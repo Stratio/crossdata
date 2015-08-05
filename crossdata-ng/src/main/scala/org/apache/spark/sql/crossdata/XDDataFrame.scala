@@ -17,8 +17,10 @@
 package org.apache.spark.sql.crossdata
 
 import com.stratio.crossdata.sql.sources.NativeScan
+import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.plans.logical.{LeafNode, LogicalPlan}
+import org.apache.spark.sql.catalyst.expressions.Literal
+import org.apache.spark.sql.catalyst.plans.logical.{Limit, LeafNode, LogicalPlan}
 import org.apache.spark.sql._
 import org.apache.spark.sql.sources.LogicalRelation
 
@@ -103,8 +105,12 @@ private[sql] class XDDataframe(@transient override val sqlContext: SQLContext,
 
   private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
     provider.buildScan(queryExecution.optimizedPlan)
+    // TODO nativeQuery may return an object array and then we could construct an array with an specific schema(this.schema)
     // TODO cache?
   }
+
+
+  override def limit(n: Int)= XDDataframe(sqlContext, Limit(Literal(n), logicalPlan))
 
 }
 

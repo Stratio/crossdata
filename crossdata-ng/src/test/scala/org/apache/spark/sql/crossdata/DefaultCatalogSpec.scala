@@ -1,4 +1,5 @@
 /*
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,16 +21,18 @@ import java.util
 import java.util.UUID
 
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.catalyst.plans.logical.{Subquery, LogicalPlan, Project}
 import org.apache.spark.sql.execution.ShowTablesCommand
+import org.apache.spark.sql.sources.LogicalRelation
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DefaultCatalogSpec extends FunSuite {
+class DefaultCatalogSpec extends FlatSpec {
 
-   test("Default catalog: Register Table") {
+   "A Defaultcatalog" should "be able to register a table" in {
 
      val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
 
@@ -46,18 +49,40 @@ class DefaultCatalogSpec extends FunSuite {
 
      assert(xdc.catalog.tableExists(tmpTable))
      xdc.catalog.unregisterTable(tmpTable)
-     xdc.catalog.close()
+     xdc.catalog.close
+
+     xdc.sparkContext.stop
    }
 
-  test("Default catalog: Specific file") {
+  "A Default catalog" should "be able to specificy a file for the persistence" in  {
     val dc: DefaultCatalog = new DefaultCatalog(
       args = util.Arrays.asList("/tmp/crossdata/catalog"))
+    dc.open()
     val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
     dc.registerTable(tmpTable, new ShowTablesCommand(None))
     assert(dc.tableExists(tmpTable))
     dc.unregisterTable(tmpTable)
-    dc.close()
+    dc.close
+  }
+
+  "A Default Catalog" should "persist tables" in {
+    val dc1: DefaultCatalog = new DefaultCatalog
+    dc1.open()
+    val tmpTable: Seq[String] = Seq("TestOfDefaultCatalogPersistence")
+    val sq: Subquery = new Subquery("aliasIsTheTableName", LogicalRelation(new MockBaseRelation))
+    val lp: LogicalPlan = new Project(Seq(), sq)
+    dc1.registerTable(tmpTable, lp)
+    assert(dc1.tableExists(tmpTable))
+    dc1.close
+
+    val dc2: DefaultCatalog = new DefaultCatalog
+    dc2.open()
+    assert(dc2.tableExists(tmpTable))
+    assert(dc2.lookupRelation(tmpTable).isInstanceOf[LogicalPlan])
+    dc2.unregisterTable(tmpTable)
+    dc2.close
   }
 
 }
 
+*/

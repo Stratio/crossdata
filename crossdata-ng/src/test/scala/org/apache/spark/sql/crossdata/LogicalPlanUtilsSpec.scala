@@ -6,18 +6,14 @@ import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.sources.{BaseRelation, LogicalRelation}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext}
+import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 
 import XDDataframe._
+import org.scalatest.junit.JUnitRunner
 
-class LogicalPlanUtilsSpec extends FlatSpec{
-
-
-
- class MockBaseRelation extends BaseRelation {
-   override def sqlContext: SQLContext = ???
-   override def schema: StructType = StructType(List(StructField("id", StringType)))
- }
+@RunWith(classOf[JUnitRunner])
+class LogicalPlanUtilsSpec extends FlatSpec {
 
  val mockNativeRelation = new MockBaseRelation with NativeScan{
    override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = ???
