@@ -84,8 +84,8 @@
     </modules>
 
     <properties>
-        <!--<scala.binary.version>2.10</scala.binary.version>
-        <scala.version>${scala.binary.version}.4</scala.version> -->
+        <scala.binary.version>2.10</scala.binary.version>
+        <scala.version>2.10.4</scala.version>
         <scalatest.version>2.2.2</scalatest.version>
         <spark.version>1.4.1</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
@@ -106,13 +106,35 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
+                <artifactId>spark-core_${scala.binary.version}</artifactId>
+                <version>${spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
                 <artifactId>spark-sql_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.stratio.crossdata</groupId>
+                <artifactId>crossdata-ng</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.stratio.crossdata</groupId>
+                <artifactId>crossdata-cassandra</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!--TEST-->
+            <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest_${scala.binary.version}</artifactId>
+                <version>${scalatest.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-    <dependencies>
 
+    <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -124,7 +146,9 @@
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
-
+        <!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
+        <testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>
+	-->
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -135,59 +159,62 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
+                    <version>3.3</version>
+                    <configuration>
+                        <skip>true</skip>
+                        <source>1.7</source>
+                        <target>1.7</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <configuration>
+                        <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
+                        <args>
+                            <arg>-Xmax-classfile-name</arg>
+                            <arg>130</arg>
+                        </args>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>compile</id>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                            <phase>compile</phase>
+                        </execution>
+                        <execution>
+                            <id>test-compile</id>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
+                            <phase>test-compile</phase>
+                        </execution>
+                        <execution>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
 
         <plugins>
             <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
-                <configuration>
-                    <skip>true</skip>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <configuration>
-                    <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                    <args>
-                        <arg>-Xmax-classfile-name</arg>
-                        <arg>130</arg>
-                    </args>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <phase>compile</phase>
-                    </execution>
-                    <execution>
-                        <id>test-compile</id>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                        <phase>test-compile</phase>
-                    </execution>
-                    <execution>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -226,44 +253,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--  <plugin>
-                 <groupId>org.scala-tools</groupId>
-                 <artifactId>maven-scala-plugin</artifactId>
-                 <executions>
-                     <execution>
-                         <id>scala-compile-first</id>
-                         <phase>process-resources</phase>
-                         <goals>
-                             <goal>add-source</goal>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                     <execution>
-                         <id>scala-test-compile</id>
-                         <phase>process-test-resources</phase>
-                         <goals>
-                             <goal>testCompile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-             </plugin>
-
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-compiler-plugin</artifactId>
-                 <configuration>
-                     <source>1.7</source>
-                     <target>1.7</target>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <phase>compile</phase>
-                         <goals>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-             </plugin>-->
             <plugin>
                 <groupId>org.scalastyle</groupId>
                 <artifactId>scalastyle-maven-plugin</artifactId>
@@ -288,8 +277,20 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <minmemory>64m</minmemory>
+                    <maxmemory>2g</maxmemory>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                    <detectLinks>true</detectLinks>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
     <profiles>
         <profile>
             <id>crossdata-core</id>
@@ -314,30 +315,6 @@
             </modules>
         </profile>
         <profile>
-            <id>scala-2.10</id>
-            <activation>
-                <property>
-                    <name>!scala-2.11</name>
-                </property>
-            </activation>
-            <properties>
-                <scala.binary.version>2.10</scala.binary.version>
-                <scala.version>${scala.binary.version}.4</scala.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>scala-2.11</id>
-            <activation>
-                <property>
-                    <name>scala-2.11</name>
-                </property>
-            </activation>
-            <properties>
-                <scala.binary.version>2.11</scala.binary.version>
-                <scala.version>${scala.binary.version}.7</scala.version>
-            </properties>
-        </profile>
-        <profile>
             <id>crossdata-hive</id>
             <activation>
                 <property>
@@ -360,5 +337,29 @@
                 <module>crossdata-examples</module>
             </modules>
         </profile>
+
+        <!--        <profile>
+                    <id>scala-2.10</id>
+                    <activation>
+                        <property><name>!scala-2.11</name></property>
+                    </activation>
+                    <properties>
+                        <scala.version>2.10.4</scala.version>
+                        <scala.binary.version>2.10</scala.binary.version>
+                    </properties>
+                </profile>
+
+                <profile>
+                    <id>scala-2.11</id>
+                    <activation>
+                        <property><name>scala-2.11</name></property>
+                    </activation>
+                    <properties>
+                        <scala.version>2.11.7</scala.version>
+                        <scala.binary.version>2.11</scala.binary.version>
+                    </properties>
+                </profile>
+                -->
     </profiles>
+
 </project>
