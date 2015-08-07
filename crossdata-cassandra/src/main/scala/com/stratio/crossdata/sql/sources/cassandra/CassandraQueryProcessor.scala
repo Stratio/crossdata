@@ -37,6 +37,7 @@ object CassandraQueryProcessor {
   def buildNativeQuery(tableQN: String, requiredColums: Array[ColumnName], filters: Array[SourceFilter], limit: Int): String = {
     val columns = requiredColums.mkString(", ")
     val orderBy = ""
+    var allowFiltering: Boolean = false
 
     def quoteString(in: Any): String = in match {
       case s: UTF8String => s"'$s'"
@@ -45,18 +46,42 @@ object CassandraQueryProcessor {
 
     def filterToCQL(filter: SourceFilter): String = filter match {
 
-      case sources.EqualTo(attribute, value) => s"$attribute = ${quoteString(value)}"
-      case sources.In(attribute, values) => s"$attribute IN ${values.map(quoteString).mkString("(", ",", ")")}"
+      case sources.EqualTo(attribute, value) => {
+
+        s"$attribute = ${quoteString(value)}"
+      }
+      case sources.In(attribute, values) => {
+
+        s"$attribute IN ${values.map(quoteString).mkString("(", ",", ")")}"
+      }
       // TODO other filters
+      case sources.LessThan(attribute, value) => {
+        allowFiltering = true
+        s"$attribute < $value"
+      }
+      case sources.GreaterThan(attribute, value) => {
+        allowFiltering = true
+        s"$attribute > $value"
+      }
+      case sources.LessThanOrEqual(attribute, value) => {
+        allowFiltering = true
+        s"$attribute <= $value"
+      }
+      case sources.GreaterThanOrEqual(attribute, value) => {
+        allowFiltering = true
+        s"$attribute => $value"
+      }
 
     }
 
     val filter = if (filters.nonEmpty) filters.map(filterToCQL).mkString("WHERE ", " AND ", "") else ""
 
     val query = s"SELECT $columns FROM $tableQN $filter $orderBy LIMIT $limit"
-    // TODO allow filtering
 
-    query
+    // TODO allow filtering
+    val completedQuery = if (!allowFiltering) query else s"$query ALLOW FILTERING"
+
+    completedQuery
   }
 
 }
@@ -77,6 +102,63 @@ case class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation,
   }
 
 
+  def checkNativeFilters(filters: Array[SourceFilter]): Boolean = {
+    var mustExistAllClusterColumns: Boolean = false
+    cassandraRelation.tableDef.columnByName
+    var filterColumns= List[ColumnName]()
+
+    filters.map(filter=>
+
+      filter match {
+        case sources.EqualTo(attribute, value) => {
+          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
+            mustExistAllClusterColumns = true
+            filterColumns ::= attribute
+          }
+        }
+        case sources.In(attribute, values) => {
+          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
+            mustExistAllClusterColumns = true
+            filterColumns ::= attribute
+          }
+        }
+        case sources.LessThan(attribute, value) => {
+          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
+            mustExistAllClusterColumns = true
+            filterColumns ::= attribute
+          }
+        }
+        case sources.GreaterThan(attribute, value) => {
+          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
+            mustExistAllClusterColumns = true
+            filterColumns ::= attribute
+          }
+        }
+        case sources.LessThanOrEqual(attribute, value) => {
+          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
+            mustExistAllClusterColumns = true
+            filterColumns ::= attribute
+          }
+        }
+        case sources.GreaterThanOrEqual(attribute, value) => {
+          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
+            mustExistAllClusterColumns = true
+            filterColumns ::= attribute
+          }
+        }
+        case _ => false
+      }
+    )
+    if (mustExistAllClusterColumns){
+      var allClusterKeys=true
+      cassandraRelation.tableDef.clusteringColumns.map(column=>
+        if(!filterColumns.contains(column.columnName)) allClusterKeys=false
+      )
+      allClusterKeys
+    }else
+      true
+  }
+
   def getValidatedPlan: Option[(Array[ColumnName], Array[SourceFilter], Option[Int])] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num}
     if (validateLogicalPlan(logicalPlan)) {
@@ -87,7 +169,10 @@ case class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation,
         }
       }
       val (projects, filters) = findProjectsFilters(logicalPlan)
-      Some(projects, filters, limit)
+      if (checkNativeFilters(filters)) {
+        Some(projects, filters, limit)
+      } else
+        None
 
     } else {
       None

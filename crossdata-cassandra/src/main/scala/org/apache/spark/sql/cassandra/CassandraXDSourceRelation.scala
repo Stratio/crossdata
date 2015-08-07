@@ -18,11 +18,10 @@
 // scalastyle:on
 package org.apache.spark.sql.cassandra
 
-
 import java.io.IOException
 
-import com.datastax.driver.core.{Metadata, ProtocolVersion}
-import com.datastax.spark.connector.{ColumnRef, AllColumns, GettableData}
+import com.datastax.driver.core.Metadata
+import com.datastax.spark.connector.cql.{CassandraConnector, CassandraConnectorConf, Schema}
 import com.datastax.spark.connector.rdd.{CassandraRDD, ReadConf}
 import com.datastax.spark.connector.util.NameTools
 import com.datastax.spark.connector.util.Quote._
@@ -35,8 +34,8 @@ import org.apache.spark.sql.cassandra.DataTypeConverter._
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.types.{UTF8String, StructType}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
+import org.apache.spark.{Logging, SparkConf}
 
 
 /**
@@ -67,7 +66,8 @@ class CassandraXDSourceRelation(
 
   }
 
-   val tableDef = {
+
+  val tableDef = {
     val tableName = tableRef.table
     val keyspaceName = tableRef.keyspace
     Schema.fromCassandra(connector, Some(keyspaceName), Some(tableName)).tables.headOption match {
@@ -108,13 +108,13 @@ class CassandraXDSourceRelation(
   private[this] val baseRdd =
     sqlContext.sparkContext.cassandraTable[CassandraSQLRow](tableRef.keyspace, tableRef.table)
 
-  def buildScan() : RDD[Row] = baseRdd.asInstanceOf[RDD[Row]]
+  def buildScan(): RDD[Row] = baseRdd.asInstanceOf[RDD[Row]]
 
   override def buildScan(requiredColumns: Array[String], filters: Array[Filter]): RDD[Row] = {
     val prunedRdd = maybeSelect(baseRdd, requiredColumns)
     logInfo(s"filters: ${filters.mkString(", ")}")
     val prunedFilteredRdd = {
-      if(filterPushdown) {
+      if (filterPushdown) {
         val filterPushdown = new PredicatePushDown(filters.toSet, tableDef)
         val pushdownFilters = filterPushdown.predicatesToPushDown.toSeq
         logInfo(s"pushdown filters: ${pushdownFilters.toString()}")
@@ -131,7 +131,7 @@ class CassandraXDSourceRelation(
   private type RDDType = CassandraRDD[CassandraSQLRow]
 
   /** Transfer selection to limit to columns specified */
-  private def maybeSelect(rdd: RDDType, requiredColumns: Array[String]) : RDDType = {
+  private def maybeSelect(rdd: RDDType, requiredColumns: Array[String]): RDDType = {
     if (requiredColumns.nonEmpty) {
       rdd.select(requiredColumns.map(column => column: ColumnRef): _*)
     } else {
@@ -140,7 +140,7 @@ class CassandraXDSourceRelation(
   }
 
   /** Push down filters to CQL query */
-  private def maybePushdownFilters(rdd: RDDType, filters: Seq[Filter]) : RDDType = {
+  private def maybePushdownFilters(rdd: RDDType, filters: Seq[Filter]): RDDType = {
     whereClause(filters) match {
       case (cql, values) if values.nonEmpty => rdd.where(cql, values: _*)
       case _ => rdd
@@ -150,13 +150,14 @@ class CassandraXDSourceRelation(
   /** Construct Cql clause and retrieve the values from filter */
   private def filterToCqlAndValue(filter: Any): (String, Seq[Any]) = {
     filter match {
-      case sources.EqualTo(attribute, value)            => (s"${quote(attribute)} = ?", Seq(value))
-      case sources.LessThan(attribute, value)           => (s"${quote(attribute)} < ?", Seq(value))
-      case sources.LessThanOrEqual(attribute, value)    => (s"${quote(attribute)} <= ?", Seq(value))
-      case sources.GreaterThan(attribute, value)        => (s"${quote(attribute)} > ?", Seq(value))
-      case sources.GreaterThanOrEqual(attribute, value) => (s"${quote(attribute)} >= ?", Seq(value))
-      case sources.In(attribute, values)                 =>
+      case sources.EqualTo(attribute, value) => (s"${quote(attribute)} = ?", Seq(value))
+      case sources.In(attribute, values) =>
         (quote(attribute) + " IN " + values.map(_ => "?").mkString("(", ", ", ")"), values.toSeq)
+      case sources.LessThan(attribute, value) => (s"${quote(attribute)} < ?", Seq(value))
+      case sources.LessThanOrEqual(attribute, value) => (s"${quote(attribute)} <= ?", Seq(value))
+      case sources.GreaterThan(attribute, value) => (s"${quote(attribute)} > ?", Seq(value))
+      case sources.GreaterThanOrEqual(attribute, value) => (s"${quote(attribute)} >= ?", Seq(value))
+
       case _ =>
         throw new UnsupportedOperationException(
           s"It's not a valid filter $filter to be pushed down, only >, <, >=, <= and In are allowed.")
@@ -172,7 +173,7 @@ class CassandraXDSourceRelation(
   }
 }
 
-  //TODO buildScan => CassandraTableScanRDD[CassandraSQLRow] => fetchTokenRange
+//TODO buildScan => CassandraTableScanRDD[CassandraSQLRow] => fetchTokenRange
 
 
 object CassandraXDSourceRelation {
@@ -249,4 +250,3 @@ object CassandraXDSourceRelation {
     conf
   }
 }
-
