@@ -1,8 +1,8 @@
 Crossdata Sandbox
 *****************
 
-Crossdata provides a sandbox that allows to test its functionality. This sandbox includes Crossdata 0.3.4, Stratio
-Cassandra, and Cassandra and Stratio Deep Connectors.
+Crossdata provides a sandbox that allows to test its functionality. This sandbox includes Crossdata 0.4.0, Stratio
+Cassandra, and Cassandra and Stratio SparkSQL Connectors.
 
 Requisites
 ============
