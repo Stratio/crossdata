@@ -62,7 +62,7 @@ Start crossdata::
 Start Connectors::
 
     > service connector_cassandra start
-    > service connector_deep start
+    > service connector_sparksql start
 
 At this point, we have all that we need so now we start crossdata shell::
 
@@ -73,10 +73,7 @@ Now you can play with the shell with this example of crossdata use:
 
 The first steps are to attach the connectors...::
 
-    xdsh> ADD DATASTORE /etc/sds/connectors/cassandra/CassandraDataStore.xml;
     xdsh> ATTACH CLUSTER cassandra_prod ON DATASTORE Cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'Port': 9042, 'rpcPort':9160, 'cluster':'cassandra_prod'};
-    xdsh> ADD CONNECTOR /etc/sds/connectors/cassandra/CassandraConnector.xml;
-    xdsh> ADD CONNECTOR /etc/sds/connectors/sparksql/SparkSQLConnector.xml;
     xdsh> ATTACH CONNECTOR CassandraConnector TO cassandra_prod WITH OPTIONS {'DefaultLimit': '1000'} AND PRIORITY=1;
     xdsh> ATTACH CONNECTOR SparkSQLConnector TO cassandra_prod WITH OPTIONS {'DefaultLimit': '1000'};
 
@@ -96,13 +93,6 @@ You can insert a few rows by executing::
     xdsh> INSERT INTO catalogTest.tableTest2(id, lastname, age, company) VALUES (999, 'Miller', 23, 'Best Company');
     xdsh> INSERT INTO catalogTest.tableTest2(id, lastname, age, company) VALUES (1000, 'Fernandez', 35, 'Stratio');
     xdsh> INSERT INTO catalogTest.tableTest2(id, lastname, age, company) VALUES (1001, 'Yorke', 42, 'Big Data Company');
-
-You can also insert 900 rows in every table by typing the next command in a system shell::
-
-    xdsh> exit
-
-    > cd /etc/sds/crossdata/
-    > java -jar CrossdataClientExample.jar
 
 Now, we can come back to the crossdata shell and see some results::
 
