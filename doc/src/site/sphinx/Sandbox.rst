@@ -44,7 +44,7 @@ and you can remove the vagrant instance.::
 
 How to get the Crossdata sandbox (OVA)
 ============================================
-You can get the OVA file with the Sandbox from this [link](www.stratio.com/crossdata).
+You can get the OVA file with the Sandbox from this [link](http://www.stratio.com/download.html).
 Once it has been downloaded, just import in your Virtual Box.
 
 
