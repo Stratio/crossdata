@@ -1,7 +1,7 @@
 #!/bin/bash
-# Stratio Deep Deployment script
+# Stratio Crossdata Deployment script
 
-TMPDIR=/tmp/stratio-deep-distribution
+TMPDIR=/tmp/stratio-crossdata-distribution
 
 rm -rf ${TMPDIR}
 mkdir -p ${TMPDIR}
@@ -14,7 +14,7 @@ export PATH=$SCALA_HOME/bin:$PATH
 SPARK_REPO="$1"
 
 if [ -z "$1" ]; then
-    SPARK_REPO="https://github.com/Stratio/spark.git"
+    SPARK_REPO="https://github.com/apache/spark.git"
 fi
 
 SPARK_BRANCH="$2"
@@ -31,12 +31,12 @@ fi
 
 
 if [ -z "$2" ]; then
-    SPARK_BRANCH="stratio-branch-1.3.1"
+    SPARK_BRANCH="tags/v1.4.1"
 fi
 
 echo "SPARK_REPO: ${SPARK_REPO}"
 echo "SPARK_BRANCH: ${SPARK_BRANCH}"
-echo " >>> STRATIO DEEP MAKE DISTRIBUTION <<< "
+echo " >>> STRATIO CROSSDATA MAKE DISTRIBUTION <<< "
 
 LOCAL_DIR=`pwd`
 
@@ -44,7 +44,7 @@ echo "LOCAL_DIR=$LOCAL_DIR"
 
 mvn -version >/dev/null || { echo "Cannot find Maven in path, aborting"; exit 1; }
 
-cd ../deep-parent
+cd ..
 RELEASE_VER=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version 2>/dev/null | grep -v '\[') || { echo "Cannot obtain project version, aborting"; exit 1; }
 echo "RELEASE_VER: ${RELEASE_VER}"
 
@@ -52,18 +52,31 @@ if [ "$RELEASE_VER" = "" ]; then
    echo "Release version empty, aborting"; exit 1;
 fi
 
-#### Create Deep jars from github (master tag) through maven release plugin
+#### Create Crossdata jars from github (master tag) through maven release plugin
 
 echo "################################################"
-echo "Compiling Deep"
+echo "Compiling Crossdata"
 echo "################################################"
 echo "$(pwd)"
-mvn clean install package -DskipTests || { echo "Cannot build Deep project, aborting"; exit 1; }
+mvn clean install package -DskipTests || { echo "Cannot build Crossdata project, aborting"; exit 1; }
+
+cd crossdata-cassandra
+mvn clean install package -DskipTests || { echo "Cannot build Crossdata-Cassandra project, aborting"; exit 1; }
+cd ..
+
+cd crossdata-hive
+mvn clean install package -DskipTests || { echo "Cannot build Crossdata-Hive project, aborting"; exit 1; }
+cd ..
 
 mkdir -p ${TMPDIR}/lib || { echo "Cannot create output lib directory"; exit 1; }
 
-cp -u ../*/target/*.jar ${TMPDIR}/lib || { echo "Cannot copy target jars to output lib directory, aborting"; exit 1; }
-cp -u ../*/target/alternateLocation/*.jar ${TMPDIR}/lib || { echo "Cannot copy alternate jars to output lib directory, aborting"; exit 1; }
+cp -u ./*/target/*.jar ${TMPDIR}/lib || { echo "Cannot copy target jars to output lib directory, aborting"; exit 1; }
+###cp -u ./*/target/alternateLocation/*.jar ${TMPDIR}/lib || { echo "Cannot copy alternate jars to output lib directory, aborting"; exit 1; }
+
+
+
+exit 1;
+
 
 git fetch --tags
 latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
@@ -74,13 +87,12 @@ echo -e "[${RELEASE_VER}]\n\n$(git log ${latest_tag}..HEAD)\n\n$(cat ChangeLog.t
 #    $LOCAL_EDITOR ${TMPDIR}/ChangeLog.txt
 #fi
 
-#### Create Deep external extractors jars from github
-
 echo "################################################"
-echo "Compiling Deep external extractors"
+echo "Copy Crossdata scripts"
 echo "################################################"
-
-../deep-scripts/make-distribution-deep-external.sh ${TMPDIR}
+mkdir -p ${TMPDIR}/bin || { echo "Cannot create output bin directory"; exit 1; }
+cp crossdata-scripts/stratio-xd-init.scala ${TMPDIR}/bin
+cp crossdata-scripts/stratio-xd-shell ${TMPDIR}/bin
 
 echo "################################################"
 echo "Creating Spark distribuition"
@@ -94,17 +106,21 @@ git clone "$SPARK_REPO" ${STRATIOSPARKDIR} || { echo "Cannot clone Spark project
 cd ./${STRATIOSPARKDIR}/
 git checkout "$SPARK_BRANCH" || { echo "Cannot checkout branch: ${SPARK_BRANCH}"; exit 1; }
 
-chmod +x bin/stratio-deep-shell
+
+chmod +x bin/stratio-xd-shell
 
 #--hadoop 2.0.0-mr1-cdh4.4.0
 ./make-distribution.sh --skip-java-test -Dhadoop.version=2.4.0 -Pyarn -Phive -Pnetlib-lgpl -Pscala-2.10 || { echo "Cannot make Spark distribution"; exit 1; }
 
 cd ..
 
-DISTDIR=spark-deep-distribution-${RELEASE_VER}
+DISTDIR=spark-crossdata-distribution-${RELEASE_VER}
 DISTFILENAME=${DISTDIR}.tgz
 
 cp ${TMPDIR}/lib/*.jar ${STRATIOSPARKDIR}/dist/lib/
+cp ${TMPDIR}/bin/stratio-xd-init.scala ${STRATIOSPARKDIR}/dist/bin/
+cp ${TMPDIR}/bin/stratio-xd-shell ${STRATIOSPARKDIR}/dist/bin/
+
 rm -f ${STRATIOSPARKDIR}/dist/lib/*-sources.jar
 rm -f ${STRATIOSPARKDIR}/dist/lib/*-javadoc.jar
 rm -f ${STRATIOSPARKDIR}/dist/lib/*-tests.jar
