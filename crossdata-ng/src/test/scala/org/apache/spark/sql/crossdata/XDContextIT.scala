@@ -20,11 +20,11 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
-import org.scalatest.FlatSpec
+import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDContextSpec extends FlatSpec {
+class XDContextSpec extends FlatSpec with BeforeAndAfterAll{
 
   "A DefaultCatalog" should "be case sensitive" in {
 
