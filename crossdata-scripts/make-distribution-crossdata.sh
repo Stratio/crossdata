@@ -1,6 +1,50 @@
 #!/bin/bash
 # Stratio Crossdata Deployment script
 
+if [ -z "$JAVA_HOME" ]; then
+    echo Error: JAVA_HOME is not set, cannot proceed.
+    exit 1
+fi
+
+while [[ $# > 1 ]]
+do
+key="$1"
+
+case $key in
+    --profile)
+    PROFILE="$2"
+    shift # past argument
+    ;;
+    --sparkRepo)
+    SPARK_REPO="$2"
+    shift # past argument
+    ;;
+    --sparkBranch)
+    SPARK_BRANCH="$2"
+    shift # past argument
+    ;;
+    -h|--help)
+    DEFAULT=YES
+    ;;
+    *)
+            # unknown option
+    ;;
+esac
+shift # past argument or value
+done
+
+if [ -z "$SPARK_REPO" ]; then
+    SPARK_REPO="https://github.com/apache/spark.git"
+fi
+
+if [ -z "$SPARK_BRANCH" ]; then
+    SPARK_BRANCH="tags/v1.4.1"
+fi
+
+if [ -z "$PROFILE" ]; then
+    PROFILE="crossdata-cassandra"
+fi
+
 TMPDIR=/tmp/stratio-crossdata-distribution
 
 rm -rf ${TMPDIR}
@@ -11,13 +55,7 @@ export PATH=$JAVA_HOME/bin:$PATH
 export SCALA_HOME=$SCALA_HOME
 export PATH=$SCALA_HOME/bin:$PATH
 
-SPARK_REPO="$1"
 
-if [ -z "$1" ]; then
-    SPARK_REPO="https://github.com/apache/spark.git"
-fi
-
-SPARK_BRANCH="$2"
 
 LOCAL_EDITOR=$(which vim)
 
@@ -27,11 +65,6 @@ fi
 
 if [ -z "$LOCAL_EDITOR" ]; then
     echo "Cannot find any command line editor, ChangeLog.txt won't be edited interactively"
-fi
-
-
-if [ -z "$2" ]; then
-    SPARK_BRANCH="tags/v1.4.1"
 fi
 
 echo "SPARK_REPO: ${SPARK_REPO}"
@@ -58,25 +91,12 @@ echo "################################################"
 echo "Compiling Crossdata"
 echo "################################################"
 echo "$(pwd)"
-mvn clean install package -DskipTests || { echo "Cannot build Crossdata project, aborting"; exit 1; }
-
-cd crossdata-cassandra
-mvn clean install package -DskipTests || { echo "Cannot build Crossdata-Cassandra project, aborting"; exit 1; }
-cd ..
-
-cd crossdata-hive
-mvn clean install package -DskipTests || { echo "Cannot build Crossdata-Hive project, aborting"; exit 1; }
-cd ..
+mvn clean package -DskipTests -P"$PROFILE" || { echo "Cannot build Crossdata project, aborting"; exit 1; }
 
 mkdir -p ${TMPDIR}/lib || { echo "Cannot create output lib directory"; exit 1; }
 
 cp -u ./*/target/*.jar ${TMPDIR}/lib || { echo "Cannot copy target jars to output lib directory, aborting"; exit 1; }
 ###cp -u ./*/target/alternateLocation/*.jar ${TMPDIR}/lib || { echo "Cannot copy alternate jars to output lib directory, aborting"; exit 1; }
-
-
-
-exit 1;
-
 
 git fetch --tags
 latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
@@ -91,8 +111,10 @@ echo "################################################"
 echo "Copy Crossdata scripts"
 echo "################################################"
 mkdir -p ${TMPDIR}/bin || { echo "Cannot create output bin directory"; exit 1; }
-cp crossdata-scripts/stratio-xd-init.scala ${TMPDIR}/bin
-cp crossdata-scripts/stratio-xd-shell ${TMPDIR}/bin
+cp crossdata-scripts/stratio-xd-init.scala ${TMPDIR}/bin || { echo "Cannot copy stratio-xd-init.scala"; exit 1; }
+cp crossdata-scripts/stratio-xd-shell ${TMPDIR}/bin || { echo "Cannot copy stratio-xd-shell"; exit 1; }
+
+chmod +x ${TMPDIR}/bin/stratio-xd-shell || { echo "Cannot modify stratio-xd-shell"; exit 1; }
 
 echo "################################################"
 echo "Creating Spark distribuition"
@@ -107,7 +129,7 @@ cd ./${STRATIOSPARKDIR}/
 git checkout "$SPARK_BRANCH" || { echo "Cannot checkout branch: ${SPARK_BRANCH}"; exit 1; }
 
 
-chmod +x bin/stratio-xd-shell
+
 
 #--hadoop 2.0.0-mr1-cdh4.4.0
 ./make-distribution.sh --skip-java-test -Dhadoop.version=2.4.0 -Pyarn -Phive -Pnetlib-lgpl -Pscala-2.10 || { echo "Cannot make Spark distribution"; exit 1; }
