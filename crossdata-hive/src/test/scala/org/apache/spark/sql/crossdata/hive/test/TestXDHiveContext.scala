@@ -42,7 +42,7 @@ class LocalXDHiveContext
     protected[sql] override lazy val conf: SQLConf = new SQLConf {
       /** Fewer partitions to speed up testing. */
       override def numShufflePartitions: Int = 5
-    }
+    
   }
 
   /**
