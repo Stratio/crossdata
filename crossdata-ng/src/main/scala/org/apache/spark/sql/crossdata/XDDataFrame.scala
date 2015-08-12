@@ -99,7 +99,7 @@ private[sql] class XDDataframe(@transient override val sqlContext: SQLContext,
   /**
    * @inheritdoc
    */
-  override def collectAsList(): java.util.List[Row] = java.util.Arrays.asList(collect() : _*)
+  override def collectAsList(): java.util.List[Row] = java.util.Arrays.asList(collect(): _*)
 
   /**
    * @inheritdoc
@@ -110,7 +110,7 @@ private[sql] class XDDataframe(@transient override val sqlContext: SQLContext,
    * @inheritdoc
    */
   override def count(): Long = {
-    val aggregateExpr =  Seq(Alias(Count(Literal(1)), "count")())
+    val aggregateExpr = Seq(Alias(Count(Literal(1)), "count")())
     XDDataframe(sqlContext, Aggregate(Seq(), aggregateExpr, logicalPlan)).collect().head.getLong(0)
   }
 

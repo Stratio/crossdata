@@ -23,7 +23,7 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDHiveContextIT extends FlatSpec with BeforeAndAfterAll{
+class XDHiveContextIT extends FlatSpec with BeforeAndAfterAll {
 
   private lazy val xctx = org.apache.spark.sql.crossdata.hive.test.TestXDHiveContext
 

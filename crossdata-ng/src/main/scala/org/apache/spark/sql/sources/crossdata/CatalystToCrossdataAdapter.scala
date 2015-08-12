@@ -26,7 +26,7 @@ object CatalystToCrossdataAdapter {
 
 
   def getFilterProject(logicalPlan: LogicalPlan, projects: Seq[NamedExpression],
-                    filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter]) = {
+                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter]) = {
 
     val projectSet = AttributeSet(projects.flatMap(_.references))
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
