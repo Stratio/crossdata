@@ -56,7 +56,7 @@ class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
  */
 
   override def sql(sqlText: String): DataFrame = {
-    XDDataframe(this, parseSql(sqlText))
+    XDDataFrame(this, parseSql(sqlText))
   }
 }
 

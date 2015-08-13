@@ -18,7 +18,7 @@
 // scalastyle:on
 package org.apache.spark.sql.crossdata.test
 
-import org.apache.spark.sql.crossdata.{XDDataframe, XDContext}
+import org.apache.spark.sql.crossdata.{XDDataFrame, XDContext}
 
 import scala.language.implicitConversions
 
@@ -50,7 +50,7 @@ class LocalXDContext
    * construct [[DataFrame]] directly out of local data without relying on implicits.
    */
   protected[sql] implicit def logicalPlanToSparkQuery(plan: LogicalPlan): DataFrame = {
-    XDDataframe(this, plan)
+    XDDataFrame(this, plan)
   }
 
 }

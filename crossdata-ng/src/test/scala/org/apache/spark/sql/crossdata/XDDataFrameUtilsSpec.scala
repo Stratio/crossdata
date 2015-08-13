@@ -3,13 +3,13 @@ package org.apache.spark.sql.crossdata
 import com.stratio.crossdata.sql.sources.NativeScan
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.sources.{BaseRelation, LogicalRelation}
+import org.apache.spark.sql.sources.LogicalRelation
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 
-import XDDataframe._
+import XDDataFrame._
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])

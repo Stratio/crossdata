@@ -17,13 +17,13 @@
 package org.apache.spark.sql.crossdata.hive
 
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.crossdata.XDDataframe
+import org.apache.spark.sql.crossdata.XDDataFrame
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+import org.scalatest.{Matchers, BeforeAndAfterAll, FlatSpec}
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDHiveContextIT extends FlatSpec with BeforeAndAfterAll {
+class XDHiveContextIT extends FlatSpec with Matchers {
 
   private lazy val xctx = org.apache.spark.sql.crossdata.hive.test.TestXDHiveContext
 
@@ -48,7 +48,7 @@ class XDHiveContextIT extends FlatSpec with BeforeAndAfterAll {
     df.registerTempTable("records")
 
     val dataframe = xctx.sql("SELECT * FROM records")
-    assert(dataframe.isInstanceOf[XDDataframe])
+    dataframe shouldBe a [XDDataFrame]
   }
 
 

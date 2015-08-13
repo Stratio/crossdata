@@ -18,11 +18,11 @@ package org.apache.spark.sql.crossdata
 
 import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+import org.scalatest.{Matchers, FlatSpec}
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDContextIT extends FlatSpec with BeforeAndAfterAll {
+class XDContextIT extends FlatSpec with Matchers {
 
   private lazy val xctx = org.apache.spark.sql.crossdata.test.TestXDContext
 
@@ -34,12 +34,22 @@ class XDContextIT extends FlatSpec with BeforeAndAfterAll {
   "A XDContext" should "perform a collect with a collection" in {
 
     import xctx.implicits._
-
     val df = xctx.sparkContext.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
     df.registerTempTable("records")
 
     val result: Array[Row] = xctx.sql("SELECT * FROM records").collect()
-    assert(result.length === 5)
+
+    result should have length 5
+  }
+
+  it must "return a XDDataFrame when executing a SQL query" in {
+    import xctx.implicits._
+
+    val df = xctx.sparkContext.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
+    df.registerTempTable("records")
+
+    val dataframe = xctx.sql("SELECT * FROM records")
+    dataframe shouldBe a [XDDataFrame]
   }
 
 }

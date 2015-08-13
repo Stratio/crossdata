@@ -18,8 +18,9 @@
 // scalastyle:on
 package org.apache.spark.sql.crossdata.hive.test
 
+import org.apache.spark.sql.crossdata.XDDataFrame
 import org.apache.spark.sql.crossdata.hive.XDHiveContext
-import org.apache.spark.sql.crossdata.XDDataframe
+
 import scala.language.implicitConversions
 
 import org.apache.spark.{SparkConf, SparkContext}
@@ -42,7 +43,7 @@ class LocalXDHiveContext
     protected[sql] override lazy val conf: SQLConf = new SQLConf {
       /** Fewer partitions to speed up testing. */
       override def numShufflePartitions: Int = 5
-
+    }
   }
 
   /**
@@ -50,7 +51,7 @@ class LocalXDHiveContext
    * construct [[DataFrame]] directly out of local data without relying on implicits.
    */
   protected[sql] implicit def logicalPlanToSparkQuery(plan: LogicalPlan): DataFrame = {
-    XDDataframe(this, plan)
+    XDDataFrame(this, plan)
   }
 
 }
