@@ -50,6 +50,7 @@ object CatalystToCrossdataAdapter {
   private[this] def selectFilters(filters: Seq[Expression]) = {
     def translate(predicate: Expression): Option[SourceFilter] = predicate match {
       // TODO support more type of filters
+      // TODO filters which are not supported shouldn't be ignored when working with native connectors
       case expressions.EqualTo(a: Attribute, Literal(v, _)) =>
         Some(sources.EqualTo(a.name, v))
       case expressions.EqualTo(Literal(v, _), a: Attribute) =>

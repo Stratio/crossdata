@@ -17,13 +17,11 @@
 package org.apache.spark.sql.crossdata
 
 import com.stratio.crossdata.sql.sources.NativeScan
-import org.apache.commons.lang3.StringUtils
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.Literal
-import org.apache.spark.sql.catalyst.plans.logical.{Limit, LeafNode, LogicalPlan}
 import org.apache.spark.sql._
+import org.apache.spark.sql.catalyst.CatalystTypeConverters
+import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.sources.LogicalRelation
-
 
 private[sql] object XDDataframe {
   def apply(sqlContext: SQLContext, logicalPlan: LogicalPlan): DataFrame = {
@@ -47,7 +45,7 @@ private[sql] object XDDataframe {
 
       nativeExecutors match {
         case Seq(head) => Some(head)
-        case _ => {
+        case _ =>
           if (nativeExecutors.sliding(2).forall { tuple =>
             tuple(0).getClass == tuple(1).getClass
           }) {
@@ -55,11 +53,8 @@ private[sql] object XDDataframe {
           } else {
             None
           }
-        }
       }
     }
-
-
   }
 
 }
@@ -92,7 +87,6 @@ private[sql] class XDDataframe(@transient override val sqlContext: SQLContext,
    * @inheritdoc
    */
   override def collect(): Array[Row] = {
-    // TODO take
     // if cache don't go through native
     if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
       super.collect()
@@ -102,15 +96,33 @@ private[sql] class XDDataframe(@transient override val sqlContext: SQLContext,
     }
   }
 
+  /**
+   * @inheritdoc
+   */
+  override def collectAsList(): java.util.List[Row] = java.util.Arrays.asList(collect() : _*)
 
-  private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
-    provider.buildScan(queryExecution.optimizedPlan)
-    // TODO nativeQuery may return an object array and then we could construct an array with an specific schema(this.schema)
-    // TODO cache?
+  /**
+   * @inheritdoc
+   */
+  override def limit(n: Int) = XDDataframe(sqlContext, Limit(Literal(n), logicalPlan))
+
+  /**
+   * @inheritdoc
+   */
+  override def count(): Long = {
+    val aggregateExpr =  Seq(Alias(Count(Literal(1)), "count")())
+    XDDataframe(sqlContext, Aggregate(Seq(), aggregateExpr, logicalPlan)).collect().head.getLong(0)
   }
 
 
-  override def limit(n: Int)= XDDataframe(sqlContext, Limit(Literal(n), logicalPlan))
+  private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
+    val rowsOption = provider.buildScan(queryExecution.optimizedPlan)
+    // TODO is it possible to avoid the step below?
+    rowsOption.map { rows =>
+      val converter = CatalystTypeConverters.createToScalaConverter(schema)
+      rows.map(converter(_).asInstanceOf[Row])
+    }
+  }
 
 }
 
