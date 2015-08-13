@@ -7,3 +7,6 @@ scala:
 script:
 
   - mvn test -Dmaven.test.failure=true
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

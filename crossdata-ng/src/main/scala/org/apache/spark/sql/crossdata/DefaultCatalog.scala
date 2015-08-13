@@ -75,8 +75,8 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
   override def unregisterAllTables(): Unit = {
     super.unregisterAllTables()
     logInfo("XDCatalog: unregisterAllTables")
-    pTables.clear
-    db.commit
+    pTables.clear()
+    db.commit()
   }
 
   /**
@@ -87,7 +87,7 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
     logInfo("XDCatalog: unregisterTable")
     val tableName: String = tableIdentifier.mkString(StringSeparator)
     pTables.remove(tableName)
-    db.commit
+    db.commit()
   }
 
   /**
@@ -98,7 +98,7 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
     logInfo("XDCatalog: registerTable")
     if(!plan.isInstanceOf[LogicalRDD]) {
       pTables.put(tableIdentifier.mkString(StringSeparator), plan)
-      db.commit
+      db.commit()
     }
   }
 
@@ -115,6 +115,6 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
    */
   override def close(): Unit = {
     logInfo("XDCatalog: close")
-    db.close
+    db.close()
   }
 }

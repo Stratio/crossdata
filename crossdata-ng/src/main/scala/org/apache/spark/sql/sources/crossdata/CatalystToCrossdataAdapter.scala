@@ -13,6 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package org.apache.spark.sql.sources.crossdata
 
 import org.apache.spark.sql.catalyst.expressions
@@ -26,7 +27,7 @@ object CatalystToCrossdataAdapter {
 
 
   def getFilterProject(logicalPlan: LogicalPlan, projects: Seq[NamedExpression],
-                    filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter]) = {
+                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter]) = {
 
     val projectSet = AttributeSet(projects.flatMap(_.references))
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
@@ -50,6 +51,7 @@ object CatalystToCrossdataAdapter {
   private[this] def selectFilters(filters: Seq[Expression]) = {
     def translate(predicate: Expression): Option[SourceFilter] = predicate match {
       // TODO support more type of filters
+      // TODO filters which are not supported shouldn't be ignored when working with native connectors
       case expressions.EqualTo(a: Attribute, Literal(v, _)) =>
         Some(sources.EqualTo(a.name, v))
       case expressions.EqualTo(Literal(v, _), a: Attribute) =>
@@ -96,13 +98,13 @@ object CatalystToCrossdataAdapter {
         translate(child).map(sources.Not)
 
       case expressions.StartsWith(a: Attribute, Literal(v: UTF8String, StringType)) =>
-        Some(sources.StringStartsWith(a.name, v.toString))
+        Some(sources.StringStartsWith(a.name, v.toString()))
 
       case expressions.EndsWith(a: Attribute, Literal(v: UTF8String, StringType)) =>
-        Some(sources.StringEndsWith(a.name, v.toString))
+        Some(sources.StringEndsWith(a.name, v.toString()))
 
       case expressions.Contains(a: Attribute, Literal(v: UTF8String, StringType)) =>
-        Some(sources.StringContains(a.name, v.toString))
+        Some(sources.StringContains(a.name, v.toString()))
 
       case _ => None
     }
