@@ -1,30 +1,53 @@
 #!/bin/bash
 # Stratio Crossdata Deployment script
 
+function usage {
+
+  echo "Usage: ./make-distribution-crossdata.sh [OPTION]... [SPARK_BUILD_OPTIONS] "
+  echo "Tool for build binary distributions of Spark with the Stratio Crossdata Pluggins"
+  echo "Example: ./make-distribution-crossdata.sh --profile crossdata-cassandra --skip-java-test -Dhadoop.version=2.4.0"
+  echo ""
+  echo "--profile            Crossdata Build Profile, Default: crossdata-cassandra. Options: crossdata-core, crossdata-all, crossdata-hive, crossdata-cassandra"
+  echo "--sparkRepo          Github repository used to download Official Spark Distribution. Default: https://github.com/apache/spark.git"
+  echo "--sparkBranch        Github branch or tag used to build the Spark Distribution. Default: tags/v1.4.1"
+  echo ""
+  echo "[SPARK_BUILD_OPTIONS]"
+  echo "Spark's specific Build options."
+  echo "See Spark's \"Building Spark\" doc for correct Maven options at http://spark.apache.org/docs/latest/building-spark.html"
+  echo ""
+  exit 1
+}
+
 if [ -z "$JAVA_HOME" ]; then
     echo Error: JAVA_HOME is not set, cannot proceed.
     exit 1
 fi
 
-while [[ $# > 1 ]]
+# Keep all the arguments, then remove the XD specific ones and only keep the Spark arguments.
+SPARK_BUILD_OPTIONS="$@"
+
+while [[ $# > 0 ]]
 do
 key="$1"
 
 case $key in
     --profile)
     PROFILE="$2"
+    SPARK_BUILD_OPTIONS=${SPARK_BUILD_OPTIONS/"--profile $PROFILE"/}
     shift # past argument
     ;;
     --sparkRepo)
     SPARK_REPO="$2"
+    SPARK_BUILD_OPTIONS=${SPARK_BUILD_OPTIONS/"--sparkRepo $SPARK_REPO"/}
     shift # past argument
     ;;
     --sparkBranch)
     SPARK_BRANCH="$2"
+    SPARK_BUILD_OPTIONS=${SPARK_BUILD_OPTIONS/"--sparkBranch $SPARK_BRANCH"/}
     shift # past argument
     ;;
-    -h|--help)
-    DEFAULT=YES
+    --help)
+    usage
     ;;
     *)
             # unknown option
@@ -33,6 +56,7 @@ esac
 shift # past argument or value
 done
 
+#Default Arguments
 if [ -z "$SPARK_REPO" ]; then
     SPARK_REPO="https://github.com/apache/spark.git"
 fi
@@ -43,6 +67,10 @@ fi
 
 if [ -z "$PROFILE" ]; then
     PROFILE="crossdata-cassandra"
+fi
+
+if [ -z "$SPARK_BUILD_OPTIONS" ]; then
+    SPARK_BUILD_OPTIONS="--skip-java-test -Dhadoop.version=2.4.0 -Pyarn -Phive -Pnetlib-lgpl -Pscala-2.10"
 fi
 
 TMPDIR=/tmp/stratio-crossdata-distribution
@@ -118,6 +146,7 @@ chmod +x ${TMPDIR}/bin/stratio-xd-shell || { echo "Cannot modify stratio-xd-shel
 
 echo "################################################"
 echo "Creating Spark distribuition"
+echo "With this options $SPARK_BUILD_OPTIONS"
 echo "################################################"
 cd ${TMPDIR}
 
@@ -132,7 +161,7 @@ git checkout "$SPARK_BRANCH" || { echo "Cannot checkout branch: ${SPARK_BRANCH}"
 
 
 #--hadoop 2.0.0-mr1-cdh4.4.0
-./make-distribution.sh --skip-java-test -Dhadoop.version=2.4.0 -Pyarn -Phive -Pnetlib-lgpl -Pscala-2.10 || { echo "Cannot make Spark distribution"; exit 1; }
+./make-distribution.sh $SPARK_BUILD_OPTIONS || { echo "Cannot make Spark distribution"; exit 1; }
 
 cd ..
 
