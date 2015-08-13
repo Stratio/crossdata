@@ -16,15 +16,13 @@
 
 package com.stratio.crossdata.examples
 
-import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.crossdata.XDContext
 
 sealed trait DefaultConstants {
   val Cluster = "Test Cluster"
-  //val Catalog = "highschool"
-  val Catalog = "cassandra_demo"
-  //val Table = "students"
-  val Table = "users"
+  val Catalog = "highschool"
+  val Table = "students"
   val CassandraHost = "127.0.0.1"
   val SourceProvider = "com.stratio.crossdata.sql.sources.cassandra"
   // Cassandra provider => org.apache.spark.sql.cassandra
@@ -36,21 +34,20 @@ object CassandraExample extends App with DefaultConstants {
 
     xdContext.sql(
       "CREATE TEMPORARY TABLE " + Table + " USING " + SourceProvider + " OPTIONS " +
-        "(keyspace \"" + Catalog + "\", table \"" + Table + "\", " +
-        "cluster \"" + Cluster + "\", pushdown \"true\")".stripMargin)
+        "( keyspace \"" + Catalog + "\"," +
+        " table \"" + Table + "\", " +
+        " cluster \"" + Cluster + "\", " +
+        " pushdown \"true\", " +
+        " spark_cassandra_connection_host \"" + CassandraHost + "\")".stripMargin)
+
+    // xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 1 AND id = 5").collect().show(5)
+    // xdContext.sql(s"SELECT comment as b FROM $Table WHERE id = 1").collect().show(5)
+    // xdContext.sql(s"SELECT name as b FROM $Table WHERE age > 1 limit 7").show(5)
+    // xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 'A'").show(5)
+    // xdContext.sql(s"SELECT comment as b FROM $Table WHERE id IN(1,2,3,4,5,6,7,8,9,10) limit 2").show(5)
 
     // scalastyle:off
-    //xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 1 AND id = 5").collect().foreach(print)
-    //xdContext.sql(s"SELECT comment as b FROM $Table WHERE id = 1").collect().foreach(print)
-    //xdContext.sql(s"SELECT *  FROM $Table ").collect().foreach(print)
-    //xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 'A'").show(5)
-    //xdContext.sql(s"SELECT comment as b FROM $Table WHERE id IN(1,2,3,4,5,6,7,8,9,10) limit 2").show(5)
-    //xdContext.sql(s"SELECT brand as b FROM $Table WHERE id IN(1,2,3,4,5,6,7,8,9,10) limit 2").show(5)
-
-    //xdContext.sql(s"SELECT name as b FROM $Table WHERE email = 'name_1@domain.com' and age > 1 limit 7").show(5)
-
-    xdContext.sql(s"SELECT name as b FROM $Table WHERE age > 1 limit 7").show(5)
-
+    xdContext.sql(s"SELECT *  FROM $Table ").collect().foreach(print)
     // scalastyle:on
 
   }
@@ -60,8 +57,7 @@ object CassandraExample extends App with DefaultConstants {
 
     val sparkConf = new SparkConf().
       setAppName("CassandraExample").
-      setMaster("local[4]").
-      set("spark.cassandra.connection.host", CassandraHost)
+      setMaster("local[4]")
 
     val sc = new SparkContext(sparkConf)
 

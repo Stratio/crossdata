@@ -13,6 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package org.apache.spark.sql.sources.crossdata
 
 import org.apache.spark.sql.catalyst.expressions
@@ -26,7 +27,7 @@ object CatalystToCrossdataAdapter {
 
 
   def getFilterProject(logicalPlan: LogicalPlan, projects: Seq[NamedExpression],
-                    filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter]) = {
+                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter]) = {
 
     val projectSet = AttributeSet(projects.flatMap(_.references))
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
@@ -97,13 +98,13 @@ object CatalystToCrossdataAdapter {
         translate(child).map(sources.Not)
 
       case expressions.StartsWith(a: Attribute, Literal(v: UTF8String, StringType)) =>
-        Some(sources.StringStartsWith(a.name, v.toString))
+        Some(sources.StringStartsWith(a.name, v.toString()))
 
       case expressions.EndsWith(a: Attribute, Literal(v: UTF8String, StringType)) =>
-        Some(sources.StringEndsWith(a.name, v.toString))
+        Some(sources.StringEndsWith(a.name, v.toString()))
 
       case expressions.Contains(a: Attribute, Literal(v: UTF8String, StringType)) =>
-        Some(sources.StringContains(a.name, v.toString))
+        Some(sources.StringContains(a.name, v.toString()))
 
       case _ => None
     }

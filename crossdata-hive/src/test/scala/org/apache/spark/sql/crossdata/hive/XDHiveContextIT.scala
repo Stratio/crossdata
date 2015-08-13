@@ -14,45 +14,43 @@
  *  limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata
+package org.apache.spark.sql.crossdata.hive
 
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.analysis.Catalog
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.crossdata.XDDataFrame
 import org.junit.runner.RunWith
-import org.scalatest.FlatSpec
+import org.scalatest.{Matchers, BeforeAndAfterAll, FlatSpec}
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDContextSpec extends FlatSpec {
+class XDHiveContextIT extends FlatSpec with Matchers {
 
-  "A DefaultCatalog" should "be case sensitive" in {
-
-    val sparkConf = new SparkConf().setAppName("Crossdata").setMaster("local[2]")
-    val sc: SparkContext = new SparkContext(sparkConf)
-    val ctx: XDContext = new XDContext(sc)
-    val xdCatalog: Catalog = ctx.catalog
-    assert(xdCatalog.conf.caseSensitiveAnalysis === true)
-    ctx.sparkContext.stop
-  }
+  private lazy val xctx = org.apache.spark.sql.crossdata.hive.test.TestXDHiveContext
 
   "A XDContext" should "perform a collect with a collection" in {
-    val sparkConf = new SparkConf().setAppName("Crossdata").setMaster("local[2]")
-    val sc: SparkContext = new SparkContext(sparkConf)
-    val xdc: XDContext = new XDContext(sc)
+    import xctx.implicits._
 
-    import xdc.implicits._
-
-    val df = sc.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
+    val df = xctx.sparkContext.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
     // Any RDD containing case classes can be registered as a table.  The schema of the table is
     // automatically inferred using scala reflection.
     df.registerTempTable("records")
 
     // Once tables have been registered, you can run SQL queries over them.
-    val result: Array[Row] = xdc.sql("SELECT * FROM records").collect
+    val result: Array[Row] = xctx.sql("SELECT * FROM records").collect()
     assert(result.length === 5)
-
-    xdc.sparkContext.stop
   }
 
+
+  it must "return a XDDataFrame when executing a SQL query" in {
+    import xctx.implicits._
+
+    val df = xctx.sparkContext.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
+    df.registerTempTable("records")
+
+    val dataframe = xctx.sql("SELECT * FROM records")
+    dataframe shouldBe a [XDDataFrame]
+  }
+
+
 }
+

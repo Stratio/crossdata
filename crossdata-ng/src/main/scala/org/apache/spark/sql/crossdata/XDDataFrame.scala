@@ -23,11 +23,21 @@ import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.sources.LogicalRelation
 
-private[sql] object XDDataframe {
+private[sql] object XDDataFrame {
+
   def apply(sqlContext: SQLContext, logicalPlan: LogicalPlan): DataFrame = {
-    new XDDataframe(sqlContext, logicalPlan)
+    new XDDataFrame(sqlContext, logicalPlan)
   }
 
+  /**
+   * Finds a [[org.apache.spark.sql.sources.BaseRelation]] mixing-in [[NativeScan]] supporting native execution.
+   *
+   * The logical plan must involve only base relation from the same datasource implementation. For example,
+   * if there is a join with a [[org.apache.spark.rdd.RDD]] the logical plan cannot be executed natively.
+   *
+   * @param optimizedLogicalPlan the logical plan once it has been processed by the parser, analyzer and optimizer.
+   * @return
+   */
   def findNativeQueryExecutor(optimizedLogicalPlan: LogicalPlan): Option[NativeScan] = {
 
     def allLeafsAreNative(leafs: Seq[LeafNode]): Boolean = {
@@ -59,15 +69,10 @@ private[sql] object XDDataframe {
 
 }
 
-
 /**
- * Extends a [[DataFrame]] to provide native access to datasources when performing RDD actions.
- *
- * @inheritdoc
- *
+ * Extends a [[DataFrame]] to provide native access to datasources when performing Spark actions.
  */
-// TODO: Improve documentation.
-private[sql] class XDDataframe(@transient override val sqlContext: SQLContext,
+private[sql] class XDDataFrame(@transient override val sqlContext: SQLContext,
                                @transient override val queryExecution: SQLContext#QueryExecution)
   extends DataFrame(sqlContext, queryExecution) {
 
@@ -81,7 +86,7 @@ private[sql] class XDDataframe(@transient override val sqlContext: SQLContext,
     })
   }
 
-  import XDDataframe._
+  import XDDataFrame._
 
   /**
    * @inheritdoc
@@ -99,22 +104,29 @@ private[sql] class XDDataframe(@transient override val sqlContext: SQLContext,
   /**
    * @inheritdoc
    */
-  override def collectAsList(): java.util.List[Row] = java.util.Arrays.asList(collect() : _*)
+  override def collectAsList(): java.util.List[Row] = java.util.Arrays.asList(collect(): _*)
 
   /**
    * @inheritdoc
    */
-  override def limit(n: Int) = XDDataframe(sqlContext, Limit(Literal(n), logicalPlan))
+  override def limit(n: Int): DataFrame = XDDataFrame(sqlContext, Limit(Literal(n), logicalPlan))
 
   /**
    * @inheritdoc
    */
   override def count(): Long = {
-    val aggregateExpr =  Seq(Alias(Count(Literal(1)), "count")())
-    XDDataframe(sqlContext, Aggregate(Seq(), aggregateExpr, logicalPlan)).collect().head.getLong(0)
+    val aggregateExpr = Seq(Alias(Count(Literal(1)), "count")())
+    XDDataFrame(sqlContext, Aggregate(Seq(), aggregateExpr, logicalPlan)).collect().head.getLong(0)
   }
 
 
+  /**
+   * Executes the logical plan.
+   *
+   * @param provider [[org.apache.spark.sql.sources.BaseRelation]] mixing-in [[NativeScan]]
+   * @return an array that contains all of [[Row]]s in this [[XDDataFrame]]
+   *         or None if the provider cannot resolve the entire [[XDDataFrame]] natively.
+   */
   private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
     val rowsOption = provider.buildScan(queryExecution.optimizedPlan)
     // TODO is it possible to avoid the step below?
