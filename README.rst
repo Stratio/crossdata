@@ -23,14 +23,33 @@ If you prefer to install solely some connectors::
 Building Crossdata
 ========================================
 
-TODO
-    
+You can buils a Spark Distribution with Crossdata libraries running the make-distribution-crossdarta script:
+    > cd crosdata-scripts
+    > ./make-distribution-crossdata.sh
 
+This will build Spark with the following options:
+    - Crossdata with Cassandra support
+    - Spark Version v1.4.1
+    - Spark's Hadoop  Version 2.4.0
+    - Yarn support
+    - Hive integration for SparkSQL
+     -Scala version 2.10
+
+For others options run ./make-distribution-crossdata.sh --help
 
 Running the crossdata-shell
 ===========================
 
-TODO
+Using a Crossdata's Spark Distribution with cassandra support:
+    > bin/stratio-xd-shell --cassandra
+
+Then you can do:
+
+    >xdContext.sql("CREATE TEMPORARY TABLE students USING com.stratio.crossdata.sql.sources.cassandra
+            OPTIONS (keyspace \"highschool\", table \"students\", cluster \"students\", pushdown \"true\",
+            spark_cassandra_connection_host \"127.0.0.1\")".stripMargin)
+    >xdContext.sql("SELECT * FROM students").collect()
+
 
 
 Send issues to Jira
