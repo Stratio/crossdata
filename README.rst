@@ -4,7 +4,7 @@ About
 |ImageLink|_
 
 .. |ImageLink| image:: https://api.travis-ci.org/Stratio/crossdata.svg?branch=new-generation
-.. _ImageLink: https://api.travis-ci.org/Stratio/crossdata?branch=new-generation
+.. _ImageLink: https://travis-ci.org/Stratio/crossdata?branch=new-generation
 
 Crossdata is a fast and general-purpose computing system powered by Apache Spark. It adds some libraries to provide
 native access to datastores when they are able to resolve the query avoiding the use of the Spark cluster.
