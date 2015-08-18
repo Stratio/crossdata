@@ -65,6 +65,11 @@
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-cassandra</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-ng</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 </project>
