@@ -22,8 +22,11 @@ If you prefer to install solely some connectors::
 
     > mvn clean install -Pcassandra
 
+Use Crossdata with a standard Spark distribution
+========================================
+TODO
 
-Building Crossdata
+Building a Spark Distribution with Crossdata
 ========================================
 
 You can buils a Spark Distribution with Crossdata libraries running the make-distribution-crossdarta script:
