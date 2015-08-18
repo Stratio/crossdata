@@ -199,14 +199,14 @@
             <artifactId>akka-agent_2.10</artifactId>
             <version>${akka.version}</version>
             <exclusions>
-            <exclusion>
-                <groupId>org.scala-lang</groupId>
-                <artifactId>scala-library</artifactId>
-            </exclusion>
-            <exclusion>
-                <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-actor_2.10</artifactId>
-            </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.typesafe.akka</groupId>
+                    <artifactId>akka-actor_2.10</artifactId>
+                </exclusion>
             </exclusions>
 
         </dependency>
@@ -227,9 +227,8 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
-   </dependencies>
+    </dependencies>
     <build>
-
 
         <pluginManagement>
             <plugins>
@@ -267,6 +266,39 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <args>
+                        <arg>-P:genjavadoc:out=${project.build.directory}/genjavadoc</arg>
+                        <arg>-deprecation</arg>
+                        <arg>-feature</arg>
+                    </args>
+                    <compilerPlugins>
+                        <compilerPlugin>
+                            <groupId>com.typesafe.genjavadoc</groupId>
+                            <artifactId>genjavadoc-plugin_${scala.version}</artifactId>
+                            <version>0.8</version>
+                        </compilerPlugin>
+                    </compilerPlugins>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.9.1</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/genjavadoc</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -292,7 +324,7 @@
                 <version>1.0</version>
                 <configuration>
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-		    <skipTests>${skipUTs}</skipTests>
+                    <skipTests>${skipUTs}</skipTests>
                     <junitxml>.</junitxml>
                     <filereports>WDF TestSuite.txt</filereports>
                 </configuration>
