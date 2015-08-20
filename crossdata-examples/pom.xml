@@ -68,7 +68,6 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-ng</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
