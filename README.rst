@@ -20,7 +20,7 @@ Compiling Crossdata
 
 If you prefer to install solely some connectors::
 
-    > mvn clean install -Pcassandra
+    > mvn clean install -P crossdata-cassandra
 
 Use Crossdata with a standard Spark distribution
 ========================================
