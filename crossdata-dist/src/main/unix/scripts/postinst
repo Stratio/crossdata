@@ -2,18 +2,18 @@
 
 set -e
 
+#DEB
+
 GROUP='stratio'
 USER='stratio'
 DIR_INSTALL='/opt/sds/crossdata'
 DIR_CONF='/etc/sds/crossdata'
 DIR_LOG='/var/log/sds/crossdata'
 
-cp /opt/sds/crossdata/bin/crossdata-server-daemon /etc/init.d/crossdata
 chmod 755 /etc/init.d/crossdata
-chmod 755 /opt/sds/crossdata/bin/crossdata-sh
+chmod 755 /opt/sds/crossdata/bin
+chmod +x /opt/sds/crossdata/bin/*
 chmod +x /etc/default/crossdata
-export CROSSDATA_LIB=/opt/sds/crossdata
-export CROSSDATA_CONF="/etc/sds/crossdata"
 
 case "$1" in
   configure)
@@ -31,22 +31,22 @@ case "$1" in
     usermod -G $GROUP $USER
   fi
 
-  chown -R ${USER}:${GROUP} /opt/sds /etc/sds
+  if [ ! -d "$DIR_LOG" ]; then
+    mkdir $DIR_LOG
+  fi
 
   chown root:root /etc/init.d/crossdata
  
   chown -R ${USER}:${GROUP} $DIR_INSTALL
   chown -R ${USER}:${GROUP} $DIR_CONF
   chown -R ${USER}:${GROUP} $DIR_LOG
-  chmod 775 $DIR_INSTALL
-  chmod 775 $DIR_CONF
+  chmod -R 775 $DIR_INSTALL
   chmod 775 $DIR_LOG
-  
-  update-rc.d crossdata defaults
 
+  update-rc.d crossdata defaults
   ;;
+
 esac    
 
 
 exit 0
-

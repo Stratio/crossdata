@@ -1,14 +1,23 @@
-# This function should be modified with what the user wants to do previous to
-# the compilation.
-# For instance, untar the code.
+#!/bin/sh
 
-## directory/to/be/created
-#etc/init.d
-#etc/sds
-#etc/default
-#opt/sds/crossdata
-#var/log/sds/crossdata
-#var/sds/crossdata
-#var/sds/crossdata/crossdata-store
-mkdir -p /var/sds/crossdata/crossdata-store
-mkdir -p /var/log/sds/crossdata
+#RPM
+
+set -e
+
+GROUP='stratio'
+USER='stratio'
+
+# Add stratio group if it doesn't already exists
+if ! getent group $GROUP >/dev/null 2>&1; then
+groupadd ${GROUP}
+fi
+
+# Add stratio user if it doesn't already exists
+if ! getent passwd $USER >/dev/null 2>&1; then
+[ -d /opt ] || mkdir /opt
+useradd -M -d /opt/sds -g ${GROUP} -s /bin/bash ${USER}
+else
+usermod -G $GROUP $USER
+fi
+
+exit 0
