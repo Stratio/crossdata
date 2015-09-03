@@ -283,7 +283,7 @@
                 <version>2.9</version>
                 <configuration>
                     <minmemory>64m</minmemory>
-                    <maxmemory>2g</maxmemory>
+                    <maxmemory>1g</maxmemory>
                     <outputDirectory>${project.build.directory}</outputDirectory>
                     <detectLinks>true</detectLinks>
                 </configuration>

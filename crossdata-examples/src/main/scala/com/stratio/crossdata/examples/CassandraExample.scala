@@ -99,7 +99,7 @@ object CassandraExample extends App with DefaultConstants {
 
     for (a <- 1 to 10) {
       session.execute("INSERT INTO " + Catalog + "." + Table + " (id, age, comment, enrolled, name) VALUES " +
-        "(" + a + ", " + (10 + a) + ", 'Coment " + a + "', " + (a % 2 == 0) + ", 'Name " + a + "')")
+        "(" + a + ", " + (10 + a) + ", 'Comment " + a + "', " + (a % 2 == 0) + ", 'Name " + a + "')")
     }
   }
 
