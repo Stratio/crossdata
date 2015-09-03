@@ -31,7 +31,9 @@ import com.stratio.crossdata.sql.sources.NativeScan
 import com.stratio.crossdata.sql.sources.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.expressions.Alias
+import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
@@ -59,13 +61,25 @@ class CassandraXDSourceRelation(
   with PrunedFilteredScan
   with NativeScan with Logging {
 
+  // NativeScan implementation ~~
   override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
-    logInfo(s"Processing ${optimizedLogicalPlan.toString}")
+    logDebug(s"Processing ${optimizedLogicalPlan.toString()}")
     val queryExecutor = CassandraQueryProcessor(this, optimizedLogicalPlan)
     queryExecutor.execute()
 
   }
 
+  override def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean = logicalStep match {
+    case ln: LeafNode => true // TODO leafNode == LogicalRelation(xdSourceRelation)
+    case un: UnaryNode => un match {
+      case Limit(_, _) | Project(_, _) | Filter(_, _) => true
+      case _ => false
+
+    }
+    case unsupportedLogicalPlan => log.debug(s"LogicalPlan $unsupportedLogicalPlan cannot be executed natively"); false
+  }
+
+  // ~~ NativeScan implementation 
 
   val tableDef = {
     val tableName = tableRef.table
@@ -171,6 +185,7 @@ class CassandraXDSourceRelation(
     val args = cqlValue.flatMap(_._2)
     (cql, args)
   }
+
 }
 
 //TODO buildScan => CassandraTableScanRDD[CassandraSQLRow] => fetchTokenRange

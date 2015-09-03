@@ -64,6 +64,7 @@ class XDDataFrameSpec extends FlatSpec with Matchers with Inside {
   val mockNonNativeRelation = new MockBaseRelation
 
   val mockNativeRelation = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
     // Native execution
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = Some(nativeRows)
 
@@ -72,6 +73,7 @@ class XDDataFrameSpec extends FlatSpec with Matchers with Inside {
   }
 
   val mockPureSparkNativeRelation = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
     // Native execution
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = None
 
@@ -80,6 +82,7 @@ class XDDataFrameSpec extends FlatSpec with Matchers with Inside {
   }
 
   val mockNativeRelationWith2Rows = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
     // Native execution
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = Some(Array(nativeRows(0), nativeRows(0)))
 

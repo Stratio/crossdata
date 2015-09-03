@@ -27,7 +27,7 @@ object CatalystToCrossdataAdapter {
 
 
   def getFilterProject(logicalPlan: LogicalPlan, projects: Seq[NamedExpression],
-                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter]) = {
+                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter], Boolean) = {
 
     val projectSet = AttributeSet(projects.flatMap(_.references))
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
@@ -38,8 +38,8 @@ object CatalystToCrossdataAdapter {
     }
 
     val requestedColumns = projectSet.map(relation.attributeMap).toSeq
-
-    (requestedColumns.map(_.name).toArray, selectFilters(pushedFilters).toArray)
+    val (filters, ignored) = selectFilters(pushedFilters)
+    (requestedColumns.map(_.name).toArray, filters.toArray, ignored)
 
   }
 
@@ -47,11 +47,12 @@ object CatalystToCrossdataAdapter {
    * Selects Catalyst predicate [[Expression]]s which are convertible into data source [[Filter]]s,
    * and convert them.
    *
+   * @param filters catalyst filters
+   * @return filters which are convertible and a boolean indicating whether any filter has been ignored.
    */
-  private[this] def selectFilters(filters: Seq[Expression]) = {
+  private[this] def selectFilters(filters: Seq[Expression]): (Array[SourceFilter], Boolean) = {
     def translate(predicate: Expression): Option[SourceFilter] = predicate match {
       // TODO support more type of filters
-      // TODO filters which are not supported shouldn't be ignored when working with native connectors
       case expressions.EqualTo(a: Attribute, Literal(v, _)) =>
         Some(sources.EqualTo(a.name, v))
       case expressions.EqualTo(Literal(v, _), a: Attribute) =>
@@ -108,7 +109,11 @@ object CatalystToCrossdataAdapter {
 
       case _ => None
     }
+    val convertibleFilters = filters.flatMap(translate).toArray
 
-    filters.flatMap(translate)
+    // TODO fix bug, filtersIgnored could be true even when there are ignored child filters within an 'Or', 'And' , 'Not'
+
+    (convertibleFilters, convertibleFilters.length != filters.size)
   }
+
 }

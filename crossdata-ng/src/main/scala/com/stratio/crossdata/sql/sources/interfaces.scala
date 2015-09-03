@@ -26,6 +26,21 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
  * a None should be returned and the process will be executed on Spark.
  */
 @DeveloperApi
-trait NativeScan {
+trait NativeScan extends PushDownable{
   def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]]
+}
+
+/**
+ * Interface for asking whether the datasource is able to push down an isolated logical plan.
+ */
+@DeveloperApi
+sealed trait PushDownable {
+  /**
+   * Checks the ability to execute a [[LogicalPlan]].
+   *
+   * @param logicalStep isolated plan
+   * @param wholeLogicalPlan the whole DataFrame tree
+   * @return whether the logical step within the fully logical plan is supported
+   */
+  def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean
 }

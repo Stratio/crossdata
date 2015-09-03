@@ -128,6 +128,10 @@ private[sql] class XDDataFrame(@transient override val sqlContext: SQLContext,
    *         or None if the provider cannot resolve the entire [[XDDataFrame]] natively.
    */
   private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
+
+    queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
+
+
     val rowsOption = provider.buildScan(queryExecution.optimizedPlan)
     // TODO is it possible to avoid the step below?
     rowsOption.map { rows =>
@@ -137,6 +141,3 @@ private[sql] class XDDataFrame(@transient override val sqlContext: SQLContext,
   }
 
 }
-
-
-
