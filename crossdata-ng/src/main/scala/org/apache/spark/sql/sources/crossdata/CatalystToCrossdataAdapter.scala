@@ -112,7 +112,7 @@ object CatalystToCrossdataAdapter {
     val convertibleFilters = filters.flatMap(translate).toArray
 
     // TODO fix bug, filtersIgnored could be true even when there are ignored child filters within an 'Or', 'And' , 'Not'
-
+    // TODO If a casting is needed to compare a result, that filter will be ignored by the adapter.
     (convertibleFilters, convertibleFilters.length != filters.size)
   }
 

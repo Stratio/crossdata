@@ -40,7 +40,7 @@ sealed trait PushDownable {
    *
    * @param logicalStep isolated plan
    * @param wholeLogicalPlan the whole DataFrame tree
-   * @return whether the logical step within the fully logical plan is supported
+   * @return whether the logical step within the entire logical plan is supported
    */
   def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean
 }

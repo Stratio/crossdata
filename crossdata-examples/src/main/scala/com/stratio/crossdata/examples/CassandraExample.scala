@@ -21,7 +21,7 @@ import com.datastax.driver.core.{Cluster, Session}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
 
-sealed trait DefaultConstants {
+sealed trait CassandraDefaultConstants {
   val ClusterName = "Test Cluster"
   val Catalog = "highschool"
   val Table = "students"
@@ -30,7 +30,7 @@ sealed trait DefaultConstants {
   // Cassandra provider => org.apache.spark.sql.cassandra
 }
 
-object CassandraExample extends App with DefaultConstants {
+object CassandraExample extends App with CassandraDefaultConstants {
 
   val (cluster, session) = prepareEnvironment()
 
