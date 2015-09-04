@@ -45,7 +45,6 @@ import org.apache.spark.{Logging, SparkConf}
  * and [[org.apache.spark.sql.sources.PrunedFilteredScan]]]]
  * It inserts data to and scans Cassandra table. If filterPushdown is true, it pushs down
  * some filters to CQL
- *
  */
 class CassandraXDSourceRelation(
                                  tableRef: TableRef,
@@ -55,7 +54,7 @@ class CassandraXDSourceRelation(
                                  val connector: CassandraConnector,
                                  readConf: ReadConf,
                                  writeConf: WriteConf,
-                                 override val sqlContext: SQLContext)
+                                 @transient override val sqlContext: SQLContext)
   extends BaseRelation
   with InsertableRelation
   with PrunedFilteredScan

@@ -164,7 +164,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
       if (groupedFilters.contains(CassandraColumnRole.PartitionKey)) {
         val partitionColsInFilter = groupedFilters.get(CassandraColumnRole.PartitionKey).get.flatMap(columnNameFromFilter)
 
-        // all PKs must be presents
+        // filters should contain all PKs
         cassandraRelation.tableDef.partitionKey.forall { column =>
           partitionColsInFilter.contains(column.columnName)
         }
