@@ -52,15 +52,10 @@ object CassandraQueryProcessor {
     def filterToCQL(filter: SourceFilter): String = filter match {
 
       case sources.EqualTo(attribute, value) => s"$attribute = ${quoteString(value)}"
-
       case sources.In(attribute, values) => s"$attribute IN ${values.map(quoteString).mkString("(", ",", ")")}"
-
       case sources.LessThan(attribute, value) => s"$attribute < $value"
-
       case sources.GreaterThan(attribute, value) => s"$attribute > $value"
-
       case sources.LessThanOrEqual(attribute, value) => s"$attribute <= $value"
-
       case sources.GreaterThanOrEqual(attribute, value) => s"$attribute => $value"
 
     }
@@ -112,9 +107,6 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     }
 
   }
-
-
-
 
 
   private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = {
