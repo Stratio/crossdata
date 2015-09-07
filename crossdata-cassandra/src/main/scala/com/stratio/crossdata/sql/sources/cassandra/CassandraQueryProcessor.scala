@@ -21,7 +21,7 @@ import java.util.Date
 
 import com.datastax.driver.core.{ProtocolVersion, ResultSet}
 import com.datastax.spark.connector.GettableData
-import com.stratio.crossdata.sql.sources.cassandra.CassandraColumnRole.CassandraColumnRole
+import com.stratio.crossdata.sql.sources.cassandra.CassandraColumnRole._
 import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions._
@@ -133,13 +133,13 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
       case sources.GreaterThan(attribute, _) => columnRole(attribute)
       case sources.LessThanOrEqual(attribute, _) => columnRole(attribute)
       case sources.GreaterThanOrEqual(attribute, _) => columnRole(attribute)
-      case _ => CassandraColumnRole.Unknown
+      case _ => Unknown
     }
 
     def checksClusteringKeyFilters: Boolean = {
-      if (groupedFilters.contains(CassandraColumnRole.ClusteringKey)) {
+      if (groupedFilters.contains(ClusteringKey)) {
         // if there is a CK filter then all CKs should be included. Accept any kind of filter
-        val clusteringColsInFilter = groupedFilters.get(CassandraColumnRole.ClusteringKey).get.flatMap(columnNameFromFilter)
+        val clusteringColsInFilter = groupedFilters.get(ClusteringKey).get.flatMap(columnNameFromFilter)
         cassandraRelation.tableDef.clusteringColumns.forall { column =>
           clusteringColsInFilter.contains(column.columnName)
         }
@@ -149,9 +149,9 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     }
 
     def checksSecondaryIndexesFilters: Boolean = {
-      if (groupedFilters.contains(CassandraColumnRole.Indexed)) {
+      if (groupedFilters.contains(Indexed)) {
         //Secondary indexes => equals are allowed
-        groupedFilters.get(CassandraColumnRole.ClusteringKey).get.forall {
+        groupedFilters.get(ClusteringKey).get.forall {
           case sources.EqualTo(_, _) => true
           case _ => false
         }
@@ -161,15 +161,15 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     }
 
     def checksPartitionKeyFilters: Boolean = {
-      if (groupedFilters.contains(CassandraColumnRole.PartitionKey)) {
-        val partitionColsInFilter = groupedFilters.get(CassandraColumnRole.PartitionKey).get.flatMap(columnNameFromFilter)
+      if (groupedFilters.contains(PartitionKey)) {
+        val partitionColsInFilter = groupedFilters.get(PartitionKey).get.flatMap(columnNameFromFilter)
 
-        // filters should contain all PKs
+        // all PKs must be presents
         cassandraRelation.tableDef.partitionKey.forall { column =>
           partitionColsInFilter.contains(column.columnName)
         }
         // filters condition must be = or IN with restrictions
-        groupedFilters.get(CassandraColumnRole.PartitionKey).get.forall {
+        groupedFilters.get(PartitionKey).get.forall {
           case sources.EqualTo(_, _) => true
           case sources.In(colName, _) if cassandraRelation.tableDef.partitionKey.last.columnName.equals(colName) => true
           case _ => false
@@ -179,7 +179,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
       }
     }
 
-    if (groupedFilters.contains(CassandraColumnRole.Unknown) || groupedFilters.contains(CassandraColumnRole.NonIndexed)) {
+    if (groupedFilters.contains(Unknown) || groupedFilters.contains(NonIndexed)) {
       false
     } else {
       checksPartitionKeyFilters && checksClusteringKeyFilters && checksSecondaryIndexesFilters
@@ -200,13 +200,13 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   private[this] def columnRole(columnName: String): CassandraColumnRole = {
     val columnDef = cassandraRelation.tableDef.columnByName(columnName)
     if (columnDef.isPartitionKeyColumn) {
-      CassandraColumnRole.PartitionKey
+      PartitionKey
     } else if (columnDef.isClusteringColumn) {
-      CassandraColumnRole.ClusteringKey
+      ClusteringKey
     } else if (columnDef.isIndexedColumn) {
-      CassandraColumnRole.Indexed
+      Indexed
     } else {
-      CassandraColumnRole.NonIndexed
+      NonIndexed
     }
   }
 
