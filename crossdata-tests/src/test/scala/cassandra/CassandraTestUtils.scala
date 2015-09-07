@@ -42,7 +42,14 @@ class CassandraTestUtils extends ScalaDsl with EN with DefaultConstants {
 
   private def buildTable(session: Session): Unit = {
 
+    session.getCluster.getMetadata.getKeyspace(Catalog).getTables
+
+    // TODO Check if session.getCluster.getMetadata.getKeyspaces contains $Catalog
+
     session.execute(s"CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
+
+    // TODO Check if session.getCluster.getMetadata.getKeyspace(Catalog).getTables contains $Table
+
     session.execute(s"CREATE TABLE $Catalog.$Table (id int PRIMARY KEY, age int,comment text, enrolled boolean, name text)")
 
     for (a <- 1 to 10) {

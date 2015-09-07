@@ -81,6 +81,10 @@
     <modules>
         <module>crossdata-ng</module>
         <module>doc</module>
+        <module>crossdata-hive</module>
+        <module>crossdata-cassandra</module>
+        <module>crossdata-examples</module>
+        <module>crossdata-tests</module>
     </modules>
 
     <properties>
@@ -108,6 +112,12 @@
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.mockito</groupId>
+                        <artifactId>mockito-all</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -296,9 +306,13 @@
             <id>crossdata-core</id>
             <activation>
                 <property>
-                    <name>!crossdata-all</name>
+                    <name>crossdata-core</name>
                 </property>
             </activation>
+            <modules>
+                <module>crossdata-ng</module>
+                <module>doc</module>
+            </modules>
         </profile>
         <profile>
             <id>crossdata-all</id>
@@ -307,11 +321,13 @@
                     <name>crossdata-all</name>
                 </property>
             </activation>
-
             <modules>
+                <module>crossdata-ng</module>
+                <module>doc</module>
                 <module>crossdata-hive</module>
                 <module>crossdata-cassandra</module>
                 <module>crossdata-examples</module>
+                <module>crossdata-tests</module>
             </modules>
         </profile>
         <profile>
@@ -322,6 +338,8 @@
                 </property>
             </activation>
             <modules>
+                <module>crossdata-ng</module>
+                <module>doc</module>
                 <module>crossdata-hive</module>
             </modules>
         </profile>
@@ -333,6 +351,8 @@
                 </property>
             </activation>
             <modules>
+                <module>crossdata-ng</module>
+                <module>doc</module>
                 <module>crossdata-cassandra</module>
                 <module>crossdata-examples</module>
             </modules>
