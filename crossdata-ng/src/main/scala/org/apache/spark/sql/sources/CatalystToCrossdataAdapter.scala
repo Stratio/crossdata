@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.apache.spark.sql.sources.crossdata
+package org.apache.spark.sql.sources
 
 import org.apache.spark.sql.catalyst.expressions
 import org.apache.spark.sql.catalyst.expressions._
@@ -51,6 +51,7 @@ object CatalystToCrossdataAdapter {
    * @return filters which are convertible and a boolean indicating whether any filter has been ignored.
    */
   private[this] def selectFilters(filters: Seq[Expression]): (Array[SourceFilter], Boolean) = {
+    var ignored = false
     def translate(predicate: Expression): Option[SourceFilter] = predicate match {
       // TODO support more type of filters
       case expressions.EqualTo(a: Attribute, Literal(v, _)) =>
@@ -107,13 +108,17 @@ object CatalystToCrossdataAdapter {
       case expressions.Contains(a: Attribute, Literal(v: UTF8String, StringType)) =>
         Some(sources.StringContains(a.name, v.toString()))
 
-      case _ => None
+      case _ =>
+        ignored = true
+        None
+
+
     }
     val convertibleFilters = filters.flatMap(translate).toArray
 
-    // TODO fix bug, filtersIgnored could be true even when there are ignored child filters within an 'Or', 'And' , 'Not'
-    // TODO If a casting is needed to compare a result, that filter will be ignored by the adapter.
-    (convertibleFilters, convertibleFilters.length != filters.size)
+    // TODO fix bug, filtersIgnored could be false when some child filters within an 'Or', 'And' , 'Not' are ignored
+    // TODO the bug above has been resolved but the variable use should be revised.
+    (convertibleFilters, ignored)
   }
 
 }
