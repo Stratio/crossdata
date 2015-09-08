@@ -48,6 +48,7 @@ existing SQL implementation.
 -   Improved SELECT queries
     -   Selection windows
     -   Joins
+    -   Full Text search in special-indexed fields.
 -   Centralized schema
 -   Mutable data
 -   P2P storage backend (if Stratio Cassandra is used as datastore)
@@ -311,9 +312,10 @@ Example:
 
 CREATE INDEX
 ------------
-CREATE (\<index-type\>)? INDEX (IF NOT EXISTS)? \<index-name\> ON \<table-name\> '(' \<column-names\> ')' (WITH \<JSON\>)? ';'
+CREATE (\<index-type\>)? INDEX (IF NOT EXISTS)? \<index-name\> ON \<table-name\> '(' \<column-names\> ')' (USING CLUSTER \<cluster-name\>) (WITH \<JSON\>)? ';'
 
-\<index-type\> ::= DEFAULT | FULL\_TEXT | CUSTOM
+\<index-type\> ::= DEFAULT | FULL\_TEXT | CUSTOM | GLOBAL
+\<cluster-name\> ::= A Cluster that support Full Text search like (Only Elastic Search cluster supported)
 
 Example:
 
