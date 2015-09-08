@@ -38,8 +38,14 @@ class XDDataFrameSpec extends FlatSpec with Matchers with Inside {
 
   }
 
-  "A XDDataFrame with a Spark query" should "be executed on the Spark cluster" in {
+  "A XDDataFrame resulting in an error when executing natively" should "be executed on the Spark cluster" in {
     val result = XDDataFrame(xdContext, LogicalRelation(mockPureSparkNativeRelation)).collect()
+    result should have length 1
+    result(0) should equal(sparkRows(0))
+  }
+
+  "A XDDataFrame with a logical plan which is not supported natively" should "be executed on the Spark cluster" in {
+    val result = XDDataFrame(xdContext, LogicalRelation(mockNativeRelationUnsupportedPlan)).collect()
     result should have length 1
     result(0) should equal(sparkRows(0))
   }
@@ -64,6 +70,7 @@ class XDDataFrameSpec extends FlatSpec with Matchers with Inside {
   val mockNonNativeRelation = new MockBaseRelation
 
   val mockNativeRelation = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
     // Native execution
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = Some(nativeRows)
 
@@ -72,6 +79,7 @@ class XDDataFrameSpec extends FlatSpec with Matchers with Inside {
   }
 
   val mockPureSparkNativeRelation = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
     // Native execution
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = None
 
@@ -80,8 +88,18 @@ class XDDataFrameSpec extends FlatSpec with Matchers with Inside {
   }
 
   val mockNativeRelationWith2Rows = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
     // Native execution
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = Some(Array(nativeRows(0), nativeRows(0)))
+
+    // Spark execution
+    override def buildScan(): RDD[Row] = TestXDContext.sparkContext.parallelize(Seq(1)).toDF().rdd
+  }
+
+  val mockNativeRelationUnsupportedPlan = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = false
+    // Native execution
+    override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = Some(nativeRows)
 
     // Spark execution
     override def buildScan(): RDD[Row] = TestXDContext.sparkContext.parallelize(Seq(1)).toDF().rdd

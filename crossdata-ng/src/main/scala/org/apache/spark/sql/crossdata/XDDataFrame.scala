@@ -47,17 +47,17 @@ private[sql] object XDDataFrame {
       }
     }
 
-    val leafs = optimizedLogicalPlan.collect { case leafNode: LeafNode => leafNode}
+    val leafs = optimizedLogicalPlan.collect { case leafNode: LeafNode => leafNode }
     if (!allLeafsAreNative(leafs)) {
       None
     } else {
-      val nativeExecutors: Seq[NativeScan] = leafs.map { case LogicalRelation(ns: NativeScan) => ns}
+      val nativeExecutors: Seq[NativeScan] = leafs.map { case LogicalRelation(ns: NativeScan) => ns }
 
       nativeExecutors match {
         case Seq(head) => Some(head)
         case _ =>
           if (nativeExecutors.sliding(2).forall { tuple =>
-            tuple(0).getClass == tuple(1).getClass
+            tuple.head.getClass == tuple.head.getClass
           }) {
             nativeExecutors.headOption
           } else {
@@ -128,15 +128,20 @@ private[sql] class XDDataFrame(@transient override val sqlContext: SQLContext,
    *         or None if the provider cannot resolve the entire [[XDDataFrame]] natively.
    */
   private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
-    val rowsOption = provider.buildScan(queryExecution.optimizedPlan)
-    // TODO is it possible to avoid the step below?
-    rowsOption.map { rows =>
-      val converter = CatalystTypeConverters.createToScalaConverter(schema)
-      rows.map(converter(_).asInstanceOf[Row])
+
+    val planSupported = queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
+
+    if (!planSupported) {
+      None
+    } else {
+      val rowsOption = provider.buildScan(queryExecution.optimizedPlan)
+      // TODO is it possible to avoid the step below?
+      rowsOption.map { rows =>
+        val converter = CatalystTypeConverters.createToScalaConverter(schema)
+        rows.map(converter(_).asInstanceOf[Row])
+      }
     }
+
   }
 
 }
-
-
-
