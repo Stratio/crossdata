@@ -55,13 +55,14 @@ object CassandraQueryProcessor {
       case sources.LessThan(attribute, value) => s"$attribute < $value"
       case sources.GreaterThan(attribute, value) => s"$attribute > $value"
       case sources.LessThanOrEqual(attribute, value) => s"$attribute <= $value"
-      case sources.GreaterThanOrEqual(attribute, value) => s"$attribute => $value"
+      case sources.GreaterThanOrEqual(attribute, value) => s"$attribute >= $value"
+      case sources.And(leftFilter, rightFilter) => s"${filterToCQL(leftFilter)} AND ${filterToCQL(rightFilter)}"
 
     }
 
     val filter = if (filters.nonEmpty) filters.map(filterToCQL).mkString("WHERE ", " AND ", "") else ""
 
-    s"SELECT $columns FROM $tableQN $filter $orderBy LIMIT $limit ALLOW FILTERING"
+    s"SELECT $columns FROM $tableQN $filter LIMIT $limit ALLOW FILTERING"
   }
 
 }
@@ -202,7 +203,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   }
 
   private[this] def sparkResultFromCassandra(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
-    // TODO efficiency, createWithSchema?
+    // TODO efficiency?
     import scala.collection.JavaConversions._
     val sparkRowList = resultSet.all().map { row =>
       val data = new Array[Object](requiredColumns.length)
