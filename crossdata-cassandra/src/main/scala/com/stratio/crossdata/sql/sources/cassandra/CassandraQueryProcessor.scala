@@ -21,23 +21,27 @@ import java.util.Date
 
 import com.datastax.driver.core.{ProtocolVersion, ResultSet}
 import com.datastax.spark.connector.GettableData
+import com.stratio.crossdata.sql.sources.cassandra.CassandraColumnRole._
+import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.sources
-import org.apache.spark.sql.sources.crossdata.CatalystToCrossdataAdapter
-import org.apache.spark.sql.sources.{Filter => SourceFilter}
+import org.apache.spark.sql.sources.{Filter => SourceFilter, CatalystToCrossdataAdapter}
 import org.apache.spark.sql.types.UTF8String
 
+
 object CassandraQueryProcessor {
+
   val DefaultLimit = 10000
   type ColumnName = String
+
+  def apply(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) = new CassandraQueryProcessor(cassandraRelation, logicalPlan)
 
   def buildNativeQuery(tableQN: String, requiredColums: Array[ColumnName], filters: Array[SourceFilter], limit: Int): String = {
     val columns = requiredColums.mkString(", ")
     val orderBy = ""
-    var allowFiltering: Boolean = false
 
     def quoteString(in: Any): String = in match {
       case s: UTF8String => s"'$s'"
@@ -46,143 +50,160 @@ object CassandraQueryProcessor {
 
     def filterToCQL(filter: SourceFilter): String = filter match {
 
-      case sources.EqualTo(attribute, value) => {
-
-        s"$attribute = ${quoteString(value)}"
-      }
-      case sources.In(attribute, values) => {
-
-        s"$attribute IN ${values.map(quoteString).mkString("(", ",", ")")}"
-      }
-      // TODO other filters
-      case sources.LessThan(attribute, value) => {
-        allowFiltering = true
-        s"$attribute < $value"
-      }
-      case sources.GreaterThan(attribute, value) => {
-        allowFiltering = true
-        s"$attribute > $value"
-      }
-      case sources.LessThanOrEqual(attribute, value) => {
-        allowFiltering = true
-        s"$attribute <= $value"
-      }
-      case sources.GreaterThanOrEqual(attribute, value) => {
-        allowFiltering = true
-        s"$attribute => $value"
-      }
+      case sources.EqualTo(attribute, value) => s"$attribute = ${quoteString(value)}"
+      case sources.In(attribute, values) => s"$attribute IN ${values.map(quoteString).mkString("(", ",", ")")}"
+      case sources.LessThan(attribute, value) => s"$attribute < $value"
+      case sources.GreaterThan(attribute, value) => s"$attribute > $value"
+      case sources.LessThanOrEqual(attribute, value) => s"$attribute <= $value"
+      case sources.GreaterThanOrEqual(attribute, value) => s"$attribute >= $value"
+      case sources.And(leftFilter, rightFilter) => s"${filterToCQL(leftFilter)} AND ${filterToCQL(rightFilter)}"
 
     }
 
     val filter = if (filters.nonEmpty) filters.map(filterToCQL).mkString("WHERE ", " AND ", "") else ""
 
-    val query = s"SELECT $columns FROM $tableQN $filter $orderBy LIMIT $limit"
-
-    // TODO allow filtering
-    val completedQuery = if (!allowFiltering) query else s"$query ALLOW FILTERING"
-
-    completedQuery
+    s"SELECT $columns FROM $tableQN $filter LIMIT $limit ALLOW FILTERING"
   }
 
 }
 
 // TODO logs, doc, tests
-case class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) {
+class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) extends Logging {
 
   import com.stratio.crossdata.sql.sources.cassandra.CassandraQueryProcessor._
 
-  private[this] def validateLogicalPlan(lp: LogicalPlan): Boolean = lp match {
-    case ln: LeafNode => true // TODO leafNode == LogicalRelation(xdSourceRelation)
-    case un: UnaryNode => un match {
-      case Limit(_, _) | Project(_, _) | Filter(_, _) => validateLogicalPlan(un.child)
-      case _ => false
-
-    }
-    case unsupportedLogicalPlan => false // TODO log
-  }
-
-
-  def checkNativeFilters(filters: Array[SourceFilter]): Boolean = {
-    var mustExistAllClusterColumns: Boolean = false
-    cassandraRelation.tableDef.columnByName
-    var filterColumns= List[ColumnName]()
-
-    filters.map(filter=>
-
-      filter match {
-        case sources.EqualTo(attribute, value) => {
-          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
-            mustExistAllClusterColumns = true
-            filterColumns ::= attribute
-          }
+  def execute(): Option[Array[Row]] = {
+    try {
+      validatedNativePlan.map { case (columnsRequired, filters, limit) =>
+        val cqlQuery = buildNativeQuery(cassandraRelation.tableDef.name, columnsRequired, filters, limit.getOrElse(CassandraQueryProcessor.DefaultLimit))
+        val resultSet = cassandraRelation.connector.withSessionDo { session =>
+          session.execute(cqlQuery)
         }
-        case sources.In(attribute, values) => {
-          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
-            mustExistAllClusterColumns = true
-            filterColumns ::= attribute
-          }
-        }
-        case sources.LessThan(attribute, value) => {
-          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
-            mustExistAllClusterColumns = true
-            filterColumns ::= attribute
-          }
-        }
-        case sources.GreaterThan(attribute, value) => {
-          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
-            mustExistAllClusterColumns = true
-            filterColumns ::= attribute
-          }
-        }
-        case sources.LessThanOrEqual(attribute, value) => {
-          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
-            mustExistAllClusterColumns = true
-            filterColumns ::= attribute
-          }
-        }
-        case sources.GreaterThanOrEqual(attribute, value) => {
-          if (cassandraRelation.tableDef.columnByName(attribute).isClusteringColumn) {
-            mustExistAllClusterColumns = true
-            filterColumns ::= attribute
-          }
-        }
-        case _ => false
+        sparkResultFromCassandra(columnsRequired, resultSet)
       }
-    )
-    if (mustExistAllClusterColumns){
-      var allClusterKeys=true
-      cassandraRelation.tableDef.clusteringColumns.map(column=>
-        if(!filterColumns.contains(column.columnName)) allClusterKeys=false
-      )
-      allClusterKeys
-    }else
-      true
+    } catch {
+      case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage); None
+    }
+
   }
 
-  def getValidatedPlan: Option[(Array[ColumnName], Array[SourceFilter], Option[Int])] = {
+
+  def validatedNativePlan: Option[(Array[ColumnName], Array[SourceFilter], Option[Int])] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num}
-    if (validateLogicalPlan(logicalPlan)) {
-      def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter]) = {
-        lplan match {
-          case Limit(_, child) => findProjectsFilters(child)
-          case PhysicalOperation(projects, filters, _) => CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projects, filters)
-        }
-      }
-      val (projects, filters) = findProjectsFilters(logicalPlan)
-      if (checkNativeFilters(filters)) {
-        Some(projects, filters, limit)
-      } else
-        None
 
-    } else {
+    def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter], Boolean) = {
+      lplan match {
+        case Limit(_, child) => findProjectsFilters(child)
+        case PhysicalOperation(projectList, filterList, _) => CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
+      }
+    }
+
+    val (projects, filters, filtersIgnored) = findProjectsFilters(logicalPlan)
+
+    if (filtersIgnored || ! checkNativeFilters(filters)) {
       None
+    } else {
+      Some(projects, filters, limit)
     }
 
   }
 
+
+  private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = {
+    // TODO test filter on PK (=) => filter on all partition keys
+    // TODO test filter on PK (IN) => last column of partition key
+    // TODO test filter on PKs and CKs(=) => filter on all pks and cks
+    // TODO test filter on PKs (=) and CKs(any) 
+    // TODO test filter only on CKs => ALLOW FILTERING
+    // TODO test filter on secondaryIndex => equal operator
+    // TODO test filter on secondary + PK (=) + CK(any)
+
+    val groupedFilters = filters.groupBy {
+      case sources.EqualTo(attribute, _) => columnRole(attribute)
+      case sources.In(attribute, _) => columnRole(attribute)
+      case sources.LessThan(attribute, _) => columnRole(attribute)
+      case sources.GreaterThan(attribute, _) => columnRole(attribute)
+      case sources.LessThanOrEqual(attribute, _) => columnRole(attribute)
+      case sources.GreaterThanOrEqual(attribute, _) => columnRole(attribute)
+      case _ => Unknown
+    }
+
+    def checksClusteringKeyFilters: Boolean = {
+      if (groupedFilters.contains(ClusteringKey)) {
+        // if there is a CK filter then all CKs should be included. Accept any kind of filter
+        val clusteringColsInFilter = groupedFilters.get(ClusteringKey).get.flatMap(columnNameFromFilter)
+        cassandraRelation.tableDef.clusteringColumns.forall { column =>
+          clusteringColsInFilter.contains(column.columnName)
+        }
+      } else {
+        true
+      }
+    }
+
+    def checksSecondaryIndexesFilters: Boolean = {
+      if (groupedFilters.contains(Indexed)) {
+        //Secondary indexes => equals are allowed
+        groupedFilters.get(ClusteringKey).get.forall {
+          case sources.EqualTo(_, _) => true
+          case _ => false
+        }
+      } else {
+        true
+      }
+    }
+
+    def checksPartitionKeyFilters: Boolean = {
+      if (groupedFilters.contains(PartitionKey)) {
+        val partitionColsInFilter = groupedFilters.get(PartitionKey).get.flatMap(columnNameFromFilter)
+
+        // all PKs must be presents
+        cassandraRelation.tableDef.partitionKey.forall { column =>
+          partitionColsInFilter.contains(column.columnName)
+        }
+        // filters condition must be = or IN with restrictions
+        groupedFilters.get(PartitionKey).get.forall {
+          case sources.EqualTo(_, _) => true
+          case sources.In(colName, _) if cassandraRelation.tableDef.partitionKey.last.columnName.equals(colName) => true
+          case _ => false
+        }
+      } else {
+        true
+      }
+    }
+
+    if (groupedFilters.contains(Unknown) || groupedFilters.contains(NonIndexed)) {
+      false
+    } else {
+      checksPartitionKeyFilters && checksClusteringKeyFilters && checksSecondaryIndexesFilters
+    }
+
+  }
+
+  private[this] def columnNameFromFilter(sourceFilter: SourceFilter): Option[ColumnName] = sourceFilter match {
+    case sources.EqualTo(attribute, _) => Some(attribute)
+    case sources.In(attribute, _) => Some(attribute)
+    case sources.LessThan(attribute, _) => Some(attribute)
+    case sources.GreaterThan(attribute, _) => Some(attribute)
+    case sources.LessThanOrEqual(attribute, _) => Some(attribute)
+    case sources.GreaterThanOrEqual(attribute, _) => Some(attribute)
+    case _ => None
+  }
+
+  private[this] def columnRole(columnName: String): CassandraColumnRole = {
+    val columnDef = cassandraRelation.tableDef.columnByName(columnName)
+    if (columnDef.isPartitionKeyColumn) {
+      PartitionKey
+    } else if (columnDef.isClusteringColumn) {
+      ClusteringKey
+    } else if (columnDef.isIndexedColumn) {
+      Indexed
+    } else {
+      NonIndexed
+    }
+  }
 
   private[this] def sparkResultFromCassandra(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
-    // TODO efficiency, createWithSchema?
+    // TODO efficiency?
     import scala.collection.JavaConversions._
     val sparkRowList = resultSet.all().map { row =>
       val data = new Array[Object](requiredColumns.length)
@@ -200,17 +221,6 @@ case class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation,
     }
     sparkRowList.toArray
   }
-
-  def execute(): Option[Array[Row]] = {
-    getValidatedPlan.map { case (columnsRequired, filters, limit) =>
-      val cqlQuery = buildNativeQuery(cassandraRelation.tableDef.name, columnsRequired, filters, limit.getOrElse(CassandraQueryProcessor.DefaultLimit))
-      val resultSet = cassandraRelation.connector.withSessionDo { session =>
-        session.execute(cqlQuery)
-      }
-      sparkResultFromCassandra(columnsRequired, resultSet)
-    }
-  }
-
 
 }
 

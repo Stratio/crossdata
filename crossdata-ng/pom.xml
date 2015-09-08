@@ -122,13 +122,6 @@
             <artifactId>mapdb</artifactId>
             <version>${mapdb.version}</version>
         </dependency>
-        <!-- Test -->
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.binary.version}</artifactId>
-            <version>${scalatest.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>

@@ -16,6 +16,7 @@ import org.scalatest.junit.JUnitRunner
 class XDDataFrameUtilsSpec extends FlatSpec {
 
   val mockNativeRelation = new MockBaseRelation with NativeScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = ???
   }
 

@@ -29,8 +29,8 @@ TODO
 Building a Spark Distribution with Crossdata
 ========================================
 
-You can buils a Spark Distribution with Crossdata libraries running the make-distribution-crossdarta script:
-    > cd crosdata-scripts
+You can build a Spark Distribution with Crossdata libraries running the make-distribution-crossdata script:
+    > cd crossdata-scripts
     > ./make-distribution-crossdata.sh
 
 This will build Spark with the following options:

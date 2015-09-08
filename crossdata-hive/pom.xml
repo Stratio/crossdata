@@ -192,12 +192,6 @@
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-ng</artifactId>
         </dependency>
-
-        <!-- Test -->
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.binary.version}</artifactId>
-        </dependency>
     </dependencies>
 
 

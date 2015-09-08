@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.apache.spark.sql.sources.crossdata
+package org.apache.spark.sql.sources
 
 import org.apache.spark.sql.catalyst.expressions
 import org.apache.spark.sql.catalyst.expressions._
@@ -27,7 +27,7 @@ object CatalystToCrossdataAdapter {
 
 
   def getFilterProject(logicalPlan: LogicalPlan, projects: Seq[NamedExpression],
-                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter]) = {
+                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter], Boolean) = {
 
     val projectSet = AttributeSet(projects.flatMap(_.references))
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
@@ -38,8 +38,8 @@ object CatalystToCrossdataAdapter {
     }
 
     val requestedColumns = projectSet.map(relation.attributeMap).toSeq
-
-    (requestedColumns.map(_.name).toArray, selectFilters(pushedFilters).toArray)
+    val (filters, ignored) = selectFilters(pushedFilters)
+    (requestedColumns.map(_.name).toArray, filters.toArray, ignored)
 
   }
 
@@ -47,11 +47,13 @@ object CatalystToCrossdataAdapter {
    * Selects Catalyst predicate [[Expression]]s which are convertible into data source [[Filter]]s,
    * and convert them.
    *
+   * @param filters catalyst filters
+   * @return filters which are convertible and a boolean indicating whether any filter has been ignored.
    */
-  private[this] def selectFilters(filters: Seq[Expression]) = {
+  private[this] def selectFilters(filters: Seq[Expression]): (Array[SourceFilter], Boolean) = {
+    var ignored = false
     def translate(predicate: Expression): Option[SourceFilter] = predicate match {
       // TODO support more type of filters
-      // TODO filters which are not supported shouldn't be ignored when working with native connectors
       case expressions.EqualTo(a: Attribute, Literal(v, _)) =>
         Some(sources.EqualTo(a.name, v))
       case expressions.EqualTo(Literal(v, _), a: Attribute) =>
@@ -106,9 +108,17 @@ object CatalystToCrossdataAdapter {
       case expressions.Contains(a: Attribute, Literal(v: UTF8String, StringType)) =>
         Some(sources.StringContains(a.name, v.toString()))
 
-      case _ => None
-    }
+      case _ =>
+        ignored = true
+        None
 
-    filters.flatMap(translate)
+
+    }
+    val convertibleFilters = filters.flatMap(translate).toArray
+
+    // TODO fix bug, filtersIgnored could be false when some child filters within an 'Or', 'And' , 'Not' are ignored
+    // TODO the bug above has been resolved but the variable use should be revised.
+    (convertibleFilters, ignored)
   }
+
 }

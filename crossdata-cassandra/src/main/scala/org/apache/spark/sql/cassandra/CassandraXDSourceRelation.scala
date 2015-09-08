@@ -31,7 +31,9 @@ import com.stratio.crossdata.sql.sources.NativeScan
 import com.stratio.crossdata.sql.sources.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.expressions.Alias
+import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
@@ -43,7 +45,6 @@ import org.apache.spark.{Logging, SparkConf}
  * and [[org.apache.spark.sql.sources.PrunedFilteredScan]]]]
  * It inserts data to and scans Cassandra table. If filterPushdown is true, it pushs down
  * some filters to CQL
- *
  */
 class CassandraXDSourceRelation(
                                  tableRef: TableRef,
@@ -53,21 +54,33 @@ class CassandraXDSourceRelation(
                                  val connector: CassandraConnector,
                                  readConf: ReadConf,
                                  writeConf: WriteConf,
-                                 override val sqlContext: SQLContext)
+                                 @transient override val sqlContext: SQLContext)
   extends BaseRelation
   with InsertableRelation
   with PrunedFilteredScan
   with NativeScan with Logging {
 
+  // NativeScan implementation ~~
   override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
-    logInfo(s"Processing ${optimizedLogicalPlan.toString}")
+    logDebug(s"Processing ${optimizedLogicalPlan.toString()}")
     val queryExecutor = CassandraQueryProcessor(this, optimizedLogicalPlan)
     queryExecutor.execute()
 
   }
 
+  override def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean = logicalStep match {
+    case ln: LeafNode => true // TODO leafNode == LogicalRelation(xdSourceRelation)
+    case un: UnaryNode => un match {
+      case Limit(_, _) | Project(_, _) | Filter(_, _) => true
+      case _ => false
 
-  val tableDef = {
+    }
+    case unsupportedLogicalPlan => log.debug(s"LogicalPlan $unsupportedLogicalPlan cannot be executed natively"); false
+  }
+
+  // ~~ NativeScan implementation 
+
+  lazy val tableDef = {
     val tableName = tableRef.table
     val keyspaceName = tableRef.keyspace
     Schema.fromCassandra(connector, Some(keyspaceName), Some(tableName)).tables.headOption match {
@@ -105,7 +118,7 @@ class CassandraXDSourceRelation(
 
   implicit val cassandraConnector = connector
   implicit val readconf = readConf
-  private[this] val baseRdd =
+  private[this] lazy val baseRdd =
     sqlContext.sparkContext.cassandraTable[CassandraSQLRow](tableRef.keyspace, tableRef.table)
 
   def buildScan(): RDD[Row] = baseRdd.asInstanceOf[RDD[Row]]
@@ -171,6 +184,7 @@ class CassandraXDSourceRelation(
     val args = cqlValue.flatMap(_._2)
     (cql, args)
   }
+
 }
 
 //TODO buildScan => CassandraTableScanRDD[CassandraSQLRow] => fetchTokenRange
