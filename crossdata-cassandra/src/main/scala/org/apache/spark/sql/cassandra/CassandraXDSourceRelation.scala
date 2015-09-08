@@ -80,7 +80,7 @@ class CassandraXDSourceRelation(
 
   // ~~ NativeScan implementation 
 
-  val tableDef = {
+  lazy val tableDef = {
     val tableName = tableRef.table
     val keyspaceName = tableRef.keyspace
     Schema.fromCassandra(connector, Some(keyspaceName), Some(tableName)).tables.headOption match {
@@ -118,7 +118,7 @@ class CassandraXDSourceRelation(
 
   implicit val cassandraConnector = connector
   implicit val readconf = readConf
-  private[this] val baseRdd =
+  private[this] lazy val baseRdd =
     sqlContext.sparkContext.cassandraTable[CassandraSQLRow](tableRef.keyspace, tableRef.table)
 
   def buildScan(): RDD[Row] = baseRdd.asInstanceOf[RDD[Row]]
