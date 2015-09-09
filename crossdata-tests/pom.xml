@@ -9,9 +9,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>crossdata-acceptance-test</artifactId>
-    <name>Crossdata Acceptance Test</name>
-    <description>Acceptance Test for Crossdata modules</description>
+    <artifactId>crossdata-tests</artifactId>
+    <name>Crossdata Tests</name>
+    <description>Tests for Crossdata modules</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
@@ -62,6 +62,12 @@
             <artifactId>cucumber-junit</artifactId>
             <version>1.2.4</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>junit</artifactId>
+                    <groupId>junit</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -74,10 +80,26 @@
             <artifactId>scala-compiler</artifactId>
             <version>${scala.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>scala-reflect</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-ng</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>netty</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>scala-reflect</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
