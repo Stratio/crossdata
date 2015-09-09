@@ -124,6 +124,11 @@
                 <artifactId>crossdata-cassandra</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.stratio.crossdata</groupId>
+                <artifactId>crossdata-mongodb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -283,6 +288,7 @@
             <modules>
                 <module>crossdata-hive</module>
                 <module>crossdata-cassandra</module>
+                <module>crossdata-mongodb</module>
             </modules>
         </profile>
 
@@ -298,7 +304,12 @@
                 <module>crossdata-cassandra</module>
             </modules>
         </profile>
-
+        <profile>
+            <id>crossdata-mongodb</id>
+            <modules>
+                <module>crossdata-mongodb</module>
+            </modules>
+        </profile>
         <profile>
             <id>scala-2.10</id>
             <activation>
