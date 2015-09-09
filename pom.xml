@@ -263,12 +263,6 @@
         </profile>
 
         <profile>
-            <id>examples</id>
-            <modules>
-                <module>crossdata-examples</module>
-            </modules>
-        </profile>
-        <profile>
             <id>crossdata-hive</id>
             <modules>
                 <module>crossdata-hive</module>
