@@ -81,6 +81,7 @@
     <modules>
         <module>crossdata-ng</module>
         <module>doc</module>
+        <module>crossdata-common</module>
     </modules>
 
     <properties>
