@@ -81,9 +81,6 @@
     <modules>
         <module>crossdata-ng</module>
         <module>doc</module>
-        <module>crossdata-hive</module>
-        <module>crossdata-cassandra</module>
-        <module>crossdata-examples</module>
         <module>crossdata-tests</module>
     </modules>
 
@@ -112,12 +109,6 @@
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.mockito</groupId>
-                        <artifactId>mockito-all</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -213,6 +204,7 @@
             </plugins>
         </pluginManagement>
 
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -233,10 +225,6 @@
                     <includes>
                         <include>**/*Spec.*</include>
                     </includes>
-                    <argLine>
-                        ${jacoco-UT-argline}
-                        -XX:MaxPermSize=256m
-                    </argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -244,46 +232,11 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>integration-test</id>
-                        <goals>
-                            <goal>integration-test</goal>
-                        </goals>
                         <configuration>
-                            <useSystemClassLoader>false</useSystemClassLoader>
-                            <useManifestOnlyJar>true</useManifestOnlyJar>
                             <includes>
                                 <include>**/*IT.*</include>
                             </includes>
-                            <argLine>
-                                ${jacoco-IT-argline}
-                                -Xmx1024m
-                                -XX:MaxPermSize=256m
-                            </argLine>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.scalastyle</groupId>
-                <artifactId>scalastyle-maven-plugin</artifactId>
-                <version>0.7.0</version>
-                <configuration>
-                    <verbose>true</verbose>
-                    <failOnViolation>false</failOnViolation>
-                    <includeTestSourceDirectory>false</includeTestSourceDirectory>
-                    <failOnWarning>false</failOnWarning>
-                    <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-                    <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-                    <configLocation>scalastyle_config.xml</configLocation>
-                    <outputFile>${basedir}/target/scalastyle-output.xml</outputFile>
-                    <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
-                    <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -303,83 +256,54 @@
 
     <profiles>
         <profile>
-            <id>crossdata-core</id>
-            <activation>
-                <property>
-                    <name>crossdata-core</name>
-                </property>
-            </activation>
-            <modules>
-                <module>crossdata-ng</module>
-                <module>doc</module>
-            </modules>
-        </profile>
-        <profile>
             <id>crossdata-all</id>
-            <activation>
-                <property>
-                    <name>crossdata-all</name>
-                </property>
-            </activation>
             <modules>
-                <module>crossdata-ng</module>
-                <module>doc</module>
                 <module>crossdata-hive</module>
                 <module>crossdata-cassandra</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>examples</id>
+            <modules>
                 <module>crossdata-examples</module>
-                <module>crossdata-tests</module>
             </modules>
         </profile>
         <profile>
             <id>crossdata-hive</id>
-            <activation>
-                <property>
-                    <name>crossdata-hive</name>
-                </property>
-            </activation>
             <modules>
-                <module>crossdata-ng</module>
-                <module>doc</module>
                 <module>crossdata-hive</module>
             </modules>
         </profile>
         <profile>
             <id>crossdata-cassandra</id>
-            <activation>
-                <property>
-                    <name>crossdata-cassandra</name>
-                </property>
-            </activation>
             <modules>
-                <module>crossdata-ng</module>
-                <module>doc</module>
                 <module>crossdata-cassandra</module>
-                <module>crossdata-examples</module>
             </modules>
         </profile>
 
-        <!--        <profile>
-                    <id>scala-2.10</id>
-                    <activation>
-                        <property><name>!scala-2.11</name></property>
-                    </activation>
-                    <properties>
-                        <scala.version>2.10.4</scala.version>
-                        <scala.binary.version>2.10</scala.binary.version>
-                    </properties>
-                </profile>
+        <profile>
+            <id>scala-2.10</id>
+            <activation>
+                <property><name>!scala-2.11</name></property>
+            </activation>
+            <properties>
+                <scala.version>2.10.4</scala.version>
+                <scala.binary.version>2.10</scala.binary.version>
+            </properties>
+        </profile>
 
-                <profile>
-                    <id>scala-2.11</id>
-                    <activation>
-                        <property><name>scala-2.11</name></property>
-                    </activation>
-                    <properties>
-                        <scala.version>2.11.7</scala.version>
-                        <scala.binary.version>2.11</scala.binary.version>
-                    </properties>
-                </profile>
-                -->
+        <profile>
+            <id>scala-2.11</id>
+            <activation>
+                <property><name>scala-2.11</name></property>
+            </activation>
+            <properties>
+                <scala.version>2.11.7</scala.version>
+                <scala.binary.version>2.11</scala.binary.version>
+            </properties>
+        </profile>
+
     </profiles>
 
 </project>
