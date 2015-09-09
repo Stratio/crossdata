@@ -61,7 +61,7 @@
     </developers>
 
     <properties>
-        <cassandra.connector.version>1.4.0-M1</cassandra.connector.version>
+        <cassandra.connector.version>1.4.0-M3</cassandra.connector.version>
     </properties>
 
     <!--TODO exclude spark dependencies from crossdata-ng-->
