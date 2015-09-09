@@ -37,29 +37,6 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <id>miguel0afd</id>
-            <name>Miguel Angel Fernandez</name>
-            <email>mafernandez at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>jjlopez</id>
-            <name>Juanjo Lopez</name>
-            <email>jjlopez at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>darroyo</id>
-            <name>David Arroyo</name>
-            <email>darroyo at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>lcisneros</id>
-            <name>Luis Cisneros</name>
-            <email>lcisneros at stratio dot com</email>
-        </developer>
-    </developers>
-
     <properties>
         <cassandra.connector.version>1.4.0-M3</cassandra.connector.version>
     </properties>
