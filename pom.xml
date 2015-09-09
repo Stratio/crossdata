@@ -250,6 +250,30 @@
                     <detectLinks>true</detectLinks>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.scalastyle</groupId>
+                <artifactId>scalastyle-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <configuration>
+                    <verbose>true</verbose>
+                    <failOnViolation>false</failOnViolation>
+                    <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                    <failOnWarning>false</failOnWarning>
+                    <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+                    <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
+                    <configLocation>scalastyle_config.xml</configLocation>
+                    <outputFile>${basedir}/target/scalastyle-output.xml</outputFile>
+                    <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+                    <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -278,7 +302,9 @@
         <profile>
             <id>scala-2.10</id>
             <activation>
-                <property><name>!scala-2.11</name></property>
+                <property>
+                    <name>!scala-2.11</name>
+                </property>
             </activation>
             <properties>
                 <scala.version>2.10.4</scala.version>
@@ -289,7 +315,9 @@
         <profile>
             <id>scala-2.11</id>
             <activation>
-                <property><name>scala-2.11</name></property>
+                <property>
+                    <name>scala-2.11</name>
+                </property>
             </activation>
             <properties>
                 <scala.version>2.11.7</scala.version>
