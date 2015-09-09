@@ -24,31 +24,9 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <id>miguel0afd</id>
-            <name>Miguel Angel Fernandez</name>
-            <email>mafernandez at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>jjlopez</id>
-            <name>Juanjo Lopez</name>
-            <email>jjlopez at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>darroyo</id>
-            <name>David Arroyo</name>
-            <email>darroyo at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>lcisneros</id>
-            <name>Luis Cisneros</name>
-            <email>lcisneros at stratio dot com</email>
-        </developer>
-    </developers>
-
     <properties>
         <scala.version>2.10.4</scala.version>
+        <crossdata.version>1.0.0-SNAPSHOT</crossdata.version>
     </properties>
 
     <dependencies>
@@ -97,7 +75,7 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-ng</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${crossdata.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>netty</artifactId>
@@ -112,7 +90,7 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-cassandra</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${crossdata.version}</version>
         </dependency>
     </dependencies>
 
