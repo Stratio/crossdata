@@ -16,14 +16,10 @@
 
 package com.stratio.crossdata.examples
 
-import java.util.regex.Pattern
 
-import com.mongodb.BasicDBObjectBuilder
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
-import com.mongodb.casbah.commons.ValidBSONType.{BasicDBObject, DBObject}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.sources
 import org.apache.spark.{SparkConf, SparkContext}
 
 sealed trait MongoDefaultConstants {
