@@ -5,22 +5,17 @@ Feature: Select Cassandra Feature
   As a Spark User
   I want to execute Select functions
 
-  Scenario: Basic Select
-    Given a XDContext instance with this createTable query "CREATE TEMPORARY TABLE students USING com.stratio.crossdata.sql.sources.cassandra OPTIONS ( keyspace 'highschool', table 'students',  cluster 'Test Cluster',  pushdown 'true',  spark_cassandra_connection_host '127.0.0.1')"
-    When I query "SELECT comment as b FROM students WHERE id = 1"
-    Then the xdContext return 1 rows;
+    Background:
+      Given a DATASOURCE_HOST in the System Variable "CassandraHost"
 
-  Scenario: Basic Select *
-    Given a XDContext instance with this createTable query "CREATE TEMPORARY TABLE students USING com.stratio.crossdata.sql.sources.cassandra OPTIONS ( keyspace 'highschool', table 'students',  cluster 'Test Cluster',  pushdown 'true',  spark_cassandra_connection_host '127.0.0.1')"
-    When I query "SELECT * FROM students"
-    Then the xdContext return 10 rows;
+    Scenario Outline: Basic Select
+      Given a table "students" with the provider "com.stratio.crossdata.sql.sources.cassandra" and options "keyspace 'highschool', table 'students',  cluster 'Test Cluster',  pushdown 'true',  spark_cassandra_connection_host '%DATASOURCE_HOST'"
+      When I query <query>
+      Then the xdContext return <result> rows;
 
-  Scenario: Basic Select Where In
-    Given a XDContext instance with this createTable query "CREATE TEMPORARY TABLE students USING com.stratio.crossdata.sql.sources.cassandra OPTIONS ( keyspace 'highschool', table 'students',  cluster 'Test Cluster',  pushdown 'true',  spark_cassandra_connection_host '127.0.0.1')"
-    When I query "SELECT comment as b FROM students WHERE id IN(1,2,3,4) limit 2"
-    Then the xdContext return 2 rows;
-
-  Scenario: Basic Select Where with to clause
-    Given a XDContext instance with this createTable query "CREATE TEMPORARY TABLE students USING com.stratio.crossdata.sql.sources.cassandra OPTIONS ( keyspace 'highschool', table 'students',  cluster 'Test Cluster',  pushdown 'true',  spark_cassandra_connection_host '127.0.0.1')"
-    When I query "SELECT comment as b FROM students WHERE comment = 1 AND id = 5"
-    Then the xdContext return 1 rows;
+      Examples:
+      |query                                                            |result |
+      |"SELECT comment as b FROM students WHERE id = 1"                 |  1    |
+      |"SELECT * FROM students"                                         |  10   |
+      |"SELECT comment as b FROM students WHERE id IN(1,2,3,4) limit 2" |  2    |
+      |"SELECT comment as b FROM students WHERE comment = 1 AND id = 5" |  0    |

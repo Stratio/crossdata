@@ -86,7 +86,6 @@
     <properties>
         <scala.binary.version>2.10</scala.binary.version>
         <scala.version>2.10.4</scala.version>
-        <scalatest.version>2.2.2</scalatest.version>
         <spark.version>1.4.1</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
         <mapdb.version>1.0.8</mapdb.version>

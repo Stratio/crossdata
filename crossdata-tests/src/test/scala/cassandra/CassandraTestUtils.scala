@@ -8,7 +8,9 @@ sealed trait DefaultConstants {
   val ClusterName = "Test Cluster"
   val Catalog = "highschool"
   val Table = "students"
-  val CassandraHost = "127.0.0.1"
+
+  val CassandraHost = Option(System.getenv("CassandraHost")).getOrElse("127.0.0.1")
+
   val SourceProvider = "com.stratio.crossdata.sql.sources.cassandra"
   // Cassandra provider => org.apache.spark.sql.cassandra
 }
@@ -16,6 +18,7 @@ sealed trait DefaultConstants {
 class CassandraTestUtils extends ScalaDsl with EN with DefaultConstants {
 
   Before("@PrepareCasandraEnvironment") { scenario: Scenario =>
+    print(CassandraHost + "**********************************************************************************")
     val (cluster, session) = createSession()
     buildTable(session)
     closeSession(cluster, session)
