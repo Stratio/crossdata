@@ -16,7 +16,6 @@ class SimpleSelectTest extends ScalaDsl with EN with Matchers {
 
   Given("""^a DATASOURCE_HOST in the System Variable "([^"]*)"$"""){ (DATASOURCE_HOST:String) =>
     DatasourceHost = Option(System.getenv(DATASOURCE_HOST)).getOrElse("127.0.0.1")
-    print(DatasourceHost + "**********************************************************************************")
   }
 
   Given("""^a table "([^"]*)" with the provider "([^"]*)" and options "([^"]*)"$"""){ (Table:String, SourceProvider:String, Options:String) =>
@@ -26,8 +25,6 @@ class SimpleSelectTest extends ScalaDsl with EN with Matchers {
 
     xDContext.sql(createTable)
   }
-
-
 
   When( """^I query "([^"]*)"$""") { (selectQuery: String) =>
     result = xDContext.sql(selectQuery).collect()
