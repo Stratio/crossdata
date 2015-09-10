@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.stratio.crossdata.sql.mongodb
+package com.stratio.crossdata.sql.sources.mongodb
 
 import java.util.regex.Pattern
 
@@ -113,10 +113,9 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: DeepConfig, schemaPr
         validatedNativePlan.map { case (requiredColumns, filters, limit) =>
           val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(requiredColumns, filters)
           val resultSet = MongodbConnection.withCollectionDo(config) { collection =>
-            logInfo(s"filters $mongoFilters projects $mongoRequiredColumns")
+            logDebug(s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
             val cursor = collection.find(mongoFilters, mongoRequiredColumns)
-            cursor.limit(limit.getOrElse(DefaultLimit))
-            val result = cursor.toArray[DBObject]
+            val result = cursor.limit(limit.getOrElse(DefaultLimit)).toArray[DBObject]
             cursor.close()
             result
           }
@@ -130,11 +129,6 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: DeepConfig, schemaPr
 
   }
 
-/*  private def getResult( dbCursor: CursorType): java.util.List[DBObject] = {
-    val resultSet = dbCursor.toArray
-    dbCursor.close()
-    resultSet
-  }*/
 
   def validatedNativePlan: Option[(Array[ColumnName], Array[SourceFilter], Option[Int])] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }

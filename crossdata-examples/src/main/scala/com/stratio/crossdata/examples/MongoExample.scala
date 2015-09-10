@@ -31,7 +31,7 @@ sealed trait MongoDefaultConstants {
   val Collection = "students"
   val MongoHost = "127.0.0.1"
   val MongoPort = 27017
-  val SourceProvider = "com.stratio.crossdata.sql.mongodb"
+  val SourceProvider = "com.stratio.crossdata.sql.sources.mongodb"
   val MongoProvider = "com.stratio.provider.mongodb"
 }
 
@@ -58,17 +58,8 @@ object MongoExample extends App with MongoDefaultConstants {
     xdContext.sql(s"SELECT id, name FROM $Collection WHERE name LIKE '%ame%'").show(5)
 
 
-    //xdContext.sql(s"SELECT count(*), avg(age) FROM $Collection GROUP BY enrolled").show(5)
-
-
-    /*
-    case sources.StringStartsWith(attribute, value) =>
-    queryBuilder.regex(Pattern.compile("^" + value + ".*$"))
-    case sources.StringEndsWith(attribute, value) =>
-    queryBuilder.regex(Pattern.compile("^.*" + value + "$"))
-    case sources.StringContains(attribute, value) =>
-    queryBuilder.regex(Pattern.compile(".*" + value + ".*"))
-*/
+    //Spark
+    xdContext.sql(s"SELECT count(*), avg(age) FROM $Collection GROUP BY enrolled").show(5)
 
 
 

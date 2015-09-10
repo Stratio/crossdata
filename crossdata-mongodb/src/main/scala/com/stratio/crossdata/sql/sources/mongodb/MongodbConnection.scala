@@ -15,7 +15,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package com.stratio.crossdata.sql.mongodb
+package com.stratio.crossdata.sql.sources.mongodb
 
 import com.mongodb.MongoCredential
 import com.mongodb.casbah.Imports._
@@ -28,6 +28,9 @@ import scala.util.Try
 
 
 object MongodbConnection {
+
+
+  // TODO avoid openning a connection per query
 
   def withCollectionDo[T](config: DeepConfig)(code: MongoCollection => T): T = {
 

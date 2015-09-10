@@ -16,7 +16,7 @@
  *  under the License.
  */
 
-package com.stratio.crossdata.sql.mongodb
+package com.stratio.crossdata.sql.sources.mongodb
 
 import com.stratio.crossdata.sql.sources.NativeScan
 import com.stratio.provider.DeepConfig
