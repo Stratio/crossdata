@@ -17,4 +17,5 @@ Feature: Select Cassandra Feature
 
   Examples:
     |query                                                            |result |
-    |"SELECT students.name, class.class_name FROM students inner join class ON (students.id = class.student_id)"                    |  10   |
+    |"SELECT students.name, class.class_name FROM students inner join class ON (students.id = class.student_id)"              |  10   |
+    |"SELECT students.name, class.class_name FROM students inner join class ON (students.id = class.student_id) where id = 1" |  1   |
