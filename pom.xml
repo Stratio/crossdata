@@ -83,6 +83,7 @@
         <module>doc</module>
         <module>crossdata-common</module>
         <module>crossdata-driver</module>
+        <module>crossdata-server</module>
     </modules>
 
     <properties>
@@ -93,6 +94,8 @@
         <mapdb.version>1.0.8</mapdb.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
         <config.version>1.2.1</config.version>
+        <akka.version>2.3.11</akka.version>
+        <slf4j.version>1.7.7</slf4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <outputFileName>stratio-crossdata</outputFileName>
