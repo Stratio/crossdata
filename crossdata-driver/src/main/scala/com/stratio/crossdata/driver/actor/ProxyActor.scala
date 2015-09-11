@@ -164,11 +164,12 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
           handler.processError(result)
         }
       } else {
-        logger.info("Result not expected received for QID: " + result.getQueryId)
+        logger.debug("Result not expected received for QID: " + result.getQueryId)
       }
-      getConnection.queriesWebUI.get(result.getQueryId).setStatus("DONE")
-      getConnection.queriesWebUI.get(result.getQueryId).setEndTime(System.currentTimeMillis())
-
+      if(getConnection.queriesWebUI.containsKey(result.getQueryId)){
+        getConnection.queriesWebUI.get(result.getQueryId).setStatus("DONE")
+        getConnection.queriesWebUI.get(result.getQueryId).setEndTime(System.currentTimeMillis())
+      }
     }
     case "test"=> {
       logger.error("Unknown message: test" )

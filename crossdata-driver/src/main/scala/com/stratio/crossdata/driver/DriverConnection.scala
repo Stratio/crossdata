@@ -110,9 +110,14 @@ class DriverConnection(val sessionId: String, userId: String,  basicDriver: Basi
     queriesWebUI.put(queryId, new QueryData(callback, queryId.toString,query, sessionId,System.currentTimeMillis(),0,"IN PROGRESS"))
     sendQuery(new Query(queryId, currentCatalog, query, userId, sessionId))
     val r = callback.waitForResult()
-    queriesWebUI.get(queryId).setStatus("DONE")
-    queriesWebUI.get(queryId).setEndTime(System.currentTimeMillis())
-    logger.info("Query " + queryId + " finished. " + queries.get(queryId).getExecutionInfo())
+    if(queries.containsKey(queryId)) {
+      queriesWebUI.get(queryId).setStatus("DONE")
+      queriesWebUI.get(queryId).setEndTime(System.currentTimeMillis())
+    }
+    logger.info("Query " + queryId + " finished.")
+    if(queries.containsKey(queryId)){
+      logger.info(queries.get(queryId).getExecutionInfo)
+    }
     queries.remove(queryId)
     r
   }
@@ -140,14 +145,17 @@ class DriverConnection(val sessionId: String, userId: String,  basicDriver: Basi
     queriesWebUI.put(queryId, new QueryData(callback, queryId.toString,query, sessionId,System.currentTimeMillis(),0,"IN PROGRESS"))
     sendQuery(new Query(queryId, currentCatalog, query, userId, sessionId))
     val r = callback.waitForResult()
-    queriesWebUI.get(queryId).setStatus("DONE")
-    queriesWebUI.get(queryId).setEndTime(System.currentTimeMillis())
-    logger.info("Query " + queryId + " finished. " + queries.get(queryId).getExecutionInfo())
+    if(queries.containsKey(queryId)) {
+      queriesWebUI.get(queryId).setStatus("DONE")
+      queriesWebUI.get(queryId).setEndTime(System.currentTimeMillis())
+    }
+    logger.info("Query " + queryId + " finished.")
+    if(queries.containsKey(queryId)){
+      logger.info(queries.get(queryId).getExecutionInfo)
+    }
     queries.remove(queryId)
     r
   }
-
-
 
   def executeRawQuery(command: String): Result = {
     executeAsyncRawQuery(command, null)
@@ -772,12 +780,16 @@ class DriverConnection(val sessionId: String, userId: String,  basicDriver: Basi
    * @return The result handler.
    */
   def getResultHandler(queryId: String): IDriverResultHandler = {
-    val queryData = queries.get(queryId)
-    if(queryData != null){
-      queryData.resultHandler
+    if(queries.containsKey(queryId)){
+      val queryData = queries.get(queryId)
+      if(queryData != null){
+        queryData.resultHandler
+      } else {
+        logger.warn("Query " + queryId + " not found.")
+        null
+      }
     } else {
-      logger.warn("Query " + queryId + " not found.")
-      return null
+      null
     }
   }
 
