@@ -128,6 +128,11 @@
                 <artifactId>crossdata-cassandra</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.stratio.crossdata</groupId>
+                <artifactId>crossdata-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
