@@ -20,10 +20,9 @@ package com.stratio.crossdata.server.actors
 import akka.actor.ActorLogging
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
-import com.stratio.connector.sparksql.core.SparkSQLConnector._
 import com.stratio.crossdata.common.ExecuteQuery
 import com.stratio.crossdata.server.config.ServerConfig
-import com.typesafe.config.Config
+
 
 
 import org.apache.log4j.Logger
