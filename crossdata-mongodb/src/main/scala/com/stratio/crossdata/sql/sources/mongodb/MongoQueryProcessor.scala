@@ -20,7 +20,7 @@ import java.util.regex.Pattern
 import com.mongodb.casbah.Imports._
 import com.mongodb.{DBObject, QueryBuilder}
 import com.stratio.provider.mongodb.MongodbRelation._
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.schema.MongodbRowConverter
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
@@ -36,7 +36,7 @@ object MongoQueryProcessor {
   val DefaultLimit = 10000
   type ColumnName = String
 
-  def apply(logicalPlan: LogicalPlan, config: DeepConfig, schemaProvided: Option[StructType] = None) = new MongoQueryProcessor(logicalPlan, config, schemaProvided)
+  def apply(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) = new MongoQueryProcessor(logicalPlan, config, schemaProvided)
 
   def buildNativeQuery(requiredColums: Array[ColumnName], filters: Array[SourceFilter]): (DBObject, DBObject) =
     (filtersToDBObject(filters), selectFields(requiredColums))
@@ -99,7 +99,7 @@ object MongoQueryProcessor {
 
 
 // TODO logs, doc, tests
-class MongoQueryProcessor(logicalPlan: LogicalPlan, config: DeepConfig, schemaProvided: Option[StructType] = None) extends Logging {
+class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) extends Logging {
 
   import MongoQueryProcessor._
 

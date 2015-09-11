@@ -19,7 +19,7 @@
 package com.stratio.crossdata.sql.sources.mongodb
 
 import com.stratio.crossdata.sql.sources.NativeScan
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.MongodbRelation
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical._
@@ -37,7 +37,7 @@ import org.apache.spark.sql.{Row, SQLContext}
  *                       a sample ratio (as JSON Data Source does).
  * @param sqlContext An existing Spark SQL context.
  */
-case class MongodbXDRelation(config: DeepConfig,
+case class MongodbXDRelation(config: Config,
                              schemaProvided: Option[StructType] = None)(
                             @transient sqlContext: SQLContext)
   extends MongodbRelation(config, schemaProvided)(sqlContext) with NativeScan with Logging{

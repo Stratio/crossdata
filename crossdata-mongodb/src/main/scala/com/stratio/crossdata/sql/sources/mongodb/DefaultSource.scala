@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.sql.sources.mongodb
 
-import com.stratio.provider.DeepConfig._
+import com.stratio.provider.Config._
 import com.stratio.provider.mongodb.MongodbConfig._
 import com.stratio.provider.mongodb.{MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions}
 import org.apache.spark.sql.SaveMode._
@@ -97,7 +97,8 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     val properties :Map[String, Any] =
       Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio, readPreference -> readpreference)
 
-    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language)
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language, Timeout)
+
     val finalMap = (properties /: optionalProperties){    //TODO improve code
       case (properties,Credentials) =>
         /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
@@ -134,7 +135,16 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
           properties.+(SearchFields -> searchFields)
         } else properties
       }
+      case (properties, Timeout) => {
+        /** Timeout in seconds */
+        val timeout = parameters.get(Timeout)
+        if(timeout.isDefined){
+          properties.+(Timeout -> timeout)
+        } else properties
+      }
+
     }
+
     finalMap
   }
 

@@ -38,7 +38,7 @@
     </licenses>
 
     <properties>
-        <mongodb.provider.version>0.8.7</mongodb.provider.version>
+        <mongodb.provider.version>0.9.0-SNAPSHOT</mongodb.provider.version>
     </properties>
 
     <!--TODO exclude spark dependencies from crossdata-ng-->

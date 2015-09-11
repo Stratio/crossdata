@@ -19,7 +19,7 @@ package com.stratio.crossdata.sql.sources.mongodb
 
 import com.mongodb.MongoCredential
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.reader.MongodbReadException
 import com.stratio.provider.mongodb.{MongodbClientFactory, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 
@@ -32,7 +32,7 @@ object MongodbConnection {
 
   // TODO avoid openning a connection per query
 
-  def withCollectionDo[T](config: DeepConfig)(code: MongoCollection => T): T = {
+  def withCollectionDo[T](config: Config)(code: MongoCollection => T): T = {
 
     val databaseName: String = config(MongodbConfig.Database)
     val collectionName: String = config(MongodbConfig.Collection)
@@ -46,7 +46,7 @@ object MongodbConnection {
   }
 
 
-  private def openClient(config: DeepConfig): MongoClient = {
+  private def openClient(config: Config): MongoClient = {
 
     val hosts: List[ServerAddress] = config[List[String]](MongodbConfig.Host).map(add => new ServerAddress(add))
 
