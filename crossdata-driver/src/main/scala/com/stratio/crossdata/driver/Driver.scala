@@ -16,13 +16,29 @@
 
 package com.stratio.crossdata.driver
 
+import java.util
+
+import akka.actor.ActorSystem
 import com.stratio.crossdata.driver.config.DriverConfig
+import com.typesafe.config.{ConfigValueFactory, Config}
 import org.apache.log4j.Logger
 
 object Driver extends DriverConfig {
   override lazy val logger = Logger.getLogger(getClass)
 }
 
-class Driver {
+class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String]()) {
 
+  private lazy val logger = Driver.logger
+
+  val finalConfig = seedNodes match {
+    case c if !c.isEmpty => Driver.config.withValue(
+      "akka.cluster.seed-nodes",
+      ConfigValueFactory.fromAnyRef(seedNodes))
+    case _ => Driver.config
+  }
+
+  private val system = ActorSystem("CrossdataSystem", finalConfig)
+  logger.info(" === CONFIGURATION === ")
+  system.logConfiguration()
 }

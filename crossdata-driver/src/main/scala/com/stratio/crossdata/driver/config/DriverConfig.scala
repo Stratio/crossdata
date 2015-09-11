@@ -24,7 +24,7 @@ import org.apache.log4j.Logger
 object DriverConfig {
   val DRIVER_CONFIG_FILE = "driver-reference.conf"
   val PARENT_CONFIG_NAME = "crossdata-driver"
-  val EXTERNAL_CONFIG_FILE = "external.config.filename"
+  val DRIVER_CONFIG_RESOURCE = "external.config.resource"
 }
 
 trait DriverConfig {
@@ -32,20 +32,27 @@ trait DriverConfig {
 
   val config: Config = {
     val defaultConfig = ConfigFactory.load(DriverConfig.DRIVER_CONFIG_FILE).getConfig(DriverConfig.PARENT_CONFIG_NAME)
-    val configFile = defaultConfig.getString(DriverConfig.DRIVER_CONFIG_FILE)
+    val configResource = defaultConfig.getString(DriverConfig.DRIVER_CONFIG_RESOURCE)
 
-    if(configFile != ""){
-      val file = new File(configFile)
-      if(file.exists){
-        val userConfig = ConfigFactory.parseFile(file).getConfig(DriverConfig.PARENT_CONFIG_NAME)
-        ConfigFactory.load(userConfig.withFallback(defaultConfig))
-      } else {
-        logger.warn("User file '" + configFile + "' haven't been found")
-        ConfigFactory.load(defaultConfig)
+    val mergedConfig = configResource match {
+      case x if !x.isEmpty => {
+        val resource = DriverConfig.getClass.getClassLoader.getResource(configResource)
+        resource match {
+          case null => {
+            logger.warn("User file '" + configResource + "' haven't been found in the classpath")
+            defaultConfig
+          }
+          case _ => {
+            val userConfig = ConfigFactory.parseResources(configResource).getConfig(DriverConfig.PARENT_CONFIG_NAME)
+            userConfig.withFallback(defaultConfig)
+          }
+        }
       }
-    } else {
-      ConfigFactory.load(defaultConfig)
+      case _ => defaultConfig
     }
+
+    ConfigFactory.load(mergedConfig)
+
   }
 
 }
