@@ -18,58 +18,48 @@
 
 package com.stratio.crossdata.server.actors
 
-import java.util.{Random, UUID}
-
-import akka.actor.{OneForOneStrategy, Actor, Props, ReceiveTimeout}
+import java.util.Random
+import akka.actor.{OneForOneStrategy, Actor, Props}
 import akka.cluster.Cluster
-import akka.routing.{RoundRobinPool, DefaultResizer}
-
+import akka.routing.DefaultResizer
+import com.stratio.crossdata.common.Message
 import com.stratio.crossdata.server.config.ServerConfig
+
 import org.apache.log4j.Logger
 import akka.actor.SupervisorStrategy.{Resume, Stop}
 import scala.concurrent.duration._
 
+
 object ServerActor {
   def props(cluster: Cluster): Props = Props(new ServerActor(cluster))
+
 }
 
 class ServerActor(cluster: Cluster) extends Actor with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
-  val random=new Random
-  val hostname=config.getString("akka.remote.netty.tcp.hostname")
+  val random = new Random
+  val hostname = config.getString("akka.remote.netty.tcp.hostname")
   val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
+  val executorActorRef = context.actorOf(Props(classOf[ExecutorActor], cluster), "ExecutorActor")
 
+
+  //val sparkContextParameters:Map[String, String]= Map()
+  val sparkContextParameters = Map("sparkMaster" -> sparkMaster, "sparkCores" -> sparkCores,
+    "sparkDriverMemory" -> sparkDriverMemory, "sparkExecutorMemory" -> sparkExecutorMemory)
 
   override val supervisorStrategy =
     OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
       case _: Any => Resume
     }
 
-  def receive : Receive={
-    /*case "watchload"=>
-      loadWatcherActorRef forward "watchload"
-    case query: Query =>{
-      logger.info("Query received: " + query.statement.toString)
-      parserActorRef forward query
-    }
-    case Connect(user,pass) => {
-      logger.info(s"Welcome $user! from  ${sender.path.address} ( host =${sender.path.address}) ")
-      sender ! ConnectResult.createConnectResult(UUID.randomUUID().toString)
-    }
-    case Disconnect(user) => {
-      logger.info("Goodbye " + user + ".")
-      sender ! DisconnectResult.createDisconnectResult(user)
-    }
-    case cmd: Command =>{
-      logger.info("API Command call received " + cmd.commandType)
-      APIActorRef forward cmd
-    }
-    case ReceiveTimeout => {
-      logger.warn("ReceiveTimeout")
-      //TODO Process ReceiveTimeout
+  def receive: Receive = {
 
-    }*/
+    case Message(query) => {
+      logger.info("Query received!")
+      val queryAndParams = List(query, sparkContextParameters)
+      executorActorRef forward queryAndParams
+    }
     case _ => {
       logger.error("Unknown message received by ServerActor");
       //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")

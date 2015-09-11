@@ -28,10 +28,18 @@ object ServerConfig {
   val SERVER_BASIC_CONFIG = "server-reference.conf"
   val PARENT_CONFIG_NAME = "crossdata-server"
 
+  //  akka cluster values
   val SERVER_CLUSTER_NAME_KEY = "config.cluster.name"
   val SERVER_ACTOR_NAME_KEY = "config.cluster.actor"
   val SERVER_USER_CONFIG_FILE = "external.config.filename"
   val SERVER_USER_CONFIG_RESOURCE = "external.config.resource"
+
+  // spark context values
+  val SERVER_CONFIG_SPARK_MASTER="config.spark.master"
+  val SERVER_CONFIG_SPARK_DRIVER_MEMORY="config.spark.driver.memory"
+  val SERVER_CONFIG_SPARK_EXECUTOR_MEMORY="config.spark.executor.memory"
+  val SERVER_CONFIG_SPARK_CORES="config.spark.cores.max"
+  val SERVER_CONFIG_SPARK_HEARTBEAT="config.spark.akka.heartbeat.interval"
 
   //val SERVER_ACTOR_NUM= "config.akka.number.server-actor"
 }
@@ -54,6 +62,12 @@ trait ServerConfig extends NumberActorConfig {
 
   lazy val clusterName = config.getString(ServerConfig.SERVER_CLUSTER_NAME_KEY)
   lazy val actorName = config.getString(ServerConfig.SERVER_ACTOR_NAME_KEY)
+  lazy val sparkMaster = config.getString(ServerConfig.SERVER_CONFIG_SPARK_MASTER)
+  lazy val sparkDriverMemory = config.getString(ServerConfig.SERVER_CONFIG_SPARK_DRIVER_MEMORY)
+  lazy val sparkExecutorMemory = config.getString(ServerConfig.SERVER_CONFIG_SPARK_EXECUTOR_MEMORY)
+  lazy val sparkCores = config.getString(ServerConfig.SERVER_CONFIG_SPARK_CORES)
+  //lazy val sparkHeartbeat = config.getString(ServerConfig.SERVER_CONFIG_SPARK_HEARTBEAT)
+
   override val config: Config = {
 
     var defaultConfig = ConfigFactory.load(ServerConfig.SERVER_BASIC_CONFIG).getConfig(ServerConfig.PARENT_CONFIG_NAME)
@@ -90,6 +104,6 @@ trait ServerConfig extends NumberActorConfig {
     ConfigFactory.load(defaultConfig)
   }
 
-  //lazy val num_actors_server_actor:Int  = config.getString(ServerConfig.SERVER_ACTOR_NUM).toInt
+
 }
 
