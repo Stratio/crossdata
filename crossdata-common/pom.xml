@@ -59,5 +59,11 @@
             <email>lcisneros at stratio dot com</email>
         </developer>
     </developers>
+    <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
