@@ -6,7 +6,8 @@ function usage {
   echo "Runs the Apache Spark shell with The Crossdata Context support"
   echo "Example: ./stratio-xd-shell --cassandra --jars myApp.jar"
   echo ""
-  echo "--cassandra          Add support for Cassandra"
+  echo "--cassandra         Add support for Cassandra"
+  echo "--mongodb           Add support for MongoDB"  
   echo ""
   echo "[SPARK_OPTIONS]"
   echo "Spark's specific options"
@@ -39,6 +40,10 @@ case $key in
 	xdjars="$xdjars,$SPARK_HOME/lib/crossdata-cassandra-1.0.0-SNAPSHOT.jar"
     sparkArguments=${sparkArguments/--cassandra/}          
     ;;
+  --mongodb)
+  xdjars="$xdjars,$SPARK_HOME/lib/crossdata-mongodb-1.0.0-SNAPSHOT.jar"
+    sparkArguments=${sparkArguments/--mongodb/}          
+    ;;  
     --help)
     usage
     ;;

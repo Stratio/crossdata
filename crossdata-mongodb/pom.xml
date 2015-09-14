@@ -56,12 +56,7 @@
 
     <profiles>
         <profile>
-            <id>crossdata-mongodb</id>
-            <activation>
-                <property>
-                    <name>crossdata-mongodb</name>
-                </property>
-            </activation>
+            <id>crossdata-all</id>
             <dependencies>
                 <dependency>
                     <groupId>com.stratio.crossdata</groupId>
@@ -70,12 +65,11 @@
                 </dependency>
                 <dependency>
                     <groupId>com.stratio</groupId>
-                    <artifactId>spark-mongodb</artifactId>
+                    <artifactId>spark-mongodb-core</artifactId>
                     <version>${mongodb.provider.version}</version>
                 </dependency>
             </dependencies>
             <build>
-
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -86,7 +80,7 @@
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
 
-                            <!-- <appendAssemblyId>false</appendAssemblyId>-->
+                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                         <executions>
                             <execution>
