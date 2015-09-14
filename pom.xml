@@ -83,6 +83,7 @@
         <module>doc</module>
         <module>crossdata-server</module>
         <module>crossdata-common</module>
+        <module>crossdata-driver</module>
     </modules>
 
     <properties>
