@@ -1,3 +1,6 @@
+import com.stratio.crossdata.driver.Driver
+import org.scalatest.{Matchers, FlatSpec}
+
 /*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
@@ -14,15 +17,13 @@
  *  limitations under the License.
  */
 
-package com.stratio.crossdata.driver
+class DriverUT extends FlatSpec with Matchers {
 
-import java.util
-import scala.collection.JavaConversions._
+  "A driver initilization " should " fail, given there is no server running locally" in {
+    val driver: Driver = new Driver
+    val result = driver.send("Ping")
+    result should be ("Not found answer. After 2 retries, timeout was exceed.")
+  }
 
-object DriverTest extends App {
-
-  val seedNodes = new util.ArrayList[String]
-  seedNodes.add("127.0.0.1:12345")
-  val driver: Driver = new Driver(seedNodes)
 
 }
