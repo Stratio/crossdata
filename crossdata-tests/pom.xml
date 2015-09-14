@@ -2,13 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
-    <parent>
-        <groupId>com.stratio</groupId>
-        <artifactId>parent</artifactId>
-        <version>0.4.0</version>
-    </parent>
-
+    
+    <groupId>com.stratio</groupId>
     <version>1.0.0-SNAPSHOT</version>
 
     <modelVersion>4.0.0</modelVersion>
@@ -26,6 +21,8 @@
 
     <properties>
         <scala.version>2.10.4</scala.version>
+        <scalatest.version>2.2.5</scalatest.version>
+        <scala.binary.version>2.10</scala.binary.version>
         <crossdata.version>1.0.0-SNAPSHOT</crossdata.version>
     </properties>
 
@@ -47,12 +44,6 @@
             <artifactId>cucumber-junit</artifactId>
             <version>1.2.4</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>junit</artifactId>
-                    <groupId>junit</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -65,12 +56,6 @@
             <artifactId>scala-compiler</artifactId>
             <version>${scala.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>scala-reflect</artifactId>
-                    <groupId>org.scala-lang</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
@@ -92,6 +77,12 @@
             <artifactId>crossdata-cassandra</artifactId>
             <version>${crossdata.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <version>${scalatest.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -99,10 +90,16 @@
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-                <version>2.15.2</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*RunCukesTest.*</include>
+                    </includes>
+                </configuration>
             </plugin>
+
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -149,5 +146,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
