@@ -2,6 +2,9 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes.
 
+## 0.4.2 (September 2015)
+- Bugs fixed
+
 ## 0.4.1 (August 2015)
 - Bugs fixed
 
