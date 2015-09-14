@@ -18,10 +18,15 @@ package com.stratio.crossdata.driver
 
 import java.util
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSelection, ActorSystem}
+import akka.contrib.pattern.ClusterClient
+import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
-import com.typesafe.config.{ConfigValueFactory, Config}
+import com.stratio.crossdata.driver.utils.RetryPolitics
+import com.typesafe.config.{ConfigValueFactory}
 import org.apache.log4j.Logger
+
+import collection.JavaConversions._
 
 object Driver extends DriverConfig {
   override lazy val logger = Logger.getLogger(getClass)
@@ -31,7 +36,7 @@ class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String](
 
   private lazy val logger = Driver.logger
 
-  val finalConfig = seedNodes match {
+  private val finalConfig = seedNodes match {
     case c if !c.isEmpty => Driver.config.withValue(
       "akka.cluster.seed-nodes",
       ConfigValueFactory.fromAnyRef(seedNodes))
@@ -39,6 +44,25 @@ class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String](
   }
 
   private val system = ActorSystem("CrossdataSystem", finalConfig)
-  logger.info(" === CONFIGURATION === ")
-  system.logConfiguration()
+
+  if(logger.isDebugEnabled){
+    system.logConfiguration()
+  }
+
+  private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes")
+  private val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
+  val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
+
+  val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, this), "proxy-actor")
+
+  val retryPolitics: RetryPolitics = {
+    new RetryPolitics
+  }
+
+  def send(s: String): String = {
+    val result = retryPolitics.askRetry(proxyActor, "Ping")
+    logger.info("Result: " + result)
+    result
+  }
+
 }
