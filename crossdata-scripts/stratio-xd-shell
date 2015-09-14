@@ -28,7 +28,6 @@ sparkArguments="$@"
 while [[ $# > 0 ]]
 do
 key="$1"
-echo "uno  $key "
 case $key in
     --jars)	
     jars="$2"
