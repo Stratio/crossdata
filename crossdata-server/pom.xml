@@ -52,6 +52,16 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-ng</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>akka-remote_2.10</artifactId>
+                    <groupId>org.spark-project.akka</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>akka-slf4j_2.10</artifactId>
+                    <groupId>org.spark-project.akka</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -71,6 +81,11 @@
                     <groupId>org.scala-lang</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-remote_${scala.binary.version}</artifactId>
+            <version>${akka.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
