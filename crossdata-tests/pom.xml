@@ -77,6 +77,13 @@
             <artifactId>crossdata-cassandra</artifactId>
             <version>${crossdata.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-mongodb</artifactId>
+            <version>${crossdata.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.binary.version}</artifactId>

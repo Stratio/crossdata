@@ -56,12 +56,7 @@
 
     <profiles>
         <profile>
-            <id>crossdata-cassandra</id>
-            <activation>
-                <property>
-                    <name>crossdata-cassandra</name>
-                </property>
-            </activation>
+            <id>crossdata-all</id>
             <dependencies>
                 <dependency>
                     <groupId>com.stratio.crossdata</groupId>
