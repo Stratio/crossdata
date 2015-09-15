@@ -42,7 +42,7 @@ case $key in
     sparkArguments=${sparkArguments/--cassandra/}          
     ;;
   --mongodb)
-  xdjars="$xdjars,MONGODB_LIB"
+  xdjars="$xdjars,$MONGODB_LIB"
     sparkArguments=${sparkArguments/--mongodb/}          
     ;;  
     --help)
