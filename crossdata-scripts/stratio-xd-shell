@@ -19,6 +19,8 @@ function usage {
 export SPARK_HOME="$(cd `dirname $0`/..; pwd)"
 
 xdjars="$SPARK_HOME/lib/crossdata-ng-1.0.0-SNAPSHOT.jar"
+MONGODB_LIB="$SPARK_HOME/lib/crossdata-mongodb-1.0.0-SNAPSHOT.jar"
+CASSANDRA_LIB="$SPARK_HOME/lib/crossdata-cassandra-1.0.0-SNAPSHOT.jar"
 
 
 # Keep all the arguments, then remove the XD specific ones and only keep the Spark arguments.
@@ -36,11 +38,11 @@ case $key in
     shift # past argument
     ;;
     --cassandra)
-	xdjars="$xdjars,$SPARK_HOME/lib/crossdata-cassandra-1.0.0-SNAPSHOT.jar"
+	xdjars="$xdjars,$CASSANDRA_LIB"
     sparkArguments=${sparkArguments/--cassandra/}          
     ;;
   --mongodb)
-  xdjars="$xdjars,$SPARK_HOME/lib/crossdata-mongodb-1.0.0-SNAPSHOT.jar"
+  xdjars="$xdjars,MONGODB_LIB"
     sparkArguments=${sparkArguments/--mongodb/}          
     ;;  
     --help)
