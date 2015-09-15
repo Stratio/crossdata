@@ -57,8 +57,9 @@ class ServerActor(cluster: Cluster) extends Actor with ServerConfig {
 
     case Message(query) => {
       logger.info("Query received!")
-      val queryAndParams = List(query, sparkContextParameters)
-      executorActorRef forward queryAndParams
+      sender ! "Answer"
+      //val queryAndParams = List(query, sparkContextParameters)
+      //executorActorRef forward queryAndParams
     }
     case _ => {
       logger.error("Unknown message received by ServerActor");

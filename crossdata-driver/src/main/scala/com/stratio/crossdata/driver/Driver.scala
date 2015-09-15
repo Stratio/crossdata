@@ -20,6 +20,7 @@ import java.util
 
 import akka.actor.{ActorSelection, ActorSystem}
 import akka.contrib.pattern.ClusterClient
+import com.stratio.crossdata.common.Message
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.utils.RetryPolitics
@@ -60,7 +61,7 @@ class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String](
   }
 
   def send(s: String): String = {
-    val result = retryPolitics.askRetry(proxyActor, "Ping")
+    val result = retryPolitics.askRetry(proxyActor, Message(s))
     logger.info("Result: " + result)
     result
   }
