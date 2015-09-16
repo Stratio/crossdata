@@ -52,6 +52,13 @@
             <artifactId>spark-mongodb-core</artifactId>
             <version>${mongodb.provider.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-ng</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

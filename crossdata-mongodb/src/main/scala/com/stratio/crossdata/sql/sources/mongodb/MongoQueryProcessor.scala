@@ -19,15 +19,15 @@ import java.util.regex.Pattern
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.{DBObject, QueryBuilder}
-import com.stratio.provider.mongodb.MongodbRelation._
 import com.stratio.provider.Config
+import com.stratio.provider.mongodb.MongodbRelation._
 import com.stratio.provider.mongodb.schema.MongodbRowConverter
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.sources
-import org.apache.spark.sql.sources.{Filter => SourceFilter, CatalystToCrossdataAdapter}
+import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.{StructType, UTF8String}
 
 
@@ -119,7 +119,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
             cursor.close()
             result
           }
-          sparkResultFromMongodb(requiredColumns,schemaProvided.get, resultSet)
+          sparkResultFromMongodb(requiredColumns, schemaProvided.get, resultSet)
         }
       } catch {
         case exc: Exception =>
@@ -163,8 +163,8 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     case _: sources.StringStartsWith => true
     case _: sources.StringEndsWith => true
     case _: sources.StringContains => true
-    case sources.And(left, right) => checkNativeFilters(Array(left,right))
-    case sources.Or(left, right) => checkNativeFilters(Array(left,right))
+    case sources.And(left, right) => checkNativeFilters(Array(left, right))
+    case sources.Or(left, right) => checkNativeFilters(Array(left, right))
     // TODO add more filters (Not?)
     case _ => false
 

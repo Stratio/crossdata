@@ -4,14 +4,14 @@ import java.util
 import java.util.regex.Pattern
 
 import com.mongodb.{DBObject, QueryOperators}
+import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.UTF8String
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class MongoQueryProcessorSpec extends FlatSpec with Matchers {
+class MongoQueryProcessorSpec extends BaseXDTest {
 
   val Keyspace = "keyspace"
   val Table = "table"

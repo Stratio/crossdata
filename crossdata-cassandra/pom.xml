@@ -52,6 +52,13 @@
             <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
             <version>${cassandra.connector.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-ng</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -72,6 +79,12 @@
                     <groupId>com.datastax.spark</groupId>
                     <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
                     <version>${cassandra.connector.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.stratio.crossdata</groupId>
+                    <artifactId>crossdata-ng</artifactId>
+                    <type>test-jar</type>
+                    <scope>test</scope>
                 </dependency>
             </dependencies>
             <build>
