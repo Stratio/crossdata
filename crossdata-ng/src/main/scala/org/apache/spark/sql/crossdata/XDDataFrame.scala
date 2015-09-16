@@ -17,10 +17,13 @@
 package org.apache.spark.sql.crossdata
 
 import com.stratio.crossdata.sql.sources.NativeScan
+import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.crossdata.ExecutionType._
+import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.sources.LogicalRelation
 
 private[sql] object XDDataFrame {
@@ -72,7 +75,7 @@ private[sql] object XDDataFrame {
 /**
  * Extends a [[DataFrame]] to provide native access to datasources when performing Spark actions.
  */
-private[sql] class XDDataFrame(@transient override val sqlContext: SQLContext,
+class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
                                @transient override val queryExecution: SQLContext#QueryExecution)
   extends DataFrame(sqlContext, queryExecution) {
 
@@ -83,7 +86,8 @@ private[sql] class XDDataFrame(@transient override val sqlContext: SQLContext,
         qe.assertAnalyzed() // This should force analysis and throw errors if there are any
       }
       qe
-    })
+    }
+    )
   }
 
   import XDDataFrame._
@@ -100,6 +104,23 @@ private[sql] class XDDataFrame(@transient override val sqlContext: SQLContext,
       nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
   }
+
+  /**
+   * Collect using an specific [[ExecutionType]]. Only for testing purpose so far.
+   *
+   * @param executionType one of the [[ExecutionType]]
+   * @return the query result
+   */
+  @DeveloperApi
+  def collect(executionType: ExecutionType): Array[Row] = executionType match {
+    case Default => collect()
+    case Spark => super.collect()
+    case Native =>
+      val result = findNativeQueryExecutor(queryExecution.optimizedPlan).flatMap(executeNativeQuery)
+      if (result.isEmpty) throw new NativeExecutionException
+      result.get
+  }
+
 
   /**
    * @inheritdoc
