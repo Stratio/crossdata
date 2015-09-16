@@ -20,6 +20,7 @@ package com.stratio.crossdata.server
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
+import akka.cluster.ClusterEvent._
 import akka.contrib.pattern.ClusterReceptionistExtension
 
 import akka.util.Timeout
@@ -40,6 +41,8 @@ class CrossdataServer extends Daemon with ServerConfig {
 
   //LoadWatcherManager.MANAGER.clear()
   val cluster = Cluster(system)
+
+
 
   override def destroy(): Unit = {
 

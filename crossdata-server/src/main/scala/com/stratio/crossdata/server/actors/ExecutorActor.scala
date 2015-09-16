@@ -21,38 +21,38 @@ import akka.actor.ActorLogging
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
 import com.stratio.crossdata.common.ExecuteQuery
-import com.stratio.crossdata.server.config.ServerConfig
-
-
 
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.crossdata.XDContext
 
 object ExecutorActor {
-  def props(cluster: Cluster): Props = Props(new ExecutorActor(cluster))
+  def props(cluster: Cluster, xDContext: XDContext): Props = Props(new ExecutorActor(cluster, xDContext))
 }
 
-class ExecutorActor(cluster: Cluster) extends Actor with ActorLogging with ServerConfig{
+class ExecutorActor(cluster: Cluster, xdContext: XDContext) extends Actor with ActorLogging {
   lazy val logger = Logger.getLogger(classOf[ExecutorActor])
 
   def receive: Receive = {
-    case ExecuteQuery(query)=> {
-      val sc = initContext()
-      val xdContext = new XDContext(sc)
-      xdContext.sql(query)
+    case ExecuteQuery(query) => {
+      try {
+        val df = xdContext.sql(query)
+        df.collect()
+        sender ! "Result OK"
+      } catch {
+        case re: RuntimeException => {
+          println("Runtime Exception: " + re.getMessage)
+          sender ! re.getMessage
+        }
+      }
+
     }
-    case _=> logger.error("Something is going wrong!")
+    case _ => {
+      logger.error("Something is going wrong!")
+      sender ! "Something is going wrong!"
+    }
 
   }
 
-  def initContext(): SparkContext = {
-    new SparkContext(new SparkConf()
-      .setMaster(sparkMaster)
-      .setAll(List(
-      sparkDriverMemory,
-      sparkExecutorMemory,
-      sparkCores).filter(config.hasPath).map(k => k -> config.getString(k))))
-  }
+
 }
 
