@@ -17,12 +17,12 @@
 package com.stratio.crossdata.driver.actor
 
 import akka.actor.{Props, ActorRef, Actor}
-import akka.actor.Actor.Receive
 import akka.contrib.pattern.ClusterClient
+import com.stratio.crossdata.common.Message
 import com.stratio.crossdata.driver.Driver
 
 object ProxyActor {
-  val SERVER_PATH = "/crossdata-server/"
+  val SERVER_PATH = "/user/crossdata-server"
 
   def props(clusterClientActor: ActorRef, driver: Driver): Props =
     Props(new ProxyActor(clusterClientActor, driver))
@@ -30,9 +30,16 @@ object ProxyActor {
 }
 
 class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
+
   override def receive: Receive = {
-    case message: String => {
-      clusterClientActor forward ClusterClient.Send(ProxyActor.SERVER_PATH, message, false)
+    case s: String => {
+      clusterClientActor forward ClusterClient.Send(ProxyActor.SERVER_PATH, Message(s), false)
+    }
+    case m: Message => {
+      println("Result: " + m.query)
+    }
+    case a: Any => {
+      println("Unknown message: " + a)
     }
   }
 }

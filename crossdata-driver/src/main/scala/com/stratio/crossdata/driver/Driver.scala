@@ -44,14 +44,17 @@ class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String](
     case _ => Driver.config
   }
 
-  private val system = ActorSystem("CrossdataSystem", finalConfig)
+  private val system = ActorSystem("CrossdataServerCluster", finalConfig)
 
   if(logger.isDebugEnabled){
     system.logConfiguration()
   }
 
-  private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes")
+  private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(dir=>dir+"/user/receptionist")
+
   private val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
+  println("Initial contacts: " + initialContacts)
+
   val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
 
   val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, this), "proxy-actor")
@@ -61,8 +64,8 @@ class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String](
   }
 
   def send(s: String): String = {
-    val result = retryPolitics.askRetry(proxyActor, Message(s))
-    logger.info("Result: " + result)
+    val result = retryPolitics.askRetry(proxyActor, s)
+    logger.info("(Driver) Result from server: " + result)
     result
   }
 
