@@ -16,34 +16,39 @@
 
 package org.apache.spark.sql.crossdata.hive
 
+import com.stratio.crossdata.test.BaseXDTest
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.XDDataFrame
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDHiveContextIT extends SharedXDContextTest {
+class XDHiveContextIT extends BaseXDTest {
+
+  private lazy val xctx = org.apache.spark.sql.crossdata.hive.test.TestXDHiveContext
 
   "A XDContext" should "perform a collect with a collection" in {
+    import xctx.implicits._
 
-    val df: DataFrame = xdContext.createDataFrame(ctx.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
+    val df = xctx.sparkContext.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
+    // Any RDD containing case classes can be registered as a table.  The schema of the table is
+    // automatically inferred using scala reflection.
     df.registerTempTable("records")
 
-    val result: Array[Row] = sql("SELECT * FROM records").collect()
-
-    result should have length 5
+    // Once tables have been registered, you can run SQL queries over them.
+    val result: Array[Row] = xctx.sql("SELECT * FROM records").collect()
+    assert(result.length === 5)
   }
 
 
   it must "return a XDDataFrame when executing a SQL query" in {
+    import xctx.implicits._
 
-    val df: DataFrame = xdContext.createDataFrame(ctx.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
+    val df = xctx.sparkContext.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
     df.registerTempTable("records")
 
-    val dataframe = sql("SELECT * FROM records")
-    dataframe shouldBe a[XDDataFrame]
+    val dataframe = xctx.sql("SELECT * FROM records")
+    dataframe shouldBe a [XDDataFrame]
   }
 
 
