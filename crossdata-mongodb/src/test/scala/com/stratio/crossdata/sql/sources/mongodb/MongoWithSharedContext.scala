@@ -18,10 +18,11 @@ package com.stratio.crossdata.sql.sources.mongodb
 
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
+import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.scalatest.Suite
 
-trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConstants {
+trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConstants with Logging {
   this: Suite =>
 
   var mongoClient: Option[MongoClient] = None
@@ -35,13 +36,18 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
       mongoClient = Some(prepareEnvironment())
 
       xdContext.sql(
-        s"CREATE TEMPORARY TABLE $Collection (id STRING, age INT, description STRING, enrolled BOOLEAN, name STRING) USING $SourceProvider OPTIONS " +
-          s"( host '$MongoHost:$MongoPort'," +
-          s" database '$Database', " +
-          s" collection '$Collection')".stripMargin)
+        s"""|CREATE TEMPORARY TABLE $Collection
+            |(id STRING, age INT, description STRING, enrolled BOOLEAN, name STRING)
+            |USING $SourceProvider
+            |OPTIONS (
+            |host '$MongoHost:$MongoPort',
+            |database '$Database',
+            |collection '$Collection'
+            |)
+         """.stripMargin.replaceAll("\n", " "))
 
     } catch {
-      case e: Throwable => ()
+      case e: Throwable => logError(e.getMessage)
     }
 
     isEnvironmentReady = mongoClient.isDefined

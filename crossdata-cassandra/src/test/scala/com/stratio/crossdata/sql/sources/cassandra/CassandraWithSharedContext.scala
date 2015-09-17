@@ -17,46 +17,47 @@
 package com.stratio.crossdata.sql.sources.cassandra
 
 import com.datastax.driver.core.{Cluster, Session}
+import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.scalatest.Suite
 
-trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefaultTestConstants {
+trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefaultTestConstants with Logging {
   this: Suite =>
 
-  var (cluster, session): (Option[Cluster], Option[Session]) = (None, None)
+  var clusterAndSession: Option[(Cluster, Session)] = None
   var isEnvironmentReady = false
-
 
   override protected def beforeAll() = {
     super.beforeAll()
 
     try {
 
-      val cassandraEnvironment = prepareEnvironment()
-      cluster = Some(cassandraEnvironment._1)
-      session = Some(cassandraEnvironment._2)
+      clusterAndSession = Some(prepareEnvironment())
 
       sql(
-        s"CREATE TEMPORARY TABLE $Table USING $SourceProvider OPTIONS " +
-          s"( keyspace '$Catalog'," +
-          s" table '$Table', " +
-          s" cluster '$ClusterName', " +
-          " pushdown \"true\", " +
-          s" spark_cassandra_connection_host '$CassandraHost')".stripMargin)
+        s"""|CREATE TEMPORARY TABLE $Table
+            |USING $SourceProvider
+            |OPTIONS (
+            |table '$Table',
+            |keyspace '$Catalog',
+            |cluster '$ClusterName',
+            |pushdown "true",
+            |spark_cassandra_connection_host '$CassandraHost'
+            |)
+      """.stripMargin.replaceAll("\n", " "))
 
     } catch {
-      case e: Throwable => ()
+      case e: Throwable => logError(e.getMessage)
     }
 
-    isEnvironmentReady = cluster.isDefined && session.isDefined
+    isEnvironmentReady = clusterAndSession.isDefined
   }
 
   override protected def afterAll() = {
     super.afterAll()
-    for {
-      clus <- cluster
-      sess <- session
-    } cleanEnvironment(clus, sess)
+
+    clusterAndSession.foreach { case (cluster, session) => cleanEnvironment(cluster, session) }
+
   }
 
   def prepareEnvironment(): (Cluster, Session) = {
