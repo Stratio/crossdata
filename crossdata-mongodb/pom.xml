@@ -46,6 +46,7 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-ng</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.stratio</groupId>
@@ -57,18 +58,6 @@
     <profiles>
         <profile>
             <id>crossdata-all</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.stratio.crossdata</groupId>
-                    <artifactId>crossdata-ng</artifactId>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>com.stratio</groupId>
-                    <artifactId>spark-mongodb-core</artifactId>
-                    <version>${mongodb.provider.version}</version>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -92,12 +81,10 @@
                             </execution>
                         </executions>
                     </plugin>
-
                 </plugins>
             </build>
         </profile>
     </profiles>
-
 
 </project>
 

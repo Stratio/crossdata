@@ -20,3 +20,6 @@ target/
 
 #hive ignores
 metastore_db/
+
+#crossdata ignores
+crossdata-scripts/spark-crossdata-distribution*
