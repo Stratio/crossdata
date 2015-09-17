@@ -40,7 +40,7 @@ class ExecutorActor(cluster: Cluster, xdContext: XDContext) extends Actor with A
         sender ! "Result OK"
       } catch {
         case re: RuntimeException => {
-          println("Runtime Exception: " + re.getMessage)
+          logger.info("Runtime Exception: " + re.getMessage)
           sender ! re.getMessage
         }
       }

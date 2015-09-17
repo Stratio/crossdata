@@ -35,6 +35,7 @@ object Driver extends DriverConfig {
 
 class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String]()) {
 
+  val ActorsPath="/user/receptionist"
   private lazy val logger = Driver.logger
 
   private val finalConfig = seedNodes match {
@@ -50,10 +51,10 @@ class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String](
     system.logConfiguration()
   }
 
-  private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(dir=>dir+"/user/receptionist")
+  private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(dir=>dir + ActorsPath )
 
   private val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
-  println("Initial contacts: " + initialContacts)
+  logger.debug("Initial contacts: " + initialContacts)
 
   val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
 
@@ -65,7 +66,7 @@ class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String](
 
   def send(s: String): String = {
     val result = retryPolitics.askRetry(proxyActor, s)
-    logger.info("(Driver) Result from server: " + result)
+    logger.info(" Result : " + result)
     result
   }
 
