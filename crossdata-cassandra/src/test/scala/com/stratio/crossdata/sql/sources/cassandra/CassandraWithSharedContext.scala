@@ -61,12 +61,12 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
 
   def prepareEnvironment(): (Cluster, Session) = {
     val (cluster, session) = createSession()
-    buildTable(session)
+    saveTestData(session)
     (cluster, session)
   }
 
   def cleanEnvironment(cluster: Cluster, session: Session) = {
-    cleanData(session)
+    cleanTestData(session)
     closeSession(cluster, session)
   }
 
@@ -76,7 +76,7 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
     (cluster, cluster.connect())
   }
 
-  private def buildTable(session: Session): Unit = {
+  private def saveTestData(session: Session): Unit = {
 
     session.execute(s"CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
     session.execute(s"CREATE TABLE $Catalog.$Table (id int PRIMARY KEY, age int,comment text, enrolled boolean, name text)")
@@ -88,7 +88,7 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
     }
   }
 
-  private def cleanData(session: Session): Unit = {
+  private def cleanTestData(session: Session): Unit = {
     session.execute(s"DROP KEYSPACE $Catalog")
   }
 

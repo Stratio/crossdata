@@ -54,17 +54,17 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
 
   def prepareEnvironment(): MongoClient = {
     val mongoClient = MongoClient(MongoHost, MongoPort)
-    populateTable(mongoClient)
+    saveTestData(mongoClient)
     mongoClient
   }
 
   def cleanEnvironment(mongoClient: MongoClient) = {
-    cleanData(mongoClient)
+    cleanTestData(mongoClient)
     mongoClient.close()
   }
 
 
-  private def populateTable(client: MongoClient): Unit = {
+  private def saveTestData(client: MongoClient): Unit = {
 
     val collection = client(Database)(Collection)
     for (a <- 1 to 10) {
@@ -79,7 +79,7 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
     }
   }
 
-  private def cleanData(client: MongoClient): Unit = {
+  private def cleanTestData(client: MongoClient): Unit = {
     val collection = client(Database)(Collection)
     collection.dropCollection()
   }
