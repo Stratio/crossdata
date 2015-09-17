@@ -14,9 +14,23 @@
  *  limitations under the License.
  */
 
-package com.stratio.crossdata.sql.sources.cassandra
+package com.stratio.crossdata.sql.sources.mongodb
 
-object CassandraColumnRole extends Enumeration {
-  type CassandraColumnRole = Value
-  val PartitionKey, ClusteringKey, Indexed, NonIndexed, Unknown = Value
+import org.apache.spark.sql.crossdata.ExecutionType._
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+@RunWith(classOf[JUnitRunner])
+class MongoConnectorIT extends MongoWithSharedContext {
+
+  "The Mongo connector" should "execute natively a select *" in {
+    assume(isEnvironmentReady, "MongoDB and Spark must be up and running")
+    val result = sql(s"SELECT * FROM $Collection ").collect(Native)
+    result should have length 10
+  }
 }
+
+
+
+
+

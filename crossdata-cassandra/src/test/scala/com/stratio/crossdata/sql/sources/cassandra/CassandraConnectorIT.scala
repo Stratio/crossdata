@@ -16,7 +16,21 @@
 
 package com.stratio.crossdata.sql.sources.cassandra
 
-object CassandraColumnRole extends Enumeration {
-  type CassandraColumnRole = Value
-  val PartitionKey, ClusteringKey, Indexed, NonIndexed, Unknown = Value
+import org.apache.spark.sql.crossdata.ExecutionType._
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+@RunWith(classOf[JUnitRunner])
+class CassandraConnectorIT extends CassandraWithSharedContext {
+
+  "The Cassandra connector" should "execute natively a select *" in {
+    assume(isEnvironmentReady, "Cassandra and Spark must be up and running")
+    val result = sql(s"SELECT * FROM $Table ").collect(Native)
+    result should have length 10
+  }
 }
+
+
+
+
+

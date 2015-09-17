@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 // scalastyle:on
+
 package org.apache.spark.sql.crossdata.hive.test
 
 import org.apache.spark.sql.crossdata.XDDataFrame

@@ -29,7 +29,7 @@ import org.apache.spark.{Logging, SparkContext}
  * and adds some features of the Crossdata system.
  * @param sc A [[SparkContext]].
  */
-class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
+class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging {
 
   /*
   val xdConfig: Config = ConfigFactory.load
