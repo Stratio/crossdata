@@ -62,13 +62,12 @@ class ServerActor(cluster: Cluster) extends Actor with ServerConfig {
       executorActorRef forward ExecuteQuery(query)
     }
     case c: ClusterDomainEvent => {
-      println("INFO: " + c)
+      logger.info("INFO: " + c)
     }
     case s: CurrentClusterState => {
-      println("INFO: " + s)
+      logger.info("INFO: " + s)
     }
     case a: Any => {
-      println("Error: " + a)
       logger.error("Unknown message received by ServerActor");
       //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
     }

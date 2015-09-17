@@ -20,6 +20,7 @@ import akka.actor.{Props, ActorRef, Actor}
 import akka.contrib.pattern.ClusterClient
 import com.stratio.crossdata.common.Message
 import com.stratio.crossdata.driver.Driver
+import org.apache.log4j.Logger
 
 object ProxyActor {
   val SERVER_PATH = "/user/crossdata-server"
@@ -31,15 +32,17 @@ object ProxyActor {
 
 class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
+  lazy val logger = Logger.getLogger(classOf[ProxyActor])
+
   override def receive: Receive = {
     case s: String => {
       clusterClientActor forward ClusterClient.Send(ProxyActor.SERVER_PATH, Message(s), false)
     }
     case m: Message => {
-      println("Result: " + m.query)
+      logger.debug("Result: " + m.query)
     }
     case a: Any => {
-      println("Unknown message: " + a)
+      logger.info("Unknown message: " + a)
     }
   }
 }
