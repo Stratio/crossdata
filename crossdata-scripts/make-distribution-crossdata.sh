@@ -7,21 +7,12 @@ function usage {
   echo "Tool for build binary distributions of Spark with the Stratio Crossdata Pluggins"
   echo "Example: ./make-distribution-crossdata.sh --profile crossdata-cassandra --skip-java-test -Dhadoop.version=2.4.0"
   echo ""
-  echo "--profile            Crossdata Build Profile, Default: crossdata-cassandra. Options: crossdata-core, crossdata-all, crossdata-hive, crossdata-cassandra"
-  echo "--sparkRepo          Github repository used to download Official Spark Distribution. Default: https://github.com/apache/spark.git"
-  echo "--sparkBranch        Github branch or tag used to build the Spark Distribution. Default: tags/v1.4.1"
-  echo ""
-  echo "[SPARK_BUILD_OPTIONS]"
-  echo "Spark's specific Build options."
-  echo "See Spark's \"Building Spark\" doc for correct Maven options at http://spark.apache.org/docs/latest/building-spark.html"
+  echo "--profile            Crossdata Build Profile, Default: crossdata-all. Options: crossdata-core, crossdata-all, crossdata-hive, crossdata-cassandra"
+  echo "--sparkDistibution   Spark Distribution Bynaries used to build The Crossdata  distribution "
+  echo "                     Default: http://apache.rediris.es/spark/spark-1.4.1/spark-1.4.1-bin-hadoop2.6.tgz"
   echo ""
   exit 1
 }
-
-if [ -z "$JAVA_HOME" ]; then
-    echo Error: JAVA_HOME is not set, cannot proceed.
-    exit 1
-fi
 
 # Keep all the arguments, then remove the XD specific ones and only keep the Spark arguments.
 SPARK_BUILD_OPTIONS="$@"
@@ -36,14 +27,9 @@ case $key in
     SPARK_BUILD_OPTIONS=${SPARK_BUILD_OPTIONS/"--profile $PROFILE"/}
     shift # past argument
     ;;
-    --sparkRepo)
+    --sparkDistribution)
     SPARK_REPO="$2"
-    SPARK_BUILD_OPTIONS=${SPARK_BUILD_OPTIONS/"--sparkRepo $SPARK_REPO"/}
-    shift # past argument
-    ;;
-    --sparkBranch)
-    SPARK_BRANCH="$2"
-    SPARK_BUILD_OPTIONS=${SPARK_BUILD_OPTIONS/"--sparkBranch $SPARK_BRANCH"/}
+    SPARK_BUILD_OPTIONS=${SPARK_BUILD_OPTIONS/"--sparkDistribution $SPARK_REPO"/}
     shift # past argument
     ;;
     --help)
@@ -58,31 +44,17 @@ done
 
 #Default Arguments
 if [ -z "$SPARK_REPO" ]; then
-    SPARK_REPO="https://github.com/apache/spark.git"
-fi
-
-if [ -z "$SPARK_BRANCH" ]; then
-    SPARK_BRANCH="tags/v1.4.1"
+    SPARK_DISTRIBUTION="http://apache.rediris.es/spark/spark-1.4.1/spark-1.4.1-bin-hadoop2.6.tgz"
 fi
 
 if [ -z "$PROFILE" ]; then
-    PROFILE="crossdata-cassandra"
-fi
-
-if [ -z "$SPARK_BUILD_OPTIONS" ]; then
-    SPARK_BUILD_OPTIONS="--skip-java-test -Dhadoop.version=2.4.0 -Pyarn -Phive -Pnetlib-lgpl -Pscala-2.10"
+    PROFILE="crossdata-all"
 fi
 
 TMPDIR=/tmp/stratio-crossdata-distribution
 
 rm -rf ${TMPDIR}
 mkdir -p ${TMPDIR}
-export JAVA_HOME=$JAVA_HOME
-export PATH=$JAVA_HOME/bin:$PATH
-
-export SCALA_HOME=$SCALA_HOME
-export PATH=$SCALA_HOME/bin:$PATH
-
 
 
 LOCAL_EDITOR=$(which vim)
@@ -95,8 +67,7 @@ if [ -z "$LOCAL_EDITOR" ]; then
     echo "Cannot find any command line editor, ChangeLog.txt won't be edited interactively"
 fi
 
-echo "SPARK_REPO: ${SPARK_REPO}"
-echo "SPARK_BRANCH: ${SPARK_BRANCH}"
+echo "SPARK_DISTRIBUTION: ${SPARK_DISTRIBUTION}"
 echo " >>> STRATIO CROSSDATA MAKE DISTRIBUTION <<< "
 
 LOCAL_DIR=`pwd`
@@ -146,37 +117,30 @@ chmod +x ${TMPDIR}/bin/stratio-xd-shell || { echo "Cannot modify stratio-xd-shel
 
 echo "################################################"
 echo "Creating Spark distribuition"
-echo "With this options $SPARK_BUILD_OPTIONS"
+echo "from this version $SPARK_DISTRIBUTION"
 echo "################################################"
 cd ${TMPDIR}
 
-STRATIOSPARKDIR=stratiospark
 
-git clone "$SPARK_REPO" ${STRATIOSPARKDIR} || { echo "Cannot clone Spark project from repository: ${SPARK_REPO}"; exit 1; }
+SPARK_DISTRIBUTION_FILE=$(basename "$SPARK_DISTRIBUTION")
+STRATIOSPARKDIR="${SPARK_DISTRIBUTION_FILE%.*}"
 
-cd ./${STRATIOSPARKDIR}/
-git checkout "$SPARK_BRANCH" || { echo "Cannot checkout branch: ${SPARK_BRANCH}"; exit 1; }
-
-
-
-
-#--hadoop 2.0.0-mr1-cdh4.4.0
-./make-distribution.sh $SPARK_BUILD_OPTIONS || { echo "Cannot make Spark distribution"; exit 1; }
-
-cd ..
+wget $SPARK_DISTRIBUTION || { echo "Cannot download Spark Distribution: ${SPARK_DISTRIBUTION}"; exit 1; }
+tar -xvf $SPARK_DISTRIBUTION_FILE || { echo "Cannot unzip Spark distribution $SPARK_DISTRIBUTION_FILE"; exit 1; }
+rm -f $SPARK_DISTRIBUTION_FILE
 
 DISTDIR=spark-crossdata-distribution-${RELEASE_VER}
 DISTFILENAME=${DISTDIR}.tgz
 
-cp ${TMPDIR}/lib/*.jar ${STRATIOSPARKDIR}/dist/lib/
-cp ${TMPDIR}/bin/stratio-xd-init.scala ${STRATIOSPARKDIR}/dist/bin/
-cp ${TMPDIR}/bin/stratio-xd-shell ${STRATIOSPARKDIR}/dist/bin/
+cp ${TMPDIR}/lib/*.jar ${STRATIOSPARKDIR}/lib/
+cp ${TMPDIR}/bin/stratio-xd-init.scala ${STRATIOSPARKDIR}/bin/
+cp ${TMPDIR}/bin/stratio-xd-shell ${STRATIOSPARKDIR}/bin/
 
-rm -f ${STRATIOSPARKDIR}/dist/lib/*-sources.jar
-rm -f ${STRATIOSPARKDIR}/dist/lib/*-javadoc.jar
-rm -f ${STRATIOSPARKDIR}/dist/lib/*-tests.jar
+rm -f ${STRATIOSPARKDIR}/lib/*-sources.jar
+rm -f ${STRATIOSPARKDIR}/lib/*-javadoc.jar
+rm -f ${STRATIOSPARKDIR}/lib/*-tests.jar
 
-mv ${STRATIOSPARKDIR}/dist/ ${DISTDIR}
+mv ${STRATIOSPARKDIR}/ ${DISTDIR}
 cp ${TMPDIR}/ChangeLog.txt ${DISTDIR}/
 
 echo "DISTFILENAME: ${DISTFILENAME}"
