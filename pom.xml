@@ -125,12 +125,13 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    <dependency>
-        <groupId>org.scala-lang</groupId>
-        <artifactId>scala-library</artifactId>
-        <version>${scala.version}</version>
-    </dependency>
+
     <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
         <!--TEST-->
         <dependency>
             <groupId>junit</groupId>
