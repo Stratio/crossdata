@@ -1,22 +1,22 @@
 package org.apache.spark.sql.crossdata
 
 import com.stratio.crossdata.sql.sources.NativeScan
+import com.stratio.crossdata.test.BaseXDTest
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.crossdata.XDDataFrame._
 import org.apache.spark.sql.sources.LogicalRelation
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
-import org.scalatest.FlatSpec
-
-import XDDataFrame._
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDDataFrameUtilsSpec extends FlatSpec {
+class XDDataFrameUtilsSpec extends BaseXDTest {
 
   val mockNativeRelation = new MockBaseRelation with NativeScan {
     override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
+
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = ???
   }
 

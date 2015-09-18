@@ -14,11 +14,6 @@ function usage {
   exit 1
 }
 
-if [ -z "$JAVA_HOME" ]; then
-    echo Error: JAVA_HOME is not set, cannot proceed.
-    exit 1
-fi
-
 # Keep all the arguments, then remove the XD specific ones and only keep the Spark arguments.
 SPARK_BUILD_OPTIONS="$@"
 
@@ -60,11 +55,6 @@ TMPDIR=/tmp/stratio-crossdata-distribution
 
 rm -rf ${TMPDIR}
 mkdir -p ${TMPDIR}
-export JAVA_HOME=$JAVA_HOME
-export PATH=$JAVA_HOME/bin:$PATH
-
-export SCALA_HOME=$SCALA_HOME
-export PATH=$SCALA_HOME/bin:$PATH
 
 
 LOCAL_EDITOR=$(which vim)

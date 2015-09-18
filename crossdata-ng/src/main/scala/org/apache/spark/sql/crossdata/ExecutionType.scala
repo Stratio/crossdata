@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-package com.stratio.crossdata.sql.sources.cassandra
+package org.apache.spark.sql.crossdata
 
-object CassandraColumnRole extends Enumeration {
-  type CassandraColumnRole = Value
-  val PartitionKey, ClusteringKey, Indexed, NonIndexed, Unknown = Value
+object ExecutionType extends Enumeration{
+  type ExecutionType = Value
+  val Default, Spark, Native, Metamodel = Value
 }

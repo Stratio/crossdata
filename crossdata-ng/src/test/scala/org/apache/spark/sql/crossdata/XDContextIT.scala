@@ -16,40 +16,38 @@
 
 package org.apache.spark.sql.crossdata
 
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
-import org.scalatest.{Matchers, FlatSpec}
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDContextIT extends FlatSpec with Matchers {
+class XDContextIT extends SharedXDContextTest {
 
-  private lazy val xctx = org.apache.spark.sql.crossdata.test.TestXDContext
 
   "A DefaultCatalog" should "be case sensitive" in {
-    val xdCatalog = xctx.catalog
+    val xdCatalog = ctx.catalog
     assert(xdCatalog.conf.caseSensitiveAnalysis === true)
   }
 
   "A XDContext" should "perform a collect with a collection" in {
 
-    import xctx.implicits._
-    val df = xctx.sparkContext.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
+    val df: DataFrame = xdContext.createDataFrame(ctx.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
     df.registerTempTable("records")
 
-    val result: Array[Row] = xctx.sql("SELECT * FROM records").collect()
+    val result: Array[Row] = ctx.sql("SELECT * FROM records").collect()
 
     result should have length 5
   }
 
   it must "return a XDDataFrame when executing a SQL query" in {
-    import xctx.implicits._
 
-    val df = xctx.sparkContext.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
+    val df: DataFrame = xdContext.createDataFrame(ctx.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
     df.registerTempTable("records")
 
-    val dataframe = xctx.sql("SELECT * FROM records")
-    dataframe shouldBe a [XDDataFrame]
+    val dataframe = ctx.sql("SELECT * FROM records")
+    dataframe shouldBe a[XDDataFrame]
   }
 
 }
