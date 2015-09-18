@@ -43,6 +43,7 @@ class RetryPolitics {
         Await.result(future.mapTo[String], waitTime.duration)
       } catch {
         case ex: Exception => {
+          logger.error(ex.getMessage)
           logger.info("Retry " + (retry + 1) + " timeout")
           askRetry(remoteActor, message, waitTime, retry + 1)
         }
