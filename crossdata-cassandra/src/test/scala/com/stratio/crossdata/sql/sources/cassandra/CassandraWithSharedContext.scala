@@ -80,12 +80,19 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
   private def saveTestData(session: Session): Unit = {
 
     session.execute(s"CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
-    session.execute(s"CREATE TABLE $Catalog.$Table (id int PRIMARY KEY, age int,comment text, enrolled boolean, name text)")
-
+    session.execute(s"CREATE TABLE $Catalog.$Table (id int, age int,comment text, enrolled boolean, name text, PRIMARY KEY ((id), age, comment))")
+    session.execute( s"""
+        |CREATE CUSTOM INDEX student_index ON $Catalog.$Table (name)
+        |USING 'com.stratio.cassandra.lucene.Index'
+        |WITH OPTIONS = {
+        | 'refresh_seconds' : '1',
+        | 'schema' : '{ fields : {comment  : {type : "text", analyzer : "english"}} }'
+        |}
+      """.stripMargin.replaceAll("\n", " "))
 
     for (a <- 1 to 10) {
-      session.execute("INSERT INTO " + Catalog + "." + Table + " (id, age, comment, enrolled, name) VALUES " +
-        "(" + a + ", " + (10 + a) + ", 'Comment " + a + "', " + (a % 2 == 0) + ", 'Name " + a + "')")
+      session.execute("INSERT INTO " + Catalog + "." + Table + " (id, age, comment, enrolled) VALUES " +
+        "(" + a + ", " + (10 + a) + ", 'Comment " + a + "', " + (a % 2 == 0) + ")")
     }
   }
 
@@ -96,6 +103,10 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
   private def closeSession(cluster: Cluster, session: Session): Unit = {
     session.close()
     cluster.close()
+  }
+
+  lazy val assumeEnvironmentIsUpAndRunning = {
+    assume(isEnvironmentReady, "Cassandra and Spark must be up and running")
   }
 
 }
