@@ -19,6 +19,7 @@ package com.stratio.crossdata.sql.sources
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.types.StructType
 
 /**
  * A BaseRelation that can execute the whole logical plan without running the query
@@ -43,4 +44,25 @@ sealed trait PushDownable {
    * @return whether the logical step within the entire logical plan is supported
    */
   def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean
+}
+
+/**
+ * Interface including data source operations for listing and describing tables
+ * at a data source.
+ *
+ */
+@DeveloperApi
+trait TableInventory {
+
+  import TableInventory._
+
+  def inventoryItem2optionsMap(item: Table): Map[String, String]
+
+  def listTables: Seq[Table]
+  //TODO: Add operation for describing a concrete table.
+}
+
+object TableInventory {
+  //Table description
+  case class Table(val database: String, val tableName: String, schema: StructType)
 }
