@@ -16,17 +16,19 @@
 
 package org.apache.spark.sql.crossdata
 
-import java.io._
+
+import java.sql.{Connection, DriverManager}
 import java.util
 
 import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
 import org.apache.spark.sql.catalyst.analysis.{OverrideCatalog, SimpleCatalog}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.execution.LogicalRDD
-import org.mapdb.{DB, DBMaker}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.sources.CreateTableUsing
+import org.json4s.NoTypeHints
+import org.json4s.jackson.Serialization
+import org.json4s.jackson.Serialization._
 
-import scala.reflect.io.{Directory, Path}
 
 /**
  * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
@@ -38,13 +40,21 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
                      val args: java.util.List[String] = new util.ArrayList[String]())
   extends SimpleCatalog(conf) with OverrideCatalog with XDCatalog with Logging {
 
+  implicit val formats = Serialization.formats(NoTypeHints)
+
+  val url = "jdbc:mysql://localhost:8889/crossdata"
+  val driver = "com.mysql.jdbc.Driver"
+  val username = "root"
+  val password = "stratio"
   private val StringSeparator: String = "."
+  var connection: Connection = _
 
   private lazy val path: Option[String] = args match {
     case e if e.isEmpty => None
     case e => Some(e.get(0))
   }
 
+  /*
   private lazy val homeDir: String = System.getProperty("user.home")
 
   private lazy val dir: Directory =
@@ -59,14 +69,22 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
   private val db: DB = DBMaker.newFileDB(dbFile).closeOnJvmShutdown.make
 
   private val pTables: java.util.Map[String, LogicalPlan] = db.getHashMap("catalog")
+*/
 
   /**
    * @inheritdoc
    */
   override def open(args: Any*): Unit = {
     logInfo("XDCatalog: open")
-    import collection.JavaConversions._
-    pTables.map(e => (e._1.split("\\.").toSeq, e._2)).foreach(e => super.registerTable(e._1, e._2))
+
+    try {
+      Class.forName(driver)
+      connection = DriverManager.getConnection(url, username, password)
+    } catch {
+      case e: Exception => e.printStackTrace
+    }
+    //Register all tables of crossdata if it is necessary
+    //pTables.map(e => (e._1.split("\\.").toSeq, e._2)).foreach(e => super.registerTable(e._1, e._2))
   }
 
   /**
@@ -75,8 +93,8 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
   override def unregisterAllTables(): Unit = {
     super.unregisterAllTables()
     logInfo("XDCatalog: unregisterAllTables")
-    pTables.clear()
-    db.commit()
+    val statement = connection.createStatement
+    statement.executeQuery(s"DROP TABLE crossdataTables")
   }
 
   /**
@@ -86,8 +104,8 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
     super.unregisterTable(tableIdentifier)
     logInfo("XDCatalog: unregisterTable")
     val tableName: String = tableIdentifier.mkString(StringSeparator)
-    pTables.remove(tableName)
-    db.commit()
+    val statement = connection.createStatement
+    statement.executeQuery(s"DELETE FROM crossdataTable WHERE tableName='$tableName'")
   }
 
   /**
@@ -96,10 +114,24 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
   override def registerTable(tableIdentifier: Seq[String], plan: LogicalPlan): Unit = {
     super.registerTable(tableIdentifier, plan)
     logInfo("XDCatalog: registerTable")
-    if(!plan.isInstanceOf[LogicalRDD]) {
-      pTables.put(tableIdentifier.mkString(StringSeparator), plan)
-      db.commit()
+
+    plan match {
+      case createTable: CreateTableUsing => {
+        val tableSchema = write(createTable.schema)
+        val tableName = createTable.tableName
+        val tableOptions = write(createTable.options)
+        val statement = connection.createStatement
+        statement.executeQuery(
+          s"INSERT INTO crossdataTables (tableName, schema, options) VALUES ($tableName,$tableSchema,$tableOptions)")
+      }
+      case _ => logError("Register Table error: Only Create Table Using command allowed")
     }
+
+
+
+    //pTables.put(tableIdentifier.mkString(StringSeparator), plan)
+    //db.commit()
+
   }
 
   /**
@@ -115,6 +147,6 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
    */
   override def close(): Unit = {
     logInfo("XDCatalog: close")
-    db.close()
+    connection.close
   }
 }
