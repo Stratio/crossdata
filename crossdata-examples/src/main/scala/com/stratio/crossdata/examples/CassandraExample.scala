@@ -37,12 +37,16 @@ object CassandraExample extends App with CassandraDefaultConstants {
   withCrossdataContext { xdContext =>
 
     xdContext.sql(
-      s"CREATE TEMPORARY TABLE $Table USING $SourceProvider OPTIONS " +
-        s"( keyspace '$Catalog'," +
-        s" table '$Table', " +
-        s" cluster '$ClusterName', " +
-        " pushdown \"true\", " +
-        s" spark_cassandra_connection_host '$CassandraHost')".stripMargin)
+      s"""|CREATE TEMPORARY TABLE $Table
+          |USING $SourceProvider
+          |OPTIONS (
+          |table '$Table',
+          |keyspace '$Catalog',
+          |cluster '$ClusterName',
+          |pushdown "true",
+          |spark_cassandra_connection_host '$CassandraHost'
+          |)
+      """.stripMargin.replaceAll("\n", " "))
 
     // Native
     xdContext.sql(s"SELECT comment as b FROM $Table WHERE id = 1").show(5)

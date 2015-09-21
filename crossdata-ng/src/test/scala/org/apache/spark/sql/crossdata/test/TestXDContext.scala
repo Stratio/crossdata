@@ -16,43 +16,32 @@
  * limitations under the License.
  */
 // scalastyle:on
+
 package org.apache.spark.sql.crossdata.test
 
-import org.apache.spark.sql.crossdata.{XDDataFrame, XDContext}
-
-import scala.language.implicitConversions
-
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.{DataFrame, SQLConf}
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.{SQLConf, SQLContext}
 
-/** A SQLContext that can be used for local testing. */
-class LocalXDContext
-  extends XDContext(
-    new SparkContext("local[2]", "TestSQLContext", new SparkConf()
-      .set("spark.sql.testkey", "true")
-      // SPARK-8910
-      .set("spark.ui.enabled", "false"))) {
 
-  override protected[sql] def createSession(): SQLSession = {
-    new this.SQLSession()
+/**
+ * A special [[SQLContext]] prepared for testing.
+ */
+private[sql] class TestXDContext(sc: SparkContext) extends XDContext(sc) { self =>
+
+  def this() {
+    this(new SparkContext("local[2]", "test-xd-context",
+      new SparkConf().set("spark.sql.testkey", "true")))
   }
+
+  // Use fewer partitions to speed up testing
+  protected[sql] override def createSession(): SQLSession = new this.SQLSession()
+
 
   protected[sql] class SQLSession extends super.SQLSession {
     protected[sql] override lazy val conf: SQLConf = new SQLConf {
-      /** Fewer partitions to speed up testing. */
-      override def numShufflePartitions: Int = 5
+      override def numShufflePartitions: Int = 3
     }
   }
 
-  /**
-   * Turn a logical plan into a [[DataFrame]]. This should be removed once we have an easier way to
-   * construct [[DataFrame]] directly out of local data without relying on implicits.
-   */
-  protected[sql] implicit def logicalPlanToSparkQuery(plan: LogicalPlan): DataFrame = {
-    XDDataFrame(this, plan)
-  }
-
 }
-
-object TestXDContext extends LocalXDContext

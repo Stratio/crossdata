@@ -28,7 +28,7 @@ import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.sources
-import org.apache.spark.sql.sources.{Filter => SourceFilter, CatalystToCrossdataAdapter}
+import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.UTF8String
 
 
@@ -89,7 +89,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
 
   def validatedNativePlan: Option[(Array[ColumnName], Array[SourceFilter], Option[Int])] = {
-    lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num}
+    lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
     def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter], Boolean) = {
       lplan match {
@@ -100,7 +100,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
     val (projects, filters, filtersIgnored) = findProjectsFilters(logicalPlan)
 
-    if (filtersIgnored || ! checkNativeFilters(filters)) {
+    if (filtersIgnored || !checkNativeFilters(filters)) {
       None
     } else {
       Some(projects, filters, limit)
@@ -110,13 +110,6 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
 
   private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = {
-    // TODO test filter on PK (=) => filter on all partition keys
-    // TODO test filter on PK (IN) => last column of partition key
-    // TODO test filter on PKs and CKs(=) => filter on all pks and cks
-    // TODO test filter on PKs (=) and CKs(any) 
-    // TODO test filter only on CKs => ALLOW FILTERING
-    // TODO test filter on secondaryIndex => equal operator
-    // TODO test filter on secondary + PK (=) + CK(any)
 
     val groupedFilters = filters.groupBy {
       case sources.EqualTo(attribute, _) => columnRole(attribute)
@@ -143,7 +136,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     def checksSecondaryIndexesFilters: Boolean = {
       if (groupedFilters.contains(Indexed)) {
         //Secondary indexes => equals are allowed
-        groupedFilters.get(ClusteringKey).get.forall {
+        groupedFilters.get(Indexed).get.forall {
           case sources.EqualTo(_, _) => true
           case _ => false
         }

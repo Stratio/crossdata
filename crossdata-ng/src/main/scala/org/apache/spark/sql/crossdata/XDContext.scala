@@ -22,8 +22,7 @@ package org.apache.spark.sql.crossdata
 import java.lang.reflect.Constructor
 import java.util.concurrent.atomic.AtomicReference
 
-import com.typesafe.config.{Config, ConfigFactory}
-import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
+import org.apache.spark.sql.sources.crossdata.XDDdlParser
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{Logging, SparkContext}
 
@@ -32,7 +31,7 @@ import org.apache.spark.{Logging, SparkContext}
  * and adds some features of the Crossdata system.
  * @param sc A [[SparkContext]].
  */
-class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
+class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging {
 
 
   val xdConfig: Config = ConfigFactory.load
@@ -52,6 +51,8 @@ class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
 
   catalog.open()
 
+
+  protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_))
 
   override def sql(sqlText: String): DataFrame = {
     XDDataFrame(this, parseSql(sqlText))

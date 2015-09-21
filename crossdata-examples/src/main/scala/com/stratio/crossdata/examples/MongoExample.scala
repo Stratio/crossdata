@@ -38,11 +38,17 @@ object MongoExample extends App with MongoDefaultConstants {
   withCrossdataContext { xdContext =>
 
     // TODO fix SPARKSQL bug => comment identifier is not supported
+
     xdContext.sql(
-      s"CREATE TEMPORARY TABLE $Collection (id STRING, age INT, description STRING, enrolled BOOLEAN, name STRING) USING $SourceProvider OPTIONS " +
-        s"( host '$MongoHost:$MongoPort'," +
-        s" database '$Database', " +
-        s" collection '$Collection')".stripMargin)
+      s"""|CREATE TEMPORARY TABLE $Collection
+          |(id STRING, age INT, description STRING, enrolled BOOLEAN, name STRING)
+          |USING $SourceProvider
+          |OPTIONS (
+          |host '$MongoHost:$MongoPort',
+          |database '$Database',
+          |collection '$Collection'
+          |)
+       """.stripMargin.replaceAll("\n", " "))
 
     // Native
     //xdContext.sql(s"SELECT description as b FROM $Collection WHERE id = 1").show(5)

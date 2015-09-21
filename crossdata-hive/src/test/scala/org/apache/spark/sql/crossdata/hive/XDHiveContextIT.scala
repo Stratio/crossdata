@@ -16,14 +16,14 @@
 
 package org.apache.spark.sql.crossdata.hive
 
+import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.XDDataFrame
 import org.junit.runner.RunWith
-import org.scalatest.{Matchers, BeforeAndAfterAll, FlatSpec}
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDHiveContextIT extends FlatSpec with Matchers {
+class XDHiveContextIT extends BaseXDTest {
 
   private lazy val xctx = org.apache.spark.sql.crossdata.hive.test.TestXDHiveContext
 
