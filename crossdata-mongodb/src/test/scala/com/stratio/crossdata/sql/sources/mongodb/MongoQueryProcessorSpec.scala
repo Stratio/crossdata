@@ -114,6 +114,21 @@ class MongoQueryProcessorSpec extends BaseXDTest {
 
   }
 
+  it should "build a query with an IS NOT NULL clause" in {
+    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(IsNotNull(ColumnAge)))
+    val filterSet = filters.keySet
+
+    requiredColumns.keySet should contain(ColumnId)
+    requiredColumns.get(ColumnId) should be (1)
+    requiredColumns.get(ObjectId) should be (0)
+
+    filterSet should have size 1
+    filters.get(ColumnAge) shouldBe a [DBObject]
+
+    filters.get(ColumnAge).asInstanceOf[DBObject].get(QueryOperators.NE) shouldBe (null)
+
+  }
+
   it should "build a query with an AND(v1 > x <= v2)" in {
     val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(And(GreaterThan(ColumnAge, ValueAge), LessThanOrEqual(ColumnAge, ValueAge2))))
     val filterSet = filters.keySet
