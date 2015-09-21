@@ -17,17 +17,119 @@
 package com.stratio.crossdata.sql.sources.cassandra
 
 import org.apache.spark.sql.crossdata.ExecutionType._
+import org.apache.spark.sql.crossdata.exceptions.{CrossdataException, NativeExecutionException}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class CassandraConnectorIT extends CassandraWithSharedContext {
 
-  "The Cassandra connector" should "execute natively a select *" in {
-    assume(isEnvironmentReady, "Cassandra and Spark must be up and running")
+  // PRIMARY KEY id
+  // CLUSTERING KEY age, comment
+  // DEFAULT enrolled
+  // SECONDARY_INDEX name
+
+  "The Cassandra connector" should "execute natively a (SELECT *)" in {
+    assumeEnvironmentIsUpAndRunning
+
     val result = sql(s"SELECT * FROM $Table ").collect(Native)
     result should have length 10
+    result(0) should have length 5
   }
+
+  "The Cassandra connector" should "execute natively a (SELECT column)" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val result = sql(s"SELECT id FROM $Table ").collect(Native)
+    result should have length 10
+    result(0) should have length 1
+  }
+
+  it should "execute natively a (SELECT * ... WHERE PK = _ )" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val result = sql(s"SELECT * FROM $Table WHERE id = 1").collect(Native)
+    result should have length 1
+  }
+
+  it should "execute natively a (SELECT * ... WHERE LAST_PK_COLUMN IN (...) )" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val result = sql(s"SELECT * FROM $Table WHERE id IN (1,5,9)").collect(Native)
+    result should have length 3
+  }
+
+  it should "execute natively a (SELECT * ...  WHERE CK._1 = _ AND CK._2 = _)" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val result = sql(s"SELECT * FROM $Table WHERE age = 13 AND comment = 'Comment 3' ").collect(Native)
+    result should have length 1
+  }
+
+  it should "execute natively a (SELECT * ...  WHERE PK = _ AND CK._1 = _ AND CK._2 = _)" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val result = sql(s"SELECT * FROM $Table WHERE id = 3 AND age = 13 AND comment = 'Comment 3' ").collect(Native)
+    result should have length 1
+  }
+
+  it should "execute natively a (SELECT * ...  WHERE LUCENE_SEC_INDEX = _ )" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val result = sql(
+      s"""
+         |SELECT * FROM $Table
+         |WHERE name =
+         |'{ filter  :
+         |  {type:"fuzzy", field:"comment", value:"Komment"}
+         |}'
+         """.stripMargin.replaceAll("\n", " ")).collect(Native)
+    result should have length 10
+  }
+
+
+  // NOT SUPPORTED FILTERS
+
+  it should "not execute natively a (SELECT * ...  WHERE LUCENE_SEC_INDEX < _ )" in {
+    assumeEnvironmentIsUpAndRunning
+
+    the [CrossdataException] thrownBy {
+      sql(s"""
+         |SELECT * FROM $Table
+          |WHERE name >
+          |'{ filter  :
+          |  {type:"fuzzy", field:"comment", value:"Komment"}
+          |}'
+         """.stripMargin.replaceAll("\n", " ")).collect(Native)
+    } should have message "The operation cannot be executed without Spark"
+  }
+
+  it should "not execute natively a (SELECT * ...  WHERE DEFAULT_COLUM = _ )" in {
+    assumeEnvironmentIsUpAndRunning
+
+    the [CrossdataException] thrownBy {
+      sql(s"SELECT * FROM $Table WHERE enrolled = 'true'").collect(Native)
+    } should have message "The operation cannot be executed without Spark"
+  }
+
+  it should "not execute natively a (SELECT * ...  WHERE PK > _ )" in {
+    assumeEnvironmentIsUpAndRunning
+
+    the [CrossdataException] thrownBy {
+      sql(s"SELECT * FROM $Table WHERE id > 3").collect(Native)
+    } should have message "The operation cannot be executed without Spark"
+  }
+
+  it should "not execute natively a (SELECT * ...  ORDER BY _ )" in {
+    assumeEnvironmentIsUpAndRunning
+
+    the [CrossdataException] thrownBy {
+      sql(s"SELECT * FROM $Table ORDER BY age").collect(Native)
+    } should have message "The operation cannot be executed without Spark"
+  }
+
+  // TODO test filter on PKs (=) and CKs(any) (right -> left)
+
 }
 
 
