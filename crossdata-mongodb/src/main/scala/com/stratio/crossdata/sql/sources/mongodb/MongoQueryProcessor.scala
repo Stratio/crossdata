@@ -60,7 +60,7 @@ object MongoQueryProcessor {
       case sources.IsNull(attribute) =>
         queryBuilder.put(attribute).is(null)
       case sources.IsNotNull(attribute) =>
-        queryBuilder.put(attribute).ne(null)
+        queryBuilder.put(attribute).notEquals(null)
       case sources.And(leftFilter, rightFilter) =>
         queryBuilder.and(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
       case sources.Or(leftFilter, rightFilter) =>
