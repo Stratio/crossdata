@@ -17,7 +17,7 @@
 package com.stratio.crossdata.sql.sources
 
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{SQLContext, Row}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.types.StructType
 
@@ -56,13 +56,19 @@ trait TableInventory {
 
   import TableInventory._
 
+  /**
+   *
+   * @param item Table description case class instance
+   * @return A concrete (for a given connector) translation of the high level table description
+   *         to a low-level option map.
+   */
   def inventoryItem2optionsMap(item: Table): Map[String, String]
 
-  def listTables: Seq[Table]
+  def listTables(context: SQLContext, options: Map[String, String]): Seq[Table]
   //TODO: Add operation for describing a concrete table.
 }
 
 object TableInventory {
   //Table description
-  case class Table(val database: String, val tableName: String, schema: StructType)
+  case class Table(database: String, tableName: String, clusterName: String, schema: StructType)
 }
