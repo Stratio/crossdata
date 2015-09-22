@@ -1,6 +1,3 @@
-import com.stratio.crossdata.driver.Driver
-import org.scalatest.{FlatSpec, Matchers}
-
 /*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
@@ -17,6 +14,8 @@ import org.scalatest.{FlatSpec, Matchers}
  *  limitations under the License.
  */
 
+import com.stratio.crossdata.driver.Driver
+import org.scalatest.{FlatSpec, Matchers}
 class DriverIT extends FlatSpec with Matchers {
 
   "A driver initilization " should " be Ok" in {

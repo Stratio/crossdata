@@ -20,7 +20,6 @@ import java.util
 
 import akka.actor.{ActorSelection, ActorSystem}
 import akka.contrib.pattern.ClusterClient
-import com.stratio.crossdata.common.Message
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.utils.RetryPolitics
@@ -51,18 +50,16 @@ class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String](
     system.logConfiguration()
   }
 
-  private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(dir=>dir + ActorsPath )
+  private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(_ + ActorsPath )
 
-  private val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
+  private val initialContacts: Set[ActorSelection] = contactPoints.map(system.actorSelection(_)).toSet
   logger.debug("Initial contacts: " + initialContacts)
 
   val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
 
   val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, this), "proxy-actor")
 
-  val retryPolitics: RetryPolitics = {
-    new RetryPolitics
-  }
+  val retryPolitics: RetryPolitics = new RetryPolitics
 
   def send(s: String): String = {
     val result = retryPolitics.askRetry(proxyActor, s)

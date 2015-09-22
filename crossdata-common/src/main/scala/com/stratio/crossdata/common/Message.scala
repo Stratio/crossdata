@@ -16,5 +16,5 @@
 
 package com.stratio.crossdata.common
 
-case class Message(query: String)
-case class ExecuteQuery(query:String)
+case class SQLCommand(query: String)
+

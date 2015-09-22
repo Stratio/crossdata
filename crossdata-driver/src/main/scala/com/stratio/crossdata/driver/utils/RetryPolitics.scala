@@ -32,23 +32,17 @@ class RetryPolitics {
   def askRetry(remoteActor: ActorRef,
                message: AnyRef,
                waitTime: Timeout = Timeout(10, TimeUnit.SECONDS),
-               retry: Int = 0):
-  String = {
-    if (retry == retryTimes) {
-      return "Not found answer. After " + retry + " retries, timeout was exceed."
-    } else {
-      try {
-        val future = remoteActor.ask(message)(waitTime)
-        logger.info("Sending query...")
-        Await.result(future.mapTo[String], waitTime.duration)
-      } catch {
-        case ex: Exception => {
-          logger.error(ex.getMessage)
-          logger.info("Retry " + (retry + 1) + " timeout")
-          askRetry(remoteActor, message, waitTime, retry + 1)
-        }
+               retry: Int = 0): String =
+    if (retry == retryTimes) s"Not found answer. After $retry + retries, timeout was exceed."
+    else try {
+      val future = remoteActor.ask(message)(waitTime)
+      logger.info("Sending query...")
+      Await.result(future.mapTo[String], waitTime.duration)
+    } catch {
+      case ex: Exception => {
+        logger.error(ex.getMessage)
+        logger.info(s"Retry ${retry + 1} timeout")
+        askRetry(remoteActor, message, waitTime, retry + 1)
       }
     }
-  }
-
 }

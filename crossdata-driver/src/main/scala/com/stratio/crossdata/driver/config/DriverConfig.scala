@@ -16,9 +16,7 @@
 
 package com.stratio.crossdata.driver.config
 
-import java.io.File
-
-import com.typesafe.config.{ConfigFactory, Config}
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 
 object DriverConfig {
@@ -34,22 +32,14 @@ trait DriverConfig {
     val defaultConfig = ConfigFactory.load(DriverConfig.DRIVER_CONFIG_FILE).getConfig(DriverConfig.PARENT_CONFIG_NAME)
     val configResource = defaultConfig.getString(DriverConfig.DRIVER_CONFIG_RESOURCE)
 
-    val mergedConfig = configResource match {
-      case x if !x.isEmpty => {
-        val resource = DriverConfig.getClass.getClassLoader.getResource(configResource)
-        resource match {
-          case null => {
-            logger.warn("User file '" + configResource + "' haven't been found in the classpath")
-            defaultConfig
-          }
-          case _ => {
-            val userConfig = ConfigFactory.parseResources(configResource).getConfig(DriverConfig.PARENT_CONFIG_NAME)
-            userConfig.withFallback(defaultConfig)
-          }
-        }
-      }
-      case _ => defaultConfig
-    }
+    val mergedConfig = Some(configResource) filter { config =>
+      val notFound = config.isEmpty || DriverConfig.getClass.getClassLoader.getResource(config) == null
+      if (notFound) logger.warn(s"User file '$configResource' haven't been found in the classpath")
+      !notFound
+    } map {
+      ConfigFactory.parseResources(_).getConfig(DriverConfig.PARENT_CONFIG_NAME) withFallback defaultConfig
+    } getOrElse defaultConfig
+
 
     ConfigFactory.load(mergedConfig)
 
