@@ -140,7 +140,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
       toStructField(ColumnDef(col,role))
     }
 
-    val pkCols = tMeta.getPrimaryKey.toSet.map(_.getName)
+    val pkCols = tMeta.getPrimaryKey.toSet[ColumnMetadata].map(_.getName)
     val clusteringCols = tMeta.getClusteringColumns.toList.map(_.getName)
     val cols = tMeta.getColumns.map(col2sfield(_, pkCols, clusteringCols))
 
@@ -150,16 +150,11 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
       StructType(cols.toArray)
     )
   }
-
-  private def withinCluster[T](clusterName: String)(f: => T): T = {
-    implicit val cName = clusterName
-    f
-  }
-
+  
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
     //TODO: Check how errors are reported
-    val clusterName: String = options.getOrElse("cluster", {sys.error("""Missing option: "Cluster""""); ""})
+    implicit val clusterName: String = options.getOrElse("cluster", {sys.error("""Missing option: "Cluster""""); ""})
 
     val cfg: SparkConf = context.sparkContext.getConf.clone()
 
@@ -172,9 +167,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
     connector.withSessionDo { s =>
       val tablesIt: Iterable[Table] = for(
         ksMeta: KeyspaceMetadata <- s.getCluster.getMetadata.getKeyspaces;
-        tMeta: TableMetadata <- ksMeta.getTables) yield withinCluster(clusterName) {
-          tableMeta2Table(tMeta)
-        }
+        tMeta: TableMetadata <- ksMeta.getTables) yield tableMeta2Table(tMeta)
       tablesIt.toSeq
     }
   }
