@@ -19,17 +19,19 @@ private [crossdata] case class ImportCatalogUsingWithOptions(provider: String, o
     //Get a reference to the inventory relation.
     val resolved = ResolvedDataSource(sqlContext, None, Array.empty[String], provider, opts)
     val inventoryRelation = resolved.relation.asInstanceOf[TableInventory] //As inventory provider
+    //TODO: Check error management. It may happen that the provided datasource doesn't support inventory
     val providerRelation = resolved.relation.asInstanceOf[RelationProvider] //As relation provider
 
     //Obtain the list of tables and persist it (if persistence implemented)
-    val tables = inventoryRelation.listTables
+    //TODO: Check error management. It may happen that a cluster name has not been provided
+    val tables = inventoryRelation.listTables(sqlContext, opts)
     persistenceStep(tables)
 
     //Register the source tables in the catalog
-    tables foreach { t =>
+    tables foreach { t: TableInventory.Table =>
       sqlContext.
         catalog.registerTable(
-          t.tableName::Nil,
+          t.database::t.tableName::Nil,
           LogicalRelation(providerRelation.createRelation(
             sqlContext,
             inventoryRelation.inventoryItem2optionsMap(t))

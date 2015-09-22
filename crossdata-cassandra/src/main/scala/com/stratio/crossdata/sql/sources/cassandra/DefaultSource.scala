@@ -19,17 +19,24 @@
 
 package com.stratio.crossdata.sql.sources.cassandra
 
-import com.datastax.spark.connector.cql.CassandraConnectorConf
+import com.datastax.driver.core.{ColumnMetadata, TableMetadata, KeyspaceMetadata}
+import com.datastax.spark.connector.cql._
 import com.datastax.spark.connector.rdd.ReadConf
 import com.datastax.spark.connector.writer.WriteConf
+import com.stratio.crossdata.sql.sources.TableInventory
+import com.stratio.crossdata.sql.sources.TableInventory.Table
 import com.stratio.crossdata.sql.sources.cassandra.DefaultSource._
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.cassandra.{CassandraSourceOptions, CassandraSourceRelation, CassandraXDSourceRelation, TableRef, DefaultSource => CassandraConnectorDS}
+import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
 import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{StructField, StructType}
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 import scala.collection.mutable
+import scala.collection.JavaConversions.iterableAsScalaIterable
+
+import org.apache.spark.sql.cassandra.DataTypeConverter._
 
 
 /**
@@ -51,7 +58,7 @@ import scala.collection.mutable
  *       spark_cassandra_connection_timeout_ms "1000"
  *      )
  */
-class DefaultSource extends CassandraConnectorDS {
+class DefaultSource extends CassandraConnectorDS with TableInventory {
 
   /**
    * Creates a new relation for a cassandra table.
@@ -119,6 +126,65 @@ class DefaultSource extends CassandraConnectorDS {
 
     CassandraXDSourceRelation(tableRef, sqlContext, options)
   }
+
+
+
+  private def tableMeta2Table(tMeta: TableMetadata)(implicit clusterName: String): Table = {
+
+    def col2sfield(col: ColumnMetadata, pks: Set[String], clusts: List[String]): StructField = {
+      val role: ColumnRole = (pks contains col.getName, clusts indexOf col.getName) match {
+        case (false, -1) => RegularColumn
+        case (true, -1) => PartitionKeyColumn
+        case (_, index) => ClusteringColumn(index) //TODO: Check whether this index has any sense
+      }
+      toStructField(ColumnDef(col,role))
+    }
+
+    val pkCols = tMeta.getPrimaryKey.toSet.map(_.getName)
+    val clusteringCols = tMeta.getClusteringColumns.toList.map(_.getName)
+    val cols = tMeta.getColumns.map(col2sfield(_, pkCols, clusteringCols))
+
+    Table(
+      tMeta.getKeyspace.getName,
+      tMeta.getName, clusterName,
+      StructType(cols.toArray)
+    )
+  }
+
+  private def withinCluster[T](clusterName: String)(f: => T): T = {
+    implicit val cName = clusterName
+    f
+  }
+
+  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
+
+    //TODO: Check how errors are reported
+    val clusterName: String = options.getOrElse("cluster", {sys.error("""Missing option: "Cluster""""); ""})
+
+    val cfg: SparkConf = context.sparkContext.getConf.clone()
+
+    for (prop <- DefaultSource.confProperties;
+         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop"))
+      cfg.set(prop, clusterLevelValue)
+
+    val connector = CassandraConnector(cfg)
+
+    connector.withSessionDo { s =>
+      val tablesIt: Iterable[Table] = for(
+        ksMeta: KeyspaceMetadata <- s.getCluster.getMetadata.getKeyspaces;
+        tMeta: TableMetadata <- ksMeta.getTables) yield withinCluster(clusterName) {
+          tableMeta2Table(tMeta)
+        }
+      tablesIt.toSeq
+    }
+  }
+
+  override def inventoryItem2optionsMap(item: Table): Map[String, String] = Map(
+    CassandraDataSourceTableNameProperty -> item.tableName,
+    CassandraDataSourceKeyspaceNameProperty -> item.database,
+    CassandraDataSourceClusterNameProperty -> item.clusterName
+  )
+
 }
 
 object DefaultSource {
