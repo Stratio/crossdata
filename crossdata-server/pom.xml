@@ -23,31 +23,6 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-ng</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>akka-remote_2.10</artifactId>
-                    <groupId>org.spark-project.akka</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>akka-slf4j_2.10</artifactId>
-                    <groupId>org.spark-project.akka</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_2.10</artifactId>
-            <version>${akka.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>config</artifactId>
-                    <groupId>com.typesafe</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>scala-library</artifactId>
-                    <groupId>org.scala-lang</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -58,42 +33,16 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-contrib_2.10</artifactId>
             <version>${akka.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>scala-library</artifactId>
-                    <groupId>org.scala-lang</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>leveldbjni</artifactId>
-                    <groupId>org.fusesource.leveldbjni</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-testkit_2.10</artifactId>
             <version>${akka.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>scala-library</artifactId>
-                    <groupId>org.scala-lang</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-slf4j_2.10</artifactId>
             <version>${akka.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>scala-library</artifactId>
-                    <groupId>org.scala-lang</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-daemon</groupId>
@@ -104,11 +53,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.typesafe</groupId>
-            <artifactId>config</artifactId>
-            <version>${config.version}</version>
         </dependency>
     </dependencies>
 

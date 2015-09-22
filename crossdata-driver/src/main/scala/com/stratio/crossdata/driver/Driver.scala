@@ -23,10 +23,10 @@ import akka.contrib.pattern.ClusterClient
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.utils.RetryPolitics
-import com.typesafe.config.{ConfigValueFactory}
+import com.typesafe.config.ConfigValueFactory
 import org.apache.log4j.Logger
 
-import collection.JavaConversions._
+import scala.collection.JavaConversions._
 
 object Driver extends DriverConfig {
   override lazy val logger = Logger.getLogger(getClass)
@@ -34,23 +34,19 @@ object Driver extends DriverConfig {
 
 class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String]()) {
 
-  val ActorsPath="/user/receptionist"
+  val ActorsPath = "/user/receptionist"
   private lazy val logger = Driver.logger
 
-  private val finalConfig = seedNodes match {
-    case c if !c.isEmpty => Driver.config.withValue(
-      "akka.cluster.seed-nodes",
-      ConfigValueFactory.fromAnyRef(seedNodes))
-    case _ => Driver.config
-  }
+  private val finalConfig = if (!seedNodes.isEmpty) Driver.config else Driver.config.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromAnyRef(seedNodes))
+
 
   private val system = ActorSystem("CrossdataServerCluster", finalConfig)
 
-  if(logger.isDebugEnabled){
+  if (logger.isDebugEnabled) {
     system.logConfiguration()
   }
 
-  private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(_ + ActorsPath )
+  private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(_ + ActorsPath)
 
   private val initialContacts: Set[ActorSelection] = contactPoints.map(system.actorSelection(_)).toSet
   logger.debug("Initial contacts: " + initialContacts)
