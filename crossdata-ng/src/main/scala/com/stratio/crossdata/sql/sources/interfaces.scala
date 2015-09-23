@@ -59,10 +59,13 @@ trait TableInventory {
   /**
    *
    * @param item Table description case class instance
+   * @param userOpts Options provided by the parsed sentence
    * @return A concrete (for a given connector) translation of the high level table description
    *         to a low-level option map.
    */
-  def inventoryItem2optionsMap(item: Table): Map[String, String]
+  def generateConnectorOpts(item: Table, userOpts: Map[String, String] = Map.empty): Map[String, String]
+
+  def exclusionFilter(table: TableInventory.Table) = true
 
   def listTables(context: SQLContext, options: Map[String, String]): Seq[Table]
   //TODO: Add operation for describing a concrete table.

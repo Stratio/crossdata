@@ -154,13 +154,16 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
     //TODO: Check how errors are reported
-    implicit val clusterName: String = options.getOrElse("cluster", {sys.error("""Missing option: "Cluster""""); ""})
+    implicit val clusterName: String = options.getOrElse(CassandraDataSourceClusterNameProperty, {sys.error("""Missing option: "Cluster""""); ""})
+    val host: String = options.getOrElse(CassandraConnectionHostProperty, {sys.error("""Missing option: "spark_cassandra_connection_host""""); ""})
 
     val cfg: SparkConf = context.sparkContext.getConf.clone()
 
     for (prop <- DefaultSource.confProperties;
          clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop"))
       cfg.set(prop, clusterLevelValue)
+
+    cfg.set("spark.cassandra.connection.host", host)
 
     val connector = CassandraConnector(cfg)
 
@@ -172,11 +175,14 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
     }
   }
 
-  override def inventoryItem2optionsMap(item: Table): Map[String, String] = Map(
+  override def exclusionFilter(t: TableInventory.Table) =
+    ! (Set("system", "system_traces") contains t.database.toLowerCase)
+
+  override def generateConnectorOpts(item: Table, opts: Map[String, String] = Map.empty): Map[String, String] = Map(
     CassandraDataSourceTableNameProperty -> item.tableName,
     CassandraDataSourceKeyspaceNameProperty -> item.database,
     CassandraDataSourceClusterNameProperty -> item.clusterName
-  )
+  ) ++ opts.filterKeys(_ == CassandraConnectionHostProperty)
 
 }
 
@@ -186,6 +192,7 @@ object DefaultSource {
   val CassandraDataSourceClusterNameProperty = "cluster"
   val CassandraDataSourceUserDefinedSchemaNameProperty = "schema"
   val CassandraDataSourcePushdownEnableProperty = "pushdown"
+  val CassandraConnectionHostProperty = "spark_cassandra_connection_host"
   val CassandraDataSourceProviderPackageName = DefaultSource.getClass.getPackage.getName
   val CassandraDataSourceProviderClassName = CassandraDataSourceProviderPackageName + ".DefaultSource"
 

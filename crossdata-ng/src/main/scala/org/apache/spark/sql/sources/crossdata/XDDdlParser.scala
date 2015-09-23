@@ -3,6 +3,8 @@ package org.apache.spark.sql.sources.crossdata
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.sources.{DDLException, DDLParser}
 
+import scala.sys
+
 class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
 
   protected val IMPORT = Keyword("IMPORT")
@@ -14,7 +16,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected lazy val importStart: Parser[LogicalPlan] =
     (IMPORT ~> (CATALOG | (TABLE ~> tableIdentifier))) ~ (USING ~> className) ~  (OPTIONS ~> options).?  ^^ {
       case "catalog" ~ provider ~ ops =>
-        ImportCatalogUsingWithOptions(provider.asInstanceOf[String], ops.getOrElse(Map.empty))
+        val mops = ops.getOrElse(Map.empty)
+        for(opName <- "cluster"::"spark_cassandra_connection_host"::Nil; if(!mops.contains(opName)))
+          sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
+        ImportCatalogUsingWithOptions(provider.asInstanceOf[String], mops)
       case other => ???
     }
 
