@@ -94,6 +94,10 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
       session.execute("INSERT INTO " + Catalog + "." + Table + " (id, age, comment, enrolled) VALUES " +
         "(" + a + ", " + (10 + a) + ", 'Comment " + a + "', " + (a % 2 == 0) + ")")
     }
+
+    //This crates a new table in the keyspace which will not be initially registered at the Spark
+    session.execute(s"CREATE TABLE $Catalog.$UnregisteredTable (id int, age int, comment text, name text, PRIMARY KEY ((id), age, comment))")
+
   }
 
   private def cleanTestData(session: Session): Unit = {
@@ -115,6 +119,7 @@ sealed trait CassandraDefaultTestConstants {
   val ClusterName = "Test Cluster"
   val Catalog = "highschool"
   val Table = "students"
+  val UnregisteredTable = "teachers"
   val CassandraHost = "127.0.0.1"
   val SourceProvider = "com.stratio.crossdata.sql.sources.cassandra"
 }
