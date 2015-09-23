@@ -53,22 +53,6 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
     case e => Some(e.get(0))
   }
 
-  /*
-  private lazy val homeDir: String = System.getProperty("user.home")
-
-  private lazy val dir: Directory =
-    Path(homeDir + "/.crossdata").createDirectory(failIfExists = false)
-
-  private val dbLocation = path.getOrElse(dir + "/catalog")
-
-  // File where to persist the data with MapDB.
-  val dbFile: File = new File(dbLocation)
-  dbFile.getParentFile.mkdirs
-
-  private val db: DB = DBMaker.newFileDB(dbFile).closeOnJvmShutdown.make
-
-  private val pTables: java.util.Map[String, LogicalPlan] = db.getHashMap("catalog")
-*/
 
   /**
    * @inheritdoc
@@ -82,14 +66,13 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
     } catch {
       case e: Exception => e.printStackTrace
     }
-    //Register all tables of crossdata if it is necessary
-    //pTables.map(e => (e._1.split("\\.").toSeq, e._2)).foreach(e => super.registerTable(e._1, e._2))
+
   }
 
   /**
    * Drop all tables of catalog
    */
-  def dropAllTables(): Unit = {
+  override def dropAllTables(): Unit = {
     super.unregisterAllTables()
     logInfo("XDCatalog: unregisterAllTables")
     val statement = connection.createStatement
@@ -99,7 +82,7 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
   /**
    * Drop table from XD catalog
    */
-  def dropTable(tableIdentifier: Seq[String]): Unit = {
+  override def dropTable(tableIdentifier: Seq[String]): Unit = {
     super.unregisterTable(tableIdentifier)
     logInfo("XDCatalog: unregisterTable")
     val tableName: String = tableIdentifier.mkString(StringSeparator)
@@ -110,7 +93,7 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
   /**
    * Persist in XD Catalog
    */
-  def persistTableXD(tableName: String, userSpecifiedSchema: Option[StructType], provider: String,
+  override def persistTableXD(tableName: String, userSpecifiedSchema: Option[StructType], provider: String,
                      temporary: Boolean, opts: Map[String, String], allowExisting: Boolean,
                      managedIfNoPath: Boolean):
   Unit = {

@@ -54,7 +54,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   catalog.open()
 
 
-  protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_))
+  protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse)
 
   override def sql(sqlText: String): DataFrame = {
     XDDataFrame(this, parseSql(sqlText))

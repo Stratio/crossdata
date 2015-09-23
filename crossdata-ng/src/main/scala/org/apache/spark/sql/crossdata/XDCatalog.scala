@@ -18,6 +18,7 @@ package org.apache.spark.sql.crossdata
 
 import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
 import org.apache.spark.sql.catalyst.analysis.Catalog
+import org.apache.spark.sql.types.StructType
 
 /**
  * CrossdataCatalog aims to provide a mechanism to persist the
@@ -36,5 +37,14 @@ trait XDCatalog extends Catalog with Serializable {
    * Performs actions before closing the application.
    */
   def close(): Unit
+
+  def persistTableXD(tableName: String, userSpecifiedSchema: Option[StructType], provider: String,
+                     temporary: Boolean, opts: Map[String, String], allowExisting: Boolean,
+                     managedIfNoPath: Boolean): Unit
+
+
+  def dropTable(tableIdentifier: Seq[String]): Unit
+
+  def dropAllTables(): Unit
 
 }
