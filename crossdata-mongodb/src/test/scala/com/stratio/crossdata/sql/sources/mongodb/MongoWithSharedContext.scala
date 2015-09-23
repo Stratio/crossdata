@@ -16,6 +16,7 @@
 
 package com.stratio.crossdata.sql.sources.mongodb
 
+import com.mongodb.QueryBuilder
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
 import org.apache.spark.Logging
@@ -37,7 +38,7 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
 
       xdContext.sql(
         s"""|CREATE TEMPORARY TABLE $Collection
-            |(id STRING, age INT, description STRING, enrolled BOOLEAN, name STRING)
+            |(id BIGINT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)
             |USING $SourceProvider
             |OPTIONS (
             |host '$MongoHost:$MongoPort',
@@ -75,19 +76,25 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
     val collection = client(Database)(Collection)
     for (a <- 1 to 10) {
       collection.insert {
-        MongoDBObject("id" -> a.toString,
+        MongoDBObject("id" -> a,
           "age" -> (10 + a),
-          "description" -> s"description $a",
+          "description" -> s"description$a",
           "enrolled" -> (a % 2 == 0),
           "name" -> s"Name $a"
         )
       }
+      collection.update(QueryBuilder.start("id").greaterThan(4).get, MongoDBObject( ("$set", MongoDBObject( ("optionalField", true))) ), multi=true)
+
     }
   }
 
   private def cleanTestData(client: MongoClient): Unit = {
     val collection = client(Database)(Collection)
     collection.dropCollection()
+  }
+
+  lazy val assumeEnvironmentIsUpAndRunning = {
+    assume(isEnvironmentReady, "MongoDB and Spark must be up and running")
   }
 }
 
