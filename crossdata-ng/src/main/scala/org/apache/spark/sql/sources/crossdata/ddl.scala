@@ -1,11 +1,13 @@
 package org.apache.spark.sql.sources.crossdata
 
+import com.google.protobuf.WireFormat.FieldType
 import com.stratio.crossdata.sql.sources.TableInventory
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.sources.{RelationProvider, LogicalRelation, ResolvedDataSource}
+import org.apache.spark.sql.types.{StructField, StructType}
 
 
 private [crossdata] case class ImportCatalogUsingWithOptions(provider: String, opts: Map[String, String])
@@ -15,12 +17,16 @@ private [crossdata] case class ImportCatalogUsingWithOptions(provider: String, o
   protected def persistenceStep(tables: Seq[TableInventory.Table]): Unit = ()
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-
     //Get a reference to the inventory relation.
-    val resolved = ResolvedDataSource(sqlContext, None, Array.empty[String], provider, opts)
-    val inventoryRelation = resolved.relation.asInstanceOf[TableInventory] //As inventory provider
+    val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
+    /*ResolvedDataSource(sqlContext, Some(StructType(Array.empty[StructField])), Array.empty[String],
+      provider,
+      opts.updated("table","").updated("keyspace", ""))
+    //opts.updated("table","").updated("keyspace", "")
+    */
+    val inventoryRelation = resolved.asInstanceOf[TableInventory] //As inventory provider
     //TODO: Check error management. It may happen that the provided datasource doesn't support inventory
-    val providerRelation = resolved.relation.asInstanceOf[RelationProvider] //As relation provider
+    val providerRelation = resolved.asInstanceOf[RelationProvider] //As relation provider
 
     //Obtain the list of tables and persist it (if persistence implemented)
     //TODO: Check error management. It may happen that a cluster name has not been provided
@@ -28,13 +34,21 @@ private [crossdata] case class ImportCatalogUsingWithOptions(provider: String, o
     persistenceStep(tables)
 
     //Register the source tables in the catalog
-    tables foreach { t: TableInventory.Table =>
+    for(
+      t: TableInventory.Table <- tables;
+      tableid = t.database::t.tableName::Nil;
+      doExist = sqlContext.catalog.tableExists(tableid);
+      if(inventoryRelation.exclusionFilter(t) && {
+        if(doExist) log.info(s"IMPORT CATALOG omitted already registered table: ${tableid mkString "."}")
+        !doExist
+      })
+    ) {
       sqlContext.
         catalog.registerTable(
-          t.database::t.tableName::Nil,
+          tableid,
           LogicalRelation(providerRelation.createRelation(
             sqlContext,
-            inventoryRelation.inventoryItem2optionsMap(t))
+            inventoryRelation.generateConnectorOpts(t, opts))
           )
         )
     }
