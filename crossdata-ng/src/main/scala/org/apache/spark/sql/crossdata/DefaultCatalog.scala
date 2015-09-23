@@ -22,9 +22,8 @@ import java.util
 
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.analysis.{OverrideCatalog, SimpleCatalog}
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
-import org.apache.spark.sql.sources.CreateTableUsing
+import org.apache.spark.sql.types.StructType
 import org.json4s.NoTypeHints
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization._
@@ -88,9 +87,9 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   /**
-   * @inheritdoc
+   * Drop all tables of catalog
    */
-  override def unregisterAllTables(): Unit = {
+  def dropAllTables(): Unit = {
     super.unregisterAllTables()
     logInfo("XDCatalog: unregisterAllTables")
     val statement = connection.createStatement
@@ -98,9 +97,9 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   /**
-   * @inheritdoc
+   * Drop table from XD catalog
    */
-  override def unregisterTable(tableIdentifier: Seq[String]): Unit = {
+  def dropTable(tableIdentifier: Seq[String]): Unit = {
     super.unregisterTable(tableIdentifier)
     logInfo("XDCatalog: unregisterTable")
     val tableName: String = tableIdentifier.mkString(StringSeparator)
@@ -109,44 +108,37 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   /**
-   * @inheritdoc
+   * Persist in XD Catalog
    */
-  override def registerTable(tableIdentifier: Seq[String], plan: LogicalPlan): Unit = {
-    super.registerTable(tableIdentifier, plan)
-    logInfo("XDCatalog: registerTable")
+  def persistTableXD(tableName: String, userSpecifiedSchema: Option[StructType], provider: String,
+                     temporary: Boolean, opts: Map[String, String], allowExisting: Boolean,
+                     managedIfNoPath: Boolean):
+  Unit = {
+    //super.registerTable(tableName, plan)
+    logInfo("XDCatalog: Persist Table")
 
-    plan match {
-      case createTable: CreateTableUsing => {
-        val tableSchema = write(createTable.schema)
-        val tableName = createTable.tableName
-        val tableOptions = write(createTable.options)
-        val statement = connection.createStatement
-        statement.executeQuery(
-          s"INSERT INTO crossdataTables (tableName, schema, options) VALUES ($tableName,$tableSchema,$tableOptions)")
-      }
-      case _ => logError("Register Table error: Only Create Table Using command allowed")
-    }
-
-
-
-    //pTables.put(tableIdentifier.mkString(StringSeparator), plan)
-    //db.commit()
+    val tableSchema = write(userSpecifiedSchema)
+    val tableOptions = write(opts)
+    val statement = connection.createStatement
+    statement.executeQuery(
+      s"INSERT INTO crossdataTables (tableName, schema, options) VALUES ($tableName,$tableSchema,$tableOptions)")
 
   }
 
-  /**
-   * @inheritdoc
-   */
-  override def refreshTable(databaseName: String, tableName: String): Unit = {
-    super.refreshTable(databaseName, tableName)
-    logInfo("XDCatalog: refreshTable")
-  }
 
-  /**
-   * @inheritdoc
-   */
-  override def close(): Unit = {
-    logInfo("XDCatalog: close")
-    connection.close
-  }
+/**
+ * @inheritdoc
+ */
+override def refreshTable (databaseName: String, tableName: String): Unit = {
+super.refreshTable (databaseName, tableName)
+logInfo ("XDCatalog: refreshTable")
+}
+
+/**
+ * @inheritdoc
+ */
+override def close (): Unit = {
+logInfo ("XDCatalog: close")
+connection.close
+}
 }

@@ -10,3 +10,4 @@ private [crossdata] case class ImportCatalogUsingWithOptions(provider: String, o
   extends LogicalPlan with RunnableCommand {
   override def run(sqlContext: SQLContext): Seq[Row] = ??? //TODO: Implement the command action
 }
+

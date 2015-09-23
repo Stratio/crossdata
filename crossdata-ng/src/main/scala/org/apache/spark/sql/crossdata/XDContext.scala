@@ -22,8 +22,10 @@ package org.apache.spark.sql.crossdata
 import java.lang.reflect.Constructor
 import java.util.concurrent.atomic.AtomicReference
 
+import com.typesafe.config.{Config, ConfigFactory}
+import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
 import org.apache.spark.sql.sources.crossdata.XDDdlParser
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{Strategy, DataFrame, SQLContext}
 import org.apache.spark.{Logging, SparkContext}
 
 /**
@@ -57,7 +59,18 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   override def sql(sqlText: String): DataFrame = {
     XDDataFrame(this, parseSql(sqlText))
   }
+
+  @transient
+  private val XDPlanner = new SparkPlanner with XDStrategies {
+    val XDContext = self
+
+    override def strategies: Seq[Strategy] = experimental.extraStrategies ++ Seq(
+      XDDDLStrategy,
+      super.strategies
+    )
 }
+
+
 
 /**
  * This XDContext object contains utility functions to create a singleton XDContext instance,
