@@ -130,6 +130,31 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
   // TODO test filter on PKs (=) and CKs(any) (right -> left)
 
+  // CATALOG OPERATIONS
+
+  it should "import all tables from a catalog" in {
+    assumeEnvironmentIsUpAndRunning
+
+    def tableCountInHighschool: Long = ctx.sql("SHOW TABLES").count
+    tableCountInHighschool shouldBe 1
+
+    val importQuery =
+      s"""
+          |IMPORT CATALOG
+          |USING $SourceProvider
+          |OPTIONS (
+          | cluster "$ClusterName",
+          | spark_cassandra_connection_host '$CassandraHost'
+          |)
+      """.stripMargin
+
+    ctx.sql(importQuery)
+
+    tableCountInHighschool shouldBe 3
+
+
+  }
+
 }
 
 
