@@ -67,6 +67,7 @@ import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderDirection;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 
@@ -174,7 +175,10 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         functionSelectors.add(firstColInFunction);
         ColumnSelector secondColInFunction = new ColumnSelector(new ColumnName(catalog, table, "name"));
         functionSelectors.add(secondColInFunction);
-        FunctionSelector fs = new FunctionSelector(tableName, functionName, functionSelectors);
+        FunctionSelector fs = new FunctionSelector(
+                tableName,
+                functionName,
+                new SelectExpression(functionSelectors));
         columnMap.put(fs, functionName);
         ColumnSelector aliasedCol = new ColumnSelector(new ColumnName(catalog, table, "boss"));
         String alias = "manager";
@@ -267,7 +271,10 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         functionSelectors.add(secondColInFunction);
         ColumnSelector thirdColInFunction = new ColumnSelector(new ColumnName(catalog, table, "boss"));
         functionSelectors.add(thirdColInFunction);
-        FunctionSelector fs = new FunctionSelector(tableName, functionName, functionSelectors);
+        FunctionSelector fs = new FunctionSelector(
+                tableName,
+                functionName,
+                new SelectExpression(functionSelectors));
         columnMap.put(fs, functionName);
 
         Map<String, ColumnType> typeMap = new HashMap<>();

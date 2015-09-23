@@ -311,6 +311,7 @@ T_THEN: T H E N;
 T_ELSE: E L S E;
 T_END: E N D;
 T_HAVING: H A V I N G;
+T_DISTINCT: D I S T I N C T;
 
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
@@ -615,7 +616,7 @@ selectStatement returns [SelectStatement slctst]
         slctst.setFieldsAliases(fieldsAliasesMap);
         slctst.setTablesAliases(tablesAliasesMap);
     }:
-    T_SELECT selClause=getSelectExpression[fieldsAliasesMap]
+    T_SELECT selClause=getSelectExpression[fieldsAliasesMap, null]
     T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS
         subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
         | tablename=getAliasedTableID[tablesAliasesMap])
@@ -991,18 +992,20 @@ getTimeUnit returns [TimeUnit unit]:
     | T_DAYS {$unit=TimeUnit.DAYS;})
 ;
 
-getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
+getSelectExpression[Map fieldsAliasesMap, TableName tablename] returns [SelectExpression se]
     @init{
         List<Selector> selectors = new ArrayList<>();
+        boolean isDistinct = false;
     }
     @after{
-        se = new SelectExpression(selectors);
+        se = new SelectExpression(isDistinct, selectors);
     }:
-    s=getSelector[null] { if(s == null) throwParsingException("Column name not found");}
+    (T_DISTINCT { isDistinct = true;} )?
+    s=getSelector[tablename] { if(s == null) throwParsingException("Column name not found");}
         (T_AS alias1=getGenericID {
             s.setAlias(alias1);
             fieldsAliasesMap.put(alias1, s.toString());})? {selectors.add(s);}
-    (T_COMMA s=getSelector[null] { if(s == null) throwParsingException("Column name not found");}
+    (T_COMMA s=getSelector[tablename] { if(s == null) throwParsingException("Column name not found");}
         (T_AS aliasN=getGenericID {
             s.setAlias(aliasN);
             fieldsAliasesMap.put(aliasN, s.toString());})? {selectors.add(s);})*
@@ -1075,20 +1078,15 @@ getCaseWhenSelector[TableName tablename] returns [Selector selector]
 ;
 
 getFunctionSelector[TableName tablename] returns [Selector selector]
-    @init{
-        LinkedList<Selector> params = new LinkedList<>();
-    }
     @after{
         String functionStr = functionName;
-        selector = new FunctionSelector(tablename, functionStr, params);
+        selector = new FunctionSelector(tablename, functionStr, se);
     }:
     functionName=getFunctionName
     T_START_PARENTHESIS
-        (select1=getSelector[workaroundTable] {params.add(select1);}
-            (T_COMMA selectN=getSelector[workaroundTable] {params.add(selectN);})*)?
+        se = getSelectExpression[new LinkedHashMap<String, String>(), tablename]
     T_END_PARENTHESIS
 ;
-
 
 getBasicSelector[TableName tablename] returns [Selector selector]
     @init{
@@ -1202,7 +1200,7 @@ getComparator returns [Operator op]:
     | T_LT {$op = Operator.LT;}
     | T_GTE {$op = Operator.GET;}
     | T_LTE {$op = Operator.LET;}
-    | T_NOT_EQUAL {$op = Operator.DISTINCT;}
+    | T_NOT_EQUAL {$op = Operator.NOT_EQUAL;}
     | T_LIKE {$op = Operator.LIKE;}
     | T_MATCH {$op = Operator.MATCH;}
     | T_IN {$op = Operator.IN;}

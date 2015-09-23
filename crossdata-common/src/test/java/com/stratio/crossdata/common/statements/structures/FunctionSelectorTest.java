@@ -24,13 +24,16 @@ import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.data.ColumnName;
+
 public class FunctionSelectorTest {
     @Test
     public void toStringTest(){
-        AsteriskSelector as=new AsteriskSelector();
+        AsteriskSelector as = new AsteriskSelector();
         List<Selector> functionSelectors=new ArrayList<>();
         functionSelectors.add(as);
-        FunctionSelector fs=new FunctionSelector("count",functionSelectors);
+
+        FunctionSelector fs = new FunctionSelector("count", new SelectExpression(functionSelectors));
 
         Assert.assertEquals(fs.getFunctionName(), "count", "Bad function name");
         Assert.assertTrue(fs.hadAsteriskSelector(), "The selector must have an asterisk selector");
@@ -40,42 +43,36 @@ public class FunctionSelectorTest {
 
     @Test
     public void equalsTest(){
-        AsteriskSelector as=new AsteriskSelector();
+        AsteriskSelector as = new AsteriskSelector();
         List<Selector> functionSelectors=new ArrayList<>();
         functionSelectors.add(as);
-        FunctionSelector fs=new FunctionSelector("count",functionSelectors);
-        FunctionSelector fs2=new FunctionSelector("count",functionSelectors);
+        FunctionSelector fs1 = new FunctionSelector("count", new SelectExpression(functionSelectors));
+        FunctionSelector fs2 = new FunctionSelector("count", new SelectExpression(functionSelectors));
 
-        Assert.assertTrue(fs.equals(fs2),"This selectors must be equals");
-        Assert.assertTrue(fs.hashCode()==fs2.hashCode(),"This selector must have the same hashcode");
-
-
+        Assert.assertTrue(fs1.equals(fs2),"This selectors must be equals");
+        Assert.assertTrue(fs1.hashCode()==fs2.hashCode(),"This selector must have the same hashcode");
     }
 
     @Test
     public void nonEqualsTest(){
-        AsteriskSelector as=new AsteriskSelector();
+        AsteriskSelector as = new AsteriskSelector();
         List<Selector> functionSelectors=new ArrayList<>();
         functionSelectors.add(as);
-        FunctionSelector fs=new FunctionSelector("count",functionSelectors);
-        FunctionSelector fs2=new FunctionSelector("now",functionSelectors);
+        FunctionSelector fs1 = new FunctionSelector("count", new SelectExpression(functionSelectors));
+        FunctionSelector fs2 = new FunctionSelector("now", new SelectExpression(functionSelectors));
 
-        Assert.assertFalse(fs.equals(fs2),"This selectors mustn't be equals");
-        Assert.assertFalse(fs.hashCode()==fs2.hashCode(),"This selector mustn't have the same hashcode");
-
-
+        Assert.assertFalse(fs1.equals(fs2),"This selectors mustn't be equals");
+        Assert.assertFalse(fs1.hashCode()==fs2.hashCode(),"This selector mustn't have the same hashcode");
     }
     @Test
     public void nonEquals2Test(){
-        AsteriskSelector as=new AsteriskSelector();
+        AsteriskSelector as = new AsteriskSelector();
         List<Selector> functionSelectors=new ArrayList<>();
         functionSelectors.add(as);
-        FunctionSelector fs=new FunctionSelector("count",functionSelectors);
-        FunctionSelector fs2=new FunctionSelector("count",null);
+        FunctionSelector fs1 = new FunctionSelector("count", new SelectExpression(functionSelectors));
+        FunctionSelector fs2 = new FunctionSelector("count", SelectExpression.create(new ArrayList<ColumnName>()));
 
-        Assert.assertFalse(fs.equals(fs2),"This selectors mustn't be equals");
-        Assert.assertFalse(fs.hashCode()==fs2.hashCode(),"This selector mustn't have the same hashcode");
-
-
+        Assert.assertFalse(fs1.equals(fs2),"This selectors mustn't be equals");
+        Assert.assertFalse(fs1.hashCode()==fs2.hashCode(),"This selector mustn't have the same hashcode");
     }
 }

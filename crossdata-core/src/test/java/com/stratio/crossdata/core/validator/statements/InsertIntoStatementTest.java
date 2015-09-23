@@ -94,7 +94,15 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         columns.add(new ColumnName(tableName, "rating"));
         columns.add(new ColumnName(tableName, "member"));
 
-        values.add(new FunctionSelector(tableName, "substring", Arrays.asList( (Selector) new ColumnSelector(new ColumnName(tableName,"name")))));
+
+        values.add(
+                new FunctionSelector(
+                        tableName,
+                        "substring",
+                        SelectExpression.create(Arrays.asList(new ColumnName(tableName, "name")))
+                )
+        );
+
         values.add(new StringSelector(tableName,"surname"));
         values.add(new FloatingPointSelector(tableName, 23.5));
         values.add(new BooleanSelector(tableName, true));
@@ -337,7 +345,18 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         columns.add(new ColumnName(tableName, "rating"));
         columns.add(new ColumnName(tableName, "member"));
 
-        values.add(new FunctionSelector(tableName, "substring", Arrays.asList( (Selector) new ColumnSelector(new ColumnName(tableName,"name")))));
+
+        values.add(
+                new FunctionSelector(
+                        tableName,
+                        "substring",
+                        SelectExpression.create(Arrays.asList(new ColumnName(tableName,"name")))
+                )
+        );
+
+
+        //values.add(new FunctionSelector(tableName, "substring", Arrays.asList( (Selector) new ColumnSelector(new
+        //        ColumnName(tableName,"name")))));
         values.add(new StringSelector(tableName,"surname"));
         values.add(new FloatingPointSelector(tableName, 23.5));
         values.add(new RelationSelector(tableName, new Relation(new StringSelector("fake"), Operator.EQ, new StringSelector("fake"))));

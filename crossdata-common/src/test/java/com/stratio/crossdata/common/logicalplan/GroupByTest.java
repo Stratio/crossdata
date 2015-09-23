@@ -81,7 +81,8 @@ public class GroupByTest {
         List<Selector> selectors = new ArrayList<>();
         selectors.add(column);
 
-        Selector left = new FunctionSelector("COUNT", Arrays.asList(columnHaving));
+        SelectExpression se = new SelectExpression(Arrays.asList(columnHaving));
+        Selector left = new FunctionSelector("COUNT", se);
         Selector right = new IntegerSelector(5);
         Relation relation = new Relation(left, Operator.GT, right);
 
@@ -110,10 +111,13 @@ public class GroupByTest {
         Selector columnHaving = new ColumnSelector(new ColumnName(tableHaving, "ordersId"));
         Selector columnHaving2 = new ColumnSelector(new ColumnName(tableHaving, "amount"));
 
-        Selector left = new FunctionSelector("COUNT", Arrays.asList(columnHaving));
+        //Selector left = new FunctionSelector("COUNT", Arrays.asList(columnHaving));
+        SelectExpression se1 = new SelectExpression(Arrays.asList(columnHaving));
+        Selector left = new FunctionSelector("COUNT", se1);
         Relation relation = new Relation(left, Operator.GT, new IntegerSelector(5));
 
-        left = new FunctionSelector("SUM", Arrays.asList(columnHaving2));
+        SelectExpression se2 = new SelectExpression(Arrays.asList(columnHaving2));
+        left = new FunctionSelector("SUM", se2);
         Relation relation2 = new Relation(left, Operator.GET, new IntegerSelector(10000));
 
         List<AbstractRelation> havingIds = new ArrayList<>();

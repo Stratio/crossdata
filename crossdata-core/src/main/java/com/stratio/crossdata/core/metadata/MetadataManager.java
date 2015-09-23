@@ -1403,7 +1403,7 @@ public enum MetadataManager {
 
         StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
         sb.append("(Tuple[");
-        Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
+        Iterator<Selector> iter = functionSelector.getFunctionColumns().getSelectorList().iterator();
         while(iter.hasNext()){
             Selector selector = iter.next();
             sb.append(inferDataType(selector, connectorName, subQuery, initialProjects));

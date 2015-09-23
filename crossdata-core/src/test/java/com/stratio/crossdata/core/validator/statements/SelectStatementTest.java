@@ -661,7 +661,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "email"));
         Selector right = new StringSelector(tablename, "name_1@domain.com");
-        Relation relation = new Relation(left, Operator.DISTINCT, right);
+        Relation relation = new Relation(left, Operator.NOT_EQUAL, right);
         where.add(relation);
 
         selectStatement.setWhere(where);
@@ -1452,8 +1452,10 @@ public class SelectStatementTest extends BasicValidatorTest {
         String expectedText = "SELECT getYear(demo.users.age) AS getYear FROM demo.users";
 
         ColumnName col1 = new ColumnName(null, "users", "age");
-        Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(col1))));
+        Selector selector1 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(col1)));
         List<Selector> selectorList = new ArrayList<>();
         selectorList.add(selector1);
         SelectExpression selectExpression = new SelectExpression(selectorList);
@@ -1521,10 +1523,14 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         ColumnName col1 = new ColumnName(null, "users", "age");
         ColumnName col2 = new ColumnName(null, "users", "average");
-        Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(col1))));
-        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(col2))));
+        Selector selector1 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(col1)));
+        Selector selector2 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(col2)));
         selector1.setAlias("year");
         selector2.setAlias("average");
         List<Selector> selectorList = new ArrayList<>();
@@ -1558,10 +1564,14 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         ColumnName col1 = new ColumnName(null, "users", "age");
         ColumnName col2 = new ColumnName(null, "users", "average");
-        Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(col1))));
-        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(col2))));
+        Selector selector1 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(col1)));
+        Selector selector2 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(col2)));
         List<Selector> selectorList = new ArrayList<>();
         selector2.setAlias("average");
         selectorList.add(selector1);
@@ -1595,10 +1605,14 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         ColumnName col1 = new ColumnName(null, "users", "age");
         ColumnName col2 = new ColumnName(null, "users", "average");
-        Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(col1))));
-        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(col2))));
+        Selector selector1 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(col1)));
+        Selector selector2 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(col2)));
         List<Selector> selectorList = new ArrayList<>();
         selectorList.add(selector1);
         selectorList.add(selector2);
@@ -1633,12 +1647,22 @@ public class SelectStatementTest extends BasicValidatorTest {
         ColumnName col1 = new ColumnName(null, "users", "age");
         ColumnName col2 = new ColumnName(null, "users", "average");
         ColumnName col3 = new ColumnName(null, "users", "other");
-        Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(col1))));
-        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(col2))));
-        Selector selector3 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(col3))));
+
+        Selector selector1 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(col1)));
+
+        Selector selector2 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(col2)));
+
+        Selector selector3 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(col3)));
+
         List<Selector> selectorList = new ArrayList<>();
         selectorList.add(selector1);
         selectorList.add(selector2);
@@ -1679,9 +1703,10 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        Selector functionSelector = new FunctionSelector(new TableName("demo", "users"), "getYear",
-                new LinkedList<Selector>(
-                Collections.singleton(new ColumnSelector(new ColumnName("demo","users","name")))));
+        Selector functionSelector = new FunctionSelector(
+                new TableName("demo", "users"),
+                "getYear",
+                SelectExpression.create(Arrays.asList(new ColumnName("demo", "users", "name"))));
         functionSelector.setAlias("sub");
         List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
@@ -1889,7 +1914,10 @@ public class SelectStatementTest extends BasicValidatorTest {
         Selector selector1 = new ColumnSelector(n1);
         selector1.setAlias("n");
 
-        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "now", new LinkedList<Selector>());
+        Selector selector2 = new FunctionSelector(
+                new TableName("demo", "users"),
+                "now",
+                SelectExpression.create(new ArrayList<ColumnName>()));
         List<Selector> selectorList = new ArrayList<>();
 
         selectorList.add(selector1);
@@ -1900,7 +1928,10 @@ public class SelectStatementTest extends BasicValidatorTest {
         SelectStatement subquerySelectStatement = new SelectStatement(selectExpression, tablename);
 
         List<Selector> selectorListSuperquery = new ArrayList<>();
-        selectorListSuperquery.add(new FunctionSelector(new TableName("demo", "users"), "now", new LinkedList<Selector>()));
+        selectorListSuperquery.add(new FunctionSelector(
+                new TableName("demo", "users"),
+                "now",
+                SelectExpression.create(new ArrayList<ColumnName>())));
         TableName virtualTable = new TableName(Constants.VIRTUAL_NAME, "t");
         virtualTable.setAlias("t");
         SelectStatement selectStatement = new SelectStatement(new SelectExpression(selectorListSuperquery), virtualTable);

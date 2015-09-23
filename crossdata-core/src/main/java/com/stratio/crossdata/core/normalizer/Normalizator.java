@@ -297,7 +297,7 @@ public class Normalizator {
                 break;
             case FUNCTION:
                 FunctionSelector fs = (FunctionSelector) selector;
-                List<Selector> fCols = fs.getFunctionColumns();
+                List<Selector> fCols = fs.getFunctionColumns().getSelectorList();
                 checkListSelector(fCols);
                 break;
             case ASTERISK:
@@ -526,7 +526,7 @@ public class Normalizator {
             case LT:
             case GET:
             case LET:
-            case DISTINCT:
+            case NOT_EQUAL:
                 if (relation.getLeftTerm().getType() == SelectorType.COLUMN
                         && relation.getRightTerm().getType() == SelectorType.COLUMN) {
                     checkColumnSelector((ColumnSelector) relation.getRightTerm());
@@ -1143,9 +1143,9 @@ public class Normalizator {
      */
     private void checkFunctionSelector(FunctionSelector functionSelector) throws ValidationException {
         // Check columns
-        List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());
-        functionSelector.getFunctionColumns().clear();
-        functionSelector.getFunctionColumns().addAll(normalizeSelector);
+        List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns().getSelectorList());
+        functionSelector.getFunctionColumns().getSelectorList().clear();
+        functionSelector.getFunctionColumns().getSelectorList().addAll(normalizeSelector);
     }
 
     private void checkRightSelector(
@@ -1282,7 +1282,7 @@ public class Normalizator {
 
     private void checkBooleanCompatibility(ColumnMetadata column, Operator operator, SelectorType valueType)
             throws ValidationException {
-        if ((operator != Operator.EQ) && (operator != Operator.DISTINCT)) {
+        if ((operator != Operator.EQ) && (operator != Operator.NOT_EQUAL)) {
             throw new BadFormatException("Boolean relations only accept equal and distinct operator.");
         }
         if (valueType != SelectorType.BOOLEAN) {

@@ -315,7 +315,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
             FunctionSelector xdFunction = FunctionSelector.class.cast(selector);
             String name = xdFunction.getFunctionName();
             List<InMemorySelector> arguments = new ArrayList<>();
-            for(Selector arg : xdFunction.getFunctionColumns()){
+            for(Selector arg : xdFunction.getFunctionColumns().getSelectorList()){
                 arguments.add(transformCrossdataSelector(arg));
             }
             result = new InMemoryFunctionSelector(name, arguments);

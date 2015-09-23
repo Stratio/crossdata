@@ -40,7 +40,7 @@ public class FunctionSelector extends Selector {
     /**
      * List of selectors.
      */
-    private final List<Selector> functionSelectors;
+    private final SelectExpression selectExpression;
 
     private boolean hadAsteriskSelector;
 
@@ -48,10 +48,10 @@ public class FunctionSelector extends Selector {
      * Class constructor.
      *
      * @param functionName Name of the includes.
-     * @param functionSelectors A list of selectors with the columns affected.
+     * @param selectExpression A list of selectors with the columns affected.
      */
-    public FunctionSelector(String functionName, List<Selector> functionSelectors) {
-        this(null, functionName, functionSelectors);
+    public FunctionSelector(String functionName, SelectExpression selectExpression) {
+        this(null, functionName, selectExpression);
     }
 
     /**
@@ -59,19 +59,24 @@ public class FunctionSelector extends Selector {
      *
      * @param tableName The table name.
      * @param functionName Name of the includes.
-     * @param functionSelectors A list of selectors with the columns affected.
+     * @param selectExpression A list of selectors with the columns affected.
      */
-    public FunctionSelector(TableName tableName, String functionName, List<Selector> functionSelectors) {
+    public FunctionSelector(TableName tableName, String functionName, SelectExpression selectExpression) {
         super(tableName);
         this.functionName = functionName;
         this.alias = functionName;
-        this.functionSelectors = functionSelectors;
-        if((functionSelectors != null)
-                && (functionSelectors.size()==1)
-                && (functionSelectors.get(0) instanceof AsteriskSelector)){
-            hadAsteriskSelector = true;
+        this.selectExpression = selectExpression;
+        if(selectExpression != null){
+            List<Selector> functionSelectors = selectExpression.getSelectorList();
+            if((functionSelectors != null)
+                    && (functionSelectors.size()==1)
+                    && (functionSelectors.get(0) instanceof AsteriskSelector)){
+                hadAsteriskSelector = true;
+            }
         }
     }
+
+
 
     /**
      * Get the function name.
@@ -86,8 +91,8 @@ public class FunctionSelector extends Selector {
      *
      * @return A list of {@link com.stratio.crossdata.common.statements.structures.Selector}.
      */
-    public List<Selector> getFunctionColumns() {
-        return functionSelectors;
+    public SelectExpression getFunctionColumns() {
+        return selectExpression;
     }
 
     /**
@@ -114,7 +119,7 @@ public class FunctionSelector extends Selector {
     @Override
     public LinkedHashSet<TableName> getSelectorTables() {
         LinkedHashSet<TableName> result = new LinkedHashSet<>();
-        for (Selector s: this.functionSelectors) {
+        for (Selector s: this.selectExpression.getSelectorList()) {
             result.addAll(s.getSelectorTables());
         }
         return result;
@@ -126,7 +131,7 @@ public class FunctionSelector extends Selector {
      */
     public TableName getTableName() {
         if(tableName==null){
-            for (Selector s: this.functionSelectors) {
+            for (Selector s: this.selectExpression.getSelectorList()) {
                 if (ColumnSelector.class.isInstance(s)){
                     return s.getColumnName().getTableName();
                 }
@@ -157,7 +162,10 @@ public class FunctionSelector extends Selector {
         sb.append("(");
 
         boolean first=true;
-        for (Selector selector:functionSelectors) {
+        if(selectExpression.isDistinct()){
+            sb.append(" DISTINCT ");
+        }
+        for (Selector selector: selectExpression.getSelectorList()) {
             if(!first){
                 sb.append(", ");
             }
@@ -178,7 +186,10 @@ public class FunctionSelector extends Selector {
     public String toString() {
         StringBuilder sb = new StringBuilder(functionName);
         sb.append("(");
-        Iterator<Selector> selectors = functionSelectors.iterator();
+        if(selectExpression.isDistinct()){
+            sb.append(" DISTINCT ");
+        }
+        Iterator<Selector> selectors = selectExpression.getSelectorList().iterator();
         while (selectors.hasNext()) {
             sb.append(selectors.next().toString());
             if (selectors.hasNext()) {
@@ -196,10 +207,13 @@ public class FunctionSelector extends Selector {
     public String toSQLString(boolean withAlias) {
         StringBuilder sb = new StringBuilder(functionName);
         sb.append("(");
+        if(selectExpression.isDistinct()){
+            sb.append(" DISTINCT ");
+        }
         if(hadAsteriskSelector){
             sb.append("*");
         }else {
-            sb.append(SqlStringUtils.sqlStringList(functionSelectors, ", ", withAlias));
+            sb.append(SqlStringUtils.sqlStringList(selectExpression.getSelectorList(), ", ", withAlias));
         }
         sb.append(")");
         if (withAlias && this.alias != null) {
@@ -219,7 +233,7 @@ public class FunctionSelector extends Selector {
 
         FunctionSelector that = (FunctionSelector) o;
 
-        if (functionSelectors != null ? !functionSelectors.equals(that.functionSelectors) : that.functionSelectors != null) {
+        if (selectExpression != null ? !selectExpression.equals(that.selectExpression) : that.selectExpression != null) {
             return false;
         }
         if (functionName != null ? !functionName.equals(that.functionName) : that.functionName != null) {
@@ -235,7 +249,7 @@ public class FunctionSelector extends Selector {
     @Override
     public int hashCode() {
         int result = functionName != null ? functionName.hashCode() : 0;
-        result = 31 * result + (functionSelectors != null ? functionSelectors.hashCode() : 0);
+        result = 31 * result + (selectExpression != null ? selectExpression.hashCode() : 0);
         result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
         return result;
     }

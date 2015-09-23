@@ -934,8 +934,11 @@ public class Planner {
                     }
                 }
                 areFunctionsConsistent = checkFunctionsConsistency(
-                        connectorMetadata, supportedFunctions,
-                        new HashSet<>(fSelector.getFunctionColumns()), svq, initialProjects);
+                        connectorMetadata,
+                        supportedFunctions,
+                        new HashSet<>(fSelector.getFunctionColumns().getSelectorList()),
+                        svq,
+                        initialProjects);
             }
         }
         return areFunctionsConsistent;

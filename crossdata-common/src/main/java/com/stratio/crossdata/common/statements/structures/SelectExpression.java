@@ -38,16 +38,32 @@ public class SelectExpression implements Serializable, ISqlExpression {
      */
     private final List<Selector> selectorList;
 
+    private final boolean distinct;
+
+    /**
+     * Class constructor.
+     * @param distinct Distinct values.
+     * @param selectorList The list of Selectors.
+     */
+    public SelectExpression(boolean distinct, List<Selector> selectorList) {
+        this.distinct = distinct;
+        this.selectorList = selectorList;
+    }
+
     /**
      * Class constructor.
      * @param selectorList The list of Selectors.
      */
     public SelectExpression(List<Selector> selectorList) {
-        this.selectorList = selectorList;
+        this(false, selectorList);
     }
 
     public List<Selector> getSelectorList() {
         return selectorList;
+    }
+
+    public boolean isDistinct() {
+        return distinct;
     }
 
     /**
@@ -55,11 +71,20 @@ public class SelectExpression implements Serializable, ISqlExpression {
      * @param columnList The list of columns.
      */
     public static SelectExpression create(List<ColumnName> columnList) {
+        return create(false, columnList);
+    }
+
+    /**
+     * Create a basic SelectExpression from a column list.
+     * @param distinct Distinct values.
+     * @param columnList The list of columns.
+     */
+    public static SelectExpression create(boolean distinct, List<ColumnName> columnList) {
         List<Selector> selectors = new ArrayList<>();
         for(ColumnName cn: columnList){
             selectors.add(new ColumnSelector(cn));
         }
-        return new SelectExpression(selectors);
+        return new SelectExpression(distinct, selectors);
     }
 
     @Override

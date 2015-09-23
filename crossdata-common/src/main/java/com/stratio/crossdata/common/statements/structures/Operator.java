@@ -158,7 +158,7 @@ public enum Operator {
     /**
      * Distinct comparator.
      */
-    DISTINCT(Group.COMPARATOR) {
+    NOT_EQUAL(Group.COMPARATOR) {
         @Override
         public String toString() {
             return "<>";
