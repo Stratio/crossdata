@@ -32,13 +32,15 @@ object Driver extends DriverConfig {
   override lazy val logger = Logger.getLogger(getClass)
 }
 
-class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String]()) {
+class Driver(seedNodes: java.util.List[String] = new util.ArrayList[String]()) {
 
-  val ActorsPath = "/user/receptionist"
   private lazy val logger = Driver.logger
-
-  private val finalConfig = if (!seedNodes.isEmpty) Driver.config else Driver.config.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromAnyRef(seedNodes))
-
+  val ActorsPath = "/user/receptionist"
+  private val finalConfig =
+    if (!seedNodes.isEmpty)
+      Driver.config
+    else
+      Driver.config.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromAnyRef(seedNodes))
 
   private val system = ActorSystem("CrossdataServerCluster", finalConfig)
 
@@ -48,7 +50,7 @@ class Driver(val seedNodes: java.util.List[String] = new util.ArrayList[String](
 
   private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(_ + ActorsPath)
 
-  private val initialContacts: Set[ActorSelection] = contactPoints.map(system.actorSelection(_)).toSet
+  private val initialContacts: Set[ActorSelection] = contactPoints.map(system.actorSelection).toSet
   logger.debug("Initial contacts: " + initialContacts)
 
   val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
