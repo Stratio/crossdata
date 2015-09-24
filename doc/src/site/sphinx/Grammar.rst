@@ -339,7 +339,7 @@ ON \<field1\>=\<field2\>)? (WHERE \<where-clause\>)?
 (LIMIT \<integer\>)?
 (WITH \<JSON\>)? ';'
 
-\<selection-list\> ::= \<identifier\> (AS \<identifier\>)? (',' \<selector\> (AS \<identifier\>)? )\* | '\*'
+\<selection-list\> ::= (DISTINCT)? \<identifier\> (AS \<identifier\>)? (',' \<selector\> (AS \<identifier\>)? )\* | '\*'
 
 \<where-clause\> ::= \<relation\> ( AND \<relation\> )\*
 

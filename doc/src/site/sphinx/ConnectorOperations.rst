@@ -121,6 +121,8 @@ With respect to the relationship, Crossdata supports:
 +--------------+------------------------------------------+
 | NOT_BETWEEN  | Opposite of BETWEEN operator.            |
 +--------------+------------------------------------------+
+| DISTINCT     | Distinct modifier for select expressions.|
++--------------+------------------------------------------+
 
 Metadata
 --------
