@@ -65,10 +65,25 @@ trait TableInventory {
    */
   def generateConnectorOpts(item: Table, userOpts: Map[String, String] = Map.empty): Map[String, String]
 
+  /**
+   * Overriding this function allows tables import filtering. e.g: Avoiding system tables.
+   *
+   * @param table Table description case class instance
+   * @return `true` if the table shall be imported, `false` otherwise
+   */
   def exclusionFilter(table: TableInventory.Table) = true
 
+  /**
+   *
+   * @param context SQLContext at which the command will be executed.
+   * @param options SQL Sentence user options
+   * @return A list of tables descriptions extracted from the datasource using a connector.0
+   */
   def listTables(context: SQLContext, options: Map[String, String]): Seq[Table]
+
+
   //TODO: Add operation for describing a concrete table.
+  //def fetchTableDescription(name: String, options: Map[String, String]): Table
 }
 
 object TableInventory {

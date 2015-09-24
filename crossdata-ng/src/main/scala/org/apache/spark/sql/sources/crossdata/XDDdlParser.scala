@@ -3,8 +3,6 @@ package org.apache.spark.sql.sources.crossdata
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.sources.{DDLException, DDLParser}
 
-import scala.sys
-
 class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
 
   protected val IMPORT = Keyword("IMPORT")

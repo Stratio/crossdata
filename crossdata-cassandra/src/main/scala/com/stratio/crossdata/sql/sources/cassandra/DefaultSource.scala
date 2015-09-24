@@ -128,7 +128,11 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
   }
 
 
-
+  /**
+   * @param tMeta C* Metadata for a given table
+   * @param clusterName
+   * @return A table description obtained after translate its C* meta data.
+   */
   private def tableMeta2Table(tMeta: TableMetadata)(implicit clusterName: String): Table = {
 
     def col2sfield(col: ColumnMetadata, pks: Set[String], clusts: List[String]): StructField = {
@@ -153,9 +157,13 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
   
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
-    //TODO: Check how errors are reported
-    implicit val clusterName: String = options.getOrElse(CassandraDataSourceClusterNameProperty, {sys.error("""Missing option: "Cluster""""); ""})
-    val host: String = options.getOrElse(CassandraConnectionHostProperty, {sys.error("""Missing option: "spark_cassandra_connection_host""""); ""})
+    /*
+      Note that `CassandraDataSourceClusterNameProperty` and `CassandraConnectionHostProperty`
+      are obligatory present in the options map at this point because of the sentence
+      parsing checks.
+     */
+    implicit val clusterName: String = options(CassandraDataSourceClusterNameProperty)
+    val host: String = options(CassandraConnectionHostProperty)
 
     val cfg: SparkConf = context.sparkContext.getConf.clone()
 
@@ -175,6 +183,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
     }
   }
 
+  //Avoids importing system tables
   override def exclusionFilter(t: TableInventory.Table) =
     ! (Set("system", "system_traces") contains t.database.toLowerCase)
 
