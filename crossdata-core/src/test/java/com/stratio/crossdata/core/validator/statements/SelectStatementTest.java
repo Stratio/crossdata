@@ -661,7 +661,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "email"));
         Selector right = new StringSelector(tablename, "name_1@domain.com");
-        Relation relation = new Relation(left, Operator.NOT_EQUAL, right);
+        Relation relation = new Relation(left, Operator.NOT_EQ, right);
         where.add(relation);
 
         selectStatement.setWhere(where);

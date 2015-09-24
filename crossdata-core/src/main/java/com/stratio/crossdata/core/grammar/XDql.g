@@ -271,7 +271,7 @@ T_GT: '>';
 T_LT: '<';
 T_GTE: '>' '='; 
 T_LTE: '<' '=';
-T_NOT_EQUAL: '<' '>'; 
+T_NOT_EQ: '<' '>';
 T_TOKEN: T O K E N;
 T_MATCH: M A T C H;
 T_SEC: S E C;
@@ -1200,7 +1200,7 @@ getComparator returns [Operator op]:
     | T_LT {$op = Operator.LT;}
     | T_GTE {$op = Operator.GET;}
     | T_LTE {$op = Operator.LET;}
-    | T_NOT_EQUAL {$op = Operator.NOT_EQUAL;}
+    | T_NOT_EQ {$op = Operator.NOT_EQ;}
     | T_LIKE {$op = Operator.LIKE;}
     | T_MATCH {$op = Operator.MATCH;}
     | T_IN {$op = Operator.IN;}

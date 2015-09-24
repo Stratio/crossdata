@@ -526,7 +526,7 @@ public class Normalizator {
             case LT:
             case GET:
             case LET:
-            case NOT_EQUAL:
+            case NOT_EQ:
                 if (relation.getLeftTerm().getType() == SelectorType.COLUMN
                         && relation.getRightTerm().getType() == SelectorType.COLUMN) {
                     checkColumnSelector((ColumnSelector) relation.getRightTerm());
@@ -1282,7 +1282,7 @@ public class Normalizator {
 
     private void checkBooleanCompatibility(ColumnMetadata column, Operator operator, SelectorType valueType)
             throws ValidationException {
-        if ((operator != Operator.EQ) && (operator != Operator.NOT_EQUAL)) {
+        if ((operator != Operator.EQ) && (operator != Operator.NOT_EQ)) {
             throw new BadFormatException("Boolean relations only accept equal and distinct operator.");
         }
         if (valueType != SelectorType.BOOLEAN) {
