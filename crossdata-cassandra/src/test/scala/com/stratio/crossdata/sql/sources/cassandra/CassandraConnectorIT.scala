@@ -152,7 +152,30 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
     tableCountInHighschool shouldBe 3
 
+  }
 
+  val wrongImportCatalogSentences = List(
+    s"""
+       |IMPORT CATALOG
+       |USING $SourceProvider
+       |OPTIONS (
+       | cluster "$ClusterName"
+       |)
+    """.stripMargin,
+    s"""
+       |IMPORT CATALOG
+       |USING $SourceProvider
+       |OPTIONS (
+       | spark_cassandra_connection_host '$CassandraHost'
+       |)
+     """.stripMargin
+  )
+
+  wrongImportCatalogSentences.take(1) foreach { sentence =>
+    it should s"not import catalogs for sentences lacking mandatory options: $sentence" in {
+      assumeEnvironmentIsUpAndRunning
+      an [Exception] shouldBe thrownBy(ctx.sql(sentence))
+    }
   }
 
 }
