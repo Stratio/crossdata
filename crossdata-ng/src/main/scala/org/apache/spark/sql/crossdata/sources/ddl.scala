@@ -1,4 +1,4 @@
-package org.apache.spark.sql.sources.crossdata
+package org.apache.spark.sql.crossdata.sources
 
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan

@@ -14,13 +14,13 @@
  *  limitations under the License.
  */
 
-package org.apache.spark.sql.sources
+package org.apache.spark.sql.crossdata.sources
 
 import org.apache.spark.sql.catalyst.expressions
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.sources
-import org.apache.spark.sql.sources.{Filter => SourceFilter}
+import org.apache.spark.sql.sources.{Filter => SourceFilter, Filter}
 import org.apache.spark.sql.types.{StringType, UTF8String}
 
 object CatalystToCrossdataAdapter {

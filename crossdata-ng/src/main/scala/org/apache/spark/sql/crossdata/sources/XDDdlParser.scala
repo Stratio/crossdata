@@ -1,7 +1,7 @@
-package org.apache.spark.sql.sources.crossdata
+package org.apache.spark.sql.crossdata.sources
 
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.sources.{DDLException, DDLParser}
+import org.apache.spark.sql.sources.DDLParser
 
 class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
 
