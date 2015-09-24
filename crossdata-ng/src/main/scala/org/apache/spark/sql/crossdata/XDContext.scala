@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
-import org.apache.spark.sql.sources.crossdata.XDDdlParser
+import org.apache.spark.sql.crossdata.sources.XDDdlParser
 import org.apache.spark.sql.{Strategy, DataFrame, SQLContext}
 import org.apache.spark.{Logging, SparkContext}
 
@@ -34,7 +34,7 @@ import org.apache.spark.{Logging, SparkContext}
  * @param sc A [[SparkContext]].
  */
 class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging {
-
+  self =>
 
   val xdConfig: Config = ConfigFactory.load
   val catalogClass: String = xdConfig.getString("crossdata.catalog.class")
@@ -62,14 +62,14 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
   @transient
   private val XDPlanner = new SparkPlanner with XDStrategies {
-    val XDContext = self
+    val xdContext = self
 
-    override def strategies: Seq[Strategy] = experimental.extraStrategies ++ Seq(
-      XDDDLStrategy,
-      super.strategies
-    )
+    override def strategies: Seq[Strategy] = (experimental.extraStrategies :+ XDDDLStrategy) ++ super.strategies
+  }
+
+  @transient
+  override protected[sql] val planner = XDPlanner
 }
-
 
 
 /**

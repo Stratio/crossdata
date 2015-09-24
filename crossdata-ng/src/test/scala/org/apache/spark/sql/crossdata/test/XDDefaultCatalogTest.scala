@@ -16,24 +16,23 @@
 
 package org.apache.spark.sql.crossdata.test
 
-import org.apache.spark.sql.crossdata.DefaultCatalog
+import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.sources.CreateTableUsing
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FlatSpec, Matchers}
+
 
 @RunWith(classOf[JUnitRunner])
-class XDDefaultCatalogTest extends FlatSpec with Matchers {
-  val catalog= new DefaultCatalog
+class XDDefaultCatalogTest extends BaseXDTest {
 
   "the table" should "be stored" in {
-    val field1=StructField("column1",StringType,true)
-    val field2=StructField("column2",StringType,true)
-    val fields=Seq[StructField](field1,field2)
-    val columns=StructType(fields)
-    val createTable=CreateTableUsing("example",Option(columns),"Cassandra",false,Map[String,String](),false,false)
-    val table=Seq("example")
-    catalog.registerTable(table,createTable)
+    val field1 = StructField("column1", StringType, true)
+    val field2 = StructField("column2", StringType, true)
+    val fields = Seq[StructField](field1, field2)
+    val columns = StructType(fields)
+    val createTable = CreateTableUsing("example", Option(columns), "Cassandra", false, Map[String, String](), false, false)
+    val table = Seq("example")
+
   }
 }

@@ -22,7 +22,6 @@ import com.stratio.provider.Config._
 import com.stratio.provider.mongodb.MongodbConfig._
 import com.stratio.provider.mongodb.{MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions}
 import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 

@@ -17,7 +17,8 @@
 package com.stratio.crossdata.sql.sources
 
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{SQLContext, Row}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 
 /**
@@ -43,4 +44,10 @@ sealed trait PushDownable {
    * @return whether the logical step within the entire logical plan is supported
    */
   def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean
+}
+
+@DeveloperApi
+trait MetadataOperations {
+  def createTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String])
+
 }

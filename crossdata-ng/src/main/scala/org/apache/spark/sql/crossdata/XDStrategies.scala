@@ -20,25 +20,23 @@
 package org.apache.spark.sql.crossdata
 
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.sources.CreateTable
 import org.apache.spark.sql.execution.{ExecutedCommand, SparkPlan}
 import org.apache.spark.sql.sources.CreateTableUsing
-import org.apache.spark.sql.sources.crossdata.CreateTable
 import org.apache.spark.sql.{SQLContext, Strategy}
 
 
 private[crossdata] trait XDStrategies {
   self: SQLContext#SparkPlanner =>
 
-  val XDContext: XDContext
+  val xdContext: XDContext
 
   object XDDDLStrategy extends Strategy {
     def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {
       case CreateTableUsing(
       tableName, userSpecifiedSchema, provider, false, opts, allowExisting, managedIfNoPath) =>
         ExecutedCommand(CreateTable(tableName, userSpecifiedSchema, provider, false, opts, allowExisting,
-          managedIfNoPath, plan))
-        //TODO CAMBIAR POR RUNNABLE COMMAND
-        Nil
+          managedIfNoPath, plan))::Nil
       case _ => Nil
     }
   }

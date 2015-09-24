@@ -19,12 +19,14 @@
 
 package com.stratio.crossdata.sql.sources.cassandra
 
-import com.datastax.spark.connector.cql.CassandraConnectorConf
+import com.datastax.spark.connector.cql.{CassandraConnector, CassandraConnectorConf}
 import com.datastax.spark.connector.rdd.ReadConf
 import com.datastax.spark.connector.writer.WriteConf
+import com.stratio.crossdata.sql.sources.MetadataOperations
 import com.stratio.crossdata.sql.sources.cassandra.DefaultSource._
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.cassandra.{CassandraSourceOptions, CassandraSourceRelation, CassandraXDSourceRelation, TableRef, DefaultSource => CassandraConnectorDS}
+import org.apache.spark.sql.cassandra.{CassandraSourceOptions, CassandraSourceRelation, CassandraXDSourceRelation, DefaultSource => CassandraConnectorDS, TableRef}
 import org.apache.spark.sql.sources.BaseRelation
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
@@ -39,31 +41,31 @@ import scala.collection.mutable
  * It's used internally by Spark SQL to create Relation for a table which specifies the Cassandra data source
  * e.g.
  *
- *      CREATE TEMPORARY TABLE tmpTable
- *      USING org.apache.spark.sql.cassandra
- *      OPTIONS (
- *       table "table",
- *       keyspace "keyspace",
- *       cluster "test_cluster",
- *       pushdown "true",
- *       spark_cassandra_input_page_row_size "10",
- *       spark_cassandra_output_consistency_level "ONE",
- *       spark_cassandra_connection_timeout_ms "1000"
- *      )
+ * CREATE TEMPORARY TABLE tmpTable
+ * USING org.apache.spark.sql.cassandra
+ * OPTIONS (
+ * table "table",
+ * keyspace "keyspace",
+ * cluster "test_cluster",
+ * pushdown "true",
+ * spark_cassandra_input_page_row_size "10",
+ * spark_cassandra_output_consistency_level "ONE",
+ * spark_cassandra_connection_timeout_ms "1000"
+ * )
  */
-class DefaultSource extends CassandraConnectorDS {
+class DefaultSource extends CassandraConnectorDS with MetadataOperations {
 
   /**
    * Creates a new relation for a cassandra table.
    * The parameters map stores table level data. User can specify vale for following keys
    *
-   *    table        -- table name, required
-   *    keyspace       -- keyspace name, required
-   *    cluster        -- cluster name, optional, default name is "default"
-   *    pushdown      -- true/false, optional, default is true
-   *    Cassandra connection settings  -- optional, e.g. spark_cassandra_connection_timeout_ms
-   *    Cassandra Read Settings        -- optional, e.g. spark_cassandra_input_page_row_size
-   *    Cassandra Write settings       -- optional, e.g. spark_cassandra_output_consistency_level
+   * table        -- table name, required
+   * keyspace       -- keyspace name, required
+   * cluster        -- cluster name, optional, default name is "default"
+   * pushdown      -- true/false, optional, default is true
+   * Cassandra connection settings  -- optional, e.g. spark_cassandra_connection_timeout_ms
+   * Cassandra Read Settings        -- optional, e.g. spark_cassandra_input_page_row_size
+   * Cassandra Write settings       -- optional, e.g. spark_cassandra_output_consistency_level
    *
    * When push_down is true, some filters are pushed down to CQL.
    *
@@ -87,6 +89,53 @@ class DefaultSource extends CassandraConnectorDS {
 
     val (tableRef, options) = tableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options, Option(schema))
+  }
+
+
+  /**
+   * Create new table into C*
+   * @param context
+   * @param options
+   * @return
+   */
+  override def createTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String])
+  = {
+
+    implicit val clusterName: String = options.getOrElse(CassandraDataSourceClusterNameProperty, {
+      sys.error( """Missing option: "Cluster"""");
+      ""
+    })
+    val host: String = options.getOrElse(CassandraConnectionHostProperty, {
+      sys.error( """Missing option: "spark_cassandra_connection_host"""");
+      ""
+    })
+
+    val cfg: SparkConf = context.sparkContext.getConf.clone()
+
+    for (prop <- DefaultSource.confProperties;
+         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop"))
+      cfg.set(prop, clusterLevelValue)
+
+    cfg.set("spark.cassandra.connection.host", host)
+
+    val connector = CassandraConnector(cfg)
+
+    val fields= schema.fields.map(field => s"${field.name} ${field.dataType.simpleString}")
+    val pk=options.getOrElse("partitionKey","")
+    val ck=options.getOrElse("clusterKey","")
+
+    val partitionKey=pk.mkString(",")
+    val clusterKey=if (ck!=null) ck.mkString(",") else null
+    val primaryKey=
+      if (!clusterKey.equals(""))
+        s"(($partitionKey),$clusterKey)"
+      else
+        s"($partitionKey)"
+
+
+    connector.withSessionDo {
+      s => s.execute(s"CREATE TABLE $tableName (${fields.mkString(",")},PRIMARY KEY $primaryKey )")
+    }
   }
 
   /**
@@ -129,6 +178,7 @@ object DefaultSource {
   val CassandraDataSourcePushdownEnableProperty = "pushdown"
   val CassandraDataSourceProviderPackageName = DefaultSource.getClass.getPackage.getName
   val CassandraDataSourceProviderClassName = CassandraDataSourceProviderPackageName + ".DefaultSource"
+  val CassandraConnectionHostProperty = "spark_cassandra_connection_host"
 
 
   /** Parse parameters into CassandraDataSourceOptions and TableRef object */

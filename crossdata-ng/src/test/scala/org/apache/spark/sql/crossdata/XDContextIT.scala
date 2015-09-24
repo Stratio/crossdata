@@ -56,4 +56,11 @@ class XDContextIT extends SharedXDContextTest {
   }
   */
 
+  "CreateTable" should "create table in the datasource" in {
+
+    ctx.sql("""CREATE TABLE crossdataTest (id INT, name String) " +
+      "USING com.stratio.crossdata.sql.sources.cassandra " +
+      "OPTIONS ("partitionKey" "id" )""")
+  }
+
 }
