@@ -839,7 +839,7 @@ public class Planner {
                                     break;
                                 case FILTER_FUNCTION_IN:
                                 case FILTER_FUNCTION_BETWEEEN:
-                                case FILTER_FUNCTION_DISTINCT:
+                                case FILTER_FUNCTION_NOT_EQ:
                                 case FILTER_FUNCTION_EQ:
                                 case FILTER_FUNCTION_GET:
                                 case FILTER_FUNCTION_GT:

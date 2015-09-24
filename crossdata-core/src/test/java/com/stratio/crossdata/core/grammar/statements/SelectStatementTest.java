@@ -132,7 +132,7 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void selectWithDistinctPlusAsterisk() {
         String inputText = "SELECT DISTINCT * FROM newks.newtb;";
-        testParserFails("newks", inputText, "selectWithDistinctPlusAsterisk");
+        testRegularStatement(inputText, "selectWithDistinctPlusAsterisk", true);
     }
 
     @Test

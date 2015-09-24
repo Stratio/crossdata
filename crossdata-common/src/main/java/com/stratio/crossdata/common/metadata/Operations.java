@@ -95,9 +95,9 @@ public enum Operations {
 
     /**
      * The engine supports update operations on columns
-     * that are part of the primary key with distinct operator.
+     * that are part of the primary key with not equals operator.
      */
-    UPDATE_PK_DISTINCT("UPDATE_PK_DISTINCT"),
+    UPDATE_PK_NOT_EQ("UPDATE_PK_NOT_EQ"),
 
     /**
      * The engine supports update operations on columns
@@ -167,9 +167,9 @@ public enum Operations {
 
     /**
      * The engine supports update operations on columns
-     * that are not indexed by the underlying datastore with distinct operator.
+     * that are not indexed by the underlying datastore with not equals operator.
      */
-    UPDATE_NON_INDEXED_DISTINCT("UPDATE_NON_INDEXED_DISTINCT"),
+    UPDATE_NON_INDEXED_NOT_EQ("UPDATE_NON_INDEXED_NOT_EQ"),
 
     /**
      * The engine supports update operations on columns
@@ -239,9 +239,9 @@ public enum Operations {
 
     /**
      * The engine supports update operations on columns
-     * that have an associated index in the underlying datastore with distinct operator.
+     * that have an associated index in the underlying datastore with not equals operator.
      */
-    UPDATE_INDEXED_DISTINCT("UPDATE_INDEXED_DISTINCT"),
+    UPDATE_INDEXED_NOT_EQ("UPDATE_INDEXED_NOT_EQ"),
 
     /**
      * The engine supports update operations on columns
@@ -311,9 +311,9 @@ public enum Operations {
 
     /**
      * The engine supports update operations using
-     * a includes as part of a relation using with distinct operator.
+     * a includes as part of a relation using with not equals operator.
      */
-    UPDATE_FUNCTION_DISTINCT("UPDATE_FUNCTION_DISTINCT"),
+    UPDATE_FUNCTION_NOT_EQ("UPDATE_FUNCTION_NOT_EQ"),
 
     /**
      * The engine supports update operations using
@@ -404,9 +404,9 @@ public enum Operations {
 
     /**
      * The engine supports delete operations on columns
-     * that are part of the primary key with distinct operator.
+     * that are part of the primary key with not equals operator.
      */
-    DELETE_PK_DISTINCT("DELETE_PK_DISTINCT"),
+    DELETE_PK_NOT_EQ("DELETE_PK_NOT_EQ"),
 
     /**
      * The engine supports delete operations on columns
@@ -476,9 +476,9 @@ public enum Operations {
 
     /**
      * The engine supports delete operations on columns
-     * that are not indexed by the underlying datastore with distinct operator.
+     * that are not indexed by the underlying datastore with not equals operator.
      */
-    DELETE_NON_INDEXED_DISTINCT("DELETE_NON_INDEXED_DISTINCT"),
+    DELETE_NON_INDEXED_NOT_EQ("DELETE_NON_INDEXED_NOT_EQ"),
 
     /**
      * The engine supports delete operations on columns
@@ -548,9 +548,9 @@ public enum Operations {
 
     /**
      * The engine supports delete operations on columns
-     * that have an associated index in the underlying datastore with distinct operator.
+     * that have an associated index in the underlying datastore with not equals operator.
      */
-    DELETE_INDEXED_DISTINCT("DELETE_INDEXED_DISTINCT"),
+    DELETE_INDEXED_NOT_EQ("DELETE_INDEXED_NOT_EQ"),
 
     /**
      * The engine supports delete operations on columns
@@ -619,9 +619,9 @@ public enum Operations {
 
     /**
      * The engine supports delete operations using
-     * a includes as part of a relation using with distinct operator.
+     * a includes as part of a relation using with not equals operator.
      */
-    DELETE_FUNCTION_DISTINCT("DELETE_FUNCTION_DISTINCT"),
+    DELETE_FUNCTION_NOT_EQ("DELETE_FUNCTION_NOT_EQ"),
 
     /**
      * The engine supports delete operations using
@@ -756,7 +756,7 @@ public enum Operations {
     SELECT_INNER_JOIN_PARTIAL_RESULTS("SELECT_INNER_JOIN_PARTIAL_RESULTS"),
 
     /**
-     * The engine supports order by
+     * The engine supports the modifier distinct for select expressions.
      */
     SELECT_DISTINCT("SELECT_DISTINCT"),
 
@@ -807,9 +807,9 @@ public enum Operations {
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
-     * that are part of the primary key with distinct operator.
+     * that are part of the primary key with not equals operator.
      */
-    FILTER_PK_DISTINCT("FILTER_PK_DISTINCT"),
+    FILTER_PK_NOT_EQ("FILTER_PK_NOT_EQ"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
@@ -884,9 +884,9 @@ public enum Operations {
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
-     * that are not indexed by the underlying datastore with a distinct operator.
+     * that are not indexed by the underlying datastore with a not equals operator.
      */
-    FILTER_NON_INDEXED_DISTINCT("FILTER_NON_INDEXED_DISTINCT"),
+    FILTER_NON_INDEXED_NOT_EQ("FILTER_NON_INDEXED_NOT_EQ"),
 
     /**
      * The engine supports full text search syntax in {@link com.stratio.crossdata.common.logicalplan.Filter}
@@ -961,9 +961,9 @@ public enum Operations {
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
-     * that have an associated index in the underlying datastore with a distinct operator.
+     * that have an associated index in the underlying datastore with a not equals operator.
      */
-    FILTER_INDEXED_DISTINCT("FILTER_INDEXED_DISTINCT"),
+    FILTER_INDEXED_NOT_EQ("FILTER_INDEXED_NOT_EQ"),
 
     /**
      * The engine supports full text search syntax in {@link com.stratio.crossdata.common.logicalplan.Filter}
@@ -1038,9 +1038,9 @@ public enum Operations {
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
-     * a includes as part of a relation using with a distinct operator.
+     * a includes as part of a relation using with a not equals operator.
      */
-    FILTER_FUNCTION_DISTINCT("FILTER_FUNCTION_DISTINCT"),
+    FILTER_FUNCTION_NOT_EQ("FILTER_FUNCTION_NOT_EQ"),
 
     /**
      * The filter of like operator.
