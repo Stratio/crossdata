@@ -135,7 +135,6 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_ORDER_BY);
         operationsC1.add(Operations.FILTER_PK_EQ);
 
-
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
         operationsC2.add(Operations.PROJECT);
@@ -617,7 +616,8 @@ public class PlannerTest extends PlannerBaseTest {
                 queryWorkflow.getWorkflow().getInitialSteps().get(2).getNextStep(),
                 "Expecting first and third initial steps to converge to the same union step");
         assertEquals(
-                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep().getNextStep().getNextStep().getClass(),
+                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep().getNextStep().getNextStep()
+                        .getClass(),
                 Select.class,
                 "Last step should be a Select");
 
@@ -1032,6 +1032,26 @@ public class PlannerTest extends PlannerBaseTest {
                 storageWorkflow.getRows().iterator().next().getCell("animals").getValue(),
                 "Bad conversion of the list");
 
+    }
+
+    @Test
+    public void selectDistinctShouldFail() throws ManifestException {
+
+        init();
+
+        String inputText = "SELECT DISTINCT demo.table1.user FROM demo.table1;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "selectDistinct", true, table1);
+    }
+
+    @Test
+    public void selectCountDistinctShouldFail() throws ManifestException {
+
+        init();
+
+        String inputText = "SELECT COUNT(DISTINCT demo.table1.user) AS COUNT FROM demo.table1;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "selectDistinct", true, table1);
     }
 
 }

@@ -163,7 +163,7 @@ public class FunctionSelector extends Selector {
 
         boolean first=true;
         if(selectExpression.isDistinct()){
-            sb.append(" DISTINCT ");
+            sb.append("DISTINCT ");
         }
         for (Selector selector: selectExpression.getSelectorList()) {
             if(!first){
@@ -187,7 +187,7 @@ public class FunctionSelector extends Selector {
         StringBuilder sb = new StringBuilder(functionName);
         sb.append("(");
         if(selectExpression.isDistinct()){
-            sb.append(" DISTINCT ");
+            sb.append("DISTINCT ");
         }
         Iterator<Selector> selectors = selectExpression.getSelectorList().iterator();
         while (selectors.hasNext()) {
@@ -208,7 +208,7 @@ public class FunctionSelector extends Selector {
         StringBuilder sb = new StringBuilder(functionName);
         sb.append("(");
         if(selectExpression.isDistinct()){
-            sb.append(" DISTINCT ");
+            sb.append("DISTINCT ");
         }
         if(hadAsteriskSelector){
             sb.append("*");

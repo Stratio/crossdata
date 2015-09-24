@@ -59,11 +59,6 @@ import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.Join;
 import com.stratio.crossdata.core.utils.CoreUtils;
 import com.stratio.crossdata.core.validator.Validator;
-import org.apache.log4j.Logger;
-import scala.util.parsing.json.JSON;
-import scala.util.parsing.json.JSONObject;
-
-import java.util.*;
 
 /**
  * Class in charge of defining the set of {@link com.stratio.crossdata.common.logicalplan.LogicalStep}
@@ -104,7 +99,6 @@ public class Planner {
     public SelectPlannedQuery planQuery(SelectValidatedQuery query) throws PlanningException {
         query.optimizeQuery();
 
-
         ExecutionWorkflow executionWorkflow = null;
         GlobalIndexMetadata globalIndex = null;
         if ((globalIndex = getGlobalIndex(query)) != null) {
@@ -124,12 +118,11 @@ public class Planner {
 
             globalIndexExecutionWorkflow.setResultType(ResultType.GLOBAL_INDEX_RESULTS);
             executionWorkflow = globalIndexExecutionWorkflow;
-        }else{
+        } else {
             LogicalWorkflow workflow = buildWorkflow(query);
             //Plan the workflow execution into different connectors.
             executionWorkflow = buildExecutionWorkflow(query, workflow);
         }
-
 
         //Return the planned query.
         SelectPlannedQuery plannedQuery = new SelectPlannedQuery(query, executionWorkflow);
@@ -592,8 +585,13 @@ public class Planner {
         //Select an actor
         Iterator<ConnectorMetadata> connectorMetadata = getConnectorsSortedByPriority(connectors, involvedClusters).iterator();
 
-        QueryWorkflow choicedWorkflow = buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow);
-        QueryWorkflow tempWorkflow = choicedWorkflow;
+        QueryWorkflow chosenWorkflow = buildQueryWorkflowFromConnector(
+                queryId,
+                connectorMetadata.next(),
+                ExecutionType.SELECT,
+                type,
+                workflow);
+        QueryWorkflow tempWorkflow = chosenWorkflow;
         while (connectorMetadata.hasNext()) {
             QueryWorkflow auxWorkflow = buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(),
                     ExecutionType.SELECT, type, workflow);
@@ -601,7 +599,7 @@ public class Planner {
             tempWorkflow = auxWorkflow;
         }
 
-        return choicedWorkflow;
+        return chosenWorkflow;
     }
 
     private QueryWorkflow buildQueryWorkflowFromConnector(String queryId, ConnectorMetadata connectorMetadata, ExecutionType exType, ResultType resType, LogicalWorkflow workflow) throws PlanningException {
@@ -649,16 +647,11 @@ public class Planner {
 
         Map<Selector, ColumnType> typeMapFromColumnName = selectStep.getTypeMapFromColumnName();
 
-        for (Selector s : typeMapFromColumnName.keySet()) {
+        for (Selector s: typeMapFromColumnName.keySet()) {
             if (FunctionSelector.class.isInstance(s)) {
                 FunctionSelector fs = FunctionSelector.class.cast(s);
                 String functionName = fs.getFunctionName();
-                FunctionType ft = MetadataManager.MANAGER.getFunction(connectorName, functionName, getSetOfProjects(workflow.getInitialSteps()));
-                if (ft == null) {
-                    throw new PlanningException("Function: '" + functionName + "' unrecognized");
-                }
-                String returningType = StringUtils.getReturningTypeFromSignature(ft.getSignature());
-                ColumnType ct = StringUtils.convertXdTypeToColumnType(returningType);
+                ColumnType ct = getColumnTypeOfFunction(workflow, connectorName, functionName);
                 typeMapFromColumnName.put(fs, ct);
                 String stringKey = fs.getFunctionName();
                 if (fs.getAlias() != null) {
@@ -667,6 +660,16 @@ public class Planner {
                 typeMap.put(stringKey, ct);
             }
         }
+    }
+
+    private ColumnType getColumnTypeOfFunction(LogicalWorkflow workflow, ConnectorName connectorName,
+            String functionName) throws PlanningException {
+        FunctionType ft = MetadataManager.MANAGER.getFunction(connectorName, functionName, getSetOfProjects(workflow.getInitialSteps()));
+        if (ft == null) {
+            throw new PlanningException("Function: '" + functionName + "' unrecognized");
+        }
+        String returningType = StringUtils.getReturningTypeFromSignature(ft.getSignature());
+        return StringUtils.convertXdTypeToColumnType(returningType);
     }
 
     //TODO Use generics.
@@ -681,7 +684,7 @@ public class Planner {
     private void linkPathsToUnionStep(List<ExecutionPath> executionPaths,
                                       ExecutionPath mergePath) {
         for (ExecutionPath path : executionPaths) {
-            path.getLast().setNextStep(mergePath.getInitial()); //TODO; Previous?
+            path.getLast().setNextStep(mergePath.getInitial()); //TODO: Previous?
         }
     }
 
@@ -705,7 +708,7 @@ public class Planner {
         for (ExecutionPath path : executionPaths) {
             Set<Project> previousInitialProjects = findPreviousInitialProjects(path.getInitial());
             initialSteps.addAll(previousInitialProjects);
-            path.getLast().setNextStep(mergePath.getInitial()); //TODO; Previous?
+            path.getLast().setNextStep(mergePath.getInitial()); //TODO: Previous?
         }
 
         for (LogicalStep previousProject : initialSteps) {
@@ -788,15 +791,17 @@ public class Planner {
      * @return An {@link com.stratio.crossdata.common.executionplan.ExecutionPath}.
      * @throws PlanningException If the execution path cannot be determined.
      */
-    protected ExecutionPath defineExecutionPath(LogicalStep initial, List<ConnectorMetadata> candidateConnectors,
-                                                SelectValidatedQuery svq)
+    protected ExecutionPath defineExecutionPath(
+            LogicalStep initial,
+            List<ConnectorMetadata> candidateConnectors,
+            SelectValidatedQuery svq)
             throws PlanningException {
 
         List<ConnectorMetadata> availableConnectors = new ArrayList<>();
         availableConnectors.addAll(candidateConnectors);
         LogicalStep last = null;
         LogicalStep current = initial;
-        List<ConnectorMetadata> toRemove = new ArrayList<>();
+        Set<ConnectorMetadata> toRemove = new HashSet<>();
         boolean unregisteredFunction = false;
         String unregisteredFunctionMsg = "";
         boolean exit = false;
@@ -805,9 +810,9 @@ public class Planner {
 
         while (!exit) {
             // Evaluate the connectors
-            for (ConnectorMetadata connector : availableConnectors) {
+            for (ConnectorMetadata connector: availableConnectors) {
 
-                for (Operations currentOperation : current.getOperations()) {
+                for (Operations currentOperation: current.getOperations()) {
                     if (!connector.supports(currentOperation)) {
                         // Check selector functions
                         toRemove.add(connector);
@@ -882,7 +887,7 @@ public class Planner {
             }
 
             // Remove invalid connectors
-            if (toRemove.size() == availableConnectors.size()) {
+            if (toRemove.size() >= availableConnectors.size()) {
                 if (unregisteredFunction) {
                     throw new PlanningException(unregisteredFunctionMsg);
                 } else {
@@ -994,7 +999,7 @@ public class Planner {
         List<LogicalStep> initialSteps = new ArrayList<>();
 
         Map<String, TableMetadata> tableMetadataMap = new LinkedHashMap<>();
-        for (TableMetadata tm : query.getTableMetadata()) {
+        for (TableMetadata tm: query.getTableMetadata()) {
             tableMetadataMap.put(tm.getName().getQualifiedName(), tm);
         }
         SelectStatement ss = SelectStatement.class.cast(query.getStatement());
@@ -2620,7 +2625,10 @@ public class Planner {
 
         Set<Operations> requiredOperations = new HashSet<>();
         requiredOperations.add(Operations.SELECT_OPERATOR);
-        for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
+        if(checkDistinct(selectStatement.getSelectExpression())){
+            requiredOperations.add(Operations.SELECT_DISTINCT);
+        }
+        for (Selector s: selectStatement.getSelectExpression().getSelectorList()) {
             if (ColumnSelector.class.isInstance(s)) {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
 
@@ -2646,7 +2654,6 @@ public class Planner {
                 }
                 aliasMap.put(cs, alias);
 
-
                 ColumnType colType = null;
                 //TODO avoid null types
                 if (!cs.getTableName().isVirtual()) {
@@ -2659,7 +2666,7 @@ public class Planner {
             } else if (FunctionSelector.class.isInstance(s)) {
                 requiredOperations.add(Operations.SELECT_FUNCTIONS);
                 FunctionSelector fs = FunctionSelector.class.cast(s);
-                ColumnType ct = null;
+                ColumnType ct = ColumnType.valueOf("NATIVE");
                 String alias;
                 if (fs.getAlias() != null) {
                     alias = fs.getAlias();
@@ -2698,7 +2705,22 @@ public class Planner {
         }
 
 
-        return new Select(requiredOperations, aliasMap, typeMap, typeMapFromColumnName);
+        return new Select(requiredOperations, aliasMap, typeMap, typeMapFromColumnName, selectStatement.getSelectExpression().isDistinct());
+    }
+
+    private boolean checkDistinct(SelectExpression se) {
+        boolean distinctIsPresent = false;
+        if(se.isDistinct()){
+            distinctIsPresent = true;
+        } else {
+            for(Selector selector: se.getSelectorList()){
+                if(FunctionSelector.class.isInstance(selector)){
+                    FunctionSelector fs = FunctionSelector.class.cast(selector);
+                    return checkDistinct(fs.getFunctionColumns());
+                }
+            }
+        }
+        return distinctIsPresent;
     }
 
     private void generateCaseWhenSelect(LinkedHashMap<Selector, String> aliasMap,

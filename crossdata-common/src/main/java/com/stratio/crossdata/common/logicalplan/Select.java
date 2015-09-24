@@ -26,6 +26,7 @@ import java.util.Set;
 
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
@@ -50,6 +51,30 @@ public class Select extends TransformationStep {
      */
     private Map<Selector, ColumnType> typeMapFromColumnName;
 
+    private boolean isDistinct = false;
+
+    /**
+     * Class constructor.
+     *
+     * @param requiredOperations
+     *            A set of operations to be applied.
+     * @param columnMap
+     *            Map of columns associating the name given in the Project logical steps with the name expected in the
+     *            result.
+     * @param typeMap
+     *            The mapping of column types.
+     * @param typeMapFromColumnName  The types of selectors.
+     * @param isDistinct Whether the select expression is modified by the operator distinct or not.
+     */
+    public Select(Set<Operations> requiredOperations, Map<Selector, String> columnMap, Map<String, ColumnType> typeMap,
+            Map<Selector, ColumnType> typeMapFromColumnName, boolean isDistinct) {
+        super(requiredOperations);
+        this.columnMap = columnMap;
+        this.typeMap = typeMap;
+        this.typeMapFromColumnName = typeMapFromColumnName;
+        this.isDistinct = isDistinct;
+    }
+
     /**
      * Class constructor.
      * 
@@ -64,10 +89,7 @@ public class Select extends TransformationStep {
      */
     public Select(Set<Operations> requiredOperations, Map<Selector, String> columnMap, Map<String, ColumnType> typeMap,
             Map<Selector, ColumnType> typeMapFromColumnName) {
-        super(requiredOperations);
-        this.columnMap = columnMap;
-        this.typeMap = typeMap;
-        this.typeMapFromColumnName = typeMapFromColumnName;
+        this(requiredOperations, columnMap, typeMap, typeMapFromColumnName, false);
     }
 
     public Map<Selector, String> getColumnMap() {
@@ -94,6 +116,14 @@ public class Select extends TransformationStep {
         this.typeMapFromColumnName = typeMapFromColumnName;
     }
 
+    public boolean isDistinct() {
+        return isDistinct;
+    }
+
+    public void setIsDistinct(boolean isDistinct) {
+        this.isDistinct = isDistinct;
+    }
+
     /**
      * Get the selectors that must be returned as a result of executing the query
      * in the expected order.
@@ -110,11 +140,21 @@ public class Select extends TransformationStep {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("SELECT (");
+        if(isDistinct){
+            sb.append("DISTINCT ");
+        }
         Iterator<Map.Entry<Selector, String>> it = columnMap.entrySet().iterator();
         Map.Entry<Selector, String> entry;
         while (it.hasNext()) {
             entry = it.next();
-            sb.append(entry.getKey().getColumnName().getQualifiedName()).append(" AS ").append(entry.getValue());
+            Selector key = entry.getKey();
+            if(FunctionSelector.class.isInstance(key)){
+                FunctionSelector fs = FunctionSelector.class.cast(key);
+                if(fs.getFunctionColumns().isDistinct()){
+                    sb.append("DISTINCT ");
+                }
+            }
+            sb.append(key.getColumnName().getQualifiedName()).append(" AS ").append(entry.getValue());
             if (it.hasNext()) {
                 sb.append(", ");
             }

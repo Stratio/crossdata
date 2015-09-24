@@ -113,6 +113,9 @@ public class SelectExpression implements Serializable, ISqlExpression {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        if(isDistinct()){
+            sb.append("DISTINCT ");
+        }
         Iterator<Selector> selectors = selectorList.iterator();
         while (selectors.hasNext()) {
             sb.append(selectors.next().toString());
@@ -127,6 +130,9 @@ public class SelectExpression implements Serializable, ISqlExpression {
     public String toSQLString(boolean withAlias) {
 
         StringBuilder sb = new StringBuilder();
+        if(isDistinct()){
+            sb.append("DISTINCT ");
+        }
         Iterator<Selector> selectors = selectorList.iterator();
         while (selectors.hasNext()) {
             Selector selector = selectors.next();
