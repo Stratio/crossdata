@@ -80,11 +80,11 @@ trait XDTestUtils
    */
   protected def withSQLConf(pairs: (String, String)*)(f: => Unit): Unit = {
     val (keys, values) = pairs.unzip
-    val currentValues = keys.map(key => Try(_xdContext.conf.getConf(key)).toOption)
-    (keys, values).zipped.foreach(_xdContext.conf.setConf)
+    val currentValues = keys.map(key => Try(_xdContext.conf.getConfString(key)).toOption)
+    (keys, values).zipped.foreach(_xdContext.conf.setConfString)
     try f finally {
       keys.zip(currentValues).foreach {
-        case (key, Some(value)) => _xdContext.conf.setConf(key, value)
+        case (key, Some(value)) => _xdContext.conf.setConfString(key, value)
         case (key, None) => _xdContext.conf.unsetConf(key)
       }
     }

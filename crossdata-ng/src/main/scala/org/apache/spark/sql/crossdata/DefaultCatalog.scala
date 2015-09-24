@@ -20,7 +20,7 @@ import java.io._
 import java.util
 
 import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
+import org.apache.spark.sql.catalyst.{TableIdentifier, SimpleCatalystConf, CatalystConf}
 import org.apache.spark.sql.catalyst.analysis.{OverrideCatalog, SimpleCatalog}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.LogicalRDD
@@ -105,8 +105,8 @@ class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
   /**
    * @inheritdoc
    */
-  override def refreshTable(databaseName: String, tableName: String): Unit = {
-    super.refreshTable(databaseName, tableName)
+  override def refreshTable(tableIdent: TableIdentifier): Unit = {
+    super.refreshTable(tableIdent)
     logInfo("XDCatalog: refreshTable")
   }
 

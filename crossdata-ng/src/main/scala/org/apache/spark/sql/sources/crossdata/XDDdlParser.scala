@@ -1,7 +1,7 @@
 package org.apache.spark.sql.sources.crossdata
 
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.sources.{DDLException, DDLParser}
+import org.apache.spark.sql.execution.datasources.DDLParser
 
 class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
 
@@ -16,14 +16,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
       case "catalog" ~ provider ~ ops =>
         ImportCatalogUsingWithOptions(provider.asInstanceOf[String], ops.getOrElse(Map.empty))
       case other => ???
-    }
-
-  protected[sql] case class TableIdentifier(table: String, db: Option[String])
-
-  //Based on Spark 1.5 DDLParser's "tableIdentifier parser"
-  protected lazy val tableIdentifier: Parser[TableIdentifier] =
-    (ident <~ ".").? ~ ident ^^ {
-      case maybeDbName ~ tableName => TableIdentifier(tableName, maybeDbName)
     }
 
 }

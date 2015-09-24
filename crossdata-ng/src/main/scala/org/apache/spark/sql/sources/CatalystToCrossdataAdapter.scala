@@ -19,9 +19,11 @@ package org.apache.spark.sql.sources
 import org.apache.spark.sql.catalyst.expressions
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
-import org.apache.spark.sql.types.{StringType, UTF8String}
+import org.apache.spark.sql.types.StringType
+import org.apache.spark.unsafe.types.UTF8String
 
 object CatalystToCrossdataAdapter {
 

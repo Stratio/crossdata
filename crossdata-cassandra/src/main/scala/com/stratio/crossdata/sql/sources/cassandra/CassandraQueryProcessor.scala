@@ -27,10 +27,9 @@ import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelatio
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.sources
+import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
-import org.apache.spark.sql.types.UTF8String
-
+import org.apache.spark.unsafe.types.UTF8String
 
 object CassandraQueryProcessor {
 
@@ -205,7 +204,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
         data(i) = GettableData.get(row, i)(ProtocolVersion.V3)
         data(i) match {
           case date: Date => data.update(i, new Timestamp(date.getTime))
-          case str: String => data.update(i, UTF8String(str))
+          case str: String => data.update(i, UTF8String.fromString(str))
           case set: Set[_] => data.update(i, set.toSeq)
           case _ =>
         }

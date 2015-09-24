@@ -86,7 +86,7 @@
     <properties>
         <scala.binary.version>2.10</scala.binary.version>
         <scala.version>2.10.4</scala.version>
-        <spark.version>1.4.1</spark.version>
+        <spark.version>1.5.0</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
         <mapdb.version>1.0.8</mapdb.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>

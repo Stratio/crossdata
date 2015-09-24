@@ -24,7 +24,7 @@ import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
-import org.apache.spark.sql.sources.LogicalRelation
+import org.apache.spark.sql.execution.datasources.LogicalRelation
 
 private[sql] object XDDataFrame {
 
