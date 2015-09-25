@@ -800,10 +800,9 @@ public enum MetadataManager {
                 TableMetadata tableMetadata = getTable(tableName.getMainTable());
                 GlobalIndexMetadata index = (GlobalIndexMetadata) tableMetadata.getIndexes().get(indexName);
                 clusterName = index.getClusterRef();
-            }else{
+            } else {
                 clusterName = getTable(table).getClusterRef();
             }
-
 
             Set<ConnectorName> connectorNames = getCluster(clusterName)
                     .getConnectorAttachedRefs().keySet();

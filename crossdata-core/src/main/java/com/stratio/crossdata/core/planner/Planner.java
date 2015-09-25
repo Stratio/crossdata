@@ -40,6 +40,7 @@ import com.google.gson.Gson;
 import com.stratio.crossdata.common.data.*;
 import com.stratio.crossdata.common.metadata.*;
 import com.stratio.crossdata.common.statements.structures.*;
+import com.stratio.crossdata.core.metadata.MetadataManagerException;
 import com.stratio.crossdata.core.planner.utils.ConnectorPriorityComparator;
 import com.stratio.crossdata.core.planner.utils.GlobalIndexQueryBuilder;
 import org.apache.log4j.Logger;
@@ -205,8 +206,12 @@ public class Planner {
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
 
         //Obtain the map of connector that is able to access those tables.
-        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
-                .getAttachedConnectors(Status.ONLINE, tables);
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = new HashMap<>();
+        try {
+            candidatesConnectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE, tables);
+        } catch (MetadataManagerException mme) {
+            throw new PlanningException(mme.getMessage());
+        }
 
         Set<ExecutionPath> executionPaths = new LinkedHashSet<>();
         logCandidateConnectors(candidatesConnectors);
