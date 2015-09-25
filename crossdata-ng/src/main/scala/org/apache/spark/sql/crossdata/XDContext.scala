@@ -44,15 +44,11 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
   val xdCatalog = Class.forName(catalogClass)
 
-  val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf], classOf[List[String]])
+  //val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf], classOf[List[String]])
 
-  override protected[sql] lazy val catalog: XDCatalog =
-    constr.newInstance(
-      new SimpleCatalystConf(caseSensitive),
-      catalogArgs).asInstanceOf[XDCatalog]
 
+  override protected[sql] lazy val catalog: XDCatalog = new CrossdataCatalog(new SimpleCatalystConf(caseSensitive))
   catalog.open()
-
 
   protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse)
 

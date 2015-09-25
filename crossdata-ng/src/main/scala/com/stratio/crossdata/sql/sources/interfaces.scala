@@ -48,6 +48,6 @@ sealed trait PushDownable {
 
 @DeveloperApi
 trait MetadataOperations {
-  def createTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String])
+  def createTable(context: SQLContext, tableName: String, schema: Option[StructType], options: Map[String, String])
 
 }

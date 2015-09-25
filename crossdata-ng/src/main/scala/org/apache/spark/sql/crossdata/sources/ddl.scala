@@ -1,5 +1,6 @@
 package org.apache.spark.sql.crossdata.sources
 
+import com.stratio.crossdata.sql.sources.MetadataOperations
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
@@ -31,8 +32,8 @@ private[crossdata] case class CreateTable(tableName: String, userSpecifiedSchema
     }
 
     //TODO Create table in specified data source
-    val resolved = ResolvedDataSource.lookupDataSource(provider)
-
+    val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
+    resolved.asInstanceOf[MetadataOperations].createTable(xdContext,tableName,userSpecifiedSchema,opts)
 
     //Register plan
     val table=Seq[String]{tableName}

@@ -128,6 +128,19 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     } should have message "The operation cannot be executed without Spark"
   }
 
+
+  "The Cassandra connector" should "execute natively a Create Table" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val result = sql(
+      """CREATE TABLE crossdataTest (id INT, name String)
+         USING com.stratio.crossdata.sql.sources.cassandra
+         OPTIONS (spark_cassandra_connection_host '127.0.0.1', cluster 'Test Cluster', keyspace 'crossdata',
+         partitionKey '[id,name]')"""
+    ).collect(Native)
+    result should have length 0
+  }
+
   // TODO test filter on PKs (=) and CKs(any) (right -> left)
 
 }

@@ -17,6 +17,7 @@
 package com.stratio.crossdata.sql.sources.cassandra
 
 import com.stratio.crossdata.test.BaseXDTest
+import org.apache.spark.sql.sources
 import org.apache.spark.sql.types.UTF8String
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
