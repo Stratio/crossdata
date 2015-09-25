@@ -35,13 +35,13 @@ import org.json4s.jackson.Serialization._
  * @param conf An implementation of the [[CatalystConf]].
  * @param args Possible extra arguments.
  */
-class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
+class CrossdataCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
                      val args: java.util.List[String] = new util.ArrayList[String]())
   extends SimpleCatalog(conf) with OverrideCatalog with XDCatalog with Logging {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  val url = "jdbc:mysql://localhost:8889/crossdata"
+  val url = "jdbc:mysql://localhost:3306/crossdata"
   val driver = "com.mysql.jdbc.Driver"
   val username = "root"
   val password = "stratio"

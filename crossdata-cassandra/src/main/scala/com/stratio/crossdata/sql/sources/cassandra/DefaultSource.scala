@@ -98,7 +98,8 @@ class DefaultSource extends CassandraConnectorDS with MetadataOperations {
    * @param options
    * @return
    */
-  override def createTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String])
+  override def createTable(context: SQLContext, tableName: String, schema: Option[StructType], options: Map[String,
+    String])
   = {
 
     implicit val clusterName: String = options.getOrElse(CassandraDataSourceClusterNameProperty, {
@@ -120,22 +121,33 @@ class DefaultSource extends CassandraConnectorDS with MetadataOperations {
 
     val connector = CassandraConnector(cfg)
 
-    val fields= schema.fields.map(field => s"${field.name} ${field.dataType.simpleString}")
-    val pk=options.getOrElse("partitionKey","")
-    val ck=options.getOrElse("clusterKey","")
+    schema match{
+      case Some(x)=>{
 
-    val partitionKey=pk.mkString(",")
-    val clusterKey=if (ck!=null) ck.mkString(",") else null
-    val primaryKey=
-      if (!clusterKey.equals(""))
-        s"(($partitionKey),$clusterKey)"
-      else
-        s"($partitionKey)"
+        val fields = x.fields.map(field => s"${field.name} ${checkCassandraTypes(field.dataType.simpleString)}")
+        val pk=options.getOrElse("partitionKey","")
+        val ck=options.getOrElse("clusterKey","")
+        val keyspace=options.getOrElse("keyspace","")
 
+        //val partitionKey=pk.mkString(",")
+        val partitionKey= pk.replace("[","").replace("]","")
+        val clusterKey=if (ck!=null) ck.replace("[","").replace("]","") else ""
+        val primaryKey=
+          if (!clusterKey.equals(""))
+            s"(($partitionKey),$clusterKey)"
+          else
+            s"($partitionKey)"
 
-    connector.withSessionDo {
-      s => s.execute(s"CREATE TABLE $tableName (${fields.mkString(",")},PRIMARY KEY $primaryKey )")
+        println(s"CREATE TABLE $keyspace.$tableName (${fields.mkString(", ")}, PRIMARY KEY $primaryKey )")
+        connector.withSessionDo {
+          s => s.execute(s"CREATE TABLE $keyspace.$tableName (${fields.mkString(",")},PRIMARY KEY $primaryKey )")
+
+        }
+      }
+      case None => throw new NotImplementedError("Crossdata needs the schema to create table")
     }
+
+
   }
 
   /**
@@ -167,6 +179,13 @@ class DefaultSource extends CassandraConnectorDS with MetadataOperations {
     }
 
     CassandraXDSourceRelation(tableRef, sqlContext, options)
+  }
+
+  def checkCassandraTypes(sparkType:String):String={
+    sparkType match {
+      case "string"=>"text"
+      case _=>sparkType
+    }
   }
 }
 

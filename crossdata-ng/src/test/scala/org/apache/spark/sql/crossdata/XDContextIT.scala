@@ -56,11 +56,14 @@ class XDContextIT extends SharedXDContextTest {
   }
   */
 
-  "CreateTable" should "create table in the datasource" in {
-
-    ctx.sql("""CREATE TABLE crossdataTest (id INT, name String) " +
-      "USING com.stratio.crossdata.sql.sources.cassandra " +
-      "OPTIONS ("partitionKey" "id" )""")
+  "CreateTable" should "parse create table using command" in {
+    the [RuntimeException] thrownBy {
+      ctx.sql(
+      """CREATE TABLE crossdataTest (id INT, name String)
+         USING testSource
+         OPTIONS (keyspace 'crossdata', partitionKey 'id')"""
+      )
+    } should have message "Failed to load class for data source: testSource"
   }
 
 }
