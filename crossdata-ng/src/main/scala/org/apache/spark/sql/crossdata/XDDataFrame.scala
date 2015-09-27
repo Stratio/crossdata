@@ -151,8 +151,9 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
   private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
 
     val planSupported = queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
+    if(planSupported) provider.buildScan(queryExecution.optimizedPlan) else None
 
-    if (!planSupported) {
+    /*if (!planSupported) {
       None
     } else {
       val rowsOption = provider.buildScan(queryExecution.optimizedPlan)
@@ -161,7 +162,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         val converter = CatalystTypeConverters.createToScalaConverter(schema)
         rows.map(converter(_).asInstanceOf[Row])
       }
-    }
+    }*/
 
   }
 

@@ -26,12 +26,11 @@ import com.datastax.spark.connector.rdd.{CassandraRDD, ReadConf}
 import com.datastax.spark.connector.util.NameTools
 import com.datastax.spark.connector.util.Quote._
 import com.datastax.spark.connector.writer.{SqlRowWriter, WriteConf}
-import com.datastax.spark.connector.{AllColumns, ColumnRef, _}
+import com.datastax.spark.connector._
 import com.stratio.crossdata.sql.sources.NativeScan
 import com.stratio.crossdata.sql.sources.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
-import org.apache.spark.sql.catalyst.expressions.Alias
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.sources._
@@ -107,7 +106,8 @@ class CassandraXDSourceRelation(
     }
 
     implicit val rwf = SqlRowWriter.Factory
-    data.rdd.saveToCassandra(tableRef.keyspace, tableRef.table, AllColumns, writeConf)
+    val columns = SomeColumns(data.columns.map(x => x: ColumnRef): _*)
+    data.rdd.saveToCassandra(tableRef.keyspace, tableRef.table, columns, writeConf)
   }
 
   override def sizeInBytes: Long = {

@@ -93,12 +93,12 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter], Boolean) = {
       lplan match {
         case Limit(_, child) => findProjectsFilters(child)
-        case PhysicalOperation(projectList, filterList, _) => CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
+        case PhysicalOperation(projectList, filterList, _) =>
+          CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
       }
     }
 
     val (projects, filters, filtersIgnored) = findProjectsFilters(logicalPlan)
-
     if (filtersIgnored || !checkNativeFilters(filters)) {
       None
     } else {

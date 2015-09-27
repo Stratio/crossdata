@@ -38,7 +38,6 @@ object CatalystToCrossdataAdapter {
         case a: AttributeReference => relation.attributeMap(a) // Match original case of attributes.
       }
     }
-
     val requestedColumns = projectSet.map(relation.attributeMap).toSeq
     val (filters, ignored) = selectFilters(pushedFilters)
     (requestedColumns.map(_.name).toArray, filters.toArray, ignored)
@@ -81,6 +80,8 @@ object CatalystToCrossdataAdapter {
       case expressions.LessThanOrEqual(Literal(v, _), a: Attribute) =>
         Some(sources.GreaterThanOrEqual(a.name, v))
 
+      case expressions.In(a: Attribute, l) =>
+        Some(sources.In(a.name, l.toArray))
       case expressions.InSet(a: Attribute, set) =>
         Some(sources.In(a.name, set.toArray))
 
@@ -113,7 +114,6 @@ object CatalystToCrossdataAdapter {
       case _ =>
         ignored = true
         None
-
 
     }
     val convertibleFilters = filters.flatMap(translate).toArray
