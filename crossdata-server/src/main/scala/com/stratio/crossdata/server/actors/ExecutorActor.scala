@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package com.stratio.crossdata.server.actors
 
 import akka.actor.ActorLogging
