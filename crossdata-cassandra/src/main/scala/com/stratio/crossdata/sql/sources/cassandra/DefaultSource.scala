@@ -130,39 +130,20 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
 
   /**
    * @param tMeta C* Metadata for a given table
-   * @param clusterName
    * @return A table description obtained after translate its C* meta data.
    */
-  private def tableMeta2Table(tMeta: TableMetadata)(implicit clusterName: String): Table = {
+  private def tableMeta2Table(tMeta: TableMetadata): Table =
+      Table(tMeta.getName, Some(tMeta.getKeyspace.getName))
 
-    def col2sfield(col: ColumnMetadata, pks: Set[String], clusts: List[String]): StructField = {
-      val role: ColumnRole = (pks contains col.getName, clusts indexOf col.getName) match {
-        case (false, -1) => RegularColumn
-        case (true, -1) => PartitionKeyColumn
-        case (_, index) => ClusteringColumn(index) //TODO: Check whether this index has any sense
-      }
-      toStructField(ColumnDef(col,role))
-    }
-
-    val pkCols = tMeta.getPrimaryKey.toSet[ColumnMetadata].map(_.getName)
-    val clusteringCols = tMeta.getClusteringColumns.toList.map(_.getName)
-    val cols = tMeta.getColumns.map(col2sfield(_, pkCols, clusteringCols))
-
-    Table(
-      tMeta.getKeyspace.getName,
-      tMeta.getName, clusterName,
-      StructType(cols.toArray)
-    )
-  }
   
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
-    /*
-      Note that `CassandraDataSourceClusterNameProperty` and `CassandraConnectionHostProperty`
-      are obligatory present in the options map at this point because of the sentence
-      parsing checks.
-     */
-    implicit val clusterName: String = options(CassandraDataSourceClusterNameProperty)
+    for(
+      opName <- CassandraDataSourceClusterNameProperty::CassandraConnectionHostProperty::Nil;
+      if(!options.contains(opName))
+    ) sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
+
+    val clusterName: String = options(CassandraDataSourceClusterNameProperty)
     val host: String = options(CassandraConnectionHostProperty)
 
     val cfg: SparkConf = context.sparkContext.getConf.clone()
@@ -184,14 +165,13 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
   }
 
   //Avoids importing system tables
-  override def exclusionFilter(t: TableInventory.Table) =
-    ! (Set("system", "system_traces") contains t.database.toLowerCase)
+  override def exclusionFilter(t: TableInventory.Table): Boolean =
+    !t.database.map(dbName => Set("system", "system_traces") contains dbName.toLowerCase).getOrElse(false)
 
   override def generateConnectorOpts(item: Table, opts: Map[String, String] = Map.empty): Map[String, String] = Map(
     CassandraDataSourceTableNameProperty -> item.tableName,
-    CassandraDataSourceKeyspaceNameProperty -> item.database,
-    CassandraDataSourceClusterNameProperty -> item.clusterName
-  ) ++ opts.filterKeys(_ == CassandraConnectionHostProperty)
+    CassandraDataSourceKeyspaceNameProperty -> item.database.get
+  ) ++ opts.filterKeys(Set(CassandraConnectionHostProperty, CassandraDataSourceClusterNameProperty).contains(_))
 
 }
 

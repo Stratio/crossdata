@@ -31,7 +31,6 @@ import com.stratio.crossdata.sql.sources.NativeScan
 import com.stratio.crossdata.sql.sources.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
-import org.apache.spark.sql.catalyst.expressions.Alias
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.sources._

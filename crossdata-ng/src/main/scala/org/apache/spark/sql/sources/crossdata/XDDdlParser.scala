@@ -14,10 +14,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected lazy val importStart: Parser[LogicalPlan] =
     (IMPORT ~> (CATALOG | (TABLE ~> tableIdentifier))) ~ (USING ~> className) ~  (OPTIONS ~> options).?  ^^ {
       case "catalog" ~ provider ~ ops =>
-        val mops = ops.getOrElse(Map.empty)
-        for(opName <- "cluster"::"spark_cassandra_connection_host"::Nil; if(!mops.contains(opName)))
-          sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
-        ImportCatalogUsingWithOptions(provider.asInstanceOf[String], mops)
+        ImportCatalogUsingWithOptions(provider.asInstanceOf[String], ops.getOrElse(Map.empty))
       case other => ???
     }
 

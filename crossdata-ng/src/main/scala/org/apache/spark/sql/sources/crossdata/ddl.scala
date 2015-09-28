@@ -24,7 +24,7 @@ private [crossdata] case class ImportCatalogUsingWithOptions(provider: String, o
     //Register the source tables in the catalog
     for(
       t: TableInventory.Table <- tables;
-      tableid = t.database::t.tableName::Nil;
+      tableid = t.database.toList :+ t.tableName;
       doExist = sqlContext.catalog.tableExists(tableid);
       if(inventoryRelation.exclusionFilter(t) && {
         if(doExist) log.info(s"IMPORT CATALOG omitted already registered table: ${tableid mkString "."}")

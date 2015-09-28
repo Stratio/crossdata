@@ -71,7 +71,7 @@ trait TableInventory {
    * @param table Table description case class instance
    * @return `true` if the table shall be imported, `false` otherwise
    */
-  def exclusionFilter(table: TableInventory.Table) = true
+  def exclusionFilter(table: TableInventory.Table): Boolean = true
 
   /**
    *
@@ -88,5 +88,5 @@ trait TableInventory {
 
 object TableInventory {
   //Table description
-  case class Table(database: String, tableName: String, clusterName: String, schema: StructType)
+  case class Table(tableName: String, database: Option[String] = None, schema: Option[StructType] = None)
 }
