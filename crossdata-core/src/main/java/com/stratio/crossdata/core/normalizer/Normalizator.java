@@ -509,7 +509,7 @@ public class Normalizator {
     }
 
     private void normalizeLimit() throws BadFormatException {
-        if(parsedQuery.getStatement().getLimit() < 0){
+        if(parsedQuery.getStatement().getLimit() < 1){
             throw new BadFormatException("Limit must be a positive number.");
         }
 
