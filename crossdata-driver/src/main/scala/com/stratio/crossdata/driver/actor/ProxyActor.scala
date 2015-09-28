@@ -23,7 +23,7 @@ import com.stratio.crossdata.driver.Driver
 import org.apache.log4j.Logger
 
 object ProxyActor {
-  val SERVER_PATH = "/user/crossdata-server"
+  val ServerPath = "/user/crossdata-server"
 
   def props(clusterClientActor: ActorRef, driver: Driver): Props =
     Props(new ProxyActor(clusterClientActor, driver))
@@ -35,9 +35,12 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
   lazy val logger = Logger.getLogger(classOf[ProxyActor])
 
   override def receive: Receive = {
-    case s: String => clusterClientActor forward ClusterClient.Send(ProxyActor.SERVER_PATH, SQLCommand(s), localAffinity = false)
-    case m: SQLCommand => logger.debug("Result: " + m.query)
-    case a: Any => logger.info("Unknown message: " + a)
+    case sqlCommand@SQLCommand(query, _) =>
+      clusterClientActor forward ClusterClient.Send(ProxyActor.ServerPath, sqlCommand, localAffinity = false)
+      logger.debug(s"Send query $query")
+
+    case any =>
+      logger.info("Unknown message: " + any)
   }
 }
 

@@ -16,33 +16,38 @@
 
 package com.stratio.crossdata.driver.utils
 
-import java.util.concurrent.TimeUnit
-
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
+import com.stratio.crossdata.common.SQLResult
 import org.apache.log4j.Logger
 
-import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.concurrent.{Future, TimeoutException}
+import scala.language.postfixOps
 
-class RetryPolitics {
-  lazy val logger = Logger.getLogger(getClass)
-  val retryTimes = 2
+object RetryPolitics {
+
+  lazy val RetryLogger = Logger.getLogger(getClass)
+
+  private def retryAction[T](n: Int = 2): ((() => Future[T]) => Future[T]) = {
+    action: (() => Future[T]) =>
+      if (n == 0) Future.failed(new TimeoutException)
+      else action().recoverWith {
+        case e: TimeoutException =>
+          RetryLogger.error(s"Retry failed: ${e.getMessage}")
+          retryAction(n - 1)(action)
+      }
+  }
 
   def askRetry(remoteActor: ActorRef,
                message: AnyRef,
-               waitTime: Timeout = Timeout(10, TimeUnit.SECONDS),
-               retry: Int = 0): String =
-    if (retry == retryTimes) s"Not found answer. After $retry + retries, timeout was exceed."
-    else try {
-      val future = remoteActor.ask(message)(waitTime)
-      logger.info("Sending query...")
-      Await.result(future.mapTo[String], waitTime.duration)
-    } catch {
-      case ex: Exception => {
-        logger.error(ex.getMessage)
-        logger.info(s"Retry ${retry + 1} timeout")
-        askRetry(remoteActor, message, waitTime, retry + 1)
-      }
+               waitTime: Timeout = Timeout(10 seconds),
+               n: Int = 2): Future[SQLResult] = {
+    retryAction(n) { () =>
+      remoteActor.ask(message)(waitTime).mapTo[SQLResult]
     }
+  }
+
 }
