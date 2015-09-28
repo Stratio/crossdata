@@ -20,6 +20,7 @@ package com.stratio.crossdata.server.actors
 
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
+import akka.routing.RoundRobinPool
 import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
@@ -29,18 +30,24 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object ServerActor {
   def props(cluster: Cluster): Props = Props(new ServerActor(cluster))
+  val NumberExecutorActor = 5
 }
 
 class ServerActor(cluster: Cluster) extends Actor with ServerConfig {
 
+  import com.stratio.crossdata.server.actors.ServerActor._
   import com.stratio.crossdata.server.actors.ExecutorActor._
 
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
   val xdContext = new XDContext(initSparkContext)
 
-  val executorActorRef = context.actorOf(Props(classOf[ExecutorActor], cluster, xdContext), "ExecutorActor")
+  // TODO pool configurable from conf-file
+  // TODO should serverActor be the router? Are supervision strategies limited by that change?
 
+  val executorActorRef = context.actorOf(
+    RoundRobinPool(NumberExecutorActor).props(Props(classOf[ExecutorActor], cluster, xdContext)),
+    "ExecutorRouter")
 
   def receive: Receive = {
 
