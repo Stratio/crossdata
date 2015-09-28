@@ -16,16 +16,17 @@
 
 package com.stratio.crossdata.server
 
-import org.apache.log4j.Logger
-
 import scala.annotation.tailrec
 
 object CrossdataApplication extends App {
 
-  lazy val logger = Logger.getLogger(getClass)
+  val crossdataServer = new CrossdataServer
 
-  val crossdataServer: CrossdataServer = new CrossdataServer
-
+  crossdataServer.init(null)
+  crossdataServer.start()
+  commandLoop()
+  crossdataServer.stop()
+  crossdataServer.destroy()
 
   /**
    * This method make a command loop.
@@ -40,12 +41,4 @@ object CrossdataApplication extends App {
     commandLoop()
   }
 
-  logger.info("Initializing Crossdata Server.")
-  crossdataServer.init(null)
-  logger.info("Starting Crossdata Server.")
-  crossdataServer.start()
-  logger.info("Crossdata Server is ready.")
-  commandLoop()
-  crossdataServer.stop()
-  crossdataServer.destroy()
 }
