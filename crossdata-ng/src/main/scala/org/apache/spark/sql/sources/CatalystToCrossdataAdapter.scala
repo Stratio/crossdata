@@ -81,9 +81,9 @@ object CatalystToCrossdataAdapter {
         Some(sources.GreaterThanOrEqual(a.name, v))
 
       case expressions.In(a: Attribute, l) =>
-        Some(sources.In(a.name, l.toArray))
+        Some(sources.In(a.name, l.map({case Literal(v, _) => v}).toArray))
       case expressions.InSet(a: Attribute, set) =>
-        Some(sources.In(a.name, set.toArray))
+        Some(sources.In(a.name, set.map({case Literal(v, _) => v}).toArray))
 
       case expressions.IsNull(a: Attribute) =>
         Some(sources.IsNull(a.name))
