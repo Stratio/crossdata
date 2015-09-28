@@ -1339,7 +1339,7 @@ public class SelectStatementTest extends BasicValidatorTest {
     @Test
     public void testValidateMultipleOrderByOk() {
 
-        String query = "SELECT * FROM demo.users ORDER BY users.gender, users.age;";
+        String query = "SELECT users.name, users.age FROM demo.users ORDER BY users.gender, users.age;";
         List<Selector> selectorList = new ArrayList<>();
 
         TableName tablename = new TableName("demo", "users");
@@ -1362,7 +1362,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"), "sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -1419,7 +1419,7 @@ public class SelectStatementTest extends BasicValidatorTest {
     @Test
     public void simpleFromAlias() {
         String inputText = "SELECT t.name, t.age FROM demo.users t";
-        String expectedText = "SELECT demo.users.name, demo.users.age FROM demo.users AS t";
+        String expectedText = "SELECT demo.users.name AS name, demo.users.age AS age FROM demo.users AS t";
         Selector selector1 = new ColumnSelector(new ColumnName("demo", "t", "name"));
         Selector selector2 = new ColumnSelector(new ColumnName("demo", "t", "age"));
         List<Selector> selectorList = new ArrayList<>();
@@ -1481,7 +1481,8 @@ public class SelectStatementTest extends BasicValidatorTest {
     @Test
     public void multipleColumnAlias(){
         String inputText = "SELECT age, age, age FROM demo.users";
-        String expectedText = "SELECT demo.users.age, demo.users.age, demo.users.age FROM demo.users";
+        String expectedText = "SELECT demo.users.age AS age, demo.users.age AS age, demo.users.age AS age FROM demo"
+                + ".users";
 
 
         ColumnName col1 = new ColumnName(null, "users", "age");
@@ -1736,7 +1737,7 @@ public class SelectStatementTest extends BasicValidatorTest {
     @Test
     public void simpleSelectAlias(){
         String inputText = "SELECT demo.users.name AS n, demo.users.age FROM demo.users WHERE n = 'name_1'";
-        String expectedText = "SELECT demo.users.name AS n, demo.users.age FROM demo.users " +
+        String expectedText = "SELECT demo.users.name AS n, demo.users.age AS age FROM demo.users " +
                 "WHERE demo.users.name = 'name_1'";
 
         ColumnName n1 = new ColumnName("demo", "users", "name");
@@ -1783,7 +1784,7 @@ public class SelectStatementTest extends BasicValidatorTest {
                         + "INNER JOIN demo.users_info ui ON n=ui.name "
                         + "WHERE n = 'name_1'";
         String expectedText =
-                "SELECT demo.users.name AS n, demo.users.age, demo.users_info.info FROM demo.users AS u "
+                "SELECT demo.users.name AS n, demo.users.age AS age, demo.users_info.info AS info FROM demo.users AS u "
                         + "INNER JOIN demo.users_info AS ui ON demo.users.name = demo.users_info.name "
                         + "WHERE demo.users.name = 'name_1'";
 
@@ -1858,7 +1859,8 @@ public class SelectStatementTest extends BasicValidatorTest {
     public void simpleSubqueryTest(){
 
         String inputText = "SELECT * FROM ( SELECT demo.users.name AS n, demo.users.age FROM demo.users ) t WHERE n = 'name_1'";
-        String expectedText = "SELECT "+Constants.VIRTUAL_NAME +".t.n AS n, "+Constants.VIRTUAL_NAME +".t.age FROM ( SELECT demo.users.name AS n, demo.users.age FROM demo.users ) AS t " +
+        String expectedText = "SELECT "+Constants.VIRTUAL_NAME +".t.n AS n, "+Constants.VIRTUAL_NAME +".t.age AS age "
+                + "FROM ( SELECT demo.users.name AS n, demo.users.age AS age FROM demo.users ) AS t " +
                         "WHERE "+ Constants.VIRTUAL_NAME +".t.n = 'name_1'";
 
         ColumnName n1 = new ColumnName("demo", "users", "name");
@@ -2004,9 +2006,9 @@ public class SelectStatementTest extends BasicValidatorTest {
                 + "FROM table3 "
                 + "WHERE surname IN ['Miller', 'Smith'];";
         String expectedText = "SELECT "
-                + "demo.table3.name, "
-                + "demo.table3.surname, "
-                + "demo.table3.rating "
+                + "demo.table3.name AS name, "
+                + "demo.table3.surname AS surname, "
+                + "demo.table3.rating AS rating "
                 + "FROM demo.table3 "
                 + "WHERE demo.table3.surname IN ('Miller', 'Smith')";
 

@@ -33,7 +33,7 @@ public class CreateTableStatementTest extends ParsingTest {
         String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
                 "something2 int, something3 boolean);";
         String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
-                ".something=text, mycatalog.myTable.something2=int, mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+                ".something=TEXT, mycatalog.myTable.something2=INT, mycatalog.myTable.something3=BOOLEAN, PRIMARY KEY((mycatalog.myTable.something)));";
         testRegularStatement(inputText, expectedText, "createTableBasic");
     }
 
@@ -42,8 +42,8 @@ public class CreateTableStatementTest extends ParsingTest {
         String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
                 "something2 int, something3 float, something4 boolean);";
         String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
-                ".something=text, mycatalog.myTable.something2=int, mycatalog.myTable.something3=float, " +
-                "mycatalog.myTable.something4=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+                ".something=TEXT, mycatalog.myTable.something2=INT, mycatalog.myTable.something3=float, " +
+                "mycatalog.myTable.something4=BOOLEAN, PRIMARY KEY((mycatalog.myTable.something)));";
         testRegularStatement(inputText, expectedText, "createTableBasic");
     }
 
@@ -62,21 +62,21 @@ public class CreateTableStatementTest extends ParsingTest {
     @Test
     public void createTableBasic4() {
         String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 boolean, PRIMARY KEY (something));";
-        String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley(demo.myTable.something=text, demo.myTable.something2=int, demo.myTable.something3=boolean, PRIMARY KEY((demo.myTable.something)));";
+        String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley(demo.myTable.something=TEXT, demo.myTable.something2=INT, demo.myTable.something3=BOOLEAN, PRIMARY KEY((demo.myTable.something)));";
         testRegularStatementSession("demo", inputText, expectedText, "createTableBasic4");
     }
 
     @Test
     public void createTableBasic5() {
         String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 boolean, PRIMARY KEY (something, something2));";
-        String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley(demo.myTable.something=text, demo.myTable.something2=int, demo.myTable.something3=boolean, PRIMARY KEY((demo.myTable.something), demo.myTable.something2));";
+        String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley(demo.myTable.something=TEXT, demo.myTable.something2=INT, demo.myTable.something3=BOOLEAN, PRIMARY KEY((demo.myTable.something), demo.myTable.something2));";
         testRegularStatementSession("demo", inputText, expectedText, "createTableBasic5");
     }
 
     @Test
     public void createTableBasic6() {
         String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 boolean, PRIMARY KEY ((something, something2), something3));";
-        String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley(demo.myTable.something=text, demo.myTable.something2=int, demo.myTable.something3=boolean, PRIMARY KEY((demo.myTable.something, demo.myTable.something2), demo.myTable.something3));";
+        String expectedText = "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley(demo.myTable.something=TEXT, demo.myTable.something2=INT, demo.myTable.something3=BOOLEAN, PRIMARY KEY((demo.myTable.something, demo.myTable.something2), demo.myTable.something3));";
         testRegularStatementSession("demo", inputText, expectedText, "createTableBasic6");
     }
 
@@ -86,7 +86,7 @@ public class CreateTableStatementTest extends ParsingTest {
                 "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int, something3 boolean, PRIMARY KEY ((something, something2), something3)) "
                         + "WITH {'propiedad1':'prop1', 'propiedad2':2, 'propiedad3':3.0};";
         String expectedText =
-                "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley(demo.myTable.something=text, demo.myTable.something2=int, demo.myTable.something3=boolean, PRIMARY KEY((demo.myTable.something, demo.myTable.something2), demo.myTable.something3)) "
+                "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley(demo.myTable.something=TEXT, demo.myTable.something2=INT, demo.myTable.something3=BOOLEAN, PRIMARY KEY((demo.myTable.something, demo.myTable.something2), demo.myTable.something3)) "
                         + "WITH {'propiedad1'='prop1', 'propiedad2'=2, 'propiedad3'=3.0};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableBasic7");
     }
@@ -94,12 +94,12 @@ public class CreateTableStatementTest extends ParsingTest {
     @Test
     public void createEphemeralTable() {
         String inputText =
-                "CREATE TABLE streaming.temporal ON CLUSTER siliconValley (name varchar, age int, rating double, member boolean, PRIMARY KEY (name)) "
+                "CREATE TABLE streaming.temporal ON CLUSTER siliconValley (name VARCHAR, age int, rating DOUBLE, member boolean, PRIMARY KEY (name)) "
                         + "WITH {'ephemeral': true};";
         String expectedText =
                 "CREATE TABLE streaming.temporal ON CLUSTER cluster.siliconValley(streaming.temporal.name=VARCHAR, " +
-                        "streaming.temporal.age=INT, streaming.temporal.rating=double, " +
-                        "streaming.temporal.member=boolean, PRIMARY KEY((streaming.temporal.name))) "
+                        "streaming.temporal.age=INT, streaming.temporal.rating=DOUBLE, " +
+                        "streaming.temporal.member=BOOLEAN, PRIMARY KEY((streaming.temporal.name))) "
                         + "WITH {'ephemeral'=true};";
         testRegularStatementSession("demo", inputText, expectedText, "createEphemeralTable");
     }
@@ -107,14 +107,14 @@ public class CreateTableStatementTest extends ParsingTest {
     @Test
     public void createTableWithManyProperties() {
         String inputText =
-                "CREATE TABLE key_space1.users ON CLUSTER siliconValley (name varchar, password varchar, color varchar, gender varchar,"
-                        + " food varchar, animal varchar, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
+                "CREATE TABLE key_space1.users ON CLUSTER siliconValley (name VARCHAR, password VARCHAR, color VARCHAR, gender VARCHAR,"
+                        + " food VARCHAR, animal VARCHAR, age int, code int, PRIMARY KEY ((name, gender), color, animal)) "
                         + "WITH {'compression': '{sstable_compression: DeflateCompressor, chunk_length_kb: 64}', "
                         + "'compaction': '{class: SizeTieredCompactionStrategy, min_threshold: 6}', 'read_repair_chance': 1.0};";
 
         String expectedText =
-                "CREATE TABLE key_space1.users ON CLUSTER cluster.siliconValley(key_space1.users.name=varchar, key_space1.users.password=varchar, key_space1.users.color=varchar, key_space1.users.gender=varchar,"
-                        + " key_space1.users.food=varchar, key_space1.users.animal=varchar, key_space1.users.age=int, key_space1.users.code=int, PRIMARY KEY((key_space1.users.name, key_space1.users.gender), key_space1.users.color, key_space1.users.animal)) "
+                "CREATE TABLE key_space1.users ON CLUSTER cluster.siliconValley(key_space1.users.name=VARCHAR, key_space1.users.password=VARCHAR, key_space1.users.color=VARCHAR, key_space1.users.gender=VARCHAR,"
+                        + " key_space1.users.food=VARCHAR, key_space1.users.animal=VARCHAR, key_space1.users.age=INT, key_space1.users.code=INT, PRIMARY KEY((key_space1.users.name, key_space1.users.gender), key_space1.users.color, key_space1.users.animal)) "
                         + "WITH {'compression'='{sstable_compression: DeflateCompressor, chunk_length_kb: 64}', "
                         + "'compaction'='{class: SizeTieredCompactionStrategy, min_threshold: 6}', 'read_repair_chance'=1.0};";
 
@@ -124,10 +124,10 @@ public class CreateTableStatementTest extends ParsingTest {
     @Test
     public void createTableCompactStorage() {
         String inputText =
-                "CREATE TABLE key_space1.sblocks ON CLUSTER siliconValley (block_id varchar, subblock_id varchar, data text, PRIMARY KEY "
+                "CREATE TABLE key_space1.sblocks ON CLUSTER siliconValley (block_id VARCHAR, subblock_id VARCHAR, data text, PRIMARY KEY "
                         + "(block_id, subblock_id)) WITH {'COMPACT STORAGE': true};";
         String expectedText =
-                "CREATE TABLE key_space1.sblocks ON CLUSTER cluster.siliconValley(key_space1.sblocks.block_id=varchar, key_space1.sblocks.subblock_id=varchar, key_space1.sblocks.data=text, PRIMARY KEY"
+                "CREATE TABLE key_space1.sblocks ON CLUSTER cluster.siliconValley(key_space1.sblocks.block_id=VARCHAR, key_space1.sblocks.subblock_id=VARCHAR, key_space1.sblocks.data=TEXT, PRIMARY KEY"
                         + "((key_space1.sblocks.block_id), key_space1.sblocks.subblock_id)) WITH {'COMPACT STORAGE'=true};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableCompactStorage");
     }
@@ -138,7 +138,7 @@ public class CreateTableStatementTest extends ParsingTest {
                 "CREATE TABLE key_space1.timeseries ON CLUSTER siliconValley (event_type text, insertion_time text, event text,"
                         + " PRIMARY KEY (event_type, insertion_time)) WITH {'insertion_time': 'CLUSTERING ORDER BY, DESC'};";
         String expectedText =
-                "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley(key_space1.timeseries.event_type=text, key_space1.timeseries.insertion_time=text, key_space1.timeseries.event=text,"
+                "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley(key_space1.timeseries.event_type=TEXT, key_space1.timeseries.insertion_time=TEXT, key_space1.timeseries.event=TEXT,"
                         + " PRIMARY KEY((key_space1.timeseries.event_type), key_space1.timeseries.insertion_time)) WITH {'insertion_time'='CLUSTERING ORDER BY, DESC'};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableClustering");
     }
@@ -146,14 +146,14 @@ public class CreateTableStatementTest extends ParsingTest {
     @Test
     public void createTableWithProperties() {
         String inputText =
-                "CREATE TABLE key_space1.test ON CLUSTER siliconValley (name varchar, color varchar, gender varchar, food varchar, "
-                        + "animal varchar, PRIMARY KEY (name)) WITH {'compression': '{sstable_compression: DeflateCompressor, "
+                "CREATE TABLE key_space1.test ON CLUSTER siliconValley (name VARCHAR, color VARCHAR, gender VARCHAR, food VARCHAR, "
+                        + "animal VARCHAR, PRIMARY KEY (name)) WITH {'compression': '{sstable_compression: DeflateCompressor, "
                         + "chunk_length_kb: 64}', 'compaction': '{class: SizeTieredCompactionStrategy, min_threshold: 6}', "
                         + "'read_repair_chance': 1.0};";
 
         String expectedText =
-                "CREATE TABLE key_space1.test ON CLUSTER cluster.siliconValley(key_space1.test.name=varchar, key_space1.test.color=varchar, key_space1.test.gender=varchar, key_space1.test.food=varchar, "
-                        + "key_space1.test.animal=varchar, PRIMARY KEY((key_space1.test.name))) WITH {'compression'='{sstable_compression: DeflateCompressor, "
+                "CREATE TABLE key_space1.test ON CLUSTER cluster.siliconValley(key_space1.test.name=VARCHAR, key_space1.test.color=VARCHAR, key_space1.test.gender=VARCHAR, key_space1.test.food=VARCHAR, "
+                        + "key_space1.test.animal=VARCHAR, PRIMARY KEY((key_space1.test.name))) WITH {'compression'='{sstable_compression: DeflateCompressor, "
                         + "chunk_length_kb: 64}', 'compaction'='{class: SizeTieredCompactionStrategy, min_threshold: 6}', "
                         + "'read_repair_chance'=1.0};";
 
@@ -163,11 +163,11 @@ public class CreateTableStatementTest extends ParsingTest {
     @Test
     public void createTableMapColumn() {
         String inputText =
-                "CREATE TABLE demo.banks ON CLUSTER siliconValley (day text, key varchar, latitude double, longitude double, name text, "
-                        + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key));";
+                "CREATE TABLE demo.banks ON CLUSTER siliconValley (day text, key VARCHAR, latitude DOUBLE, longitude DOUBLE, name text, "
+                        + "address text, tags MAP<TEXT,BOOLEAN>, lucene text, PRIMARY KEY (day, key));";
         String expectedText =
-                "CREATE TABLE demo.banks ON CLUSTER cluster.siliconValley(demo.banks.day=text, demo.banks.key=varchar, demo.banks.latitude=double, demo.banks.longitude=double, demo.banks.name=text, "
-                        + "demo.banks.address=text, demo.banks.tags=map<text, boolean>, demo.banks.lucene=text, PRIMARY KEY((demo.banks.day), demo.banks.key));";
+                "CREATE TABLE demo.banks ON CLUSTER cluster.siliconValley(demo.banks.day=TEXT, demo.banks.key=VARCHAR, demo.banks.latitude=DOUBLE, demo.banks.longitude=DOUBLE, demo.banks.name=TEXT, "
+                        + "demo.banks.address=TEXT, demo.banks.tags=MAP<TEXT, BOOLEAN>, demo.banks.lucene=TEXT, PRIMARY KEY((demo.banks.day), demo.banks.key));";
         testRegularStatementSession("demo", inputText, expectedText, "createTableMapColumn");
     }
 
@@ -179,13 +179,13 @@ public class CreateTableStatementTest extends ParsingTest {
 
     @Test
     public void createTableMissingPrimaryKey() {
-        String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, id varchar, number int);";
+        String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, id VARCHAR, number int);";
         testParserFails(inputText, "createTableMissingPrimaryKey");
     }
 
     @Test
     public void createTableWrongColumnType() {
-        String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something uuid PRIMARY KEY, id varchar, number int);";
+        String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something uuid PRIMARY KEY, id VARCHAR, number int);";
         testParserFails(inputText, "createTableWrongColumnType");
     }
 
@@ -195,7 +195,7 @@ public class CreateTableStatementTest extends ParsingTest {
                 "CREATE TABLE key_space1.timeseries ON CLUSTER siliconValley (event_type text, insertion_time text, event text,"
                         + " PRIMARY KEY (event_type, insertion_time)) WITH {'CLUSTERING ORDER BY': 'insertion_time DESC', 'ephemeral': true};";
         String expectedText =
-                "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley(key_space1.timeseries.event_type=text, key_space1.timeseries.insertion_time=text, key_space1.timeseries.event=text,"
+                "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley(key_space1.timeseries.event_type=TEXT, key_space1.timeseries.insertion_time=TEXT, key_space1.timeseries.event=TEXT,"
                         + " PRIMARY KEY((key_space1.timeseries.event_type), key_space1.timeseries.insertion_time)) WITH {'CLUSTERING ORDER BY'='insertion_time DESC', 'ephemeral'=true};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableWithGetCrossdataProperty");
     }
@@ -203,12 +203,12 @@ public class CreateTableStatementTest extends ParsingTest {
     @Test
     public void createTableWithOptions() {
         String inputText =
-                "CREATE TABLE key_space1.wallet ON CLUSTER siliconValley (day text, key varchar, latitude double, longitude double, name text, "
-                        + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key)) WITH {'COMPACT STORAGE': true, "
+                "CREATE TABLE key_space1.wallet ON CLUSTER siliconValley (day text, key VARCHAR, latitude DOUBLE, longitude DOUBLE, name text, "
+                        + "address text, tags MAP<TEXT,BOOLEAN>, lucene text, PRIMARY KEY (day, key)) WITH {'COMPACT STORAGE': true, "
                         + "'read_repair_chance': 1.0};";
         String expectedText =
-                "CREATE TABLE key_space1.wallet ON CLUSTER cluster.siliconValley(key_space1.wallet.day=text, key_space1.wallet.key=varchar, key_space1.wallet.latitude=double, key_space1.wallet.longitude=double, key_space1.wallet.name=text, "
-                        + "key_space1.wallet.address=text, key_space1.wallet.tags=map<text, boolean>, key_space1.wallet.lucene=text, PRIMARY KEY((key_space1.wallet.day), key_space1.wallet.key)) WITH {'COMPACT STORAGE'=true, "
+                "CREATE TABLE key_space1.wallet ON CLUSTER cluster.siliconValley(key_space1.wallet.day=TEXT, key_space1.wallet.key=VARCHAR, key_space1.wallet.latitude=DOUBLE, key_space1.wallet.longitude=DOUBLE, key_space1.wallet.name=TEXT, "
+                        + "key_space1.wallet.address=TEXT, key_space1.wallet.tags=MAP<TEXT, BOOLEAN>, key_space1.wallet.lucene=TEXT, PRIMARY KEY((key_space1.wallet.day), key_space1.wallet.key)) WITH {'COMPACT STORAGE'=true, "
                         + "'read_repair_chance'=1.0};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableWithOptions");
     }
@@ -218,7 +218,7 @@ public class CreateTableStatementTest extends ParsingTest {
         String inputText = "[myCatalog], REGISTER TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
                         "something2 int, something3 boolean);";
         String expectedText = "REGISTER TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
-                        ".something=text, mycatalog.myTable.something2=int, mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+                        ".something=TEXT, mycatalog.myTable.something2=INT, mycatalog.myTable.something3=BOOLEAN, PRIMARY KEY((mycatalog.myTable.something)));";
         testRegularStatement(inputText, expectedText, "registerTableBasic");
     }
 
@@ -238,7 +238,7 @@ public class CreateTableStatementTest extends ParsingTest {
         String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
                 "something2 int(\"analyzer\":\"basic\"), something3 boolean);";
         String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
-                ".something=text, mycatalog.myTable.something2=int(analyzer:basic), mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+                ".something=TEXT, mycatalog.myTable.something2=INT(analyzer:basic), mycatalog.myTable.something3=BOOLEAN, PRIMARY KEY((mycatalog.myTable.something)));";
         testRegularStatement(inputText, expectedText, "createTableBasic");
     }
 
@@ -247,7 +247,7 @@ public class CreateTableStatementTest extends ParsingTest {
         String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
                 "something2 int(\"analyzer\":\"basic\", \"analyzer\":\"english\"), something3 boolean);";
         String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
-                ".something=text, mycatalog.myTable.something2=int(analyzer:basic, analyzer:english), mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+                ".something=TEXT, mycatalog.myTable.something2=INT(analyzer:basic, analyzer:english), mycatalog.myTable.something3=BOOLEAN, PRIMARY KEY((mycatalog.myTable.something)));";
         testRegularStatement(inputText, expectedText, "createTableBasic");
     }
 
@@ -256,7 +256,7 @@ public class CreateTableStatementTest extends ParsingTest {
         String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
                 "something2 int(\"analyzer\":\"basic\", \"format\":\"bbbb\"), something3 boolean);";
         String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
-                ".something=text, mycatalog.myTable.something2=int(analyzer:basic, format:bbbb), mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+                ".something=TEXT, mycatalog.myTable.something2=INT(analyzer:basic, format:bbbb), mycatalog.myTable.something3=BOOLEAN, PRIMARY KEY((mycatalog.myTable.something)));";
         testRegularStatement(inputText, expectedText, "createTableBasic");
     }
 
@@ -265,7 +265,7 @@ public class CreateTableStatementTest extends ParsingTest {
         String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
                 "something2 int(\"analyzer\":\"basic\"), something3 boolean(\"format\":\"b\"));";
         String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
-                ".something=text, mycatalog.myTable.something2=int(analyzer:basic), mycatalog.myTable.something3=boolean(format:b), PRIMARY KEY((mycatalog.myTable.something)));";
+                ".something=TEXT, mycatalog.myTable.something2=INT(analyzer:basic), mycatalog.myTable.something3=BOOLEAN(format:b), PRIMARY KEY((mycatalog.myTable.something)));";
         testRegularStatement(inputText, expectedText, "createTableBasic");
     }
 

@@ -74,7 +74,8 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
         return childSelectParsedQuery;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return statement.toString();
     }
 

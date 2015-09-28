@@ -455,7 +455,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         }
 
         if (groupInc) {
-            sb.append(" GROUP BY ").append(StringUtils.stringList(groupByClause.getSelectorIdentifier(), ", "));
+            sb.append(" GROUP BY ").append(StringUtils.stringList(groupByClause.getSelectorIdentifier(), ", ", false));
         }
 
         if ((havingInc)&& (havingClause!=null)) {
@@ -464,7 +464,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         }
 
         if (orderInc) {
-            sb.append(" ORDER BY ").append(StringUtils.stringList(orderByClauses, ", "));
+            sb.append(" ORDER BY ").append(StringUtils.stringList(orderByClauses, ", ", false));
         }
 
         if (limitInc) {

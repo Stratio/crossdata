@@ -189,7 +189,7 @@ public class PlannerPartialResultSqlTest extends PlannerBaseTest {
         String inputText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 WITH WINDOW 5 MINUTES " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table1.id > 5;";
 
-        String expectedText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 " +
+        String expectedText = "SELECT demo.table3.address AS address, demo.table1.id AS id FROM demo.table1 " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id";
 
         ExecutionWorkflow lastExecutionWorkflow=  getPlannedQuery(
@@ -212,7 +212,7 @@ public class PlannerPartialResultSqlTest extends PlannerBaseTest {
         String inputText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 WITH WINDOW 5 ROWS " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table1.user LIKE 'David' AND demo.table1.id <= 6;";
 
-        String expectedText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 " +
+        String expectedText = "SELECT demo.table3.address AS address, demo.table1.id AS id FROM demo.table1 " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id";
 
         ExecutionWorkflow lastExecutionWorkflow=  getPlannedQuery(
@@ -237,7 +237,7 @@ public class PlannerPartialResultSqlTest extends PlannerBaseTest {
         String inputText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 WITH WINDOW 5 ROWS " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table1.user LIKE 'David' AND demo.table3.address = 'via';";
 
-        String expectedText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 " +
+        String expectedText = "SELECT demo.table3.address AS address, demo.table1.id AS id FROM demo.table1 " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table3.address = 'via'";
 
         ExecutionWorkflow lastExecutionWorkflow=  getPlannedQuery(
@@ -260,7 +260,7 @@ public class PlannerPartialResultSqlTest extends PlannerBaseTest {
         String inputText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 WITH WINDOW 5 ROWS " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table1.id = demo.table1.id + 1;";
 
-        String expectedText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 " +
+        String expectedText = "SELECT demo.table3.address AS address, demo.table1.id AS id FROM demo.table1 " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id";
 
         ExecutionWorkflow lastExecutionWorkflow=  getPlannedQuery(
@@ -283,7 +283,7 @@ public class PlannerPartialResultSqlTest extends PlannerBaseTest {
         String inputText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 WITH WINDOW 5 ROWS " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table1.id = demo.table3.id_aux + 1;";
 
-        String expectedText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 " +
+        String expectedText = "SELECT demo.table3.address AS address, demo.table1.id AS id FROM demo.table1 " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table1.id = demo.table3.id_aux + 1";
 
         ExecutionWorkflow lastExecutionWorkflow=  getPlannedQuery(
@@ -303,10 +303,11 @@ public class PlannerPartialResultSqlTest extends PlannerBaseTest {
 
         init();
 
-        String inputText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 WITH WINDOW 5 ROWS " +
-                "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table1.id = 5 AND demo.table1.id > 5 AND demo.table1.id < 5 OR demo.table3.id_aux > 5;";
+        String inputText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 WITH WINDOW 5 ROWS "
+                + "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id "
+                + "WHERE demo.table1.id = 5 AND demo.table1.id > 5 AND demo.table1.id < 5 OR demo.table3.id_aux > 5;";
 
-        String expectedText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 " +
+        String expectedText = "SELECT demo.table3.address AS address, demo.table1.id AS id FROM demo.table1 " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table1.id < 5 OR demo.table3.id_aux > 5";
 
         ExecutionWorkflow lastExecutionWorkflow=  getPlannedQuery(
@@ -334,7 +335,7 @@ public class PlannerPartialResultSqlTest extends PlannerBaseTest {
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table1.id = 25 AND ((demo.table1.id = 25 AND demo.table1.id = 25) OR (demo.table1.id = 14 AND demo.table1.id = 14) OR (demo.table1.id = 25 AND demo.table1.id = 14));";
 
 
-        String expectedText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 " +
+        String expectedText = "SELECT demo.table3.address AS address, demo.table1.id AS id FROM demo.table1 " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id";
 
 
@@ -361,7 +362,7 @@ public class PlannerPartialResultSqlTest extends PlannerBaseTest {
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE demo.table1.id = 25 AND ((demo.table1.id = 25 AND demo.table1.id = 25) OR (demo.table3.id_aux = 14 AND demo.table1.id = 14) OR (demo.table1.id = 25 AND demo.table1.id = 14));";
 
 
-        String expectedText = "SELECT demo.table3.address, demo.table1.id FROM demo.table1 " +
+        String expectedText = "SELECT demo.table3.address AS address, demo.table1.id AS id FROM demo.table1 " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id WHERE ((demo.table1.id = 25 AND demo.table1.id = 25) OR (demo.table3.id_aux = 14 AND demo.table1.id = 14) OR (demo.table1.id = 25 AND demo.table1.id = 14))";
 
 

@@ -54,4 +54,5 @@ public class GroupByClause implements Serializable {
     public void setSelectorIdentifier(List<Selector> selectorIdentifier) {
         this.selectorIdentifier = selectorIdentifier;
     }
+
 }

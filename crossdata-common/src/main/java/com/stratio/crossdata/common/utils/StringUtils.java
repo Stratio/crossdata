@@ -42,6 +42,7 @@ import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.ISqlExpression;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 
@@ -75,9 +76,29 @@ public final class StringUtils implements Serializable {
      * @return A String.
      */
     public static String stringList(List<?> ids, String separator) {
+        return stringList(ids, separator, true);
+    }
+
+    /**
+     * Create a string from a list of objects using a separator between objects.
+     *
+     * @param ids       The list of objects.
+     * @param separator The separator.
+     * @param withAlias If the list should be printed with alias or not
+     * @return A String.
+     */
+    public static String stringList(List<?> ids, String separator, boolean withAlias) {
         StringBuilder sb = new StringBuilder();
         for (Object value: ids) {
-            sb.append(value.toString()).append(separator);
+            if(Selector.class.isInstance(value)) {
+                Selector selector = Selector.class.cast(value);
+                sb.append(selector.toSQLString(withAlias)).append(separator);
+            } else if (OrderByClause.class.isInstance(value)) {
+                OrderByClause obc = OrderByClause.class.cast(value);
+                sb.append(obc.toSQLString(withAlias)).append(separator);
+            } else {
+                sb.append(value.toString()).append(separator);
+            }
         }
         if (sb.length() > separator.length()) {
             return sb.substring(0, sb.length() - separator.length());

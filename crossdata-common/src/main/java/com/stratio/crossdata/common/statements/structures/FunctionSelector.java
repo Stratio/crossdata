@@ -191,7 +191,7 @@ public class FunctionSelector extends Selector {
         }
         Iterator<Selector> selectors = selectExpression.getSelectorList().iterator();
         while (selectors.hasNext()) {
-            sb.append(selectors.next().toString());
+            sb.append(selectors.next().toString(false));
             if (selectors.hasNext()) {
                 sb.append(", ");
             }

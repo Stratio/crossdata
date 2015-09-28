@@ -41,7 +41,7 @@ public class AlterTableStatementTest extends ParsingTest {
     @Test
     public void alterTableCatalogWithSession1() {
         String inputText = "ALTER TABLE demo.myTable ALTER column1 TYPE int;";
-        String expectedText = "ALTER TABLE demo.myTable ALTER demo.myTable.column1 TYPE int;";
+        String expectedText = "ALTER TABLE demo.myTable ALTER demo.myTable.column1 TYPE INT;";
         testRegularStatementSession("clients", inputText, expectedText, "alterTableCatalogWithSession1");
     }
 
@@ -54,14 +54,14 @@ public class AlterTableStatementTest extends ParsingTest {
     @Test
     public void alterTableCatalogWithSession2() {
         String inputText = "ALTER TABLE myTable ALTER column1 TYPE int;";
-        String expectedText = "ALTER TABLE clients.myTable ALTER clients.myTable.column1 TYPE int;";
+        String expectedText = "ALTER TABLE clients.myTable ALTER clients.myTable.column1 TYPE INT;";
         testRegularStatementSession("clients", inputText, expectedText, "alterTableCatalogWithSession2");
     }
 
     @Test
     public void alterTableCatalogWithSession3() {
         String inputText = "ALTER TABLE myTable ALTER myTable.column1 TYPE int;";
-        String expectedText = "ALTER TABLE clients.myTable ALTER clients.myTable.column1 TYPE int;";
+        String expectedText = "ALTER TABLE clients.myTable ALTER clients.myTable.column1 TYPE INT;";
         testRegularStatementSession("clients", inputText, expectedText, "alterTableCatalogWithSession3");
     }
 

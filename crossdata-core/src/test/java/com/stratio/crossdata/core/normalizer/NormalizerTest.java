@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.core.normalizer;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -275,7 +276,9 @@ public class NormalizerTest {
                 + "GROUP BY colSales, colExpenses "
                 + "ORDER BY age;";
 
-        String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
+        String expectedText = "SELECT demo.tableClients.colSales AS colSales, "
+                + "demo.tableClients.colExpenses AS colExpenses "
+                + "FROM demo.tableClients "
                 + "WHERE demo.tableClients.colPlace = 'Madrid' "
                 + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses "
                 + "ORDER BY demo.tableClients.year";
@@ -324,13 +327,10 @@ public class NormalizerTest {
             fail("Test failed: " + methodName + System.lineSeparator(), e);
         }
 
-        assertTrue(result.toString().equalsIgnoreCase(expectedText),
-                "Test failed: " + methodName + System.lineSeparator() +
-                        "Result:   " + result.toString() + System.lineSeparator() +
-                        "Expected: " + expectedText);
-
-
-
+        assertEquals(
+                result.toString(),
+                expectedText,
+                "Test failed: " + methodName);
     }
 
     @Test
@@ -348,7 +348,8 @@ public class NormalizerTest {
                         + "ORDER BY age;";
 
         String expectedText =
-                "SELECT demo.tableClients.colSales, myCatalog.tableCostumers.colFee FROM demo.tableClients "
+                "SELECT demo.tableClients.colSales AS colSales, myCatalog.tableCostumers.colFee AS colFee "
+                        + "FROM demo.tableClients "
                         + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.tableClients.clientId "
                         + "WHERE myCatalog.tableCostumers.colCity = 'Madrid' "
                         + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee "
@@ -412,10 +413,10 @@ public class NormalizerTest {
             fail("Test failed: " + methodName + System.lineSeparator(), e);
         }
 
-        assertTrue(result.toString().equalsIgnoreCase(expectedText),
-                "Test failed: " + methodName + System.lineSeparator() +
-                        "Result:   " + result.toString() + System.lineSeparator() +
-                        "Expected: " + expectedText);
+        assertEquals(
+                result.toString(),
+                expectedText,
+                "Test failed: ");
 
     }
 
@@ -510,7 +511,8 @@ public class NormalizerTest {
 
         String virtualTableQN = Constants.VIRTUAL_NAME +".t";
 
-        String expectedText = "SELECT "+virtualTableQN+".colSales, "+virtualTableQN+".1 FROM ( SELECT demo.tableClients.colsales, 1 FROM demo.tableClients ) AS t";
+        String expectedText = "SELECT "+virtualTableQN+".colSales AS colSales, "+virtualTableQN+".1 FROM ( SELECT "
+                + "demo.tableClients.colSales AS colSales, 1 FROM demo.tableClients ) AS t";
 
         // BASE QUERY
         BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("Constants.VIRTUAL_NAME"),"sessionTest");
@@ -543,10 +545,10 @@ public class NormalizerTest {
             fail("Test failed: " + methodName + System.lineSeparator(), e);
         }
 
-        assertTrue(result.toString().equalsIgnoreCase(expectedText),
-                        "Test failed: " + methodName + System.lineSeparator() +
-                                        "Result:   " + result.toString() + System.lineSeparator() +
-                                        "Expected: " + expectedText);
+        assertEquals(
+                result.toString(),
+                expectedText,
+                "Test failed: testNormalizeSubquery.");
 
     }
 

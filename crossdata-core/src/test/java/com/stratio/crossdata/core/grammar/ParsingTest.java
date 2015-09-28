@@ -105,7 +105,9 @@ public class ParsingTest {
             fail(sb.toString(), e);
         }
 
-        assertEquals(st.toString().toLowerCase() + ";", expectedQuery.toLowerCase(),
+        assertEquals(
+                st.toString().toLowerCase() + ";",
+                expectedQuery.toLowerCase(),
                 "Cannot parse " + methodName
                         + ": expecting " + System.lineSeparator() + "'" + expectedQuery
                         + "' from " + System.lineSeparator() + "'" + st.toString() + ";");
@@ -161,10 +163,10 @@ public class ParsingTest {
             fail(sb.toString(), e);
         }
 
-        assertTrue(expectedText.equalsIgnoreCase(st.toString() + ";"),
-                "Cannot parse " + methodName
-                        + ": expecting " + System.lineSeparator() + "'" + expectedText
-                        + "' from " + System.lineSeparator() + "'" + st.toString() + ";");
+        assertEquals(
+                st.toString() + ";",
+                expectedText,
+                "Failed test:  " + methodName);
         return st;
     }
 

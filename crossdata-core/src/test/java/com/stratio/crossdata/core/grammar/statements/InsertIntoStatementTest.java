@@ -110,7 +110,8 @@ public class InsertIntoStatementTest extends ParsingTest {
                 "INSERT INTO tablename (ident1, ident2) SELECT c.a, c.b from c "
                         + "IF NOT EXISTS WHEN ident3 = true WITH {'innerTerm': 'result'};";
         String expectText =
-                "INSERT INTO demo.tablename (demo.tablename.ident1, demo.tablename.ident2) SELECT demo.c.a, demo.c.b from demo.c "
+                "INSERT INTO demo.tablename (demo.tablename.ident1, demo.tablename.ident2) "
+                        + "SELECT demo.c.a, demo.c.b FROM demo.c "
                         + "IF NOT EXISTS WHEN demo.tablename.ident3 = true WITH {'innerTerm'='result'};";
         testRegularStatementSession("demo", inputText, expectText, "insertIntoSelect");
     }

@@ -290,15 +290,39 @@ public class Normalizator {
             case COLUMN:
                 Selector referencedSelector = findReferencedSelector(((ColumnSelector) selector).getName().getName());
                 if (referencedSelector != null) {
-                    orderBy.setSelector(new AliasSelector(referencedSelector));
+                    int index = fields.getSelectors().indexOf(referencedSelector);
+                    String alias = null;
+                    if(index >= 0){
+                        Selector originSelector = fields.getSelectors().get(index);
+                        referencedSelector.setAlias(originSelector.getAlias());
+                    } else {
+                        referencedSelector.setAlias(referencedSelector.getColumnName().getColumnNameToShow());
+                    }
+                    AliasSelector aliasSelector = new AliasSelector(referencedSelector);
+                    orderBy.setSelector(aliasSelector);
                 } else {
                     checkColumnSelector((ColumnSelector) selector);
+                    int index = fields.getSelectors().indexOf(selector);
+                    if(index >= 0){
+                        Selector originSelector = fields.getSelectors().get(index);
+                        selector.setAlias(originSelector.getAlias());
+                    } else {
+                        selector.setAlias(selector.getColumnName().getColumnNameToShow());
+                    }
+
                 }
                 break;
             case FUNCTION:
                 FunctionSelector fs = (FunctionSelector) selector;
                 List<Selector> fCols = fs.getFunctionColumns().getSelectorList();
                 checkListSelector(fCols);
+                int index = fields.getSelectors().indexOf(selector);
+                if(index >= 0){
+                    Selector originSelector = fields.getSelectors().get(index);
+                    fs.setAlias(originSelector.getAlias());
+                } else {
+                    fs.setAlias(fs.getFunctionName());
+                }
                 break;
             case ASTERISK:
             case BOOLEAN:
@@ -343,7 +367,7 @@ public class Normalizator {
      */
     public void normalizeGroupBy() throws ValidationException {
         //Ensure that there is not any case-when selector
-        for (Selector s : fields.getSelectors()) {
+        for (Selector s: fields.getSelectors()) {
             if (CaseWhenSelector.class.isInstance(s)) {
                 throw new BadFormatException("Group By clause is not possible with Case When Selector");
             }
@@ -377,7 +401,7 @@ public class Normalizator {
         Set<ColumnName> columnNames = new LinkedHashSet<>();
         int selectorIndex = 0;
 
-        for (Selector selector : selectorList) {
+        for (Selector selector: selectorList) {
             switch (selector.getType()) {
             case FUNCTION:
                 checkFunctionSelector((FunctionSelector) selector);
@@ -385,9 +409,25 @@ public class Normalizator {
             case COLUMN:
                 Selector referencedSelector = findReferencedSelector(((ColumnSelector) selector).getName().getName());
                 if (referencedSelector != null) {
-                    selectorList.set(selectorIndex, new AliasSelector(referencedSelector));
+                    int index = fields.getSelectors().indexOf(referencedSelector);
+                    if(index >= 0){
+                        Selector originSelector = fields.getSelectors().get(index);
+                        referencedSelector.setAlias(originSelector.getAlias());
+                    } else {
+                        referencedSelector.setAlias(referencedSelector.getColumnName().getColumnNameToShow());
+                    }
+                    AliasSelector aliasSelector = new AliasSelector(referencedSelector);
+                    selectorList.set(selectorIndex, aliasSelector);
                 } else {
                     checkColumnSelector((ColumnSelector) selector);
+                    int index = fields.getSelectors().indexOf(selector);
+                    if(index >= 0){
+                        Selector originSelector = fields.getSelectors().get(index);
+                        selector.setAlias(originSelector.getAlias());
+                    } else {
+                        selector.setAlias(selector.getColumnName().getColumnNameToShow());
+                    }
+
                     if (!columnNames.add(((ColumnSelector) selector).getName())) {
                         throw new BadFormatException("COLUMN into group by is repeated");
                     }
@@ -920,20 +960,22 @@ public class Normalizator {
         }
         for (TableName table : tableNames) {
             if (table.isVirtual()) {
-                for (Selector selector : selectStatement.getSubquery().getSelectExpression().getSelectorList()) {
+                for (Selector selector: selectStatement.getSubquery().getSelectExpression().getSelectorList()) {
                     ColumnName colName = new ColumnName(table, getVirtualAliasFromSelector(selector));
                     Selector defaultSelector = new ColumnSelector(colName);
                     defaultSelector.setAlias(selector.getAlias());
                     defaultSelector.setTableName(selectStatement.getTableName());
+                    defaultSelector.setAlias(selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias());
                     aSelectors.add(defaultSelector);
                     fields.addColumnName(colName, defaultSelector.getAlias());
                 }
             } else {
                 TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(table);
-                for (ColumnName columnName : tableMetadata.getColumns().keySet()) {
+                for (ColumnName columnName: tableMetadata.getColumns().keySet()) {
                     ColumnSelector selector = new ColumnSelector(columnName);
                     columnName.setTableName(table);
                     selector.setTableName(table);
+                    selector.setAlias(columnName.getAlias()==null?columnName.getName():columnName.getAlias());
                     aSelectors.add(selector);
                     fields.getColumnNames().add(columnName);
                 }
@@ -969,6 +1011,8 @@ public class Normalizator {
             switch (selector.getType()) {
             case FUNCTION:
                 FunctionSelector functionSelector = getFunctionSelector(firstTableName, (FunctionSelector) selector);
+                functionSelector.setAlias(
+                        selector.getAlias() == null ? selector.getColumnName().getName() : selector.getAlias());
                 result.add(functionSelector);
                 break;
             case COLUMN:
@@ -981,10 +1025,14 @@ public class Normalizator {
                         aliasSet.add(columnSelector.getAlias());
                     }
                 }
+                columnSelector.setAlias(
+                        selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias());
                 result.add(columnSelector);
                 break;
             case RELATION:
                 RelationSelector rs = getRelationSelector((RelationSelector) selector);
+                rs.setAlias(
+                        selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias());
                 result.add(rs);
                 break;
             case ASTERISK:
@@ -992,11 +1040,15 @@ public class Normalizator {
                 break;
             case CASE_WHEN:
                 CaseWhenSelector caseWhenSelector = getCaseWhenSelector((CaseWhenSelector) selector);
+                caseWhenSelector.setAlias(
+                        selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias());
                 result.add(caseWhenSelector);
                 break;
             default:
                 Selector defaultSelector = selector;
                 defaultSelector.setTableName(firstTableName);
+                defaultSelector.setAlias(
+                        selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias());
                 result.add(defaultSelector);
                 break;
             }

@@ -75,7 +75,7 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void singleColumn() {
         String inputText = "SELECT newtb.lucene FROM newks.newtb;";
-        String expectedText = "SELECT <unknown_name>.newtb.lucene FROM newks.newtb;";
+        String expectedText = "SELECT <UNKNOWN_NAME>.newtb.lucene FROM newks.newtb;";
         testRegularStatement(inputText, expectedText, "singleColumn");
     }
 
@@ -97,14 +97,14 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void functionSingleColumn() {
         String inputText = "SELECT sum(newtb.lucene) FROM newks.newtb;";
-        String expectedText = "SELECT sum(<unknown_name>.newtb.lucene) AS sum FROM newks.newtb;";
+        String expectedText = "SELECT sum(<UNKNOWN_NAME>.newtb.lucene) AS sum FROM newks.newtb;";
         testRegularStatement(inputText, expectedText, "functionSingleColumn");
     }
 
     @Test
     public void function2SingleColumn() {
         String inputText = "SELECT myfunction(newtb.lucene) FROM newks.newtb;";
-        String expectedText = "SELECT myfunction(<unknown_name>.newtb.lucene) AS myfunction FROM newks.newtb;";
+        String expectedText = "SELECT myfunction(<UNKNOWN_NAME>.newtb.lucene) AS myfunction FROM newks.newtb;";
         testRegularStatement(inputText, expectedText, "function2SingleColumn");
     }
 
@@ -144,7 +144,8 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void innerJoinWithTableAliases() {
         String inputText = "SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;";
-        String expectedText = "SELECT <unknown_name>.<unknown_name>.field1, <unknown_name>.<unknown_name>.field2 FROM demo.clients AS table1 INNER JOIN demo.sales AS table2 ON <unknown_name>.<unknown_name>.identifier = <unknown_name>.<unknown_name>.codeID;";
+        String expectedText = "SELECT <UNKNOWN_NAME>.<UNKNOWN_NAME>.field1, <UNKNOWN_NAME>.<UNKNOWN_NAME>.field2 FROM " 
+                + "demo.clients AS table1 INNER JOIN demo.sales AS table2 ON <UNKNOWN_NAME>.<UNKNOWN_NAME>.identifier = <UNKNOWN_NAME>.<UNKNOWN_NAME>.codeID;";
         testRegularStatementSession("demo", inputText, expectedText, "innerJoinWithTableAliases");
     }
 
@@ -308,11 +309,11 @@ public class SelectStatementTest extends ParsingTest {
                 + "GROUP BY gender "
                 + "ORDER BY age;";
         String expectedText =
-                "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
-                        + "INNER JOIN test.tableCostumers ON <unknown_name>.<unknown_name>.AssistantId = <unknown_name>.<unknown_name>.clientId "
-                        + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
-                        + "GROUP BY <unknown_name>.<unknown_name>.gender "
-                        + "ORDER BY <unknown_name>.<unknown_name>.age;";
+                "SELECT <UNKNOWN_NAME>.<UNKNOWN_NAME>.colSales, <UNKNOWN_NAME>.<UNKNOWN_NAME>.colRevenues FROM test.tableClients "
+                        + "INNER JOIN test.tableCostumers ON <UNKNOWN_NAME>.<UNKNOWN_NAME>.AssistantId = <UNKNOWN_NAME>.<UNKNOWN_NAME>.clientId "
+                        + "WHERE <UNKNOWN_NAME>.<UNKNOWN_NAME>.colCity = 'Madrid' "
+                        + "GROUP BY gender "
+                        + "ORDER BY age;";
         testRegularStatement(inputText, expectedText, "selectStatementJoinComplex");
     }
 
@@ -322,8 +323,8 @@ public class SelectStatementTest extends ParsingTest {
                 "SELECT c.a, c.b FROM c INNER JOIN tablename t ON field1=field2 WHERE c.x = y;";
         String expectedText =
                 "SELECT catalogTest.c.a, catalogTest.c.b FROM catalogTest.c INNER JOIN catalogTest.tablename AS t " +
-                        "ON <unknown_name>.<unknown_name>.field1 = <unknown_name>.<unknown_name>.field2 " +
-                        "WHERE catalogTest.c.x = <unknown_name>.<unknown_name>.y;";
+                        "ON <UNKNOWN_NAME>.<UNKNOWN_NAME>.field1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.field2 " +
+                        "WHERE catalogTest.c.x = <UNKNOWN_NAME>.<UNKNOWN_NAME>.y;";
         testRegularStatement(inputText, expectedText, "selectStatementJoins");
     }
 
@@ -466,8 +467,8 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void selectGroupedWithCountOk() {
         String inputText = "SELECT users.gender, COUNT(*) FROM demo.users GROUP BY users.gender;";
-        String expectedText = "SELECT <unknown_name>.users.gender, COUNT(*) AS COUNT FROM demo.users " +
-                "GROUP BY <unknown_name>.users.gender;";
+        String expectedText = "SELECT <UNKNOWN_NAME>.users.gender, COUNT(*) AS COUNT FROM demo.users " +
+                "GROUP BY <UNKNOWN_NAME>.users.gender;";
         testRegularStatement(inputText, expectedText, "selectGroupedWithCountOk");
     }
 
@@ -562,8 +563,8 @@ public class SelectStatementTest extends ParsingTest {
         String inputText =
                 "SELECT users.gender, min(users.age) as minimo FROM demo.users GROUP BY users.gender;";
         String expectedText =
-                "SELECT <unknown_name>.users.gender, min(<unknown_name>.users.age) as minimo "
-                        + "FROM demo.users GROUP BY <unknown_name>.users.gender;";
+                "SELECT <UNKNOWN_NAME>.users.gender, min(<UNKNOWN_NAME>.users.age) as minimo "
+                        + "FROM demo.users GROUP BY <UNKNOWN_NAME>.users.gender;";
         Assert.assertNotNull(testRegularStatement(inputText, expectedText, "testSimpleGroupQueryWithAliasesOk"),
                 "regular statement error");
     }
@@ -591,11 +592,10 @@ public class SelectStatementTest extends ParsingTest {
                         + "GROUP BY gender "
                         + "ORDER BY age DESC, rating ASC;";
         String expectedText =
-                "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
+                "SELECT <UNKNOWN_NAME>.<UNKNOWN_NAME>.colSales, <UNKNOWN_NAME>.<UNKNOWN_NAME>.colRevenues FROM test.tableClients "
                         + "WHERE test.tableclients.colCity = 'Madrid' "
-                        + "GROUP BY <unknown_name>.<unknown_name>.gender "
-                        + "ORDER BY <unknown_name>.<unknown_name>.age DESC, " +
-                        "<unknown_name>.<unknown_name>.rating;";
+                        + "GROUP BY gender "
+                        + "ORDER BY age DESC, rating;";
         testRegularStatement(inputText, expectedText, "selectComplex");
     }
 
@@ -714,7 +714,7 @@ public class SelectStatementTest extends ParsingTest {
                 + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.name, "
                 + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.size * <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice "
                 + "FROM demo.part "
-                + "ORDER BY <UNKNOWN_NAME>.<UNKNOWN_NAME>.name;";
+                + "ORDER BY name;";
         testRegularStatementSession("demo", inputText, expectedText, "selectWithPreferenceOperatorsSimple1");
     }
 
@@ -749,15 +749,15 @@ public class SelectStatementTest extends ParsingTest {
                 + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.name, "
                 + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.size * <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice, "
                 + "(2 * <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice), "
-                + "sum(<UNKNOWN_NAME>.<UNKNOWN_NAME>.size * (1 - <UNKNOWN_NAME>.<UNKNOWN_NAME>.size) * " +
-                        "(1 + <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice)) AS sum_charge, "
-                + "avg(<UNKNOWN_NAME>.<UNKNOWN_NAME>.size) AS avg_size, "
+                + "sum(size * (1 - size) * " +
+                        "(1 + retailprice)) AS sum_charge, "
+                + "avg(size) AS avg_size, "
                 + "count(*) AS count_order "
                 + "FROM demo.part "
                 + "WHERE "
                 + "demo.part.date <= '1998-12-01' - interval('1998-12-01', 3) AS interval "
-                + "GROUP BY <UNKNOWN_NAME>.<UNKNOWN_NAME>.name "
-                + "ORDER BY <UNKNOWN_NAME>.<UNKNOWN_NAME>.name;";
+                + "GROUP BY name "
+                + "ORDER BY name;";
         testRegularStatementSession("demo", inputText, expectedText, "selectWithPreferenceOperators");
     }
 
@@ -832,7 +832,7 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void selectWithOptions() {
         String inputText = "SELECT field1 FROM demo.emp WITH {'cache': 'yes', 'StorageLevel': 'MEMORY_ONLY'};";
-        String expectedText = "SELECT <unknown_name>.<unknown_name>.field1 FROM demo.emp "
+        String expectedText = "SELECT <UNKNOWN_NAME>.<UNKNOWN_NAME>.field1 FROM demo.emp "
                 + "WITH {'cache'='yes', 'StorageLevel'='MEMORY_ONLY'};";
         testRegularStatement(inputText, expectedText, "selectSimpleWithWhereFunction");
     }

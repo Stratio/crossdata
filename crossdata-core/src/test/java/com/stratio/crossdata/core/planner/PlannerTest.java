@@ -56,8 +56,10 @@ import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Disjunction;
 import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.logicalplan.GroupBy;
 import com.stratio.crossdata.common.logicalplan.Join;
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
+import com.stratio.crossdata.common.logicalplan.OrderBy;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.manifest.FunctionType;
@@ -1052,6 +1054,88 @@ public class PlannerTest extends PlannerBaseTest {
         String inputText = "SELECT COUNT(DISTINCT demo.table1.user) AS COUNT FROM demo.table1;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "selectDistinct", true, table1);
+    }
+
+    @Test
+    public void selectOrderByCheckDefaultAlias() throws ManifestException {
+
+        init();
+
+        String inputText =
+                "SELECT demo.table1.id, demo.table1.user FROM demo.table1 ORDER BY demo.table1.id, demo.table1.user;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "selectOrderByCheckDefaultAlias", false, table1);
+        OrderBy orderBy = OrderBy.class.cast(queryWorkflow.getWorkflow().getLastStep().getPreviousSteps().get(0));
+        assertEquals(
+                orderBy.getIds().get(0).getSelector().getAlias(),
+                "id",
+                "There is no alias in the first Selector of the Order By Clause");
+        assertEquals(
+                orderBy.getIds().get(1).getSelector().getAlias(),
+                "user",
+                "There is no alias in the second Selector of the Order By Clause");
+    }
+
+    @Test
+    public void selectOrderByCheckAlias() throws ManifestException {
+
+        init();
+
+        String inputText =
+                "SELECT demo.table1.id as ident, demo.table1.user as name FROM demo.table1 "
+                        + "ORDER BY demo.table1.id, demo.table1.user;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "selectOrderByCheckAlias", false, table1);
+        OrderBy orderBy = OrderBy.class.cast(queryWorkflow.getWorkflow().getLastStep().getPreviousSteps().get(0));
+        assertEquals(
+                orderBy.getIds().get(0).getSelector().getAlias(),
+                "ident",
+                "There is no alias in the first Selector of the Order By Clause");
+        assertEquals(
+                orderBy.getIds().get(1).getSelector().getAlias(),
+                "name",
+                "There is no alias in the second Selector of the Order By Clause");
+    }
+
+    @Test
+    public void selectGroupByCheckDefaultAlias() throws ManifestException {
+
+        init();
+
+        String inputText =
+                "SELECT demo.table1.id, demo.table1.user FROM demo.table1 GROUP BY demo.table1.id, demo.table1.user;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "selectGroupByCheckDefaultAlias", false, table1);
+        GroupBy groupBy = GroupBy.class.cast(queryWorkflow.getWorkflow().getLastStep().getPreviousSteps().get(0));
+        assertEquals(
+                groupBy.getIds().get(0).getAlias(),
+                "id",
+                "There is no alias in the first Selector of the Group By Clause");
+        assertEquals(
+                groupBy.getIds().get(1).getAlias(),
+                "user",
+                "There is no alias in the second Selector of the Group By Clause");
+    }
+
+    @Test
+    public void selectGroupByCheckAlias() throws ManifestException {
+
+        init();
+
+        String inputText =
+                "SELECT demo.table1.id as ident, demo.table1.user as name FROM demo.table1 "
+                        + "GROUP BY demo.table1.id, demo.table1.user;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "selectGroupByCheckAlias", false, table1);
+        GroupBy groupBy = GroupBy.class.cast(queryWorkflow.getWorkflow().getLastStep().getPreviousSteps().get(0));
+        assertEquals(
+                groupBy.getIds().get(0).getAlias(),
+                "ident",
+                "There is no alias in the first Selector of the Group By Clause");
+        assertEquals(
+                groupBy.getIds().get(1).getAlias(),
+                "name",
+                "There is no alias in the second Selector of the Group By Clause");
     }
 
 }

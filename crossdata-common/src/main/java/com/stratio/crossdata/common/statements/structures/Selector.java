@@ -162,5 +162,7 @@ public abstract class Selector implements Serializable, ISqlExpression {
     @Override
     public abstract int hashCode();
 
-
+    public String toString(boolean b) {
+        return toSQLString(b);
+    }
 }

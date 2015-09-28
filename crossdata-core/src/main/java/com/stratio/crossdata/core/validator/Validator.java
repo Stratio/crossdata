@@ -66,7 +66,7 @@ public class Validator {
 
         IValidatedQuery validatedQuery = null;
         LOG.info("Validating CrossdataStatements...");
-        for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
+        for (ValidationTypes val: parsedQuery.getStatement().getValidationRequirements().getValidations()) {
             val.validate(parsedQuery, parentsTableNames, validatorHelper);
         }
 
@@ -76,7 +76,6 @@ public class Validator {
             validatedQuery = new StorageValidatedQuery((StorageParsedQuery) parsedQuery);
             ((StorageValidatedQuery) validatedQuery).setSqlQuery(parsedQuery.getStatement().toString());
         } else if (parsedQuery instanceof SelectParsedQuery) {
-
             validatedQuery = createValidatedQuery(validatorHelper.getNormalizator(), ((SelectParsedQuery) parsedQuery));
         }
         return validatedQuery;
