@@ -330,7 +330,7 @@ QUOTED_LITERAL
 
 T_CONSTANT: '-'? (DIGIT)+;
 
-T_IDENT: (LETTER | '_') (LETTER | DIGIT | '_')*;
+T_IDENT: (LETTER | '_') (LETTER | DIGIT | '_' | '-')*;
 
 T_KS_AND_TN: T_IDENT (POINT T_IDENT)?;
 
