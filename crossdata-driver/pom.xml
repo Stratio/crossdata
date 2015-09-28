@@ -31,11 +31,6 @@
     <description>Driver for Crossdata in order to communicate with the Crossdata Servers</description>
     <url>http://stratio.github.io/crossdata/</url>
 
-    <properties>
-        <akka.version>2.3.11</akka.version>
-        <slf4j.version>1.7.12</slf4j.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
@@ -61,6 +56,21 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+
+        <!--TEST-->
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-server</artifactId>
+            <version>${parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-ng</artifactId>
+            <version>${parent.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
