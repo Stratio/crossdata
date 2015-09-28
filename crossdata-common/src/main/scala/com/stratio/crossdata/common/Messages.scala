@@ -14,14 +14,11 @@
  *  limitations under the License.
  */
 
-import com.stratio.crossdata.driver.Driver
-import org.scalatest.{FlatSpec, Matchers}
-class DriverIT extends FlatSpec with Matchers {
+package com.stratio.crossdata.common
 
-  "A driver initilization " should " be Ok" in {
-    val driver: Driver = new Driver
-    val result = driver.send("select * from anyTable")
-    result should be ("Table Not Found: anyTable")
-  }
+import java.util.UUID
 
-}
+import com.stratio.crossdata.common.result.Result
+
+case class SQLCommand(query: String, uuid: UUID = UUID.randomUUID())
+case class SQLResult(result: Result)
