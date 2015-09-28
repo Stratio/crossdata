@@ -156,6 +156,7 @@ public class Normalizator {
         normalizeOrderBy();
         normalizeGroupBy();
         normalizeHaving();
+        normalizeLimit();
         validateColumnsScope();
     }
 
@@ -478,7 +479,6 @@ public class Normalizator {
         }
     }
 
-
     private void checkGroupByColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
         switch (selector.getType()) {
         case FUNCTION:
@@ -491,7 +491,7 @@ public class Normalizator {
             }
             break;
         case ASTERISK:
-            throw new BadFormatException("Asterisk is not valid with group by statements");
+            throw new BadFormatException("Asterisk is not valid with group by statements.");
         }
     }
 
@@ -506,6 +506,13 @@ public class Normalizator {
         for (AbstractRelation relation : havingClause) {
             checkRelation(relation);
         }
+    }
+
+    private void normalizeLimit() throws BadFormatException {
+        if(parsedQuery.getStatement().getLimit() < 0){
+            throw new BadFormatException("Limit must be a positive number.");
+        }
+
     }
 
     private void validateColumnsScope() throws ValidationException {
