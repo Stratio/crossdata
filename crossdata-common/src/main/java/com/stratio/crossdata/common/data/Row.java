@@ -105,4 +105,23 @@ public class Row implements Serializable {
         return cells.get(key);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Row row = (Row) o;
+
+        return !(cells != null ? !cells.equals(row.cells) : row.cells != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return cells != null ? cells.hashCode() : 0;
+    }
 }
