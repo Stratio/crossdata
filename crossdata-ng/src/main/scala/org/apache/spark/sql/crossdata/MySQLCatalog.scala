@@ -19,13 +19,15 @@ package org.apache.spark.sql.crossdata
 import java.sql.{Connection, DriverManager}
 
 import org.apache.spark.Logging
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
 import org.apache.spark.sql.types.StructType
 
 object MySQLCatalog{
   val Driver = "com.mysql.jdbc.Driver"
   val StringSeparator: String = "."
-  case class CrossdataTable(tableName: String, database: Option[String] = None,  userSpecifiedSchema: Option[StructType], provider: String, opts: Map[String, String] = Map.empty[String, String])
+  val CrossdataVersion = "1.0.0-SNAPSHOT"
+  case class CrossdataTable(tableName: String, database: Option[String] = None,  userSpecifiedSchema: Option[StructType], provider: String, crossdataVersion: String, opts: Map[String, String] = Map.empty[String, String])
 }
 
 /**
@@ -33,7 +35,7 @@ object MySQLCatalog{
  * MySQL.
  * @param conf An implementation of the [[CatalystConf]].
  */
-class MySQLCatalog(conf: CatalystConf = new SimpleCatalystConf(true))
+class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true))
   extends XDCatalog(conf) with Logging  {
 
   import MySQLCatalog._
@@ -49,8 +51,6 @@ class MySQLCatalog(conf: CatalystConf = new SimpleCatalystConf(true))
       Class.forName(Driver)
       DriverManager.getConnection(URL, User, Password)
   }
-
-
 
 
   /**
@@ -92,50 +92,6 @@ class MySQLCatalog(conf: CatalystConf = new SimpleCatalystConf(true))
   }
 
 
-//
-//  /**
-//   * @inheritdoc
-//   */
-//  override def unregisterAllTables(): Unit = {
-//    super.unregisterAllTables()
-//    logInfo("XDCatalog: unregisterAllTables")
-//    pTables.clear()
-//    db.commit()
-//  }
-//
-//  /**
-//   * @inheritdoc
-//   */
-//  override def unregisterTable(tableIdentifier: Seq[String]): Unit = {
-//    super.unregisterTable(tableIdentifier)
-//    logInfo("XDCatalog: unregisterTable")
-//    val tableName: String = tableIdentifier.mkString(StringSeparator)
-//    pTables.remove(tableName)
-//    db.commit()
-//  }
-//
-//  /**
-//   * @inheritdoc
-//   */
-//  override def registerTable(tableIdentifier: Seq[String], plan: LogicalPlan): Unit = {
-//    super.registerTable(tableIdentifier, plan)
-//    logInfo("XDCatalog: registerTable")
-//    if(!plan.isInstanceOf[LogicalRDD]) {
-//      pTables.put(tableIdentifier.mkString(StringSeparator), plan)
-//      db.commit()
-//    }
-//  }
-//
-//  /**
-//   * @inheritdoc
-//   */
-//  override def refreshTable(databaseName: String, tableName: String): Unit = {
-//    super.refreshTable(databaseName, tableName)
-//    logInfo("XDCatalog: refreshTable")
-//  }
-//
-
-
 
 
   override def tableExists(tableIdentifier: Seq[String]): Boolean = {
@@ -143,7 +99,7 @@ class MySQLCatalog(conf: CatalystConf = new SimpleCatalystConf(true))
     if (existsInCache){
       true
     } else{
-      val table = lookUpTable(tableIdentifier) match {
+      lookUpTable(tableIdentifier) match {
         case Some(crossdataTable) =>
           //TODO provider => new instance => createRelation( table, options....); registerTempTable (tableIdentifier, crossdataTable)
           true
@@ -153,10 +109,40 @@ class MySQLCatalog(conf: CatalystConf = new SimpleCatalystConf(true))
     }
   }
 
+  override def lookupRelation(tableIdentifier: Seq[String], alias: Option[String]): LogicalPlan = {
+
+    lookupRelationCache(tableIdentifier, alias).getOrElse{
+      lookUpTable(tableIdentifier) match {
+        case Some(crossdataTable) =>
+          //TODO provider => new instance => createRelation( table, options....); registerTempTable (tableIdentifier, crossdataTable)
+          val table = ???
+          val logicalPlan: LogicalPlan = ???
+          val tableIdent: Seq[String] = ???
+          val tableFullName = ???
+          val tableWithQualifiers = Subquery(tableIdent.last, table)
+          // If an alias was specified by the lookup, wrap the plan in a subquery so that attributes are
+          // properly qualified with this alias.
+          alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
+
+        case None =>
+          val tableFullName = ???
+          sys.error(s"Table Not Found: $tableFullName")
+      }
+
+    }
+  }
+
+
   private def lookUpTable(tableIdentifier: Seq[String]): Option[CrossdataTable] = {
     ???
   }
 
+  // ** TODO ()
+  // Logical plan
+  //val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
+  // if schema is provided and resolved implemnts SchemaRelationProvider=> val providerRelation = resolved.asInstanceOf[SchemaRelationProvider] //As relation provider
+  // if there is no schema => val providerRelation = resolved.asInstanceOf[RelationProvider] //As relation provider
+  //LogicalRelation(providerRelation.createRelation(sqlContext,inventoryRelation.generateConnectorOpts(t, opts)))
 
 
 }

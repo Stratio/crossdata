@@ -51,6 +51,18 @@
             <artifactId>mapdb</artifactId>
             <version>${mapdb.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-jackson_${scala.binary.version}</artifactId>
+            <version>${jackson4s.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
