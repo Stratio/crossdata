@@ -14,16 +14,20 @@
  *  limitations under the License.
  */
 
-package com.stratio.crossdata.common
+package com.stratio.crossdata.common.result
 
 import java.util.UUID
 
+import com.stratio.crossdata.common.SQLResult
 import org.apache.spark.sql.Row
 
-case class SQLCommand(query: String, queryId: UUID = UUID.randomUUID())
 
-trait SQLResult extends Serializable{
-  val queryId: UUID
-  val resultSet: Option[Array[Row]]
-  def hasError: Boolean
+case class SuccessfulQueryResult(queryId: UUID, result: Array[Row]) extends SQLResult {
+  override val resultSet = Option(result)
+  def hasError = false
+}
+
+case class ErrorResult(queryId: UUID, message: String, cause: Option[Throwable] = None) extends SQLResult{
+  override val resultSet = None
+  def hasError = true
 }
