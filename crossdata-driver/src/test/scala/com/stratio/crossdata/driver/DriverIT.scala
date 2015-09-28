@@ -1,5 +1,3 @@
-package com.stratio.crossdata.driver
-
 /*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
@@ -16,61 +14,52 @@ package com.stratio.crossdata.driver
  *  limitations under the License.
  */
 
+package com.stratio.crossdata.driver
+
+import java.nio.file.Paths
+
 import akka.util.Timeout
 import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.ErrorResult
-import com.stratio.crossdata.server.CrossdataServer
+import com.stratio.crossdata.common.result.{SuccessfulQueryResult, ErrorResult}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
 @RunWith(classOf[JUnitRunner])
-class DriverIT extends DriverAndServerTest {
+class DriverIT extends EndToEndTest {
 
-  "The driver" should "return a ErrorResult when there is no server" in {
-    val driver: Driver = new Driver
-    val result = driver.syncQuery(SQLCommand("select * from any"), Timeout(1 seconds), 1)
+  "Crossdata" should "return an ErrorResult when running an unparseable query" in {
+    assumeCrossdataUpAndRunning()
+    val driver= new Driver
+    val sqlCommand = SQLCommand("select select")
+    val result = driver.syncQuery(sqlCommand, Timeout(10 seconds), 2)
+    result.queryId should be(sqlCommand.queryId)
     result shouldBe an[ErrorResult]
+    result.asInstanceOf[ErrorResult].cause.isDefined shouldBe (true)
+    result.asInstanceOf[ErrorResult].cause.get shouldBe a [RuntimeException]
+    result.asInstanceOf[ErrorResult].cause.get.getMessage should include regex "expected but .* found"
   }
 
 
-  it should "return a ErrorResult when running an unparseable query" in {
-    val driver: Driver = new Driver
-    val result = driver.syncQuery(SQLCommand("select select"))
-    result shouldBe an[ErrorResult]
+  it should "return a SuccessfulQueryResult when executing a select *" in {
+    assumeCrossdataUpAndRunning()
+    val driver = new Driver
+    driver.syncQuery {
+      SQLCommand( s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    }
+    // TODO how to process metadata ops?
+
+    val sqlCommand = SQLCommand("SELECT * FROM jsonTable")
+    val result = driver.syncQuery(sqlCommand)
+    result shouldBe an[SuccessfulQueryResult]
+    result.queryId should be (sqlCommand.queryId)
+    result.hasError should be (false)
+    result.resultSet.isDefined should be (true)
+    val rows = result.resultSet.get
+    rows should have length 2
+    rows(0) should have length 2
   }
 
-  it should "return a SuccessfulQueryResult when executing a list tables" in {
-    val driver: Driver = new Driver
-    val result = driver.syncQuery(SQLCommand("LIST TABLES"))
-    result shouldBe an[ErrorResult]
-  }
-
-}
-
-trait DriverAndServerTest extends FlatSpec with Matchers with BeforeAndAfter {
-
-  var crossdataServer: Option[CrossdataServer]
-
-  def init() = {
-    crossdataServer = Some(new CrossdataServer)
-    crossdataServer.foreach(_.init(null))
-    crossdataServer.foreach(_.start())
-  }
-
-  def stop() = {
-    crossdataServer.foreach(_.stop())
-    crossdataServer.foreach(_.destroy())
-  }
-
-  override protected def before(fun: => Any): Unit = {
-    init()
-  }
-
-  override protected def after(fun: => Any): Unit = {
-    stop()
-  }
 }
