@@ -18,17 +18,13 @@
 
 package com.stratio.crossdata.server.actors
 
-import java.util.Random
-
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent._
-import akka.routing.DefaultResizer
 import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 
 object ServerActor {
@@ -38,55 +34,38 @@ object ServerActor {
 class ServerActor(cluster: Cluster) extends Actor with ServerConfig {
 
   import com.stratio.crossdata.server.actors.ExecutorActor._
-  override lazy val logger = Logger.getLogger(classOf[ServerActor])
-  val random = new Random
-  val hostname = config.getString("akka.remote.netty.tcp.hostname")
-  val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
-  // spark configuration parameters
-  val sparkContextParameters = Map("sparkMaster" -> sparkMaster, "sparkCores" -> sparkCores,
-    "sparkDriverMemory" -> sparkDriverMemory, "sparkExecutorMemory" -> sparkExecutorMemory)
-  lazy val sc = initContext()
-  lazy val xdContext = new XDContext(sc)
+  override lazy val logger = Logger.getLogger(classOf[ServerActor])
+
+  val xdContext = new XDContext(initSparkContext)
 
   val executorActorRef = context.actorOf(Props(classOf[ExecutorActor], cluster, xdContext), "ExecutorActor")
-
-  // For testing purposes
-  cluster.subscribe(self, classOf[MemberUp], classOf[CurrentClusterState], classOf[UnreachableMember],
-    classOf[MemberRemoved], classOf[MemberExited])
 
 
   def receive: Receive = {
 
-    case SQLCommand(query) => {
-      logger.debug("Query received!")
-      //val queryAndParams = List(query, sparkContextParameters)
-      executorActorRef forward ExecuteQuery(query)
-    }
-    case c: ClusterDomainEvent => {
-      logger.info("INFO: " + c)
-    }
-    case s: CurrentClusterState => {
-      logger.info("INFO: " + s)
-    }
-    case a: Any => {
-      logger.error("Unknown message received by ServerActor");
-      //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
-    }
+    case sqlCommand @ SQLCommand(query,_) =>
+      logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}")
+      executorActorRef forward ExecuteQuery(sqlCommand)
+
+    case any =>
+      logger.error(s"Unknown message received by ServerActor: $any")
+
   }
 
-  def initContext(): SparkContext = {
+  def initSparkContext: SparkContext =
     new SparkContext(new SparkConf()
       .setAppName("Crossdata")
       .setMaster(sparkMaster)
-      .setAll(List(
-      sparkDriverMemory,
-      sparkExecutorMemory,
-      sparkCores).filter(config.hasPath).map(k => k -> config.getString(k))))
-  }
+      .setAll(
+        List(sparkDriverMemory, sparkExecutorMemory, sparkCores).filter(config.hasPath).map(k => k -> config.getString(k))
+      ))
 
 
-  override def postStop(): Unit = xdContext.sc.stop()
+  override def preRestart(reason: Throwable, message: Option[Any]): Unit =
+    xdContext.sc.stop()
 
-  override def preRestart(reason: Throwable, message: Option[Any]): Unit = xdContext.sc.stop()
+  override def postStop(): Unit =
+    xdContext.sc.stop()
+
 }

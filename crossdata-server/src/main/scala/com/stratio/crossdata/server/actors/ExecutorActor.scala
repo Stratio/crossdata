@@ -20,12 +20,14 @@ package com.stratio.crossdata.server.actors
 import akka.actor.ActorLogging
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
+import com.stratio.crossdata.common.{SQLCommand, SQLResult}
+import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
 
 object ExecutorActor {
   def props(cluster: Cluster, xDContext: XDContext): Props = Props(new ExecutorActor(cluster, xDContext))
-  case class ExecuteQuery(query:String)
+  case class ExecuteQuery(sqlCommand: SQLCommand)
 }
 
 class ExecutorActor(cluster: Cluster, xdContext: XDContext) extends Actor with ActorLogging {
@@ -34,26 +36,23 @@ class ExecutorActor(cluster: Cluster, xdContext: XDContext) extends Actor with A
   lazy val logger = Logger.getLogger(classOf[ExecutorActor])
 
   def receive: Receive = {
-    case ExecuteQuery(query) => {
+
+    case ExecuteQuery( sqlCommand @ SQLCommand(query, _)) =>
       try {
         val df = xdContext.sql(query)
-        df.collect()
-        sender ! "Result OK"
+        val rows = df.collect()
+        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows)
       } catch {
-        case re: RuntimeException => {
-          logger.info("Runtime Exception: " + re.getMessage)
-          sender ! re.getMessage
+        case e: Throwable => {
+          logger.error(e.getMessage)
+          sender ! ErrorResult(sqlCommand.queryId, e.getMessage, Some(e))
         }
       }
 
-    }
-    case _ => {
-      logger.error("Something is going wrong!")
-      sender ! "Something is going wrong!"
-    }
+    case any =>
+      logger.error(s"Something is going wrong!. Unknown message: ${any.toString}")
 
   }
-
 
 }
 
