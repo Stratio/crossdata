@@ -16,10 +16,11 @@
 
 package com.stratio.crossdata.driver
 
-import java.util
-
 import akka.actor.{ActorSelection, ActorSystem}
 import akka.contrib.pattern.ClusterClient
+import akka.util.Timeout
+import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.{SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.utils.RetryPolitics
@@ -27,42 +28,49 @@ import com.typesafe.config.ConfigValueFactory
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
+import scala.util.Try
 
 object Driver extends DriverConfig {
   override lazy val logger = Logger.getLogger(getClass)
+  val ActorsPath = "/user/receptionist"
 }
 
-class Driver(seedNodes: java.util.List[String] = new util.ArrayList[String]()) {
+class Driver(seedNodes: Option[java.util.List[String]] = None) {
+
+  import Driver._
 
   private lazy val logger = Driver.logger
-  val ActorsPath = "/user/receptionist"
-  private val finalConfig =
-    if (!seedNodes.isEmpty)
+
+  private val proxyActor = {
+    val finalConfig = seedNodes.fold(
       Driver.config
-    else
+    ) { seedNodes =>
       Driver.config.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromAnyRef(seedNodes))
+    }
+    val system = ActorSystem("CrossdataServerCluster", finalConfig)
 
-  private val system = ActorSystem("CrossdataServerCluster", finalConfig)
+    if (logger.isDebugEnabled) {
+      system.logConfiguration()
+    }
 
-  if (logger.isDebugEnabled) {
-    system.logConfiguration()
+    val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(_ + ActorsPath)
+    val initialContacts: Set[ActorSelection] = contactPoints.map(system.actorSelection).toSet
+
+    logger.debug("Initial contacts: " + initialContacts)
+    val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
+    system.actorOf(ProxyActor.props(clusterClientActor, this), "proxy-actor")
   }
 
-  private val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(_ + ActorsPath)
-
-  private val initialContacts: Set[ActorSelection] = contactPoints.map(system.actorSelection).toSet
-  logger.debug("Initial contacts: " + initialContacts)
-
-  val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
-
-  val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, this), "proxy-actor")
-
-  val retryPolitics: RetryPolitics = new RetryPolitics
-
-  def send(s: String): String = {
-    val result = retryPolitics.askRetry(proxyActor, s)
-    logger.info(" Result : " + result)
-    result
+  def syncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 3): SQLResult = {
+    Try {
+      Await.result(asyncQuery(sqlCommand, timeout, retries), timeout.duration * retries)
+    } getOrElse ErrorResult(sqlCommand.queryId, s"Not found answer to query ${sqlCommand.query}. Timeout was exceed.")
   }
 
+  def asyncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 3): Future[SQLResult] = {
+    RetryPolitics.askRetry(proxyActor, sqlCommand, timeout, retries)
+  }
 }
