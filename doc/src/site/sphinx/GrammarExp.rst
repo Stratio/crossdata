@@ -81,7 +81,6 @@ IMPORT TABLES USING \<provider\> OPTIONS '(' (\<property\>',)\+'\<property\> ')'
 
 Example:
 
-.. code-block:: scala
     IMPORT TABLES
     USING $SourceProvider
     OPTIONS (
