@@ -81,6 +81,9 @@
     <modules>
         <module>crossdata-ng</module>
         <module>doc</module>
+        <module>crossdata-common</module>
+        <module>crossdata-driver</module>
+        <module>crossdata-server</module>
     </modules>
 
     <properties>
@@ -91,6 +94,8 @@
         <mapdb.version>1.0.8</mapdb.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
         <config.version>1.2.1</config.version>
+        <akka.version>2.3.4</akka.version>
+        <slf4j.version>1.7.7</slf4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <outputFileName>stratio-crossdata</outputFileName>
@@ -98,11 +103,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-core_${scala.binary.version}</artifactId>
-                <version>${spark.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-sql_${scala.binary.version}</artifactId>
@@ -121,6 +121,11 @@
             <dependency>
                 <groupId>com.stratio.crossdata</groupId>
                 <artifactId>crossdata-mongodb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.stratio.crossdata</groupId>
+                <artifactId>crossdata-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
