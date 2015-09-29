@@ -50,10 +50,4 @@ class XDContextIT extends SharedXDContextTest {
     dataframe shouldBe a[XDDataFrame]
   }
 
-  /* TODO: Complete this test once ImportCatalogUsingWithOptions#run method has been implemented
-  it must "import all tables from a catalog" in {
-    ctx.sql("IMPORT CATALOG USING dummypkg.dummyclass")
-  }
-  */
-
 }

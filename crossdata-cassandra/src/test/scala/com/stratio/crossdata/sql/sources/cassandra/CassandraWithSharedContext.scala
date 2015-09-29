@@ -21,6 +21,8 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.scalatest.Suite
 
+import scala.util.Try
+
 trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefaultTestConstants with Logging {
   this: Suite =>
 
@@ -30,27 +32,25 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
   override protected def beforeAll() = {
     super.beforeAll()
 
-    try {
-
+    isEnvironmentReady = Try {
       clusterAndSession = Some(prepareEnvironment())
-
       sql(
         s"""|CREATE TEMPORARY TABLE $Table
             |USING $SourceProvider
             |OPTIONS (
-            |table '$Table',
-            |keyspace '$Catalog',
-            |cluster '$ClusterName',
-            |pushdown "true",
-            |spark_cassandra_connection_host '$CassandraHost'
+            | table '$Table',
+            | keyspace '$Catalog',
+            | cluster '$ClusterName',
+            | pushdown "true",
+            | spark_cassandra_connection_host '$CassandraHost'
             |)
       """.stripMargin.replaceAll("\n", " "))
+      clusterAndSession.isDefined
+    } recover { case e: Throwable =>
+      logError(e.getMessage)
+      false
+    } get
 
-    } catch {
-      case e: Throwable => logError(e.getMessage)
-    }
-
-    isEnvironmentReady = clusterAndSession.isDefined
   }
 
   override protected def afterAll() = {
@@ -94,6 +94,10 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
       session.execute("INSERT INTO " + Catalog + "." + Table + " (id, age, comment, enrolled) VALUES " +
         "(" + a + ", " + (10 + a) + ", 'Comment " + a + "', " + (a % 2 == 0) + ")")
     }
+
+    //This crates a new table in the keyspace which will not be initially registered at the Spark
+    session.execute(s"CREATE TABLE $Catalog.$UnregisteredTable (id int, age int, comment text, name text, PRIMARY KEY ((id), age, comment))")
+
   }
 
   private def cleanTestData(session: Session): Unit = {
@@ -115,6 +119,7 @@ sealed trait CassandraDefaultTestConstants {
   val ClusterName = "Test Cluster"
   val Catalog = "highschool"
   val Table = "students"
+  val UnregisteredTable = "teachers"
   val CassandraHost = "127.0.0.1"
   val SourceProvider = "com.stratio.crossdata.sql.sources.cassandra"
 }

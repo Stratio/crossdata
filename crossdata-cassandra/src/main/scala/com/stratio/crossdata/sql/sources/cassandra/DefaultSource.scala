@@ -19,17 +19,24 @@
 
 package com.stratio.crossdata.sql.sources.cassandra
 
-import com.datastax.spark.connector.cql.CassandraConnectorConf
+import com.datastax.driver.core.{ColumnMetadata, TableMetadata, KeyspaceMetadata}
+import com.datastax.spark.connector.cql._
 import com.datastax.spark.connector.rdd.ReadConf
 import com.datastax.spark.connector.writer.WriteConf
+import com.stratio.crossdata.sql.sources.TableInventory
+import com.stratio.crossdata.sql.sources.TableInventory.Table
 import com.stratio.crossdata.sql.sources.cassandra.DefaultSource._
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.cassandra.{CassandraSourceOptions, CassandraSourceRelation, CassandraXDSourceRelation, TableRef, DefaultSource => CassandraConnectorDS}
+import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
 import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{StructField, StructType}
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 import scala.collection.mutable
+import scala.collection.JavaConversions.iterableAsScalaIterable
+
+import org.apache.spark.sql.cassandra.DataTypeConverter._
 
 
 /**
@@ -51,7 +58,7 @@ import scala.collection.mutable
  *       spark_cassandra_connection_timeout_ms "1000"
  *      )
  */
-class DefaultSource extends CassandraConnectorDS {
+class DefaultSource extends CassandraConnectorDS with TableInventory {
 
   /**
    * Creates a new relation for a cassandra table.
@@ -119,6 +126,53 @@ class DefaultSource extends CassandraConnectorDS {
 
     CassandraXDSourceRelation(tableRef, sqlContext, options)
   }
+
+
+  /**
+   * @param tMeta C* Metadata for a given table
+   * @return A table description obtained after translate its C* meta data.
+   */
+  private def tableMeta2Table(tMeta: TableMetadata): Table =
+      Table(tMeta.getName, Some(tMeta.getKeyspace.getName))
+
+  
+  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
+
+    for(
+      opName <- CassandraDataSourceClusterNameProperty::CassandraConnectionHostProperty::Nil;
+      if(!options.contains(opName))
+    ) sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
+
+    val clusterName: String = options(CassandraDataSourceClusterNameProperty)
+    val host: String = options(CassandraConnectionHostProperty)
+
+    val cfg: SparkConf = context.sparkContext.getConf.clone()
+
+    for (prop <- DefaultSource.confProperties;
+         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop"))
+      cfg.set(prop, clusterLevelValue)
+
+    cfg.set("spark.cassandra.connection.host", host)
+
+    val connector = CassandraConnector(cfg)
+
+    connector.withSessionDo { s =>
+      val tablesIt: Iterable[Table] = for(
+        ksMeta: KeyspaceMetadata <- s.getCluster.getMetadata.getKeyspaces;
+        tMeta: TableMetadata <- ksMeta.getTables) yield tableMeta2Table(tMeta)
+      tablesIt.toSeq
+    }
+  }
+
+  //Avoids importing system tables
+  override def exclusionFilter(t: TableInventory.Table): Boolean =
+    !t.database.map(dbName => Set("system", "system_traces") contains dbName.toLowerCase).getOrElse(false)
+
+  override def generateConnectorOpts(item: Table, opts: Map[String, String] = Map.empty): Map[String, String] = Map(
+    CassandraDataSourceTableNameProperty -> item.tableName,
+    CassandraDataSourceKeyspaceNameProperty -> item.database.get
+  ) ++ opts.filterKeys(Set(CassandraConnectionHostProperty, CassandraDataSourceClusterNameProperty).contains(_))
+
 }
 
 object DefaultSource {
@@ -127,6 +181,7 @@ object DefaultSource {
   val CassandraDataSourceClusterNameProperty = "cluster"
   val CassandraDataSourceUserDefinedSchemaNameProperty = "schema"
   val CassandraDataSourcePushdownEnableProperty = "pushdown"
+  val CassandraConnectionHostProperty = "spark_cassandra_connection_host"
   val CassandraDataSourceProviderPackageName = DefaultSource.getClass.getPackage.getName
   val CassandraDataSourceProviderClassName = CassandraDataSourceProviderPackageName + ".DefaultSource"
 
