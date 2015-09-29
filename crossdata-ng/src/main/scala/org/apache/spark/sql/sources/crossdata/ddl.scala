@@ -8,7 +8,7 @@ import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.sources.{RelationProvider, LogicalRelation, ResolvedDataSource}
 
 
-private [crossdata] case class ImportCatalogUsingWithOptions(provider: String, opts: Map[String, String])
+private [crossdata] case class ImportTablesUsingWithOptions(provider: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
@@ -27,7 +27,7 @@ private [crossdata] case class ImportCatalogUsingWithOptions(provider: String, o
       tableid = t.database.toList :+ t.tableName;
       doExist = sqlContext.catalog.tableExists(tableid);
       if(inventoryRelation.exclusionFilter(t) && {
-        if(doExist) log.info(s"IMPORT CATALOG omitted already registered table: ${tableid mkString "."}")
+        if(doExist) log.info(s"IMPORT TABLE omitted already registered table: ${tableid mkString "."}")
         !doExist
       })
     ) sqlContext.

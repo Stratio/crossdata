@@ -130,9 +130,9 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
   // TODO test filter on PKs (=) and CKs(any) (right -> left)
 
-  // CATALOG OPERATIONS
+  // IMPORT OPERATIONS
 
-  it should "import all tables from a catalog" in {
+  it should "import all tables from a keyspace" in {
     assumeEnvironmentIsUpAndRunning
 
     def tableCountInHighschool: Long = ctx.sql("SHOW TABLES").count
@@ -140,7 +140,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
     val importQuery =
       s"""
-          |IMPORT CATALOG
+          |IMPORT TABLES
           |USING $SourceProvider
           |OPTIONS (
           | cluster "$ClusterName",
@@ -154,16 +154,16 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
   }
 
-  val wrongImportCatalogSentences = List(
+  val wrongImportTablesSentences = List(
     s"""
-       |IMPORT CATALOG
+       |IMPORT TABLES
        |USING $SourceProvider
        |OPTIONS (
        | cluster "$ClusterName"
        |)
     """.stripMargin,
     s"""
-       |IMPORT CATALOG
+       |IMPORT TABLES
        |USING $SourceProvider
        |OPTIONS (
        | spark_cassandra_connection_host '$CassandraHost'
@@ -171,8 +171,8 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
      """.stripMargin
   )
 
-  wrongImportCatalogSentences.take(1) foreach { sentence =>
-    it should s"not import catalogs for sentences lacking mandatory options: $sentence" in {
+  wrongImportTablesSentences.take(1) foreach { sentence =>
+    it should s"not import tables for sentences lacking mandatory options: $sentence" in {
       assumeEnvironmentIsUpAndRunning
       an [Exception] shouldBe thrownBy(ctx.sql(sentence))
     }
