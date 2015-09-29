@@ -21,6 +21,8 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.scalatest.Suite
 
+import scala.util.Try
+
 trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefaultTestConstants with Logging {
   this: Suite =>
 
@@ -30,27 +32,25 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
   override protected def beforeAll() = {
     super.beforeAll()
 
-    try {
-
+    isEnvironmentReady = Try {
       clusterAndSession = Some(prepareEnvironment())
-
       sql(
         s"""|CREATE TEMPORARY TABLE $Table
             |USING $SourceProvider
             |OPTIONS (
-            |table '$Table',
-            |keyspace '$Catalog',
-            |cluster '$ClusterName',
-            |pushdown "true",
-            |spark_cassandra_connection_host '$CassandraHost'
+            | table '$Table',
+            | keyspace '$Catalog',
+            | cluster '$ClusterName',
+            | pushdown "true",
+            | spark_cassandra_connection_host '$CassandraHost'
             |)
       """.stripMargin.replaceAll("\n", " "))
+      clusterAndSession.isDefined
+    } recover { case e: Throwable =>
+      logError(e.getMessage)
+      false
+    } get
 
-    } catch {
-      case e: Throwable => logError(e.getMessage)
-    }
-
-    isEnvironmentReady = clusterAndSession.isDefined
   }
 
   override protected def afterAll() = {
