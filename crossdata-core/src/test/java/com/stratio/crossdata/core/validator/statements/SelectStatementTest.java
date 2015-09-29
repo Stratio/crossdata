@@ -1481,9 +1481,8 @@ public class SelectStatementTest extends BasicValidatorTest {
     @Test
     public void multipleColumnAlias(){
         String inputText = "SELECT age, age, age FROM demo.users";
-        String expectedText = "SELECT demo.users.age AS age, demo.users.age AS age, demo.users.age AS age FROM demo"
-                + ".users";
-
+        String expectedText = "SELECT demo.users.age AS age, demo.users.age AS age, demo.users.age AS age"
+                + " FROM demo.users";
 
         ColumnName col1 = new ColumnName(null, "users", "age");
         ColumnName col2 = new ColumnName(null, "users", "age");
