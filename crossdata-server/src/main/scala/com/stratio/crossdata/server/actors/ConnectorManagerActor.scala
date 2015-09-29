@@ -62,7 +62,6 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
   logger.info("Lifting connector manager actor")
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
 
-
   override def preStart(): Unit = {
     cluster.subscribe(self, classOf[MemberUp],classOf[CurrentClusterState],classOf[UnreachableMember], classOf[MemberRemoved], classOf[MemberExited])
   }
@@ -71,14 +70,16 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
     cluster.unsubscribe(self)
   }
 
-
-
   def receive : Receive= {
 
     case ConnectorUp(memberAddress: String) => {
       log.info("connectorUp " + memberAddress)
       lazy val connectorActorRef = context.actorSelection(memberAddress + "/user/ConnectorActor")
       val nodeName = new NodeName(memberAddress)
+      if(logger.isDebugEnabled){
+        val node = MetadataManager.MANAGER.getNode(nodeName);
+        logger.debug("Node info: " + node.getName + ": " + node.getStatus)
+      }
       //if the node is offline
       if (MetadataManager.MANAGER.notIsNodeOnline(nodeName)) {
         logger.debug("Asking its name to the connector " + memberAddress)
@@ -99,7 +100,6 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
       if (actorRefUri != null) {
         val connectorName = new ConnectorName(msg.name)
         ExecutionManager.MANAGER.createEntry(actorRefUri, connectorName, true)
-
         MetadataManager.MANAGER.addConnectorRef(connectorName, actorRefUri)
 
         val connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName)
@@ -133,7 +133,9 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
           }
         }
         MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
+        logger.debug(" [Connector] " + connectorName + ": ONLINE")
         MetadataManager.MANAGER.setNodeStatus(new NodeName(sender.path.address.toString), Status.ONLINE)
+        logger.debug(" [Node] " + sender.path.address + ": ONLINE" )
       } else {
         logger.error("Actor reference of the sender can't be null")
       }
@@ -170,6 +172,7 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
         val role = it.next()
         role match {
           case "connector" => {
+            logger.debug(member + ": ConnectorUp")
             self ! ConnectorUp(member.address.toString)
           }
           case _ => {
@@ -198,21 +201,24 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
         logger.info("Resetting Connectors status")
         val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
         MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
+        logger.debug(" [Connectors] " + connectors + ": OFFLINE")
         val nodes = MetadataManager.MANAGER.getNodeNames(data.Status.ONLINE)
         MetadataManager.MANAGER.setNodeStatus(nodes, data.Status.OFFLINE)
+        logger.debug(" [Nodes] " + nodes + ": OFFLINE")
 
         for (member <- members) {
           logger.info("Address: " + member.address + ", roles: " + member.getRoles)
           if (member.getRoles.contains("connector") && member.status == MemberStatus.Up) {
+            logger.debug(member.address + ": Status UP")
             if (MetadataManager.MANAGER.isNodeOffline(new NodeName(sender.path.address.toString))) {
               // TODO log.info(s"checking if the connector $member.address is actually online")
+              logger.debug(sender.path.address + " is OFFLINE")
             } else {
-              logger.debug("New connector joined to the cluster")
+              logger.debug(member.address + ": ConnectorUp")
               self ! ConnectorUp(member.address.toString)
             }
           }
         }
-
       }
     }
 
@@ -227,11 +233,12 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
       logger.info("Member info: " + member.toString)
 
       val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address, false)+"/user/ConnectorActor"
-      if(ExecutionManager.MANAGER.exists(actorRefUri)){
 
+      if(ExecutionManager.MANAGER.exists(actorRefUri)){
         val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
         logger.info("Removing Connector: " + connectorName)
         MetadataManager.MANAGER.removeActorRefFromConnector(connectorName.asInstanceOf[ConnectorName], actorRefUri)
+        logger.debug(" [NODE] " + member.member.address + ": OFFLINE")
         MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
         ExecutionManager.MANAGER.deleteEntry(actorRefUri)
       } else {
@@ -249,6 +256,7 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender, false)
       val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
       MetadataManager.MANAGER.removeActorRefFromConnector(connectorName.asInstanceOf[ConnectorName], actorRefUri)
+      logger.debug(" [NODE] " + member.member.address + ": OFFLINE")
       MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
     }
 
