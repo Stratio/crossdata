@@ -40,7 +40,7 @@ You can also find help in https://groups.google.com/forum/#!forum/crossdata-user
 Grammar
 =======
 
-TODO
+Crossdata implements the standard SparkSQL grammar plus an expansion described `at <doc/src/site/sphinx/GrammarExp.rst>`
 
 
 Getting started

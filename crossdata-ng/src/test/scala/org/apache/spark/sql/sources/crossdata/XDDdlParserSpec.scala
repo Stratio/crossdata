@@ -6,11 +6,11 @@ class XDDdlParserSpec extends BaseXDTest {
 
   val parser = new XDDdlParser(_ => null)
 
-  "A XDDlParser" should  """successfully parse an "IMPORT CATALOG" sentence into
-                           |a ImportCatalogUsingWithOptions RunnableCommand """.stripMargin in {
+  "A XDDlParser" should  """successfully parse an "IMPORT TABLES" sentence into
+                           |a ImportTablesUsingWithOptions RunnableCommand """.stripMargin in {
 
     val sentence =
-      """IMPORT CATALOG
+      """IMPORT TABLES
         | USING org.apache.dumypackage.dummyclass
         | OPTIONS (
         |   addr     "dummyaddr",
@@ -18,20 +18,20 @@ class XDDdlParserSpec extends BaseXDTest {
         | )
         | """.stripMargin
 
-    parser.parse(sentence) shouldBe ImportCatalogUsingWithOptions(
+    parser.parse(sentence) shouldBe ImportTablesUsingWithOptions(
       "org.apache.dumypackage.dummyclass",
       Map(
-        "addr" -> "dummyaddr",
+        "addr"     -> "dummyaddr",
         "database" -> "dummydb"
       )
     )
 
   }
 
-  it should "generate an ImportCatalogUsingWithOptionsan with empty options map when they haven't been provided" in {
+  it should "generate an ImportCatalogUsingWithOptions with empty options map when they haven't been provided" in {
 
-    val sentence = "IMPORT CATALOG USING org.apache.dumypackage.dummyclass"
-    parser.parse(sentence) shouldBe ImportCatalogUsingWithOptions("org.apache.dumypackage.dummyclass", Map.empty)
+    val sentence = "IMPORT TABLES USING org.apache.dumypackage.dummyclass"
+    parser.parse(sentence) shouldBe ImportTablesUsingWithOptions("org.apache.dumypackage.dummyclass", Map.empty)
 
   }
 
@@ -55,8 +55,8 @@ class XDDdlParserSpec extends BaseXDTest {
 
   //Malformed sentences and their expectations
   val wrongSentences =  List[String] (
-    "IMPORT TABLE dummy",
-    """IMPORT CATALOG
+    "IMPORT TABLES",
+    """IMPORT TABLES
       | OPTIONS (
       |   addr     "dummyaddr",
       |   database "dummydb"
