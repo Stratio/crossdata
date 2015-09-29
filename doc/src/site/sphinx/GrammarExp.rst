@@ -1,27 +1,6 @@
 CROSSDATA Expanded Grammar
 **************************
 
-Notes
-=======
-
--   In general, a quoted (single or double) string refers to a literal
-    string whereas a string without quotation marks refers to a column
-    name.
-
-Example:
-
-    -   Column name:
-        -   total
-        -   myTable.total
-        -   myCatalog.myTable.total
-    -   Literal:
-        -   “Madrid”
-        -   ‘California'
-        -   “New York City”
-
--   This expansion is under intense development so supported sentences set is expected to
-    rapidly grow.
-
 Introduction
 ============
 
@@ -37,7 +16,7 @@ Expansion main features
 
 -   100% SparkSQL compatible.
 -   Added new table import capabilities:
-        -   `IMPORT CATALOG`: Catalog registration of every single table existing accessible by a concrete provider.
+        -   `IMPORT TABLES`: Catalog registration of every single table existing accessible by a concrete provider.
 
 Statements
 ----------
@@ -62,18 +41,11 @@ language.
 -   \<database\> ::= \<simple\_identifier\>
 -   \<tablename\> ::= \<identifier\>
 -   \<property\> ::= \<identifier\> ' '\+ ( \<literal\> | \<constant\> )
--   \<data-types\> = TEXT | BIGINT | INT | DOUBLE | FLOAT | BOOLEAN
 
 Supported types
 ---------------
 
--   TEXT
--   VARCHAR
--   BIGINT
--   INT
--   DOUBLE
--   FLOAT
--   BOOLEAN
+Those supported by SparkSQL
 
 IMPORT TABLES
 -------------
