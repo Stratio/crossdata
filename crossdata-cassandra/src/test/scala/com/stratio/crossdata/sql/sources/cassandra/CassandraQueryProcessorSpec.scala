@@ -38,7 +38,7 @@ class CassandraQueryProcessorSpec extends BaseXDTest {
     val query = CassandraQueryProcessor.buildNativeQuery(TableQN, Array(ColumnId, ColumnAge), Array(), Limit)
 
     query should be(s"SELECT $ColumnId, $ColumnAge FROM $TableQN  LIMIT $Limit ALLOW FILTERING")
-  }a
+  }
 
   "A CassandraQueryProcessor" should "build a query with two equal filters" in {
     val query = CassandraQueryProcessor.buildNativeQuery(
