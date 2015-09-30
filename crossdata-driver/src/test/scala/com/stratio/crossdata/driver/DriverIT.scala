@@ -21,7 +21,7 @@ import java.nio.file.Paths
 import akka.util.Timeout
 import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.common.result.{SuccessfulQueryResult, ErrorResult}
-import org.apache.spark.sql.types.{IntegerType, DataTypes, StringType, DataType}
+import org.apache.spark.sql.AnalysisException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -39,8 +39,8 @@ class DriverIT extends EndToEndTest {
     result.queryId should be(sqlCommand.queryId)
     result shouldBe an[ErrorResult]
     result.asInstanceOf[ErrorResult].cause.isDefined shouldBe (true)
-    result.asInstanceOf[ErrorResult].cause.get shouldBe a [RuntimeException]
-    result.asInstanceOf[ErrorResult].cause.get.getMessage should include regex "expected but .* found"
+    result.asInstanceOf[ErrorResult].cause.get shouldBe a [AnalysisException]
+    result.asInstanceOf[ErrorResult].cause.get.getMessage should include regex "cannot resolve .*"
   }
 
 
@@ -63,38 +63,4 @@ class DriverIT extends EndToEndTest {
     rows(0) should have length 2
   }
 
-  it should "list tables" in {
-    assumeCrossdataUpAndRunning()
-    val driver = new Driver
-    driver.syncQuery {
-      SQLCommand( s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
-    }
-
-    val tables = driver.listTables()
-    tables should have length 1
-    tables(0) should be ("jsonTable")
-  }
-
-  // TODO it should "list tables for a specific database" in {}
-
-  it should "retrieve the metadata of certain table" in {
-    assumeCrossdataUpAndRunning()
-    val driver = new Driver
-    driver.syncQuery {
-      SQLCommand( s"CREATE TEMPORARY TABLE jsonTable(id INT, title STRING) USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
-    }
-
-    val tableMetadata = driver.describeTable(None, "jsonTable")
-    tableMetadata should have length 2
-
-    val names = Seq("id", "title")
-    val types = Seq(IntegerType, StringType)
-
-    for (index <- 0 to 1){
-      tableMetadata(index).name should be (names(index))
-      tableMetadata(index)._type should be (types(index))
-    }
-  }
-
-  //TODO describe using catalog.table
 }

@@ -18,7 +18,6 @@ package com.stratio.crossdata.sql.sources.cassandra
 
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.sources
-import org.apache.spark.sql.types.UTF8String
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -33,7 +32,7 @@ class CassandraQueryProcessorSpec extends BaseXDTest {
   val Limit = 12000
   val ValueAge = 25
   val ValueAge2 = 30
-  val ValueId = UTF8String("00123")
+  val ValueId = "00123"
 
   "A CassandraQueryProcessor" should "build a query requiring some columns" in {
     val query = CassandraQueryProcessor.buildNativeQuery(TableQN, Array(ColumnId, ColumnAge), Array(), Limit)
