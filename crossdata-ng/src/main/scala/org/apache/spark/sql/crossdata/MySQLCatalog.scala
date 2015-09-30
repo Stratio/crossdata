@@ -21,13 +21,29 @@ import java.sql.{Connection, DriverManager}
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
-import org.apache.spark.sql.types.StructType
 
-object MySQLCatalog{
-  val Driver = "com.mysql.jdbc.Driver"
+import org.apache.spark.sql.sources._
+import org.apache.spark.sql.types.StructType
+import com.typesafe.config.Config
+
+
+import scala.util.parsing.json.{JSON, JSONObject}
+
+object MySQLCatalog {
+
+  val DRIVER = "crossdata.catalog.mysql.driver"
+  val IP="crossdata.catalog.mysql.ip"
+  val PORT="crossdata.catalog.mysql.port"
+  val DB="crossdata.catalog.mysql.db"
+  val TABLE="crossdata.catalog.mysql.db.persistTable"
+  val USER="crossdata.catalog.mysql.db.user"
+  val PASS="crossdata.catalog.mysql.db.pass"
+
   val StringSeparator: String = "."
-  val CrossdataVersion = "1.0.0-SNAPSHOT"
+  val CROSSDATA_VERSION = "crossdata.version"
+
   case class CrossdataTable(tableName: String, database: Option[String] = None,  userSpecifiedSchema: Option[StructType], provider: String, crossdataVersion: String, opts: Map[String, String] = Map.empty[String, String])
+
 }
 
 /**
@@ -35,38 +51,62 @@ object MySQLCatalog{
  * MySQL.
  * @param conf An implementation of the [[CatalystConf]].
  */
-class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true))
+class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xDContext: XDContext)
   extends XDCatalog(conf) with Logging  {
-
   import MySQLCatalog._
 
-  // TODO Refactor close method, singleton??
-  // TODO  in config
-  val URL = "jdbc:mysql://localhost:3306/crossdata"
-  val User = "root"
-  val Password = "stratio"
+  def config: Config = ???
 
+  lazy val ip= config.getString(IP)
+  lazy val port= config.getString(PORT)
+  lazy val driver= config.getString(DRIVER)
+  lazy val db= config.getString(DB)
+  lazy val table= config.getString(TABLE)
+  lazy val user= config.getString(USER)
+  lazy val pass= config.getString(PASS)
+  lazy val crossdataVersion= config.getString(CROSSDATA_VERSION)
+
+  lazy val url=s"jdbc:mysql://$ip:$port"
 
   lazy val connection: Connection = {
-      Class.forName(Driver)
-      DriverManager.getConnection(URL, User, Password)
+      Class.forName(driver)
+      DriverManager.getConnection(url, user, pass)
   }
 
+  //CREATE PERSISTENT METADATA TABLE
+  connection.createStatement().executeUpdate(s"CREATE DATABASE IF NOT EXISTS $db")
+  connection.createStatement().executeUpdate(s"""CREATE TABLE IF NOT EXISTS $db.$table (database VARCHAR(50),
+                                              | tableName VARCHAR(50),
+                                              | sch TEXT,
+                                              | provider TEXT,
+                                              | options TEXT,
+                                              | crossdataVersion TEXT,
+                                              | PRIMARY KEY (database,tablename))""".stripMargin)
 
   /**
    * Persist in XD Catalog
    */
   override def persistTable(tableIdentifier: Seq[String], crossdataTable: CrossdataTable):
   Unit = {
+
     //super.registerTable(tableName, plan)
     logInfo("XDCatalog: Persist Table")
 
-//    val tableSchema = write(userSpecifiedSchema)
-//    val tableOptions = write(opts)
-//    val statement = connection.createStatement
-//    statement.executeQuery(
-//      s"INSERT INTO crossdataTables (tableName, schema, options) VALUES ($tableName,$tableSchema,$tableOptions)")
+    val tableSchema = crossdataTable.userSpecifiedSchema.get.json
+    val tableOptions = JSONObject(crossdataTable.opts).toString()
+    val statement = connection.createStatement
+    statement.executeQuery(
+      s"""INSERT INTO $db.$table (database, tableName, sch, provider, options) VALUES(
+         | ${crossdataTable.database},
+         | ${crossdataTable.tableName},
+         | ${tableSchema},
+         | ${crossdataTable.provider},
+         | $tableOptions
+         | $crossdataVersion
+       """.stripMargin)
 
+   //Try to register the table.
+   lookupRelation(tableIdentifier)
   }
 
 
@@ -74,24 +114,22 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
    * Drop all tables of catalog
    */
   override def dropAllTables(): Unit = {
-    super.unregisterAllTables()
-    logInfo("XDCatalog: unregisterAllTables")
+    logInfo("XDCatalog: Drop all tables from catalog")
     val statement = connection.createStatement
-    statement.executeQuery(s"DROP TABLE crossdataTables")
+    statement.executeUpdate(s"""DROP TABLE $db.$table""")
+    super.unregisterAllTables()
   }
 
   /**
    * Drop table from XD catalog
    */
   override def dropTable(tableIdentifier: Seq[String]): Unit = {
-    super.unregisterTable(tableIdentifier)
-    logInfo("XDCatalog: unregisterTable")
-    val tableName: String = tableIdentifier.mkString(StringSeparator)
+    logInfo("XDCatalog: Delete Table from catalog")
+    val tableName: String = tableIdentifier(1)
     val statement = connection.createStatement
-    statement.executeQuery(s"DELETE FROM crossdataTable WHERE tableName='$tableName'")
+    statement.executeUpdate(s"""DELETE FROM $db.$table WHERE tableName='$tableName'""")
+    super.unregisterTable(tableIdentifier)
   }
-
-
 
 
   override def tableExists(tableIdentifier: Seq[String]): Boolean = {
@@ -101,7 +139,9 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     } else{
       lookUpTable(tableIdentifier) match {
         case Some(crossdataTable) =>
-          //TODO provider => new instance => createRelation( table, options....); registerTempTable (tableIdentifier, crossdataTable)
+          val logicalPlan: LogicalPlan = createLogicalRelation(crossdataTable)
+          val tableWithQualifiers = Subquery(tableIdentifier.last, logicalPlan)
+          super.registerTable(tableIdentifier,logicalPlan)
           true
         case None =>
           false
@@ -109,40 +149,76 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     }
   }
 
+  /**
+   * Search if exists a relation registered previously of table identifier
+   * @param tableIdentifier
+   * @param alias
+   * @return
+   */
   override def lookupRelation(tableIdentifier: Seq[String], alias: Option[String]): LogicalPlan = {
 
     lookupRelationCache(tableIdentifier, alias).getOrElse{
       lookUpTable(tableIdentifier) match {
         case Some(crossdataTable) =>
           //TODO provider => new instance => createRelation( table, options....); registerTempTable (tableIdentifier, crossdataTable)
-          val table = ???
-          val logicalPlan: LogicalPlan = ???
-          val tableIdent: Seq[String] = ???
-          val tableFullName = ???
-          val tableWithQualifiers = Subquery(tableIdent.last, table)
+
+          val logicalPlan: LogicalPlan = createLogicalRelation(crossdataTable)
+          super.registerTable(tableIdentifier,logicalPlan)
+          val tableWithQualifiers = Subquery(tableIdentifier.last, logicalPlan)
           // If an alias was specified by the lookup, wrap the plan in a subquery so that attributes are
           // properly qualified with this alias.
           alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
 
         case None =>
-          val tableFullName = ???
+          val tableFullName = tableIdentifier(0)
           sys.error(s"Table Not Found: $tableFullName")
       }
 
     }
   }
 
-
+  /**
+   * Search in catalog if table identifier exists
+   * @param tableIdentifier
+   * @return
+   */
   private def lookUpTable(tableIdentifier: Seq[String]): Option[CrossdataTable] = {
-    ???
+    val database=tableIdentifier(0)
+    val tablename=tableIdentifier(1)
+    val statement = connection.createStatement
+    val resultSet=statement.executeQuery(
+      s"""SELECT * FROM $db.$table WHERE database='$database' AND tableName='$tablename')""".stripMargin)
+
+    if (!resultSet.isBeforeFirst() ) {
+      None
+    }else{
+      resultSet.next()
+      val database = resultSet.getString("database")
+      val table = resultSet.getString("tableName")
+      val schemaJSON = resultSet.getString("sch")
+      val provider= resultSet.getString("provider")
+      val optsJSON = resultSet.getString("options")
+
+      Some(CrossdataTable(table,Some(database),getUserSpecifiedSchema(schemaJSON),provider,crossdataVersion,
+        getOptions(optsJSON)))
+    }
   }
 
-  // ** TODO ()
-  // Logical plan
-  //val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
-  // if schema is provided and resolved implemnts SchemaRelationProvider=> val providerRelation = resolved.asInstanceOf[SchemaRelationProvider] //As relation provider
-  // if there is no schema => val providerRelation = resolved.asInstanceOf[RelationProvider] //As relation provider
-  //LogicalRelation(providerRelation.createRelation(sqlContext,inventoryRelation.generateConnectorOpts(t, opts)))
+  private def createLogicalRelation(crossdataTable: CrossdataTable):LogicalRelation = {
+    val resolved = ResolvedDataSource.lookupDataSource(crossdataTable.provider).newInstance()
+    crossdataTable.userSpecifiedSchema match {
+      case schema:Some[StructType] =>
+        LogicalRelation(resolved.asInstanceOf[SchemaRelationProvider].createRelation(xDContext,crossdataTable.opts,
+         schema.get))
+      case None =>
+        LogicalRelation(resolved.asInstanceOf[RelationProvider].createRelation(xDContext,crossdataTable.opts))
+    }
+  }
 
+  private def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] =
+    Some(JSON.parseFull(schemaJSON).get.asInstanceOf[StructType])
+
+  private def getOptions(optsJSON: String): Map[String,String] =
+    JSON.parseFull(optsJSON).get.asInstanceOf[Map[String,String]]
 
 }
