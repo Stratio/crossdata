@@ -77,8 +77,13 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
       lazy val connectorActorRef = context.actorSelection(memberAddress + "/user/ConnectorActor")
       val nodeName = new NodeName(memberAddress)
       if(logger.isDebugEnabled){
-        val node = MetadataManager.MANAGER.getNode(nodeName);
-        logger.debug("Node info: " + node.getName + ": " + node.getStatus)
+        if(MetadataManager.MANAGER.exists(nodeName)){
+          val node = MetadataManager.MANAGER.getNode(nodeName);
+          logger.debug("Node info: " + node.getName + ": " + node.getStatus)
+        } else {
+          logger.debug("New node: "  + nodeName)
+        }
+
       }
       //if the node is offline
       if (MetadataManager.MANAGER.notIsNodeOnline(nodeName)) {
