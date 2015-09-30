@@ -16,11 +16,8 @@
 package com.stratio.crossdata.sql.sources.cassandra
 
 
-import java.sql.Timestamp
-import java.util.Date
 
 import com.datastax.driver.core.{ProtocolVersion, ResultSet}
-import com.datastax.spark.connector.GettableData
 import com.stratio.crossdata.sql.sources.cassandra.CassandraColumnRole._
 import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
@@ -29,7 +26,6 @@ import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
-import org.apache.spark.unsafe.types.UTF8String
 
 object CassandraQueryProcessor {
 
@@ -43,7 +39,7 @@ object CassandraQueryProcessor {
     val orderBy = ""
 
     def quoteString(in: Any): String = in match {
-      case s: UTF8String => s"'$s'"
+      case s: String => s"'$s'"
       case other => other.toString
     }
 

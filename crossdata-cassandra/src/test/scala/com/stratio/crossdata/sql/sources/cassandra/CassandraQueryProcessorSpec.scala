@@ -21,8 +21,6 @@ import org.apache.spark.sql.sources
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import org.apache.spark.unsafe.types.UTF8String
-
 @RunWith(classOf[JUnitRunner])
 class CassandraQueryProcessorSpec extends BaseXDTest {
 
@@ -34,13 +32,13 @@ class CassandraQueryProcessorSpec extends BaseXDTest {
   val Limit = 12000
   val ValueAge = 25
   val ValueAge2 = 30
-  val ValueId = UTF8String.fromString("00123")
+  val ValueId = "00123"
 
   "A CassandraQueryProcessor" should "build a query requiring some columns" in {
     val query = CassandraQueryProcessor.buildNativeQuery(TableQN, Array(ColumnId, ColumnAge), Array(), Limit)
 
     query should be(s"SELECT $ColumnId, $ColumnAge FROM $TableQN  LIMIT $Limit ALLOW FILTERING")
-  }
+  }a
 
   "A CassandraQueryProcessor" should "build a query with two equal filters" in {
     val query = CassandraQueryProcessor.buildNativeQuery(

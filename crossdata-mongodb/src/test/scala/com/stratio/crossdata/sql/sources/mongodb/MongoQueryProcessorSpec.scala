@@ -6,7 +6,6 @@ import java.util.regex.Pattern
 import com.mongodb.{DBObject, QueryOperators}
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.sources._
-import org.apache.spark.unsafe.types.UTF8String
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -22,7 +21,7 @@ class MongoQueryProcessorSpec extends BaseXDTest {
   val Limit = 12000
   val ValueAge = 25
   val ValueAge2 = 30
-  val ValueId = UTF8String.fromString("00123")
+  val ValueId = "00123"
 
   "A MongoQueryProcessor" should "build a query requiring some columns" in {
     val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId, ColumnAge), Array())
