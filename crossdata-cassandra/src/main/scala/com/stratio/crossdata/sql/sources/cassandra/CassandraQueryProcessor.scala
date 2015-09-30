@@ -195,23 +195,8 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   }
 
   private[this] def sparkResultFromCassandra(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
-    // TODO efficiency?
     import scala.collection.JavaConversions._
-    val sparkRowList = resultSet.all().map { row =>
-      val data = new Array[Object](requiredColumns.length)
-      for (i <- requiredColumns.indices) {
-
-        data(i) = GettableData.get(row, i)(ProtocolVersion.V3)
-        data(i) match {
-          case date: Date => data.update(i, new Timestamp(date.getTime))
-          case str: String => data.update(i, UTF8String.fromString(str))
-          case set: Set[_] => data.update(i, set.toSeq)
-          case _ =>
-        }
-      }
-      new CassandraSQLRow(requiredColumns, data)
-    }
-    sparkRowList.toArray
+    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, requiredColumns)(ProtocolVersion.V3)).toArray
   }
 
 }
