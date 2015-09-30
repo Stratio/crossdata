@@ -191,12 +191,12 @@ class Select extends Query {
       sb.append(" WHERE ").append(where.get.asString)
     }
 
-    if(orderBy.nonEmpty){
-      sb.append(" ORDER BY ").append(orderBy.get)
-    }
-
     if(groupBy.nonEmpty){
       sb.append(" GROUP BY ").append(groupBy.get)
+    }
+
+    if(orderBy.nonEmpty){
+      sb.append(" ORDER BY ").append(orderBy.get)
     }
 
     if(limit.nonEmpty){
