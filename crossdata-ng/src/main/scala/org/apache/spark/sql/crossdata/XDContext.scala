@@ -23,7 +23,7 @@ import java.lang.reflect.Constructor
 import java.util.concurrent.atomic.AtomicReference
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
 import org.apache.spark.sql.sources.crossdata.XDDdlParser
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{Logging, SparkContext}
@@ -45,12 +45,13 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
   val xdCatalog = Class.forName(catalogClass)
 
-  val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf], classOf[List[String]])
+  val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf],classOf[XDContext] )
+
 
   override protected[sql] lazy val catalog: XDCatalog =
     constr.newInstance(
       new SimpleCatalystConf(caseSensitive)).asInstanceOf[XDCatalog]
-
+//  override protected[sql] lazy val catalog: XDCatalog  = new MySQLCatalog(new SimpleCatalystConf(caseSensitive), self)
 
 
 

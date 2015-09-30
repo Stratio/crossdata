@@ -19,7 +19,7 @@ package org.apache.spark.sql.crossdata
 import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
-import org.apache.spark.sql.crossdata.MySQLCatalog.CrossdataTable
+
 
 import scala.collection.mutable
 

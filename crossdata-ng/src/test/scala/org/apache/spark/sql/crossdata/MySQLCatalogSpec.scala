@@ -16,23 +16,32 @@
 
 package org.apache.spark.sql.crossdata
 
-import com.stratio.crossdata.test.BaseXDTest
-import org.apache.spark.sql.sources.CreateTableUsing
+import org.apache.spark.sql.catalyst.SimpleCatalystConf
+import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
-class MySQLCatalogSpec extends BaseXDTest {
+class MySQLCatalogSpec extends SharedXDContextTest {
 
   "the table" should "be stored" in {
     val field1 = StructField("column1", StringType, true)
     val field2 = StructField("column2", StringType, true)
     val fields = Seq[StructField](field1, field2)
     val columns = StructType(fields)
-    val createTable = CreateTableUsing("example", Option(columns), "Cassandra", false, Map[String, String](), false, false)
-    val table = Seq("example")
+    //val createTable = CreateTableUsing("example", Option(columns), "Cassandra", false, Map[String, String](), false, false)
+
+
+    val mySQLCatalog = new MySQLCatalog(new SimpleCatalystConf(true), xdContext)
+    val tableName = "tableName"
+    val catalogName = "catalogName"
+    val tableIdentifier = Seq(catalogName, tableName)
+    val crossdataTable = CrossdataTable(tableName, Option(catalogName), Option(columns), "com.stratio.crossdata.sql.sources.cassandra.DefaultSource", "1.0")
+
+    mySQLCatalog.persistTable(tableIdentifier, crossdataTable)
+
 
   }
 }

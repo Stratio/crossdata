@@ -18,33 +18,17 @@ package org.apache.spark.sql.crossdata
 
 import java.sql.{Connection, DriverManager}
 
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
-
 import org.apache.spark.sql.sources._
-import org.apache.spark.sql.types.StructType
-import com.typesafe.config.Config
+import org.apache.spark.sql.types._
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization.write
 
 
-import scala.util.parsing.json.{JSON, JSONObject}
-
-object MySQLCatalog {
-
-  val DRIVER = "crossdata.catalog.mysql.driver"
-  val IP="crossdata.catalog.mysql.ip"
-  val PORT="crossdata.catalog.mysql.port"
-  val DB="crossdata.catalog.mysql.db"
-  val TABLE="crossdata.catalog.mysql.db.persistTable"
-  val USER="crossdata.catalog.mysql.db.user"
-  val PASS="crossdata.catalog.mysql.db.pass"
-
-  val StringSeparator: String = "."
-  val CROSSDATA_VERSION = "crossdata.version"
-
-  case class CrossdataTable(tableName: String, database: Option[String] = None,  userSpecifiedSchema: Option[StructType], provider: String, crossdataVersion: String, opts: Map[String, String] = Map.empty[String, String])
-
-}
+import scala.util.parsing.json.JSON
 
 /**
  * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
@@ -53,9 +37,8 @@ object MySQLCatalog {
  */
 class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xDContext: XDContext)
   extends XDCatalog(conf) with Logging  {
-  import MySQLCatalog._
 
-  def config: Config = ???
+  def config: Config = ConfigFactory.load
 
   lazy val ip= config.getString(IP)
   lazy val port= config.getString(PORT)
@@ -69,19 +52,19 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   lazy val url=s"jdbc:mysql://$ip:$port"
 
   lazy val connection: Connection = {
-      Class.forName(driver)
-      DriverManager.getConnection(url, user, pass)
+    Class.forName(driver)
+    DriverManager.getConnection(url, user, pass)
   }
 
   //CREATE PERSISTENT METADATA TABLE
   connection.createStatement().executeUpdate(s"CREATE DATABASE IF NOT EXISTS $db")
-  connection.createStatement().executeUpdate(s"""CREATE TABLE IF NOT EXISTS $db.$table (database VARCHAR(50),
-                                              | tableName VARCHAR(50),
-                                              | sch TEXT,
-                                              | provider TEXT,
-                                              | options TEXT,
-                                              | crossdataVersion TEXT,
-                                              | PRIMARY KEY (database,tablename))""".stripMargin)
+  connection.createStatement().executeUpdate(s"""CREATE TABLE IF NOT EXISTS $db.$table (db VARCHAR(50),
+                                                                                        | tableName VARCHAR(50),
+                                                                                        | sch TEXT,
+                                                                                        | provider TEXT,
+                                                                                        | options TEXT,
+                                                                                        | crossdataVersion TEXT,
+                                                                                        | PRIMARY KEY (db,tablename))""".stripMargin)
 
   /**
    * Persist in XD Catalog
@@ -92,21 +75,38 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     //super.registerTable(tableName, plan)
     logInfo("XDCatalog: Persist Table")
 
-    val tableSchema = crossdataTable.userSpecifiedSchema.get.json
-    val tableOptions = JSONObject(crossdataTable.opts).toString()
+    // TODO: Evaluate userSpecifiedSchema as Options
+    // TODO: Test StructTypes with multiple subdocuments
+    val tableSchema = serializeSchema(crossdataTable.userSpecifiedSchema.get)
+    val tableOptions = serializeOptions(crossdataTable.opts)
+
     val statement = connection.createStatement
-    statement.executeQuery(
-      s"""INSERT INTO $db.$table (database, tableName, sch, provider, options) VALUES(
-         | ${crossdataTable.database},
-         | ${crossdataTable.tableName},
-         | ${tableSchema},
-         | ${crossdataTable.provider},
-         | $tableOptions
-         | $crossdataVersion
+
+    connection.setAutoCommit(false)
+    val prepped = connection.prepareStatement(
+      s"""INSERT INTO $db.$table (db, tableName, sch, provider, options, crossdataVersion) VALUES(?,?,?,?,?,?)
+                                  |ON DUPLICATE KEY UPDATE
+                                  |sch = VALUES (sch),
+                                  |provider = VALUES (provider),
+                                  |options = VALUES (options),
+                                  |crossdataVersion = VALUES (crossdataVersion)
        """.stripMargin)
 
-   //Try to register the table.
-   lookupRelation(tableIdentifier)
+    crossdataTable.db match {
+      case Some(db) => prepped.setString(1, db)
+      case None => prepped.setString(1, "")
+    }
+    prepped.setString(2, crossdataTable.tableName)
+    prepped.setString(3, tableSchema)
+    prepped.setString(4, crossdataTable.provider)
+    prepped.setString(5, tableOptions)
+    prepped.setString(6, crossdataVersion)
+    prepped.execute();
+
+    connection.commit();
+
+    //Try to register the table.
+    lookupRelation(tableIdentifier)
   }
 
 
@@ -187,13 +187,13 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     val tablename=tableIdentifier(1)
     val statement = connection.createStatement
     val resultSet=statement.executeQuery(
-      s"""SELECT * FROM $db.$table WHERE database='$database' AND tableName='$tablename')""".stripMargin)
+      s"""SELECT * FROM $db.$table WHERE db='$database' AND tableName='$tablename'""".stripMargin)
 
     if (!resultSet.isBeforeFirst() ) {
       None
     }else{
       resultSet.next()
-      val database = resultSet.getString("database")
+      val database = resultSet.getString("db")
       val table = resultSet.getString("tableName")
       val schemaJSON = resultSet.getString("sch")
       val provider= resultSet.getString("provider")
@@ -209,16 +209,37 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     crossdataTable.userSpecifiedSchema match {
       case schema:Some[StructType] =>
         LogicalRelation(resolved.asInstanceOf[SchemaRelationProvider].createRelation(xDContext,crossdataTable.opts,
-         schema.get))
+          schema.get))
       case None =>
         LogicalRelation(resolved.asInstanceOf[RelationProvider].createRelation(xDContext,crossdataTable.opts))
     }
   }
 
-  private def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] =
-    Some(JSON.parseFull(schemaJSON).get.asInstanceOf[StructType])
+  private def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
+    //JSON.parseFull(schemaJSON).get.asInstanceOf[StructType]
+    val jsonMap = JSON.parseFull(schemaJSON).get.asInstanceOf[Map[String, Any]]
+    // TODO Create new Exception?
+    // TODO pass metadata to StructFields
+    // Metadata.build() ??? x.getOrElse("metadata", "")
+    val structFields = jsonMap.getOrElse("fields", throw new Exception).asInstanceOf[List[Map[String, Any]]]
+      .map(x => StructField(x.getOrElse("name", "").asInstanceOf[String], DataTypeParser.parse(x.getOrElse("type", "").asInstanceOf[String]), x.getOrElse("nullable", "").asInstanceOf[Boolean]))
+    Option(StructType(structFields))
+
+
+
+  }
+
 
   private def getOptions(optsJSON: String): Map[String,String] =
     JSON.parseFull(optsJSON).get.asInstanceOf[Map[String,String]]
 
+  private def serializeSchema(schema: StructType) : String = {
+    implicit val formats = DefaultFormats
+    write(schema.jsonValue.values)
+  }
+
+  private def serializeOptions(options: Map[String, Any]): String = {
+    implicit val formats = DefaultFormats
+    write(formats)
+  }
 }
