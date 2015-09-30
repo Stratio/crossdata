@@ -19,6 +19,7 @@ package com.stratio.crossdata.driver
 import akka.actor.{ActorSelection, ActorSystem}
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
+import com.stratio.crossdata.common.metadata.FieldMetadata
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.{SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.actor.ProxyActor
@@ -26,6 +27,7 @@ import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import com.typesafe.config.ConfigValueFactory
 import org.apache.log4j.Logger
+import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
 
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
@@ -64,6 +66,7 @@ class Driver(seedNodes: Option[java.util.List[String]] = None) {
     system.actorOf(ProxyActor.props(clusterClientActor, this), "proxy-actor")
   }
 
+  // TODO syncQuery and asynQuery should be private when the driver get improved
   def syncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 3): SQLResult = {
     Try {
       Await.result(asyncQuery(sqlCommand, timeout, retries), timeout.duration * retries)
@@ -73,4 +76,34 @@ class Driver(seedNodes: Option[java.util.List[String]] = None) {
   def asyncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 3): Future[SQLResult] = {
     RetryPolitics.askRetry(proxyActor, sqlCommand, timeout, retries)
   }
+
+
+  def listDatabases(): Seq[String] = {
+    // TODO create command in XD Parser => syncQuery(SQLCommand("SHOW DATABASES"))
+    ???
+  }
+
+  def listTables(databaseName: Option[String] = None): Seq[String] = {
+    syncQuery(SQLCommand(s"SHOW TABLES ${databaseName.fold("")("IN " + _)}")) match {
+      case SuccessfulQueryResult(_, result) =>
+        result.map(row => row.getString(0))
+      case ErrorResult(_, message, Some(cause)) =>
+        throw new RuntimeException(message, cause)
+      case ErrorResult(_, message, _) =>
+        throw new RuntimeException(message)
+      // TODO manage exceptions
+    }
+  }
+
+  def describeTable(database: Option[String], tableName: String): Seq[FieldMetadata] = {
+    syncQuery(SQLCommand(s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")) match {
+      case SuccessfulQueryResult(_, result) =>
+        result.map(row => FieldMetadata(row.getString(0), DataTypesUtils.toDataType(row.getString(1))))
+      case ErrorResult(_, message, Some(cause)) =>
+        throw new RuntimeException(message, cause)
+      case ErrorResult(_, message, _) =>
+        throw new RuntimeException(message)
+    }
+  }
+
 }
