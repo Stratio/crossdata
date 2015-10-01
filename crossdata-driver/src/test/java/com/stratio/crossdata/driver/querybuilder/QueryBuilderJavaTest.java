@@ -99,8 +99,8 @@ public class QueryBuilderJavaTest {
         String expected = "SELECT col1, col2 FROM table1 "
                 + "INNER JOIN table2 ON id1 = id2 "
                 + "WHERE col1 = 'value1' "
-                + "ORDER BY col3 "
-                + "GROUP BY col4;";
+                + "GROUP BY col4 "
+                + "ORDER BY col3;";
         Query s = QueryBuilder.select("col1", "col2")
                 .from("table1")
                 .join("table2").on("id1 = id2")
