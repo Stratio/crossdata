@@ -53,7 +53,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       }
 
     case any =>
-      logger.error(s"Something is going wrong!. Unknown message: ${any.toString}")
+      logger.error(s"Something is going wrong!. Unknown message: $any")
 
   }
 
