@@ -166,7 +166,8 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
 
   //Avoids importing system tables
   override def exclusionFilter(t: TableInventory.Table): Boolean =
-    !t.database.map(dbName => Set("system", "system_traces") contains dbName.toLowerCase).getOrElse(false)
+    !t.database.exists(dbName => Set("system", "system_traces") contains dbName.toLowerCase)
+
 
   override def generateConnectorOpts(item: Table, opts: Map[String, String] = Map.empty): Map[String, String] = Map(
     CassandraDataSourceTableNameProperty -> item.tableName,

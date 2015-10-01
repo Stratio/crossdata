@@ -31,6 +31,7 @@ import org.apache.spark.{Logging, SparkContext}
  * @param sc A [[SparkContext]].
  */
 class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging {
+  self =>
 
   /*
   val xdConfig: Config = ConfigFactory.load
@@ -61,6 +62,8 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   override def sql(sqlText: String): DataFrame = {
     XDDataFrame(this, parseSql(sqlText))
   }
+
+  XDContext.setLastInstantiatedContext(self)
 }
 
 /**
