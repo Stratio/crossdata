@@ -35,7 +35,7 @@ You can build a Spark Distribution with Crossdata libraries running the make-dis
 
 This will build Spark with the following options:
     - Crossdata with Cassandra support
-    - Spark Version v1.4.1
+    - Spark Version v1.5.0
     - Spark's Hadoop  Version 2.4.0
     - Yarn support
     - Hive integration for SparkSQL

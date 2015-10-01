@@ -14,15 +14,8 @@
  *  limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata
+package com.stratio.crossdata.common.metadata
 
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
+import org.apache.spark.sql.types.DataType
 
-class MockBaseRelation extends BaseRelation with Serializable {
-
-  override def sqlContext: SQLContext = ???
-
-  override def schema: StructType = StructType(List(StructField("id", IntegerType)))
-}
+case class FieldMetadata(name: String, _type: DataType)

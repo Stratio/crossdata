@@ -35,7 +35,7 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-common</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -62,16 +62,62 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-server</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-ng</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>crossdata-jdbc</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>2.4.1</version>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+                            <minimizeJar>true</minimizeJar>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.stratio.crossdata:crossdata-common</include>
+                                    <include>com.stratio.crossdata:crossdata-driver</include>
+                                    <include>org.apache.spark:spark-catalyst_${scala.binary.version}</include>
+                                    <include>com.typesafe.akka:akka-actor_${scala.binary.version}</include>
+                                    <include>com.typesafe.akka:akka-cluster_${scala.binary.version}</include>
+                                    <include>com.typesafe.akka:akka-contrib_${scala.binary.version}</include>
+                                    <include>com.typesafe.akka:akka-remote_${scala.binary.version}</include>
+                                    <include>com.typesafe.akka:akka-slf4j_${scala.binary.version}</include>
+                                    <include>com.google.guava:guava</include>
+                                    <include>io.netty:netty-all</include>
+                                    <include>io.netty:netty</include>
+                                    <include>com.google.protobuf:protobuf-java</include>
+                                    <include>org.slf4j:slf4j-api</include>
+                                    <include>org.slf4j:slf4j-log4j12</include>
+                                    <include>log4j:log4j:jar</include>
+                                </includes>
+                            </artifactSet>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

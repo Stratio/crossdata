@@ -19,10 +19,12 @@ package org.apache.spark.sql.crossdata.test
 
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.SpecificMutableRow
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.types.{StructField, _}
 import org.apache.spark.sql.{ColumnName, DataFrameHolder, Row}
+import org.apache.spark.unsafe.types.UTF8String
 
 import scala.language.implicitConversions
 import scala.reflect.runtime.universe.TypeTag
@@ -70,11 +72,11 @@ private[sql] abstract class XDImplicits {
       val row = new SpecificMutableRow(dataType :: Nil)
       iter.map { v =>
         row.setInt(0, v)
-        row: Row
+        row: InternalRow
       }
     }
     DataFrameHolder(
-      _xdContext.createDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
+      _xdContext.internalCreateDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
   }
 
   /**
@@ -87,11 +89,11 @@ private[sql] abstract class XDImplicits {
       val row = new SpecificMutableRow(dataType :: Nil)
       iter.map { v =>
         row.setLong(0, v)
-        row: Row
+        row: InternalRow
       }
     }
     DataFrameHolder(
-      _xdContext.createDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
+      _xdContext.internalCreateDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
   }
 
   /**
@@ -103,12 +105,12 @@ private[sql] abstract class XDImplicits {
     val rows = data.mapPartitions { iter =>
       val row = new SpecificMutableRow(dataType :: Nil)
       iter.map { v =>
-        row.update(0, UTF8String(v))
-        row: Row
+        row.update(0, UTF8String.fromString(v))
+        row: InternalRow
       }
     }
     DataFrameHolder(
-      _xdContext.createDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
+      _xdContext.internalCreateDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
   }
 }
 

@@ -20,7 +20,8 @@ import java.nio.file.Paths
 
 import akka.util.Timeout
 import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.{SuccessfulQueryResult, ErrorResult}
+import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+import org.apache.spark.sql.AnalysisException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -32,22 +33,23 @@ class DriverIT extends EndToEndTest {
 
   "Crossdata" should "return an ErrorResult when running an unparseable query" in {
     assumeCrossdataUpAndRunning()
-    val driver= new Driver
+    val driver = Driver()
     val sqlCommand = SQLCommand("select select")
     val result = driver.syncQuery(sqlCommand, Timeout(10 seconds), 2)
     result.queryId should be(sqlCommand.queryId)
     result shouldBe an[ErrorResult]
     result.asInstanceOf[ErrorResult].cause.isDefined shouldBe (true)
-    result.asInstanceOf[ErrorResult].cause.get shouldBe a [RuntimeException]
-    result.asInstanceOf[ErrorResult].cause.get.getMessage should include regex "expected but .* found"
+    result.asInstanceOf[ErrorResult].cause.get shouldBe a[AnalysisException]
+    result.asInstanceOf[ErrorResult].cause.get.getMessage should include regex "cannot resolve .*"
   }
 
 
   it should "return a SuccessfulQueryResult when executing a select *" in {
     assumeCrossdataUpAndRunning()
-    val driver = new Driver
+    val driver = Driver()
+
     driver.syncQuery {
-      SQLCommand( s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+      SQLCommand(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
     }
     // TODO how to process metadata ops?
 
@@ -60,6 +62,12 @@ class DriverIT extends EndToEndTest {
     val rows = result.resultSet.get
     rows should have length 2
     rows(0) should have length 2
+
+    /* TODO unregister in afterAll
+    driver.syncQuery {
+      SQLCommand(s"UNREGISTER TABLES")
+    }
+    */
   }
 
 }

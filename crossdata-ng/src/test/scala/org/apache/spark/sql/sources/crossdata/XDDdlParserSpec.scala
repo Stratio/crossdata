@@ -1,7 +1,6 @@
 package org.apache.spark.sql.sources.crossdata
 import com.stratio.crossdata.test.BaseXDTest
-import org.apache.spark.sql.sources.{RefreshTable, CreateTableUsing, DescribeCommand}
-import org.scalatest.{Matchers, WordSpec}
+import org.apache.spark.sql.execution.datasources.{DescribeCommand, RefreshTable, CreateTableUsing}
 
 class XDDdlParserSpec extends BaseXDTest {
 

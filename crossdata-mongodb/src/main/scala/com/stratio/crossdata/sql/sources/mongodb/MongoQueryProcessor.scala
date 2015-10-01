@@ -28,8 +28,9 @@ import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
-import org.apache.spark.sql.types.{StructType, UTF8String}
+import org.apache.spark.sql.types.StructType
 
+import org.apache.spark.sql.Row
 
 object MongoQueryProcessor {
 
@@ -76,10 +77,7 @@ object MongoQueryProcessor {
     queryBuilder.get
   }
 
-  private def convertToStandardType(value: Any): Any = value match {
-    case value: UTF8String => value.toString()
-    case other => other
-  }
+  private def convertToStandardType(value: Any): Any = value
 
   /**
    *

@@ -6,7 +6,8 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
-import org.apache.spark.sql.sources.{LogicalRelation, TableScan}
+import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.sources.TableScan
 import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.Inside

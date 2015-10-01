@@ -136,7 +136,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     def tableCountInHighschool: Long = ctx.sql("SHOW TABLES").count
-    tableCountInHighschool shouldBe 1
+    val initialLength = tableCountInHighschool
 
     val importQuery =
       s"""
@@ -150,7 +150,9 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
     ctx.sql(importQuery)
 
-    tableCountInHighschool shouldBe 3
+    // TODO We need to create an unregister the table
+    // TODO Modify this test when the new catalog is ready
+    tableCountInHighschool should be > initialLength
 
   }
 

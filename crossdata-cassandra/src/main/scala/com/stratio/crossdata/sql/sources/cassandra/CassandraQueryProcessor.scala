@@ -16,21 +16,16 @@
 package com.stratio.crossdata.sql.sources.cassandra
 
 
-import java.sql.Timestamp
-import java.util.Date
 
 import com.datastax.driver.core.{ProtocolVersion, ResultSet}
-import com.datastax.spark.connector.GettableData
 import com.stratio.crossdata.sql.sources.cassandra.CassandraColumnRole._
 import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.sources
+import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
-import org.apache.spark.sql.types.UTF8String
-
 
 object CassandraQueryProcessor {
 
@@ -44,7 +39,7 @@ object CassandraQueryProcessor {
     val orderBy = ""
 
     def quoteString(in: Any): String = in match {
-      case s: UTF8String => s"'$s'"
+      case s: String => s"'$s'"
       case other => other.toString
     }
 
@@ -94,12 +89,12 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter], Boolean) = {
       lplan match {
         case Limit(_, child) => findProjectsFilters(child)
-        case PhysicalOperation(projectList, filterList, _) => CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
+        case PhysicalOperation(projectList, filterList, _) =>
+          CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
       }
     }
 
     val (projects, filters, filtersIgnored) = findProjectsFilters(logicalPlan)
-
     if (filtersIgnored || !checkNativeFilters(filters)) {
       None
     } else {
@@ -196,23 +191,8 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   }
 
   private[this] def sparkResultFromCassandra(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
-    // TODO efficiency?
     import scala.collection.JavaConversions._
-    val sparkRowList = resultSet.all().map { row =>
-      val data = new Array[Object](requiredColumns.length)
-      for (i <- requiredColumns.indices) {
-
-        data(i) = GettableData.get(row, i)(ProtocolVersion.V3)
-        data(i) match {
-          case date: Date => data.update(i, new Timestamp(date.getTime))
-          case str: String => data.update(i, UTF8String(str))
-          case set: Set[_] => data.update(i, set.toSeq)
-          case _ =>
-        }
-      }
-      new CassandraSQLRow(requiredColumns, data)
-    }
-    sparkRowList.toArray
+    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, requiredColumns)(ProtocolVersion.V3)).toArray
   }
 
 }
