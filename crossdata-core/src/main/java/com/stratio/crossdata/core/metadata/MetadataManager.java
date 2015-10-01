@@ -714,6 +714,9 @@ public enum MetadataManager {
     public void setConnectorStatus(ConnectorName name, Status status) {
         ConnectorMetadata connectorMetadata = getConnector(name);
         connectorMetadata.setStatus(status);
+        if(status.equals(Status.OFFLINE)){
+            connectorMetadata.getActorRefs().clear();
+        }
         createConnector(connectorMetadata, false);
     }
 

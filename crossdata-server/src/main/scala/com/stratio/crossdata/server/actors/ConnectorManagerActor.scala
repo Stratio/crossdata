@@ -19,28 +19,19 @@
 package com.stratio.crossdata.server.actors
 
 
-import akka.actor.{ReceiveTimeout, ActorLogging, Actor, Props, Address}
-import akka.cluster.{MemberStatus, Cluster}
-import akka.cluster.ClusterEvent.{ClusterMetricsChanged, MemberEvent, MemberExited,
-MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEvent}
-import com.stratio.crossdata.common.connector.ConnectorClusterConfig
-import com.stratio.crossdata.common.data
-import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
-import com.stratio.crossdata.common.executionplan.{ExecutionInfo, ResultType, ExecutionType, ManagementWorkflow}
-import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import java.util
 import java.util.{Collections, UUID}
 
-import akka.actor.{Actor, ActorLogging, Address, Props, ReceiveTimeout}
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, ClusterMetricsChanged, CurrentClusterState, MemberEvent, MemberExited, MemberRemoved, MemberUp, UnreachableMember}
+import akka.actor.{Actor, ActorLogging, Address, Props}
+import akka.cluster.ClusterEvent.{CurrentClusterState, MemberExited, MemberRemoved, MemberUp, UnreachableMember}
 import akka.cluster.{Cluster, MemberStatus}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.{ConnectorName, DataStoreName, NodeName, Status}
-import com.stratio.crossdata.common.exceptions.{ExecutionException, ManifestException}
+import com.stratio.crossdata.common.executionplan.{ExecutionInfo, ExecutionType, ManagementWorkflow, ResultType}
 import com.stratio.crossdata.common.manifest._
 import com.stratio.crossdata.common.metadata.{ConnectorMetadata, DataStoreMetadata}
-import com.stratio.crossdata.common.result.{ConnectToConnectorResult, ConnectResult, ErrorResult, Result}
+import com.stratio.crossdata.common.result.{ConnectToConnectorResult, ErrorResult, Result}
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
@@ -70,7 +61,7 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
     cluster.unsubscribe(self)
   }
 
-  def receive : Receive= {
+  def receive: Receive= {
 
     case ConnectorUp(memberAddress: String) => {
       log.info("connectorUp " + memberAddress)
@@ -83,8 +74,8 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
         } else {
           logger.debug("New node: "  + nodeName)
         }
-
       }
+
       //if the node is offline
       if (MetadataManager.MANAGER.notIsNodeOnline(nodeName)) {
         logger.debug("Asking its name to the connector " + memberAddress)
@@ -201,14 +192,17 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
           logger.info("New server added. Size: " + foundServers.size)
         }
       }
-      if (foundServers.size == 1) {
 
+      logger.debug(s"Number of online servers: ${foundServers.size}")
+      if (foundServers.size <= 1) {
         logger.info("Resetting Connectors status")
-        val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
-        MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
+        val connectors = MetadataManager.MANAGER.getConnectors()
+        connectors.foreach(c => MetadataManager.MANAGER.setConnectorStatus(c.getName, data.Status.OFFLINE))
+        //MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
         logger.debug(" [Connectors] " + connectors + ": OFFLINE")
-        val nodes = MetadataManager.MANAGER.getNodeNames(data.Status.ONLINE)
-        MetadataManager.MANAGER.setNodeStatus(nodes, data.Status.OFFLINE)
+        val nodes = MetadataManager.MANAGER.getNodes()
+        nodes.foreach(n => MetadataManager.MANAGER.setNodeStatus(n.getName, data.Status.OFFLINE))
+        //MetadataManager.MANAGER.setNodeStatus(nodes, data.Status.OFFLINE)
         logger.debug(" [Nodes] " + nodes + ": OFFLINE")
 
         for (member <- members) {
@@ -227,7 +221,6 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
       }
     }
 
-
     case member: UnreachableMember => {
       logger.info("Member detected as unreachable: " + member)
       //TODO Process UnreachableMember
@@ -238,13 +231,13 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
       logger.info("Member info: " + member.toString)
 
       val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address, false)+"/user/ConnectorActor"
+      MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
 
       if(ExecutionManager.MANAGER.exists(actorRefUri)){
         val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
         logger.info("Removing Connector: " + connectorName)
         MetadataManager.MANAGER.removeActorRefFromConnector(connectorName.asInstanceOf[ConnectorName], actorRefUri)
         logger.debug(" [NODE] " + member.member.address + ": OFFLINE")
-        MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
         ExecutionManager.MANAGER.deleteEntry(actorRefUri)
       } else {
         logger.warn(actorRefUri + " not found in the Execution Manager")
@@ -264,7 +257,6 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
       logger.debug(" [NODE] " + member.member.address + ": OFFLINE")
       MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
     }
-
 
     case unknown: Any => {
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
