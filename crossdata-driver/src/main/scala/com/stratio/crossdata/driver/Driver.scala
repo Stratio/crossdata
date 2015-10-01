@@ -38,6 +38,10 @@ import scala.util.Try
 object Driver extends DriverConfig {
   override lazy val logger = Logger.getLogger(getClass)
   val ActorsPath = "/user/receptionist"
+
+  def apply(seedNodes: Option[java.util.List[String]] = None) =
+    new Driver(seedNodes)
+
 }
 
 class Driver(seedNodes: Option[java.util.List[String]] = None) {
@@ -67,13 +71,13 @@ class Driver(seedNodes: Option[java.util.List[String]] = None) {
   }
 
   // TODO syncQuery and asynQuery should be private when the driver get improved
-  def syncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 3): SQLResult = {
+  def syncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 2): SQLResult = {
     Try {
       Await.result(asyncQuery(sqlCommand, timeout, retries), timeout.duration * retries)
     } getOrElse ErrorResult(sqlCommand.queryId, s"Not found answer to query ${sqlCommand.query}. Timeout was exceed.")
   }
 
-  def asyncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 3): Future[SQLResult] = {
+  def asyncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 2): Future[SQLResult] = {
     RetryPolitics.askRetry(proxyActor, sqlCommand, timeout, retries)
   }
 
