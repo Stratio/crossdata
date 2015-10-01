@@ -22,12 +22,12 @@ import com.typesafe.config.Config
 
 
 object NumberActorConfig {
-   val SERVER_ACTOR_NUM = "config.akka.number.server-actor"
+   val ServerActorInstances = "config.akka.number.server-actor"
 }
 
 trait NumberActorConfig {
 
-  lazy val num_server_actor: Int = config.getString(NumberActorConfig.SERVER_ACTOR_NUM).toInt
-  def config: Config = ???
+  lazy val serverActorInstances: Int = config.getString(NumberActorConfig.ServerActorInstances).toInt
+  def config: Config
 
 }

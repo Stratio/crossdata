@@ -33,7 +33,7 @@ import scala.language.postfixOps
 class DriverSpec extends BaseXDTest {
 
   "Crossdata driver" should "fail with a timeout when there is no server" in {
-    val driver: Driver = new Driver
+    val driver = Driver()
     val sqlCommand = SQLCommand("select * from any")
     val result = driver.syncQuery(sqlCommand, Timeout(1 seconds), 1)
     result.hasError should be (true)
@@ -45,7 +45,7 @@ class DriverSpec extends BaseXDTest {
 
 
   it should "return a future with a timeout when there is no server" in {
-    val driver: Driver = new Driver
+    val driver = Driver()
     val future = driver.asyncQuery(SQLCommand("select * from any"), Timeout(1 seconds), 1)
     a [TimeoutException] should be thrownBy Await.result(future, 2 seconds)
   }
