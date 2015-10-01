@@ -29,7 +29,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
   // DEFAULT enrolled
   // SECONDARY_INDEX name
 
-/*  "The Cassandra connector" should "execute natively a (SELECT *)" in {
+  "The Cassandra connector" should "execute natively a (SELECT *)" in {
     assumeEnvironmentIsUpAndRunning
 
     val result = sql(s"SELECT * FROM $Table ").collect(Native)
@@ -126,7 +126,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     the [CrossdataException] thrownBy {
       sql(s"SELECT * FROM $Table ORDER BY age").collect(Native)
     } should have message "The operation cannot be executed without Spark"
-  }*/
+  }
 
   // TODO test filter on PKs (=) and CKs(any) (right -> left)
 
@@ -156,7 +156,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
   }
 
-/*  val wrongImportTablesSentences = List(
+  val wrongImportTablesSentences = List(
     s"""
        |IMPORT TABLES
        |USING $SourceProvider
@@ -178,7 +178,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
       assumeEnvironmentIsUpAndRunning
       an [Exception] shouldBe thrownBy(ctx.sql(sentence))
     }
-  }*/
+  }
 
 }
 
