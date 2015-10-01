@@ -24,8 +24,9 @@ import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.{SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
+import com.stratio.crossdata.driver.config.DriverConfig._
 import com.stratio.crossdata.driver.utils.RetryPolitics
-import com.typesafe.config.ConfigValueFactory
+import com.typesafe.config.{ConfigValue, ConfigValueFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
 
@@ -39,23 +40,30 @@ object Driver extends DriverConfig {
   override lazy val logger = Logger.getLogger(getClass)
   val ActorsPath = "/user/receptionist"
 
-  def apply(seedNodes: Option[java.util.List[String]] = None) =
+  def apply(seedNodes: java.util.List[String]) =
     new Driver(seedNodes)
+
+  def apply() = new Driver()
 
 }
 
-class Driver(seedNodes: Option[java.util.List[String]] = None) {
+class Driver(properties: java.util.Map[String, ConfigValue]) {
+
+  def this(seedNodes: java.util.List[String]) =
+    this(Map(DriverConfigSeedNodes -> ConfigValueFactory.fromAnyRef(seedNodes)))
+
+  def this() = this(Map.empty[String, ConfigValue])
 
   import Driver._
 
   private lazy val logger = Driver.logger
 
   private val proxyActor = {
-    val finalConfig = seedNodes.fold(
-      Driver.config
-    ) { seedNodes =>
-      Driver.config.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromAnyRef(seedNodes))
+
+    val finalConfig = properties.foldLeft(Driver.config) { case (previousConfig, keyValue) =>
+      previousConfig.withValue(keyValue._1, keyValue._2)
     }
+
     val system = ActorSystem("CrossdataServerCluster", finalConfig)
 
     if (logger.isDebugEnabled) {
