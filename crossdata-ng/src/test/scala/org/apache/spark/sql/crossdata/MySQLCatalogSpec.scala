@@ -16,7 +16,6 @@
 
 package org.apache.spark.sql.crossdata
 
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
@@ -26,22 +25,27 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class MySQLCatalogSpec extends SharedXDContextTest {
 
-  "the table" should "be stored" in {
+  "it" must "return a dataframe from a persist table" in {
     val field1 = StructField("column1", StringType, true)
     val field2 = StructField("column2", StringType, true)
     val fields = Seq[StructField](field1, field2)
     val columns = StructType(fields)
-    //val createTable = CreateTableUsing("example", Option(columns), "Cassandra", false, Map[String, String](), false, false)
-
-
-    val mySQLCatalog = new MySQLCatalog(new SimpleCatalystConf(true), xdContext)
+    val opts = Map("path"->"/home/ccaballero")
     val tableName = "tableName"
     val catalogName = "catalogName"
     val tableIdentifier = Seq(catalogName, tableName)
-    val crossdataTable = CrossdataTable(tableName, Option(catalogName), Option(columns), "org.apache.spark.sql.parquet", Array(),"1.0")
+    // TODO Check datasource type (parquet is HadoopFsRelationProvider)
+    //val crossdataTable = CrossdataTable(tableName, Option(catalogName), Option(columns), "org.apache.spark.sql.parquet","1.0", opts)
 
-    mySQLCatalog.persistTable(tableIdentifier, crossdataTable)
+    val crossdataTable = CrossdataTable(tableName, Option(catalogName),  Option(columns), "org.apache.spark.sql.json", Array[String](), "1.0", opts)
 
+    xdContext.catalog.persistTable(tableIdentifier, crossdataTable)
+
+    val dataframe = xdContext.sql("SELECT * FROM catalogName.tableName")
+    // TODO Separate in multiple test. Check is dataframe is empty. Prepare a test environment (insert data)
+    // TODO One test for each case (table not persisted in ms but as temporary, persist uncorrect data.....)
+    // TODO test with multiple datasources
+    dataframe shouldBe a[XDDataFrame]
 
   }
 }

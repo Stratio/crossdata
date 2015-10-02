@@ -211,13 +211,14 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   private def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
     val resolved = ResolvedDataSource(xDContext,  crossdataTable.userSpecifiedSchema, Array(), crossdataTable.provider, crossdataTable.opts)
-    crossdataTable.userSpecifiedSchema match {
-      case schema:Some[StructType] =>
-        LogicalRelation(resolved.asInstanceOf[SchemaRelationProvider].createRelation(xDContext,crossdataTable.opts,
-          schema.get))
-      case None =>
-        LogicalRelation(resolved.asInstanceOf[RelationProvider].createRelation(xDContext,crossdataTable.opts))
-    }
+    LogicalRelation(resolved.relation)
+//    crossdataTable.userSpecifiedSchema match {
+//      case schema:Some[StructType] =>
+//        LogicalRelation(resolved.asInstanceOf[SchemaRelationProvider].createRelation(xDContext,crossdataTable.opts,
+//          schema.get))
+//      case None =>
+//        LogicalRelation(resolved.asInstanceOf[RelationProvider].createRelation(xDContext,crossdataTable.opts))
+//    }
   }
 
   private def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {

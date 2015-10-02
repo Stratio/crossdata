@@ -50,9 +50,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
   override protected[sql] lazy val catalog: XDCatalog =
     constr.newInstance(
-      new SimpleCatalystConf(caseSensitive)).asInstanceOf[XDCatalog]
-//  override protected[sql] lazy val catalog: XDCatalog  = new MySQLCatalog(new SimpleCatalystConf(caseSensitive), self)
-
+      new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
 
 
   protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse)
