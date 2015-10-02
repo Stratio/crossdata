@@ -22,6 +22,7 @@ import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
 import akka.routing.RoundRobinPool
 import com.stratio.crossdata.common.SQLCommand
+import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
@@ -29,50 +30,31 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 
 object ServerActor {
-  def props(cluster: Cluster): Props = Props(new ServerActor(cluster))
-  val NumberExecutorActor = 5
+  def props(cluster: Cluster, xdContext: XDContext): Props = Props(new ServerActor(cluster, xdContext))
 }
 
-class ServerActor(cluster: Cluster) extends Actor with ServerConfig {
-
-  import com.stratio.crossdata.server.actors.ServerActor._
-  import com.stratio.crossdata.server.actors.ExecutorActor._
+class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with ServerConfig {
 
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
-
-  val xdContext = new XDContext(initSparkContext)
-
-  // TODO pool configurable from conf-file
-  // TODO should serverActor be the router? Are supervision strategies limited by that change?
-
-  val executorActorRef = context.actorOf(
-    RoundRobinPool(NumberExecutorActor).props(Props(classOf[ExecutorActor], cluster, xdContext)),
-    "ExecutorRouter")
 
   def receive: Receive = {
 
     case sqlCommand @ SQLCommand(query,_) =>
-      logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}")
-      executorActorRef forward ExecuteQuery(sqlCommand)
+      logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
+      try {
+        val df = xdContext.sql(query)
+        val rows = df.collect()
+        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows)
+      } catch {
+        case e: Throwable => {
+          logger.error(e.getMessage)
+          sender ! ErrorResult(sqlCommand.queryId, e.getMessage, Some(e))
+        }
+      }
 
     case any =>
-      logger.error(s"Unknown message received by ServerActor: $any")
+      logger.error(s"Something is going wrong!. Unknown message: $any")
 
   }
-
-  def initSparkContext: SparkContext =
-    new SparkContext(new SparkConf()
-      .setAppName("Crossdata")
-      .setMaster(sparkMaster)
-      .setAll(
-        List(sparkDriverMemory, sparkExecutorMemory, sparkCores).filter(config.hasPath).map(k => k -> config.getString(k))
-      ))
-
-
-  override def preRestart(reason: Throwable, message: Option[Any]): Unit =
-    xdContext.sc.stop()
-
-  override def postStop(): Unit =
-    xdContext.sc.stop()
 
 }

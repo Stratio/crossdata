@@ -37,12 +37,12 @@ trait EndToEndTest extends BaseXDTest with BeforeAndAfterAll {
   }
 
 
-  override protected def afterAll(): Unit = {
-   stop()
-  }
-
   override protected def beforeAll(): Unit = {
     init()
+  }
+
+  override protected def afterAll(): Unit = {
+    stop()
   }
 
   def assumeCrossdataUpAndRunning() = {
