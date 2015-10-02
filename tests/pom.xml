@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-ng</artifactId>
+            <artifactId>crossdata-core</artifactId>
             <version>${crossdata.version}</version>
             <exclusions>
                 <exclusion>

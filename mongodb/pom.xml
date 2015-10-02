@@ -45,7 +45,7 @@
     <dependencies>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-ng</artifactId>
+            <artifactId>crossdata-core</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -55,7 +55,7 @@
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-ng</artifactId>
+            <artifactId>crossdata-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
