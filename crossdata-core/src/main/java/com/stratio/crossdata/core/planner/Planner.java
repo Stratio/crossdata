@@ -2331,7 +2331,13 @@ public class Planner {
             filters.add(new Filter(
                     Collections.singleton(op),
                     relation));
-        } else if (abstractRelation instanceof RelationDisjunction) {
+        } else if (abstractRelation instanceof FunctionRelation){
+            FunctionRelation relation = (FunctionRelation) abstractRelation;
+            Operations op = Operations.FILTER_FUNCTION;
+            FunctionFilter filter = new FunctionFilter(Collections.singleton(op), relation);
+            filters.add(filter);
+
+        }else if (abstractRelation instanceof RelationDisjunction) {
             RelationDisjunction rd = (RelationDisjunction) abstractRelation;
             List<List<ITerm>> abFilters = new ArrayList<>();
             List<RelationTerm> terms = rd.getTerms();

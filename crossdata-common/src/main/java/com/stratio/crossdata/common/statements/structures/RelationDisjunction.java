@@ -144,9 +144,12 @@ public class RelationDisjunction extends AbstractRelation {
                 if(ab instanceof RelationDisjunction){
                     RelationDisjunction rd = (RelationDisjunction) ab;
                     iter = rd.getTerms().get(0).getRelations().iterator();
-                } else {
+                } else if ( ab instanceof  Relation){
                     Relation r = (Relation) ab;
                     return r.getLeftTerm().getTableName().toString().split(" AS ")[0];
+                } else{
+                    FunctionRelation fr = (FunctionRelation) ab;
+                    return fr.getTableName();
                 }
             }
         }

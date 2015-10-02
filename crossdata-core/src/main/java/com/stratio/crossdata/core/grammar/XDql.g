@@ -922,7 +922,8 @@ getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     (T_OR { simpleRelation = false; }
         (T_START_PARENTHESIS anotherTerm=getConditions[workaroundTable] T_END_PARENTHESIS
             { rt = new RelationTerm(anotherTerm, true); }
-        | anotherRel=getRelation[workaroundTable] { rt = new RelationTerm(anotherRel); } )
+        | anotherRel=getRelation[workaroundTable] { rt = new RelationTerm(anotherRel); } 
+        |  (functionRel=getFunctionRelation[workaroundTable] {rt = new RelationTerm(functionRel);}))
     { rd.getTerms().add(rt); } )*
 ;
 
