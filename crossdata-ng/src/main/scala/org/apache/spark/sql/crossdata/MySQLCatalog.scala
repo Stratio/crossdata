@@ -27,7 +27,6 @@ import org.apache.spark.sql.types._
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization.write
 
-
 import scala.util.parsing.json.JSON
 
 /**
@@ -62,6 +61,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
                                                                                         | tableName VARCHAR(50),
                                                                                         | sch TEXT,
                                                                                         | provider TEXT,
+                                                                                        | partitionColumn TEXT,
                                                                                         | options TEXT,
                                                                                         | crossdataVersion TEXT,
                                                                                         | PRIMARY KEY (db,tablename))""".stripMargin)
@@ -79,15 +79,17 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     // TODO: Test StructTypes with multiple subdocuments
     val tableSchema = serializeSchema(crossdataTable.userSpecifiedSchema.get)
     val tableOptions = serializeOptions(crossdataTable.opts)
+    val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
     val statement = connection.createStatement
 
     connection.setAutoCommit(false)
     val prepped = connection.prepareStatement(
-      s"""INSERT INTO $db.$table (db, tableName, sch, provider, options, crossdataVersion) VALUES(?,?,?,?,?,?)
+      s"""INSERT INTO $db.$table (db, tableName, sch, provider, partitionColumn, options, crossdataVersion) VALUES(?,?,?,?,?,?,?)
                                   |ON DUPLICATE KEY UPDATE
                                   |sch = VALUES (sch),
                                   |provider = VALUES (provider),
+                                  |partitionColumn = VALUES (partitionColumn),
                                   |options = VALUES (options),
                                   |crossdataVersion = VALUES (crossdataVersion)
        """.stripMargin)
@@ -99,8 +101,9 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     prepped.setString(2, crossdataTable.tableName)
     prepped.setString(3, tableSchema)
     prepped.setString(4, crossdataTable.provider)
-    prepped.setString(5, tableOptions)
-    prepped.setString(6, crossdataVersion)
+    prepped.setString(5, partitionColumn)
+    prepped.setString(6, tableOptions)
+    prepped.setString(7, crossdataVersion)
     prepped.execute();
 
     connection.commit();
@@ -196,16 +199,18 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       val database = resultSet.getString("db")
       val table = resultSet.getString("tableName")
       val schemaJSON = resultSet.getString("sch")
+      val partitionColumn = resultSet.getString("partitionColumn")
       val provider= resultSet.getString("provider")
       val optsJSON = resultSet.getString("options")
+      val version = resultSet.getString(("crossdataVersion"))
 
-      Some(CrossdataTable(table,Some(database),getUserSpecifiedSchema(schemaJSON),provider,crossdataVersion,
+      Some(CrossdataTable(table,Some(database),getUserSpecifiedSchema(schemaJSON),provider, getPartitionColumn(partitionColumn), version,
         getOptions(optsJSON)))
     }
   }
 
-  private def createLogicalRelation(crossdataTable: CrossdataTable):LogicalRelation = {
-    val resolved = ResolvedDataSource.lookupDataSource(crossdataTable.provider).newInstance()
+  private def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
+    val resolved = ResolvedDataSource(xDContext,  crossdataTable.userSpecifiedSchema, Array(), crossdataTable.provider, crossdataTable.opts)
     crossdataTable.userSpecifiedSchema match {
       case schema:Some[StructType] =>
         LogicalRelation(resolved.asInstanceOf[SchemaRelationProvider].createRelation(xDContext,crossdataTable.opts,
@@ -229,6 +234,8 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   }
 
+  private def getPartitionColumn(partitionColumn: String): Array[String] =
+    JSON.parseFull(partitionColumn).toList flatMap(_.asInstanceOf[List[String]]) toArray
 
   private def getOptions(optsJSON: String): Map[String,String] =
     JSON.parseFull(optsJSON).get.asInstanceOf[Map[String,String]]
@@ -240,6 +247,12 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   private def serializeOptions(options: Map[String, Any]): String = {
     implicit val formats = DefaultFormats
-    write(formats)
+    write(options)
+  }
+
+  private def serializePartitionColumn(partitionColumn: Array[String]): String = {
+
+    implicit val formats = DefaultFormats
+    write(partitionColumn)
   }
 }

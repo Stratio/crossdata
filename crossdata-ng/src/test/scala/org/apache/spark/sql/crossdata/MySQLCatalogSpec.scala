@@ -38,7 +38,7 @@ class MySQLCatalogSpec extends SharedXDContextTest {
     val tableName = "tableName"
     val catalogName = "catalogName"
     val tableIdentifier = Seq(catalogName, tableName)
-    val crossdataTable = CrossdataTable(tableName, Option(catalogName), Option(columns), "com.stratio.crossdata.sql.sources.cassandra.DefaultSource", "1.0")
+    val crossdataTable = CrossdataTable(tableName, Option(catalogName), Option(columns), "org.apache.spark.sql.parquet", Array(),"1.0")
 
     mySQLCatalog.persistTable(tableIdentifier, crossdataTable)
 
