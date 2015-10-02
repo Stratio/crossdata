@@ -84,6 +84,7 @@
         <module>common</module>
         <module>driver</module>
         <module>server</module>
+        <module>dist</module>
     </modules>
 
     <properties>
