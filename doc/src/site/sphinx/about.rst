@@ -11,11 +11,11 @@ developed by the Spark community.
 
 Compiling Crossdata
 
-    > mvn clean install -Pcrossdata-all
+    > mvn clean install -Pall
 
 If you prefer to install solely some connectors::
 
-    > mvn clean install -Pcrossdata-cassandra
+    > mvn clean install -Pcassandra
 
 
 Building Crossdata

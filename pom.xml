@@ -79,11 +79,11 @@
     </developers>
 
     <modules>
-        <module>crossdata-ng</module>
+        <module>core</module>
         <module>doc</module>
-        <module>crossdata-common</module>
-        <module>crossdata-driver</module>
-        <module>crossdata-server</module>
+        <module>common</module>
+        <module>driver</module>
+        <module>server</module>
     </modules>
 
     <properties>
@@ -288,30 +288,30 @@
 
     <profiles>
         <profile>
-            <id>crossdata-all</id>
+            <id>all</id>
             <modules>
-                <module>crossdata-hive</module>
-                <module>crossdata-cassandra</module>
-                <module>crossdata-mongodb</module>
+                <module>hive</module>
+                <module>cassandra</module>
+                <module>mongodb</module>
             </modules>
         </profile>
 
         <profile>
-            <id>crossdata-hive</id>
+            <id>hive</id>
             <modules>
-                <module>crossdata-hive</module>
+                <module>hive</module>
             </modules>
         </profile>
         <profile>
-            <id>crossdata-cassandra</id>
+            <id>cassandra</id>
             <modules>
-                <module>crossdata-cassandra</module>
+                <module>cassandra</module>
             </modules>
         </profile>
         <profile>
-            <id>crossdata-mongodb</id>
+            <id>mongodb</id>
             <modules>
-                <module>crossdata-mongodb</module>
+                <module>mongodb</module>
             </modules>
         </profile>
         <profile>
