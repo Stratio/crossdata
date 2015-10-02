@@ -64,7 +64,7 @@
 
     <profiles>
         <profile>
-            <id>crossdata-all</id>
+            <id>all</id>
             <build>
                 <plugins>
                     <plugin>
