@@ -29,10 +29,10 @@
 
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>parent</artifactId>
-    <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
-    <name>Stratio Crossdata Parent</name>
-    <description>Stratio Crossdata parent</description>
+    <packaging>pom</packaging>
+    <name>Parent</name>
+    <description>Crossdata Parent</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
@@ -115,12 +115,12 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.stratio.crossdata</groupId>
+                <groupId>com.stratio.crossdata.connector</groupId>
                 <artifactId>crossdata-cassandra</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.stratio.crossdata</groupId>
+                <groupId>com.stratio.crossdata.connector</groupId>
                 <artifactId>crossdata-mongodb</artifactId>
                 <version>${project.version}</version>
             </dependency>

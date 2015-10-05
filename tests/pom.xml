@@ -77,13 +77,13 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.stratio.crossdata</groupId>
+            <groupId>com.stratio.crossdata.connector</groupId>
             <artifactId>crossdata-cassandra</artifactId>
             <version>${crossdata.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.stratio.crossdata</groupId>
+            <groupId>com.stratio.crossdata.connector</groupId>
             <artifactId>crossdata-mongodb</artifactId>
             <version>${crossdata.version}</version>
         </dependency>

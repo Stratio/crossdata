@@ -22,7 +22,8 @@
 
     <groupId>com.stratio.crossdata.doc</groupId>
     <artifactId>crossdata-doc</artifactId>
-    <name>Stratio Crossdata Documentation</name>
+    <name>Documentation</name>
+    <description>${project.name}</description>
     <build>
         <plugins>
             <plugin>

@@ -18,17 +18,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>parent</artifactId>
         <groupId>com.stratio.crossdata</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <packaging>jar</packaging>
+
     <artifactId>crossdata-driver</artifactId>
-    <name>Stratio Crossdata Driver</name>
+    <name>Driver</name>
     <description>Driver for Crossdata in order to communicate with the Crossdata Servers</description>
+    <packaging>jar</packaging>
     <url>http://stratio.github.io/crossdata/</url>
 
     <dependencies>
