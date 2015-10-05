@@ -1,81 +1,62 @@
 About
 *****
 
-Crossdata is a distributed framework and a data layer that unifies the interaction with batch and
-streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies, Crossdata defines a common unifying interface containing the set of operations that a datastore may support. New connectors can be easily added to increase its connectivity capabilities. Two types of connectors are defined: native and spark-based. Native connectors are faster for simple operations, while Spark-based connectors offer a larger set of functionality. The Crossdata planner decides which connector will be used for any request based its characteristics. We offer a shell, Java/REST APIs, JDBC and ODBC for BI.
+|ImageLink|_
 
-Compiling Crossdata
+.. |ImageLink| image:: https://api.travis-ci.org/Stratio/Crossdata.svg?branch=master
+.. _ImageLink: https://travis-ci.org/Stratio/Crossdata?branch=master
+
+Crossdata is a fast and general-purpose computing system powered by Apache Spark. It adds some libraries to provide
+native access to datastores when they are able to resolve the query avoiding the use of the Spark cluster.
+We include some Spark connectors optimized to access to each datasource, but Crossdata is fully compatible with any connector
+developed by the Spark community.
+-  Cassandra connector powered by Datastax-Spark-Connector
+
 ===================
 
-Compiling Crossdata involves generating a set of files (.tokens, Lexers and Parsers) from the different grammar
-files. To automatically build Stratio Crossdata execute the following command::
+Compiling Crossdata
 
-    > mvn clean install
+    > mvn clean install -Pcrossdata-all
 
-If you prefer to skip the unitary and integration tests, just type::
+If you prefer to install solely some connectors::
 
-    > mvn clean install -DskipUTs -DskipITs
+    > mvn clean install -P crossdata-cassandra
 
-
-Running the com.stratio.crossdata-server
+Use Crossdata with a standard Spark distribution
 ========================================
-::
+TODO
 
-    > mvn exec:java -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.CrossdataApplication"
+Building a Spark Distribution with Crossdata
+========================================
 
-or you can run our script located in crossdata-dist::
+You can build a Spark Distribution with Crossdata libraries running the make-distribution-crossdata script:
+    > cd crossdata-scripts
+    > ./make-distribution-crossdata.sh
 
-    > chmod +x crossdata-dist/target/crossdata-dist-[crossdata-version]/bin/crossdata-server
-    > cd crossdata-dist/target/crossdata-dist-[crossdata-version]/
-    > bin/crossdata-server
+This will build Spark with the following options:
+    - Crossdata with Cassandra support
+    - Spark Version v1.5.0
+    - Spark's Hadoop  Version 2.4.0
+    - Yarn support
+    - Hive integration for SparkSQL
+     -Scala version 2.10
 
-or run it like a service::
-
-    > bin/crossdata-server-daemon start
-    
-
+For others options run ./make-distribution-crossdata.sh --help
 
 Running the crossdata-shell
 ===========================
 
-The com.stratio.crossdata-shell allows users to launch interactive queries against a set of Crossdata servers. 
-Works both in Unix and Windows.
-The shell features:
+Using a Crossdata's Spark Distribution with cassandra support:
+    > bin/stratio-xd-shell --cassandra
 
--   History support (arrow navigation)
--   History search (ctrl-r)
--   Token completion (tab)
--   Help command
-::
+Then you can do:
 
-    > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell"
+    >xdContext.sql("CREATE TEMPORARY TABLE students USING com.stratio.crossdata.sql.sources.cassandra
+            OPTIONS (keyspace \"highschool\", table \"students\", cluster \"students\", pushdown \"true\",
+            spark_cassandra_connection_host \"127.0.0.1\")".stripMargin)
+    >xdContext.sql("SELECT * FROM students").collect()
 
 
-The default behaviour of the Shell is asynchronous, however, the shell also supports synchronous query execution by
-means of the --sync parameter.::
-
-    > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--sync"
-
-
-Additionally, you can execute an script upon launching the shell. The script will be executed first,
-and the prompt will be shown afterwards.::
-
-
-    > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--script /path/script.xdql"
-
-
-You can run our shell too, executing our crossdata-dist script::
-
-    > chmod +x crossdata-dist/target/crossdata-dist-[crossdata-version]/bin/crossdata-sh
-    > cd crossdata-dist/target/crossdata-dist-[crossdata-version]/
-    > bin/crossdata-sh
-
-
-
-Useful commands
-===============
-
-Once the shell is running, you can exit the program introducing the word **exit** or **quit** in the query prompt. A command help system is available by introducing the command **help**. A help entry is available per command, to check specify help topics use **help command**.
 
 Send issues to Jira
 ===================
@@ -86,30 +67,19 @@ You can also find help in https://groups.google.com/forum/#!forum/crossdata-user
 Grammar
 =======
 
-Grammar specification for this release can be found `here <doc/src/site/sphinx/Grammar.rst>`_.
+TODO
 
 
 Getting started
 ===============
-In this `link <GettingStarted.rst>`_ you can follow an example of Crossdata with a Cassandra Connector as an access
-to a Cassandra datastore.
 
-
-Crossdata in a distributed environment
-======================================
-
-In this `link <doc/src/site/sphinx/DistributedCrossdata.rst>`_ you can read how to configure crossdata in a
-distributed environment.
+TODO. See Crossdata examples.
 
 
 Connectors
 ==========
 
-`List of Crossdata Connectors <doc/src/site/sphinx/List-of-Crossdata-Connectors.rst>`_
-
-`InMemory Connector development tutorial <doc/src/site/sphinx/InMemory-Connector-Development-Tutorial.rst>`_
-
-`Definition of Connector Operations <doc/src/site/sphinx/ConnectorOperations.rst>`_
+TODO
 
 
 Crossdata compatibility with connectors

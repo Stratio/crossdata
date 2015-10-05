@@ -18,79 +18,43 @@
 
 package com.stratio.crossdata.server.actors
 
-import java.util.{Random, UUID}
-
-import akka.actor.{OneForOneStrategy, Actor, Props, ReceiveTimeout}
+import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
-import akka.routing.{RoundRobinPool, DefaultResizer}
-import com.stratio.crossdata.common.ask.{Command, Connect, Query}
-import com.stratio.crossdata.common.result.{ConnectResult, DisconnectResult, Result}
-import com.stratio.crossdata.communication.Disconnect
-import com.stratio.crossdata.core.engine.Engine
+import akka.routing.RoundRobinPool
+import com.stratio.crossdata.common.SQLCommand
+import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import akka.actor.SupervisorStrategy.{Resume, Stop}
-import scala.concurrent.duration._
+import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.{SparkConf, SparkContext}
+
 
 object ServerActor {
-  def props(engine: Engine,cluster: Cluster): Props = Props(new ServerActor(engine,cluster))
+  def props(cluster: Cluster, xdContext: XDContext): Props = Props(new ServerActor(cluster, xdContext))
 }
 
-class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConfig {
+class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with ServerConfig {
+
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
-  val random=new Random
-  val hostname=config.getString("akka.remote.netty.tcp.hostname")
-  val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
-  val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(hostname), "loadWatcherActor")
-  val connectorManagerActorRef = context.actorOf(Props(classOf[ConnectorManagerActor], cluster), "ConnectorManagerActor")
+  def receive: Receive = {
 
-  val coordinatorActorRef = context.actorOf( RoundRobinPool(num_coordinator_actor, Some(resizer))
-     .props(Props(classOf[CoordinatorActor], connectorManagerActorRef, engine.getCoordinator)), "CoordinatorActor")
+    case sqlCommand @ SQLCommand(query,_) =>
+      logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
+      try {
+        val df = xdContext.sql(query)
+        val rows = df.collect()
+        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows)
+      } catch {
+        case e: Throwable => {
+          logger.error(e.getMessage)
+          sender ! ErrorResult(sqlCommand.queryId, e.getMessage, Some(e))
+        }
+      }
 
-  val plannerActorRef = context.actorOf( RoundRobinPool(num_planner_actor, Some(resizer))
-     .props(Props(classOf[PlannerActor], coordinatorActorRef, engine.getPlanner)), "PlannerActor")
+    case any =>
+      logger.error(s"Something is going wrong!. Unknown message: $any")
 
-  val validatorActorRef = context.actorOf( RoundRobinPool(num_validator_actor, Some(resizer))
-     .props(Props(classOf[ValidatorActor], plannerActorRef, engine.getValidator)), "ValidatorActor")
-
-  val parserActorRef = context.actorOf( RoundRobinPool(num_parser_actor, Some(resizer))
-     .props(Props(classOf[ParserActor], validatorActorRef, engine.getParser)), "ParserActor")
-
-  val APIActorRef = context.actorOf( RoundRobinPool(num_api_actor, Some(resizer))
-     .props(Props(classOf[APIActor], engine.getAPIManager, coordinatorActorRef )), "APIActor")
-
-  override val supervisorStrategy =
-    OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
-      case _: Any => Resume
-    }
-
-  def receive : Receive= {
-    case "watchload"=>
-      loadWatcherActorRef forward "watchload"
-    case query: Query =>{
-      logger.info("Query received: " + query.statement.toString)
-      parserActorRef forward query
-    }
-    case Connect(user,pass) => {
-      logger.info(s"Welcome $user! from  ${sender.path.address} ( host =${sender.path.address}) ")
-      sender ! ConnectResult.createConnectResult(UUID.randomUUID().toString)
-    }
-    case Disconnect(user) => {
-      logger.info("Goodbye " + user + ".")
-      sender ! DisconnectResult.createDisconnectResult(user)
-    }
-    case cmd: Command =>{
-      logger.info("API Command call received " + cmd.commandType)
-      APIActorRef forward cmd
-    }
-    case ReceiveTimeout => {
-      logger.warn("ReceiveTimeout")
-      //TODO Process ReceiveTimeout
-    }
-    case _ => {
-      logger.error("Unknown message received by ServerActor");
-      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
-    }
   }
+
 }

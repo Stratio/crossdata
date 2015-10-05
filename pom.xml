@@ -24,29 +24,29 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>parent</artifactId>
-        <version>0.1.0</version>
+        <version>0.4.0</version>
     </parent>
 
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>crossdata-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.4.0-SNAPSHOT</version>
-    <name>Stratio Crossdata</name>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>Stratio Crossdata Parent</name>
     <description>Stratio Crossdata parent</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0t</url>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
     </licenses>
 
     <scm>
-    	<url>https://github.com/Stratio/crossdata</url>
+        <url>https://github.com/Stratio/crossdata</url>
         <connection>scm:git:git:@github.com:Stratio/crossdata.git</connection>
         <developerConnection>scm:git:git@github.com:Stratio/crossdata.git
-    </developerConnection>
+        </developerConnection>
         <tag>HEAD</tag>
     </scm>
 
@@ -57,185 +57,289 @@
 
     <developers>
         <developer>
-            <id>aagea</id>
-            <name>Álvaro Agea</name>
-            <email>aagea at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>antonioalcocer</id>
-            <name>Antonio Alcocer</name>
-            <email>aalcocer at stratio dot com</email>
-        </developer>
-        <developer>
             <id>miguel0afd</id>
             <name>Miguel Angel Fernandez</name>
             <email>mafernandez at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>gmunoz</id>
-            <name>Gaspar Muñoz</name>
-            <email>gmunoz at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>roclas</id>
-            <name>Carlos Hernandez</name>
-            <email>chernandez at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>dhiguero</id>
-            <name>Daniel Higuero</name>
-            <email>dhiguero at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>idiaz</id>
-            <name>Ivan Diaz</name>
-            <email>idiaz at stratio dot com</email>
         </developer>
         <developer>
             <id>jjlopez</id>
             <name>Juanjo Lopez</name>
             <email>jjlopez at stratio dot com</email>
         </developer>
+        <developer>
+            <id>darroyo</id>
+            <name>David Arroyo</name>
+            <email>darroyo at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>lcisneros</id>
+            <name>Luis Cisneros</name>
+            <email>lcisneros at stratio dot com</email>
+        </developer>
     </developers>
 
     <modules>
+        <module>crossdata-ng</module>
+        <module>doc</module>
         <module>crossdata-common</module>
-        <module>crossdata-core</module>
         <module>crossdata-driver</module>
         <module>crossdata-server</module>
-        <module>crossdata-shell</module>
-        <module>crossdata-dist</module>
-        <module>crossdata-connector</module>
-        <module>crossdata-connector-maven-plugin</module>
-        <module>crossdata-connector-inmemory</module>
-        <module>crossdata-client-examples</module>
-        <module>crossdata-connector-twitter</module>
-        <module>doc</module>        
     </modules>
+
     <properties>
+        <scala.binary.version>2.10</scala.binary.version>
         <scala.version>2.10.4</scala.version>
-        <akka.version>2.3.11</akka.version>
-        <infinispan.version>6.0.2.Final</infinispan.version>
-        <scala.dep.version>2.10.4</scala.dep.version>
+        <spark.version>1.5.1</spark.version>
+        <scalatest.version>2.2.5</scalatest.version>
+        <mapdb.version>1.0.8</mapdb.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
-        <slf4j.version>1.7.7</slf4j.version>
         <config.version>1.2.1</config.version>
-        <testng.version>6.8.8</testng.version>
-        <commons-lang3.version>3.2.1</commons-lang3.version>
-        <mockito.version>1.10.8</mockito.version>
-        <powermock.version>1.5.5</powermock.version>
-	<outputFileName>stratio-crossdata</outputFileName>
+        <akka.version>2.3.11</akka.version>
+        <slf4j.version>1.7.7</slf4j.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <outputFileName>stratio-crossdata</outputFileName>
     </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <version>2.6</version>
-                <configuration>
-                    <formats>
-                        <format>html</format>
-                        <format>xml</format>
-                    </formats>
-                    <aggregate>true</aggregate>
-                    <check/>
-                </configuration>
-            </plugin>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-sql_${scala.binary.version}</artifactId>
+                <version>${spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.stratio.crossdata</groupId>
+                <artifactId>crossdata-ng</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.stratio.crossdata</groupId>
+                <artifactId>crossdata-cassandra</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.stratio.crossdata</groupId>
+                <artifactId>crossdata-mongodb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.stratio.crossdata</groupId>
+                <artifactId>crossdata-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+        <!--TEST-->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <version>${scalatest.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
+        <!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
+        <testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>
+	-->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.scala-tools</groupId>
+                    <artifactId>maven-scala-plugin</artifactId>
+                    <version>2.15.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.3</version>
+                    <configuration>
+                        <skip>true</skip>
+                        <source>1.7</source>
+                        <target>1.7</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <configuration>
+                        <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
+                        <args>
+                            <arg>-Xmax-classfile-name</arg>
+                            <arg>130</arg>
+                        </args>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>compile</id>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                            <phase>compile</phase>
+                        </execution>
+                        <execution>
+                            <id>test-compile</id>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
+                            <phase>test-compile</phase>
+                        </execution>
+                        <execution>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+
+        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.18.1</version>
-                <configuration>
-                        <skipTests>${skipITs}</skipTests>
-                        <argLine>${jacoco-IT-argline}</argLine>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.4</version>
                 <configuration>
-                    <skipTests>${skipUTs}</skipTests>
-                    <argLine>${jacoco-UT-argline}</argLine>
+                    <includes>
+                        <include>**/*Spec.*</include>
+                    </includes>
                 </configuration>
             </plugin>
-
             <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.1.201405082137</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>UT</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
                         <configuration>
-                            <destFile>${project.build.directory}/jacocoUT.exec</destFile>
-                            <propertyName>jacoco-UT-argline</propertyName>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>IT</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                        <configuration>
-                            <destFile>${project.build.directory}/jacocoIT.exec</destFile>
-                            <propertyName>jacoco-IT-argline</propertyName>
+                            <includes>
+                                <include>**/*IT.*</include>
+                            </includes>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <minmemory>64m</minmemory>
+                    <maxmemory>1g</maxmemory>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                    <detectLinks>true</detectLinks>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.scalastyle</groupId>
+                <artifactId>scalastyle-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <configuration>
+                    <verbose>true</verbose>
+                    <failOnViolation>false</failOnViolation>
+                    <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                    <failOnWarning>false</failOnWarning>
+                    <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+                    <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
+                    <configLocation>scalastyle_config.xml</configLocation>
+                    <outputFile>${basedir}/target/scalastyle-output.xml</outputFile>
+                    <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+                    <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>crossdata-all</id>
+            <modules>
+                <module>crossdata-hive</module>
+                <module>crossdata-cassandra</module>
+                <module>crossdata-mongodb</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>crossdata-hive</id>
+            <modules>
+                <module>crossdata-hive</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>crossdata-cassandra</id>
+            <modules>
+                <module>crossdata-cassandra</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>crossdata-mongodb</id>
+            <modules>
+                <module>crossdata-mongodb</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>scala-2.10</id>
+            <activation>
+                <property>
+                    <name>!scala-2.11</name>
+                </property>
+            </activation>
+            <properties>
+                <scala.version>2.10.4</scala.version>
+                <scala.binary.version>2.10</scala.binary.version>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>scala-2.11</id>
+            <activation>
+                <property>
+                    <name>scala-2.11</name>
+                </property>
+            </activation>
+            <properties>
+                <scala.version>2.11.7</scala.version>
+                <scala.binary.version>2.11</scala.binary.version>
+            </properties>
+        </profile>
+
+    </profiles>
+
 </project>

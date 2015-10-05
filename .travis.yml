@@ -1,10 +1,12 @@
-language: java
+language: scala
 
-jdk:
-  - oraclejdk8
-  - oraclejdk7
-  - openjdk7
+scala:
+   - 2.10.4
+   - 2.11.6
   
 script:
 
   - mvn test -Dmaven.test.failure=true
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

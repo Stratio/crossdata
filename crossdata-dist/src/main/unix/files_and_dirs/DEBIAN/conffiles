@@ -1,6 +1,0 @@
-/etc/default/crossdata
-/etc/sds/crossdata/driver-application.conf
-/etc/sds/crossdata/driver-log.properties
-/etc/sds/crossdata/crossdata-env.sh
-/etc/sds/crossdata/server-application.conf
-/etc/sds/crossdata/server-log.properties

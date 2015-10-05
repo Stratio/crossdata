@@ -1,7 +1,7 @@
-target/
 .classpath
 .project
 .settings
+*.log
 nbproject/
 build.xml
 nbactions.xml
@@ -9,14 +9,17 @@ nb-configuration.xml
 .idea
 *.iml
 *.xml.asc
-crossdata-core/src/main/java/com/stratio/crossdata/core/grammar/generated/
-crossdata-shell/src/main/java/com/stratio/crossdata/sh/help/generated/
 src/main/resources/history.txt
 *.orig
-*/.cache
-crossdata-core/test-output/*
 sonar-project.properties
 */.sonar
 */test-output
-*.log
 atlassian-ide-plugin.xml
+*.cache
+target/
+
+#hive ignores
+metastore_db/
+
+#crossdata ignores
+crossdata-scripts/spark-crossdata-distribution*

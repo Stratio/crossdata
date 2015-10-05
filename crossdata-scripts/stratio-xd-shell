@@ -1,0 +1,57 @@
+#!/bin/bash
+
+function usage {
+
+  echo "Usage: ./stratio-xd-shell [OPTION]... [SPARK_OPTIONS] "
+  echo "Runs the Apache Spark shell with The Crossdata Context support"
+  echo "Example: ./stratio-xd-shell --cassandra --jars myApp.jar"
+  echo ""
+  echo "--cassandra         Add support for Cassandra"
+  echo "--mongodb           Add support for MongoDB"  
+  echo ""
+  echo "[SPARK_OPTIONS]"
+  echo "Spark's specific options"
+  echo "Run $SPARK_HOME/bin/spark-shell --help for more details."
+  echo ""
+  exit 1
+}
+
+export SPARK_HOME="$(cd `dirname $0`/..; pwd)"
+
+xdjars="$SPARK_HOME/lib/crossdata-ng-1.0.0-SNAPSHOT.jar"
+MONGODB_LIB="$SPARK_HOME/lib/crossdata-mongodb-1.0.0-SNAPSHOT.jar"
+CASSANDRA_LIB="$SPARK_HOME/lib/crossdata-cassandra-1.0.0-SNAPSHOT.jar"
+
+
+# Keep all the arguments, then remove the XD specific ones and only keep the Spark arguments.
+sparkArguments="$@"
+
+
+while [[ $# > 0 ]]
+do
+key="$1"
+case $key in
+    --jars)	
+    jars="$2"
+    xdjars="$xdjars,$jars"
+    sparkArguments=${sparkArguments/--jars $jars/}     
+    shift # past argument
+    ;;
+    --cassandra)
+	xdjars="$xdjars,$CASSANDRA_LIB"
+    sparkArguments=${sparkArguments/--cassandra/}          
+    ;;
+  --mongodb)
+  xdjars="$xdjars,$MONGODB_LIB"
+    sparkArguments=${sparkArguments/--mongodb/}          
+    ;;  
+    --help)
+    usage
+    ;;
+    *)
+    ;;
+esac
+shift # past argument or value
+done
+
+$SPARK_HOME/bin/spark-shell -i $SPARK_HOME/bin/stratio-xd-init.scala --jars $xdjars $sparkArguments
