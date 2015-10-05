@@ -154,11 +154,6 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
-        <!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
-        <testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>
-	-->
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
@@ -170,18 +165,13 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>compile</id>
                         <goals>
+                            <goal>add-source</goal>
                             <goal>compile</goal>
-                        </goals>
-                        <phase>compile</phase>
-                    </execution>
-                    <execution>
-                        <id>test-compile</id>
-                        <goals>
                             <goal>testCompile</goal>
+                            <goal>doc</goal>
+                            <goal>doc-jar</goal>
                         </goals>
-                        <phase>test-compile</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -203,25 +193,13 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>org.scalastyle</groupId>
-                <artifactId>scalastyle-maven-plugin</artifactId>
-                <version>0.7.0</version>
-                <configuration>
-                    <verbose>true</verbose>
-                    <failOnViolation>false</failOnViolation>
-                    <includeTestSourceDirectory>false</includeTestSourceDirectory>
-                    <failOnWarning>false</failOnWarning>
-                    <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-                    <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-                    <configLocation>scalastyle_config.xml</configLocation>
-                    <outputFile>${basedir}/target/scalastyle-output.xml</outputFile>
-                    <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
-                    <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.4</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>check</goal>
+                            <goal>jar-no-fork</goal>
                         </goals>
                     </execution>
                 </executions>
