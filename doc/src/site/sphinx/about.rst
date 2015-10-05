@@ -9,20 +9,19 @@ developed by the Spark community.
 
 ===================
 
-Compiling Crossdata
+Compiling Crossdata and connectors:
 
-    > mvn clean install -Pall
+    > mvn clean install
 
-If you prefer to install solely some connectors::
+If hive compatibility is needed:
 
-    > mvn clean install -Pcassandra
+    > mvn clean install -Phive
 
 
 Building Crossdata
 ========================================
 
 TODO
-    
 
 
 Running the crossdata-shell

@@ -76,7 +76,7 @@
 
     <profiles>
         <profile>
-            <id>crossdata-jdbc</id>
+            <id>crossdata-dbc</id>
             <build>
                 <plugins>
                     <plugin>

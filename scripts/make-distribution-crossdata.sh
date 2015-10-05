@@ -7,7 +7,7 @@ function usage {
   echo "Tool for build binary distributions of Spark with the Stratio Crossdata Pluggins"
   echo "Example: ./make-distribution-crossdata.sh --skip-java-test"
   echo ""
-  echo "--profile            Crossdata Build Profile, Default: all. Options: core, hive, cassandra"
+  echo "--profile            Crossdata Build Profile, Default: hive"
   echo "--sparkDistibution   Spark Distribution Bynaries used to build The Crossdata  distribution "
   echo "                     Default: http://apache.rediris.es/spark/spark-1.5.1/spark-1.5.1-bin-hadoop2.6.tgz"
   echo ""
@@ -48,7 +48,7 @@ if [ -z "$SPARK_REPO" ]; then
 fi
 
 if [ -z "$PROFILE" ]; then
-    PROFILE="all"
+    PROFILE="hive"
 fi
 
 TMPDIR=/tmp/stratio-crossdata-distribution

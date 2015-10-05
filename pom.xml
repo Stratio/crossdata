@@ -80,6 +80,8 @@
 
     <modules>
         <module>core</module>
+        <module>cassandra</module>
+        <module>mongodb</module>
         <module>doc</module>
         <module>common</module>
         <module>driver</module>
@@ -209,32 +211,12 @@
 
     <profiles>
         <profile>
-            <id>all</id>
-            <modules>
-                <module>hive</module>
-                <module>cassandra</module>
-                <module>mongodb</module>
-            </modules>
-        </profile>
-
-        <profile>
             <id>hive</id>
             <modules>
                 <module>hive</module>
             </modules>
         </profile>
-        <profile>
-            <id>cassandra</id>
-            <modules>
-                <module>cassandra</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>mongodb</id>
-            <modules>
-                <module>mongodb</module>
-            </modules>
-        </profile>
+
         <profile>
             <id>scala-2.10</id>
             <activation>

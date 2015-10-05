@@ -14,13 +14,13 @@ developed by the Spark community.
 
 ===================
 
-Compiling Crossdata
+Compiling Crossdata and connectors:
 
-    > mvn clean install -Pall
+    > mvn clean install
 
-If you prefer to install solely some connectors::
+If hive compatibility is needed:
 
-    > mvn clean install -Pcassandra
+    > mvn clean install -Phive
 
 Use Crossdata with a standard Spark distribution
 ========================================
@@ -35,8 +35,8 @@ You can build a Spark Distribution with Crossdata libraries running the make-dis
 
 This will build Spark with the following options:
     - Crossdata with Cassandra support
-    - Spark Version v1.5.0
-    - Spark's Hadoop  Version 2.4.0
+    - Spark Version v1.5.1
+    - Spark's Hadoop  Version 2.6.0
     - Yarn support
     - Hive integration for SparkSQL
      -Scala version 2.10
