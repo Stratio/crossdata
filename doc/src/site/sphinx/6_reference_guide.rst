@@ -2,7 +2,8 @@
 Reference Guide
 ===============
 
-Crossdata implements the standard SparkSQL grammar plus an expansion described `at <doc/src/site/sphinx/GrammarExp.rst>`
+Crossdata implements the standard SparkSQL grammar plus an expansion described
+`at <GrammarExp.rst>`__
 
 TODO:
 

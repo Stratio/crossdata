@@ -34,9 +34,7 @@ connector developed by the Spark community.
 (Coming soon) Crossdata will allow us to merge data from batch and streaming resources using the extended SQL-like
 grammar of Spark and the Crossdata API.
 
-
 ----
-
 
 =============
 Documentation
@@ -55,9 +53,7 @@ Documentation
 - `Benchmarks <doc/src/site/sphinx/10_crossdata_benchmarks.rst>`__
 - `FAQs <doc/src/site/sphinx/11_crossdata_faqs.rst>`__
 
-
 ----
-
 
 ===========
 Get support
