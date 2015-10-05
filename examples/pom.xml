@@ -69,50 +69,17 @@
         <sourceDirectory>src/main/scala</sourceDirectory>
             <plugins>
                 <plugin>
-                    <groupId>org.scala-tools</groupId>
-                    <artifactId>maven-scala-plugin</artifactId>
-                    <version>2.15.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.3</version>
-                    <configuration>
-                        <skip>true</skip>
-                        <source>1.7</source>
-                        <target>1.7</target>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
                     <version>3.2.0</version>
                     <configuration>
                         <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                        <args>
-                            <arg>-Xmax-classfile-name</arg>
-                            <arg>130</arg>
-                        </args>
                     </configuration>
                     <executions>
                         <execution>
-                            <id>compile</id>
                             <goals>
                                 <goal>compile</goal>
-                            </goals>
-                            <phase>compile</phase>
-                        </execution>
-                        <execution>
-                            <id>test-compile</id>
-                            <goals>
                                 <goal>testCompile</goal>
-                            </goals>
-                            <phase>test-compile</phase>
-                        </execution>
-                        <execution>
-                            <phase>process-resources</phase>
-                            <goals>
-                                <goal>compile</goal>
                             </goals>
                         </execution>
                     </executions>
