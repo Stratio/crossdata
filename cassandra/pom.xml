@@ -30,13 +30,6 @@
     <description>Crossdata Cassandra connector</description>
     <url>http://stratio.github.io/crossdata/</url>
 
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
-
     <properties>
         <cassandra.connector.version>1.5.0-M1</cassandra.connector.version>
     </properties>
