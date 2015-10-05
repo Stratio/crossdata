@@ -166,10 +166,7 @@
                 <version>3.2.0</version>
                 <configuration>
                     <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                    <args>
-                        <arg>-Xmax-classfile-name</arg>
-                        <arg>130</arg>
-                    </args>
+                    <recompileMode>incremental</recompileMode>
                 </configuration>
                 <executions>
                     <execution>
