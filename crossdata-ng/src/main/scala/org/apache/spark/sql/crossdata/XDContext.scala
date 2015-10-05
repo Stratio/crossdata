@@ -21,9 +21,15 @@ package org.apache.spark.sql.crossdata
 
 import java.util.concurrent.atomic.AtomicReference
 
+import org.apache.spark.sql.catalyst.analysis.{FunctionRegistry, Analyzer}
+import org.apache.spark.sql.execution.{datasources, ExtractPythonUDFs}
+import org.apache.spark.sql.execution.datasources.PreInsertCastAndRename
 import org.apache.spark.sql.sources.crossdata.XDDdlParser
+import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{Logging, SparkContext}
+
+import org.apache.spark.sql.execution.crossdata._
 
 /**
  * CrossdataContext leverages the features of [[SQLContext]]
@@ -31,6 +37,20 @@ import org.apache.spark.{Logging, SparkContext}
  * @param sc A [[SparkContext]].
  */
 class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging {
+
+  @transient
+  override protected[sql] lazy val analyzer: Analyzer =
+    new Analyzer(catalog, functionRegistry, conf) {
+      override val extendedResolutionRules =
+        ExtractPythonUDFs ::
+          ExtractNativeUDFs::
+          PreInsertCastAndRename ::
+          Nil
+
+      override val extendedCheckRules = Seq(
+        datasources.PreWriteCheck(catalog)
+      )
+    }
 
   /*
   val xdConfig: Config = ConfigFactory.load
@@ -61,6 +81,11 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   override def sql(sqlText: String): DataFrame = {
     XDDataFrame(this, parseSql(sqlText))
   }
+
+  //TODO: Remove this hardcoded registration and replace it by a mechanism for importing UDFs from a datasource.
+  functionRegistry.registerFunction("F", { case exps => NativeUDF("F", DataTypes.StringType, exps)})
+
+
 }
 
 /**
