@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.stratio.crossdata.sql.sources.cassandra
+package com.stratio.crossdata.connector.cassandra
 
 import com.datastax.driver.core.{Cluster, Session}
 import org.apache.spark.Logging
@@ -121,5 +121,5 @@ sealed trait CassandraDefaultTestConstants {
   val Table = "students"
   val UnregisteredTable = "teachers"
   val CassandraHost = "127.0.0.1"
-  val SourceProvider = "com.stratio.crossdata.sql.sources.cassandra"
+  val SourceProvider = "com.stratio.crossdata.connector.cassandra"
 }

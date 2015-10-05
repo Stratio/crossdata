@@ -1,6 +1,6 @@
 package org.apache.spark.sql.sources.crossdata
 
-import com.stratio.crossdata.sql.sources.TableInventory
+import com.stratio.crossdata.connector.TableInventory
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.RelationProvider
 import org.apache.spark.sql.{Row, SQLContext}

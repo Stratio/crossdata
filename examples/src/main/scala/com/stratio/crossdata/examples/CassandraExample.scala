@@ -26,7 +26,7 @@ sealed trait CassandraDefaultConstants {
   val Catalog = "highschool"
   val Table = "students"
   val CassandraHost = "127.0.0.1"
-  val SourceProvider = "com.stratio.crossdata.sql.sources.cassandra"
+  val SourceProvider = "com.stratio.crossdata.connector.cassandra"
   // Cassandra provider => org.apache.spark.sql.cassandra
 }
 

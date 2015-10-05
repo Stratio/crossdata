@@ -9,7 +9,7 @@ Feature: Select MongoDB Feature
       Given a DATASOURCE_HOST in the System Variable "MongoDBHost"
 
     Scenario Outline: Basic Select
-      Given a table "students" with the provider "com.stratio.crossdata.sql.sources.mongodb" and options " host '%DATASOURCE_HOST:27017', database 'highschool', collection 'students'"
+      Given a table "students" with the provider "com.stratio.crossdata.connector.mongodb" and options " host '%DATASOURCE_HOST:27017', database 'highschool', collection 'students'"
       When I query <query>
       Then the xdContext return <result> rows;
 

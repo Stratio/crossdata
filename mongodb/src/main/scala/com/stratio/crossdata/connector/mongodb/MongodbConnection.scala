@@ -15,7 +15,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package com.stratio.crossdata.sql.sources.mongodb
+package com.stratio.crossdata.connector.mongodb
 
 import com.mongodb.MongoCredential
 import com.mongodb.casbah.Imports._

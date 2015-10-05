@@ -1,6 +1,6 @@
 package org.apache.spark.sql.crossdata
 
-import com.stratio.crossdata.sql.sources.NativeScan
+import com.stratio.crossdata.connector.NativeScan
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions._

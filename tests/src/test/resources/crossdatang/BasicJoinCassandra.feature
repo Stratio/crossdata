@@ -10,8 +10,8 @@ Feature: Select Cassandra Feature
 
 
   Scenario Outline: Basic Join Select
-    Given a table "students" with the provider "com.stratio.crossdata.sql.sources.cassandra" and options "keyspace 'highschool', table 'students',  cluster 'Test Cluster',  pushdown 'true',  spark_cassandra_connection_host '%DATASOURCE_HOST'"
-    And a table "class" with the provider "com.stratio.crossdata.sql.sources.cassandra" and options "keyspace 'highschool', table 'class',  cluster 'Test Cluster',  pushdown 'true',  spark_cassandra_connection_host '%DATASOURCE_HOST'"
+    Given a table "students" with the provider "com.stratio.crossdata.connector.cassandra" and options "keyspace 'highschool', table 'students',  cluster 'Test Cluster',  pushdown 'true',  spark_cassandra_connection_host '%DATASOURCE_HOST'"
+    And a table "class" with the provider "com.stratio.crossdata.connector.cassandra" and options "keyspace 'highschool', table 'class',  cluster 'Test Cluster',  pushdown 'true',  spark_cassandra_connection_host '%DATASOURCE_HOST'"
     When I query <query>
     Then the xdContext return <result> rows;
 

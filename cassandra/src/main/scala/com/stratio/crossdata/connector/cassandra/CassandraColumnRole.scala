@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.stratio.crossdata.sql.sources.cassandra
+package com.stratio.crossdata.connector.cassandra
 
 object CassandraColumnRole extends Enumeration {
   type CassandraColumnRole = Value

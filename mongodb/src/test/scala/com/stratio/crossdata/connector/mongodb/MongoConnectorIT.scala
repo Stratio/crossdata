@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.stratio.crossdata.sql.sources.mongodb
+package com.stratio.crossdata.connector.mongodb
 
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.apache.spark.sql.crossdata.exceptions.CrossdataException

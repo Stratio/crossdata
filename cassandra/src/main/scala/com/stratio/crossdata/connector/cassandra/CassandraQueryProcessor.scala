@@ -13,12 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.stratio.crossdata.sql.sources.cassandra
-
-
+package com.stratio.crossdata.connector.cassandra
 
 import com.datastax.driver.core.{ProtocolVersion, ResultSet}
-import com.stratio.crossdata.sql.sources.cassandra.CassandraColumnRole._
+import CassandraColumnRole._
 import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions._
@@ -65,7 +63,7 @@ object CassandraQueryProcessor {
 // TODO logs, doc, tests
 class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) extends Logging {
 
-  import com.stratio.crossdata.sql.sources.cassandra.CassandraQueryProcessor._
+  import CassandraQueryProcessor._
 
   def execute(): Option[Array[Row]] = {
     try {

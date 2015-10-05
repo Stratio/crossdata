@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.stratio.crossdata.sql.sources.mongodb
+package com.stratio.crossdata.connector.mongodb
 
 import com.mongodb.QueryBuilder
 import com.mongodb.casbah.MongoClient
@@ -103,5 +103,5 @@ sealed trait MongoDefaultConstants {
   val Collection = "students"
   val MongoHost = "127.0.0.1"
   val MongoPort = 27017
-  val SourceProvider = "com.stratio.crossdata.sql.sources.mongodb"
+  val SourceProvider = "com.stratio.crossdata.connector.mongodb"
 }

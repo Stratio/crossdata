@@ -27,7 +27,7 @@ sealed trait MongoDefaultConstants {
   val Collection = "students"
   val MongoHost = "127.0.0.1"
   val MongoPort = 27017
-  val SourceProvider = "com.stratio.crossdata.sql.sources.mongodb"
+  val SourceProvider = "com.stratio.crossdata.connector.mongodb"
   val MongoProvider = "com.stratio.provider.mongodb"
 }
 
@@ -36,8 +36,6 @@ object MongoExample extends App with MongoDefaultConstants {
   val mongoClient = prepareEnvironment()
 
   withCrossdataContext { xdContext =>
-
-    // TODO fix SPARKSQL bug => comment identifier is not supported
 
     xdContext.sql(
       s"""|CREATE TEMPORARY TABLE $Collection

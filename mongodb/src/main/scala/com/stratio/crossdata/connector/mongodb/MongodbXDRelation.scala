@@ -16,9 +16,9 @@
  *  under the License.
  */
 
-package com.stratio.crossdata.sql.sources.mongodb
+package com.stratio.crossdata.connector.mongodb
 
-import com.stratio.crossdata.sql.sources.NativeScan
+import com.stratio.crossdata.connector.NativeScan
 import com.stratio.provider.Config
 import com.stratio.provider.mongodb.MongodbRelation
 import org.apache.spark.Logging

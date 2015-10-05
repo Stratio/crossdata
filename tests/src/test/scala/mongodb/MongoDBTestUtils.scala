@@ -15,7 +15,7 @@ sealed trait DefaultConstants {
 
   val Host = Option(System.getenv("MongoHost")).getOrElse("127.0.0.1")
 
-  val SourceProvider = "com.stratio.crossdata.sql.sources.cassandra"
+  val SourceProvider = "com.stratio.crossdata.connector.cassandra"
   // Cassandra provider => org.apache.spark.sql.cassandra
 }
 

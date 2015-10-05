@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.stratio.crossdata.sql.sources.cassandra
+package com.stratio.crossdata.connector.cassandra
 
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.apache.spark.sql.crossdata.exceptions.{CrossdataException, NativeExecutionException}

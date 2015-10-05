@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.stratio.crossdata.sql.sources
+package com.stratio.crossdata.connector
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.{SQLContext, Row}

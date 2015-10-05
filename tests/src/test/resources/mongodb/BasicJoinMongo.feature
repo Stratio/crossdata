@@ -10,8 +10,8 @@ Feature: Select Cassandra Feature
 
 
   Scenario Outline: Basic Join Select
-    Given a table "students" with the provider "com.stratio.crossdata.sql.sources.mongodb" and options " host '%DATASOURCE_HOST:27017', database 'highschool', collection 'students'"
-    And a table "class" with the provider "com.stratio.crossdata.sql.sources.mongodb" and options " host '%DATASOURCE_HOST:27017', database 'highschool', collection 'class'"
+    Given a table "students" with the provider "com.stratio.crossdata.connector.mongodb" and options " host '%DATASOURCE_HOST:27017', database 'highschool', collection 'students'"
+    And a table "class" with the provider "com.stratio.crossdata.connector.mongodb" and options " host '%DATASOURCE_HOST:27017', database 'highschool', collection 'class'"
     When I query <query>
     Then the xdContext return <result> rows;
 

@@ -1,4 +1,4 @@
-package com.stratio.crossdata.sql.sources.mongodb
+package com.stratio.crossdata.connector.mongodb
 
 import java.util
 import java.util.regex.Pattern

@@ -16,7 +16,7 @@
  *  under the License.
  */
 
-package com.stratio.crossdata.sql.sources.mongodb
+package com.stratio.crossdata.connector.mongodb
 
 import com.stratio.provider.Config._
 import com.stratio.provider.mongodb.MongodbConfig._

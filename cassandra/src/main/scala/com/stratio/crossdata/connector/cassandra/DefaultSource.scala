@@ -17,15 +17,16 @@
  */
 // scalastyle:on
 
-package com.stratio.crossdata.sql.sources.cassandra
+package com.stratio.crossdata.connector.cassandra
 
 import com.datastax.driver.core.{ColumnMetadata, TableMetadata, KeyspaceMetadata}
 import com.datastax.spark.connector.cql._
 import com.datastax.spark.connector.rdd.ReadConf
 import com.datastax.spark.connector.writer.WriteConf
-import com.stratio.crossdata.sql.sources.TableInventory
-import com.stratio.crossdata.sql.sources.TableInventory.Table
-import com.stratio.crossdata.sql.sources.cassandra.DefaultSource._
+import com.stratio.crossdata.connector.TableInventory
+import com.stratio.crossdata.connector.TableInventory.Table
+import TableInventory.Table
+import DefaultSource._
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}

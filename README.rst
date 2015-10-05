@@ -51,7 +51,7 @@ Using a Crossdata's Spark Distribution with cassandra support:
 
 Then you can do:
 
-    >xdContext.sql("CREATE TEMPORARY TABLE students USING com.stratio.crossdata.sql.sources.cassandra
+    >xdContext.sql("CREATE TEMPORARY TABLE students USING com.stratio.crossdata.connector.cassandra
             OPTIONS (keyspace \"highschool\", table \"students\", cluster \"students\", pushdown \"true\",
             spark_cassandra_connection_host \"127.0.0.1\")".stripMargin)
     >xdContext.sql("SELECT * FROM students").collect()

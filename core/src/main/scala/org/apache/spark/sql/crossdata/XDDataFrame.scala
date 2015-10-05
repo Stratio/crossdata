@@ -16,7 +16,7 @@
 
 package org.apache.spark.sql.crossdata
 
-import com.stratio.crossdata.sql.sources.NativeScan
+import com.stratio.crossdata.connector.NativeScan
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
