@@ -227,6 +227,7 @@
                     </properties>
                     <excludes>
                         <exclude>**/.*/**</exclude>
+                        <exclude>**/src/site/sphinx/_themes/stratio/**</exclude>
                         <exclude>**/*.rst</exclude>
                         <exclude>**/*.feature</exclude>
                         <exclude>**/*.conf</exclude>
