@@ -218,6 +218,7 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <version>2.11</version>
                 <configuration>
+                    <useDefaultExcludes>true</useDefaultExcludes>
                     <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
                     <properties>
                         <owner>${project.organization.name}</owner>
@@ -225,6 +226,10 @@
                         <failOnMissingHeader>true</failOnMissingHeader>
                     </properties>
                     <excludes>
+                        <exclude>**/.*/**</exclude>
+                        <exclude>**/*.rst</exclude>
+                        <exclude>**/*.feature</exclude>
+                        <exclude>**/*.conf</exclude>
                         <exclude>**/com/stratio/crossdata/connector/cassandra/DefaultSource.scala</exclude>
                         <exclude>**/org/apache/spark/sql/cassandra/CassandraXDSourceRelation.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/XDContext.scala</exclude>
