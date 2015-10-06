@@ -119,7 +119,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   override def dropAllTables(): Unit = {
     logInfo("XDCatalog: Drop all tables from catalog")
     val statement = connection.createStatement
-    statement.executeUpdate(s"""DROP TABLE $db.$table""")
+    statement.executeUpdate(s"""TRUNCATE $db.$table""")
     super.unregisterAllTables()
   }
 
@@ -163,8 +163,6 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     lookupRelationCache(tableIdentifier, alias).getOrElse{
       lookUpTable(tableIdentifier) match {
         case Some(crossdataTable) =>
-          //TODO provider => new instance => createRelation( table, options....); registerTempTable (tableIdentifier, crossdataTable)
-
           val logicalPlan: LogicalPlan = createLogicalRelation(crossdataTable)
           super.registerTable(tableIdentifier,logicalPlan)
           val tableWithQualifiers = Subquery(tableIdentifier.last, logicalPlan)
@@ -186,8 +184,12 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
    * @return
    */
   private def lookUpTable(tableIdentifier: Seq[String]): Option[CrossdataTable] = {
-    val database=tableIdentifier(0)
-    val tablename=tableIdentifier(1)
+
+    val (database, tablename) = {
+      val auxSeq = Seq("").filter(x=>tableIdentifier.length < 2) ++ tableIdentifier
+      (auxSeq zip auxSeq.tail).head
+    }
+
     val statement = connection.createStatement
     val resultSet=statement.executeQuery(
       s"""SELECT * FROM $db.$table WHERE db='$database' AND tableName='$tablename'""".stripMargin)
@@ -210,15 +212,8 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   }
 
   private def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
-    val resolved = ResolvedDataSource(xDContext,  crossdataTable.userSpecifiedSchema, Array(), crossdataTable.provider, crossdataTable.opts)
+    val resolved = ResolvedDataSource(xDContext,  crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.provider, crossdataTable.opts)
     LogicalRelation(resolved.relation)
-//    crossdataTable.userSpecifiedSchema match {
-//      case schema:Some[StructType] =>
-//        LogicalRelation(resolved.asInstanceOf[SchemaRelationProvider].createRelation(xDContext,crossdataTable.opts,
-//          schema.get))
-//      case None =>
-//        LogicalRelation(resolved.asInstanceOf[RelationProvider].createRelation(xDContext,crossdataTable.opts))
-//    }
   }
 
   private def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {

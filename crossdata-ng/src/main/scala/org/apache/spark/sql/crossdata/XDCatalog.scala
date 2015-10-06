@@ -50,11 +50,10 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true)) 
 
     dbName.fold{
       tables.map{
-        case (tableName, _) => (tableName.split("\\.")(1), true)
-          //TODO if ! DB => ! split
+        case (tableName, _) => {
+          (tableName, true)}
       }.toSeq
     }{ realDBName =>
-      // TODO tables.map( )
       tables.filter {
         case (tableIdentifier, _) =>
           tableIdentifier.split("\\.")(0) == realDBName
