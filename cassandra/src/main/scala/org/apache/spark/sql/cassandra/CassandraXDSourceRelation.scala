@@ -1,7 +1,6 @@
-// scalastyle:off
 /*
  * Copyright 2014-2015, DataStax, Inc.
- * Modification and adapations - Copyright (C) 2015 Stratio (http://stratio.com)
+ * Modifications and adaptations - Copyright (C) 2015 Stratio (http://stratio.com)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-// scalastyle:on
+
 package org.apache.spark.sql.cassandra
 
 import java.io.IOException

@@ -1,4 +1,5 @@
 /*
+ * Modifications and adaptations - Copyright (C) 2015 Stratio (http://stratio.com)
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
