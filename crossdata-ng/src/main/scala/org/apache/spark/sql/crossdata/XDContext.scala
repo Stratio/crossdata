@@ -21,12 +21,12 @@ package org.apache.spark.sql.crossdata
 
 import java.util.concurrent.atomic.AtomicReference
 
-import org.apache.spark.sql.catalyst.analysis.{FunctionRegistry, Analyzer}
-import org.apache.spark.sql.execution.{datasources, ExtractPythonUDFs}
+import org.apache.spark.sql.catalyst.analysis.Analyzer
+import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.PreInsertCastAndRename
 import org.apache.spark.sql.sources.crossdata.XDDdlParser
 import org.apache.spark.sql.types.DataTypes
-import org.apache.spark.sql.{Strategy, DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
 import org.apache.spark.{Logging, SparkContext}
 
 import org.apache.spark.sql.execution.crossdata._
@@ -53,8 +53,6 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
     }
 
 
-
-
   /*
   val xdConfig: Config = ConfigFactory.load
   val catalogClass: String = xdConfig.getString("crossdata.catalog.class")
@@ -79,10 +77,15 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   catalog.open()
  */
 
-  override protected[sql] val planner: SparkPlanner = new SparkPlanner {
+  @transient
+  class XDPlanner extends SparkPlanner with XDStrategies {
     override def strategies: Seq[Strategy] = Seq(NativeUDFStrategy) ++ super.strategies
   }
 
+  @transient
+  override protected[sql] val planner: SparkPlanner = new XDPlanner
+
+  @transient
   protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_))
 
   override def sql(sqlText: String): DataFrame = {

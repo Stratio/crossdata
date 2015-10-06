@@ -1,12 +1,8 @@
 package org.apache.spark.sql.execution.crossdata
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SQLContext}
-import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.rules.Rule
-import org.apache.spark.sql.execution.{ExecutedCommand, SparkPlan}
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.catalyst.plans.logical
 
