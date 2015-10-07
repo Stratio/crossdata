@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Licensed to STRATIO (C) under one or more contributor license agreements.
-  ~ See the NOTICE file distributed with this work for additional information
-  ~ regarding copyright ownership.  The STRATIO (C) licenses this file
-  ~ to you under the Apache License, Version 2.0 (the
-  ~ "License"); you may not use this file except in compliance
-  ~ with the License.  You may obtain a copy of the License at
-  ~
-  ~   http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing,
-  ~ software distributed under the License is distributed on an
-  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  ~ KIND, either express or implied.  See the License for the
-  ~ specific language governing permissions and limitations
-  ~ under the License.
-  -->
 
+    Copyright (C) 2015 Stratio (http://stratio.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -28,12 +27,13 @@
     </parent>
 
     <groupId>com.stratio.crossdata</groupId>
-    <artifactId>crossdata-parent</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>Stratio Crossdata Parent</name>
-    <description>Stratio Crossdata parent</description>
+    <packaging>pom</packaging>
+    <name>Parent</name>
+    <description>Crossdata Parent</description>
     <url>http://stratio.github.io/crossdata/</url>
+    <inceptionYear>2015</inceptionYear>
 
     <licenses>
         <license>
@@ -54,6 +54,12 @@
         <system>Jira</system>
         <url>https://crossdata.atlassian.net/</url>
     </issueManagement>
+
+
+    <organization>
+        <name>Stratio</name>
+        <url>http://stratio.com</url>
+    </organization>
 
     <developers>
         <developer>
@@ -79,11 +85,14 @@
     </developers>
 
     <modules>
-        <module>crossdata-ng</module>
+        <module>core</module>
+        <module>cassandra</module>
+        <module>mongodb</module>
         <module>doc</module>
-        <module>crossdata-common</module>
-        <module>crossdata-driver</module>
-        <module>crossdata-server</module>
+        <module>common</module>
+        <module>driver</module>
+        <module>server</module>
+        <module>dist</module>
     </modules>
 
     <properties>
@@ -110,16 +119,16 @@
             </dependency>
             <dependency>
                 <groupId>com.stratio.crossdata</groupId>
-                <artifactId>crossdata-ng</artifactId>
+                <artifactId>crossdata-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.stratio.crossdata</groupId>
+                <groupId>com.stratio.crossdata.connector</groupId>
                 <artifactId>crossdata-cassandra</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.stratio.crossdata</groupId>
+                <groupId>com.stratio.crossdata.connector</groupId>
                 <artifactId>crossdata-mongodb</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -153,74 +162,26 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
-        <!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
-        <testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>
-	-->
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.scala-tools</groupId>
-                    <artifactId>maven-scala-plugin</artifactId>
-                    <version>2.15.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.3</version>
-                    <configuration>
-                        <skip>true</skip>
-                        <source>1.7</source>
-                        <target>1.7</target>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>net.alchim31.maven</groupId>
-                    <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.2.0</version>
-                    <configuration>
-                        <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                        <args>
-                            <arg>-Xmax-classfile-name</arg>
-                            <arg>130</arg>
-                        </args>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>compile</id>
-                            <goals>
-                                <goal>compile</goal>
-                            </goals>
-                            <phase>compile</phase>
-                        </execution>
-                        <execution>
-                            <id>test-compile</id>
-                            <goals>
-                                <goal>testCompile</goal>
-                            </goals>
-                            <phase>test-compile</phase>
-                        </execution>
-                        <execution>
-                            <phase>process-resources</phase>
-                            <goals>
-                                <goal>compile</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
-
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
+                    <recompileMode>incremental</recompileMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                            <goal>doc</goal>
+                            <goal>doc-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -238,48 +199,64 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <configuration>
-                            <includes>
-                                <include>**/*IT.*</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
-                <configuration>
-                    <minmemory>64m</minmemory>
-                    <maxmemory>1g</maxmemory>
-                    <outputDirectory>${project.build.directory}</outputDirectory>
-                    <detectLinks>true</detectLinks>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.scalastyle</groupId>
-                <artifactId>scalastyle-maven-plugin</artifactId>
-                <version>0.7.0</version>
-                <configuration>
-                    <verbose>true</verbose>
-                    <failOnViolation>false</failOnViolation>
-                    <includeTestSourceDirectory>false</includeTestSourceDirectory>
-                    <failOnWarning>false</failOnWarning>
-                    <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-                    <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-                    <configLocation>scalastyle_config.xml</configLocation>
-                    <outputFile>${basedir}/target/scalastyle-output.xml</outputFile>
-                    <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
-                    <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
-                </configuration>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.4</version>
                 <executions>
                     <execution>
                         <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>2.11</version>
+                <configuration>
+                    <useDefaultExcludes>true</useDefaultExcludes>
+                    <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
+                    <properties>
+                        <owner>${project.organization.name}</owner>
+                        <email>${project.organization.url}</email>
+                        <failOnMissingHeader>true</failOnMissingHeader>
+                    </properties>
+                    <excludes>
+                        <exclude>**/.*/**</exclude>
+                        <exclude>**/src/site/sphinx/_themes/stratio/**</exclude>
+                        <exclude>**/*.rst</exclude>
+                        <exclude>**/*.feature</exclude>
+                        <exclude>**/*.conf</exclude>
+                        <exclude>**/com/stratio/crossdata/connector/cassandra/DefaultSource.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/cassandra/CassandraXDSourceRelation.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/XDContext.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/test/SharedXDContextTest.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/test/TestXDContext.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/test/XDImplicits.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/test/XDTestUtils.scala</exclude>
+                        <exclude>**/sphinx/conf.py</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/hive/XDHiveContext.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/hive/test/LocalXDHiveContext.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/test/acceptance/TestXDContext.scala</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>format</id>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <goals>
                             <goal>check</goal>
                         </goals>
+                        <phase>process-resources</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -288,32 +265,12 @@
 
     <profiles>
         <profile>
-            <id>crossdata-all</id>
+            <id>hive</id>
             <modules>
-                <module>crossdata-hive</module>
-                <module>crossdata-cassandra</module>
-                <module>crossdata-mongodb</module>
+                <module>hive</module>
             </modules>
         </profile>
 
-        <profile>
-            <id>crossdata-hive</id>
-            <modules>
-                <module>crossdata-hive</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>crossdata-cassandra</id>
-            <modules>
-                <module>crossdata-cassandra</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>crossdata-mongodb</id>
-            <modules>
-                <module>crossdata-mongodb</module>
-            </modules>
-        </profile>
         <profile>
             <id>scala-2.10</id>
             <activation>
