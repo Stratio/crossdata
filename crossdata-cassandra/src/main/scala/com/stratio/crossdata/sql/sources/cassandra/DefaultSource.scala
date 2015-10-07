@@ -143,6 +143,9 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
       if(!options.contains(opName))
     ) sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
 
+    // TODO optional keyspace
+    // TODO optional table
+
     val clusterName: String = options(CassandraDataSourceClusterNameProperty)
     val host: String = options(CassandraConnectionHostProperty)
 
