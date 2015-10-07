@@ -17,7 +17,7 @@
  */
 package com.stratio.crossdata.sql.sources.mongodb
 
-import com.mongodb.MongoCredential
+import com.mongodb.{ServerAddress, MongoCredential}
 import com.mongodb.casbah.Imports._
 import com.stratio.provider.Config
 import com.stratio.provider.mongodb.reader.MongodbReadException
@@ -29,8 +29,24 @@ import scala.util.Try
 
 object MongodbConnection {
 
-
   // TODO avoid openning a connection per query
+
+  def withClientDo[T](hosts: List[String])(code: MongoClient => T): T = {
+
+    val mongoClient: Try[MongoClient] = Try {
+      MongoClient(hosts.map(new ServerAddress(_)))
+    }.recover {
+      case throwable =>
+        throw MongodbReadException(throwable.getMessage, throwable)
+    }
+
+    try{
+      code(mongoClient.get)
+    } finally{
+      mongoClient.foreach(_.close())
+    }
+  }
+
 
   def withCollectionDo[T](config: Config)(code: MongoCollection => T): T = {
 
