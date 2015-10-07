@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2015 Stratio (http://stratio.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.stratio.crossdata</groupId>
+        <artifactId>parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>crossdata-dist</artifactId>
+    <name>Distribution</name>
+    <description>${project.name}</description>
+    <packaging>pom</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>package</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.stratio.mojo.unix</groupId>
+                        <artifactId>unix-maven-plugin</artifactId>
+                        <version>1.1.6</version>
+                        <extensions>true</extensions>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <contact><![CDATA[Stratio <crossdata@stratio.com>]]></contact>
+                            <contactEmail>crossdata@stratio.com</contactEmail>
+                            <outputFileName>stratio-crossdata</outputFileName>
+                            <rpm>
+                                <group>stratio</group>
+                                <requires>bash</requires>
+                            </rpm>
+                            <deb>
+                                <section>devel</section>
+                            </deb>
+                            <excludeDirectoryAttributes>
+                                <dir>/etc</dir>
+                                <dir>/etc/init.d</dir>
+                                <dir>/etc/default</dir>
+                                <dir>/var</dir>
+                                <dir>/opt</dir>
+                                <dir>/usr</dir>
+                                <dir>/bin</dir>
+                            </excludeDirectoryAttributes>
+                            <defaults>
+                                <directoryAttributes>
+                                    <user>stratio</user>
+                                    <group>stratio</group>
+                                    <mode>0775</mode>
+                                </directoryAttributes>
+                                <fileAttributes>
+                                    <user>stratio</user>
+                                    <group>stratio</group>
+                                    <mode>0664</mode>
+                                </fileAttributes>
+                            </defaults>
+                            <assembly>
+                                <mkdirs>
+                                    <paths>
+                                        <path>etc/sds/crossdata</path>
+                                        <path>etc/default</path>
+                                        <path>var/run/sds</path>
+                                        <path>var/log/sds/crossdata</path>
+                                        <path>var/sds/crossdata</path>
+                                    </paths>
+                                    <attributes>
+                                        <user>stratio</user>
+                                        <group>stratio</group>
+                                        <mode>775</mode>
+                                    </attributes>
+                                </mkdirs>
+                            </assembly>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>create-rpm</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>package-rpm</goal>
+                                </goals>
+                                <configuration>
+                                    <architecture>noarch</architecture>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-deb</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>package-deb</goal>
+                                </goals>
+                                <configuration>
+                                    <architecture>all</architecture>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

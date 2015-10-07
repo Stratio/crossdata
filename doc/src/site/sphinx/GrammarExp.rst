@@ -54,7 +54,7 @@ IMPORT TABLES USING \<provider\> OPTIONS '(' (\<property\>',)\+'\<property\> ')'
 Example:
 
     IMPORT TABLES
-    USING com.stratio.crossdata.sql.sources.cassandra
+    USING com.stratio.crossdata.connector.cassandra
     OPTIONS (
         cluster "Test Cluster",
         spark_cassandra_connection_host '127.0.0.1'
