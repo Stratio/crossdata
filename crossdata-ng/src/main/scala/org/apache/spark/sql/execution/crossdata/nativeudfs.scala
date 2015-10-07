@@ -32,7 +32,7 @@ case class EvaluateNativeUDF(
 
 object EvaluateNativeUDF {
   def apply(udf: NativeUDF, child: LogicalPlan): EvaluateNativeUDF =
-    new EvaluateNativeUDF(udf, child, AttributeReference("nativeUDFres", udf.dataType)())
+    new EvaluateNativeUDF(udf, child, AttributeReference(udf.name, udf.dataType)())
 }
 
 //case class NativeUDFEvaluation(udf: NativeUDF, output: Seq[Attribute], child: SparkPlan) extends SparkPlan

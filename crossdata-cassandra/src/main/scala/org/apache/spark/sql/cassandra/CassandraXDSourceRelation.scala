@@ -32,6 +32,7 @@ import com.stratio.crossdata.sql.sources.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
 import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.execution.crossdata.EvaluateNativeUDF
 import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
@@ -70,7 +71,7 @@ class CassandraXDSourceRelation(
   override def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean = logicalStep match {
     case ln: LeafNode => true // TODO leafNode == LogicalRelation(xdSourceRelation)
     case un: UnaryNode => un match {
-      case Limit(_, _) | Project(_, _) | Filter(_, _) => true
+      case Limit(_, _) | Project(_, _) | Filter(_, _) | EvaluateNativeUDF(_, _, _) => true
       case _ => false
 
     }

@@ -24,6 +24,7 @@ import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelatio
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.execution.crossdata.NativeUDF
 import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 
@@ -86,7 +87,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   def validatedNativePlan: Option[(Array[ColumnName], Array[SourceFilter], Option[Int])] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
-    def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter], Boolean) = {
+    def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter], Array[NativeUDF], Boolean) = {
       lplan match {
         case Limit(_, child) => findProjectsFilters(child)
         case PhysicalOperation(projectList, filterList, _) =>
@@ -94,13 +95,8 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
       }
     }
 
-    val (projects, filters, filtersIgnored) = findProjectsFilters(logicalPlan)
-    if (filtersIgnored || !checkNativeFilters(filters)) {
-      None
-    } else {
-      Some(projects, filters, limit)
-    }
-
+    val (projects, filters, udfs, filtersIgnored) = findProjectsFilters(logicalPlan)
+    Option((projects, filters, limit)) filter {x => !filtersIgnored && checkNativeFilters(filters)}
   }
 
 

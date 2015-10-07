@@ -20,6 +20,7 @@ import org.apache.spark.sql.catalyst.CatalystTypeConverters._
 import org.apache.spark.sql.catalyst.{CatalystTypeConverters, expressions}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.execution.crossdata.{NativeUDF, EvaluateNativeUDF}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
@@ -29,19 +30,23 @@ import org.apache.spark.unsafe.types.UTF8String
 object CatalystToCrossdataAdapter {
 
 
-  def getFilterProject(logicalPlan: LogicalPlan, projects: Seq[NamedExpression],
-                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter], Boolean) = {
+  def getFilterProject(logicalPlan: LogicalPlan,
+                       projects: Seq[NamedExpression],
+                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter], Array[NativeUDF], Boolean) = {
 
     val projectSet = AttributeSet(projects.flatMap(_.references))
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
+    val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
     val pushedFilters = filterPredicates.map {
       _ transform {
-        case a: AttributeReference => relation.attributeMap(a) // Match original case of attributes.
+        case a: AttributeReference =>
+          if(att2udf.contains(a)) a
+          else relation.attributeMap(a) // Match original case of attributes.
       }
     }
     val requestedColumns = projectSet.map(relation.attributeMap).toSeq
     val (filters, ignored) = selectFilters(pushedFilters)
-    (requestedColumns.map(_.name).toArray, filters.toArray, ignored)
+    (requestedColumns.map(_.name).toArray, filters.toArray, att2udf.values.toArray, ignored)
 
   }
 
@@ -59,6 +64,8 @@ object CatalystToCrossdataAdapter {
         Some(sources.EqualTo(a.name, convertToScala(v, t)))
       case expressions.EqualTo(Literal(v, t), a: Attribute) =>
         Some(sources.EqualTo(a.name, convertToScala(v, t)))
+      case expressions.EqualTo(a: Attribute, b: Attribute) =>
+        Some(sources.EqualTo(a.name, b.name))
 
       /* TODO
       case expressions.EqualNullSafe(a: Attribute, Literal(v, t)) =>
