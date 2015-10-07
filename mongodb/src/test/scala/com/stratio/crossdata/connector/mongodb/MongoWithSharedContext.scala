@@ -41,9 +41,9 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
             |USING $SourceProvider
             |OPTIONS (
             |host '$MongoHost:$MongoPort',
-                                          |database '$Database',
-                                                                |collection '$Collection'
-                                                                                          |)
+            |database '$Database',
+            |collection '$Collection'
+            |)
          """.stripMargin.replaceAll("\n", " "))
 
     } catch {
