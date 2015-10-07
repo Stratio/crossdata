@@ -17,8 +17,8 @@ package com.stratio.crossdata.connector.mongodb
 
 import com.mongodb.DBCollection
 import com.mongodb.casbah.MongoDB
-import com.stratio.crossdata.sql.sources.TableInventory
-import com.stratio.crossdata.sql.sources.TableInventory.Table
+import com.stratio.crossdata.connector.TableInventory
+import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.provider.Config._
 import com.stratio.provider.mongodb.{DefaultSource => ProviderDS, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions, MongodbConfig, MongodbRelation}
 import org.apache.spark.sql.SaveMode._
