@@ -134,7 +134,10 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter], Boolean) = {
       lplan match {
         case Limit(_, child) => findProjectsFilters(child)
-        case PhysicalOperation(projectList, filterList, _) => CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
+        case PhysicalOperation(projectList, filterList, _) =>
+          val (prjcts, fltrs, _, fltrsig) =
+            CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
+          (prjcts, fltrs, fltrsig)
       }
     }
 
