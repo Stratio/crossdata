@@ -28,7 +28,7 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
 
   var mongoClient: Option[MongoClient] = None
   var isEnvironmentReady = false
-
+  val UnregisteredCollection = "unregistered"
 
   override protected def beforeAll() = {
     super.beforeAll()
@@ -42,9 +42,9 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
             |USING $SourceProvider
             |OPTIONS (
             |host '$MongoHost:$MongoPort',
-            |database '$Database',
-            |collection '$Collection'
-            |)
+                                          |database '$Database',
+                                                                |collection '$Collection'
+                                                                                          |)
          """.stripMargin.replaceAll("\n", " "))
 
     } catch {
@@ -83,9 +83,9 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
           "name" -> s"Name $a"
         )
       }
-      collection.update(QueryBuilder.start("id").greaterThan(4).get, MongoDBObject( ("$set", MongoDBObject( ("optionalField", true))) ), multi=true)
-
+      collection.update(QueryBuilder.start("id").greaterThan(4).get, MongoDBObject(("$set", MongoDBObject(("optionalField", true)))), multi = true)
     }
+
   }
 
   private def cleanTestData(client: MongoClient): Unit = {
