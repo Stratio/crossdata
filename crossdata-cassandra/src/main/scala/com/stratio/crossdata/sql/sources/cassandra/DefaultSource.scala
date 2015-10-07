@@ -19,24 +19,24 @@
 
 package com.stratio.crossdata.sql.sources.cassandra
 
-import com.datastax.driver.core.{ColumnMetadata, TableMetadata, KeyspaceMetadata}
+import com.datastax.driver.core.{TableMetadata, KeyspaceMetadata}
 import com.datastax.spark.connector.cql._
 import com.datastax.spark.connector.rdd.ReadConf
 import com.datastax.spark.connector.writer.WriteConf
-import com.stratio.crossdata.sql.sources.TableInventory
+import com.stratio.crossdata.sql.sources.FunctionInventory.UDF
+import com.stratio.crossdata.sql.sources.{FunctionInventory, TableInventory}
 import com.stratio.crossdata.sql.sources.TableInventory.Table
 import com.stratio.crossdata.sql.sources.cassandra.DefaultSource._
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
 import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.types.{DataTypes, StructType}
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 import scala.collection.mutable
 import scala.collection.JavaConversions.iterableAsScalaIterable
 
-import org.apache.spark.sql.cassandra.DataTypeConverter._
 
 
 /**
@@ -58,7 +58,7 @@ import org.apache.spark.sql.cassandra.DataTypeConverter._
  *       spark_cassandra_connection_timeout_ms "1000"
  *      )
  */
-class DefaultSource extends CassandraConnectorDS with TableInventory {
+class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory {
 
   /**
    * Creates a new relation for a cassandra table.
@@ -135,33 +135,48 @@ class DefaultSource extends CassandraConnectorDS with TableInventory {
   private def tableMeta2Table(tMeta: TableMetadata): Table =
       Table(tMeta.getName, Some(tMeta.getKeyspace.getName))
 
-  
-  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
+  private def buildCassandraConnector(context: SQLContext, options: Map[String, String]): CassandraConnector = {
 
-    for(
-      opName <- CassandraDataSourceClusterNameProperty::CassandraConnectionHostProperty::Nil;
-      if(!options.contains(opName))
-    ) sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
-
-    val clusterName: String = options(CassandraDataSourceClusterNameProperty)
-    val host: String = options(CassandraConnectionHostProperty)
+    val conParams = (CassandraDataSourceClusterNameProperty::CassandraConnectionHostProperty::Nil) map { opName =>
+      if(!options.contains(opName)) sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
+      else options(opName)
+    }
+    val (clusterName, host) = (conParams zip conParams.tail) head
 
     val cfg: SparkConf = context.sparkContext.getConf.clone()
-
     for (prop <- DefaultSource.confProperties;
-         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop"))
-      cfg.set(prop, clusterLevelValue)
-
+         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop")) cfg.set(prop, clusterLevelValue)
     cfg.set("spark.cassandra.connection.host", host)
 
-    val connector = CassandraConnector(cfg)
-
-    connector.withSessionDo { s =>
+    CassandraConnector(cfg)
+  }
+  
+  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
+    buildCassandraConnector(context, options).withSessionDo { s =>
       val tablesIt: Iterable[Table] = for(
         ksMeta: KeyspaceMetadata <- s.getCluster.getMetadata.getKeyspaces;
         tMeta: TableMetadata <- ksMeta.getTables) yield tableMeta2Table(tMeta)
       tablesIt.toSeq
     }
+  }
+
+  override def listUDFs(context: SQLContext, options: Map[String, String]): Seq[UDF] = {
+    /*
+    TODO: When the Datastax Java Driver for C* 3 is ready, it might be possible.
+    to automatically load UDFs...
+
+    buildCassandraConnector(context, options).withSessionDo { s =>
+      s.getCluster.getMetadata...
+    }*/
+
+    Seq(
+      UDF("now", None, StructType(Nil), DataTypes.StringType)
+      /*UDF("", None, StructType(Array.empty), DataTypes.StringType),
+      UDF("", None, StructType(Array.empty), DataTypes.StringType),
+      UDF("", None, StructType(Array.empty), DataTypes.StringType),
+      UDF("", None, StructType(Array.empty), DataTypes.StringType)*/
+    )
+
   }
 
   //Avoids importing system tables
