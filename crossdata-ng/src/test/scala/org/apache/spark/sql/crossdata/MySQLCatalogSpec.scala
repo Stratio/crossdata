@@ -17,6 +17,7 @@
 package org.apache.spark.sql.crossdata
 
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.sources.LogicalRelation
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -93,13 +94,18 @@ class MySQLCatalogSpec extends SharedXDContextTest with MySQLCatalogConstants{
     val crossdataTable2 = CrossdataTable(TableName, None,  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), "1.0", OptsJSON)
     val tableIdentifier1 = Seq(Database, TableName)
     val tableIdentifier2 = Seq(TableName)
+
     xdContext.catalog.persistTable(tableIdentifier1, crossdataTable1)
-    xdContext.catalog.persistTable(tableIdentifier2, crossdataTable2)
+
+    xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     xdContext.catalog.unregisterAllTables()
+    xdContext.catalog.tables.size shouldBe 0
     val tables = xdContext.catalog.getTables(None)
-    tables.size shouldBe 2
+    tables.size shouldBe 1
+
 
   }
+
 
 
     override protected def afterAll(){
