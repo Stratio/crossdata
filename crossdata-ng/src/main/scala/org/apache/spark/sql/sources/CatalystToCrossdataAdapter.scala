@@ -20,7 +20,7 @@ import org.apache.spark.sql.catalyst.CatalystTypeConverters._
 import org.apache.spark.sql.catalyst.{CatalystTypeConverters, expressions}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.execution.crossdata.{NativeUDF, EvaluateNativeUDF}
+import org.apache.spark.sql.execution.crossdata.{NativeUDFAttribute, NativeUDF, EvaluateNativeUDF}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
@@ -32,21 +32,36 @@ object CatalystToCrossdataAdapter {
 
   def getFilterProject(logicalPlan: LogicalPlan,
                        projects: Seq[NamedExpression],
-                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter], Array[NativeUDF], Boolean) = {
+                       filterPredicates: Seq[Expression]):
+  (Array[Attribute], Array[SourceFilter], Map[Attribute, NativeUDF], Boolean) = {
 
-    val projectSet = AttributeSet(projects.flatMap(_.references))
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
     val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
+
+    val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap(_.references).flatMap {
+      case nat: NativeUDFAttribute =>
+        //TODO: Managed nested UDF calls
+        att2udf(nat).children.collect {case a: Attribute => false -> relation.attributeMap(a)} :+ (true -> nat)
+      case x => Seq(true -> relation.attributeMap(x))
+    }.groupBy(_._1).mapValues(l => l.map(_._2))
+
     val pushedFilters = filterPredicates.map {
       _ transform {
-        case a: AttributeReference =>
-          if(att2udf.contains(a)) a
-          else relation.attributeMap(a) // Match original case of attributes.
+        case a: NativeUDFAttribute => a
+        case a: Attribute => relation.attributeMap(a) // Match original case of attributes.
       }
     }
-    val requestedColumns = projectSet.map(relation.attributeMap).toSeq
+
+    //`required` is the collection of columns which should be present at the table (all referenced columns)
+    val required = AttributeSet {
+      requestedCols.values.reduce[Seq[Attribute]]((a,b) => a ++ b) filter {
+        case _: NativeUDFAttribute => false
+        case _ => true
+      }
+    }
+
     val (filters, ignored) = selectFilters(pushedFilters)
-    (requestedColumns.map(_.name).toArray, filters.toArray, att2udf.values.toArray, ignored)
+    (requestedCols(true).toArray, filters.toArray, att2udf, ignored)
 
   }
 
@@ -64,8 +79,8 @@ object CatalystToCrossdataAdapter {
         Some(sources.EqualTo(a.name, convertToScala(v, t)))
       case expressions.EqualTo(Literal(v, t), a: Attribute) =>
         Some(sources.EqualTo(a.name, convertToScala(v, t)))
-      case expressions.EqualTo(a: Attribute, b: Attribute) =>
-        Some(sources.EqualTo(a.name, b.name))
+      case expressions.EqualTo(a: NativeUDFAttribute, b: Attribute) =>
+        Some(sources.EqualTo(a.toString, b.name))
 
       /* TODO
       case expressions.EqualNullSafe(a: Attribute, Literal(v, t)) =>

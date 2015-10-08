@@ -7,7 +7,7 @@ class EphemeralTest extends CassandraConnectorIT with CassandraWithSharedContext
   "The Cassandra connector" should "be able to use native UDFs" in {
     assumeEnvironmentIsUpAndRunning
 
-    val result = sql(s"SELECT * FROM $Table WHERE F(1) = name").collect(Native)
+    val result = sql(s"SELECT F(id) FROM $Table WHERE F(F(id)) = name").collect(Native)
     println(result)
   }
 

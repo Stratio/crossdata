@@ -14,13 +14,8 @@ import org.apache.spark.unsafe.types.UTF8String
 case class DummyRun(udfName: String, output: Seq[Attribute], child: SparkPlan) extends SparkPlan {
   override def children: Seq[SparkPlan] = child :: Nil
 
-  override protected def doExecute(): RDD[InternalRow] = {
-    sparkContext.parallelize(
-      (new GenericInternalRow(List("dummyRes","a", "b", "c", "d", "e").map(
-        UTF8String.fromString(_)).toArray[Any])
-        ) ::Nil
-    )
-  }
+  //TODO: throw a more descriptive exception
+  override protected def doExecute(): RDD[InternalRow] = ??? //Just native executions should work
 
 }
 

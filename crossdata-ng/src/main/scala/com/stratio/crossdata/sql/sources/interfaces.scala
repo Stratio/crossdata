@@ -91,6 +91,7 @@ object TableInventory {
   case class Table(tableName: String, database: Option[String] = None, schema: Option[StructType] = None)
 }
 
+//TODO: Document this interface
 trait FunctionInventory {
   import FunctionInventory._
 
