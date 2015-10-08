@@ -47,21 +47,23 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true)) 
     } else {
       if (databaseName.isDefined) Some(databaseName.get.toLowerCase) else None
     }
-
-    dbName.fold{
+    (dbName.fold{
       tables.map{
         case (tableName, _) => {
           (tableName, true)}
       }.toSeq
     }{ realDBName =>
       tables.filter {
-        case (tableIdentifier, _) =>
+        case (tableIdentifier, _) => {
           tableIdentifier.split("\\.")(0) == realDBName
+        }
         case _ => false
       }.map {
-        case (tableName, _) => (tableName.split("\\.")(1), true)
+        case (tableName, _) => (tableName.split("\\.")(0)+"."+tableName.split("\\.")(1), true)
       }.toSeq
-    }
+    }++getPersistenceTables(databaseName)).distinct
+
+
 
   }
 
@@ -94,6 +96,8 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true)) 
   override def refreshTable(databaseName: String, tableName: String): Unit = {
     throw new UnsupportedOperationException
   }
+
+  def getPersistenceTables(databaseName: Option[String]): Seq[(String, Boolean)]
 
   def persistTable(tableIdentifier: Seq[String], crossdataCatalog: CrossdataTable): Unit
 

@@ -34,8 +34,7 @@ class MySQLCatalogSpec extends SharedXDContextTest with MySQLCatalogConstants{
     val crossdataTable = CrossdataTable(TableName, None,  Option(columns), "org.apache.spark.sql.json", Array[String](), "1.0", opts)
     xdContext.catalog.persistTable(tableIdentifier, crossdataTable)
     val dataframe = xdContext.sql(s"SELECT * FROM $TableName")
-    // TODO One test for each case (table not persisted in ms but as temporary, persist uncorrect data.....)
-    // TODO test with multiple datasources
+
     dataframe shouldBe a[XDDataFrame]
   }
 
@@ -60,13 +59,50 @@ class MySQLCatalogSpec extends SharedXDContextTest with MySQLCatalogConstants{
     xdContext.catalog.persistTable(tableIdentifier1, crossdataTable1)
     xdContext.catalog.persistTable(tableIdentifier2, crossdataTable2)
 
-    val dfDatabase = xdContext.sql("SHOW TABLES IN database")
-    dfDatabase.count() shouldBe(1)
-    val df = xdContext.sql("SHOW TABLES")
-    df.count() shouldBe(2)
+    val tables = xdContext.catalog.getTables(Option(Database))
+    tables.size shouldBe(1)
+    val tables2 = xdContext.catalog.getTables(None)
+    tables2.size shouldBe(2)
   }
 
-  override protected def afterAll(){
+
+
+  "it" should "drop tables" in{
+    xdContext.catalog.dropAllTables()
+
+    val crossdataTable1 = CrossdataTable(TableName, Option(Database),  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), "1.0", OptsJSON)
+    val crossdataTable2 = CrossdataTable(TableName, None,  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), "1.0", OptsJSON)
+    val tableIdentifier1 = Seq(Database, TableName)
+    val tableIdentifier2 = Seq(TableName)
+    xdContext.catalog.persistTable(tableIdentifier1, crossdataTable1)
+    xdContext.catalog.persistTable(tableIdentifier2, crossdataTable2)
+
+    val tables = xdContext.catalog.getTables(None)
+    tables.size shouldBe 2
+    xdContext.catalog.dropTable(tableIdentifier2)
+    val tables2 = xdContext.catalog.getTables(None)
+    tables2.size shouldBe 1
+    xdContext.catalog.dropTable(tableIdentifier1)
+    val tables3 = xdContext.catalog.getTables(None)
+    tables3.size shouldBe 0
+  }
+
+  "it" should "check if tables map is correct" in{
+    xdContext.catalog.dropAllTables()
+    val crossdataTable1 = CrossdataTable(TableName, Option(Database),  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), "1.0", OptsJSON)
+    val crossdataTable2 = CrossdataTable(TableName, None,  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), "1.0", OptsJSON)
+    val tableIdentifier1 = Seq(Database, TableName)
+    val tableIdentifier2 = Seq(TableName)
+    xdContext.catalog.persistTable(tableIdentifier1, crossdataTable1)
+    xdContext.catalog.persistTable(tableIdentifier2, crossdataTable2)
+    xdContext.catalog.unregisterAllTables()
+    val tables = xdContext.catalog.getTables(None)
+    tables.size shouldBe 2
+
+  }
+
+
+    override protected def afterAll(){
     xdContext.catalog.dropAllTables()
     super.afterAll()
   }
@@ -81,7 +117,7 @@ sealed trait MySQLCatalogConstants{
   val Field2Name = "column2"
   val Field1 = StructField(Field1Name, StringType, true)
   val Field2 = StructField(Field2Name, StringType, true)
-  val SourceProvider = "com.stratio.crossdata.sql.sources.mongodb"
+  val SourceProvider = "org.apache.spark.sql.json"
   val Fields = Seq[StructField](Field1, Field2)
   val Columns = StructType(Fields)
   val OptsJSON = Map("path"->"/fake_path")

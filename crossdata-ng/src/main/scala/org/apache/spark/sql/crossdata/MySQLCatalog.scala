@@ -16,7 +16,7 @@
 
 package org.apache.spark.sql.crossdata
 
-import java.sql.{Connection, DriverManager}
+import java.sql.{ResultSet, Connection, DriverManager}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.Logging
@@ -27,6 +27,7 @@ import org.apache.spark.sql.types._
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization.write
 
+import scala.annotation.tailrec
 import scala.util.parsing.json.JSON
 
 /**
@@ -107,6 +108,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     prepped.execute();
 
     connection.commit();
+    connection.setAutoCommit(true)
 
     //Try to register the table.
     lookupRelation(tableIdentifier)
@@ -128,9 +130,17 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
    */
   override def dropTable(tableIdentifier: Seq[String]): Unit = {
     logInfo("XDCatalog: Delete Table from catalog")
-    val tableName: String = tableIdentifier(1)
+    val (database, tableName) = {
+      val auxSeq = Seq("").filter(x=>tableIdentifier.length < 2) ++ tableIdentifier
+      (auxSeq zip auxSeq.tail).head
+    }
     val statement = connection.createStatement
-    statement.executeUpdate(s"""DELETE FROM $db.$table WHERE tableName='$tableName'""")
+    if(database == "") {
+      val res = statement.executeUpdate( s"""DELETE FROM $db.$table WHERE tableName='$tableName' AND db=''""")
+
+    }
+    else
+      statement.executeUpdate(s"""DELETE FROM $db.$table WHERE tableName='$tableName' AND db='$database'""")
     super.unregisterTable(tableIdentifier)
   }
 
@@ -251,4 +261,29 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     implicit val formats = DefaultFormats
     write(partitionColumn)
   }
+
+  override
+  def getPersistenceTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
+
+    @tailrec
+    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[String] = Set()): Set[String] = {
+      if (next) {
+        val database = resultset.getString("db")
+        val table = resultset.getString("tableName")
+        val tableId = if (database.trim.isEmpty) table else  s"""$database.$table"""
+        getSequenceAux(resultset,resultset.next(), set + tableId)
+      } else {
+        set
+      }
+    }
+
+    val statement = connection.createStatement
+    val resultSet = databaseName match{
+      case Some(database) => statement.executeQuery(s"""SELECT * FROM $db.$table WHERE db='$database'""".stripMargin)
+      case None => statement.executeQuery(s"""SELECT db, tableName FROM $db.$table""".stripMargin)
+    }
+    getSequenceAux(resultSet, resultSet.next).map( tableId => (tableId, true)).toSeq
+  }
+
+
 }

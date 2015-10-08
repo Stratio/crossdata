@@ -18,9 +18,6 @@ package org.apache.spark.sql
 
 import org.apache.spark.sql.types.StructType
 
-/**
- * Created by ccaballero on 9/30/15.
- */
 package object crossdata {
   case class CrossdataTable(tableName: String, db: Option[String] = None,  userSpecifiedSchema: Option[StructType], provider: String, partitionColumn: Array[String], crossdataVersion: String, opts: Map[String, String] = Map.empty[String, String])
 
