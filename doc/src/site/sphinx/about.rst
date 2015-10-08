@@ -9,20 +9,19 @@ developed by the Spark community.
 
 ===================
 
-Compiling Crossdata
+Compiling Crossdata and connectors:
 
-    > mvn clean install -Pcrossdata-all
+    > mvn clean install
 
-If you prefer to install solely some connectors::
+If hive compatibility is needed:
 
-    > mvn clean install -Pcrossdata-cassandra
+    > mvn clean install -Phive
 
 
 Building Crossdata
 ========================================
 
 TODO
-    
 
 
 Running the crossdata-shell
@@ -40,7 +39,7 @@ You can also find help in https://groups.google.com/forum/#!forum/crossdata-user
 Grammar
 =======
 
-TODO
+Crossdata implements the standard SparkSQL grammar plus an expansion described `at <doc/src/site/sphinx/GrammarExp.rst>`
 
 
 Getting started
