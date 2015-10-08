@@ -19,10 +19,12 @@
 
 package org.apache.spark.sql.crossdata
 
+import java.util
 import java.util.concurrent.atomic.AtomicReference
-
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.{TableIdentifier, CatalystConf}
 import org.apache.spark.sql.sources.crossdata.XDDdlParser
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql._
 import org.apache.spark.{Logging, SparkContext}
 
 /**
@@ -56,8 +58,16 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
   catalog.open()
  */
+  override val catalog: XDCatalog = ???
 
   protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_))
+
+  @transient
+  private val xdPlanner = new SparkPlanner with XDStrategies {
+    val xdContext = self
+
+    override def strategies: Seq[Strategy] =  XDDDLStrategy +: super.strategies
+  }
 
   override def sql(sqlText: String): DataFrame = {
     XDDataFrame(this, parseSql(sqlText))
