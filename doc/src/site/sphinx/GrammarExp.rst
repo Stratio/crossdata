@@ -53,6 +53,8 @@ IMPORT TABLES USING \<provider\> OPTIONS '(' (\<property\>',)\+'\<property\> ')'
 
 Example:
 
+-   Cassandra:
+
     IMPORT TABLES
     USING com.stratio.crossdata.connector.cassandra
     OPTIONS (
@@ -60,4 +62,11 @@ Example:
         spark_cassandra_connection_host '127.0.0.1'
     )
 
+-   MongoDB:
 
+    IMPORT TABLES
+    USING com.stratio.crossdata.connector.mongodb
+    OPTIONS (
+       host '127.0.0.1:27017',
+       schema_samplingRatio  '0.1'
+    )
