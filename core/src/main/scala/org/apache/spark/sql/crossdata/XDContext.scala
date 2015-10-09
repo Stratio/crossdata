@@ -21,13 +21,12 @@ package org.apache.spark.sql.crossdata
 
 
 import java.lang.reflect.Constructor
-
-import com.typesafe.config.{Config, ConfigFactory}
-import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
 import java.util.concurrent.atomic.AtomicReference
 
-import org.apache.spark.sql.sources.crossdata.XDDdlParser
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql._
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.sources.crossdata.XDDdlParser
 import org.apache.spark.{Logging, SparkContext}
 
 
@@ -45,19 +44,19 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
     val caseSensitive: Boolean = xdConfig.getBoolean("crossdata.catalog.caseSensitive")
     val xdCatalog = Class.forName(catalogClass)
 
-    val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf],classOf[XDContext])
+    val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf], classOf[XDContext])
 
     constr.newInstance(
       new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
   }
 
-  protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse)
+  override protected[sql] val ddlParser = new XDDdlParser(sqlParser.parse)
 
   @transient
-  private val xdPlanner = new SparkPlanner with XDStrategies {
-    val xdContext = self
+  override protected[sql] val planner = new SparkPlanner with XDStrategies {
 
-    override def strategies: Seq[Strategy] =  XDDDLStrategy +: super.strategies
+    override def strategies: Seq[Strategy] =
+      XDDDLStrategy +: super.strategies
   }
 
   override def sql(sqlText: String): DataFrame = {

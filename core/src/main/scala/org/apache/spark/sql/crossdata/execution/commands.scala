@@ -42,7 +42,7 @@ case class PersistDataSourceTable(
     if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable)
 
     if (tableExist && !allowExisting)
-      throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists.")
+      throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
     else
       Seq.empty[Row]
   }
