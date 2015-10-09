@@ -38,10 +38,16 @@ object CatalystToCrossdataAdapter {
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
     val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
 
+    def udfFlattenedActualParameters[B](udfAttr: NativeUDFAttribute)(f: Attribute => B): Seq[B] = {
+      att2udf(udfAttr).children.flatMap {
+        case nat: NativeUDFAttribute => udfFlattenedActualParameters(nat)(f)
+        case att: AttributeReference => Seq(f(att))
+      }
+    }
+
     val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap(_.references).flatMap {
       case nat: NativeUDFAttribute =>
-        //TODO: Managed nested UDF calls
-        att2udf(nat).children.collect {case a: Attribute => false -> relation.attributeMap(a)} :+ (true -> nat)
+        udfFlattenedActualParameters(nat)(at => false -> relation.attributeMap(at)) :+ (true -> nat)
       case x => Seq(true -> relation.attributeMap(x))
     }.groupBy(_._1).mapValues(l => l.map(_._2))
 
