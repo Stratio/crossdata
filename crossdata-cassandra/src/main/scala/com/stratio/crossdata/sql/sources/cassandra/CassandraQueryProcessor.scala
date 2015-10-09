@@ -22,7 +22,7 @@ import com.stratio.crossdata.sql.sources.cassandra.CassandraAttributeRole._
 import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.planning.PhysicalOperation
+import org.apache.spark.sql.catalyst.planning.crossdata.ExtendedPhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.execution.crossdata.{NativeUDFAttribute, NativeUDF}
 import org.apache.spark.sql.{Row, sources}
@@ -54,7 +54,7 @@ object CassandraQueryProcessor {
           case at: AttributeReference => at.name
         } mkString ","
         s"${udf.name}($actualParams)"
-      } getOrElse(att) //TODO: Try a more sophisticated way...
+      } getOrElse(att.split("#").head.trim) //TODO: Try a more sophisticated way...
     }
 
     def filterToCQL(filter: SourceFilter): String = filter match {
@@ -111,8 +111,9 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     def findProjectsFilters(lplan: LogicalPlan):
     (Array[Attribute], Array[SourceFilter], Map[Attribute, NativeUDF], Boolean) = {
       lplan match {
-        case Limit(_, child) => findProjectsFilters(child)
-        case PhysicalOperation(projectList, filterList, _) =>
+        case Limit(_, child) =>
+          findProjectsFilters(child)
+        case ExtendedPhysicalOperation(projectList, filterList, _) =>
           CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
       }
     }
