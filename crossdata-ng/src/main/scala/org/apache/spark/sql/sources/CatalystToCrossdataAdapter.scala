@@ -45,11 +45,13 @@ object CatalystToCrossdataAdapter {
       }
     }
 
-    val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap(_.references).flatMap {
-      case nat: NativeUDFAttribute =>
-        udfFlattenedActualParameters(nat)(at => false -> relation.attributeMap(at)) :+ (true -> nat)
-      case x => Seq(true -> relation.attributeMap(x))
-    }.groupBy(_._1).mapValues(l => l.map(_._2))
+    val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap (
+      _.references flatMap {
+        case nat: NativeUDFAttribute =>
+          udfFlattenedActualParameters(nat)(at => false -> relation.attributeMap(at)) :+ (true -> nat)
+        case x => Seq(true -> relation.attributeMap(x))
+      }
+    ) groupBy(_._1) mapValues(_.map(_._2))
 
     val pushedFilters = filterPredicates.map {
       _ transform {
