@@ -21,12 +21,12 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{TableIdentifier, CatalystConf, SimpleCatalystConf}
-import org.apache.spark.sql.crossdata.{CrossdataTable, XDCatalog, XDContext}
+import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
 import org.apache.spark.sql.execution.datasources.{ResolvedDataSource, LogicalRelation}
 import org.apache.spark.sql.types._
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization.write
-import org.apache.spark.sql.crossdata._
+
 
 import scala.annotation.tailrec
 import scala.util.parsing.json.JSON
@@ -39,6 +39,8 @@ import scala.util.parsing.json.JSON
 class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xDContext: XDContext)
   extends XDCatalog(conf) with Logging  {
 
+  import org.apache.spark.sql.crossdata._
+
   def config: Config = ConfigFactory.load
 
   lazy val ip= config.getString(Ip)
@@ -48,7 +50,6 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   lazy val table= config.getString(Table)
   lazy val user= config.getString(User)
   lazy val pass= config.getString(Pass)
-  lazy val crossdataVersion= config.getString(CrossdataVersion)
 
   lazy val url=s"jdbc:mysql://$ip:$port"
 
@@ -105,7 +106,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     prepped.setString(4, crossdataTable.provider)
     prepped.setString(5, partitionColumn)
     prepped.setString(6, tableOptions)
-    prepped.setString(7, crossdataVersion)
+    prepped.setString(7, CrossdataVersion)
     prepped.execute()
 
     connection.commit()
@@ -182,7 +183,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
           alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
 
         case None =>
-          val tableFullName = tableIdentifier(0)
+          val tableFullName = tableIdentifier.head
           sys.error(s"Table Not Found: $tableFullName")
       }
 

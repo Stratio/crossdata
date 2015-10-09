@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class MySQLCatalogSpec extends SharedXDContextTest with MySQLCatalogConstants{
 
-  "it" must "return a dataframe from a persist table without catalog using json datasource" in {
+  "MySQLCatalogSpec" must "return a dataframe from a persist table without catalog using json datasource" in {
     val fields = Seq[StructField](Field1, Field2)
     val columns = StructType(fields)
     val opts = Map("path"->"/fake_path")
@@ -39,7 +39,7 @@ class MySQLCatalogSpec extends SharedXDContextTest with MySQLCatalogConstants{
     dataframe shouldBe a[XDDataFrame]
   }
 
-  "it" should "persist a table with catalog and partitionColumns in MySQL" in {
+  it should "persist a table with catalog and partitionColumns in MySQL" in {
     
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Option(Database),  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
@@ -51,7 +51,7 @@ class MySQLCatalogSpec extends SharedXDContextTest with MySQLCatalogConstants{
 
   }
 
-  "it" should "returns list of tables" in{
+  it should "returns list of tables" in{
     xdContext.catalog.dropAllTables()
     val crossdataTable1 = CrossdataTable(TableName, Option(Database),  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
     val crossdataTable2 = CrossdataTable(TableName, None,  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
@@ -68,7 +68,7 @@ class MySQLCatalogSpec extends SharedXDContextTest with MySQLCatalogConstants{
 
 
 
-  "it" should "drop tables" in{
+  it should "drop tables" in{
     xdContext.catalog.dropAllTables()
 
     val crossdataTable1 = CrossdataTable(TableName, Option(Database),  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
@@ -88,7 +88,7 @@ class MySQLCatalogSpec extends SharedXDContextTest with MySQLCatalogConstants{
     tables3.size shouldBe 0
   }
 
-  "it" should "check if tables map is correct" in{
+  it should "check if tables map is correct" in{
     xdContext.catalog.dropAllTables()
     val crossdataTable1 = CrossdataTable(TableName, Option(Database),  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
     val crossdataTable2 = CrossdataTable(TableName, None,  Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
@@ -105,8 +105,6 @@ class MySQLCatalogSpec extends SharedXDContextTest with MySQLCatalogConstants{
 
 
   }
-
-
 
     override protected def afterAll(){
     xdContext.catalog.dropAllTables()
