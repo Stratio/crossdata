@@ -25,6 +25,7 @@ import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.crossdata.ExtendedPhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.execution.crossdata.{NativeUDFAttribute, NativeUDF}
+import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 
@@ -52,6 +53,8 @@ object CassandraQueryProcessor {
         val actualParams = udf.children.collect { //TODO: Add type checker (maybe not here)
           case at: NativeUDFAttribute => expandAttribute(at.toString)
           case at: AttributeReference => at.name
+          case lit @ Literal(_, DataTypes.StringType) => quoteString(lit.toString)
+          case lit: Literal => lit.toString
         } mkString ","
         s"${udf.name}($actualParams)"
       } getOrElse(att.split("#").head.trim) //TODO: Try a more sophisticated way...
