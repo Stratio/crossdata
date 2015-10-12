@@ -19,17 +19,21 @@
 
 package org.apache.spark.sql.crossdata
 
+import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 
+import com.stratio.crossdata.sql.sources.FunctionInventory
 import org.apache.spark.sql.catalyst.analysis.Analyzer
 import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.PreInsertCastAndRename
 import org.apache.spark.sql.sources.crossdata.XDDdlParser
-import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
+import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
 import org.apache.spark.sql.execution.crossdata._
+
+case class KK()
 
 /**
  * CrossdataContext leverages the features of [[SQLContext]]
@@ -92,8 +96,15 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
     XDDataFrame(this, parseSql(sqlText))
   }
 
-  //TODO: Remove this hardcoded registration and replace it by a mechanism for importing UDFs from a datasource.
-  functionRegistry.registerFunction("F", { case exps => NativeUDF("F", DataTypes.StringType, exps)})
+  { //Register built-in UDFs for each provider available.
+    import scala.collection.JavaConversions._
+    val loader = Utils.getContextOrSparkClassLoader
+    val serviceLoader = ServiceLoader.load(classOf[FunctionInventory], loader)
+    for(srv <- serviceLoader.iterator();
+        inventory = srv.getClass.newInstance();
+        udf <- srv.nativeBuiltinFunctions
+    ) functionRegistry.registerFunction(udf.name, e => NativeUDF(udf.name, udf.returnType, e))
+  }
 
 
 }

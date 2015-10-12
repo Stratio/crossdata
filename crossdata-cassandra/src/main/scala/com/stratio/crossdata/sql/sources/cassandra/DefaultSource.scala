@@ -31,7 +31,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
 import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.types.{DataTypes, StructType}
+import org.apache.spark.sql.types.{StructField, DataTypes, StructType}
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 import scala.collection.mutable
@@ -126,8 +126,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
     CassandraXDSourceRelation(tableRef, sqlContext, options)
   }
-
-
+  
   /**
    * @param tMeta C* Metadata for a given table
    * @return A table description obtained after translate its C* meta data.
@@ -160,19 +159,13 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     }
   }
 
-  override def listUDFs(context: SQLContext, options: Map[String, String]): Seq[UDF] = {
-    /*
-    TODO: When the Datastax Java Driver for C* 3 is ready, it might be possible.
-    to automatically load UDFs...
+  override def nativeBuiltinFunctions: Seq[UDF] = {
 
-    buildCassandraConnector(context, options).withSessionDo { s =>
-      s.getCluster.getMetadata...
-    }*/
-
+    //TODO: Complete the built-in function
     Seq(
-      UDF("now", None, StructType(Nil), DataTypes.StringType)
-      /*UDF("", None, StructType(Array.empty), DataTypes.StringType),
-      UDF("", None, StructType(Array.empty), DataTypes.StringType),
+      UDF("now", None, StructType(Nil), DataTypes.StringType),
+      UDF("dateOf", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.StringType),
+      UDF("toDate", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.StringType)/*,
       UDF("", None, StructType(Array.empty), DataTypes.StringType),
       UDF("", None, StructType(Array.empty), DataTypes.StringType)*/
     )

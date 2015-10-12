@@ -91,14 +91,15 @@ object TableInventory {
   case class Table(tableName: String, database: Option[String] = None, schema: Option[StructType] = None)
 }
 
-//TODO: Document this interface
+/* Interface for providing lists and UDF discovery services */
 trait FunctionInventory {
   import FunctionInventory._
 
-  def listUDFs(context: SQLContext, options: Map[String, String]): Seq[UDF]
+  //Get builtin functions manifest
+  def nativeBuiltinFunctions: Seq[UDF]
 }
 
 object FunctionInventory {
-  //Function description
+  //Native function (either built-in or user defined) description.
   case class UDF(name: String, database: Option[String] = None, formalParameters: StructType, returnType: DataType)
 }
