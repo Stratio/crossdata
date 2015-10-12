@@ -39,8 +39,8 @@ object CassandraQueryProcessor {
                         tableQN: String,
                         requiredColumns: Array[String],
                         filters: Array[SourceFilter],
-                        udfs: Map[String, NativeUDF],
-                        limit: Int): String = {
+                        limit: Int,
+                        udfs: Map[String, NativeUDF] = Map.empty): String = {
 
     def quoteString(in: Any): String = in match {
       case s: String => s"'$s'"
@@ -90,8 +90,8 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
           cassandraRelation.tableDef.name,
           columnsRequired.map(_.toString),
           filters,
-          udfs map { case (k,v) => k.toString -> v},
-          limit.getOrElse(CassandraQueryProcessor.DefaultLimit)
+          limit.getOrElse(CassandraQueryProcessor.DefaultLimit),
+          udfs map { case (k,v) => k.toString -> v}
         )
         val resultSet = cassandraRelation.connector.withSessionDo { session =>
           session.execute(cqlQuery)
