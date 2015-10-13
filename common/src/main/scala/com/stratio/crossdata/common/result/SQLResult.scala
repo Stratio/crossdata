@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.stratio.crossdata.common.result
 
 import java.util.UUID
@@ -22,11 +23,15 @@ import org.apache.spark.sql.Row
 
 
 case class SuccessfulQueryResult(queryId: UUID, result: Array[Row]) extends SQLResult {
-  override val resultSet = Option(result)
+  override val resultSet = result
+
   def hasError = false
+
 }
 
-case class ErrorResult(queryId: UUID, message: String, cause: Option[Throwable] = None) extends SQLResult{
-  override val resultSet = None
+case class ErrorResult(queryId: UUID, message: String, cause: Option[Throwable] = None) extends SQLResult {
+  override lazy val resultSet = cause.fold(throw new RuntimeException(message)) {
+    throwable => throw new RuntimeException(message,throwable)
+  }
   def hasError = true
 }

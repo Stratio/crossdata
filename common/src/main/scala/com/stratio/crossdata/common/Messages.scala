@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.stratio.crossdata.common
 
 import java.util.UUID
@@ -23,6 +24,7 @@ case class SQLCommand(query: String, queryId: UUID = UUID.randomUUID())
 
 trait SQLResult extends Serializable{
   val queryId: UUID
-  val resultSet: Option[Array[Row]]
+  def resultSet: Array[Row]
   def hasError: Boolean
 }
+
