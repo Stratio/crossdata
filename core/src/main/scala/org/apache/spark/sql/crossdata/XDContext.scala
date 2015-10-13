@@ -63,7 +63,6 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
     XDDataFrame(this, parseSql(sqlText))
   }
 
-
   XDContext.setLastInstantiatedContext(self)
 
 }
