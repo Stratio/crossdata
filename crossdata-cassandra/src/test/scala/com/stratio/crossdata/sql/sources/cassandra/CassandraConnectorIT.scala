@@ -180,11 +180,12 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     }
   }
 
-  it should "be able to natively execute the built-in funcion `now`" in {
+  it should "be able to natively select the built-in funcion `now`" in {
     assumeEnvironmentIsUpAndRunning
 
     val query = s"SELECT now() FROM $Table"
     sql(query).collect(Native) should have length 10
+
   }
 
 

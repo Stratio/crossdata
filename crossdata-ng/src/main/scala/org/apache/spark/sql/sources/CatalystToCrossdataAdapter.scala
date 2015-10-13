@@ -88,9 +88,9 @@ object CatalystToCrossdataAdapter {
       case expressions.EqualTo(Literal(v, t), a: Attribute) =>
         Some(sources.EqualTo(a.name, convertToScala(v, t)))
       case expressions.EqualTo(a: NativeUDFAttribute, b: Attribute) =>
-        Some(sources.EqualTo(a.toString, b.name))
+        Some(sources.EqualTo(b.name, a))
       case expressions.EqualTo(b: Attribute, a: NativeUDFAttribute) =>
-        Some(sources.EqualTo(a.toString, b.name))
+        Some(sources.EqualTo(b.name, a))
 
       /* TODO
       case expressions.EqualNullSafe(a: Attribute, Literal(v, t)) =>

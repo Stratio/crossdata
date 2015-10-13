@@ -45,6 +45,7 @@ object CassandraQueryProcessor {
 
     def quoteString(in: Any): String = in match {
       case s: String => s"'$s'"
+      case a: Attribute => expandAttribute(a.toString)
       case other => other.toString
     }
 
@@ -64,10 +65,10 @@ object CassandraQueryProcessor {
 
       case sources.EqualTo(attribute, value) => s"${expandAttribute(attribute)} = ${quoteString(value)}"
       case sources.In(attribute, values) => s"${expandAttribute(attribute)} IN ${values.map(quoteString).mkString("(", ",", ")")}"
-      case sources.LessThan(attribute, value) => s"${expandAttribute(attribute)} < $value"
-      case sources.GreaterThan(attribute, value) => s"${expandAttribute(attribute)} > $value"
-      case sources.LessThanOrEqual(attribute, value) => s"${expandAttribute(attribute)} <= $value"
-      case sources.GreaterThanOrEqual(attribute, value) => s"${expandAttribute(attribute)} >= $value"
+      case sources.LessThan(attribute, value) => s"${expandAttribute(attribute)} < ${quoteString(value)}"
+      case sources.GreaterThan(attribute, value) => s"${expandAttribute(attribute)} > ${quoteString(value)}"
+      case sources.LessThanOrEqual(attribute, value) => s"${expandAttribute(attribute)} <= ${quoteString(value)}"
+      case sources.GreaterThanOrEqual(attribute, value) => s"${expandAttribute(attribute)} >= ${quoteString(value)}"
       case sources.And(leftFilter, rightFilter) => s"${filterToCQL(leftFilter)} AND ${filterToCQL(rightFilter)}"
 
     }
