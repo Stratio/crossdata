@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
-class MySQLCatalogSpec extends SharedXDContextTest with MySQLCatalogConstants{
+class MySQLCatalogIT extends SharedXDContextTest with MySQLCatalogConstants{
 
   "MySQLCatalogSpec" must "return a dataframe from a persist table without catalog using json datasource" in {
     val fields = Seq[StructField](Field1, Field2)
