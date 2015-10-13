@@ -103,21 +103,38 @@ object CatalystToCrossdataAdapter {
         Some(sources.GreaterThan(a.name, convertToScala(v, t)))
       case expressions.GreaterThan(Literal(v, t), a: Attribute) =>
         Some(sources.LessThan(a.name, convertToScala(v, t)))
+      case expressions.GreaterThan(b: Attribute, a: NativeUDFAttribute) =>
+        Some(sources.GreaterThan(b.name, a))
+      case expressions.GreaterThan(a: NativeUDFAttribute, b: Attribute) =>
+        Some(sources.LessThan(b.name, a))
+
 
       case expressions.LessThan(a: Attribute, Literal(v, t)) =>
         Some(sources.LessThan(a.name, convertToScala(v, t)))
       case expressions.LessThan(Literal(v, t), a: Attribute) =>
         Some(sources.GreaterThan(a.name, convertToScala(v, t)))
+      case expressions.LessThan(b: Attribute, a: NativeUDFAttribute) =>
+        Some(sources.LessThan(b.name, a))
+      case expressions.LessThan(a: NativeUDFAttribute, b: Attribute) =>
+        Some(sources.GreaterThan(b.name, a))
 
       case expressions.GreaterThanOrEqual(a: Attribute, Literal(v, t)) =>
         Some(sources.GreaterThanOrEqual(a.name, convertToScala(v, t)))
       case expressions.GreaterThanOrEqual(Literal(v, t), a: Attribute) =>
         Some(sources.LessThanOrEqual(a.name, convertToScala(v, t)))
+      case expressions.GreaterThanOrEqual(b: Attribute, a: NativeUDFAttribute) =>
+        Some(sources.GreaterThanOrEqual(b.name, a))
+      case expressions.GreaterThanOrEqual(a: NativeUDFAttribute, b: Attribute) =>
+        Some(sources.LessThanOrEqual(b.name, a))
 
       case expressions.LessThanOrEqual(a: Attribute, Literal(v, t)) =>
         Some(sources.LessThanOrEqual(a.name, convertToScala(v, t)))
       case expressions.LessThanOrEqual(Literal(v, t), a: Attribute) =>
         Some(sources.GreaterThanOrEqual(a.name, convertToScala(v, t)))
+      case expressions.LessThanOrEqual(b: Attribute, a: NativeUDFAttribute) =>
+        Some(sources.LessThanOrEqual(b.name, a))
+      case expressions.LessThanOrEqual(a: NativeUDFAttribute, b: Attribute) =>
+        Some(sources.GreaterThanOrEqual(b.name, a))
 
       case expressions.InSet(a: Attribute, set) =>
         val toScala = CatalystTypeConverters.createToScalaConverter(a.dataType)

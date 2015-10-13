@@ -111,11 +111,23 @@ class CassandraQueryProcessorSpec extends BaseXDTest {
   }
 
   it should "built a query with filters calling a pushed-down function" in {
-    val query = CassandraQueryProcessor.buildNativeQuery(
-      TableQN, Array(ColumnId), Array(sources.EqualTo(Function01, ValueId)), Limit, udfs
+
+    val predicate2expectationOp = Map(
+      sources.EqualTo(Function01, ValueId) -> "=",
+      sources.GreaterThan(Function01, ValueId) -> ">",
+      sources.LessThan(Function01, ValueId) -> "<",
+      sources.GreaterThanOrEqual(Function01, ValueId) -> ">=",
+      sources.LessThanOrEqual(Function01, ValueId) -> "<="
     )
 
-    query should be(s"SELECT $ColumnId FROM $TableQN WHERE ${getFunctionName(Function01)}($ColumnId) = '$ValueId' LIMIT $Limit ALLOW FILTERING")
+    for((predicate, operatorStr) <- predicate2expectationOp) {
+      val query = CassandraQueryProcessor.buildNativeQuery(
+        TableQN, Array(ColumnId), Array(predicate), Limit, udfs
+      )
+      query should be(
+        s"SELECT $ColumnId FROM $TableQN WHERE ${getFunctionName(Function01)}($ColumnId) ${operatorStr} '$ValueId' LIMIT $Limit ALLOW FILTERING"
+      )
+    }
   }
   
   /*
