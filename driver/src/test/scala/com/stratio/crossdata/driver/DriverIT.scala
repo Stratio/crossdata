@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
@@ -57,8 +58,7 @@ class DriverIT extends EndToEndTest {
     result shouldBe an[SuccessfulQueryResult]
     result.queryId should be (sqlCommand.queryId)
     result.hasError should be (false)
-    result.resultSet.isDefined should be (true)
-    val rows = result.resultSet.get
+    val rows = result.resultSet
     rows should have length 2
     rows(0) should have length 2
 
