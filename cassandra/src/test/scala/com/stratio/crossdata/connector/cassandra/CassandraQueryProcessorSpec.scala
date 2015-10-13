@@ -37,12 +37,14 @@ class CassandraQueryProcessorSpec extends BaseXDTest {
   val ValueId = "00123"
   
   val Function01 = "F#01"
-  //val Function02 = "F#02"
+  val Function02 = "F#02"
   
   val udfs = Map(
     Function01 ->
       NativeUDF(getFunctionName(Function01), DataTypes.StringType, AttributeReference("id", DataTypes.StringType)
-      ()::Nil)
+      ()::Nil),
+    Function02 ->
+      NativeUDF(getFunctionName(Function02), DataTypes.StringType, Literal(42)::Nil)
   )
 
   protected def getFunctionName(fid: String): String = fid.split("#").head.trim
@@ -111,7 +113,7 @@ class CassandraQueryProcessorSpec extends BaseXDTest {
 
   it should "built a query with filters calling a pushed-down function" in {
 
-    val predicate2expectationOp = Map(
+    val predicate2expectationOp = List(
       sources.EqualTo(Function01, ValueId) -> "=",
       sources.GreaterThan(Function01, ValueId) -> ">",
       sources.LessThan(Function01, ValueId) -> "<",
@@ -127,6 +129,22 @@ class CassandraQueryProcessorSpec extends BaseXDTest {
         s"SELECT $ColumnId FROM $TableQN WHERE ${getFunctionName(Function01)}($ColumnId) ${operatorStr} '$ValueId' LIMIT $Limit ALLOW FILTERING"
       )
     }
+  }
+
+  it should "build a query selecting a pushed-down function call" in {
+
+    val function2expectedSel = List(
+      Function01 -> s"${getFunctionName(Function01)}(id)",
+      Function02 -> s"${getFunctionName(Function02)}(42)"
+    )
+
+    for((f, sel) <- function2expectedSel) {
+      val query = CassandraQueryProcessor.buildNativeQuery(
+        TableQN, Array(f.toString), Array.empty, Limit, udfs
+      )
+      query should be(s"SELECT $sel FROM $TableQN  LIMIT $Limit ALLOW FILTERING")
+    }
+
   }
   
   /*
