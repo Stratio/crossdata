@@ -143,32 +143,27 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
       case _ => Unknown
     }
 
-    def checksClusteringKeyFilters: Boolean = {
-      if (groupedFilters.contains(ClusteringKey)) {
+    def checksClusteringKeyFilters: Boolean =
+      !groupedFilters.contains(ClusteringKey) || {
         // if there is a CK filter then all CKs should be included. Accept any kind of filter
         val clusteringColsInFilter = groupedFilters.get(ClusteringKey).get.flatMap(columnNameFromFilter)
         cassandraRelation.tableDef.clusteringColumns.forall { column =>
           clusteringColsInFilter.contains(column.columnName)
         }
-      } else {
-        true
       }
-    }
 
-    def checksSecondaryIndexesFilters: Boolean = {
-      if (groupedFilters.contains(Indexed)) {
+    def checksSecondaryIndexesFilters: Boolean =
+      !groupedFilters.contains(Indexed) || {
         //Secondary indexes => equals are allowed
         groupedFilters.get(Indexed).get.forall {
           case sources.EqualTo(_, _) => true
           case _ => false
         }
-      } else {
-        true
       }
-    }
 
-    def checksPartitionKeyFilters: Boolean = {
-      if (groupedFilters.contains(PartitionKey)) {
+
+    def checksPartitionKeyFilters: Boolean =
+      !groupedFilters.contains(PartitionKey) || {
         val partitionColsInFilter = groupedFilters.get(PartitionKey).get.flatMap(columnNameFromFilter)
 
         // all PKs must be present
@@ -181,10 +176,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
           case sources.In(colName, _) if cassandraRelation.tableDef.partitionKey.last.columnName.equals(colName) => true
           case _ => false
         }
-      } else {
-        true
       }
-    }
 
     { !groupedFilters.contains(Unknown) && !groupedFilters.contains(NonIndexed) &&
       checksPartitionKeyFilters && checksClusteringKeyFilters && checksSecondaryIndexesFilters }
