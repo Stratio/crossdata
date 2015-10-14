@@ -2,36 +2,36 @@
 Getting started
 ===============
 
-Compiling Crossdata
+Building Crossdata
 
-    > mvn clean install -Pcrossdata-all
+    > mvn clean package -Ppackage
 
-If you prefer to install solely some connectors::
+In order to build Crossdata also with hive:
 
-    > mvn clean install -Pcrossdata-cassandra
+    > mvn clean package -Ppackage -Phive
 
 You can build a Spark Distribution with Crossdata libraries running the make-distribution-crossdata script:
-    > cd crossdata-scripts
+    > cd scripts
     > ./make-distribution-crossdata.sh
 
 This will build Spark with the following options:
     - Crossdata with Cassandra support
-    - Spark Version v1.5.0
-    - Spark's Hadoop  Version 2.4.0
+    - Spark Version v1.5.1
+    - Spark's Hadoop  Version 2.6.0
     - Yarn support
     - Hive integration for SparkSQL
-     -Scala version 2.10
+    - Scala version 2.10
 
 For others options run ./make-distribution-crossdata.sh --help
 
-Using a Crossdata's Spark Distribution with cassandra support:
-    > bin/stratio-xd-shell --cassandra
+Using a Crossdata's Spark Distribution with Cassandra and MongoDB support:
+    > bin/stratio-xd-shell --cassandra --mongodb
 
 Then you can do:
 
     >xdContext.sql("CREATE TEMPORARY TABLE students USING com.stratio.crossdata.sql.sources.cassandra
-            OPTIONS (keyspace \"highschool\", table \"students\", cluster \"students\", pushdown \"true\",
-            spark_cassandra_connection_host \"127.0.0.1\")".stripMargin)
+            OPTIONS (keyspace 'highschool', table 'students', cluster 'students', pushdown 'true',
+            spark_cassandra_connection_host '127.0.0.1')")
     >xdContext.sql("SELECT * FROM students").collect()
 
 

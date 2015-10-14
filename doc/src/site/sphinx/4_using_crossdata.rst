@@ -3,7 +3,7 @@ Using Crossdata
 ===============
 
 If you want to test Crossdata you can get our Sandbox follow the instructions of this
-`link <Sandbox.rst>`__
+`link <Sandbox.rst>`__ (Coming soon)
 
 TODO:
 

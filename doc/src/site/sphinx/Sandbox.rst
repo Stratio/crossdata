@@ -1,8 +1,7 @@
 Crossdata Sandbox
 *****************
 
-Crossdata provides a sandbox that allows to test its functionality. This sandbox includes Crossdata 0.3.4, Stratio
-Cassandra, and Cassandra and Stratio Deep Connectors.
+Crossdata provides a sandbox that allows to test its functionality. This sandbox includes Crossdata 1.0.0.
 
 Requisites
 ============
@@ -50,75 +49,8 @@ Once it has been downloaded, just import in your Virtual Box.
 
 First Steps with Crossdata Sandbox
 =============================================
-Once you have started the sandbox you can follow this steps::
 
-    > sudo su -
-
-Start crossdata::
-
-    > cd /etc/init.d
-    > service crossdata start
-
-Start Connectors::
-
-    > service connector_cassandra start
-    > service connector_deep start
-
-At this point, we have all that we need so now we start crossdata shell::
-
-    > cd /opt/sds/crossdata/bin
-    > ./crossdata-sh
-
-Now you can play with the shell with this example of crossdata use:
-
-The first steps are to attach the connectors...::
-
-    xdsh> ADD DATASTORE /etc/sds/connectors/cassandra/CassandraDataStore.xml;
-    xdsh> ATTACH CLUSTER cassandra_prod ON DATASTORE Cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'Port': 9042, 'rpcPort':9160, 'cluster':'cassandra_prod'};
-    xdsh> ADD CONNECTOR /etc/sds/connectors/cassandra/CassandraConnector.xml;
-    xdsh> ADD CONNECTOR /etc/sds/connectors/sparksql/SparkSQLConnector.xml;
-    xdsh> ATTACH CONNECTOR CassandraConnector TO cassandra_prod WITH OPTIONS {'DefaultLimit': '1000'} AND PRIORITY=1;
-    xdsh> ATTACH CONNECTOR SparkSQLConnector TO cassandra_prod WITH OPTIONS {'DefaultLimit': '1000'};
-
-Now we can operate as usual...::
-
-    xdsh> CREATE CATALOG catalogTest;
-    xdsh> USE catalogTest;         
-    xdsh> CREATE TABLE tableTest ON CLUSTER cassandra_prod (id int PRIMARY KEY, serial int, name text, rating double, email text);
-    xdsh> CREATE TABLE tableTest2 ON CLUSTER cassandra_prod (id int PRIMARY KEY, lastname text, age int, company text);
-
-You can insert a few rows by executing::
-
-    xdsh> INSERT INTO catalogTest.tableTest(id, serial, name, rating, email) VALUES (999, 54000, 'Peter', 8.9,'myemail@yahoo.com');
-    xdsh> INSERT INTO catalogTest.tableTest(id, serial, name, rating, email) VALUES (1000, 71098, 'Charles', 2.7,'contact@stratio.com');
-    xdsh> INSERT INTO catalogTest.tableTest(id, serial, name, rating, email) VALUES (1001, 34539, 'John', 9.3,'crossdata@stratio.com');
-
-    xdsh> INSERT INTO catalogTest.tableTest2(id, lastname, age, company) VALUES (999, 'Miller', 23, 'Best Company');
-    xdsh> INSERT INTO catalogTest.tableTest2(id, lastname, age, company) VALUES (1000, 'Fernandez', 35, 'Stratio');
-    xdsh> INSERT INTO catalogTest.tableTest2(id, lastname, age, company) VALUES (1001, 'Yorke', 42, 'Big Data Company');
-
-You can also insert 900 rows in every table by typing the next command in a system shell::
-
-    xdsh> exit
-
-    > cd /etc/sds/crossdata/
-    > java -jar CrossdataClientExample.jar
-
-Now, we can come back to the crossdata shell and see some results::
-
-    > cd /opt/sds/crossdata/bin
-    > ./crossdata-sh
-
-    xdsh> USE catalogTest;
-    xdsh> SELECT * FROM catalogTest.tableTest;
-    xdsh> SELECT id, age FROM catalogTest.tableTest2;
-
-    xdsh> SELECT name, age FROM catalogtest.tabletest INNER JOIN catalogtest.tabletest2 ON tabletest.id=tabletest2.id;
-
-Let's create a full text index::
-
-    xdsh> CREATE FULL_TEXT INDEX myIndex ON tableTest(email);
-    xdsh> SELECT * FROM tabletest WHERE email MATCH '*yahoo*';
+TODO
 
 
 F.A.Q about the sandbox
