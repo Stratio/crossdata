@@ -23,15 +23,6 @@ package object crossdata {
 
   case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType], provider: String, partitionColumn: Array[String], opts: Map[String, String] = Map.empty[String, String] , crossdataVersion: String = CrossdataVersion)
 
-  // TODO prop
-  val Driver = "crossdata.catalog.mysql.driver"
-  val Ip="crossdata.catalog.mysql.ip"
-  val Port="crossdata.catalog.mysql.port"
-  val Database="crossdata.catalog.mysql.db.name"
-  val Table="crossdata.catalog.mysql.db.persistTable"
-  val User="crossdata.catalog.mysql.db.user"
-  val Pass="crossdata.catalog.mysql.db.pass"
-
   val StringSeparator: String = "."
 
 }
