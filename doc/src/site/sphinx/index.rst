@@ -4,5 +4,4 @@ Contents:
     :maxdepth: 4
     :numbered:
 
-    about.rst
-    Sandbox.rst
+    2_getting_started.rst
