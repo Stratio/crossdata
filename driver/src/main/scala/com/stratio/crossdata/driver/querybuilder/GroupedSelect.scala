@@ -17,14 +17,14 @@ package com.stratio.crossdata.sql.querybuilder
 
 class GroupedSelect(private[querybuilder] val filteredSelect: FilteredSelect, expressions: List[String]) {
 
-  def Having(expression: String = ""): HavingSelect = new HavingSelect(this, expression)
+  def having(expression: String = ""): HavingSelect = new HavingSelect(this, expression)
 
-  def OrderBy(ordering: String = ""): OrderedSelect = {
+  def orderBy(ordering: String = ""): OrderedSelect = {
     new OrderedSelect(new HavingSelect(this, ""), ordering)
   }
 
-  def Limit(expression: String = "") = {
-    new LimitedSelect(OrderBy(), expression)
+  def limit(expression: String = "") = {
+    new LimitedSelect(orderBy(), expression)
   }
 
   def build(): CompletedSelect = {
@@ -42,7 +42,7 @@ class GroupedSelect(private[querybuilder] val filteredSelect: FilteredSelect, ex
 
   override def toString: String = {
     if(expressions.isEmpty)
-      s""
+      ""
     else
       s"GROUP BY ${expressions.mkString(", ")} "
   }

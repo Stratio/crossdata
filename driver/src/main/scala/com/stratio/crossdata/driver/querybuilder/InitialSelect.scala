@@ -17,9 +17,9 @@ package com.stratio.crossdata.sql.querybuilder
 
 class InitialSelect(private[querybuilder] val bracketed: Boolean){
 
-  def Distinct(projections: List[String]): ProjectedSelect = new ProjectedSelect(this, projections, true)
+  def distinct(projections: List[String]): ProjectedSelect = new ProjectedSelect(this, projections, true)
 
-  def Projections(projections: List[String]): ProjectedSelect = new ProjectedSelect(this, projections)
+  def projections(projections: List[String]): ProjectedSelect = new ProjectedSelect(this, projections)
 
   override def toString: String = s"SELECT "
 }

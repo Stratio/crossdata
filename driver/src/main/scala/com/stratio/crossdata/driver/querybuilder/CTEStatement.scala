@@ -16,6 +16,5 @@
 
 package com.stratio.crossdata.sql.querybuilder
 
-class CTEStatement() {
-
-}
+// TODO: Implement this class according to Crossdata grammar (take a look to the Spark SqlParser)
+class CTEStatement()

@@ -17,7 +17,7 @@ package com.stratio.crossdata.sql.querybuilder
 
 class ProjectedSelect(private[querybuilder] val initialSelect: InitialSelect, projections: List[String], distinct: Boolean = false) {
 
-  def From(relations: List[String]): RelatedSelect = new RelatedSelect(this, relations)
+  def from(relations: List[String]): RelatedSelect = new RelatedSelect(this, relations)
 
   override def toString: String = {
     if(distinct)

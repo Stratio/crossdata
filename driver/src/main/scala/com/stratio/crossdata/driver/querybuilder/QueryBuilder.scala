@@ -17,15 +17,15 @@ package com.stratio.crossdata.sql.querybuilder
 
 object QueryBuilder {
 
-  def Select(bracketed: Boolean = false): InitialSelect = {
+  def select(bracketed: Boolean = false): InitialSelect = {
     new InitialSelect(bracketed)
   }
 
-  def Insert(): InsertStatement = {
+  def insert(): InsertStatement = {
     new InsertStatement()
   }
 
-  def CommonTableExpression: CTEStatement = {
+  def commonTableExpression: CTEStatement = {
     new CTEStatement()
   }
 

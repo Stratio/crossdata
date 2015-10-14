@@ -17,7 +17,7 @@ package com.stratio.crossdata.sql.querybuilder
 
 class OrderedSelect(private[querybuilder] val havingSelect: HavingSelect, ordering: String) {
 
-  def Limit(expression: String = ""): LimitedSelect = new LimitedSelect(this, expression)
+  def limit(expression: String = ""): LimitedSelect = new LimitedSelect(this, expression)
 
   def build(): CompletedSelect = {
     val groupedSelect = havingSelect.groupedSelect
@@ -38,8 +38,8 @@ class OrderedSelect(private[querybuilder] val havingSelect: HavingSelect, orderi
 
   override def toString: String = {
     if(ordering.isEmpty)
-      s""
+      ""
     else
-      s"ORDER BY ${ordering} "
+      s"ORDER BY $ordering "
   }
 }

@@ -15,6 +15,5 @@
  */
 package com.stratio.crossdata.sql.querybuilder
 
-class InsertStatement() {
-
-}
+// TODO: Implement this class according to Crossdata grammar (take a look to the Spark SqlParser)
+class InsertStatement()

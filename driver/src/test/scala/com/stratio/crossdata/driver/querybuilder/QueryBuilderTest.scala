@@ -28,14 +28,14 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a completed query with distinct" in {
 
     val query = QueryBuilder
-      .Select()
-      .Distinct(List("*"))
-      .From(List("test"))
-      .Where("quantity > 10")
-      .GroupBy(List("age"))
-      .Having("age > 25")
-      .OrderBy("age")
-      .Limit("10")
+      .select()
+      .distinct(List("*"))
+      .from(List("test"))
+      .where("quantity > 10")
+      .groupBy(List("age"))
+      .having("age > 25")
+      .orderBy("age")
+      .limit("10")
       .build()
       .toString
 
@@ -53,14 +53,14 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a completed query without distinct" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Where("quantity > 10")
-      .GroupBy(List("age"))
-      .Having("age > 25")
-      .OrderBy("age")
-      .Limit("10")
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .where("quantity > 10")
+      .groupBy(List("age"))
+      .having("age > 25")
+      .orderBy("age")
+      .limit("10")
       .build()
       .toString
 
@@ -78,14 +78,14 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with an empty having" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Where("quantity > 10")
-      .GroupBy(List("age"))
-      .Having()
-      .OrderBy("age")
-      .Limit("10")
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .where("quantity > 10")
+      .groupBy(List("age"))
+      .having()
+      .orderBy("age")
+      .limit("10")
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -100,14 +100,14 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with an empty group by" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Where("quantity > 10")
-      .GroupBy()
-      .Having()
-      .OrderBy("age")
-      .Limit("10")
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .where("quantity > 10")
+      .groupBy()
+      .having()
+      .orderBy("age")
+      .limit("10")
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -121,14 +121,14 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with an empty limit" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Where("quantity > 10")
-      .GroupBy()
-      .Having()
-      .OrderBy("age")
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .where("quantity > 10")
+      .groupBy()
+      .having()
+      .orderBy("age")
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -141,14 +141,14 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with an empty where clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Where()
-      .GroupBy()
-      .Having()
-      .OrderBy("age")
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .where()
+      .groupBy()
+      .having()
+      .orderBy("age")
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -160,14 +160,14 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with an empty order by" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Where()
-      .GroupBy()
-      .Having()
-      .OrderBy()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .where()
+      .groupBy()
+      .having()
+      .orderBy()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -178,23 +178,23 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with a subquery" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List(QueryBuilder.Select(true)
-            .Projections(List("*"))
-            .From(List("animals"))
-            .Where()
-            .GroupBy()
-            .Having()
-            .OrderBy()
-            .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List(QueryBuilder.select(true)
+            .projections(List("*"))
+            .from(List("animals"))
+            .where()
+            .groupBy()
+            .having()
+            .orderBy()
+            .limit()
             .build()
             .toString))
-      .Where()
-      .GroupBy()
-      .Having()
-      .OrderBy()
-      .Limit()
+      .where()
+      .groupBy()
+      .having()
+      .orderBy()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -205,14 +205,14 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with a join clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test INNER JOIN animals ON test.id = animals.id"))
-      .Where()
-      .GroupBy()
-      .Having()
-      .OrderBy()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test INNER JOIN animals ON test.id = animals.id"))
+      .where()
+      .groupBy()
+      .having()
+      .orderBy()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -223,13 +223,13 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query skipping the limit clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Distinct(List("*"))
-      .From(List("test"))
-      .Where()
-      .GroupBy()
-      .Having()
-      .OrderBy()
+      .select()
+      .distinct(List("*"))
+      .from(List("test"))
+      .where()
+      .groupBy()
+      .having()
+      .orderBy()
       .build()
       .toString
     val expected = formatOutput("""SELECT DISTINCT *
@@ -240,12 +240,12 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query skipping the order by clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("id, name, age"))
-      .From(List("test"))
-      .Where()
-      .GroupBy()
-      .Having()
+      .select()
+      .projections(List("id, name, age"))
+      .from(List("test"))
+      .where()
+      .groupBy()
+      .having()
       .build()
       .toString
     val expected = formatOutput("""SELECT id, name, age
@@ -256,11 +256,11 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query skipping the having clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("id, name, age"))
-      .From(List("test"))
-      .Where()
-      .GroupBy()
+      .select()
+      .projections(List("id, name, age"))
+      .from(List("test"))
+      .where()
+      .groupBy()
       .build()
       .toString
     val expected = formatOutput("""SELECT id, name, age
@@ -271,10 +271,10 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query skipping the group by clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("id, name, age"))
-      .From(List("test"))
-      .Where()
+      .select()
+      .projections(List("id, name, age"))
+      .from(List("test"))
+      .where()
       .build()
       .toString
     val expected = formatOutput("""SELECT id, name, age
@@ -285,9 +285,9 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query skipping the where clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("id, name, age"))
-      .From(List("test"))
+      .select()
+      .projections(List("id, name, age"))
+      .from(List("test"))
       .build()
       .toString
     val expected = formatOutput("""SELECT id, name, age
@@ -298,13 +298,13 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with the where clause missing from a from clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .GroupBy()
-      .Having()
-      .OrderBy()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .groupBy()
+      .having()
+      .orderBy()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -315,12 +315,12 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with the group by clause missing from a from clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Having()
-      .OrderBy()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .having()
+      .orderBy()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -331,11 +331,11 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with the having clause missing from a from clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .OrderBy()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .orderBy()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -346,10 +346,10 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with the order by clause missing from a from clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -360,13 +360,13 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with the group by clause missing from a where clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Where()
-      .Having()
-      .OrderBy()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .where()
+      .having()
+      .orderBy()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -377,12 +377,12 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with the having clause missing from a where clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Where()
-      .OrderBy()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .where()
+      .orderBy()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -393,11 +393,11 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with the order by clause missing from a where clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .Where()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .where()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -408,12 +408,12 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with the having clause missing from a group by clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .GroupBy()
-      .OrderBy()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .groupBy()
+      .orderBy()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -424,11 +424,11 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with the order by clause missing from a group by clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .GroupBy()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .groupBy()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity
@@ -439,12 +439,12 @@ class QueryBuilderTest extends BaseXDTest {
   "The Query Builder" should " be able to build a query with the order by clause missing from a having clause" in {
 
     val query = QueryBuilder
-      .Select()
-      .Projections(List("name, age, quantity"))
-      .From(List("test"))
-      .GroupBy()
-      .Having()
-      .Limit()
+      .select()
+      .projections(List("name, age, quantity"))
+      .from(List("test"))
+      .groupBy()
+      .having()
+      .limit()
       .build()
       .toString
     val expected = formatOutput("""SELECT name, age, quantity

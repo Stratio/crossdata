@@ -17,22 +17,22 @@ package com.stratio.crossdata.sql.querybuilder
 
 class RelatedSelect(private[querybuilder] val projectedSelect: ProjectedSelect, relations: List[String]) {
 
-  def Where(expression: String = ""): FilteredSelect = new FilteredSelect(this, expression)
+  def where(expression: String = ""): FilteredSelect = new FilteredSelect(this, expression)
 
-  def GroupBy(expressions: List[String] = List()): GroupedSelect = {
+  def groupBy(expressions: List[String] = List()): GroupedSelect = {
     new GroupedSelect(new FilteredSelect(this, ""), expressions)
   }
 
-  def Having(expressions: String = ""): HavingSelect = {
-    new HavingSelect(GroupBy(), expressions)
+  def having(expressions: String = ""): HavingSelect = {
+    new HavingSelect(groupBy(), expressions)
   }
 
-  def OrderBy(ordering: String = ""): OrderedSelect = {
-    new OrderedSelect(Having(), ordering)
+  def orderBy(ordering: String = ""): OrderedSelect = {
+    new OrderedSelect(having(), ordering)
   }
 
-  def Limit(expression: String = ""): LimitedSelect = {
-    new LimitedSelect(OrderBy(), expression)
+  def limit(expression: String = ""): LimitedSelect = {
+    new LimitedSelect(orderBy(), expression)
   }
 
   def build(): CompletedSelect = {

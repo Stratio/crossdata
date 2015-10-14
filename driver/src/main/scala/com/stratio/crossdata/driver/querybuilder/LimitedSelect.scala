@@ -38,8 +38,8 @@ class LimitedSelect(private[querybuilder] val orderedSelect: OrderedSelect, expr
 
   override def toString: String = {
     if(expression.isEmpty)
-      s""
+      ""
     else
-      s"LIMIT ${expression}"
+      s"LIMIT $expression"
   }
 }
