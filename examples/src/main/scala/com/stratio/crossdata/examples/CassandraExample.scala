@@ -115,6 +115,5 @@ object CassandraExample extends App with CassandraDefaultConstants {
     cluster.close()
   }
 
-
 }
 
