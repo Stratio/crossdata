@@ -18,6 +18,7 @@ sonar-project.properties
 atlassian-ide-plugin.xml
 *.cache
 target/
+.DS_Store
 
 #hive ignores
 metastore_db/
