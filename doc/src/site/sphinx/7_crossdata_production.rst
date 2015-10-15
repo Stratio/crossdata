@@ -30,6 +30,6 @@ ODBC:
 - Ensure full bidirectional network connectivity between local ODBC machine and the Crossdata Server.
 
 
-.. _configuration: 2_getting_started.html
+.. _configuration: 2_getting_started.rst
 
 
