@@ -89,6 +89,12 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   import CassandraQueryProcessor._
 
   def execute(): Option[Array[Row]] = {
+    def annotateRepeatedNames(names: Seq[String]): Seq[String] = {
+      val indexedNames = names zipWithIndex
+      val m = indexedNames.groupBy(_._1).values.flatMap(_.zipWithIndex.map(x => x._1._2 -> x._2 )).toMap
+      indexedNames map { case (name, index) => val c = m(index); if(c>0) s"$name$c" else name }
+    }
+
     try {
       validatedNativePlan.map { case (columnsRequired, filters, udfs: Map[Attribute, NativeUDF], limit) =>
         val cqlQuery = buildNativeQuery(
@@ -101,7 +107,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
         val resultSet = cassandraRelation.connector.withSessionDo { session =>
           session.execute(cqlQuery)
         }
-        sparkResultFromCassandra(columnsRequired.map(_.name), resultSet)
+        sparkResultFromCassandra(annotateRepeatedNames(columnsRequired.map(_.name)).toArray, resultSet)
       }
     } catch {
       case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage); None
