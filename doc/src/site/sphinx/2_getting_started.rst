@@ -1,7 +1,7 @@
 Getting started
 ****************
 
-How to install Crossdata
+How to build Crossdata
 =========================
 There are different ways to install Crossdata depending of your necessities.
 One way is using maven::
@@ -18,13 +18,9 @@ You can build a Spark Distribution with Crossdata libraries running the make-dis
     > ./make-distribution-crossdata.sh
 
 This will build Spark with the following options:
-    - Crossdata with Cassandra support
-    - Spark Version v1.5.1
-    - Spark's Hadoop  Version 2.6.0
-    - Yarn support
-    - Hive integration for SparkSQL
-    - Scala version 2.10
+    - Spark-1.5.1/hadoop2.6
     - Crossdata shell
+    - And all available Crossdata providers
 
 For others options run ./make-distribution-crossdata.sh --help
 
