@@ -48,7 +48,7 @@ And then you can execute::
 Running Crossdata as a client-server service
 =============================================
 Crossdata has an Scala/Java API driver to allow make queries programmatically on your own projects. Before do it,
-please see the `Configuration document <3_configuration.html>`_
+please see the `Configuration document <3_configuration.rst>`_
 
 Run Crossdata Server using maven::
 
