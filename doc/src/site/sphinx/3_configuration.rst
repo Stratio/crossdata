@@ -2,8 +2,8 @@ Crossdata Configuration
 ************************
 
 Crossdata have the following requirements:
-1. `MySQL <http://dev.mysql.com/downloads/mysql/>`_ to persist metadata in the Crossdata Catalog.
-2. `Mongo Provider <https://github.com/Stratio/spark-mongodb>`_ to get the features of Mongo into Spark.
+ - `MySQL <http://dev.mysql.com/downloads/mysql/>`_ to persist metadata in the Crossdata Catalog.
+ - `Mongo Provider <https://github.com/Stratio/spark-mongodb>`_ to get the features of Mongo into Spark.
 
 Once the requirements are installed it's necessary to set up the server and driver configuration files to allow
 crossdata run in a distributed environments. In other case, it is possible to use Crossdata with a default values,
@@ -58,9 +58,7 @@ This is an example of driver-application file::
 
 Catalog Configuration
 ======================
-To allow crossdata store metadata from different data sources is necessary to have a Crossdata Catalog. For this case
- crossdata uses a JDBC connection with a relational database (nowadays MySQL database). It is possible to set up some
- parameters to specified the requirements of the catalog in file core/src/main/resources/application.conf:
+To allow crossdata store metadata from different data sources is necessary to have a Crossdata Catalog. For this case crossdata uses a JDBC connection with a relational database (nowadays MySQL database). It is possible to set up some parameters to specified the requirements of the catalog in file core/src/main/resources/application.conf:
 
  - crossdata.catalog.class: The crossdata class that controls the catalog.
 
