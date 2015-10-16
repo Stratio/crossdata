@@ -1,12 +1,12 @@
 Crossdata Configuration
 ************************
 
-Crossdata have the following requirements:
+Crossdata has the following requirements:
  - `MySQL <http://dev.mysql.com/downloads/mysql/>`_ to persist metadata in the Crossdata Catalog.
  - `Mongo Provider <https://github.com/Stratio/spark-mongodb>`_ to get the features of Mongo into Spark.
 
 Once the requirements are installed it's necessary to set up the server and driver configuration files to allow
-crossdata run in a distributed environments. In other case, it is possible to use Crossdata with a default values,
+crossdata runs in a distributed environments. In other case, it is possible to use Crossdata with a default values,
 and it will run in localhost mode.
 
 Server Configuration for Distributed Environment
@@ -15,9 +15,9 @@ Server Configuration for Distributed Environment
 To configure the servers in a distributed environment it is needed to create a server-application.conf file in every
 crossdata instance, with the following params:
 
- - crossdata-server.akka.remote.netty.tcp.hostname: This is the IP of the local machine where is this crossdata instance.
+ - crossdata-server.akka.remote.netty.tcp.hostname: This is the IP of the local machine where Crossdata server instance is running.
 
- - crossdata-server.akka.remote.netty.tcp.port: The crossdata server port, default set in 13420.
+ - crossdata-server.akka.remote.netty.tcp.port: The Crossdata server port, default is set in 13420.
 
  - crossdata-server.akka.cluster.seed-nodes: In this parameter it is needed to set all the IPs and Ports of all Crossdata servers. The format of that is ["akka.tcp://CrossdataServerCluster@IP_1:port_1", "akka.tcp://CrossdataServerCluster@IP_2:port_2", ... , "akka.tcp://CrossdataServerCluster@IP_n:port_n"]
 
@@ -32,13 +32,12 @@ This is an example of server-application.conf file::
 
 Driver configuration
 ======================
-To start a crossdata client is needed to create the configuration file driver-application.conf. In other case the
-driver try to connect with a localhost server of crossdata.
-This file must contains:
+To start a crossdata client is needed to create the configuration file driver-application.conf. In any other case the driver tries to connect to a localhost server of Crossdata.
+This file must contain:
 
- - crossdata-driver.config.cluster.name: The name of the crossdata cluster.
+ - crossdata-driver.config.cluster.name: The name of the Crossdata cluster.
 
- - crossdata-driver.config.cluster.hosts: A list of crossdata servers where the client can connect. The format is like [ip_1:port_1, ip_2:port_2, ...,ip_n:port_n]
+ - crossdata-driver.config.cluster.hosts: A list of Crossdata servers where the client can connect. The format is like [ip_1:port_1, ip_2:port_2, ...,ip_n:port_n]
 
  - crossdata-driver.config.retry.times: Retry connections.
 
@@ -58,9 +57,9 @@ This is an example of driver-application file::
 
 Catalog Configuration
 ======================
-To allow crossdata store metadata from different data sources is necessary to have a Crossdata Catalog. For this case crossdata uses a JDBC connection with a relational database (nowadays MySQL database). It is possible to set up some parameters to specified the requirements of the catalog in file core/src/main/resources/application.conf:
+To allow crossdata stores metadata from different data sources is necessary to have a Crossdata Catalog. For this case crossdata uses a JDBC connection with a relational database (currently MySQL database). It is possible to set up some parameters to specify the requirements of the catalog in file core/src/main/resources/application.conf:
 
- - crossdata.catalog.class: The crossdata class that controls the catalog.
+ - crossdata.catalog.class: The Crossdata class that controls the catalog.
 
  - crossdata.catalog.caseSensitive = Set if the catalog database is case sensitive.
 
@@ -74,7 +73,7 @@ To allow crossdata store metadata from different data sources is necessary to ha
 
  - crossdata.catalog.mysql.db.name: Database name in the database catalog.
 
- - crossdata.catalog.mysql.db.tableName: Table name where the metadata will be stored in the database catalog
+ - crossdata.catalog.mysql.db.tableName: Table name where the metadata will be stored in the database catalog.
 
  - crossdata.catalog.mysql.db.user: Allowed user to connect using JDBC to the catalog database.
 
