@@ -27,7 +27,7 @@ FAQs
     having loaded, and unnecessary transmitted data between Spark workers, huge data sets as RDDs. Add that to the
     fact that Spark won't be able execute UDFs or built-in defined functions within concrete data bases.
 
-    Crossdata tries to:
+    Crossdata tries to: 
         - Execute operation as fully native queries to a database whenever is possible.
         - Otherwise, push-down as many parts of the operation as possible. That is, generate optimized native queries to fulfill as many parts of the operation as possible.
 
