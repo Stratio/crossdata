@@ -80,7 +80,7 @@ To allow crossdata store metadata from different data sources is necessary to ha
 
  - crossdata.catalog.mysql.db.pass: Password to connect using JDBC to the catalog database.
 
-Here is an example of ths configuration file::
+This is an example of the configuration file::
 
     crossdata.catalog.class = "org.apache.spark.sql.crossdata.catalog.MySQLCatalog"
 
