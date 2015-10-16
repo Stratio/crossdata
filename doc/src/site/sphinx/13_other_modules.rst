@@ -11,7 +11,7 @@ Modules using Crossdata
 Acting as an integrated medium for accessing data, it shouldn't be a surprise that top-level modules use Crossdata to
 simplify their integration with data sources.
 
-In this regard, Crossdata currently relates to the following Stratio modules:
+In this regard, Crossdata currently relates to the following Stratio modules: 
 
 + **Viewer**
 + **Explorer**
