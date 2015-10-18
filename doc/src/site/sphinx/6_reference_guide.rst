@@ -23,18 +23,16 @@ Table of Contents
 
 -  `3) DDL <#data-definition-language>`__
 
-   -  `1.1) IMPORT TABLES <import-tables>`__
-
-IMPORT TABLES..
-
-CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> ) [AS \<select\>]
---explain temporary --optional schema --asSelect => DDL
+   -  `3.1) IMPORT EXISTING EXTERNAL TABLES <import-tables>`__
+   -  `3.2) REGISTER EXISTING EXTERNAL TABLES <import-tables>`__
 
 -  `4) DML <#data-manipulation-language>`__
 
    -  `IMPORT TABLES <import-tables>`__
       -  `Creating a default index <#creating-a-default-index>`__
       -  `Creating a custom index <#creating-a-custom-index>`__
+
+CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> ) AS \<select\>
 
 CACHE [LAZY] TABLE \<tablename\> [AS \<select\>..]
 
@@ -144,7 +142,7 @@ DESCRIBE FUNCTION [EXTENDED] \<functionid\>
 
 
 1) General Notes
-----------------
+================
 
 -   In general, a quoted (single or double) string refers to a literal
     string whereas a string without quotation marks refers to a column
@@ -165,7 +163,7 @@ Example:
     ([a-zA-Z0-9\_]+.)*[a-zA-Z0-9\_]+
 
 
-        The following non-terminal elements appear in the grammar:
+The following non-terminal elements appear in the grammar:
 
 -   \<simpleidentifier\> ::= [a-zA-Z0-9\_]+
 -   \<identifier\> ::= (\<simpleidentifier\>'.')\*\<simpleidentifier\>
@@ -200,8 +198,9 @@ Example:
 
 Please, check SparkSQL documentation for further information about specific statements. 
 
+
 2) Expansion main features
------------------------
+==========================
 
 Through the following lines you will find a description of those sentences provided by
 CROSSDATA which are not supported by SparkSQL.
@@ -210,13 +209,28 @@ Expansion main features:
 -   Added new table import capabilities:
         -   `IMPORT TABLES`: Catalog registration of every single table accessible by a concrete datasource.
         
-        
-        
-The language supports the following set of operations based on the SQL
-language.        
-        
-IMPORT TABLES
--------------
+
+3) Data Definition Language       
+===========================
+
+The most important thing to understand how the DDL works is to be aware of how Crossdata manage the metadata. 
+So, the basics are:
+ - Crossdata leverages in different datasources to store the data.
+ - Crossdata have a persistent catalog with the metadata necessary to access this data 
+ as well as statistics to speed up the queries plus a cache where temporary tables could
+ be stored in addition.
+ 
+ Crossdata is focused on analytics, so the main use case of Crossdata is create a table to register 
+ the metadata in the Crossdata catalog. However, when we perform a create table the table is not actually 
+ created in the specific datasource. For instance if we are working with Cassandra, the table created in 
+ Crossdata should have been created previously on Cassandra. But there are some exceptions to this behaviour:
+ a well-known use case is store in a new table the result of an analytical query; in that case it will be 
+ possible to create a table as select which will create the table both in the datasource and in the Crossdata 
+ catalog. CREATE TABLE AS SELECT is described in DML<#data-manipulation-language>. 
+ 
+ 
+3.1) IMPORT TABLES
+------------------
 
 Import all the tables from a specific datasource to the Crossdata catalog. It incorporates all the underlying metadata
 needed by the datasource provider in order to create a Spark BaseRelation.
@@ -245,6 +259,21 @@ Example:
        host '127.0.0.1:27017',
        schema_samplingRatio  '0.1'
     )
+    
+ -  `3.2) REGISTER EXISTING EXTERNAL TABLES <import-tables>`__
+
+
+CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> ) [AS \<select\>]
+--explain temporary --optional schema --asSelect => DDL
+
+
+The language supports the following set of operations based on the SQL
+language.        
+        
+IMPORT TABLES
+-------------
+
+
 
 
 
