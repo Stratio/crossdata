@@ -29,102 +29,20 @@ Table of Contents
 
 -  `4) DML <#data-manipulation-language>`__
 
- -  `4.1) CREATE TABLE AS SELECT <create-table-as-select>`__
- -  `4.2) INSERT INTO TABLE AS SELECT <insert-into-table-as-select>`__
+   -  `4.1) CREATE TABLE AS SELECT <create-table-as-select>`__
+   -  `4.2) INSERT INTO TABLE AS SELECT <insert-into-table-as-select>`__
 
--  `5) Select Statements <#select>`__
+-  `5) Select Statements <#select-statements>`__
 
-   -  `Step 4: Insert into collection students <#step-4-insert-into-collection-students>`__
+-  `6) Other commands <#other-commands>`__
 
-      -  `Insert if not exists <#insert-if-not-exists>`__
+   -  `6.1) SHOW COMMANDS <show-commands>`__
+   -  `6.2) DESCRIBE COMMANDS <describe-commands>`__
+   -  `6.3) SET COMMAND <set-command>`__
+   
+-  `7) Supported data types <#supported-data-types>`__
 
-WITH \<tablename\> AS  \<select\> (\<select\> | \<insert\>)
-
-
-\<select\> :: = ( \<selectstatement\> | \<subquery\> )
-                [(UNION ALL | INTERSECT | EXCEPT | UNION DISTINCT) \<select\>]
--- cartesian, intersection, first substract second, distinct (union)
-
-\<subquery\> = (\<\<selectstatement\>\>)
-
-\<selectstatement\> ::=
-      SELECT [DISTINCT] (\<selectexpression\>' [AS \<aliasname\>],)\+\<selectexpression\> [AS \<aliasname\>]
-      FROM   \<relations\> [ \<joinexpressions\> ]
-      [WHERE \<expressions\>]
-      [GROUP BY \<expressions\> [ HAVING \<expressions\>]]
-      [ (ORDER BY| SORT BY ]
-      => TODO explain what SORT BY mean
-
-      [LIMIT  \<numLiteral\>]
-
-\<relations\> ::= csv ( \<tablename\> [\<alias\>] , \<subquery\> [\<alias\>])
-\<alias\> ::=  [AS] \<aliasname\>
-
-\<joinexpression\> ::= \<relation\> [ \<jointype\>] JOIN \<relation\> [ ON \<expression\> ]
-
-\<jointype\> ::= INNER
-                | LEFT SEMI
-                | LEFT [OUTER]
-                | RIGHT [OUTER]
-                | FULL  [OUTER]
-
-
- protected lazy val sortType: Parser[LogicalPlan => LogicalPlan] =
-    ( ORDER ~ BY  ~> ordering ^^ { case o => l: LogicalPlan => Sort(o, true, l) }
-    | SORT ~ BY  ~> ordering ^^ { case o => l: LogicalPlan => Sort(o, false, l) }
-    )
-
-  protected lazy val ordering: Parser[Seq[SortOrder]] =
-    ( rep1sep(expression ~ direction.? , ",") ^^ {
-        case exps => exps.map(pair => SortOrder(pair._1, pair._2.getOrElse(Ascending)))
-      }
-    )
-
-  protected lazy val direction: Parser[SortDirection] =
-    ( ASC  ^^^ Ascending
-    | DESC ^^^ Descending
-    )
-
-\<selectexpression\> similar to expression??
-
-\<expression\> ::=
-    CombinationExpressions => AND | OR
-    NotExpression => NOT
-    ComparisonExpressions =>
-        = | < | <= | > | >= | (!= | <>)
-       | <=> (equal null safe)
-       | [NOT] BETWEEN _ AND _
-       | [NOT] LIKE | (RLIKE | REGEXP)
-       | [NOT] IN
-       | IS [NOT] NULL
-    ArithmeticExpressions =>  + | - | * | / | %
-    BitwiseExpressions => & | '|' | | ^
-    CaseWhenExpression =>   CASE [ \<expression\> ]
-                            ( WHEN \<expression\> THEN \<expression\>)+
-                            [ ELSE \<expression\> ]
-                            END
-    FunctionExpression => \<functionname\> ( \<functionparameters\> ) => See supported functions <supported-functions>
-        Special cases:  [ APPROXIMATE [ ( unsigned_float )] ] function ( [DISTINCT] params )
-
-
--  `6) Other commands <#commands>`__
-
-   -  `Step 4: Insert into collection students <#step-4-insert-into-collection-students>`__
-
-     -  `Insert if not exists <#insert-if-not-exists>`__
-
-SET key=value
-
-SHOW TABLES [IN \<database\>]
-
-DESCRIBE [EXTENDED] \<tablename\>
-
-SHOW FUNCTIONS  [\<functionid\>] -> It's possible to specify certain function
-
-DESCRIBE FUNCTION [EXTENDED] \<functionid\>
-
--  `5) Supported data types <#supported--types>`__
-
+-  `8) Supported functions <#supported-functions>`__
 
 
 1) General Notes
@@ -302,13 +220,103 @@ Example:
 It is quite similar to the previous one, but the the old data in the relation will be overwritten with the new data instead of appended.
 
 
+5) SELECT STATEMENTS
+--------------------
 
- 
 The language supports the following set of operations based on the SQL
-language.        
+language.   
 
-Supported types
----------------
+WITH \<tablename\> AS  \<select\> (\<select\> | \<insert\>)
+
+
+\<select\> :: = ( \<selectstatement\> | \<subquery\> )
+                [(UNION ALL | INTERSECT | EXCEPT | UNION DISTINCT) \<select\>]
+-- cartesian, intersection, first substract second, distinct (union)
+
+\<subquery\> = (\<\<selectstatement\>\>)
+
+\<selectstatement\> ::=
+      SELECT [DISTINCT] (\<selectexpression\>' [AS \<aliasname\>],)\+\<selectexpression\> [AS \<aliasname\>]
+      FROM   \<relations\> [ \<joinexpressions\> ]
+      [WHERE \<expressions\>]
+      [GROUP BY \<expressions\> [ HAVING \<expressions\>]]
+      [ (ORDER BY| SORT BY ]
+      => TODO explain what SORT BY mean
+
+      [LIMIT  \<numLiteral\>]
+
+\<relations\> ::= csv ( \<tablename\> [\<alias\>] , \<subquery\> [\<alias\>])
+\<alias\> ::=  [AS] \<aliasname\>
+
+\<joinexpression\> ::= \<relation\> [ \<jointype\>] JOIN \<relation\> [ ON \<expression\> ]
+
+\<jointype\> ::= INNER
+                | LEFT SEMI
+                | LEFT [OUTER]
+                | RIGHT [OUTER]
+                | FULL  [OUTER]
+
+
+ protected lazy val sortType: Parser[LogicalPlan => LogicalPlan] =
+    ( ORDER ~ BY  ~> ordering ^^ { case o => l: LogicalPlan => Sort(o, true, l) }
+    | SORT ~ BY  ~> ordering ^^ { case o => l: LogicalPlan => Sort(o, false, l) }
+    )
+
+  protected lazy val ordering: Parser[Seq[SortOrder]] =
+    ( rep1sep(expression ~ direction.? , ",") ^^ {
+        case exps => exps.map(pair => SortOrder(pair._1, pair._2.getOrElse(Ascending)))
+      }
+    )
+
+  protected lazy val direction: Parser[SortDirection] =
+    ( ASC  ^^^ Ascending
+    | DESC ^^^ Descending
+    )
+
+\<selectexpression\> similar to expression??
+
+\<expression\> ::=
+    CombinationExpressions => AND | OR
+    NotExpression => NOT
+    ComparisonExpressions =>
+        = | < | <= | > | >= | (!= | <>)
+       | <=> (equal null safe)
+       | [NOT] BETWEEN _ AND _
+       | [NOT] LIKE | (RLIKE | REGEXP)
+       | [NOT] IN
+       | IS [NOT] NULL
+    ArithmeticExpressions =>  + | - | * | / | %
+    BitwiseExpressions => & | '|' | | ^
+    CaseWhenExpression =>   CASE [ \<expression\> ]
+                            ( WHEN \<expression\> THEN \<expression\>)+
+                            [ ELSE \<expression\> ]
+                            END
+    FunctionExpression => \<functionname\> ( \<functionparameters\> ) => See supported functions <supported-functions>
+        Special cases:  [ APPROXIMATE [ ( unsigned_float )] ] function ( [DISTINCT] params )
+
+
+6) OTHER COMMANDS
+-----------------
+
+6.1) Shpw commands
+------------------
+SHOW TABLES [IN \<database\>]
+
+SHOW FUNCTIONS  [\<functionid\>] -> It's possible to specify certain function
+
+6.2) Describe commands
+----------------------
+
+DESCRIBE [EXTENDED] \<tablename\>
+
+DESCRIBE FUNCTION [EXTENDED] \<functionid\>
+
+6.3) Set command
+----------------
+SET key=value
+
+7) SUPPORTED DATA TYPES
+-----------------------
 
 Those supported by SparkSQL:
 
@@ -338,17 +346,15 @@ Complex types:
   * StructField(name, datatype, nullable): Represents a field in a StructType.
 
 
-Supported functions
--------------------
+8) SUPPORTED FUNCTIONS
+----------------------
 
-Native build-in functions:
+Native built-in functions:
 
  _link => cassandra-datasource
  _link => mongodb-datasource
 
-Spark built-in functions:
-
- Last update: Spark v1.5.1
+Spark built-in functions (last update: Spark v1.5.1):
 
 // aggregate functions
 avg
