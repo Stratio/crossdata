@@ -36,7 +36,6 @@ class DriverSpec extends BaseXDTest {
     val sqlCommand = SQLCommand("select * from any")
     val result = driver.syncQuery(sqlCommand, Timeout(1 seconds), 1)
     result.hasError should be (true)
-    result.resultSet should be (None)
     result.queryId should be (sqlCommand.queryId)
     result shouldBe an [ErrorResult]
     result.asInstanceOf[ErrorResult].message should include regex "(?i)timeout was exceed"
