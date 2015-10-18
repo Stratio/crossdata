@@ -215,17 +215,17 @@ Expansion main features:
 
 The most important thing to understand how the DDL works is to be aware of how Crossdata manage the metadata. 
 So, the basics are:
- - Crossdata leverages in different datasources to store the data.
- - Crossdata have a persistent catalog with the metadata necessary to access this data 
- as well as statistics to speed up the queries plus a cache where temporary tables could
- be stored in addition.
+ - Crossdata leverages in different datasources to store data.
+ - Crossdata has a persistent catalog plus a cache where temporary tables could
+ be stored in addition. That catalog contains metadata necessary to access datasouces data 
+ as well as statistics to speed up the queries.
  
  Crossdata is focused on analytics, so the main use case of Crossdata is create a table to register 
- the metadata in the Crossdata catalog. However, when we perform a create table the table is not actually 
- created in the specific datasource. For instance if we are working with Cassandra, the table created in 
- Crossdata should have been created previously on Cassandra. But there are some exceptions to this behaviour:
- a well-known use case is store in a new table the result of an analytical query; in that case it will be 
- possible to create a table as select which will create the table both in the datasource and in the Crossdata 
+ the metadata in the Crossdata catalog. However, when we perform a create table, it is not actually 
+ created in the specific datasource. For instance, if you are working with Cassandra, the table created in 
+ Crossdata should have been created previously on Cassandra. There are some exceptions to this behaviour:
+ a well-known use case is to store the result of an analytical query in a new table; in that case, it will be 
+ possible to create a table as select which will create the table in both the datasource and  the Crossdata 
  catalog. CREATE TABLE AS SELECT is described in DML<#data-manipulation-language>. 
  
  
