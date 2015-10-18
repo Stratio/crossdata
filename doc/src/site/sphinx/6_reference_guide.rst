@@ -24,7 +24,7 @@ Table of Contents
 -  `3) DDL <#data-definition-language>`__
 
    -  `3.1) IMPORT EXISTING EXTERNAL TABLES <import-tables>`__
-   -  `3.2) REGISTER EXISTING EXTERNAL TABLES <import-tables>`__
+   -  `3.2) REGISTER EXISTING EXTERNAL TABLES <create-table>`__
 
 -  `4) DML <#data-manipulation-language>`__
 
@@ -158,7 +158,7 @@ Example:
         -   ‘California'
         -   “New York City”
 
--   Identifier: Used to identify tables and qualified columns.
+-   Identifier: Used to identify datasources, tables and qualified columns.
     An identifier is a token matching the regular expression
     ([a-zA-Z0-9\_]+.)*[a-zA-Z0-9\_]+
 
@@ -169,13 +169,13 @@ The following non-terminal elements appear in the grammar:
 -   \<identifier\> ::= (\<simpleidentifier\>'.')\*\<simpleidentifier\>
 -   \<stringliteral\> ::= “ (\~”)\* ” | ‘ (\~')\* '
 -   \<intliteral\> ::= [0-9]+
--   \<datasource\> ::= \<stringliteral\>
+-   \<datasource\> ::= \<identifier\>
 -   \<database\> ::= \<simpleidentifier\>
 -   \<tablename\> ::= \<identifier\>
 -   \<property\> ::= \<identifier\> \<stringliteral\>
 -   \<functionid\> ::= \<simple\_identifier\> | \<stringliteral\>
 -   \<schema\> ::= ( (\<columndefinition\>',)*\<columndefinition\> )
--   \<columnmd\> ::= \<columnname\> \<datatype\>
+-   \<columndefinition\> ::= \<columnname\> \<datatype\>
 -   \<columnname\> ::= \<simple\_identifier\>
 -   \<data-type\> ::=
         string |
@@ -260,27 +260,24 @@ Example:
        schema_samplingRatio  '0.1'
     )
     
- -  `3.2) REGISTER EXISTING EXTERNAL TABLES <import-tables>`__
+        
+3.2) CREATE TABLE
+-----------------
 
+CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> )
 
-CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> ) [AS \<select\>]
---explain temporary --optional schema --asSelect => DDL
+Temporary: A temporary table won't be persisted in Crossdata catalog.
+  
+Example:
+
+    CREATE TABLE IF NOT EXISTS tablename ( id string, eventdate date)
+    USING com.databricks.spark.csv 
+    OPTIONS (path "events.csv", header "true")
+
 
 
 The language supports the following set of operations based on the SQL
 language.        
-        
-IMPORT TABLES
--------------
-
-
-
-
-
-Notes?
-=======
-
-
 
 Supported types
 ---------------
