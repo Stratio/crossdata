@@ -11,12 +11,8 @@ CROSSDATA SQL - Introduction
 This document describes the standard SparkSQL grammar expansion provided by CROSSDATA
 that means that any SQL sentences accepted by SparkSQL will be compatible with CROSSDATA.
 
-Through the following lines you will find a description of those sentences provided by
-CROSSDATA which are not supported by SparkSQL.
-
-Expansion main features:
--   Added new table import capabilities:
-        -   `IMPORT TABLES`: Catalog registration of every single table accessible by a concrete datasource.
+Along with the language description different features like supported types or built-in functions 
+are included.
 
 Table of Contents
 =================
@@ -147,7 +143,79 @@ DESCRIBE FUNCTION [EXTENDED] \<functionid\>
 
 
 
+1) General Notes
+----------------
 
+-   In general, a quoted (single or double) string refers to a literal
+    string whereas a string without quotation marks refers to a column
+    name.
+
+Example:
+    -   Column name:
+        -   total
+        -   myTable.total
+        -   myCatalog.myTable.total
+    -   Literal:
+        -   “Madrid”
+        -   ‘California'
+        -   “New York City”
+
+
+
+
+        The following elements appear in the grammar:
+
+-   Identifier: Used to identify databases and tables.
+    An identifier is a token matching the regular expression
+    ([a-zA-Z0-9\_]+.)*[a-zA-Z0-9\_]+
+
+-   \<simple\_identifier\> ::= [a-zA-Z0-9\_]+
+-   \<identifier\> ::= (\<simple\_identifier\>'.')\*\<simple\_identifier\>
+-   \<literal\> ::= “ (\~”)\* ” | ‘ (\~')\* '
+-   \<datasource\> ::= \<identifier\>
+-   \<database\> ::= \<simple\_identifier\>
+-   \<tablename\> ::= \<identifier\>
+-   \<property\> ::= \<identifier\> \<literal\>
+-   \<functionid\> ::= \<simple\_identifier\> | \<literal\>
+-   \<schema\> ::= ( (\<columnmd\>',)\+\<columnmd\> )
+-   \<columnmd\> ::= \<column-name\> \<data-type\>
+-   \<columnname\> ::= \<simple\_identifier\>
+-   \<data-type\> ::=
+        string |
+        float|
+        integer|
+        tinyint |
+        smallint |
+        double |
+        (bigint|long) |
+        binary |
+        boolean |
+        decimal [(\<precision\>, \<scale\>) ] |
+        date |
+        timestamp |
+        varchar (\<num\>) |
+        array\<\<data-type\>\> |
+        map\<\<data-type\>, \<data-type\>\> |
+        struct\<  (\<struct-field\>',)\+\<struct-field\> \>
+        
+-   \<struct-field\> ::= \<columnname\>:\<data-type\>
+
+
+Expansion main features
+-----------------------
+
+Through the following lines you will find a description of those sentences provided by
+CROSSDATA which are not supported by SparkSQL.
+
+Expansion main features:
+-   Added new table import capabilities:
+        -   `IMPORT TABLES`: Catalog registration of every single table accessible by a concrete datasource.
+        
+        
+        
+The language supports the following set of operations based on the SQL
+language.        
+        
 IMPORT TABLES
 -------------
 
@@ -184,71 +252,6 @@ Example:
 Notes?
 =======
 
--   In general, a quoted (single or double) string refers to a literal
-    string whereas a string without quotation marks refers to a column
-    name.
-
-Example:
-
-    -   Column name:
-        -   total
-        -   myTable.total
-        -   myCatalog.myTable.total
-    -   Literal:
-        -   “Madrid”
-        -   ‘California'
-        -   “New York City”
-
-
--   In the near future, many statements and statement extensions will be supported.
-
-Statements?
-----------
-
-The language supports the following set of operations based on the SQL
-language.
-
-        The following elements are defined as:
-
--   Identifier: Used to identify datasources and, databases and tables.
-    An identifier is a token matching the regular expression
-    ([a-zA-Z0-9\_]+.)*[a-zA-Z0-9\_]+
-
--   Values: A value is a text representation of any of the supported
-    data types.
-
-        The following non-terminal symbols appear in the grammar:
-
--   \<simple\_identifier\> ::= LETTER (LETTER | DIGIT | '\_')\*
--   \<identifier\> ::= (\<simple\_identifier\>'.')\*\<simple\_identifier\>
--   \<literal\> ::= “ (\~”)\* ” | ‘ (\~')\* '
--   \<datasource\> ::= \<identifier\>
--   \<database\> ::= \<simple\_identifier\>
--   \<tablename\> ::= \<identifier\>
--   \<property\> ::= \<identifier\> \<literal\>
--   \<functionid\> ::= \<simple\_identifier\> | \<literal\>
--   \<schema\> ::= ( (\<columnmd\>',)\+\<columnmd\> )
--   \<columnmd\> ::= \<column-name\> \<data-type\>
--   \<columnname\> ::= \<simple\_identifier\>
--   \<data-type\> ::=
-        string |
-        float|
-        integer|
-        tinyint |
-        smallint |
-        double |
-        (bigint|long) |
-        binary |
-        boolean |
-        decimal [(\<precision\>, \<scale\>) ] |
-        date |
-        timestamp |
-        varchar (\<num\>) |
-        array\<\<data-type\>\> |
-        map\<\<data-type\>, \<data-type\>\> |
-        struct\<  (\<struct-field\>',)\+\<struct-field\> \>
-
--   \<struct-field\> ::= \<columnname\>:\<data-type\>
 
 
 Supported types
