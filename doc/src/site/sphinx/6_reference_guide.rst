@@ -17,9 +17,9 @@ are included.
 Table of Contents
 =================
 
--  `1) General notes`__
+-  `1) General notes <#general-notes>`__
 
--  `2) Expansion main features`__
+-  `2) Expansion main features <#expansion-main-features>`__
 
 -  `3) DDL <#data-definition-language>`__
 
@@ -160,25 +160,24 @@ Example:
         -   ‘California'
         -   “New York City”
 
-
-
-
-        The following elements appear in the grammar:
-
--   Identifier: Used to identify databases and tables.
+-   Identifier: Used to identify tables and qualified columns.
     An identifier is a token matching the regular expression
     ([a-zA-Z0-9\_]+.)*[a-zA-Z0-9\_]+
 
--   \<simple\_identifier\> ::= [a-zA-Z0-9\_]+
--   \<identifier\> ::= (\<simple\_identifier\>'.')\*\<simple\_identifier\>
--   \<literal\> ::= “ (\~”)\* ” | ‘ (\~')\* '
--   \<datasource\> ::= \<identifier\>
--   \<database\> ::= \<simple\_identifier\>
+
+        The following non-terminal elements appear in the grammar:
+
+-   \<simpleidentifier\> ::= [a-zA-Z0-9\_]+
+-   \<identifier\> ::= (\<simpleidentifier\>'.')\*\<simpleidentifier\>
+-   \<stringliteral\> ::= “ (\~”)\* ” | ‘ (\~')\* '
+-   \<intliteral\> ::= [0-9]+
+-   \<datasource\> ::= \<stringliteral\>
+-   \<database\> ::= \<simpleidentifier\>
 -   \<tablename\> ::= \<identifier\>
--   \<property\> ::= \<identifier\> \<literal\>
--   \<functionid\> ::= \<simple\_identifier\> | \<literal\>
--   \<schema\> ::= ( (\<columnmd\>',)\+\<columnmd\> )
--   \<columnmd\> ::= \<column-name\> \<data-type\>
+-   \<property\> ::= \<identifier\> \<stringliteral\>
+-   \<functionid\> ::= \<simple\_identifier\> | \<stringliteral\>
+-   \<schema\> ::= ( (\<columndefinition\>',)*\<columndefinition\> )
+-   \<columnmd\> ::= \<columnname\> \<datatype\>
 -   \<columnname\> ::= \<simple\_identifier\>
 -   \<data-type\> ::=
         string |
@@ -190,18 +189,18 @@ Example:
         (bigint|long) |
         binary |
         boolean |
-        decimal [(\<precision\>, \<scale\>) ] |
+        decimal [(\<intliteral\>, \<intliteral\>) ] |
         date |
         timestamp |
-        varchar (\<num\>) |
-        array\<\<data-type\>\> |
-        map\<\<data-type\>, \<data-type\>\> |
-        struct\<  (\<struct-field\>',)\+\<struct-field\> \>
-        
--   \<struct-field\> ::= \<columnname\>:\<data-type\>
+        varchar (\<intliteral\>) |
+        array\<\<datatype\>\> |
+        map\<\<datatype\>, \<datatype\>\> |
+        struct\<  (\<structfield\>',)*\<structfield\> \>
+-   \<structfield\> ::= \<columnname\>:\<data-type\>
 
+Please, check SparkSQL documentation for further information about specific statements. 
 
-Expansion main features
+2) Expansion main features
 -----------------------
 
 Through the following lines you will find a description of those sentences provided by
