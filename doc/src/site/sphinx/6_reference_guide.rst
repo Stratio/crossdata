@@ -17,9 +17,9 @@ are included.
 Table of Contents
 =================
 
--  `1) General notes <#general-notes>`__
+-  `1) GENERAL NOTES <#general-notes>`__
 
--  `2) Expansion main features <#expansion-main-features>`__
+-  `2) EXPANSION MAIN FEATURES <#expansion-main-features>`__
 
 -  `3) DDL <#data-definition-language>`__
 
@@ -32,17 +32,17 @@ Table of Contents
    -  `4.1) CREATE TABLE AS SELECT <create-table-as-select>`__
    -  `4.2) INSERT INTO TABLE AS SELECT <insert-into-table-as-select>`__
 
--  `5) Select Statements <#select-statements>`__
+-  `5) SELECT STATEMENTS <#select-statements>`__
 
--  `6) Other commands <#other-commands>`__
+-  `6) OTHER COMMANDS <#other-commands>`__
 
    -  `6.1) SHOW COMMANDS <show-commands>`__
    -  `6.2) DESCRIBE COMMANDS <describe-commands>`__
    -  `6.3) SET COMMAND <set-command>`__
    
--  `7) Supported data types <#supported-data-types>`__
+-  `7) SUPPORTED DATA TYPES <#supported-data-types>`__
 
--  `8) Supported functions <#supported-functions>`__
+-  `8) SUPPORTED FUNCTIONS <#supported-functions>`__
 
 
 1) General Notes
@@ -314,6 +314,7 @@ DESCRIBE FUNCTION [EXTENDED] \<functionid\>
 6.3) Set command
 ----------------
 SET key=value
+
 
 7) SUPPORTED DATA TYPES
 -----------------------
