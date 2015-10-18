@@ -25,26 +25,12 @@ Table of Contents
 
    -  `3.1) IMPORT EXISTING EXTERNAL TABLES <import-tables>`__
    -  `3.2) REGISTER EXISTING EXTERNAL TABLES <create-table>`__
+   -  `3.3) TABLE CACHING <table-caching>`__
 
 -  `4) DML <#data-manipulation-language>`__
 
-   -  `IMPORT TABLES <import-tables>`__
-      -  `Creating a default index <#creating-a-default-index>`__
-      -  `Creating a custom index <#creating-a-custom-index>`__
-
-CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> ) AS \<select\>
-
-CACHE [LAZY] TABLE \<tablename\> [AS \<select\>..]
-
-UNCACHE TABLE \<tablename\>...
-
-CLEAR CACHE ...
-
-REFRESH TABLE  \<tablename\>
-
-INSERT (OVERWRITE | INTO) TABLE \<tablename\> \<select\>
-
-If overwrite in insert method is true, the old data in the relation should be overwritten with the new data. If overwrite in insert method is false, the new data should be appended.
+ -  `4.1) CREATE TABLE AS SELECT <create-table-as-select>`__
+ -  `4.2) INSERT INTO TABLE AS SELECT <insert-into-table-as-select>`__
 
 -  `5) Select Statements <#select>`__
 
@@ -275,7 +261,49 @@ Example:
     OPTIONS (path "events.csv", header "true")
 
 
+3.3) TABLE CACHING
+------------------
 
+It is possible to cache a table or a temporary table using the following commands:
+
+* CACHE [LAZY] TABLE \<tablename\> [AS \<select\>..]
+
+Lazy: If lazy is ommited a count * will be performed in order to bring the whole RDD to memory without
+waiting for the first time the data is needed.
+
+* UNCACHE TABLE \<tablename\>
+
+* CLEAR CACHE 
+
+* REFRESH TABLE \<tablename\> (coming soon) => Refresh the cache.
+
+4) DATA MANIPULATION LANGUAGE
+-----------------------------
+
+4.1) CREATE TABLE AS SELECT
+---------------------------
+
+The table will be created in both he Crossdata catalog and the target datasource indicated within the query:
+
+CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> ) AS \<select\>
+
+4.2) INSERT INTO TABLE AS SELECT
+--------------------------------
+
+* INSERT INTO TABLE \<tablename\> \<select\>
+
+Example:
+
+    INSERT INTO TABLE mongodbtable 
+    SELECT sum(price), day FROM cassandratable GROUP BY day
+    
+* INSERT OVERWRITE TABLE \<tablename\> \<select\>
+
+It is quite similar to the previous one, but the the old data in the relation will be overwritten with the new data instead of appended.
+
+
+
+ 
 The language supports the following set of operations based on the SQL
 language.        
 
