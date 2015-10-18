@@ -2,11 +2,11 @@
 Reference Guide
 ===============
 
-Appart from the API Crossdata provides a SQL-LIKE language based on standard SparkSQL grammar plus an expansion
+Apart from the API Crossdata provides a SQL-LIKE language based on standard SparkSQL grammar plus an expansion
 described below:
 
-CROSSDATA SQL Grammar
-*********************
+CROSSDATA SQL - Introduction
+****************************
 
 This document describes the standard SparkSQL grammar expansion provided by CROSSDATA
 that means that any SQL sentences accepted by SparkSQL will be compatible with CROSSDATA.
@@ -21,7 +21,11 @@ Expansion main features:
 Table of Contents
 =================
 
--  `1) DDL <#data-definition-language>`__
+-  `1) General notes`__
+
+-  `2) Expansion main features`__
+
+-  `3) DDL <#data-definition-language>`__
 
    -  `1.1) IMPORT TABLES <import-tables>`__
 
@@ -30,7 +34,7 @@ IMPORT TABLES..
 CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> ) [AS \<select\>]
 --explain temporary --optional schema --asSelect => DDL
 
--  `2) DML <#data-manipulation-language>`__
+-  `4) DML <#data-manipulation-language>`__
 
    -  `IMPORT TABLES <import-tables>`__
       -  `Creating a default index <#creating-a-default-index>`__
@@ -48,7 +52,7 @@ INSERT (OVERWRITE | INTO) TABLE \<tablename\> \<select\>
 
 If overwrite in insert method is true, the old data in the relation should be overwritten with the new data. If overwrite in insert method is false, the new data should be appended.
 
--  `3) Select Statements <#select>`__
+-  `5) Select Statements <#select>`__
 
    -  `Step 4: Insert into collection students <#step-4-insert-into-collection-students>`__
 
@@ -123,7 +127,7 @@ WITH \<tablename\> AS  \<select\> (\<select\> | \<insert\>)
         Special cases:  [ APPROXIMATE [ ( unsigned_float )] ] function ( [DISTINCT] params )
 
 
--  `4) Other commands <#commands>`__
+-  `6) Other commands <#commands>`__
 
    -  `Step 4: Insert into collection students <#step-4-insert-into-collection-students>`__
 
