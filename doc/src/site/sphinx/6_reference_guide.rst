@@ -45,7 +45,7 @@ Table of Contents
    
 -  `7) SUPPORTED DATA TYPES <#supported-data-types>`__
 
--  `8) LIST OF CROSSDATA CONNECTORS <#list-of-crossdata-connectors/datasources>`__
+-  `8) LIST OF CROSSDATA CONNECTORS <#list-of-crossdata-connectors>`__
 
 -  `9) SUPPORTED FUNCTIONS <#supported-functions>`__
 
@@ -57,6 +57,10 @@ Table of Contents
     string whereas a string without quotation marks refers to a column
     name.
 
+-   Identifier: Used to identify datasources, tables and qualified columns.
+    An identifier is a token matching the regular expression
+    ([a-zA-Z0-9\_]+.)*[a-zA-Z0-9\_]+
+
 Example:
     -   Column name:
         -   total
@@ -67,26 +71,22 @@ Example:
         -   ‘California'
         -   “New York City”
 
--   Identifier: Used to identify datasources, tables and qualified columns.
-    An identifier is a token matching the regular expression
-    ([a-zA-Z0-9\_]+.)*[a-zA-Z0-9\_]+
-
-
 The following non-terminal elements appear in the grammar:
 
 -   \<simpleidentifier\> ::= [a-zA-Z0-9\_]+
--   \<identifier\> ::= (\<simpleidentifier\>'.')\*\<simpleidentifier\>
--   \<stringliteral\> ::= “ (\~”)\* ” | ‘ (\~')\* '
+-   \<identifier\> ::= (\<simpleidentifier\>'.')*\<simpleidentifier\>
+-   \<stringliteral\> ::= ( “ (\~”)\* ” | ‘ (\~')\* ' )
 -   \<intliteral\> ::= [0-9]+
 -   \<datasource\> ::= \<identifier\>
 -   \<database\> ::= \<simpleidentifier\>
 -   \<tablename\> ::= \<identifier\>
 -   \<property\> ::= \<identifier\> \<stringliteral\>
--   \<functionid\> ::= \<simple\_identifier\> | \<stringliteral\>
--   \<schema\> ::= ( (\<columndefinition\>',)*\<columndefinition\> )
+-   \<functionid\> ::= (\<simple\_identifier\> | \<stringliteral\>)
+-   \<schema\> ::= ( (\<columndefinition\>',)* \<columndefinition\> )
 -   \<columndefinition\> ::= \<columnname\> \<datatype\>
 -   \<columnname\> ::= \<simple\_identifier\>
 -   \<data-type\> ::=
+::
         string |
         float|
         integer|
@@ -372,8 +372,8 @@ Complex types:
 
 
 
-8. LIST OF CROSSDATA CONNECTORS/DATASOURCES
-===========================================
+8. LIST OF CROSSDATA CONNECTORS
+===============================
 
 This document maintains an updated list of connector that work with current versions of Crossdata. Take into account
 that each connector listed may require different version of Crossdata.
