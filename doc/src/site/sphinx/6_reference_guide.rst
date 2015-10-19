@@ -420,8 +420,8 @@ that each connector listed may require different version of Crossdata.
 -  Datasources => Implement some methods of SparkSQL Datasource API
 -  Connectors => Implement both SparkSQL Datasource API and Crossdata API.
 
-Although connectors and datasources take advantage of Crossdata core only connectors can support certain capabilities
-like native execution, Native built-in functions or table discovery.
+Although connectors and datasources take advantage of Crossdata core, only connectors support certain capabilities
+like native execution, native built-in functions or table discovery.
 
 Connectors taking advantage of Crossdata extension
 --------------------------------------------------
