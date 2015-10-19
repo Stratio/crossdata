@@ -1,33 +1,39 @@
-===============
 Getting started
-===============
+****************
 
-Building Crossdata
+How to build Crossdata
+=========================
+There are different ways to install Crossdata depending of your necessities.
+One way is using maven::
 
     > mvn clean package -Ppackage
 
-In order to build Crossdata also with hive:
+and it could be packaged with hive dependencies too::
 
     > mvn clean package -Ppackage -Phive
 
-You can build a Spark Distribution with Crossdata libraries running the make-distribution-crossdata script:
+You can build a Spark Distribution with Crossdata libraries running the make-distribution-crossdata script::
+
     > cd scripts
     > ./make-distribution-crossdata.sh
 
 This will build Spark with the following options:
-    - Crossdata with Cassandra support
-    - Spark Version v1.5.1
-    - Spark's Hadoop  Version 2.6.0
-    - Yarn support
-    - Hive integration for SparkSQL
-    - Scala version 2.10
+    - Spark-1.5.1/hadoop2.6
+    - Crossdata shell
+    - And all available Crossdata providers
 
 For others options run ./make-distribution-crossdata.sh --help
 
-Using a Crossdata's Spark Distribution with Cassandra and MongoDB support:
+
+Running Crossdata standalone
+=============================
+To run Crossdata in a standalone mode, it's necessary to install Crossdata using the make-distribution-crossdata
+script first.
+Once Crossdata is installed, just run this::
+
     > bin/stratio-xd-shell --cassandra --mongodb
 
-Then you can do:
+This example register the existent table "students" of the Cassandra keyspace "highschool" that has a few rows inserted. Once the table is registered then execute a query by the native way::
 
     >xdContext.sql("CREATE TEMPORARY TABLE students USING com.stratio.crossdata.sql.sources.cassandra
             OPTIONS (keyspace 'highschool', table 'students', cluster 'students', pushdown 'true',
@@ -35,11 +41,17 @@ Then you can do:
     >xdContext.sql("SELECT * FROM students").collect()
 
 
-TODO:
+Running Crossdata as a client-server service
+=============================================
+Crossdata has a Scala/Java API driver to allow to make queries programmatically on your own projects. Before do it,
+please see the `Configuration document <3_configuration.rst>`_
 
-See Crossdata examples.
+Run Crossdata Server using maven::
 
-How do I get started?
-- What do I need before I start? System Requirements, What skills should I have, What should I know?
-- Walk through an Example
+    > mvn exec:java -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.CrossdataApplication"
 
+Or it is possible to start using the server jar generated previously and server configuration file::
+
+    > java -cp crossdata-server-<version>.jar com.stratio.crossdata.server.CrossdataApplication -Dcrossdata-server.external.config.filename=[path]/server-application.conf
+
+Now that Crossdata server is running you can use the Crossdata driver importing the jar in your own project.
