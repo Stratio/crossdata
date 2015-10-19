@@ -453,8 +453,8 @@ A more completed list of external Datasources could be find at `spark packages <
 
 -  Native built-in functions:
 
- -  (coming soon) => cassandra-connector _link
- -  (coming soon) => mongodb-connector _link
+   -  (coming soon) => cassandra-connector _link
+   -  (coming soon) => mongodb-connector _link
 
 Spark built-in functions (last update: Spark v1.5.1):
 
