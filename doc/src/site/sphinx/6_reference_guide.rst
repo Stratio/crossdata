@@ -381,17 +381,17 @@ SET key=value
 Those supported by SparkSQL:
 
 -  Numeric types:
-   -  ByteType: Represents 1-byte signed integer numbers.
-   -  ShortType: Represents 2-byte signed integer numbers.
-   -  IntegerType: Represents 4-byte signed integer numbers.
-   -  LongType: Represents 8-byte signed integer numbers.
-   -  FloatType: Represents 4-byte single-precision floating point numbers.
-   -  DoubleType: Represents 8-byte double-precision floating point numbers.
-   -  DecimalType: Represents arbitrary-precision signed decimal numbers. Backed internally by java.math.BigDecimal.
+   |-  ByteType: Represents 1-byte signed integer numbers.
+   |-  ShortType: Represents 2-byte signed integer numbers.
+   |-  IntegerType: Represents 4-byte signed integer numbers.
+   |-  LongType: Represents 8-byte signed integer numbers.
+   |-  FloatType: Represents 4-byte single-precision floating point numbers.
+   |-  DoubleType: Represents 8-byte double-precision floating point numbers.
+   |-  DecimalType: Represents arbitrary-precision signed decimal numbers. Backed internally by java.math.BigDecimal.
 
 -  Datetime types:
-   -  DateType: year, month, day.
-   -  TimestampType: year, month, day, hour, minute, and second.
+   |-  DateType: year, month, day.
+   |-  TimestampType: year, month, day, hour, minute, and second.
 
 -  StringType
 
@@ -400,10 +400,10 @@ Those supported by SparkSQL:
 -  BinaryType
 
 -  Complex types:
-   -  ArrayType[ElementType]: Sequence of elements.
-   -  MapType[KeyType, ValueType]: Set of key-value pairs.
-   -  StructType: Sequence of StructFields.
-    -  StructField(name, datatype, nullable): Represents a field in a StructType.
+   |-  ArrayType[ElementType]: Sequence of elements.
+   |-  MapType[KeyType, ValueType]: Set of key-value pairs.
+   |-  StructType: Sequence of StructFields.
+     |-  StructField(name, datatype, nullable): Represents a field in a StructType.
 
 
 
