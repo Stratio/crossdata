@@ -2,7 +2,7 @@
 Quick Reference
 ===============
 
-Quick SQL Statement reference. More details can be found at `reference guide <doc/src/site/sphinx/6_reference_guide.rst>`__
+Quick SQL Statement reference. More details can be found at `reference guide. <doc/src/site/sphinx/6_reference_guide.rst>`__
 
 CREATE TABLE
 ------------
