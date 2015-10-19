@@ -23,8 +23,9 @@ On the other hand, other modules efforts to provide and improve access to mainst
 extremely convenient when trying to expand Crossdata functionality. Thus *GoSec*, *Spark-Mongodb* and *Stratio's Cassandra Lucene Index plugin*
 are direct Crossdata dependencies.
 
-+ **Spark-Mongodb** is Stratio's library which enables the use of *MongoDB* from *Apache Spark*. It is therefore the first requirement for Crossdata in order to interact with this database.
-+ **Stratio's Cassandra Lucene Index plugin** is the plugin which seamlessly integrates *Apache Lucene* index with *Cassandra*. Using any Lucene index functionality from Crossdata requires this plugin to be configured within the C* database.
++ Spark-Mongodb_ is Stratio's library which enables the use of *MongoDB* from *Apache Spark*. It is therefore the first requirement for Crossdata in order to interact with this datastore.
++ `Stratio's Cassandra Lucene Index plugin`_ is the plugin which seamlessly integrates *Apache Lucene* index with *Cassandra*. Using any Lucene index functionality from Crossdata requires this plugin to be configured within the C* datastore.
 + **GoSec** is a new module dedicated to authentication, authorization and event tracking in Stratio platform so the team is actively working on integrating it as the Crossdata security layer.
 
-
+.. _Spark-Mongodb: https://github.com/Stratio/spark-mongodb
+.. _`Stratio's Cassandra Lucene Index plugin`: https://github.com/Stratio/cassandra-lucene-index
