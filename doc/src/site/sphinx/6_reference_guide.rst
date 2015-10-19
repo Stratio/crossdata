@@ -2,7 +2,7 @@
 Reference Guide
 ===============
 
-Apart from the API Crossdata provides a SQL-LIKE language based on standard SparkSQL grammar plus an expansion
+Apart from the API, Crossdata provides a SQL-LIKE language based on standard SparkSQL grammar plus an expansion
 described below:
 
 CROSSDATA SQL - Introduction
@@ -11,7 +11,7 @@ CROSSDATA SQL - Introduction
 This document describes the standard SparkSQL grammar expansion provided by CROSSDATA
 that means that any SQL sentences accepted by SparkSQL will be compatible with CROSSDATA.
 
-Along with the language description different features like supported types or built-in functions 
+Along with the language description, different features like supported types or built-in functions
 are included.
 
 Table of Contents
@@ -56,8 +56,7 @@ Table of Contents
 ================
 
 -   In general, a quoted (single or double) string refers to a literal
-    string whereas a string without quotation marks refers to a column
-    name.
+    string whereas a string without quotation marks refers to an identifier.
 
 -   Identifier: Used to identify datasources, tables and qualified columns.
     An identifier is a token matching the regular expression
@@ -119,7 +118,7 @@ CROSSDATA which are not supported by SparkSQL.
 
 Expansion main features:
 -   Added new table import capabilities:
-        -   IMPORT TABLES: Catalog registration of every single table accessible by a concrete datasource.
+        -   IMPORT TABLES: Catalog registration of every single table accessible by a specific datasource.
         
 
 
@@ -130,8 +129,8 @@ Expansion main features:
 The most important thing to understand how the DDL works is to be aware of how Crossdata manages the metadata.
 So, the basics are:
 
- - Crossdata leverages in different datasources to store data.
- - Crossdata has a persistent catalog plus a cache where temporary tables could be stored in addition. The catalog contains metadata necessary to access datasouces data as well as statistics to speed up the queries.
+ - Crossdata leverages different datasources to store data.
+ - Crossdata has a persistent catalog plus a cache where temporary tables can be stored in addition. The catalog contains metadata necessary to access that data as well as statistics to speed up the queries.
  
  Crossdata is focused on analytics, so the main use case of Crossdata is create a table to register 
  the metadata in the Crossdata catalog. However, when a create table is performed, it is not actually
@@ -145,8 +144,8 @@ So, the basics are:
 3.1 IMPORT TABLES
 -----------------
 
-Import all the tables from a specific datasource to the Crossdata catalog. It incorporates all the underlying metadata
-needed by the datasource provider in order to create a Spark BaseRelation.
+It's possible to import all the tables from a specific datasource to the Crossdata catalog. It incorporates all the underlying metadata
+needed by the datasource in order to create a Spark BaseRelation.
 
 Once the tables are imported, they are persisted. If there is an existing table with the same name, this table will be
 ignored.
@@ -198,7 +197,7 @@ It is possible to cache a table or a temporary table using the following command
 
 - CACHE [LAZY] TABLE \<tablename\> [AS \<select\>..]
 
-Lazy: If lazy is omitted a count * will be performed in order to bring the whole RDD to memory without
+Lazy: If lazy is omitted, a count * will be performed in order to bring the whole RDD to memory without
 waiting for the first time the data is needed.
 
 - UNCACHE TABLE \<tablename\>
@@ -216,7 +215,7 @@ waiting for the first time the data is needed.
 4.1 CREATE TABLE AS SELECT
 --------------------------
 
-The table will be created in both he Crossdata catalog and the target datasource indicated within the query:
+The table will be created in both the Crossdata catalog and the target datasource indicated within the query:
 
 CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> ) AS \<select\>
 
@@ -245,7 +244,7 @@ Example:
     
 * INSERT OVERWRITE TABLE \<tablename\> \<select\>
 
-It is quite similar to the previous one, but the old data in the relation will be overwritten with the new data instead of appended.
+It is quite similar to the previous one, but the data will be overwritten instead of appended.
 
 
 
@@ -308,7 +307,7 @@ The language supports the following set of operations based on the SQL language.
         Special cases:  [ APPROXIMATE [ ( unsigned_float )] ] function ( [DISTINCT] params )
 
 
-Though most language is similar to SQL, let's go deeper to some specific grammar for querying over partitioned data:
+Though most of the language is similar to SQL, let's go deeper to some specific grammar for querying over partitioned data:
 
 - Ordering statements
 ORDER BY: means global sorting apply for entire data set.
@@ -324,7 +323,7 @@ UNION DISTINCT: deletes duplicates.
 5.2 Examples
 ------------
 
-Some different examples with common structures are shown below:
+Some examples using common statements are shown below:
 ::
 
     - SELECT name, id FROM table1
@@ -378,7 +377,7 @@ SET key=value
 7. SUPPORTED DATA TYPES
 =======================
 
-Those supported by SparkSQL:
+These are the supported data types by SparkSQL:
 
 -  Numeric types:
 
@@ -414,14 +413,14 @@ Those supported by SparkSQL:
 8. LIST OF CROSSDATA CONNECTORS
 ===============================
 
-This document maintains an updated list of connector that work with current versions of Crossdata. Take into account
-that each connector listed may require different version of Crossdata.
+This document keeps an updated list of connector that work with current versions of Crossdata. Take into account
+that each connector listed may require different Crossdata versions.
 
--  Datasources => Implement some methods of SparkSQL Datasource API
--  Connectors => Implement both SparkSQL Datasource API and Crossdata API.
+-  Datasources (Spark-based connectors) => Implement some methods of SparkSQL Datasource API
+-  Connectors (Crossdata-based) => Implement both SparkSQL Datasource API and Crossdata API.
 
-Although connectors and datasources take advantage of Crossdata core, only connectors support certain capabilities
-like native execution, native built-in functions or table discovery.
+Although all connectors and spark-based connectors can take advantage of Crossdata core, only Crossdata-based connectors support
+certain capabilities like native execution, native built-in functions or table discovery.
 
 Connectors taking advantage of Crossdata extension
 --------------------------------------------------
