@@ -85,7 +85,7 @@ The following non-terminal elements appear in the grammar:
 -   \<schema\> ::= ( (\<columndefinition\>',)* \<columndefinition\> )
 -   \<columndefinition\> ::= \<columnname\> \<datatype\>
 -   \<columnname\> ::= \<simple\_identifier\>
--   \<data-type\> ::=
+|-   \<data-type\> ::=
         |string |
         |float |
         |integer |
