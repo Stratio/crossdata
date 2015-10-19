@@ -34,6 +34,9 @@ Table of Contents
 
 -  `5) SELECT STATEMENTS <#select-statements>`__
 
+   -  `5.1) GRAMMAR <grammar>`__
+   -  `5.2) EXAMPLES <examples>`__
+
 -  `6) OTHER COMMANDS <#other-commands>`__
 
    -  `6.1) SHOW COMMANDS <show-commands>`__
@@ -42,7 +45,7 @@ Table of Contents
    
 -  `7) SUPPORTED DATA TYPES <#supported-data-types>`__
 
--  `8) LIST OF CROSSDATA CONNECTORS <#list-of-crossdata-connectors>`__
+-  `8) LIST OF CROSSDATA CONNECTORS <#list-of-crossdata-connectors/datasources>`__
 
 -  `9) SUPPORTED FUNCTIONS <#supported-functions>`__
 
@@ -113,7 +116,7 @@ CROSSDATA which are not supported by SparkSQL.
 
 Expansion main features:
 -   Added new table import capabilities:
-        -   `IMPORT TABLES`: Catalog registration of every single table accessible by a concrete datasource.
+        -   IMPORT TABLES: Catalog registration of every single table accessible by a concrete datasource.
         
 
 3) Data Definition Language       
@@ -225,57 +228,46 @@ It is quite similar to the previous one, but the the old data in the relation wi
 5) SELECT STATEMENTS
 --------------------
 
-The language supports the following set of operations based on the SQL
-language.   
+The language supports the following set of operations based on the SQL language.
 
-WITH \<tablename\> AS  \<select\> (\<select\> | \<insert\>)
+5.1) Grammar
+------------
 
-
-\<select\> :: = ( \<selectstatement\> | \<subquery\> )
+\<select\> ::= ( \<selectstatement\> | \<subquery\> )
                 [(UNION ALL | INTERSECT | EXCEPT | UNION DISTINCT) \<select\>]
--- cartesian, intersection, first substract second, distinct (union)
+\<subquery\> ::= ( \<selectstatement\> )
 
-\<subquery\> = (\<\<selectstatement\>\>)
+Union all: combines the result.
+Intersect: collects first query elements that also belong the the second one.
+Except: subtracts the second query result to the first one.
+Union distinct: deletes duplicates.
+
+Example:
+SELECT name, id FROM table1
+UNION ALL
+SELECT name, id FROM table2
+
 
 \<selectstatement\> ::=
-      SELECT [DISTINCT] (\<selectexpression\>' [AS \<aliasname\>],)\+\<selectexpression\> [AS \<aliasname\>]
-      FROM   \<relations\> [ \<joinexpressions\> ]
+      SELECT [DISTINCT] (\<selectexpression\>' [AS \<aliasname\>],)* \<selectexpression\> [AS \<aliasname\>]
+      FROM   ( \<relations\> | \<joinexpressions\> )
       [WHERE \<expressions\>]
       [GROUP BY \<expressions\> [ HAVING \<expressions\>]]
-      [ (ORDER BY| SORT BY ]
-      => TODO explain what SORT BY mean
-
+      [ (ORDER BY | SORT BY) \<orderexpressions\>]
       [LIMIT  \<numLiteral\>]
 
-\<relations\> ::= csv ( \<tablename\> [\<alias\>] , \<subquery\> [\<alias\>])
+\<relations\> ::= (\<relation\> [\<alias\>],)* \<relation\> [\<alias\>]
+\<relation\> ::= (\<tablename\> | \<subquery\>)
 \<alias\> ::=  [AS] \<aliasname\>
-
+\<aliasname\> ::= \<simpleidentifier\>
 \<joinexpression\> ::= \<relation\> [ \<jointype\>] JOIN \<relation\> [ ON \<expression\> ]
-
 \<jointype\> ::= INNER
                 | LEFT SEMI
                 | LEFT [OUTER]
                 | RIGHT [OUTER]
                 | FULL  [OUTER]
-
-
- protected lazy val sortType: Parser[LogicalPlan => LogicalPlan] =
-    ( ORDER ~ BY  ~> ordering ^^ { case o => l: LogicalPlan => Sort(o, true, l) }
-    | SORT ~ BY  ~> ordering ^^ { case o => l: LogicalPlan => Sort(o, false, l) }
-    )
-
-  protected lazy val ordering: Parser[Seq[SortOrder]] =
-    ( rep1sep(expression ~ direction.? , ",") ^^ {
-        case exps => exps.map(pair => SortOrder(pair._1, pair._2.getOrElse(Ascending)))
-      }
-    )
-
-  protected lazy val direction: Parser[SortDirection] =
-    ( ASC  ^^^ Ascending
-    | DESC ^^^ Descending
-    )
-
-\<selectexpression\> similar to expression??
+\<orderexpressions\> ::= (\<orderexpression\>,)* \<orderexpression\>
+\<orderexpression\> ::= (\<identifier\> | \<expression\>) [ (ASC | DESC) ]
 
 \<expression\> ::=
     CombinationExpressions => AND | OR
@@ -293,18 +285,48 @@ WITH \<tablename\> AS  \<select\> (\<select\> | \<insert\>)
                             ( WHEN \<expression\> THEN \<expression\>)+
                             [ ELSE \<expression\> ]
                             END
-    FunctionExpression => \<functionname\> ( \<functionparameters\> ) => See supported functions <supported-functions>
+    FunctionExpression => \<functionname\> ( \<functionparameters\> ) => See `supported functions <#supported-functions>`_
         Special cases:  [ APPROXIMATE [ ( unsigned_float )] ] function ( [DISTINCT] params )
+
+
+Though most language is similar to SQL, let's go deeper to some specific grammar for querying over partitioned data:
+
+- Ordering statements
+ORDER BY: means global sorting apply for entire data set.
+SORT BY: means sorting only apply within the partition.
+
+
+5.2) Examples
+-------------
+
+Some different examples with common structures are shown below:
+
+SELECT t1.product, gender, count(*) AS amount, sum(t1.quantity) AS total_quantity
+FROM (SELECT product, client_id, quantity FROM lineshdfsdemo) t1
+INNER JOIN clients ON client_id=id
+GROUP BY gender, product;
+
+
+SELECT ol_cnt, sum(CASE
+                   WHEN o_carrier_id = 1 OR o_carrier_id = 2 THEN 1
+                   ELSE 0 END
+                   ) AS high_line_count
+FROM testmetastore.orders
+WHERE ol_delivery_d <to_date('2013-07-09')  AND country LIKE "C%"
+GROUP BY o_ol_cnt
+ORDER BY high_line_count DESC, low_line_count
+LIMIT 10
 
 
 6) OTHER COMMANDS
 -----------------
 
-6.1) Shpw commands
+6.1) Show commands
 ------------------
+
 SHOW TABLES [IN \<database\>]
 
-SHOW FUNCTIONS  [\<functionid\>] -> It's possible to specify certain function
+SHOW FUNCTIONS [\<functionid\>]
 
 6.2) Describe commands
 ----------------------
@@ -386,17 +408,18 @@ External datasources
 
 A more completed list of external Datasources could be find at `spark packages <http://spark-packages.org/?q=tags%3A%22Data%20Sources%22>`_
 
+
 9) SUPPORTED FUNCTIONS
 ----------------------
 
-Native built-in functions:
+- Native built-in functions:
 
- _link => cassandra-datasource
- _link => mongodb-datasource
+ (coming soon) => cassandra-connector _link
+ (coming soon) => mongodb-connector _link
 
 Spark built-in functions (last update: Spark v1.5.1):
 
-// aggregate functions
+- Aggregate functions
 avg
 count
 first
@@ -405,7 +428,7 @@ max
 min
 sum
 
-// misc non-aggregate functions
+- Misc non-aggregate functions
 abs
 array
 coalesce
@@ -420,7 +443,7 @@ rand
 randn
 sqrt
 
-// math functions
+- Math functions
 acos
 asin
 atan
@@ -452,7 +475,7 @@ tanh
 degrees
 radians
 
-// string functions
+- String functions
 ascii
 base64
 concat
@@ -472,7 +495,7 @@ trim
 upper
 
 
-// datetime functions
+- Datetime functions
 current_date
 current_timestamp
 datediff
@@ -499,12 +522,12 @@ weekofyear
 year
 
 
-// collection functions
+- Collection functions
 size
 sort_array
 array_contains
 
-// misc functions
+- Misc functions
 crc32
 md5
 sha
