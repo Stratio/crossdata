@@ -9,7 +9,7 @@ FAQs
     accessible by the big data solution.
 
     That can become quite a challenge when different departments took their own decisions on which technology to use
-    for their databases. Moreover, it might happen that external sources be consulted in order to add value to the
+    for their datastores. Moreover, it might happen that external sources be consulted in order to add value to the
     internal data. Population census, location, historical data repositories, stock prices, ... are good examples
     of this.
 
@@ -18,24 +18,24 @@ FAQs
 
 - **I thought Spark already took care of that, why should I use Crossdata?**
     Yes, Spark is already able to access any, supported by either its connectors or externally developed ones,
-    database. The main value behind Crossdata is the O-word: **Optimization**.
+    datastore. The main value behind Crossdata is the O-word: **Optimization**.
 
-    As many other solutions, Spark is able to use multiple databases. However it generally won't make use of these
+    As many other solutions, Spark is able to use multiple datastores. However it generally won't make use of these
     sources optimized filtering, selection, joining or aggregation mechanisms. It will try to do its best for
-    mainstream databases (such as Cassandra) by **pushing down** some filters. However, more complex cases as joining
+    mainstream datastores (such as Cassandra) by **pushing down** some filters. However, more complex cases as joining
     within the same data source, aggregating, etc will be performed by Spark after
     having loaded, and unnecessary transmitted data between Spark workers, huge data sets as RDDs. Add that to the
-    fact that Spark won't be able execute UDFs or built-in defined functions within concrete data bases.
+    fact that Spark won't be able execute UDFs or built-in defined functions within concrete datastores.
 
     Crossdata tries to:
-        - Execute operation as fully native queries to a database whenever is possible.
+        - Execute operation as fully native queries to a datastore whenever is possible.
         - Otherwise, push-down as many parts of the operation as possible. That is, generate optimized native queries to fulfill as many parts of the operation as possible.
 
 
-- **Which data bases can Crossdata make use of?**
+- **Which datastores can Crossdata make use of?**
     Crossdata is a library expanding Spark functionality. Therefore, any data source supported by Spark is also
     supported by Crossdata. Nevertheless, the optimizations set and advantages provided by Crossdata are to be noted
-    when accessing to *MongoDB* and *Cassandra* data bases.
+    when accessing to *MongoDB* and *Cassandra* datastores.
 
 - **How bad is the resource overload when using Crossdata compared to access to DBs through Spark data sources?**
     There is not overload. On the contrary, Crossdata just adds optimizations whenever possible falling back to
