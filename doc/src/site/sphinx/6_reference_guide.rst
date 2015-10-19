@@ -85,23 +85,23 @@ The following non-terminal elements appear in the grammar:
 -   \<schema\> ::= ( (\<columndefinition\>',)* \<columndefinition\> )
 -   \<columndefinition\> ::= \<columnname\> \<datatype\>
 -   \<columnname\> ::= \<simple\_identifier\>
-|-   \<data-type\> ::=
-        |string |
-        |float |
-        |integer |
-        |tinyint |
-        |smallint |
-        |double |
-        |(bigint | long) |
-        |binary |
-        |boolean |
-        |decimal [(\<intliteral\>, \<intliteral\>)] |
-        |date |
-        |timestamp |
-        |varchar (\<intliteral\>) |
-        |array\<\<datatype\>\> |
-        |map\<\<datatype\>, \<datatype\>\> |
-        |struct\< (\<structfield\>',)* \<structfield\>\>
+-   \<data-type\> ::=
+        string   |
+        float    |
+        integer  |
+        tinyint  |
+        smallint |
+        double   |
+        (bigint | long) |
+        binary   |
+        boolean  |
+        decimal [(\<intliteral\>, \<intliteral\>)] |
+        date     |
+        timestamp|
+        varchar (\<intliteral\>) |
+        array\<\<datatype\>\>    |
+        map\<\<datatype\>, \<datatype\>\> |
+        struct\< (\<structfield\>',)* \<structfield\>\>
 -   \<structfield\> ::= \<columnname\>:\<data-type\>
 
 Please, check SparkSQL documentation for further information about specific statements. 
@@ -121,20 +121,20 @@ Expansion main features:
 3. Data Definition Language
 ===========================
 
-The most important thing to understand how the DDL works is to be aware of how Crossdata manage the metadata. 
+The most important thing to understand how the DDL works is to be aware of how Crossdata manages the metadata.
 So, the basics are:
+
  - Crossdata leverages in different datasources to store data.
- - Crossdata has a persistent catalog plus a cache where temporary tables could
- be stored in addition. That catalog contains metadata necessary to access datasouces data 
- as well as statistics to speed up the queries.
+ - Crossdata has a persistent catalog plus a cache where temporary tables could be stored in addition.
+ That catalog contains metadata necessary to access datasouces data as well as statistics to speed up the queries.
  
  Crossdata is focused on analytics, so the main use case of Crossdata is create a table to register 
- the metadata in the Crossdata catalog. However, when we perform a create table, it is not actually 
+ the metadata in the Crossdata catalog. However, when a create table is performed, it is not actually
  created in the specific datasource. For instance, if you are working with Cassandra, the table created in 
  Crossdata should have been created previously on Cassandra. There are some exceptions to this behaviour:
  a well-known use case is to store the result of an analytical query in a new table; in that case, it will be 
- possible to create a table as select which will create the table in both the datasource and  the Crossdata 
- catalog. CREATE TABLE AS SELECT is described in DML<#data-manipulation-language>. 
+ possible to create a table as select which will create the table in both the datasource and the Crossdata
+ catalog. CREATE TABLE AS SELECT is described in `DML <#data-manipulation-language>`_.
  
  
 3.1 IMPORT TABLES
@@ -151,6 +151,7 @@ IMPORT TABLES USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> )
 Example:
 
 -   Cassandra:
+::
 
     IMPORT TABLES
     USING com.stratio.crossdata.connector.cassandra
@@ -160,6 +161,7 @@ Example:
     )
 
 -   MongoDB:
+::
 
     IMPORT TABLES
     USING com.stratio.crossdata.connector.mongodb
@@ -177,6 +179,7 @@ CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<dataso
 Temporary: A temporary table won't be persisted in Crossdata catalog.
   
 Example:
+::
 
     CREATE TABLE IF NOT EXISTS tablename ( id string, eventdate date)
     USING com.databricks.spark.csv 
@@ -188,16 +191,16 @@ Example:
 
 It is possible to cache a table or a temporary table using the following commands:
 
-* CACHE [LAZY] TABLE \<tablename\> [AS \<select\>..]
+- CACHE [LAZY] TABLE \<tablename\> [AS \<select\>..]
 
-Lazy: If lazy is ommited a count * will be performed in order to bring the whole RDD to memory without
+Lazy: If lazy is omitted a count * will be performed in order to bring the whole RDD to memory without
 waiting for the first time the data is needed.
 
-* UNCACHE TABLE \<tablename\>
+- UNCACHE TABLE \<tablename\>
 
-* CLEAR CACHE 
+- CLEAR CACHE
 
-* REFRESH TABLE \<tablename\> (coming soon) => Refresh the cache.
+- REFRESH TABLE \<tablename\> (coming soon) => Refresh the metadata cache.
 
 4. DATA MANIPULATION LANGUAGE
 -----------------------------
