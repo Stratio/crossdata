@@ -435,15 +435,15 @@ List of Datasources (or Spark-based Connectors)
 
 Datasources within SparkSQL
 
--  `parquet: <https://github.com/apache/spark/tree/master/sql>`_
--  `jdbc: <https://github.com/apache/spark/tree/master/sql>`_
--  `json: <https://github.com/apache/spark/tree/master/sql>`_
+-  `parquet <https://github.com/apache/spark/tree/master/sql>`_
+-  `jdbc <https://github.com/apache/spark/tree/master/sql>`_
+-  `json <https://github.com/apache/spark/tree/master/sql>`_
 
 External datasources
 
--  `elasticsearch: <https://github.com/elastic/elasticsearch-hadoop>`_
--  `csv: <https://github.com/databricks/spark-csv>`_
--  `avro: <https://github.com/databricks/spark-avro>`_
+-  `elasticsearch <https://github.com/elastic/elasticsearch-hadoop>`_
+-  `csv <https://github.com/databricks/spark-csv>`_
+-  `avro <https://github.com/databricks/spark-avro>`_
 
 A more completed list of external Datasources could be find at `spark packages <http://spark-packages.org/?q=tags%3A%22Data%20Sources%22>`_
 
@@ -453,8 +453,8 @@ A more completed list of external Datasources could be find at `spark packages <
 
 -  Native built-in functions:
 
- - (coming soon) => cassandra-connector _link
- - (coming soon) => mongodb-connector _link
+ -  (coming soon) => cassandra-connector _link
+ -  (coming soon) => mongodb-connector _link
 
 Spark built-in functions (last update: Spark v1.5.1):
 
