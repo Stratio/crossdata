@@ -86,7 +86,9 @@ The following non-terminal elements appear in the grammar:
 -   \<columndefinition\> ::= \<columnname\> \<datatype\>
 -   \<columnname\> ::= \<simple\_identifier\>
 -   \<data-type\> ::=
+
 ::
+
         string |
         float|
         integer|
