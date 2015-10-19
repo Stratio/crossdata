@@ -392,8 +392,8 @@ Those supported by SparkSQL:
 
 -  Datetime types:
 
-   |-  DateType: year, month, day.
-   |-  TimestampType: year, month, day, hour, minute, and second.
+   -  DateType: year, month, day.
+   -  TimestampType: year, month, day, hour, minute, and second.
 
 -  StringType
 
@@ -403,11 +403,11 @@ Those supported by SparkSQL:
 
 -  Complex types:
 
-   |-  ArrayType[ElementType]: Sequence of elements.
-   |-  MapType[KeyType, ValueType]: Set of key-value pairs.
-   |-  StructType: Sequence of StructFields.
+   -  ArrayType[ElementType]: Sequence of elements.
+   -  MapType[KeyType, ValueType]: Set of key-value pairs.
+   -  StructType: Sequence of StructFields.
 
-     |-  StructField(name, datatype, nullable): Represents a field in a StructType.
+     -  StructField(name, datatype, nullable): Represents a field in a StructType.
 
 
 
@@ -453,8 +453,8 @@ A more completed list of external Datasources could be find at `spark packages <
 
 -  Native built-in functions:
 
- (coming soon) => cassandra-connector _link
- (coming soon) => mongodb-connector _link
+ - (coming soon) => cassandra-connector _link
+ - (coming soon) => mongodb-connector _link
 
 Spark built-in functions (last update: Spark v1.5.1):
 
