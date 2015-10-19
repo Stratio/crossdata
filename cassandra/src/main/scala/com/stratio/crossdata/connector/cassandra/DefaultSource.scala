@@ -163,9 +163,8 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     Seq(
       UDF("now", None, StructType(Nil), DataTypes.StringType),
       UDF("dateOf", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.StringType),
-      UDF("toDate", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.StringType)/*,
-      UDF("", None, StructType(Array.empty), DataTypes.StringType),
-      UDF("", None, StructType(Array.empty), DataTypes.StringType)*/
+      UDF("toDate", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.StringType),
+      UDF("unixTimestampOf", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.LongType)
     )
 
   }

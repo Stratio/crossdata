@@ -76,7 +76,6 @@ object CassandraQueryProcessor {
 
     val filter = if (filters.nonEmpty) filters.map(filterToCQL).mkString("WHERE ", " AND ", "") else ""
     val columns = requiredColumns.map(expandAttribute).mkString(", ")
-    val orderBy = ""
 
     s"SELECT $columns FROM $tableQN $filter LIMIT $limit ALLOW FILTERING"
   }
