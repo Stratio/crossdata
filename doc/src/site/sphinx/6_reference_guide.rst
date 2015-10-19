@@ -380,30 +380,30 @@ SET key=value
 
 Those supported by SparkSQL:
 
-Numeric types:
-* ByteType: Represents 1-byte signed integer numbers.
-* ShortType: Represents 2-byte signed integer numbers.
-* IntegerType: Represents 4-byte signed integer numbers.
-* LongType: Represents 8-byte signed integer numbers.
-* FloatType: Represents 4-byte single-precision floating point numbers.
-* DoubleType: Represents 8-byte double-precision floating point numbers.
-* DecimalType: Represents arbitrary-precision signed decimal numbers. Backed internally by java.math.BigDecimal.
+-  Numeric types:
+   -  ByteType: Represents 1-byte signed integer numbers.
+   -  ShortType: Represents 2-byte signed integer numbers.
+   -  IntegerType: Represents 4-byte signed integer numbers.
+   -  LongType: Represents 8-byte signed integer numbers.
+   -  FloatType: Represents 4-byte single-precision floating point numbers.
+   -  DoubleType: Represents 8-byte double-precision floating point numbers.
+   -  DecimalType: Represents arbitrary-precision signed decimal numbers. Backed internally by java.math.BigDecimal.
 
-Datetime types:
-* DateType: year, month, day.
-* TimestampType: year, month, day, hour, minute, and second.
+-  Datetime types:
+   -  DateType: year, month, day.
+   -  TimestampType: year, month, day, hour, minute, and second.
 
-StringType
+-  StringType
 
-BooleanType
+-  BooleanType
 
-BinaryType
+-  BinaryType
 
-Complex types:
-* ArrayType[ElementType]: Sequence of elements.
-* MapType[KeyType, ValueType]: Set of key-value pairs.
-* StructType: Sequence of StructFields.
-  * StructField(name, datatype, nullable): Represents a field in a StructType.
+-  Complex types:
+   -  ArrayType[ElementType]: Sequence of elements.
+   -  MapType[KeyType, ValueType]: Set of key-value pairs.
+   -  StructType: Sequence of StructFields.
+    -  StructField(name, datatype, nullable): Represents a field in a StructType.
 
 
 
@@ -413,8 +413,8 @@ Complex types:
 This document maintains an updated list of connector that work with current versions of Crossdata. Take into account
 that each connector listed may require different version of Crossdata.
 
-- Datasources => Implement some methods of SparkSQL Datasource API
-- Connectors => Implement both SparkSQL Datasource API and Crossdata API.
+-  Datasources => Implement some methods of SparkSQL Datasource API
+-  Connectors => Implement both SparkSQL Datasource API and Crossdata API.
 
 Although connectors and datasources take advantage of Crossdata core only connectors can support certain capabilities
 like native execution, Native built-in functions or table discovery.
@@ -422,24 +422,24 @@ like native execution, Native built-in functions or table discovery.
 Connectors taking advantage of Crossdata extension
 --------------------------------------------------
 
-- connector-cassandra
-- connector-mongodb
-- connector-elasticsearch (coming soon)
+-  connector-cassandra
+-  connector-mongodb
+-  connector-elasticsearch (coming soon)
 
 List of Datasources (or Spark-based Connectors)
 -----------------------------------------------
 
 Datasources within SparkSQL
 
-- `parquet: <https://github.com/apache/spark/tree/master/sql>`_
-- `jdbc: <https://github.com/apache/spark/tree/master/sql>`_
-- `json: <https://github.com/apache/spark/tree/master/sql>`_
+-  `parquet: <https://github.com/apache/spark/tree/master/sql>`_
+-  `jdbc: <https://github.com/apache/spark/tree/master/sql>`_
+-  `json: <https://github.com/apache/spark/tree/master/sql>`_
 
 External datasources
 
-- `elasticsearch: <https://github.com/elastic/elasticsearch-hadoop>`_
-- `csv: <https://github.com/databricks/spark-csv>`_
-- `avro: <https://github.com/databricks/spark-avro>`_
+-  `elasticsearch: <https://github.com/elastic/elasticsearch-hadoop>`_
+-  `csv: <https://github.com/databricks/spark-csv>`_
+-  `avro: <https://github.com/databricks/spark-avro>`_
 
 A more completed list of external Datasources could be find at `spark packages <http://spark-packages.org/?q=tags%3A%22Data%20Sources%22>`_
 
@@ -447,14 +447,14 @@ A more completed list of external Datasources could be find at `spark packages <
 9. SUPPORTED FUNCTIONS
 ----------------------
 
-- Native built-in functions:
+-  Native built-in functions:
 
  (coming soon) => cassandra-connector _link
  (coming soon) => mongodb-connector _link
 
 Spark built-in functions (last update: Spark v1.5.1):
 
-- Aggregate functions
+-  Aggregate functions
 avg
 count
 first
@@ -463,7 +463,7 @@ max
 min
 sum
 
-- Misc non-aggregate functions
+-  Misc non-aggregate functions
 abs
 array
 coalesce
@@ -478,7 +478,7 @@ rand
 randn
 sqrt
 
-- Math functions
+-  Math functions
 acos
 asin
 atan
@@ -510,7 +510,7 @@ tanh
 degrees
 radians
 
-- String functions
+-  String functions
 ascii
 base64
 concat
@@ -530,7 +530,7 @@ trim
 upper
 
 
-- Datetime functions
+-  Datetime functions
 current_date
 current_timestamp
 datediff
@@ -557,12 +557,12 @@ weekofyear
 year
 
 
-- Collection functions
+-  Collection functions
 size
 sort_array
 array_contains
 
-- Misc functions
+-  Misc functions
 crc32
 md5
 sha
