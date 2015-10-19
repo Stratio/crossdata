@@ -27,13 +27,13 @@ For others options run ./make-distribution-crossdata.sh --help
 
 Running Crossdata standalone
 =============================
-To run crossdata in a standalone mode, it's necessary to install crossdata using the make-distribution-crossdata
+To run Crossdata in a standalone mode, it's necessary to install Crossdata using the make-distribution-crossdata
 script first.
 Once Crossdata is installed, just run this::
 
     > bin/stratio-xd-shell --cassandra --mongodb
 
-And then you can execute::
+This example register the existent table "students" of the Cassandra keyspace "highschool" that has a few rows inserted. Once the table is registered then execute a query by the native way::
 
     >xdContext.sql("CREATE TEMPORARY TABLE students USING com.stratio.crossdata.sql.sources.cassandra
             OPTIONS (keyspace 'highschool', table 'students', cluster 'students', pushdown 'true',
@@ -43,7 +43,7 @@ And then you can execute::
 
 Running Crossdata as a client-server service
 =============================================
-Crossdata has an Scala/Java API driver to allow make queries programmatically on your own projects. Before do it,
+Crossdata has a Scala/Java API driver to allow to make queries programmatically on your own projects. Before do it,
 please see the `Configuration document <3_configuration.rst>`_
 
 Run Crossdata Server using maven::
