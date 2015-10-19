@@ -382,13 +382,13 @@ Those supported by SparkSQL:
 
 -  Numeric types:
 
-   |-  ByteType: Represents 1-byte signed integer numbers.
-   |-  ShortType: Represents 2-byte signed integer numbers.
-   |-  IntegerType: Represents 4-byte signed integer numbers.
-   |-  LongType: Represents 8-byte signed integer numbers.
-   |-  FloatType: Represents 4-byte single-precision floating point numbers.
-   |-  DoubleType: Represents 8-byte double-precision floating point numbers.
-   |-  DecimalType: Represents arbitrary-precision signed decimal numbers. Backed internally by java.math.BigDecimal.
+   -  ByteType: Represents 1-byte signed integer numbers.
+   -  ShortType: Represents 2-byte signed integer numbers.
+   -  IntegerType: Represents 4-byte signed integer numbers.
+   -  LongType: Represents 8-byte signed integer numbers.
+   -  FloatType: Represents 4-byte single-precision floating point numbers.
+   -  DoubleType: Represents 8-byte double-precision floating point numbers.
+   -  DecimalType: Represents arbitrary-precision signed decimal numbers. Backed internally by java.math.BigDecimal.
 
 -  Datetime types:
 
@@ -406,7 +406,7 @@ Those supported by SparkSQL:
    |-  ArrayType[ElementType]: Sequence of elements.
    |-  MapType[KeyType, ValueType]: Set of key-value pairs.
    |-  StructType: Sequence of StructFields.
-   
+
      |-  StructField(name, datatype, nullable): Represents a field in a StructType.
 
 
