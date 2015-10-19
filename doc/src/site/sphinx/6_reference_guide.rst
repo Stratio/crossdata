@@ -15,7 +15,7 @@ Along with the language description different features like supported types or b
 are included.
 
 Table of Contents
-=================
+*****************
 
 -  `1) GENERAL NOTES <#general-notes>`__
 
@@ -50,7 +50,7 @@ Table of Contents
 -  `9) SUPPORTED FUNCTIONS <#supported-functions>`__
 
 
-1) General Notes
+1. General Notes
 ================
 
 -   In general, a quoted (single or double) string refers to a literal
@@ -108,7 +108,7 @@ The following non-terminal elements appear in the grammar:
 Please, check SparkSQL documentation for further information about specific statements. 
 
 
-2) Expansion main features
+2. Expansion main features
 ==========================
 
 Through the following lines you will find a description of those sentences provided by
@@ -119,7 +119,7 @@ Expansion main features:
         -   IMPORT TABLES: Catalog registration of every single table accessible by a concrete datasource.
         
 
-3) Data Definition Language       
+3. Data Definition Language
 ===========================
 
 The most important thing to understand how the DDL works is to be aware of how Crossdata manage the metadata. 
@@ -138,8 +138,8 @@ So, the basics are:
  catalog. CREATE TABLE AS SELECT is described in DML<#data-manipulation-language>. 
  
  
-3.1) IMPORT TABLES
-------------------
+3.1 IMPORT TABLES
+-----------------
 
 Import all the tables from a specific datasource to the Crossdata catalog. It incorporates all the underlying metadata
 needed by the datasource provider in order to create a Spark BaseRelation.
@@ -170,8 +170,8 @@ Example:
     )
     
         
-3.2) CREATE TABLE
------------------
+3.2 CREATE TABLE
+----------------
 
 CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> )
 
@@ -200,18 +200,18 @@ waiting for the first time the data is needed.
 
 * REFRESH TABLE \<tablename\> (coming soon) => Refresh the cache.
 
-4) DATA MANIPULATION LANGUAGE
+4. DATA MANIPULATION LANGUAGE
 -----------------------------
 
-4.1) CREATE TABLE AS SELECT
----------------------------
+4.1 CREATE TABLE AS SELECT
+--------------------------
 
 The table will be created in both he Crossdata catalog and the target datasource indicated within the query:
 
 CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> ) AS \<select\>
 
-4.2) INSERT INTO TABLE AS SELECT
---------------------------------
+4.2 INSERT INTO TABLE AS SELECT
+-------------------------------
 
 * INSERT INTO TABLE \<tablename\> \<select\>
 
@@ -225,13 +225,13 @@ Example:
 It is quite similar to the previous one, but the the old data in the relation will be overwritten with the new data instead of appended.
 
 
-5) SELECT STATEMENTS
---------------------
+5. SELECT STATEMENTS
+====================
 
 The language supports the following set of operations based on the SQL language.
 
-5.1) Grammar
-------------
+5.1 Grammar
+-----------
 
 \<select\> ::= ( \<selectstatement\> | \<subquery\> )
                 [(UNION ALL | INTERSECT | EXCEPT | UNION DISTINCT) \<select\>]
@@ -296,8 +296,8 @@ ORDER BY: means global sorting apply for entire data set.
 SORT BY: means sorting only apply within the partition.
 
 
-5.2) Examples
--------------
+5.2 Examples
+------------
 
 Some different examples with common structures are shown below:
 
@@ -318,30 +318,30 @@ ORDER BY high_line_count DESC, low_line_count
 LIMIT 10
 
 
-6) OTHER COMMANDS
------------------
+6. OTHER COMMANDS
+=================
 
-6.1) Show commands
-------------------
+6.1 Show commands
+-----------------
 
 SHOW TABLES [IN \<database\>]
 
 SHOW FUNCTIONS [\<functionid\>]
 
-6.2) Describe commands
-----------------------
+6.2 Describe commands
+---------------------
 
 DESCRIBE [EXTENDED] \<tablename\>
 
 DESCRIBE FUNCTION [EXTENDED] \<functionid\>
 
-6.3) Set command
-----------------
+6.3 Set command
+---------------
 SET key=value
 
 
-7) SUPPORTED DATA TYPES
------------------------
+7. SUPPORTED DATA TYPES
+=======================
 
 Those supported by SparkSQL:
 
@@ -372,8 +372,8 @@ Complex types:
 
 
 
-8) LIST OF CROSSDATA CONNECTORS/DATASOURCES
-*******************************************
+8. LIST OF CROSSDATA CONNECTORS/DATASOURCES
+===========================================
 
 This document maintains an updated list of connector that work with current versions of Crossdata. Take into account
 that each connector listed may require different version of Crossdata.
@@ -385,14 +385,14 @@ Although connectors and datasources take advantage of Crossdata core only connec
 like native execution, Native built-in functions or table discovery.
 
 Connectors taking advantage of Crossdata extension
-==================================================
+--------------------------------------------------
 
 -    connector-cassandra
 -    connector-mongodb
 -    connector-elasticsearch (coming soon)
 
 List of Datasources (or Spark-based Connectors)
-===============================================
+-----------------------------------------------
 
 Datasources within SparkSQL
 
@@ -409,7 +409,7 @@ External datasources
 A more completed list of external Datasources could be find at `spark packages <http://spark-packages.org/?q=tags%3A%22Data%20Sources%22>`_
 
 
-9) SUPPORTED FUNCTIONS
+9. SUPPORTED FUNCTIONS
 ----------------------
 
 - Native built-in functions:
