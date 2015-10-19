@@ -459,114 +459,121 @@ A more completed list of external Datasources could be find at `spark packages <
 Spark built-in functions (last update: Spark v1.5.1):
 
 -  Aggregate functions
-avg
-count
-first
-last
-max
-min
-sum
+
+   -  avg
+   -  count
+   -  first
+   -  last
+   -  max
+   -  min
+   -  sum
 
 -  Misc non-aggregate functions
-abs
-array
-coalesce
-explode
-greatest
-if
-isnan
-isnull
-isnotnull
-least
-rand
-randn
-sqrt
+
+   -  abs
+   -  array
+   -  coalesce
+   -  explode
+   -  greatest
+   -  if
+   -  isnan
+   -  isnull
+   -  isnotnull
+   -  least
+   -  rand
+   -  randn
+   -  sqrt
 
 -  Math functions
-acos
-asin
-atan
-atan2
-bin
-cbrt
-ceil
-ceiling
-cos
-conv
-exp
-floor
-factorial
-hypot
-hex
-log
-ln
-log10
-pow
-pmod
-positive
-round
-rint
-sign
-sin
-sinh
-tan
-tanh
-degrees
-radians
+
+   -  acos
+   -  asin
+   -  atan
+   -  atan2
+   -  bin
+   -  cbrt
+   -  ceil
+   -  ceiling
+   -  cos
+   -  conv
+   -  exp
+   -  floor
+   -  factorial
+   -  hypot
+   -  hex
+   -  log
+   -  ln
+   -  log10
+   -  pow
+   -  pmod
+   -  positive
+   -  round
+   -  rint
+   -  sign
+   -  sin
+   -  sinh
+   -  tan
+   -  tanh
+   -  degrees
+   -  radians
 
 -  String functions
-ascii
-base64
-concat
-format_number
-get_json_object
-lower
-length
-regexp_extract
-regexp_replace
-ltrim
-printf
-rtrim
-split
-substring
-substring_index
-trim
-upper
+
+   -  ascii
+   -  base64
+   -  concat
+   -  format_number
+   -  get_json_object
+   -  lower
+   -  length
+   -  regexp_extract
+   -  regexp_replace
+   -  ltrim
+   -  printf
+   -  rtrim
+   -  split
+   -  substring
+   -  substring_index
+   -  trim
+   -  upper
 
 
 -  Datetime functions
-current_date
-current_timestamp
-datediff
-date_add
-date_format
-date_sub
-day
-dayofyear
-dayofmonth
-from_unixtime
-from_utc_timestamp
-hour
-last_day
-minute
-month
-months_between
-next_day
-quarter
-second
-to_date
-to_utc_timestamp
-unix_timestamp
-weekofyear
-year
+
+   -  current_date
+   -  current_timestamp
+   -  datediff
+   -  date_add
+   -  date_format
+   -  date_sub
+   -  day
+   -  dayofyear
+   -  dayofmonth
+   -  from_unixtime
+   -  from_utc_timestamp
+   -  hour
+   -  last_day
+   -  minute
+   -  month
+   -  months_between
+   -  next_day
+   -  quarter
+   -  second
+   -  to_date
+   -  to_utc_timestamp
+   -  unix_timestamp
+   -  weekofyear
+   -  year
 
 
 -  Collection functions
-size
-sort_array
-array_contains
+
+   -  size
+   -  sort_array
+   -  array_contains
 
 -  Misc functions
-crc32
-md5
-sha
+
+   -  crc32
+   -  md5
+   -  sha
