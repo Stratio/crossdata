@@ -125,8 +125,7 @@ The most important thing to understand how the DDL works is to be aware of how C
 So, the basics are:
 
  - Crossdata leverages in different datasources to store data.
- - Crossdata has a persistent catalog plus a cache where temporary tables could be stored in addition.
- That catalog contains metadata necessary to access datasouces data as well as statistics to speed up the queries.
+ - Crossdata has a persistent catalog plus a cache where temporary tables could be stored in addition. The catalog contains metadata necessary to access datasouces data as well as statistics to speed up the queries.
  
  Crossdata is focused on analytics, so the main use case of Crossdata is create a table to register 
  the metadata in the Crossdata catalog. However, when a create table is performed, it is not actually
@@ -212,19 +211,28 @@ The table will be created in both he Crossdata catalog and the target datasource
 
 CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS ( (\<property\>',)\+\<property\> ) AS \<select\>
 
+Example:
+::
+
+    CREATE TABLE mongodbtable
+    USING com.databricks.spark.csv
+    OPTIONS (path "events.csv", header "true")
+    SELECT sum(price), day FROM cassandratable GROUP BY day
+
 4.2 INSERT INTO TABLE AS SELECT
 -------------------------------
 
 * INSERT INTO TABLE \<tablename\> \<select\>
 
 Example:
+::
 
     INSERT INTO TABLE mongodbtable 
     SELECT sum(price), day FROM cassandratable GROUP BY day
     
 * INSERT OVERWRITE TABLE \<tablename\> \<select\>
 
-It is quite similar to the previous one, but the the old data in the relation will be overwritten with the new data instead of appended.
+It is quite similar to the previous one, but the old data in the relation will be overwritten with the new data instead of appended.
 
 
 5. SELECT STATEMENTS
