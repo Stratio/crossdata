@@ -42,7 +42,9 @@ Table of Contents
    
 -  `7) SUPPORTED DATA TYPES <#supported-data-types>`__
 
--  `8) SUPPORTED FUNCTIONS <#supported-functions>`__
+-  `8) LIST OF CROSSDATA CONNECTORS <#list-of-crossdata-connectors>`__
+
+-  `9) SUPPORTED FUNCTIONS <#supported-functions>`__
 
 
 1) General Notes
@@ -347,7 +349,44 @@ Complex types:
   * StructField(name, datatype, nullable): Represents a field in a StructType.
 
 
-8) SUPPORTED FUNCTIONS
+
+8) LIST OF CROSSDATA CONNECTORS/DATASOURCES
+*******************************************
+
+This document maintains an updated list of connector that work with current versions of Crossdata. Take into account
+that each connector listed may require different version of Crossdata.
+
+- Datasources => Implement some methods of SparkSQL Datasource API
+- Connectors => Implement both SparkSQL Datasource API and Crossdata API.
+
+Although connectors and datasources take advantage of Crossdata core only connectors can support certain capabilities
+like native execution, Native built-in functions or table discovery.
+
+Connectors taking advantage of Crossdata extension
+==================================================
+
+-    connector-cassandra
+-    connector-mongodb
+-    connector-elasticsearch (coming soon)
+
+List of Datasources (or Spark-based Connectors)
+===============================================
+
+Datasources within SparkSQL
+
+-    `parquet: <https://github.com/apache/spark/tree/master/sql>`_
+-    `jdbc: <https://github.com/apache/spark/tree/master/sql>`_
+-    `json: <https://github.com/apache/spark/tree/master/sql>`_
+
+External datasources
+
+-    `elasticsearch: <https://github.com/elastic/elasticsearch-hadoop>`_
+-    `csv: <https://github.com/databricks/spark-csv>`_
+-    `avro: <https://github.com/databricks/spark-avro>`_
+
+A more completed list of external Datasources could be find at `spark packages <http://spark-packages.org/?q=tags%3A%22Data%20Sources%22>`_
+
+9) SUPPORTED FUNCTIONS
 ----------------------
 
 Native built-in functions:
