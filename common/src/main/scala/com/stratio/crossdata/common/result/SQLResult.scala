@@ -21,7 +21,6 @@ import java.util.UUID
 import com.stratio.crossdata.common.SQLResult
 import org.apache.spark.sql.Row
 
-
 case class SuccessfulQueryResult(queryId: UUID, result: Array[Row]) extends SQLResult {
   override val resultSet = result
 
