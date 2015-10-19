@@ -50,6 +50,8 @@ Table of Contents
 -  `9) SUPPORTED FUNCTIONS <#supported-functions>`__
 
 
+
+
 1. General Notes
 ================
 
@@ -107,6 +109,8 @@ The following non-terminal elements appear in the grammar:
 Please, check SparkSQL documentation for further information about specific statements. 
 
 
+
+
 2. Expansion main features
 ==========================
 
@@ -117,6 +121,8 @@ Expansion main features:
 -   Added new table import capabilities:
         -   IMPORT TABLES: Catalog registration of every single table accessible by a concrete datasource.
         
+
+
 
 3. Data Definition Language
 ===========================
@@ -201,6 +207,9 @@ waiting for the first time the data is needed.
 
 - REFRESH TABLE \<tablename\> (coming soon) => Refresh the metadata cache.
 
+
+
+
 4. DATA MANIPULATION LANGUAGE
 -----------------------------
 
@@ -217,7 +226,9 @@ Example:
     CREATE TABLE mongodbtable
     USING com.databricks.spark.csv
     OPTIONS (path "events.csv", header "true")
-    SELECT sum(price), day FROM cassandratable GROUP BY day
+    SELECT sum(price), day
+    FROM cassandratable
+    GROUP BY day
 
 4.2 INSERT INTO TABLE AS SELECT
 -------------------------------
@@ -228,11 +239,15 @@ Example:
 ::
 
     INSERT INTO TABLE mongodbtable 
-    SELECT sum(price), day FROM cassandratable GROUP BY day
+    SELECT sum(price), day
+    FROM cassandratable
+    GROUP BY day
     
 * INSERT OVERWRITE TABLE \<tablename\> \<select\>
 
 It is quite similar to the previous one, but the old data in the relation will be overwritten with the new data instead of appended.
+
+
 
 
 5. SELECT STATEMENTS
@@ -242,44 +257,38 @@ The language supports the following set of operations based on the SQL language.
 
 5.1 Grammar
 -----------
+::
 
-\<select\> ::= ( \<selectstatement\> | \<subquery\> )
-                [(UNION ALL | INTERSECT | EXCEPT | UNION DISTINCT) \<select\>]
-\<subquery\> ::= ( \<selectstatement\> )
+ \<select\> ::= ( \<selectstatement\> | \<subquery\> ) [ \<setoperation\> \<select\>]
+ \<subquery\> ::= ( \<selectstatement\> )
+ \<setoperation\> ::= ( UNION ALL |
+                        INTERSECT |
+                        EXCEPT    |
+                        UNION DISTINCT )
 
-Union all: combines the result.
-Intersect: collects first query elements that also belong the the second one.
-Except: subtracts the second query result to the first one.
-Union distinct: deletes duplicates.
-
-Example:
-SELECT name, id FROM table1
-UNION ALL
-SELECT name, id FROM table2
-
-
-\<selectstatement\> ::=
+ \<selectstatement\> ::=
       SELECT [DISTINCT] (\<selectexpression\>' [AS \<aliasname\>],)* \<selectexpression\> [AS \<aliasname\>]
       FROM   ( \<relations\> | \<joinexpressions\> )
       [WHERE \<expressions\>]
       [GROUP BY \<expressions\> [ HAVING \<expressions\>]]
-      [ (ORDER BY | SORT BY) \<orderexpressions\>]
-      [LIMIT  \<numLiteral\>]
+      [(ORDER BY | SORT BY) \<orderexpressions\>]
+      [LIMIT \<numLiteral\>]
 
-\<relations\> ::= (\<relation\> [\<alias\>],)* \<relation\> [\<alias\>]
-\<relation\> ::= (\<tablename\> | \<subquery\>)
-\<alias\> ::=  [AS] \<aliasname\>
-\<aliasname\> ::= \<simpleidentifier\>
-\<joinexpression\> ::= \<relation\> [ \<jointype\>] JOIN \<relation\> [ ON \<expression\> ]
-\<jointype\> ::= INNER
-                | LEFT SEMI
-                | LEFT [OUTER]
-                | RIGHT [OUTER]
-                | FULL  [OUTER]
-\<orderexpressions\> ::= (\<orderexpression\>,)* \<orderexpression\>
-\<orderexpression\> ::= (\<identifier\> | \<expression\>) [ (ASC | DESC) ]
+ \<relations\> ::= (\<relation\> [\<alias\>],)* \<relation\> [\<alias\>]
+ \<relation\> ::= (\<tablename\> | \<subquery\>)
+ \<alias\> ::=  [AS] \<aliasname\>
+ \<aliasname\> ::= \<simpleidentifier\>
+ \<joinexpression\> ::= \<relation\> [ \<jointype\>] JOIN \<relation\> [ ON \<expression\> ]
+ \<jointype\> ::= ( INNER        |
+                    LEFT SEMI    |
+                    LEFT [OUTER] |
+                    RIGHT [OUTER]|
+                    FULL  [OUTER]
+                  )
+ \<orderexpressions\> ::= (\<orderexpression\>,)* \<orderexpression\>
+ \<orderexpression\> ::= (\<identifier\> | \<expression\>) [ (ASC | DESC) ]
 
-\<expression\> ::=
+ \<expression\> ::=
     CombinationExpressions => AND | OR
     NotExpression => NOT
     ComparisonExpressions =>
@@ -290,7 +299,7 @@ SELECT name, id FROM table2
        | [NOT] IN
        | IS [NOT] NULL
     ArithmeticExpressions =>  + | - | * | / | %
-    BitwiseExpressions => & | '|' | | ^
+    BitwiseExpressions => & | '|' | ^
     CaseWhenExpression =>   CASE [ \<expression\> ]
                             ( WHEN \<expression\> THEN \<expression\>)+
                             [ ELSE \<expression\> ]
@@ -305,27 +314,41 @@ Though most language is similar to SQL, let's go deeper to some specific grammar
 ORDER BY: means global sorting apply for entire data set.
 SORT BY: means sorting only apply within the partition.
 
+- Set statements
+UNION ALL: combines the result.
+INTERSECT: collects first query elements that also belong the the second one.
+EXCEPT: subtracts the second query result to the first one.
+UNION DISTINCT: deletes duplicates.
+
 
 5.2 Examples
 ------------
 
 Some different examples with common structures are shown below:
+::
 
-SELECT t1.product, gender, count(*) AS amount, sum(t1.quantity) AS total_quantity
-FROM (SELECT product, client_id, quantity FROM lineshdfsdemo) t1
-INNER JOIN clients ON client_id=id
-GROUP BY gender, product;
+    - SELECT name, id FROM table1
+    UNION ALL
+    SELECT name, id FROM table2
 
 
-SELECT ol_cnt, sum(CASE
-                   WHEN o_carrier_id = 1 OR o_carrier_id = 2 THEN 1
-                   ELSE 0 END
-                   ) AS high_line_count
-FROM testmetastore.orders
-WHERE ol_delivery_d <to_date('2013-07-09')  AND country LIKE "C%"
-GROUP BY o_ol_cnt
-ORDER BY high_line_count DESC, low_line_count
-LIMIT 10
+    - SELECT t1.product, gender, count(*) AS amount, sum(t1.quantity) AS total_quantity
+    FROM (SELECT product, client_id, quantity FROM lineshdfsdemo) t1
+    INNER JOIN clients ON client_id=id
+    GROUP BY gender, product;
+
+
+    - SELECT ol_cnt, sum(CASE
+                       WHEN o_carrier_id = 1 OR o_carrier_id = 2 THEN 1
+                       ELSE 0 END
+                       ) AS high_line_count
+    FROM testmetastore.orders
+    WHERE ol_delivery_d <to_date('2013-07-09') AND country LIKE "C%"
+    GROUP BY o_ol_cnt
+    ORDER BY high_line_count DESC, low_line_count
+    LIMIT 10
+
+
 
 
 6. OTHER COMMANDS
@@ -347,7 +370,9 @@ DESCRIBE FUNCTION [EXTENDED] \<functionid\>
 
 6.3 Set command
 ---------------
+
 SET key=value
+
 
 
 7. SUPPORTED DATA TYPES
@@ -397,24 +422,24 @@ like native execution, Native built-in functions or table discovery.
 Connectors taking advantage of Crossdata extension
 --------------------------------------------------
 
--    connector-cassandra
--    connector-mongodb
--    connector-elasticsearch (coming soon)
+- connector-cassandra
+- connector-mongodb
+- connector-elasticsearch (coming soon)
 
 List of Datasources (or Spark-based Connectors)
 -----------------------------------------------
 
 Datasources within SparkSQL
 
--    `parquet: <https://github.com/apache/spark/tree/master/sql>`_
--    `jdbc: <https://github.com/apache/spark/tree/master/sql>`_
--    `json: <https://github.com/apache/spark/tree/master/sql>`_
+- `parquet: <https://github.com/apache/spark/tree/master/sql>`_
+- `jdbc: <https://github.com/apache/spark/tree/master/sql>`_
+- `json: <https://github.com/apache/spark/tree/master/sql>`_
 
 External datasources
 
--    `elasticsearch: <https://github.com/elastic/elasticsearch-hadoop>`_
--    `csv: <https://github.com/databricks/spark-csv>`_
--    `avro: <https://github.com/databricks/spark-avro>`_
+- `elasticsearch: <https://github.com/elastic/elasticsearch-hadoop>`_
+- `csv: <https://github.com/databricks/spark-csv>`_
+- `avro: <https://github.com/databricks/spark-avro>`_
 
 A more completed list of external Datasources could be find at `spark packages <http://spark-packages.org/?q=tags%3A%22Data%20Sources%22>`_
 
