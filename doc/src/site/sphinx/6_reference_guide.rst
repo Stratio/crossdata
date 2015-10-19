@@ -86,25 +86,22 @@ The following non-terminal elements appear in the grammar:
 -   \<columndefinition\> ::= \<columnname\> \<datatype\>
 -   \<columnname\> ::= \<simple\_identifier\>
 -   \<data-type\> ::=
-
-::
-
-        string |
-        float|
-        integer|
-        tinyint |
-        smallint |
-        double |
-        (bigint|long) |
-        binary |
-        boolean |
-        decimal [(\<intliteral\>, \<intliteral\>) ] |
-        date |
-        timestamp |
-        varchar (\<intliteral\>) |
-        array\<\<datatype\>\> |
-        map\<\<datatype\>, \<datatype\>\> |
-        struct\<  (\<structfield\>',)*\<structfield\> \>
+|        string |
+|        float|
+|        integer|
+|        tinyint |
+|        smallint |
+|        double |
+|        (bigint|long) |
+|        binary |
+|        boolean |
+|        decimal [(\<intliteral\>, \<intliteral\>) ] |
+|        date |
+|        timestamp |
+|        varchar (\<intliteral\>) |
+|        array\<\<datatype\>\> |
+|        map\<\<datatype\>, \<datatype\>\> |
+|        struct\<  (\<structfield\>',)*\<structfield\> \>
 -   \<structfield\> ::= \<columnname\>:\<data-type\>
 
 Please, check SparkSQL documentation for further information about specific statements. 
