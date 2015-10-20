@@ -60,8 +60,17 @@ object MongoExample extends App with MongoDefaultConstants {
     //Spark
     xdContext.sql(s"SELECT count(*), avg(age) FROM $Collection GROUP BY enrolled").show(5)
 
-
-
+    /* TODO CREATE TABLE AS SELECT EXAMPLE
+    xdContext.sql(
+      s"""|CREATE TABLE newTable
+          |USING $SourceProvider
+          |OPTIONS (
+          |host '$MongoHost:$MongoPort',
+          |database 'any',
+          |collection 'newTable'
+          |)
+          |AS SELECT * FROM $Collection
+       """.stripMargin.replaceAll("\n", " "))*/
   }
 
   cleanEnvironment(mongoClient)
