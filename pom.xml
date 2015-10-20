@@ -35,13 +35,6 @@
     <url>http://stratio.github.io/crossdata/</url>
     <inceptionYear>2015</inceptionYear>
 
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
-
     <scm>
         <url>https://github.com/Stratio/crossdata</url>
         <connection>scm:git:git:@github.com:Stratio/crossdata.git</connection>
@@ -49,17 +42,6 @@
         </developerConnection>
         <tag>HEAD</tag>
     </scm>
-
-    <issueManagement>
-        <system>Jira</system>
-        <url>https://crossdata.atlassian.net/</url>
-    </issueManagement>
-
-
-    <organization>
-        <name>Stratio</name>
-        <url>http://stratio.com</url>
-    </organization>
 
     <developers>
         <developer>
@@ -166,22 +148,6 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <configuration>
-                    <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                    <recompileMode>incremental</recompileMode>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>compile</goal>
-                            <goal>testCompile</goal>
-                            <goal>doc</goal>
-                            <goal>doc-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -216,15 +182,7 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>2.11</version>
                 <configuration>
-                    <useDefaultExcludes>true</useDefaultExcludes>
-                    <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
-                    <properties>
-                        <owner>${project.organization.name}</owner>
-                        <email>${project.organization.url}</email>
-                        <failOnMissingHeader>true</failOnMissingHeader>
-                    </properties>
                     <excludes>
                         <exclude>**/.*/**</exclude>
                         <exclude>**/src/site/sphinx/_themes/stratio/**</exclude>
@@ -244,21 +202,6 @@
                         <exclude>**/org/apache/spark/sql/crossdata/test/acceptance/TestXDContext.scala</exclude>
                     </excludes>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>format</id>
-                        <goals>
-                            <goal>format</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>check</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <phase>process-resources</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
