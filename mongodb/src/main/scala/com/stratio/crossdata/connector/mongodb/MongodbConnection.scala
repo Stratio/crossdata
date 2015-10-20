@@ -17,15 +17,17 @@ package com.stratio.crossdata.connector.mongodb
 
 import com.mongodb.{ServerAddress, MongoCredential}
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.Config
-import com.stratio.provider.mongodb.reader.MongodbReadException
-import com.stratio.provider.mongodb.{MongodbClientFactory, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
+import com.stratio.datasource.Config
+import com.stratio.datasource.mongodb.reader.MongodbReadException
+import com.stratio.datasource.mongodb.{MongodbClientFactory, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 
 import scala.language.reflectiveCalls
 import scala.util.Try
 
 
 object MongodbConnection {
+
+  import MongodbConfig._
 
   // TODO avoid openning a connection per query
 
@@ -62,24 +64,18 @@ object MongodbConnection {
 
   private def openClient(config: Config): MongoClient = {
 
-    val hosts: List[ServerAddress] = config[List[String]](MongodbConfig.Host).map(add => new ServerAddress(add))
+    val hosts: List[ServerAddress] = config[List[String]](Host).map(add => new ServerAddress(add))
 
     val credentials: List[MongoCredential] =
-    config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+    config.getOrElse[List[MongodbCredentials]](Credentials, DefaultCredentials).map{
       case MongodbCredentials(user,database,password) =>
         MongoCredential.createCredential(user,database,password)
     }
-    val ssloptions: Option[MongodbSSLOptions] = config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
-    val readpreference: String = config[String](MongodbConfig.readPreference)
+
+    val ssloptions: Option[MongodbSSLOptions] = config.get[MongodbSSLOptions](SSLOptions)
 
     val mongoClient: Try[MongoClient] = Try {
-      MongodbClientFactory.createClient(
-        hosts,
-        config[List[MongodbCredentials]](MongodbConfig.Credentials).map {
-          case MongodbCredentials(user, database, password) =>
-            MongoCredential.createCredential(user, database, password)
-        },
-        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config[String](MongodbConfig.readPreference))
+      MongodbClientFactory.createClient(hosts,credentials,ssloptions, config.properties)
     }.recover {
       case throwable =>
         throw MongodbReadException(throwable.getMessage, throwable)
