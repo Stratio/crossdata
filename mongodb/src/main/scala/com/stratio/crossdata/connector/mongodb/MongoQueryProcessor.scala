@@ -19,9 +19,9 @@ import java.util.regex.Pattern
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.{DBObject, QueryBuilder}
-import com.stratio.provider.Config
-import com.stratio.provider.mongodb.MongodbRelation._
-import com.stratio.provider.mongodb.schema.MongodbRowConverter
+import com.stratio.datasource.Config
+import com.stratio.datasource.mongodb.MongodbRelation._
+import com.stratio.datasource.mongodb.schema.MongodbRowConverter
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
