@@ -27,6 +27,8 @@ import scala.util.Try
 
 object MongodbConnection {
 
+  import MongodbConfig._
+
   // TODO avoid openning a connection per query
 
   def withClientDo[T](hosts: List[String])(code: MongoClient => T): T = {
@@ -62,14 +64,15 @@ object MongodbConnection {
 
   private def openClient(config: Config): MongoClient = {
 
-    val hosts: List[ServerAddress] = config[List[String]](MongodbConfig.Host).map(add => new ServerAddress(add))
+    val hosts: List[ServerAddress] = config[List[String]](Host).map(add => new ServerAddress(add))
 
     val credentials: List[MongoCredential] =
-    config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+    config.getOrElse[List[MongodbCredentials]](Credentials, DefaultCredentials).map{
       case MongodbCredentials(user,database,password) =>
         MongoCredential.createCredential(user,database,password)
     }
-    val ssloptions: Option[MongodbSSLOptions] = config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
+
+    val ssloptions: Option[MongodbSSLOptions] = config.get[MongodbSSLOptions](SSLOptions)
 
     val mongoClient: Try[MongoClient] = Try {
       MongodbClientFactory.createClient(hosts,credentials,ssloptions, config.properties)
