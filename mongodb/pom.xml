@@ -39,7 +39,7 @@
     </licenses>
 
     <properties>
-        <mongodb.provider.version>0.9.0-SNAPSHOT</mongodb.provider.version>
+        <mongodb.datasource.version>0.10.0-SNAPSHOT</mongodb.datasource.version>
     </properties>
 
     <!--TODO exclude spark dependencies from crossdata-ng-->
@@ -50,9 +50,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.stratio</groupId>
-            <artifactId>spark-mongodb-core</artifactId>
-            <version>${mongodb.provider.version}</version>
+            <groupId>com.stratio.datasource</groupId>
+            <artifactId>spark-mongodb_${scala.binary.version}</artifactId>
+            <version>${mongodb.datasource.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
