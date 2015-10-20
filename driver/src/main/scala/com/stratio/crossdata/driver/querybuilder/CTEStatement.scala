@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.stratio.crossdata.sql.querybuilder
+package com.stratio.crossdata.driver.querybuilder
 
 // TODO: Implement this class according to Crossdata grammar (take a look to the Spark SqlParser)
 class CTEStatement()

@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.querybuilder
+package org.apache.spark.driver.querybuilder
 
-import com.stratio.crossdata.sql.querybuilder.QueryBuilder
+import com.stratio.crossdata.driver.querybuilder.QueryBuilder
 import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
