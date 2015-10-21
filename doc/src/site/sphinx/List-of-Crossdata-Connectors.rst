@@ -16,7 +16,7 @@ List of Native Connectors
 
 -    `stratio-connector-elasticsearch: Connector for ElasticSearch 1.3.2 <https://github.com/Stratio/stratio-connector-elasticsearch>`_
 
--    `stratio-connector-streaming: Connector for Stratio Streaming 0.5.0 <https://github.com/Stratio/stratio-connector-streaming>`_
+-    `stratio-connector-decision: Connector for Stratio Decision 0.6.0 <https://github.com/Stratio/stratio-connector-decision>`_
 
 
 List of Spark-based Connectors
@@ -33,9 +33,7 @@ Misc
 
 -    `crossdata-connector-skeleton: Skeleton project used to develop new connectors <https://github.com/Stratio/crossdata-connector-skeleton>`_
 
--    `crossdata-connector-inmmemory: InMemory example connector provided as example to develop new connectors
-<https://github.com/Stratio/crossdata/crossdata-connector-inmemory>`_
+-    `crossdata-connector-inmmemory: InMemory example connector provided as example to develop new connectors <https://github.com/Stratio/crossdata/crossdata-connector-inmemory>`_
 
--    `crossdata-connector-twitter: Streaming example connector provided as example to develop new connectors
-<https://github.com/Stratio/crossdata/crossdata-connector-twitter>`_
+-    `crossdata-connector-twitter: Streaming example connector provided as example to develop new connectors <https://github.com/Stratio/crossdata/crossdata-connector-twitter>`_
 

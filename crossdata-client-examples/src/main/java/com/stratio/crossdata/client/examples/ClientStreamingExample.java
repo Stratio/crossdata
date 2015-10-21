@@ -48,22 +48,22 @@ import com.stratio.crossdata.driver.BasicDriver;
 import com.stratio.crossdata.driver.DriverConnection;
 import com.stratio.crossdata.driver.utils.ManifestUtils;
 
-public class ClientStreamingExample {
+public class ClientDecisionExample {
 	/**
 	 * Class constructor.
 	 */
-	private ClientStreamingExample() {
+	private ClientDecisionExample() {
 	}
 
-	static final Logger LOG = Logger.getLogger(ClientStreamingExample.class);
+	static final Logger LOG = Logger.getLogger(ClientDecisionExample.class);
 
-	static final String STREAMING_DATASTORE_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-streaming/branch-0.4/connector-streaming/src/main/config/StreamingDataStore.xml";
-	static final String STREAMING_CONNECTOR_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-streaming/branch-0.4/connector-streaming/src/main/config/StreamingConnector.xml";
+	static final String DECISION_DATASTORE_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-decision/branch-0.6/connector-decision/src/main/config/DecisionDataStore.xml";
+	static final String DECISION_CONNECTOR_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-decision/branch-0.6/connector-decision/src/main/config/DecisionConnector.xml";
 
-	static final String STREAMING_DATASTORE_FILE = STREAMING_DATASTORE_MANIFEST
-			.substring(STREAMING_DATASTORE_MANIFEST.lastIndexOf('/') + 1);
-	static final String STREAMING_CONNECTOR_FILE = STREAMING_CONNECTOR_MANIFEST
-			.substring(STREAMING_CONNECTOR_MANIFEST.lastIndexOf('/') + 1);
+	static final String DECISION_DATASTORE_FILE = DECISION_DATASTORE_MANIFEST
+			.substring(DECISION_DATASTORE_MANIFEST.lastIndexOf('/') + 1);
+	static final String DECISION_CONNECTOR_FILE = DECISION_CONNECTOR_MANIFEST
+			.substring(DECISION_CONNECTOR_MANIFEST.lastIndexOf('/') + 1);
 
 	static final int NUMBER_OF_ROWS = 1000;
 	static final String USER_NAME = "stratio";
@@ -71,8 +71,8 @@ public class ClientStreamingExample {
 
 	public static void main(String[] args) {
 
-		downloadManifest(STREAMING_DATASTORE_MANIFEST, STREAMING_DATASTORE_FILE);
-		downloadManifest(STREAMING_CONNECTOR_MANIFEST, STREAMING_CONNECTOR_FILE);
+		downloadManifest(DECISION_DATASTORE_MANIFEST, DECISION_DATASTORE_FILE);
+		downloadManifest(DECISION_CONNECTOR_MANIFEST, DECISION_CONNECTOR_FILE);
 
 		BasicDriver basicDriver = new BasicDriver();
 
@@ -95,7 +95,7 @@ public class ClientStreamingExample {
 		try {
 			result = dc
 					.executeQuery(
-							"ATTACH CLUSTER streamingprod ON DATASTORE Streaming WITH OPTIONS {'KafkaServer': '[127.0.0.1]', 'KafkaPort': '[9092]', 'zooKeeperServer': '[127.0.0.1]', 'zooKeeperPort': '[2181]'};");
+							"ATTACH CLUSTER decisionprod ON DATASTORE Decision WITH OPTIONS {'KafkaServer': '[127.0.0.1]', 'KafkaPort': '[9092]', 'zooKeeperServer': '[127.0.0.1]', 'zooKeeperPort': '[2181]'};");
 		} catch (ConnectionException | ValidationException | ExecutionException
 				| UnsupportedException ex) {
 			LOG.error(ex);
@@ -103,12 +103,12 @@ public class ClientStreamingExample {
 		assert result != null;
 		LOG.info("Cluster attached.");
 
-		// ATTACH STRATIO STREAMING CONNECTOR
+		// ATTACH STRATIO DECISION CONNECTOR
 		result = null;
 		try {
 			result = dc
 					.executeQuery(
-							"ATTACH CONNECTOR StreamingConnector TO streamingprod WITH OPTIONS {};");
+							"ATTACH CONNECTOR DecisionConnector TO decisionprod WITH OPTIONS {};");
 		} catch (ConnectionException | ValidationException | ExecutionException
 				| UnsupportedException ex) {
 			LOG.error(ex);
@@ -136,7 +136,7 @@ public class ClientStreamingExample {
 		try {
 			result = dc
 					.executeQuery(
-							"CREATE TABLE tableTest ON CLUSTER streamingprod "
+							"CREATE TABLE tableTest ON CLUSTER decisionprod "
 									+ "(id int PRIMARY KEY, timestamp TIMESTAMP, Temp DOUBLE);");
 		} catch (ConnectionException | ValidationException | ExecutionException
 				| UnsupportedException ex) {
