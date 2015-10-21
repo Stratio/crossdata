@@ -29,24 +29,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.DecimalFormat;
 
 import org.apache.log4j.Logger;
-import org.jfairy.Fairy;
-import org.jfairy.producer.BaseProducer;
-import org.jfairy.producer.person.Person;
 
 import com.stratio.crossdata.client.examples.utils.DriverResultHandler;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
-import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.driver.BasicDriver;
 import com.stratio.crossdata.driver.DriverConnection;
-import com.stratio.crossdata.driver.utils.ManifestUtils;
 
 public class ClientDecisionExample {
 	/**
