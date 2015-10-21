@@ -15,14 +15,18 @@
  */
 package com.stratio.crossdata.driver.config
 
+import java.io.File
+
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 
 object DriverConfig {
-  val DriverConfigFile = "driver-reference.conf"
+
+  val DriverConfigDefault = "driver-reference.conf"
   val ParentConfigName = "crossdata-driver"
   val DriverConfigResource = "external.config.resource"
-  val DriverConfigSeedNodes = "akka.cluster.seed-nodes"
+  val DriverConfigFile = "external.config.filename"
+  val DriverConfigHosts = "config.cluster.hosts"
 }
 
 trait DriverConfig {
@@ -32,20 +36,52 @@ trait DriverConfig {
   lazy val logger: Logger = ???
 
   val config: Config = {
-    val defaultConfig = ConfigFactory.load(DriverConfigFile).getConfig(ParentConfigName)
+
+    val defaultConfig = ConfigFactory.load(DriverConfigDefault).getConfig(ParentConfigName)
+    val configFile = defaultConfig.getString(DriverConfigFile)
     val configResource = defaultConfig.getString(DriverConfigResource)
 
-    val mergedConfig = Some(configResource) filter { config =>
-      val notFound = config.isEmpty || DriverConfig.getClass.getClassLoader.getResource(config) == null
-      if (notFound) logger.warn(s"User file '$configResource' haven't been found in the classpath")
-      !notFound
-    } map {
-      ConfigFactory.parseResources(_).getConfig(ParentConfigName) withFallback defaultConfig
-    } getOrElse defaultConfig
+    //Get the driver-application.conf properties if exists in resources
+    val configWithResource: Config = {
+      if (DriverConfigResource.isEmpty) {
+        defaultConfig
+      } else {
+        val resource = DriverConfig.getClass.getClassLoader.getResource(DriverConfigResource)
+        Option(resource).fold {
 
+          logger.warn("User resource (" + configResource + ") haven't been found")
+          val file = new File(configResource)
+          if (file.exists()) {
+            val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
+            userConfig.withFallback(defaultConfig)
+          } else {
+            logger.warn("User file (" + configResource + ") haven't been found in classpath")
+            defaultConfig
+          }
+        } { resTemp =>
+          val userConfig = ConfigFactory.parseResources(DriverConfigResource).getConfig(ParentConfigName)
+          userConfig.withFallback(defaultConfig)
+        }
+      }
+    }
 
-    ConfigFactory.load(mergedConfig)
+    //Get the user external driver-application.conf properties if exists
+    val finalConfig: Config = {
+      if(configFile.isEmpty){
+        configWithResource
+      }else{
+        val file = new File(configFile)
+        if (file.exists()) {
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
+          userConfig.withFallback(configWithResource)
+        } else {
+          logger.error("User file (" + configFile + ") haven't been found")
+          configWithResource
+        }
+      }
+    }
 
+    ConfigFactory.load(finalConfig)
   }
 
 }
