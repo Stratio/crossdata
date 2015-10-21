@@ -47,7 +47,7 @@ public class QueryWorkflowTest {
         LogicalWorkflow workflow=new LogicalWorkflow(initialSteps, lastStep, 10, new HashMap<Selector, Selector>());
         QueryWorkflow qw=new QueryWorkflow("queryId","actorRef",ExecutionType.SELECT,ResultType.TRIGGER_EXECUTION,
                 workflow,true);
-        Assert.assertFalse(qw.checkStreaming(lastStep), "It is not possible beacause last step is null");
+        Assert.assertFalse(qw.checkStreaming(lastStep), "It is not possible because the last step is null");
     }
 
     @Test
@@ -58,8 +58,8 @@ public class QueryWorkflowTest {
         LogicalWorkflow workflow=new LogicalWorkflow(initialSteps, lastStep, 10, new HashMap<Selector, Selector>());
         QueryWorkflow qw=new QueryWorkflow("queryId","actorRef",ExecutionType.SELECT,ResultType.TRIGGER_EXECUTION,
                 workflow,true);
-        Assert.assertTrue(qw.checkStreaming(lastStep), "It's has to be a streaming select because last step is Window" +
-                " type.");
+        Assert.assertTrue(qw.checkStreaming(lastStep), "It has to be a streaming select because the last step is "
+                + "Window type.");
     }
 
     @Test
@@ -95,6 +95,6 @@ public class QueryWorkflowTest {
         QueryWorkflow qw=new QueryWorkflow("queryId","actorRef",ExecutionType.SELECT,ResultType.RESULTS,
                 workflow,false);
         Assert.assertTrue(Execute.class.isInstance(qw.getExecuteOperation("queryId")),
-                "The execution operation is a sync Execute type");
+                "The execution operation is a Sync Execute type");
     }
 }
