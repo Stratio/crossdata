@@ -20,17 +20,14 @@ import java.util.regex.Pattern
 import com.mongodb.casbah.Imports._
 import com.mongodb.{DBObject, QueryBuilder}
 import com.stratio.datasource.Config
-import com.stratio.datasource.mongodb.MongodbRelation._
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.sources
+import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
-
-import org.apache.spark.sql.Row
 
 object MongoQueryProcessor {
 
@@ -174,6 +171,20 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
   private[this] def sparkResultFromMongodb(requiredColumns: Array[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
     MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns), resultSet)
   }
+
+  /**
+   * Prune whole schema in order to fit with
+   * required columns in Spark SQL statement.
+   * @param schema Whole field projection schema.
+   * @param requiredColumns Required fields in statement
+   * @return A new pruned schema
+   */
+  def pruneSchema(
+                   schema: StructType,
+                   requiredColumns: Array[String]): StructType =
+    StructType(schema.fields.filter{ structField =>
+      requiredColumns.contains(structField.name)
+    })
 
 }
 
