@@ -13,15 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata
+package org.apache.spark.sql.crossdata.execution
+
+import org.apache.spark.Logging
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.execution.datasources.{CreateTableUsingAsSelect, CreateTableUsing}
+import org.apache.spark.sql.execution.{ExecutedCommand, SparkPlan, SparkStrategies}
 
 import org.apache.spark.sql.Strategy
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.execution.{PersistSelectAsTable, PersistDataSourceTable}
-import org.apache.spark.sql.execution.{ExecutedCommand, SparkPlan}
-import org.apache.spark.sql.execution.datasources.{CreateTableUsingAsSelect, CreateTableUsing}
 
-private[crossdata] trait XDStrategies {
+case class DummyRun(udfName: String, output: Seq[Attribute], child: SparkPlan) extends SparkPlan {
+  override def children: Seq[SparkPlan] = child :: Nil
+
+  //TODO: throw a more descriptive exception
+  override protected def doExecute(): RDD[InternalRow] = ??? //Just native executions should work
+
+}
+
+trait XDStrategies extends SparkStrategies {
+  self: XDContext#XDPlanner =>
 
   object XDDDLStrategy extends Strategy {
     def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {
@@ -29,11 +43,20 @@ private[crossdata] trait XDStrategies {
         val cmd = PersistDataSourceTable(tableIdent, userSpecifiedSchema, provider, opts, allowExisting)
         ExecutedCommand(cmd) :: Nil
 
-     case CreateTableUsingAsSelect(tableIdent, provider, false, partitionCols, mode, opts, query) =>
+      case CreateTableUsingAsSelect(tableIdent, provider, false, partitionCols, mode, opts, query) =>
         val cmd = PersistSelectAsTable(tableIdent, provider, partitionCols, mode, opts, query)
         ExecutedCommand(cmd) :: Nil
 
       case _ => Nil
     }
   }
+
+  object NativeUDFStrategy extends Strategy with Logging {
+    override def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {
+      case e @ EvaluateNativeUDF(udf, child, at) =>
+        DummyRun(udf.name, e.output, planLater(child))::Nil
+      case _ => Nil
+    }
+  }
+
 }

@@ -179,6 +179,15 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     }
   }
 
+  it should "be able to natively select the built-in funcions `now`, `dateOf` and `unixTimeStampOf` " in {
+    assumeEnvironmentIsUpAndRunning
+
+    val query = s"SELECT now() as t, now() as a, dateOf(now()) as dt, unixTimestampOf(now()) as ut FROM $Table"
+    sql(query).collect(Native) should have length 10
+
+  }
+
+
 }
 
 

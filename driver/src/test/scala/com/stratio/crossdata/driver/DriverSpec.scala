@@ -24,7 +24,7 @@ import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -36,9 +36,11 @@ class DriverSpec extends BaseXDTest {
     val sqlCommand = SQLCommand("select * from any")
     val result = driver.syncQuery(sqlCommand, Timeout(1 seconds), 1)
     result.hasError should be (true)
+    a [RuntimeException] should be thrownBy result.resultSet
     result.queryId should be (sqlCommand.queryId)
     result shouldBe an [ErrorResult]
     result.asInstanceOf[ErrorResult].message should include regex "(?i)timeout was exceed"
+
   }
 
 
