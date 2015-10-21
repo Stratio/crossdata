@@ -21,9 +21,9 @@ import com.datastax.driver.core.{ProtocolVersion, ResultSet}
 import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.planning.crossdata.ExtendedPhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.execution.crossdata.{NativeUDFAttribute, NativeUDF}
+import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
+import org.apache.spark.sql.crossdata.execution.{NativeUDFAttribute, NativeUDF}
 import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}

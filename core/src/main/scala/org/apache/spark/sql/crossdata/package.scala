@@ -13,24 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.spark.sql
 
-package com.stratio.crossdata.common.result
+import org.apache.spark.sql.types.StructType
 
-import java.util.UUID
+package object crossdata {
 
-import com.stratio.crossdata.common.SQLResult
-import org.apache.spark.sql.Row
+  val CrossdataVersion = "1.0.0"
 
-case class SuccessfulQueryResult(queryId: UUID, result: Array[Row]) extends SQLResult {
-  override val resultSet = result
+  case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType], provider: String, partitionColumn: Array[String], opts: Map[String, String] = Map.empty[String, String] , crossdataVersion: String = CrossdataVersion)
 
-  def hasError = false
+  val StringSeparator: String = "."
 
-}
-
-case class ErrorResult(queryId: UUID, message: String, cause: Option[Throwable] = None) extends SQLResult {
-  override lazy val resultSet = cause.fold(throw new RuntimeException(message)) {
-    throwable => throw new RuntimeException(message,throwable)
-  }
-  def hasError = true
 }

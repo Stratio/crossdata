@@ -11,12 +11,14 @@ nb-configuration.xml
 *.xml.asc
 src/main/resources/history.txt
 *.orig
+/crossdata-hive/derby.log
 sonar-project.properties
 */.sonar
 */test-output
 atlassian-ide-plugin.xml
 *.cache
 target/
+.DS_Store
 
 #hive ignores
 metastore_db/

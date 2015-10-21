@@ -13,24 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.stratio.crossdata.driver.querybuilder
 
-package com.stratio.crossdata.common.result
+class InitialSelect(private[querybuilder] val bracketed: Boolean){
 
-import java.util.UUID
+  def distinct(projections: List[String]): ProjectedSelect = new ProjectedSelect(this, projections, true)
 
-import com.stratio.crossdata.common.SQLResult
-import org.apache.spark.sql.Row
+  def projections(projections: List[String]): ProjectedSelect = new ProjectedSelect(this, projections)
 
-case class SuccessfulQueryResult(queryId: UUID, result: Array[Row]) extends SQLResult {
-  override val resultSet = result
-
-  def hasError = false
-
-}
-
-case class ErrorResult(queryId: UUID, message: String, cause: Option[Throwable] = None) extends SQLResult {
-  override lazy val resultSet = cause.fold(throw new RuntimeException(message)) {
-    throwable => throw new RuntimeException(message,throwable)
-  }
-  def hasError = true
+  override def toString: String = s"SELECT "
 }

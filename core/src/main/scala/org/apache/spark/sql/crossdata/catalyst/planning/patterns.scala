@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.catalyst.planning.crossdata
+package org.apache.spark.sql.crossdata.catalyst.planning
 
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.{Filter, LogicalPlan, Project}
-import org.apache.spark.sql.execution.crossdata.EvaluateNativeUDF
+import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
 
 
 object ExtendedPhysicalOperation extends PredicateHelper {

@@ -24,13 +24,16 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.stratio.crossdata.connector.FunctionInventory
 import org.apache.spark.sql.catalyst.analysis.Analyzer
-import org.apache.spark.sql.execution._
-import org.apache.spark.sql.execution.crossdata.{NativeUDF, XDStrategies, ExtractNativeUDFs}
-import org.apache.spark.sql.execution.datasources.PreInsertCastAndRename
+import org.apache.spark.sql.execution.ExtractPythonUDFs
+import org.apache.spark.sql.crossdata.execution.{XDStrategies, NativeUDF, ExtractNativeUDFs}
+import org.apache.spark.sql.execution.datasources.{PreWriteCheck, PreInsertCastAndRename}
 import org.apache.spark.sql.sources.crossdata.XDDdlParser
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import com.typesafe.config.{Config, ConfigFactory}
+import java.lang.reflect.Constructor
 
 /**
  * CrossdataContext leverages the features of [[SQLContext]]
@@ -39,6 +42,18 @@ import org.apache.spark.{Logging, SparkContext}
  */
 class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging {
   self =>
+
+  override protected[sql] lazy val catalog: XDCatalog = {
+    val xdConfig: Config = ConfigFactory.load
+    val catalogClass: String = xdConfig.getString("crossdata.catalog.class")
+    val caseSensitive: Boolean = xdConfig.getBoolean("crossdata.catalog.caseSensitive")
+    val xdCatalog = Class.forName(catalogClass)
+
+    val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf], classOf[XDContext])
+
+    constr.newInstance(
+      new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
+  }
 
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
@@ -50,34 +65,9 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
           Nil
 
       override val extendedCheckRules = Seq(
-        datasources.PreWriteCheck(catalog)
+        PreWriteCheck(catalog)
       )
     }
-
-
-  /*
-  val xdConfig: Config = ConfigFactory.load
-  val catalogClass: String = xdConfig.getString("crossdata.catalog.class")
-  val caseSensitive: Boolean = xdConfig.getBoolean("crossdata.catalog.caseSensitive")
-
-  import scala.collection.JavaConversions._
-
-  val catalogArgs: util.List[String] =
-    xdConfig.getList("crossdata.catalog.args").map(e => e.toString)
-
-  val xdCatalog = Class.forName(catalogClass)
-
-  val constr: Constructor[_] = xdCatalog.getConstructor(
-    classOf[CatalystConf],
-    classOf[util.List[String]])
-
-  override protected[sql] lazy val catalog: XDCatalog =
-    constr.newInstance(
-      new SimpleCatalystConf(caseSensitive),
-      catalogArgs).asInstanceOf[XDCatalog]
-
-  catalog.open()
- */
 
   @transient
   class XDPlanner extends SparkPlanner with XDStrategies {

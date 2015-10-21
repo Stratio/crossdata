@@ -17,7 +17,7 @@ package com.stratio.crossdata.connector.cassandra
 
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.catalyst.expressions.{AttributeReference, Literal}
-import org.apache.spark.sql.execution.crossdata.NativeUDF
+import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.types.DataTypes
 import org.junit.runner.RunWith

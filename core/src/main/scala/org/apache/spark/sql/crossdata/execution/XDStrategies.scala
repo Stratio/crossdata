@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.execution.crossdata
+package org.apache.spark.sql.crossdata.execution
 
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
@@ -21,7 +21,8 @@ import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.execution.{SparkPlan, SparkStrategies}
+import org.apache.spark.sql.execution.datasources.{CreateTableUsingAsSelect, CreateTableUsing}
+import org.apache.spark.sql.execution.{ExecutedCommand, SparkPlan, SparkStrategies}
 
 import org.apache.spark.sql.Strategy
 
@@ -35,6 +36,20 @@ case class DummyRun(udfName: String, output: Seq[Attribute], child: SparkPlan) e
 
 trait XDStrategies extends SparkStrategies {
   self: XDContext#XDPlanner =>
+
+  object XDDDLStrategy extends Strategy {
+    def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {
+      case CreateTableUsing(tableIdent, userSpecifiedSchema, provider, false, opts, allowExisting, _) =>
+        val cmd = PersistDataSourceTable(tableIdent, userSpecifiedSchema, provider, opts, allowExisting)
+        ExecutedCommand(cmd) :: Nil
+
+      case CreateTableUsingAsSelect(tableIdent, provider, false, partitionCols, mode, opts, query) =>
+        val cmd = PersistSelectAsTable(tableIdent, provider, partitionCols, mode, opts, query)
+        ExecutedCommand(cmd) :: Nil
+
+      case _ => Nil
+    }
+  }
 
   object NativeUDFStrategy extends Strategy with Logging {
     override def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {

@@ -19,7 +19,7 @@ import org.apache.spark.sql.catalyst.CatalystTypeConverters._
 import org.apache.spark.sql.catalyst.{CatalystTypeConverters, expressions}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.execution.crossdata.{NativeUDFAttribute, NativeUDF, EvaluateNativeUDF}
+import org.apache.spark.sql.crossdata.execution.{NativeUDFAttribute, NativeUDF, EvaluateNativeUDF}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}

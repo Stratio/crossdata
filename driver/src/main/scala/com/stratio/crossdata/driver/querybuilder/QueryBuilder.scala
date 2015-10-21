@@ -13,24 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.stratio.crossdata.driver.querybuilder
 
-package com.stratio.crossdata.common.result
+object QueryBuilder {
 
-import java.util.UUID
-
-import com.stratio.crossdata.common.SQLResult
-import org.apache.spark.sql.Row
-
-case class SuccessfulQueryResult(queryId: UUID, result: Array[Row]) extends SQLResult {
-  override val resultSet = result
-
-  def hasError = false
-
-}
-
-case class ErrorResult(queryId: UUID, message: String, cause: Option[Throwable] = None) extends SQLResult {
-  override lazy val resultSet = cause.fold(throw new RuntimeException(message)) {
-    throwable => throw new RuntimeException(message,throwable)
+  def select(bracketed: Boolean = false): InitialSelect = {
+    new InitialSelect(bracketed)
   }
-  def hasError = true
+
+  def insert(): InsertStatement = {
+    new InsertStatement()
+  }
+
+  def commonTableExpression: CTEStatement = {
+    new CTEStatement()
+  }
+
 }
