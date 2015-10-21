@@ -43,25 +43,20 @@ trait DriverConfig {
 
     //Get the driver-application.conf properties if exists in resources
     val configWithResource: Config = {
-      if (DriverConfigResource.isEmpty) {
-        defaultConfig
-      } else {
-        val resource = DriverConfig.getClass.getClassLoader.getResource(DriverConfigResource)
-        Option(resource).fold {
-
-          logger.warn("User resource (" + configResource + ") haven't been found")
-          val file = new File(configResource)
-          if (file.exists()) {
-            val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
-            userConfig.withFallback(defaultConfig)
-          } else {
-            logger.warn("User file (" + configResource + ") haven't been found in classpath")
-            defaultConfig
-          }
-        } { resTemp =>
-          val userConfig = ConfigFactory.parseResources(DriverConfigResource).getConfig(ParentConfigName)
+      val resource = DriverConfig.getClass.getClassLoader.getResource(DriverConfigResource)
+      Option(resource).fold {
+        logger.warn("User resource (" + configResource + ") haven't been found")
+        val file = new File(configResource)
+        if (file.exists()) {
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
           userConfig.withFallback(defaultConfig)
+        } else {
+          logger.warn("User file (" + configResource + ") haven't been found in classpath")
+          defaultConfig
         }
+      } { resTemp =>
+        val userConfig = ConfigFactory.parseResources(DriverConfigResource).getConfig(ParentConfigName)
+        userConfig.withFallback(defaultConfig)
       }
     }
 
