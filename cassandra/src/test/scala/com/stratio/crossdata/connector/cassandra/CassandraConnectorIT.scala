@@ -16,7 +16,7 @@
 package com.stratio.crossdata.connector.cassandra
 
 import org.apache.spark.sql.crossdata.ExecutionType._
-import org.apache.spark.sql.crossdata.exceptions.{CrossdataException, NativeExecutionException}
+import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -150,7 +150,6 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     ctx.sql(importQuery)
 
     // TODO We need to create an unregister the table
-    // TODO Modify this test when the new catalog is ready
     tableCountInHighschool should be > initialLength
 
   }

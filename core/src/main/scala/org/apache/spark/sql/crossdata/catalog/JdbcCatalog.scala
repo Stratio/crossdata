@@ -19,6 +19,7 @@ import java.sql.{Connection, DriverManager, ResultSet}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.Logging
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
 import org.apache.spark.sql.types._
@@ -29,15 +30,14 @@ import scala.annotation.tailrec
 import scala.util.parsing.json.JSON
 
 
-object MySQLCatalog {
+object JdbcCatalog {
   // SQLConfig
-  val Driver = "crossdata.catalog.mysql.driver"
-  val Ip = "crossdata.catalog.mysql.ip"
-  val Port = "crossdata.catalog.mysql.port"
-  val Database = "crossdata.catalog.mysql.db.name"
-  val Table = "crossdata.catalog.mysql.db.persistTable"
-  val User = "crossdata.catalog.mysql.db.user"
-  val Pass = "crossdata.catalog.mysql.db.pass"
+  val Driver = "crossdata.catalog.jdbc.driver"
+  val Url = "crossdata.catalog.jdbc.url"
+  val Database = "crossdata.catalog.jdbc.db.name"
+  val Table = "crossdata.catalog.jdbc.db.persistTable"
+  val User = "crossdata.catalog.jdbc.db.user"
+  val Pass = "crossdata.catalog.jdbc.db.pass"
   // CatalogFields
   val DatabaseField = "db"
   val TableNameField = "tableName"
@@ -50,13 +50,13 @@ object MySQLCatalog {
 
 /**
  * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
- * MySQL.
+ * Jdbc.
  * @param conf An implementation of the [[CatalystConf]].
  */
-class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
+class JdbcCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) with Logging {
 
-  import MySQLCatalog._
+  import JdbcCatalog._
   import org.apache.spark.sql.crossdata._
 
   private val config: Config = ConfigFactory.load
@@ -65,12 +65,10 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   lazy val connection: Connection = {
 
-    val ip = config.getString(Ip)
-    val port = config.getString(Port)
     val driver = config.getString(Driver)
     val user = config.getString(User)
     val pass = config.getString(Pass)
-    val url = s"jdbc:mysql://$ip:$port"
+    val url = config.getString(Url)
 
     Class.forName(driver)
     val mysqlConnection = DriverManager.getConnection(url, user, pass)
@@ -97,9 +95,6 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     preparedStatement.setString(1, databaseName.getOrElse(""))
     preparedStatement.setString(2, tableName)
     val resultSet = preparedStatement.executeQuery()
-
-    //val statement = connection.createStatement
-    //val resultSet = preparedStatement.executeQuery(s"SELECT * FROM $db.$table WHERE db='${databaseName.getOrElse("")}' AND tableName='$tableName'")
 
     if (!resultSet.isBeforeFirst) {
       None
@@ -139,11 +134,13 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, true)).toSeq
   }
 
-  override def persistTableMetadata(crossdataTable: CrossdataTable): Unit = {
+  override def persistTableMetadata(crossdataTable: CrossdataTable, logicalRelation: Option[LogicalPlan]): Unit = {
 
-    // TODO: Evaluate userSpecifiedSchema as Options
-    // TODO: Test StructTypes with multiple subdocuments
-    val tableSchema = serializeSchema(crossdataTable.userSpecifiedSchema.get)
+    val tableSchema = crossdataTable.userSpecifiedSchema match {
+      case Some(schema) => serializeSchema(schema)
+      case None => serializeSchema(new StructType())
+    }
+
     val tableOptions = serializeOptions(crossdataTable.opts)
     val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
@@ -170,8 +167,10 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     connection.commit()
     connection.setAutoCommit(true)
 
+    val tableIdentifier = TableIdentifier(crossdataTable.tableName,crossdataTable.dbName).toSeq
     //Try to register the table.
-    lookupRelation(TableIdentifier(crossdataTable.tableName, crossdataTable.dbName).toSeq)
+    registerTable(tableIdentifier, logicalRelation.getOrElse(lookupRelation(tableIdentifier))
+    )
   }
 
   override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {
@@ -184,18 +183,35 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
 
   private def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
+    implicit val formats = DefaultFormats
+
     val jsonMap = JSON.parseFull(schemaJSON).get.asInstanceOf[Map[String, Any]]
-    // TODO Create new Exception?
-    // TODO pass metadata to StructFields x.getOrElse("metadata", "")
     val fields = jsonMap.getOrElse("fields", throw new Exception).asInstanceOf[List[Map[String, Any]]]
-    val structFields = fields.map { x =>
+    val structFields = fields.map { x => {
+
+
+      val tpe:String = x.getOrElse("type", "") match {
+        case t: Map[String, Any] => convertToGrammar(t)
+        case t: String => t
+        case _ => throw new Error("Invalid type")
+      }
       StructField(
         x.getOrElse("name", "").asInstanceOf[String],
-        DataTypeParser.parse(x.getOrElse("type", "").asInstanceOf[String]),
-        x.getOrElse("nullable", "").asInstanceOf[Boolean]
+        DataTypeParser.parse(tpe),
+        x.getOrElse("nullable", "").asInstanceOf[Boolean],
+        Metadata.fromJson(write(x.getOrElse("metadata", "").asInstanceOf[Map[String, Any]]))
       )
     }
+    }
     Some(StructType(structFields))
+  }
+
+  private def convertToGrammar (m: Map[String, Any]) : String = {
+    if(m.contains("fields")) {
+      val fields = m.getOrElse("fields", "").asInstanceOf[List[Map[String, Any]]].map(x=>{x.getOrElse("name", "")+":"+convertToGrammar(x)}) mkString ","
+      "struct<"+fields+">"
+    }
+    else m.getOrElse("type", "").asInstanceOf[String]
   }
 
   private def getPartitionColumn(partitionColumn: String): Array[String] =
