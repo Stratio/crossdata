@@ -27,7 +27,6 @@ class MongoConnectorIT extends MongoWithSharedContext {
 
   //(id BIGINT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)
 
-
   "The Mongo connector" should "execute natively a select *" in {
     assumeEnvironmentIsUpAndRunning
     val dataframe = sql(s"SELECT * FROM $Collection ")
@@ -37,19 +36,6 @@ class MongoConnectorIT extends MongoWithSharedContext {
     schema.fieldNames should equal (Seq("id", "age", "description", "enrolled", "name", "optionalField"))
     result.head.toSeq should equal (Seq(1, 11, "description1", false, "Name 1", null))
   }
-
-  // TODO remove test
-  /*"The Mongo connector" should "execute natively a select **" in {
-    assumeEnvironmentIsUpAndRunning
-    sql("CREATE TEMPORARY TABLE tabletest(ident INT, name STRING, money "
-      + "DOUBLE, new BOOLEAN, date DATE"
-      + ") USING "
-      + "com.stratio.crossdata.connector.mongodb OPTIONS (host '127.0.0.1:27017',database 'databasetest',"
-      + "collection 'tabletest')")
-
-    val dataframe = sql(s"SELECT * FROM tabletest").collect(Native)
-
-  }*/
 
 
   it should "return the columns in the requested order" in {
