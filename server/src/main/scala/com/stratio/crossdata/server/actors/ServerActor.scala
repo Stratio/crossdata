@@ -41,7 +41,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       try {
         val df = xdContext.sql(query)
         val rows = df.collect()
-        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows)
+        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, Some(df.schema))
       } catch {
         case e: Throwable => {
           logger.error(e.getMessage)
