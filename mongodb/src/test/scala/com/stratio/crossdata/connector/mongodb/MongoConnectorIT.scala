@@ -125,6 +125,12 @@ class MongoConnectorIT extends MongoWithSharedContext {
     result should have length 2
   }
 
+  it should "execute natively a query with LIMIT 0" in {
+    assumeEnvironmentIsUpAndRunning
+    val result = sql(s"SELECT * FROM $Collection LIMIT 0").collect(Native)
+    result should have length 0
+  }
+
 
   // NOT SUPPORTED => JOIN
   it should "not execute natively a (SELECT * ...  ORDER BY _ )" in {
