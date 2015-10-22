@@ -18,16 +18,17 @@
 
 package com.stratio.crossdata.client.examples;
 
-import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.jfairy.Fairy;
 import org.jfairy.producer.BaseProducer;
 import org.jfairy.producer.person.Person;
+
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
@@ -41,7 +42,6 @@ import com.stratio.crossdata.driver.querybuilder.Query;
 import com.stratio.crossdata.driver.querybuilder.QueryBuilder;
 
 public class ClientAPIExample {
-
 
     static final Logger LOG = Logger.getLogger(ClientAPIExample.class);
 
@@ -59,7 +59,6 @@ public class ClientAPIExample {
         COLUMN_TYPE.put("name", "TEXT");
         COLUMN_TYPE.put("rating", "DOUBLE");
         COLUMN_TYPE.put("email", "TEXT");
-
     }
 
     static final List<String> PARTITION_KEY = Arrays.asList("id");
@@ -135,23 +134,6 @@ public class ClientAPIExample {
         }
         // CLOSE DRIVER
         basicDriver.close();
-    }
-
-
-    private static String generateCompany(Person person) {
-        return  person.getCompany().name();
-    }
-
-    private static int generateAge(Person person) {
-        return person.age();
-    }
-
-    private static String generateLastName(Person person) {
-        return  person.lastName() ;
-    }
-
-    private static int generateInt(BaseProducer baseProducer, int nRows) {
-        return baseProducer.randomBetween(1, nRows*8);
     }
 
     private static int generateSerial(BaseProducer baseProducer) {

@@ -49,30 +49,11 @@ public class ClientExample {
 
     static final Logger LOG = Logger.getLogger(ClientExample.class);
 
-    static final String CASSANDRA_DATASTORE_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-cassandra/master/src/main/resources/com/stratio/connector/cassandra/CassandraDataStore.xml";
-    static final String CASSANDRA_CONNECTOR_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-cassandra/master/src/main/resources/com/stratio/connector/cassandra/CassandraConnector.xml";
-    static final String DEEP_CONNECTOR_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-deep/maintenance/0.3/src/main/config/DeepConnector.xml";
-
-    static final String CASSANDRA_DATASTORE_FILE = CASSANDRA_DATASTORE_MANIFEST.substring(CASSANDRA_DATASTORE_MANIFEST.lastIndexOf('/')+1);
-    static final String CASSANDRA_CONNECTOR_FILE = CASSANDRA_CONNECTOR_MANIFEST.substring(CASSANDRA_CONNECTOR_MANIFEST.lastIndexOf('/')+1);
-    static final String DEEP_CONNECTOR_FILE = DEEP_CONNECTOR_MANIFEST.substring(DEEP_CONNECTOR_MANIFEST.lastIndexOf('/')+1);
-
     static final int NUMBER_OF_ROWS = 1000;
     static final String USER_NAME = "stratio";
     static final String PASSWORD = "stratio";
 
     public static void main(String[] args) {
-
-        /*downloadManifest(
-                CASSANDRA_DATASTORE_MANIFEST,
-                CASSANDRA_DATASTORE_FILE);
-        downloadManifest(
-                CASSANDRA_CONNECTOR_MANIFEST,
-                CASSANDRA_CONNECTOR_FILE);
-        downloadManifest(
-                DEEP_CONNECTOR_MANIFEST,
-                DEEP_CONNECTOR_FILE);
-        */
 
         BasicDriver basicDriver = new BasicDriver();
 
@@ -86,35 +67,10 @@ public class ClientExample {
             xdConnection.cleanMetadata();
             LOG.info("Server data cleaned");
 
-            // ADD CASSANDRA DATASTORE MANIFEST
-            /*CrossdataManifest manifest = ManifestUtils.parseFromXmlToManifest(
-                                CrossdataManifest.TYPE_DATASTORE,
-                                CASSANDRA_DATASTORE_FILE);
-            xdConnection.addManifest(manifest);
-            LOG.info("Datastore manifest added.");
-            */
-
             // ATTACH CLUSTER
             xdConnection.executeQuery("ATTACH CLUSTER cassandra_prod ON DATASTORE Cassandra WITH OPTIONS " +
                                 "{'Hosts': '[127.0.0.1]', 'Port': 9042};");
             LOG.info("Cluster attached.");
-
-            // ADD STRATIO CASSANDRA CONNECTOR MANIFEST
-            /*
-            manifest = ManifestUtils.parseFromXmlToManifest(
-                                CrossdataManifest.TYPE_CONNECTOR,
-                                CASSANDRA_CONNECTOR_FILE);
-            xdConnection.addManifest(manifest);
-            LOG.info("Stratio Cassandra Connector manifest added.");
-
-            // ADD STRATIO DEEP CONNECTOR MANIFEST
-            manifest = ManifestUtils.parseFromXmlToManifest(
-                                CrossdataManifest.TYPE_CONNECTOR,
-                                DEEP_CONNECTOR_FILE);
-            xdConnection.addManifest(manifest);
-            LOG.info("Stratio Deep Connector manifest added.");
-            */
-
 
             // ATTACH STRATIO CASSANDRA CONNECTOR
             xdConnection.executeQuery("ATTACH CONNECTOR CassandraConnector TO cassandra_prod WITH OPTIONS " +
@@ -192,63 +148,6 @@ public class ClientExample {
         }
         // CLOSE DRIVER
         basicDriver.close();
-    }
-
-
-
-    private static void downloadManifest(String url, String output) {
-        URL link = null;
-        try {
-            link = new URL(url);
-        } catch (MalformedURLException ex) {
-            LOG.error(ex);
-        }
-        assert link != null;
-
-        InputStream in = null;
-        try {
-            in = new BufferedInputStream(link.openStream());
-        } catch (IOException ex) {
-            LOG.error(ex);
-        }
-        assert in != null;
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buf = new byte[1024];
-        int n;
-        try {
-            while (-1!=(n=in.read(buf))){
-                out.write(buf, 0, n);
-            }
-            out.close();
-        } catch (IOException ex) {
-            LOG.error(ex);
-        }
-
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(output);
-        } catch (FileNotFoundException e) {
-            LOG.error(e);
-        }
-        try {
-            in.close();
-            byte[] response = out.toByteArray();
-
-
-            fos.write(response);
-            fos.close();
-        } catch (IOException ex) {
-            LOG.error(ex);
-        }finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    LOG.error(e);
-                }
-            }
-        }
     }
 
     private static String generateCompany(Person person) {

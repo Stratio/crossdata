@@ -50,22 +50,11 @@ public class ClientDecisionExample {
 
 	static final Logger LOG = Logger.getLogger(ClientDecisionExample.class);
 
-	static final String DECISION_DATASTORE_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-decision/branch-0.6/connector-decision/src/main/config/DecisionDataStore.xml";
-	static final String DECISION_CONNECTOR_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-decision/branch-0.6/connector-decision/src/main/config/DecisionConnector.xml";
-
-	static final String DECISION_DATASTORE_FILE = DECISION_DATASTORE_MANIFEST
-			.substring(DECISION_DATASTORE_MANIFEST.lastIndexOf('/') + 1);
-	static final String DECISION_CONNECTOR_FILE = DECISION_CONNECTOR_MANIFEST
-			.substring(DECISION_CONNECTOR_MANIFEST.lastIndexOf('/') + 1);
-
 	static final int NUMBER_OF_ROWS = 1000;
 	static final String USER_NAME = "stratio";
 	static final String PASSWORD = "stratio";
 
 	public static void main(String[] args) {
-
-		downloadManifest(DECISION_DATASTORE_MANIFEST, DECISION_DATASTORE_FILE);
-		downloadManifest(DECISION_CONNECTOR_MANIFEST, DECISION_CONNECTOR_FILE);
 
 		BasicDriver basicDriver = new BasicDriver();
 
@@ -157,60 +146,6 @@ public class ClientDecisionExample {
 		// CLOSE DRIVER
 		basicDriver.close();
 		LOG.info("Connection closed");
-	}
-
-	private static void downloadManifest(String url, String output) {
-		URL link = null;
-		try {
-			link = new URL(url);
-		} catch (MalformedURLException ex) {
-			LOG.error(ex);
-		}
-		assert link != null;
-
-		InputStream in = null;
-		try {
-			in = new BufferedInputStream(link.openStream());
-		} catch (IOException ex) {
-			LOG.error(ex);
-		}
-		assert in != null;
-
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		byte[] buf = new byte[1024];
-		int n;
-		try {
-			while (-1 != (n = in.read(buf))) {
-				out.write(buf, 0, n);
-			}
-			out.close();
-		} catch (IOException ex) {
-			LOG.error(ex);
-		}
-
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(output);
-		} catch (FileNotFoundException e) {
-			LOG.error(e);
-		}
-		try {
-			in.close();
-			byte[] response = out.toByteArray();
-
-			fos.write(response);
-			fos.close();
-		} catch (IOException ex) {
-			LOG.error(ex);
-		} finally {
-			if (fos != null) {
-				try {
-					fos.close();
-				} catch (IOException e) {
-					LOG.error(e);
-				}
-			}
-		}
 	}
 
 }
