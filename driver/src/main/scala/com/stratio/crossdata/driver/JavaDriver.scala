@@ -26,8 +26,8 @@ import scala.collection.JavaConversions._
 
 class JavaDriver(properties: java.util.Map[String, ConfigValue]) {
 
-  def this(seedNodes: java.util.List[String]) =
-    this(Map(DriverConfigSeedNodes -> ConfigValueFactory.fromAnyRef(seedNodes)))
+  def this(serverHosts: java.util.List[String]) =
+    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)))
 
   def this() = this(Map.empty[String, ConfigValue])
 

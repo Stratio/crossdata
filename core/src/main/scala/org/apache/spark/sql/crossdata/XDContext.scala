@@ -19,11 +19,21 @@
 
 package org.apache.spark.sql.crossdata
 
+import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 
+import com.stratio.crossdata.connector.FunctionInventory
+import org.apache.spark.sql.catalyst.analysis.Analyzer
+import org.apache.spark.sql.execution.ExtractPythonUDFs
+import org.apache.spark.sql.crossdata.execution.{XDStrategies, NativeUDF, ExtractNativeUDFs}
+import org.apache.spark.sql.execution.datasources.{PreWriteCheck, PreInsertCastAndRename}
 import org.apache.spark.sql.sources.crossdata.XDDdlParser
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
+import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import com.typesafe.config.{Config, ConfigFactory}
+import java.lang.reflect.Constructor
 
 /**
  * CrossdataContext leverages the features of [[SQLContext]]
@@ -33,34 +43,55 @@ import org.apache.spark.{Logging, SparkContext}
 class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging {
   self =>
 
-  /*
-  val xdConfig: Config = ConfigFactory.load
-  val catalogClass: String = xdConfig.getString("crossdata.catalog.class")
-  val caseSensitive: Boolean = xdConfig.getBoolean("crossdata.catalog.caseSensitive")
+  override protected[sql] lazy val catalog: XDCatalog = {
+    val xdConfig: Config = ConfigFactory.load
+    val catalogClass: String = xdConfig.getString("crossdata.catalog.class")
+    val caseSensitive: Boolean = xdConfig.getBoolean("crossdata.catalog.caseSensitive")
+    val xdCatalog = Class.forName(catalogClass)
 
-  import scala.collection.JavaConversions._
+    val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf], classOf[XDContext])
 
-  val catalogArgs: util.List[String] =
-    xdConfig.getList("crossdata.catalog.args").map(e => e.toString)
-
-  val xdCatalog = Class.forName(catalogClass)
-
-  val constr: Constructor[_] = xdCatalog.getConstructor(
-    classOf[CatalystConf],
-    classOf[util.List[String]])
-
-  override protected[sql] lazy val catalog: XDCatalog =
     constr.newInstance(
-      new SimpleCatalystConf(caseSensitive),
-      catalogArgs).asInstanceOf[XDCatalog]
+      new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
+  }
 
-  catalog.open()
- */
+  @transient
+  override protected[sql] lazy val analyzer: Analyzer =
+    new Analyzer(catalog, functionRegistry, conf) {
+      override val extendedResolutionRules =
+        ExtractPythonUDFs ::
+          ExtractNativeUDFs::
+          PreInsertCastAndRename ::
+          Nil
 
+      override val extendedCheckRules = Seq(
+        PreWriteCheck(catalog)
+      )
+    }
+
+  @transient
+  class XDPlanner extends SparkPlanner with XDStrategies {
+    override def strategies: Seq[Strategy] = Seq(NativeUDFStrategy) ++ super.strategies
+  }
+
+  @transient
+  override protected[sql] val planner: SparkPlanner = new XDPlanner
+
+  @transient
   protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_))
 
   override def sql(sqlText: String): DataFrame = {
     XDDataFrame(this, parseSql(sqlText))
+  }
+
+  { //Register built-in UDFs for each provider available.
+    import scala.collection.JavaConversions._
+    val loader = Utils.getContextOrSparkClassLoader
+    val serviceLoader = ServiceLoader.load(classOf[FunctionInventory], loader)
+    for(srv <- serviceLoader.iterator();
+        inventory = srv.getClass.newInstance();
+        udf <- srv.nativeBuiltinFunctions
+    ) functionRegistry.registerFunction(udf.name, e => NativeUDF(udf.name, udf.returnType, e))
   }
 
   XDContext.setLastInstantiatedContext(self)
@@ -104,5 +135,6 @@ object XDContext {
       lastInstantiatedContext.set(xdContext)
     }
   }
+
 }
 

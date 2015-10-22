@@ -16,8 +16,8 @@
 package com.stratio.crossdata.connector.mongodb
 
 import com.stratio.crossdata.connector.NativeScan
-import com.stratio.provider.Config
-import com.stratio.provider.mongodb.MongodbRelation
+import com.stratio.datasource.Config
+import com.stratio.datasource.mongodb.MongodbRelation
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.types._

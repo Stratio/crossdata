@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.connector.cassandra
+package org.apache.spark.sql
 
-object CassandraColumnRole extends Enumeration {
-  type CassandraColumnRole = Value
-  val PartitionKey, ClusteringKey, Indexed, NonIndexed, Unknown = Value
+import org.apache.spark.sql.types.StructType
+
+package object crossdata {
+
+  val CrossdataVersion = "1.0.0"
+
+  case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType], provider: String, partitionColumn: Array[String], opts: Map[String, String] = Map.empty[String, String] , crossdataVersion: String = CrossdataVersion)
+
+  val StringSeparator: String = "."
+
 }

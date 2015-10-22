@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>parent</artifactId>
-        <version>0.4.0</version>
+        <version>0.5.0</version>
     </parent>
 
     <artifactId>crossdata-examples</artifactId>
@@ -31,13 +31,6 @@
     <name>Examples</name>
     <description>Examples using Crossdata with MongoDB and Cassandra</description>
     <url>http://stratio.github.io/crossdata/</url>
-
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
 
     <properties>
         <crossdata.version>1.0.0-SNAPSHOT</crossdata.version>

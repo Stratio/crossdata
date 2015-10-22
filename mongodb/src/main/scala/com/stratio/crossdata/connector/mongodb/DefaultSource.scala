@@ -17,10 +17,11 @@ package com.stratio.crossdata.connector.mongodb
 
 import com.mongodb.DBCollection
 import com.mongodb.casbah.MongoDB
+
 import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
-import com.stratio.provider.Config._
-import com.stratio.provider.mongodb.{DefaultSource => ProviderDS, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions, MongodbConfig, MongodbRelation}
+import com.stratio.datasource.Config._
+import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions, MongodbConfig, MongodbRelation}
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.sources.BaseRelation
 import org.apache.spark.sql.types.StructType
@@ -29,7 +30,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 /**
  * Allows creation of MongoDB based tables using
  * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
- * Required options are detailed in [[com.stratio.provider.mongodb.MongodbConfig]]
+ * Required options are detailed in [[com.stratio.datasource.mongodb.MongodbConfig]]
  */
 class DefaultSource extends ProviderDS with TableInventory {
 
@@ -40,8 +41,7 @@ class DefaultSource extends ProviderDS with TableInventory {
                                parameters: Map[String, String]): BaseRelation = {
 
     MongodbXDRelation(
-      MongodbConfigBuilder()
-        .apply(parseParameters(parameters))
+      MongodbConfigBuilder(parseParameters(parameters))
         .build())(sqlContext)
 
   }
@@ -52,9 +52,8 @@ class DefaultSource extends ProviderDS with TableInventory {
                                schema: StructType): BaseRelation = {
 
     MongodbXDRelation(
-      MongodbConfigBuilder()
-        .apply(parseParameters(parameters))
-        .build(), Some(schema))(sqlContext)
+      MongodbConfigBuilder(parseParameters(parameters))
+        .build(),Some(schema))(sqlContext)
 
   }
 
@@ -65,16 +64,15 @@ class DefaultSource extends ProviderDS with TableInventory {
                                data: DataFrame): BaseRelation = {
 
     val mongodbRelation = MongodbXDRelation(
-      MongodbConfigBuilder()
-        .apply(parseParameters(parameters))
+      MongodbConfigBuilder(parseParameters(parameters))
         .build())(sqlContext)
 
-    mode match {
-      case Append => mongodbRelation.insert(data, overwrite = false)
-      case Overwrite => mongodbRelation.insert(data, overwrite = true)
-      case ErrorIfExists => if (mongodbRelation.isEmptyCollection) mongodbRelation.insert(data, overwrite = false)
+    mode match{
+      case Append         => mongodbRelation.insert(data, overwrite = false)
+      case Overwrite      => mongodbRelation.insert(data, overwrite = true)
+      case ErrorIfExists  => if(mongodbRelation.isEmptyCollection) mongodbRelation.insert(data, overwrite = false)
       else throw new UnsupportedOperationException("Writing in a non-empty collection.")
-      case Ignore => if (mongodbRelation.isEmptyCollection) mongodbRelation.insert(data, overwrite = false)
+      case Ignore         => if(mongodbRelation.isEmptyCollection) mongodbRelation.insert(data, overwrite = false)
     }
 
     mongodbRelation
@@ -125,75 +123,42 @@ class DefaultSource extends ProviderDS with TableInventory {
   }
 
 
-  private def parseParameters(parameters: Map[String, String]): Map[String, Any] = {
+  private def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
 
+    // required properties
     /** We will assume hosts are provided like 'host:port,host2:port2,...' */
-    val host = parameters
-      .getOrElse(Host, notFound[String](Host))
-      .split(",").toList
+    val properties: Map[String, Any] = parameters.updated(Host, parameters.getOrElse(Host, notFound[String](Host)).split(",").toList)
+    if (!parameters.contains(Database)) notFound(Database)
+    if (!parameters.contains(Collection)) notFound(Collection)
 
-    val database = parameters.getOrElse(Database, notFound(Database))
+    //optional parseable properties
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
 
-    val collection = parameters.getOrElse(Collection, notFound(Collection))
-
-    val samplingRatio = parameters
-      .get(SamplingRatio)
-      .map(_.toDouble).getOrElse(DefaultSamplingRatio)
-
-    val readpreference = parameters.getOrElse(readPreference, DefaultReadPreference)
-
-    val properties: Map[String, Any] =
-      Map(Host -> host, Database -> database, Collection -> collection, SamplingRatio -> samplingRatio, readPreference -> readpreference)
-
-    val optionalProperties: List[String] = List(Credentials, SSLOptions, IdField, SearchFields, Language, Timeout)
-
-    val finalMap = (properties /: optionalProperties) {
-      //TODO improve code
-      case (properties, Credentials) =>
-
-        /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
-        val credentialInput = parameters.getOrElse(Credentials, " ")
-        if (credentialInput.compareTo(" ") != 0) {
-          val credentials = credentialInput
-            .split(";")
-            .map(credential => credential.split(",")).toList
+    val finalMap = (properties /: optionalProperties){
+      /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
+      case (properties,Credentials) =>
+        parameters.get(Credentials).map{ credentialInput =>
+          val credentials = credentialInput.split(";").map(_.split(",")).toList
             .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
-          properties.+(Credentials -> credentials)
-        } else properties
-      case (properties, SSLOptions) =>
+          properties + (Credentials -> credentials)
+        } getOrElse properties
 
-        /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
-        val ssloptionInput = parameters.getOrElse(SSLOptions, " ")
-        if (ssloptionInput.compareTo(" ") != 0) {
-          val ssloption = ssloptionInput.split(",")
+      /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
+      case (properties,SSLOptions) =>
+        parameters.get(SSLOptions).map{ ssloptionsInput =>
+
+          val ssloption = ssloptionsInput.split(",")
           val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
-          properties.+(SSLOptions -> ssloptions)
-        }
-        else properties
-      case (properties, IdField) => {
-        val idFieldInput = parameters.get(IdField)
-        if (idFieldInput.isDefined) properties.+(IdField -> idFieldInput.get) else properties
-      }
-      case (properties, Language) => {
-        val languageInput = parameters.get(Language)
-        if (languageInput.isDefined) properties.+(Language -> languageInput.get) else properties
-      }
-      case (properties, SearchFields) => {
-        /** We will assume fields are provided like 'user,database,password...' */
-        val searchInputs = parameters.get(SearchFields)
-        if (searchInputs.isDefined) {
-          val searchFields = searchInputs.get.split(",")
-          properties.+(SearchFields -> searchFields)
-        } else properties
-      }
-      case (properties, Timeout) => {
-        /** Timeout in seconds */
-        val timeout = parameters.get(Timeout)
-        if (timeout.isDefined) {
-          properties.+(Timeout -> timeout)
-        } else properties
-      }
+          properties + (SSLOptions -> ssloptions)
+        } getOrElse properties
 
+      /** We will assume fields are provided like 'user,database,password...' */
+      case (properties, UpdateFields) => {
+        parameters.get(UpdateFields).map{ updateInputs =>
+          val updateFields = updateInputs.split(",")
+          properties + (UpdateFields -> updateFields)
+        } getOrElse properties
+      }
     }
 
     finalMap

@@ -15,25 +15,152 @@
  */
 package org.apache.spark.sql.crossdata
 
-import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
+import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.analysis.Catalog
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
+
+import scala.collection.mutable
 
 /**
  * CrossdataCatalog aims to provide a mechanism to persist the
  * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
  */
-trait XDCatalog extends Catalog with Serializable {
+abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
+                         xdContext: XDContext) extends Catalog with Logging with Serializable {
 
-  val args: java.util.List[String]
+  // TODO We should use a limited cache
 
-  /**
-   * Performs actions for loading data if necessary.
-   */
-  def open(args: Any*): Unit
+  val tables = new mutable.HashMap[String, LogicalPlan]()
 
-  /**
-   * Performs actions before closing the application.
-   */
-  def close(): Unit
+  override def tableExists(tableIdentifier: Seq[String]): Boolean = {
+    val tableIdent = processTableIdentifier(tableIdentifier)
+    if (tables.get(getDbTableName(tableIdent)).isDefined) {
+      true
+    } else {
+      val (table, database) = tableIdToTuple(tableIdentifier)
+      lookupTable(table, database).fold(false){ crossdataTable =>
+        val logicalPlan: LogicalPlan = createLogicalRelation(crossdataTable)
+        registerTable(tableIdentifier, logicalPlan)
+        true
+      }
+    }
+  }
+
+  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
+    def processDBIdentifier(dbName: String): String = if (conf.caseSensitiveAnalysis) dbName else dbName.toLowerCase
+    def tablesInDb(dbName: String): mutable.HashMap[String, LogicalPlan] = tables.filter {
+      case (tableIdentifier, _) =>
+        tableIdentifier.split("\\.")(0) == dbName
+      case _ =>
+        false
+    }
+
+    val dbName = databaseName.map(processDBIdentifier)
+    val cachedTables = dbName.fold {
+      tables.map {
+        case (tableName, _) => (tableName, true)
+      }.toSeq
+    } { definedDBName =>
+      tablesInDb(definedDBName).map{
+        case (tableName, _) => (tableName.split("\\.")(0) + "." + tableName.split("\\.")(1), true)
+      }.toSeq
+    }
+
+    (cachedTables ++ listPersistedTables(databaseName)).distinct
+  }
+
+  override def lookupRelation(tableIdentifier: Seq[String], alias: Option[String]): LogicalPlan = {
+    val tableIdent = processTableIdentifier(tableIdentifier)
+    lookupRelationCache(tableIdent, alias).getOrElse {
+      val (table, database) = tableIdToTuple(tableIdent)
+      logInfo(s"XDCatalog: Looking up table ${tableIdent.mkString(".")}")
+      lookupTable(table, database) match {
+        case Some(crossdataTable) =>
+          val table: LogicalPlan = createLogicalRelation(crossdataTable)
+          registerTable(tableIdent, table)
+          processAlias(tableIdent, table, alias)
+
+        case None =>
+          sys.error(s"Table Not Found: ${tableIdent.mkString(".")}")
+      }
+    }
+  }
+
+  def lookupRelationCache(processedTableIdentifier: Seq[String], alias: Option[String]): Option[LogicalPlan] = {
+    val tableFullName = getDbTableName(processedTableIdentifier)
+    val tableOpt = tables.get(tableFullName)
+    tableOpt.fold[Option[LogicalPlan]] {
+      None
+    } { table =>
+      Some( processAlias(processedTableIdentifier, table, alias))
+    }
+  }
+
+  // TODO: Review it in future Spark versions
+  private def processAlias( processedTableIdentifier: Seq[String], lPlan: LogicalPlan, alias: Option[String]) = {
+    val tableWithQualifiers = Subquery(processedTableIdentifier.last, lPlan)
+    // If an alias was specified by the lookup, wrap the plan in a subquery so that attributes are
+    // properly qualified with this alias.
+    alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
+  }
+
+  override def registerTable(tableIdentifier: Seq[String], plan: LogicalPlan): Unit = {
+    val tableIdent = processTableIdentifier(tableIdentifier)
+    tables.put(getDbTableName(tableIdent), plan)
+  }
+
+  override def unregisterTable(tableIdentifier: Seq[String]): Unit = {
+    val tableIdent = processTableIdentifier(tableIdentifier)
+    tables remove getDbTableName(tableIdent)
+  }
+
+  override def unregisterAllTables(): Unit =
+    tables.clear()
+
+  override def refreshTable(tableIdentifier: TableIdentifier): Unit = {
+    throw new UnsupportedOperationException
+  }
+
+  private def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
+    val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.provider, crossdataTable.opts)
+    LogicalRelation(resolved.relation)
+  }
+
+  private def tableIdToTuple(tableIdentifier: Seq[String]): (String, Option[String]) = tableIdentifier match {
+    case Seq(db, tableName) => (tableName, Some(db))
+    case Seq(tableName) => (tableName, None)
+  }
+
+  // Defined by Crossdata
+
+  final def persistTable(crossdataTable: CrossdataTable): Unit = {
+    logInfo(s"XDCatalog: Persisting table ${crossdataTable.tableName}")
+    persistTableMetadata(crossdataTable)
+  }
+
+  final def dropTable(tableIdentifier: Seq[String]): Unit = {
+    logInfo(s"XDCatalog: Deleting table ${tableIdentifier.mkString(".")}from catalog")
+    val (table, catalog) = tableIdToTuple(tableIdentifier)
+    unregisterTable(tableIdentifier)
+    dropPersistedTable(table, catalog)
+  }
+
+  final def dropAllTables(): Unit = {
+    logInfo("XDCatalog: Drop all tables from catalog")
+    unregisterAllTables()
+    dropAllPersistedTables()
+  }
+
+  protected def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable]
+
+  def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)]
+
+  protected def persistTableMetadata(crossdataTable: CrossdataTable): Unit
+
+  protected def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit
+
+  protected def dropAllPersistedTables(): Unit
 
 }
