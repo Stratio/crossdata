@@ -14,9 +14,12 @@ class ElasticSearchXDRelation(parameters: Map[String, String], sqlContext: SQLCo
 
   override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
     logDebug(s"Processing ${optimizedLogicalPlan.toString()}")
-    val queryExecutor = new ElasticSearchQueryProcessor(optimizedLogicalPlan, parameters, userSchema)
+    val queryExecutor = ElasticSearchQueryProcessor(optimizedLogicalPlan, parameters, userSchema)
     queryExecutor.execute()
+
   }
+
+
 
   /**
    * Checks the ability to execute a [[LogicalPlan]].
