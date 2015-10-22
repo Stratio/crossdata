@@ -169,22 +169,9 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
   }
 
   private[this] def sparkResultFromMongodb(requiredColumns: Array[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
+    import com.stratio.datasource.mongodb.MongodbRelation._
     MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns), resultSet)
   }
-
-  /**
-   * Prune whole schema in order to fit with
-   * required columns in Spark SQL statement.
-   * @param schema Whole field projection schema.
-   * @param requiredColumns Required fields in statement
-   * @return A new pruned schema
-   */
-  def pruneSchema(
-                   schema: StructType,
-                   requiredColumns: Array[String]): StructType =
-    StructType(schema.fields.filter{ structField =>
-      requiredColumns.contains(structField.name)
-    })
 
 }
 

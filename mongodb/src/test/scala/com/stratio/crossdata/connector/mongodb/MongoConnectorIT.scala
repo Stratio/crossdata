@@ -38,6 +38,30 @@ class MongoConnectorIT extends MongoWithSharedContext {
     result.head.toSeq should equal (Seq(1, 11, "description1", false, "Name 1", null))
   }
 
+  // TODO remove test
+  /*"The Mongo connector" should "execute natively a select **" in {
+    assumeEnvironmentIsUpAndRunning
+    sql("CREATE TEMPORARY TABLE tabletest(ident INT, name STRING, money "
+      + "DOUBLE, new BOOLEAN, date DATE"
+      + ") USING "
+      + "com.stratio.crossdata.connector.mongodb OPTIONS (host '127.0.0.1:27017',database 'databasetest',"
+      + "collection 'tabletest')")
+
+    val dataframe = sql(s"SELECT * FROM tabletest").collect(Native)
+
+  }*/
+
+
+  it should "return the columns in the requested order" in {
+    assumeEnvironmentIsUpAndRunning
+    val dataframe = sql(s"SELECT name, id FROM $Collection ")
+    val schema = dataframe.schema
+    val result = dataframe.collect(Native)
+    result should have length 10
+    schema.fieldNames should equal (Seq("name", "id"))
+    result.head.toSeq should equal (Seq( "Name 1", 1))
+  }
+
   it should "execute natively a simple project" in {
     assumeEnvironmentIsUpAndRunning
     val result = sql(s"SELECT id FROM $Collection ").collect(Native)
