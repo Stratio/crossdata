@@ -143,7 +143,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     // TODO: Evaluate userSpecifiedSchema as Options
     // TODO: Test StructTypes with multiple subdocuments
-    val tableSchema = serializeSchema(crossdataTable.userSpecifiedSchema.get)
+    val tableSchema = serializeSchema(crossdataTable.userSpecifiedSchema.getOrElse(new StructType()))
     val tableOptions = serializeOptions(crossdataTable.opts)
     val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
