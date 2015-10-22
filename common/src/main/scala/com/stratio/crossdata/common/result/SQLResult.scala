@@ -22,7 +22,7 @@ import com.stratio.crossdata.common.SQLResult
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 
-case class SuccessfulQueryResult(queryId: UUID, result: Array[Row], schema:Option[StructType]=None) extends SQLResult {
+case class SuccessfulQueryResult(queryId: UUID, result: Array[Row], schema:StructType) extends SQLResult {
   override val resultSet = result
 
   def hasError = false
