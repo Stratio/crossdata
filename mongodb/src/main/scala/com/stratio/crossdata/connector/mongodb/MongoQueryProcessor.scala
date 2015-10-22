@@ -26,11 +26,9 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.sources
+import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
-
-import org.apache.spark.sql.Row
 
 object MongoQueryProcessor {
 
@@ -109,15 +107,19 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     } else {
       try {
         validatedNativePlan.map { case (requiredColumns, filters, limit) =>
-          val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(requiredColumns, filters)
-          val resultSet = MongodbConnection.withCollectionDo(config) { collection =>
-            logDebug(s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
-            val cursor = collection.find(mongoFilters, mongoRequiredColumns)
-            val result = cursor.limit(limit.getOrElse(DefaultLimit)).toArray[DBObject]
-            cursor.close()
-            result
+          if (limit.exists(_ == 0)) {
+            Array.empty[Row]
+          } else {
+            val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(requiredColumns, filters)
+            val resultSet = MongodbConnection.withCollectionDo(config) { collection =>
+              logDebug(s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
+              val cursor = collection.find(mongoFilters, mongoRequiredColumns)
+              val result = cursor.limit(limit.getOrElse(DefaultLimit)).toArray[DBObject]
+              cursor.close()
+              result
+            }
+            sparkResultFromMongodb(requiredColumns, schemaProvided.get, resultSet)
           }
-          sparkResultFromMongodb(requiredColumns, schemaProvided.get, resultSet)
         }
       } catch {
         case exc: Exception =>
