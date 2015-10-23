@@ -28,7 +28,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
   // DEFAULT enrolled
   // SECONDARY_INDEX name
 
-  "The Cassandra connector" should "execute natively a (SELECT *)" in {
+  /*"The Cassandra connector" should "execute natively a (SELECT *)" in {
     assumeEnvironmentIsUpAndRunning
 
     val result = sql(s"SELECT * FROM $Table ").collect(Native)
@@ -184,6 +184,15 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
     val query = s"SELECT now() as t, now() as a, dateOf(now()) as dt, unixTimestampOf(now()) as ut FROM $Table"
     sql(query).collect(Native) should have length 10
+
+  }*/
+
+  it should "bla bla bla" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val query = s"SELECT now() FROM $Table"
+    val res = sql(query).collect(Spark)
+    res should have length 10
 
   }
 

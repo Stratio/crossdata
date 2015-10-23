@@ -146,7 +146,8 @@ class CassandraXDSourceRelation(
   /** Transfer selection to limit to columns specified */
   private def maybeSelect(rdd: RDDType, requiredColumns: Array[String]): RDDType = {
     if (requiredColumns.nonEmpty) {
-      rdd.select(requiredColumns.map(column => column: ColumnRef): _*)
+      val cols = requiredColumns.map(column => column: ColumnRef) :+ FunctionCallRef("now")
+      rdd.select(cols: _*)
     } else {
       rdd
     }
