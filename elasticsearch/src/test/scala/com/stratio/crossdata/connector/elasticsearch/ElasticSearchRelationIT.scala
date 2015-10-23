@@ -24,8 +24,17 @@ class ElasticSearchRelationIT extends ElasticWithSharedContext {
 
   "The ElasticSearch Connector" should "execute natively a select *" in {
     assumeEnvironmentIsUpAndRunning
-    val result = sql(s"SELECT * FROM $Type ").collect(Native)
+
+    //Experimentation
+    val dataframe = sql(s"SELECT * FROM $Type ")
+
+    //Expectations
+    val schema = dataframe.schema
+    val result = dataframe.collect(Native)
+
     result should have length 10
+    schema.fieldNames should equal (Seq("id", "age", "description", "enrolled", "name", "optionalField"))
+    result.head.toSeq(2).toString.contains("description") should be (true)
   }
 
   ignore should "execute natively a select with simple filter" in {

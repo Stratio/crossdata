@@ -75,7 +75,7 @@
         <module>driver</module>
         <module>server</module>
         <module>dist</module>
-        <module>elastic-search</module>
+        <module>elasticsearch</module>
     </modules>
 
     <properties>
@@ -83,7 +83,6 @@
         <scala.version>2.10.4</scala.version>
         <spark.version>1.5.1</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
-        <mapdb.version>1.0.8</mapdb.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
         <config.version>1.2.1</config.version>
         <akka.version>2.3.11</akka.version>

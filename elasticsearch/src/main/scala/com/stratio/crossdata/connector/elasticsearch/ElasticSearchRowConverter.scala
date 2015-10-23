@@ -16,16 +16,16 @@
 package com.stratio.crossdata.connector.elasticsearch
 
 import java.sql.Timestamp
-
-import com.sksamuel.elastic4s.RichSearchHit
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
+import org.elasticsearch.search.SearchHit
 
 object ElasticSearchRowConverter {
 
-  def asRows(schema: StructType, array: Array[RichSearchHit]): Array[Row] = {
-    array.map { hit =>
-      hitAsRow(hit.fields, schema)
+  def asRows(schema: StructType, array: Array[SearchHit]): Array[Row] = {
+    import scala.collection.JavaConverters._
+    array map { hit =>
+      hitAsRow(hit.sourceAsMap().asScala.toMap, schema)
     }
   }
 

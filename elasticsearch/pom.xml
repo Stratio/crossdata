@@ -27,21 +27,15 @@
     </parent>
     <packaging>jar</packaging>
     <groupId>com.stratio.crossdata.connector</groupId>
-    <artifactId>elastic-search</artifactId>
+    <artifactId>elasticsearch</artifactId>
 
     <name>elastic-search</name>
     <description>Crossdata Elastic-Search Connector</description>
     <url>http://stratio.github.io/crossdata/</url>
 
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
-
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <elastic.datasource.version>2.1.1</elastic.datasource.version>
+        <elastic4s.version>1.7.4</elastic4s.version>
     </properties>
     <dependencies>
 
@@ -49,6 +43,24 @@
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-core</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch-spark_${scala.binary.version}</artifactId>
+            <version>${elastic.datasource.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sksamuel.elastic4s</groupId>
+            <artifactId>elastic4s-core_${scala.binary.version}</artifactId>
+            <version>${elastic4s.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.10.19</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
@@ -58,23 +70,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch-spark_${scala.binary.version}</artifactId>
-            <version>2.1.1</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.sksamuel.elastic4s</groupId>
-            <artifactId>elastic4s-core_${scala.binary.version}</artifactId>
-            <version>1.7.4</version>
-        </dependency>
     </dependencies>
 </project>

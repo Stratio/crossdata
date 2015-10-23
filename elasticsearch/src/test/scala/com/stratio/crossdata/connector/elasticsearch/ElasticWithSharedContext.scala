@@ -38,7 +38,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
 
       xdContext.sql(
         s"""|CREATE TEMPORARY TABLE $Type
-            |(_id String, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)
+            |(id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)
             |USING $SourceProvider
             |OPTIONS (
             |resource '$Index/$Type',
@@ -69,6 +69,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
     elasticClient.execute {
       create index Index mappings (
         Type as(
+          "id" typed IntegerType,
           "age" typed IntegerType,
           "description" typed StringType,
           "enrolled" typed BooleanType,
@@ -90,6 +91,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
     for (a <- 1 to 10) {
       elasticClient.execute {
         index into Index / Type fields(
+          "id" -> a,
           "age" -> (10 + a),
           "description" -> s"description $a",
           "enrolled" -> (a % 2 == 0),
