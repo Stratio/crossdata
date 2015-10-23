@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.stratio.crossdata.connector.FunctionInventory
 import org.apache.spark.sql.catalyst.analysis.Analyzer
+import org.apache.spark.sql.crossdata.execution.datasources.ExtendedDataSourceStrategy
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.crossdata.execution.{XDStrategies, NativeUDF, ExtractNativeUDFs}
 import org.apache.spark.sql.execution.datasources.{PreWriteCheck, PreInsertCastAndRename}
@@ -71,7 +72,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
   @transient
   class XDPlanner extends SparkPlanner with XDStrategies {
-    override def strategies: Seq[Strategy] = Seq(NativeUDFStrategy) ++ super.strategies
+    override def strategies: Seq[Strategy] = Seq(NativeUDFStrategy, ExtendedDataSourceStrategy) ++ super.strategies
   }
 
   @transient
