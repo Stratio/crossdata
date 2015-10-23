@@ -16,7 +16,7 @@
 package com.stratio.crossdata.connector.cassandra
 
 import org.apache.spark.sql.crossdata.ExecutionType._
-import org.apache.spark.sql.crossdata.exceptions.{CrossdataException, NativeExecutionException}
+import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -34,6 +34,13 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     val result = sql(s"SELECT * FROM $Table ").collect(Native)
     result should have length 10
     result(0) should have length 5
+  }
+
+  "The Cassandra connector" should "execute natively a query with limit 0" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val result = sql(s"SELECT * FROM $Table LIMIT 0").collect(Native)
+    result should have length 0
   }
 
   "The Cassandra connector" should "execute natively a (SELECT column)" in {

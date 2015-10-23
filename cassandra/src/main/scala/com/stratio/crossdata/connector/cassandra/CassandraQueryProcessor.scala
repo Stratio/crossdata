@@ -18,17 +18,16 @@ package com.stratio.crossdata.connector.cassandra
 
 
 import com.datastax.driver.core.{ProtocolVersion, ResultSet}
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole._
 import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.crossdata.execution.{NativeUDFAttribute, NativeUDF}
+import org.apache.spark.sql.crossdata.execution.{NativeUDF, NativeUDFAttribute}
+import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{Row, sources}
-import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
-
-import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole._
 
 object CassandraQueryProcessor {
 
@@ -96,17 +95,23 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
     try {
       validatedNativePlan.map { case (columnsRequired, filters, udfs: Map[Attribute, NativeUDF], limit) =>
-        val cqlQuery = buildNativeQuery(
-          cassandraRelation.tableDef.name,
-          columnsRequired.map(_.toString),
-          filters,
-          limit.getOrElse(CassandraQueryProcessor.DefaultLimit),
-          udfs map { case (k,v) => k.toString -> v}
-        )
-        val resultSet = cassandraRelation.connector.withSessionDo { session =>
-          session.execute(cqlQuery)
+
+        if (limit.exists(_ == 0)) {
+          Array.empty[Row]
+        } else {
+          val cqlQuery = buildNativeQuery(
+            cassandraRelation.tableDef.name,
+            columnsRequired.map(_.toString),
+            filters,
+            limit.getOrElse(CassandraQueryProcessor.DefaultLimit),
+            udfs map { case (k, v) => k.toString -> v }
+          )
+          val resultSet = cassandraRelation.connector.withSessionDo { session =>
+            session.execute(cqlQuery)
+          }
+          sparkResultFromCassandra(annotateRepeatedNames(columnsRequired.map(_.name)).toArray, resultSet)
         }
-        sparkResultFromCassandra(annotateRepeatedNames(columnsRequired.map(_.name)).toArray, resultSet)
+
       }
     } catch {
       case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage); None
