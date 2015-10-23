@@ -20,7 +20,6 @@ import java.util.regex.Pattern
 import com.mongodb.casbah.Imports._
 import com.mongodb.{DBObject, QueryBuilder}
 import com.stratio.datasource.Config
-import com.stratio.datasource.mongodb.MongodbRelation._
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
@@ -174,6 +173,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
   }
 
   private[this] def sparkResultFromMongodb(requiredColumns: Array[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
+    import com.stratio.datasource.mongodb.MongodbRelation._
     MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns), resultSet)
   }
 
