@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,9 +43,10 @@ object ElasticSearchQueryProcessor {
  * @param parameters ElasticSearch Configuration Parameters
  * @param schemaProvided Spark used defined schema
  */
-class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String], val schemaProvided: Option[StructType] = None) extends Logging{
+class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String], val schemaProvided: Option[StructType] = None) extends Logging {
 
   import ElasticSearchQueryProcessor._
+
   /**
    * Executes the [[LogicalPlan]]] and query the ElasticSearch database
    * @return the query result
@@ -74,30 +75,38 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
   }
 
   def buildNativeQuery(requiredColumns: Array[Attribute], filters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
-    val queryWithFilters = buildFilters(filters, query)
+    val queryWithFilters = if (filters.isEmpty) query else buildFilters(filters, query)
     selectFields(requiredColumns, queryWithFilters)
   }
 
   private def buildFilters(sFilters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
 
-    val searchFilters = (query /: sFilters) { (prev, next) =>
-      prev postFilter (
-        next match {
-          case sources.EqualTo(attribute, value) => termFilter(attribute, value)
-          case sources.GreaterThan(attribute, value) => rangeFilter(attribute).gt(value)
-        }
-        )
+    val searchFilters = sFilters.map(
+      _ match {
+        case sources.EqualTo(attribute, value) => termFilter(attribute, value)
+        case sources.GreaterThan(attribute, value) => rangeFilter(attribute).gt(value)
+        case sources.GreaterThanOrEqual(attribute, value) => rangeFilter(attribute).gte(value.toString)
+        case sources.LessThan(attribute, value) => rangeFilter(attribute).lt(value)
+        case sources.LessThanOrEqual(attribute, value) => rangeFilter(attribute).lte(value.toString)
+        case sources.In(attribute, value) => termsFilter(attribute, value.toList: _*)
+        case sources.IsNotNull(attribute) => existsFilter(attribute)
+        case sources.IsNull(attribute) => missingFilter(attribute)
+      }
+    )
+
+    val mustQuery = query postFilter bool {
+      must(searchFilters)
     }
 
-    log.debug("LogicalPlan transformed to the Elasticsearch query:" + searchFilters.toString())
+    log.info("LogicalPlan transformed to the Elasticsearch query:" + mustQuery.toString())
+    mustQuery
 
-    searchFilters
   }
 
   private def selectFields(fields: Array[Attribute], query: SearchDefinition): SearchDefinition = {
 
-    val stringFields:Array[String] = fields.map(_.name)
-    query.fields(stringFields.toList : _*)
+    val stringFields: Array[String] = fields.map(_.name)
+    query.fields(stringFields.toList: _*)
   }
 
 
@@ -122,19 +131,19 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
   private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = filters.forall {
     case _: sources.EqualTo => true
-        case _: sources.In => false
-        case _: sources.LessThan => false
-        case _: sources.GreaterThan => false
-        case _: sources.LessThanOrEqual => false
-        case _: sources.GreaterThanOrEqual => false
-        case _: sources.IsNull => false
-        case _: sources.IsNotNull => false
-        case _: sources.StringStartsWith => false
-        case _: sources.StringEndsWith => false
-        case _: sources.StringContains => false
-        case sources.And(left, right) => checkNativeFilters(Array(left, right))
-        case sources.Or(left, right) => checkNativeFilters(Array(left, right))
-        // TODO add more filters (Not?)
+    case _: sources.In => true
+    case _: sources.LessThan => true
+    case _: sources.GreaterThan => true
+    case _: sources.LessThanOrEqual => true
+    case _: sources.GreaterThanOrEqual => true
+    case _: sources.IsNull => true
+    case _: sources.IsNotNull => true
+    case _: sources.StringStartsWith => false
+    case _: sources.StringEndsWith => false
+    case _: sources.StringContains => false
+    case sources.And(left, right) => checkNativeFilters(Array(left, right))
+    case sources.Or(left, right) => false //checkNativeFilters(Array(left, right))
+    // TODO add more filters (Not?)
     case _ => false
 
   }

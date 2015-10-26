@@ -94,7 +94,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
           "id" -> a,
           "age" -> (10 + a),
           "description" -> s"description $a",
-          "enrolled" -> (a % 2 == 0),
+          "enrolled" -> (if (a % 2 == 0) true else null),
           "name" -> s"Name $a")
       }.await
 

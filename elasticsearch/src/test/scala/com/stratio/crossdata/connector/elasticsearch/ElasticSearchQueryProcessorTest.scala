@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,7 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import com.sksamuel.elastic4s.{IndexesTypes, SearchDefinition}
 import com.stratio.crossdata.test.BaseXDTest
-import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.expressions.{Attribute, PrettyAttribute}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.sources.{Filter => SourceFilter, _}
 import org.apache.spark.sql.types.StructType
@@ -37,7 +37,7 @@ class ElasticSearchQueryProcessorTest extends BaseXDTest with MockitoSugar {
     val structType = Option(mock[StructType])
     val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
 
-    val requiredColums: Array[Attribute] = Array()
+    val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
     val filters: Array[SourceFilter] = Array()
 
     val indexType = IndexesTypes("movies/movie")
@@ -48,7 +48,7 @@ class ElasticSearchQueryProcessorTest extends BaseXDTest with MockitoSugar {
 
     //Expectations
     result should not be null
-    result.toString() should be("{ }")
+    result.toString().replace("\n", "").replace(" ", "") should be("{\"fields\":\"title\"}")
   }
 
 
@@ -60,7 +60,7 @@ class ElasticSearchQueryProcessorTest extends BaseXDTest with MockitoSugar {
     val structType = Option(mock[StructType])
     val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
 
-    val requiredColums: Array[Attribute] = Array()
+    val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
     val filters: Array[SourceFilter] = Array(EqualTo("year", 1990))
 
     val indexType = IndexesTypes("movies/movie")
@@ -71,6 +71,29 @@ class ElasticSearchQueryProcessorTest extends BaseXDTest with MockitoSugar {
 
     //Expectations
     result should not be null
-    result.toString().replace("\n", "").replace(" ", "") should be("{\"post_filter\":{\"term\":{\"year\":\"1990\"}}}")
+    result.toString().replace("\n", "").replace(" ", "") should be("{\"post_filter\":{\"bool\":{\"must\":{\"term\":{\"year\":\"1990\"}}}},\"fields\":\"title\"}")
+  }
+
+
+  it should "build a AND Query" in {
+    //Fixture
+
+    val logicalPlan: LogicalPlan = mock[LogicalPlan]
+    val parameters = mock[Map[String, String]]
+    val structType = Option(mock[StructType])
+    val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
+
+    val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
+    val filters: Array[SourceFilter] = Array(EqualTo("year", 1990), EqualTo("Name", "Lord"))
+
+    val indexType = IndexesTypes("movies/movie")
+    val query = new SearchDefinition(indexType)
+
+    //Experimentation
+    val result = queryProcessor.buildNativeQuery(requiredColums, filters, query)
+
+    //Expectations
+    result should not be null
+    result.toString().replace("\n", "").replace(" ", "") should be("{\"post_filter\":{\"bool\":{\"must\":[{\"term\":{\"year\":\"1990\"}},{\"term\":{\"Name\":\"Lord\"}}]}},\"fields\":\"title\"}")
   }
 }

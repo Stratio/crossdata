@@ -56,8 +56,8 @@ class ElasticSearchXDRelation(parameters: Map[String, String], sqlContext: SQLCo
   override def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean = logicalStep match {
     case ln: LeafNode => true // TODO leafNode == LogicalRelation(xdSourceRelation)
     case un: UnaryNode => un match {
-      case Project(_, _) => true
-      case Limit(_, _) | Filter(_, _) => false //TODO add support to others
+      case Project(_, _) | Filter(_, _)  => true
+      case Limit(_, _)=> false //TODO add support to others
       case _ => false
 
     }
