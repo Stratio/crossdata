@@ -1,6 +1,8 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
+import com.stratio.crossdata.connector.NativeFunctionExecutor
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
+import org.apache.spark.sql.crossdata.execution.{NativeUDFAttribute, NativeUDF}
 import org.apache.spark.sql.execution.datasources.{PartitionSpec, Partition, LogicalRelation}
 import org.apache.spark.{Logging, TaskContext}
 import org.apache.spark.deploy.SparkHadoopUtil
@@ -17,6 +19,54 @@ import org.apache.spark.unsafe.types.UTF8String
 import org.apache.spark.util.{SerializableConfiguration, Utils}
 
 private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
+
+  protected def pruneFilterProjectUdfs(plan: LogicalPlan,
+                                       relation: LogicalRelation,
+                                       projects: Seq[NamedExpression],
+                                       filterPredicates: Seq[Expression],
+                                       scanBuilder: (
+                                         Seq[Attribute],
+                                           Seq[Expression],
+                                           Map[String, NativeUDF]
+                                         ) => RDD[InternalRow]
+                                        ) = {
+    import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
+    val (pro, fil, att2udf, ignor) = CatalystToCrossdataAdapter.getFilterProject(plan, projects, filterPredicates)
+
+    val projectSet = AttributeSet(pro)
+    val filterSet = AttributeSet(filterPredicates.flatMap(_.references)) //TODO Complete filters
+    val filterCondition = filterPredicates.reduceLeftOption(expressions.And)
+
+    val pushedFilters = filterPredicates.map { _ transform {
+      case a: AttributeReference => relation.attributeMap(a) // Match original case of attributes.
+    }}
+
+    /*if (projects.map(_.toAttribute) == projects &&
+      projectSet.size == projects.size &&
+      filterSet.subsetOf(projectSet)) {
+      // When it is possible to just use column pruning to get the right projection and
+      // when the columns of this projection are enough to evaluate all filter conditions,
+      // just do a scan followed by a filter, with no extra project.
+      val requestedColumns =
+        projects.asInstanceOf[Seq[Attribute]] // Safe due to if above.
+          .map(relation.attributeMap)            // Match original case of attributes.
+
+      val scan = execution.PhysicalRDD.createFromDataSource(
+        projects.map(_.toAttribute),
+        scanBuilder(requestedColumns, pushedFilters),
+        relation.relation)
+      filterCondition.map(execution.Filter(_, scan)).getOrElse(scan)
+    } else {*/
+      val requestedColumns = (projectSet ++ filterSet)/*.map(relation.attributeMap).*/toSeq
+
+      val scan = execution.PhysicalRDD.createFromDataSource(
+        requestedColumns,
+        scanBuilder(requestedColumns, pushedFilters, att2udf map {case (k,v) => k.toString() -> v}),
+        relation.relation)
+      execution.Project(projects, filterCondition.map(execution.Filter(_, scan)).getOrElse(scan))
+    //}
+  }
+
   def apply(plan: LogicalPlan): Seq[execution.SparkPlan] = plan match {
     case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: CatalystScan)) =>
       pruneFilterProjectRaw(
@@ -25,12 +75,23 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
         filters,
         (a, f) => toCatalystRDD(l, a, t.buildScan(a, f))) :: Nil
 
-    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: PrunedFilteredScan)) =>
-      pruneFilterProject(
+    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: NativeFunctionExecutor)) =>
+      val scanBuilder: (Seq[Attribute], Array[Filter], Map[String, NativeUDF]) =>
+        RDD[InternalRow] = (a, f, a2udf) => toCatalystRDD(l, a, t.buildScan(
+        a.map {
+          case nat: NativeUDFAttribute => nat.toString
+          case att => att.name
+        }.toArray, f, a2udf)
+      )
+      pruneFilterProjectUdfs(
+        plan,
         l,
         projects,
         filters,
-        (a, f) => toCatalystRDD(l, a, t.buildScan(a.map(_.name).toArray, f))) :: Nil
+        (requestedColumns, pushedFilters, attr2udf) => {
+          scanBuilder(requestedColumns, selectFilters(pushedFilters).toArray, attr2udf)
+        }
+        ) :: Nil
 
     case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: PrunedScan)) =>
       pruneFilterProject(

@@ -26,15 +26,16 @@ import com.datastax.spark.connector.util.NameTools
 import com.datastax.spark.connector.util.Quote._
 import com.datastax.spark.connector.writer.{SqlRowWriter, WriteConf}
 import com.datastax.spark.connector._
-import com.stratio.crossdata.connector.NativeScan
+import com.stratio.crossdata.connector.{NativeFunctionExecutor, NativeScan}
 import com.stratio.crossdata.connector.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
+import org.apache.spark.sql.catalyst.expressions.{Literal, AttributeReference, Attribute}
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
+import org.apache.spark.sql.crossdata.execution.{NativeUDFAttribute, NativeUDF, EvaluateNativeUDF}
 import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.sources._
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{DataTypes, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
 import org.apache.spark.{Logging, SparkConf}
 
@@ -57,6 +58,7 @@ class CassandraXDSourceRelation(
   extends BaseRelation
   with InsertableRelation
   with PrunedFilteredScan
+  with NativeFunctionExecutor
   with NativeScan with Logging {
 
   // NativeScan implementation ~~
@@ -124,7 +126,27 @@ class CassandraXDSourceRelation(
   def buildScan(): RDD[Row] = baseRdd.asInstanceOf[RDD[Row]]
 
   override def buildScan(requiredColumns: Array[String], filters: Array[Filter]): RDD[Row] = {
-    val prunedRdd = maybeSelect(baseRdd, requiredColumns)
+    buildScan(requiredColumns, filters, Map.empty)
+  }
+
+  private def resolveUDFsReferences(strId: String, udfs: Map[String, NativeUDF]): Option[FunctionCallRef] =
+    udfs get(strId) map { udf =>
+      val actualParams = udf.children.collect {
+        case at: NativeUDFAttribute => Left(resolveUDFsReferences(at.toString, udfs).get)
+        case at: AttributeReference => Left(ColumnName(at.name))
+        case lit@Literal(_, DataTypes.StringType) => Right(s"$lit")
+        case lit: Literal => Right(lit.toString)
+      }
+      FunctionCallRef(udf.name, actualParams)
+    }
+
+
+  override def buildScan(requiredColumns: Array[String],
+                         filters: Array[Filter],
+                         udfs: Map[String, NativeUDF]): RDD[Row] = {
+
+
+    val prunedRdd = maybeSelect(baseRdd, requiredColumns, udfs)
     logInfo(s"filters: ${filters.mkString(", ")}")
     val prunedFilteredRdd = {
       if (filterPushdown) {
@@ -144,9 +166,12 @@ class CassandraXDSourceRelation(
   private type RDDType = CassandraRDD[CassandraSQLRow]
 
   /** Transfer selection to limit to columns specified */
-  private def maybeSelect(rdd: RDDType, requiredColumns: Array[String]): RDDType = {
+  private def maybeSelect(
+                           rdd: RDDType,
+                           requiredColumns: Array[String],
+                           udfs: Map[String, NativeUDF] = Map.empty): RDDType = {
     if (requiredColumns.nonEmpty) {
-      val cols = requiredColumns.map(column => column: ColumnRef) :+ FunctionCallRef("now")
+      val cols = requiredColumns.map(column => resolveUDFsReferences(column, udfs).getOrElse(column: ColumnRef))
       rdd.select(cols: _*)
     } else {
       rdd
