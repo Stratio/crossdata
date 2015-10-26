@@ -47,8 +47,8 @@ object ElasticSearchRowConverter {
     Row.fromSeq(values)
   }
 
-
   def toSQL(value: SearchHitField, dataType: DataType): Any = {
+
     Option(value).map { value =>
       (value, dataType) match {
         case _ =>

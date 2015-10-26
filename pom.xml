@@ -70,12 +70,12 @@
         <module>core</module>
         <module>cassandra</module>
         <module>mongodb</module>
+        <module>elasticsearch</module>
         <module>doc</module>
         <module>common</module>
         <module>driver</module>
         <module>server</module>
         <module>dist</module>
-        <module>elasticsearch</module>
     </modules>
 
     <properties>

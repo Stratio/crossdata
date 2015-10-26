@@ -47,7 +47,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
   import ElasticSearchQueryProcessor._
   /**
-   * Executes the [[LogicalPlan]]] and query the ElaticSearch database
+   * Executes the [[LogicalPlan]]] and query the ElasticSearch database
    * @return the query result
    */
   def execute(): Option[Array[Row]] = {
