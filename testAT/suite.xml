@@ -1,0 +1,7 @@
+<suite name="Crossdata" verbose="10" parallel="instances" thread-count="1">
+    <test name="Crossdata acceptance tests">
+        <packages>
+            <package name="com.stratio.crossdata.testsAT.*"/>
+        </packages>
+    </test>
+</suite>
