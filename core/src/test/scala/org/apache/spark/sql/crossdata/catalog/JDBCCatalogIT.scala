@@ -24,14 +24,13 @@ import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
-class MySQLCatalogIT extends SharedXDContextTest with MySQLCatalogConstants {
+class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
 
-  "MySQLCatalog" must "return a dataframe from a persist table without catalog using json datasource" in {
+  "JdbcCatalogSpec" must "return a dataframe from a persist table without catalog using json datasource" in {
     val fields = Seq[StructField](Field1, Field2)
     val columns = StructType(fields)
     val opts = Map("path" -> "/fake_path")
     val tableIdentifier = Seq(TableName)
-    // TODO Check datasource type (parquet is HadoopFsRelationProvider)
     val crossdataTable = CrossdataTable(TableName, None, Option(columns), "org.apache.spark.sql.json", Array[String](), opts)
     xdContext.catalog.persistTable(crossdataTable)
     val dataframe = xdContext.sql(s"SELECT * FROM $TableName")
@@ -39,7 +38,7 @@ class MySQLCatalogIT extends SharedXDContextTest with MySQLCatalogConstants {
     dataframe shouldBe a[XDDataFrame]
   }
 
-  it should "persist a table with catalog and partitionColumns in MySQL" in {
+  it should "persist a table with catalog and partitionColumns in Jdbc" in {
 
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Option(Database), Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
@@ -51,12 +50,39 @@ class MySQLCatalogIT extends SharedXDContextTest with MySQLCatalogConstants {
 
   }
 
+
+  it should "persist a table with catalog and partitionColumns without schema in Jdbc" in {
+
+    val tableIdentifier = Seq(Database, TableName)
+    val crossdataTable = CrossdataTable(TableName, Option(Database), None, "org.apache.spark.sql.json", Array[String](), OptsJSON)
+    xdContext.catalog.persistTable(crossdataTable)
+    xdContext.catalog.tableExists(tableIdentifier) shouldBe true
+
+    val df = xdContext.sql(s"SELECT * FROM $Database.$TableName")
+    df shouldBe a[XDDataFrame]
+
+  }
+
+  it should "persist a table with catalog and partitionColumns with multiple subdocuments as schema in JDBC" in {
+    xdContext.catalog.dropAllTables()
+    val tableIdentifier = Seq(Database, TableName)
+    val crossdataTable = CrossdataTable(TableName, Option(Database), Option(ColumnsWithSubColumns), "org.apache.spark.sql.json", Array.empty[String], OptsJSON)
+    xdContext.catalog.persistTable(crossdataTable)
+
+    xdContext.catalog.unregisterTable(tableIdentifier)
+    xdContext.catalog.tableExists(tableIdentifier) shouldBe true
+    val df = xdContext.sql(s"SELECT $FieldWithSubcolumnsName FROM $Database.$TableName")
+
+    df shouldBe a[XDDataFrame]
+    df.schema.apply(0).dataType.asInstanceOf[StructType].size shouldBe (2)
+  }
+
+
   it should "returns list of tables" in {
     xdContext.catalog.dropAllTables()
     val crossdataTable1 = CrossdataTable(TableName, Option(Database), Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
     val crossdataTable2 = CrossdataTable(TableName, None, Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
-    val tableIdentifier1 = Seq(Database, TableName)
-    val tableIdentifier2 = Seq(TableName)
+
     xdContext.catalog.persistTable(crossdataTable1)
     xdContext.catalog.persistTable(crossdataTable2)
 
@@ -91,8 +117,6 @@ class MySQLCatalogIT extends SharedXDContextTest with MySQLCatalogConstants {
   it should "check if tables map is correct" in {
     xdContext.catalog.dropAllTables()
     val crossdataTable1 = CrossdataTable(TableName, Option(Database), Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
-    val crossdataTable2 = CrossdataTable(TableName, None, Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
-    val tableIdentifier1 = Seq(Database, TableName)
     val tableIdentifier2 = Seq(TableName)
 
     xdContext.catalog.persistTable(crossdataTable1)
@@ -103,9 +127,7 @@ class MySQLCatalogIT extends SharedXDContextTest with MySQLCatalogConstants {
     val tables = xdContext.catalog.getTables(None)
     tables.size shouldBe 1
 
-
   }
-
   override protected def afterAll() {
     xdContext.catalog.dropAllTables()
     super.afterAll()
@@ -113,16 +135,23 @@ class MySQLCatalogIT extends SharedXDContextTest with MySQLCatalogConstants {
 
 }
 
-sealed trait MySQLCatalogConstants {
+sealed trait JDBCCatalogConstants {
   val Database = "database"
   val TableName = "tableName"
   val AnotherTable = "anotherTable"
   val Field1Name = "column1"
   val Field2Name = "column2"
+  val SubField1Name = "subcolumn1"
+  val SubField2Name = "subcolumn2"
+  val FieldWithSubcolumnsName = "columnWithSubcolumns"
   val Field1 = StructField(Field1Name, StringType, nullable = true)
   val Field2 = StructField(Field2Name, StringType, nullable = true)
+  val SubField = StructField(SubField1Name, StringType, nullable = true)
+  val SubField2 = StructField(SubField2Name, StringType, nullable = true)
   val SourceProvider = "org.apache.spark.sql.json"
   val Fields = Seq[StructField](Field1, Field2)
+  val SubFields = Seq(SubField, SubField2)
   val Columns = StructType(Fields)
+  val ColumnsWithSubColumns = StructType(Seq(StructField(Field1Name, StringType, nullable = true), StructField(FieldWithSubcolumnsName, StructType(SubFields), nullable = true)) )
   val OptsJSON = Map("path" -> "/fake_path")
 }
