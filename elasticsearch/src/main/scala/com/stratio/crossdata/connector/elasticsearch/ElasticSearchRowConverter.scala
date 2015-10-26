@@ -41,9 +41,9 @@ object ElasticSearchRowConverter {
   }
 
   /**
-   * It converts some DBObject attribute value into
+   * It converts some ES attribute value into
    * a Row field
-   * @param value DBObject attribute
+   * @param value Elasticsearch attribute
    * @param dataType Attribute type
    * @return The converted value into a Row field.
    */
