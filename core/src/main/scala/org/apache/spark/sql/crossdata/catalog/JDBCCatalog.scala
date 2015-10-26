@@ -30,12 +30,12 @@ import scala.annotation.tailrec
 import scala.util.parsing.json.JSON
 
 
-object JdbcCatalog {
+object JDBCCatalog {
   // SQLConfig
   val Driver = "crossdata.catalog.jdbc.driver"
   val Url = "crossdata.catalog.jdbc.url"
   val Database = "crossdata.catalog.jdbc.db.name"
-  val Table = "crossdata.catalog.jdbc.db.persistTable"
+  val Table = "crossdata.catalog.jdbc.db.table"
   val User = "crossdata.catalog.jdbc.db.user"
   val Pass = "crossdata.catalog.jdbc.db.pass"
   // CatalogFields
@@ -53,10 +53,10 @@ object JdbcCatalog {
  * Jdbc.
  * @param conf An implementation of the [[CatalystConf]].
  */
-class JdbcCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
+class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) with Logging {
 
-  import JdbcCatalog._
+  import JDBCCatalog._
   import org.apache.spark.sql.crossdata._
 
   private val config: Config = ConfigFactory.load
@@ -136,10 +136,7 @@ class JdbcCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
   override def persistTableMetadata(crossdataTable: CrossdataTable, logicalRelation: Option[LogicalPlan]): Unit = {
 
-    val tableSchema = crossdataTable.userSpecifiedSchema match {
-      case Some(schema) => serializeSchema(schema)
-      case None => serializeSchema(new StructType())
-    }
+    val tableSchema = serializeSchema(crossdataTable.userSpecifiedSchema.getOrElse(new StructType()))
 
     val tableOptions = serializeOptions(crossdataTable.opts)
     val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
@@ -186,20 +183,20 @@ class JdbcCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     implicit val formats = DefaultFormats
 
     val jsonMap = JSON.parseFull(schemaJSON).get.asInstanceOf[Map[String, Any]]
-    val fields = jsonMap.getOrElse("fields", throw new Exception).asInstanceOf[List[Map[String, Any]]]
+    val fields = jsonMap.getOrElse("fields", throw new Error("Fields not found")).asInstanceOf[List[Map[String, Any]]]
     val structFields = fields.map { x => {
 
 
-      val tpe:String = x.getOrElse("type", "") match {
-        case t: Map[String, Any] => convertToGrammar(t)
-        case t: String => t
+      val typeStr: String = x.getOrElse("type", throw new Error("Type not found")) match {
+        case structType: Map[String, Any] => convertToGrammar(structType)
+        case simpleType: String => simpleType
         case _ => throw new Error("Invalid type")
       }
       StructField(
-        x.getOrElse("name", "").asInstanceOf[String],
-        DataTypeParser.parse(tpe),
-        x.getOrElse("nullable", "").asInstanceOf[Boolean],
-        Metadata.fromJson(write(x.getOrElse("metadata", "").asInstanceOf[Map[String, Any]]))
+        x.getOrElse("name", throw new Error("Name not found")).asInstanceOf[String],
+        DataTypeParser.parse(typeStr),
+        x.getOrElse("nullable", throw new Error("Nullable definition not found")).asInstanceOf[Boolean],
+        Metadata.fromJson(write(x.getOrElse("metadata", throw new Error("Metadata not found")).asInstanceOf[Map[String, Any]]))
       )
     }
     }
@@ -208,10 +205,10 @@ class JdbcCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
   private def convertToGrammar (m: Map[String, Any]) : String = {
     if(m.contains("fields")) {
-      val fields = m.getOrElse("fields", "").asInstanceOf[List[Map[String, Any]]].map(x=>{x.getOrElse("name", "")+":"+convertToGrammar(x)}) mkString ","
+      val fields = m.get("fields").get.asInstanceOf[List[Map[String, Any]]].map(x=>{x.getOrElse("name", throw new Error("Name not found"))+":"+convertToGrammar(x)}) mkString ","
       "struct<"+fields+">"
     }
-    else m.getOrElse("type", "").asInstanceOf[String]
+    else m.getOrElse("type", throw new Error("Type not found")).asInstanceOf[String]
   }
 
   private def getPartitionColumn(partitionColumn: String): Array[String] =

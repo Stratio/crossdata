@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
-class JdbcCatalogSpec extends SharedXDContextTest with JdbcCatalogConstants {
+class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
 
   "JdbcCatalogSpec" must "return a dataframe from a persist table without catalog using json datasource" in {
     val fields = Seq[StructField](Field1, Field2)
@@ -66,10 +66,11 @@ class JdbcCatalogSpec extends SharedXDContextTest with JdbcCatalogConstants {
   it should "persist a table with catalog and partitionColumns with multiple subdocuments as schema in JDBC" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
-    val crossdataTable = CrossdataTable(TableName, Option(Database), Option(ColumnsWithSubColumns), "org.apache.spark.sql.json", Array[String](), OptsJSON)
+    val crossdataTable = CrossdataTable(TableName, Option(Database), Option(ColumnsWithSubColumns), "org.apache.spark.sql.json", Array.empty[String], OptsJSON)
     xdContext.catalog.persistTable(crossdataTable)
-    xdContext.catalog.tableExists(tableIdentifier) shouldBe true
 
+    xdContext.catalog.unregisterTable(tableIdentifier)
+    xdContext.catalog.tableExists(tableIdentifier) shouldBe true
     val df = xdContext.sql(s"SELECT $FieldWithSubcolumnsName FROM $Database.$TableName")
 
     df shouldBe a[XDDataFrame]
@@ -134,7 +135,7 @@ class JdbcCatalogSpec extends SharedXDContextTest with JdbcCatalogConstants {
 
 }
 
-sealed trait JdbcCatalogConstants {
+sealed trait JDBCCatalogConstants {
   val Database = "database"
   val TableName = "tableName"
   val AnotherTable = "anotherTable"
