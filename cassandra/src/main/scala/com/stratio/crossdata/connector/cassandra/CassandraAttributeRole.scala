@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.connector.cassandra
 
-object CassandraColumnRole extends Enumeration {
-  type CassandraColumnRole = Value
-  val PartitionKey, ClusteringKey, Indexed, NonIndexed, Unknown = Value
+object CassandraAttributeRole extends Enumeration {
+  type CassandraAttributeRole = Value
+  val PartitionKey, ClusteringKey, Indexed, NonIndexed, Function, Unknown = Value
 }

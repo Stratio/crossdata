@@ -19,6 +19,7 @@ import org.apache.spark.sql.catalyst.CatalystTypeConverters._
 import org.apache.spark.sql.catalyst.{CatalystTypeConverters, expressions}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.execution.{NativeUDFAttribute, NativeUDF, EvaluateNativeUDF}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
@@ -28,19 +29,46 @@ import org.apache.spark.unsafe.types.UTF8String
 object CatalystToCrossdataAdapter {
 
 
-  def getFilterProject(logicalPlan: LogicalPlan, projects: Seq[NamedExpression],
-                       filterPredicates: Seq[Expression]): (Array[String], Array[SourceFilter], Boolean) = {
+  def getFilterProject(logicalPlan: LogicalPlan,
+                       projects: Seq[NamedExpression],
+                       filterPredicates: Seq[Expression]):
+  (Array[Attribute], Array[SourceFilter], Map[Attribute, NativeUDF], Boolean) = {
 
-    val projectSet = AttributeSet(projects.flatMap(_.references))
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
-    val pushedFilters = filterPredicates.map {
-      _ transform {
-        case a: AttributeReference => relation.attributeMap(a) // Match original case of attributes.
+    val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
+
+    def udfFlattenedActualParameters[B](udfAttr: NativeUDFAttribute)(f: Attribute => B): Seq[B] = {
+      att2udf(udfAttr).children.flatMap {
+        case nat: NativeUDFAttribute => udfFlattenedActualParameters(nat)(f)
+        case att: AttributeReference => Seq(f(att))
       }
     }
-    val requestedColumns = projectSet.map(relation.attributeMap).toSeq
+
+    val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap (
+      _.references flatMap {
+        case nat: NativeUDFAttribute =>
+          udfFlattenedActualParameters(nat)(at => false -> relation.attributeMap(at)) :+ (true -> nat)
+        case x => Seq(true -> relation.attributeMap(x))
+      }
+    ) groupBy(_._1) mapValues(_.map(_._2))
+
+    val pushedFilters = filterPredicates.map {
+      _ transform {
+        case a: NativeUDFAttribute => a
+        case a: Attribute => relation.attributeMap(a) // Match original case of attributes.
+      }
+    }
+
+    //`required` is the collection of columns which should be present at the table (all referenced columns)
+    val required = AttributeSet {
+      requestedCols.values.reduce[Seq[Attribute]]((a,b) => a ++ b) filter {
+        case _: NativeUDFAttribute => false
+        case _ => true
+      }
+    }
+
     val (filters, ignored) = selectFilters(pushedFilters)
-    (requestedColumns.map(_.name).toArray, filters.toArray, ignored)
+    (requestedCols(true).toArray, filters.toArray, att2udf, ignored)
 
   }
 
@@ -58,6 +86,10 @@ object CatalystToCrossdataAdapter {
         Some(sources.EqualTo(a.name, convertToScala(v, t)))
       case expressions.EqualTo(Literal(v, t), a: Attribute) =>
         Some(sources.EqualTo(a.name, convertToScala(v, t)))
+      case expressions.EqualTo(a: NativeUDFAttribute, b: Attribute) =>
+        Some(sources.EqualTo(b.name, a))
+      case expressions.EqualTo(b: Attribute, a: NativeUDFAttribute) =>
+        Some(sources.EqualTo(b.name, a))
 
       /* TODO
       case expressions.EqualNullSafe(a: Attribute, Literal(v, t)) =>
@@ -70,21 +102,38 @@ object CatalystToCrossdataAdapter {
         Some(sources.GreaterThan(a.name, convertToScala(v, t)))
       case expressions.GreaterThan(Literal(v, t), a: Attribute) =>
         Some(sources.LessThan(a.name, convertToScala(v, t)))
+      case expressions.GreaterThan(b: Attribute, a: NativeUDFAttribute) =>
+        Some(sources.GreaterThan(b.name, a))
+      case expressions.GreaterThan(a: NativeUDFAttribute, b: Attribute) =>
+        Some(sources.LessThan(b.name, a))
+
 
       case expressions.LessThan(a: Attribute, Literal(v, t)) =>
         Some(sources.LessThan(a.name, convertToScala(v, t)))
       case expressions.LessThan(Literal(v, t), a: Attribute) =>
         Some(sources.GreaterThan(a.name, convertToScala(v, t)))
+      case expressions.LessThan(b: Attribute, a: NativeUDFAttribute) =>
+        Some(sources.LessThan(b.name, a))
+      case expressions.LessThan(a: NativeUDFAttribute, b: Attribute) =>
+        Some(sources.GreaterThan(b.name, a))
 
       case expressions.GreaterThanOrEqual(a: Attribute, Literal(v, t)) =>
         Some(sources.GreaterThanOrEqual(a.name, convertToScala(v, t)))
       case expressions.GreaterThanOrEqual(Literal(v, t), a: Attribute) =>
         Some(sources.LessThanOrEqual(a.name, convertToScala(v, t)))
+      case expressions.GreaterThanOrEqual(b: Attribute, a: NativeUDFAttribute) =>
+        Some(sources.GreaterThanOrEqual(b.name, a))
+      case expressions.GreaterThanOrEqual(a: NativeUDFAttribute, b: Attribute) =>
+        Some(sources.LessThanOrEqual(b.name, a))
 
       case expressions.LessThanOrEqual(a: Attribute, Literal(v, t)) =>
         Some(sources.LessThanOrEqual(a.name, convertToScala(v, t)))
       case expressions.LessThanOrEqual(Literal(v, t), a: Attribute) =>
         Some(sources.GreaterThanOrEqual(a.name, convertToScala(v, t)))
+      case expressions.LessThanOrEqual(b: Attribute, a: NativeUDFAttribute) =>
+        Some(sources.LessThanOrEqual(b.name, a))
+      case expressions.LessThanOrEqual(a: NativeUDFAttribute, b: Attribute) =>
+        Some(sources.GreaterThanOrEqual(b.name, a))
 
       case expressions.InSet(a: Attribute, set) =>
         val toScala = CatalystTypeConverters.createToScalaConverter(a.dataType)

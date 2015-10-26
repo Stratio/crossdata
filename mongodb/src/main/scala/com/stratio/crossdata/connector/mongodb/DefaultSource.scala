@@ -17,6 +17,7 @@ package com.stratio.crossdata.connector.mongodb
 
 import com.mongodb.DBCollection
 import com.mongodb.casbah.MongoDB
+
 import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.datasource.Config._

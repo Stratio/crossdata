@@ -18,7 +18,8 @@ package com.stratio.crossdata.connector
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.{SQLContext, Row}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{DataType, StructType}
+
 
 /**
  * A BaseRelation that can execute the whole logical plan without running the query
@@ -80,7 +81,6 @@ trait TableInventory {
    */
   def listTables(context: SQLContext, options: Map[String, String]): Seq[Table]
 
-
   //TODO: Add operation for describing a concrete table.
   //def fetchTableDescription(name: String, options: Map[String, String]): Table
 }
@@ -88,4 +88,17 @@ trait TableInventory {
 object TableInventory {
   //Table description
   case class Table(tableName: String, database: Option[String] = None, schema: Option[StructType] = None)
+}
+
+/* Interface for providing lists and UDF discovery services */
+trait FunctionInventory {
+  import FunctionInventory._
+
+  //Get builtin functions manifest
+  def nativeBuiltinFunctions: Seq[UDF]
+}
+
+object FunctionInventory {
+  //Native function (either built-in or user defined) description.
+  case class UDF(name: String, database: Option[String] = None, formalParameters: StructType, returnType: DataType)
 }

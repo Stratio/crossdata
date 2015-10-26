@@ -48,8 +48,8 @@ object Driver extends DriverConfig {
 
 class Driver(properties: java.util.Map[String, ConfigValue]) {
 
-  def this(seedNodes: java.util.List[String]) =
-    this(Map(DriverConfigSeedNodes -> ConfigValueFactory.fromAnyRef(seedNodes)))
+  def this(serverHosts: java.util.List[String]) =
+    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)))
 
   def this() = this(Map.empty[String, ConfigValue])
 
@@ -69,7 +69,6 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
       system.logConfiguration()
     }
 
-    val contactPoints = finalConfig.getStringList("akka.cluster.seed-nodes").map(_ + ActorsPath)
     val initialContacts: Set[ActorSelection] = contactPoints.map(system.actorSelection).toSet
 
     logger.debug("Initial contacts: " + initialContacts)
@@ -77,8 +76,14 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     system.actorOf(ProxyActor.props(clusterClientActor, this), "proxy-actor")
   }
 
+  private lazy val contactPoints: List[String] = {
+    val hosts = Driver.config.getStringList("config.cluster.hosts").toList
+    val clusterName = Driver.config.getString("config.cluster.name")
+    hosts map (host=>s"akka.tcp://$clusterName@$host$ActorsPath" )
+  }
+
   // TODO syncQuery and asynQuery should be private when the driver get improved
-  def syncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 2): SQLResult = {
+  def syncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(180 seconds), retries: Int = 3): SQLResult = {
     Try {
       Await.result(asyncQuery(sqlCommand, timeout, retries), timeout.duration * retries)
     } getOrElse ErrorResult(sqlCommand.queryId, s"Not found answer to query ${sqlCommand.query}. Timeout was exceed.")
