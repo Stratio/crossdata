@@ -29,7 +29,7 @@ import org.scalatest.Inside
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDDataFrameSpec extends SharedXDContextTest with Inside {
+class XDDataFrameIT extends SharedXDContextTest with Inside {
 
   lazy val sparkRows = xdContext.createDataFrame(ctx.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).collect()
   lazy val nativeRows = Array(Row(2l))

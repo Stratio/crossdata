@@ -19,18 +19,15 @@ import java.util.regex.Pattern
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.{DBObject, QueryBuilder}
-import com.stratio.provider.Config
-import com.stratio.provider.mongodb.MongodbRelation._
-import com.stratio.provider.mongodb.schema.MongodbRowConverter
+import com.stratio.datasource.Config
+import com.stratio.datasource.mongodb.schema.MongodbRowConverter
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.sources
+import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
-
-import org.apache.spark.sql.Row
 
 object MongoQueryProcessor {
 
@@ -109,15 +106,19 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     } else {
       try {
         validatedNativePlan.map { case (requiredColumns, filters, limit) =>
-          val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(requiredColumns, filters)
-          val resultSet = MongodbConnection.withCollectionDo(config) { collection =>
-            logDebug(s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
-            val cursor = collection.find(mongoFilters, mongoRequiredColumns)
-            val result = cursor.limit(limit.getOrElse(DefaultLimit)).toArray[DBObject]
-            cursor.close()
-            result
+          if (limit.exists(_ == 0)) {
+            Array.empty[Row]
+          } else {
+            val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(requiredColumns, filters)
+            val resultSet = MongodbConnection.withCollectionDo(config) { collection =>
+              logDebug(s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
+              val cursor = collection.find(mongoFilters, mongoRequiredColumns)
+              val result = cursor.limit(limit.getOrElse(DefaultLimit)).toArray[DBObject]
+              cursor.close()
+              result
+            }
+            sparkResultFromMongodb(requiredColumns, schemaProvided.get, resultSet)
           }
-          sparkResultFromMongodb(requiredColumns, schemaProvided.get, resultSet)
         }
       } catch {
         case exc: Exception =>
@@ -134,7 +135,10 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter], Boolean) = {
       lplan match {
         case Limit(_, child) => findProjectsFilters(child)
-        case PhysicalOperation(projectList, filterList, _) => CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
+        case PhysicalOperation(projectList, filterList, _) =>
+          val (prjcts, fltrs, _, fltrsig) =
+            CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
+          (prjcts.map(_.name), fltrs, fltrsig)
       }
     }
 
@@ -169,6 +173,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
   }
 
   private[this] def sparkResultFromMongodb(requiredColumns: Array[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
+    import com.stratio.datasource.mongodb.MongodbRelation._
     MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns), resultSet)
   }
 

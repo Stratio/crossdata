@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.connector.mongodb
 
+import com.mongodb.casbah.MongoClient
+import com.mongodb.casbah.commons.MongoDBObject
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.junit.runner.RunWith
@@ -25,11 +27,25 @@ class MongoConnectorIT extends MongoWithSharedContext {
 
   //(id BIGINT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)
 
-
   "The Mongo connector" should "execute natively a select *" in {
     assumeEnvironmentIsUpAndRunning
-    val result = sql(s"SELECT * FROM $Collection ").collect(Native)
+    val dataframe = sql(s"SELECT * FROM $Collection ")
+    val schema = dataframe.schema
+    val result = dataframe.collect(Native)
     result should have length 10
+    schema.fieldNames should equal (Seq("id", "age", "description", "enrolled", "name", "optionalField"))
+    result.head.toSeq should equal (Seq(1, 11, "description1", false, "Name 1", null))
+  }
+
+
+  it should "return the columns in the requested order" in {
+    assumeEnvironmentIsUpAndRunning
+    val dataframe = sql(s"SELECT name, id FROM $Collection ")
+    val schema = dataframe.schema
+    val result = dataframe.collect(Native)
+    result should have length 10
+    schema.fieldNames should equal (Seq("name", "id"))
+    result.head.toSeq should equal (Seq( "Name 1", 1))
   }
 
   it should "execute natively a simple project" in {
@@ -123,14 +139,55 @@ class MongoConnectorIT extends MongoWithSharedContext {
     result should have length 2
   }
 
+  it should "execute natively a query with LIMIT 0" in {
+    assumeEnvironmentIsUpAndRunning
+    val result = sql(s"SELECT * FROM $Collection LIMIT 0").collect(Native)
+    result should have length 0
+  }
+
 
   // NOT SUPPORTED => JOIN
   it should "not execute natively a (SELECT * ...  ORDER BY _ )" in {
     assumeEnvironmentIsUpAndRunning
 
-    the [CrossdataException] thrownBy {
+    the[CrossdataException] thrownBy {
       sql(s"SELECT * FROM $Collection CROSS JOIN $Collection").collect(Native)
     } should have message "The operation cannot be executed without Spark"
+  }
+
+
+
+  // IMPORT OPERATIONS
+
+  it should "import all user collections" in {
+    assumeEnvironmentIsUpAndRunning
+
+    def tableCountInHighschool: Long = sql("SHOW TABLES").count()
+    val initialLength = tableCountInHighschool
+
+    //This crates a new collection in the database which will not be initially registered at the Spark
+    val client = MongoClient(MongoHost, MongoPort)(Database)(UnregisteredCollection).insert(MongoDBObject("id" -> 1))
+
+    // TODO import tables should return the tables registered
+    sql(
+      s"""
+         |IMPORT TABLES
+         |USING $SourceProvider
+         |OPTIONS (
+         |host '$MongoHost:$MongoPort',
+         |schema_samplingRatio  '0.1'
+         |)
+      """.stripMargin)
+
+    // TODO We need to create an unregister table
+    // TODO We have to modify the test when the new catalog is ready
+    tableCountInHighschool should be > initialLength
+
+  }
+
+  it should "not import tables for sentences lacking required options:" in {
+    assumeEnvironmentIsUpAndRunning
+    an[Exception] shouldBe thrownBy(sql(s"IMPORT TABLES USING $SourceProvider"))
   }
 
 }

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.connector.cassandra
+package com.stratio.crossdata.driver.querybuilder
 
-object CassandraColumnRole extends Enumeration {
-  type CassandraColumnRole = Value
-  val PartitionKey, ClusteringKey, Indexed, NonIndexed, Unknown = Value
-}
+// TODO: Implement this class according to Crossdata grammar (take a look to the Spark SqlParser)
+class InsertStatement()

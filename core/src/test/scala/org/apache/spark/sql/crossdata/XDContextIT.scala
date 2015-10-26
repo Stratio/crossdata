@@ -15,7 +15,11 @@
  */
 package org.apache.spark.sql.crossdata
 
+import java.nio.file.Paths
+
+import org.apache.spark.sql.crossdata.execution.PersistDataSourceTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.execution.ExecutedCommand
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
@@ -47,6 +51,15 @@ class XDContextIT extends SharedXDContextTest {
 
     val dataframe = ctx.sql("SELECT * FROM records")
     dataframe shouldBe a[XDDataFrame]
+  }
+
+
+  it must "plan a PersistDataSource when creating a table " in {
+    val dataframe = ctx.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/application.conf").toURI()).toString}')")
+    val sparkPlan = dataframe.queryExecution.sparkPlan
+    ctx.catalog.dropTable(Seq("","jsonTable"))
+    sparkPlan should matchPattern { case ExecutedCommand(_: PersistDataSourceTable) => }
+
   }
 
 }

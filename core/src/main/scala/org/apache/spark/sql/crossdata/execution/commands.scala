@@ -25,8 +25,7 @@ import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedData
 import org.apache.spark.sql.sources.{HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.StructType
 
-private[crossdata]
-case class PersistDataSourceTable(
+private[crossdata] case class PersistDataSourceTable(
                                    tableIdent: TableIdentifier,
                                    userSpecifiedSchema: Option[StructType],
                                    provider: String,

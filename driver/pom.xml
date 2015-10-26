@@ -105,6 +105,10 @@
                                     <include>org.slf4j:slf4j-api</include>
                                     <include>org.slf4j:slf4j-log4j12</include>
                                     <include>log4j:log4j:jar</include>
+                                    <include>org.scala-lang:scala-library</include>
+                                    <include>org.scala-lang:scala-reflect</include>
+                                    <include>org.scala-lang:scala-compiler</include>
+                                    <include>org.scala-lang:scalap</include>
                                 </includes>
                             </artifactSet>
                         </configuration>

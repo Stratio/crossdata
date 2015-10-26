@@ -36,7 +36,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     result(0) should have length 5
   }
 
-  "The Cassandra connector" should "execute natively a (SELECT column)" in {
+  it should "execute natively a (SELECT column)" in {
     assumeEnvironmentIsUpAndRunning
 
     val result = sql(s"SELECT id FROM $Table ").collect(Native)
@@ -177,6 +177,15 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
       an [Exception] shouldBe thrownBy(ctx.sql(sentence))
     }
   }
+
+  it should "be able to natively select the built-in funcions `now`, `dateOf` and `unixTimeStampOf` " in {
+    assumeEnvironmentIsUpAndRunning
+
+    val query = s"SELECT now() as t, now() as a, dateOf(now()) as dt, unixTimestampOf(now()) as ut FROM $Table"
+    sql(query).collect(Native) should have length 10
+
+  }
+
 
 }
 

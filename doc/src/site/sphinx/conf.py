@@ -125,7 +125,7 @@ html_theme = 'stratio'
 html_theme_options = {
     'versions' : ['1.0.0-SNAPSHOT'],
     'github' : 'https://github.com/Stratio/crossdata',
-    'jira': 'https://crossdata.atlassian.net/projects/CROSSDATA',
+    'jira': 'https://stratio.atlassian.net/secure/Dashboard.jspa',
     'module_name' : 'crossdata'
 }
 
