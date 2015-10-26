@@ -69,7 +69,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
       val resp: SearchResponse = client.execute(finalQuery).await
 
-      ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits)
+      ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
     }
   }
 
@@ -95,7 +95,9 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
   }
 
   private def selectFields(fields: Array[Attribute], query: SearchDefinition): SearchDefinition = {
-    query //TODO build projection
+
+    val stringFields:Array[String] = fields.map(_.name)
+    query.fields(stringFields.toList : _*)
   }
 
 

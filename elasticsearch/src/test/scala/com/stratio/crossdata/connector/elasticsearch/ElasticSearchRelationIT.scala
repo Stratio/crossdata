@@ -37,6 +37,22 @@ class ElasticSearchRelationIT extends ElasticWithSharedContext {
     result.head.toSeq(2).toString.contains("description") should be (true)
   }
 
+
+  it should "execute natively a select with projections" in {
+    assumeEnvironmentIsUpAndRunning
+
+    //Experimentation
+    val dataframe = sql(s"SELECT name, age FROM $Type ")
+
+    //Expectations
+    val schema = dataframe.schema
+    val result = dataframe.collect(Native)
+
+    result should have length 10
+    schema.fieldNames should equal (Seq("name", "age"))
+    result.head.toSeq(0).toString.contains("Name") should be (true)
+  }
+
   ignore should "execute natively a select with simple filter" in {
     assumeEnvironmentIsUpAndRunning
     val result = sql(s"SELECT * FROM $Type where _id = 1").collect(Native)

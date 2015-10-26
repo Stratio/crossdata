@@ -17,42 +17,43 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import java.sql.Timestamp
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.types._
-import org.elasticsearch.search.SearchHit
+import org.elasticsearch.search.{SearchHitField, SearchHit}
+import org.elasticsearch.search.internal.InternalSearchHitField
 
 object ElasticSearchRowConverter {
 
-  def asRows(schema: StructType, array: Array[SearchHit]): Array[Row] = {
+
+
+  def asRows(schema: StructType, array: Array[SearchHit],requiredFields: Array[Attribute]): Array[Row] = {
     import scala.collection.JavaConverters._
+    val schemaMap = schema.map(field => field.name -> field.dataType).toMap
+
     array map { hit =>
-      hitAsRow(hit.sourceAsMap().asScala.toMap, schema)
+      hitAsRow(hit.fields().asScala.toMap, schemaMap, requiredFields.map(_.name))
     }
   }
 
   def hitAsRow(
-                hits: Map[String, AnyRef],
-                schema: StructType): Row = {
-    val values: Seq[Any] = schema.fields.map {
-      case StructField(name, dataType, _, _) =>
-        hits.get(name).flatMap(v => Option(v)).map(
-          toSQL(_, dataType)).orNull
+                hitFields: Map[String, SearchHitField],
+                schemaMap: Map[String, DataType],
+                requiredFields:Array[String]): Row = {
+    val values: Seq[Any] = requiredFields.map {
+      name =>
+          hitFields.get(name).flatMap(v => Option(v)).map(
+            toSQL(_, schemaMap(name))).orNull
     }
     Row.fromSeq(values)
   }
 
-  /**
-   * It converts some DBObject attribute value into
-   * a Row field
-   * @param value DBObject attribute
-   * @param dataType Attribute type
-   * @return The converted value into a Row field.
-   */
-  def toSQL(value: Any, dataType: DataType): Any = {
+
+  def toSQL(value: SearchHitField, dataType: DataType): Any = {
     Option(value).map { value =>
       (value, dataType) match {
         case _ =>
           //Assure value is mapped to schema constrained type.
-          enforceCorrectType(value, dataType)
+          enforceCorrectType(value.getValue, dataType)
       }
     }.orNull
   }
@@ -63,7 +64,7 @@ object ElasticSearchRowConverter {
     } else {
       desiredType match {
         case StringType => value.toString
-        case _ if value == null || value == "" => null // guard the non string type
+        case _ if value == "" => null // guard the non string type
         case IntegerType => toInt(value)
         case LongType => toLong(value)
         case DoubleType => toDouble(value)
