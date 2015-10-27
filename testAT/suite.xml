@@ -1,9 +1,0 @@
-<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
-<suite name="CrossdataSuite" verbose="10" parallel="instances"
-       thread-count="1">
-    <test name="Crossdata">
-        <packages>
-            <package name="com.stratio.tests" />
-        </packages>
-    </test>
-</suite>
