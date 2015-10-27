@@ -27,11 +27,25 @@ class MongoConnectorIT extends MongoWithSharedContext {
 
   //(id BIGINT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)
 
-
   "The Mongo connector" should "execute natively a select *" in {
     assumeEnvironmentIsUpAndRunning
-    val result = sql(s"SELECT * FROM $Collection ").collect(Native)
+    val dataframe = sql(s"SELECT * FROM $Collection ")
+    val schema = dataframe.schema
+    val result = dataframe.collect(Native)
     result should have length 10
+    schema.fieldNames should equal (Seq("id", "age", "description", "enrolled", "name", "optionalField"))
+    result.head.toSeq should equal (Seq(1, 11, "description1", false, "Name 1", null))
+  }
+
+
+  it should "return the columns in the requested order" in {
+    assumeEnvironmentIsUpAndRunning
+    val dataframe = sql(s"SELECT name, id FROM $Collection ")
+    val schema = dataframe.schema
+    val result = dataframe.collect(Native)
+    result should have length 10
+    schema.fieldNames should equal (Seq("name", "id"))
+    result.head.toSeq should equal (Seq( "Name 1", 1))
   }
 
   it should "execute natively a simple project" in {
@@ -123,6 +137,12 @@ class MongoConnectorIT extends MongoWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     val result = sql(s"SELECT * FROM $Collection WHERE id = 3 OR (age = 14 AND description = 'description4') ").collect(Native)
     result should have length 2
+  }
+
+  it should "execute natively a query with LIMIT 0" in {
+    assumeEnvironmentIsUpAndRunning
+    val result = sql(s"SELECT * FROM $Collection LIMIT 0").collect(Native)
+    result should have length 0
   }
 
 
