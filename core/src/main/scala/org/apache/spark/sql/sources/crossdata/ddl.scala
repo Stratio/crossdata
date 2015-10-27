@@ -16,11 +16,12 @@
 package org.apache.spark.sql.sources.crossdata
 
 import com.stratio.crossdata.connector.TableInventory
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.{CrossdataTable, XDCatalog}
+import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.RelationProvider
 import org.apache.spark.sql.{Row, SQLContext}
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.execution.RunnableCommand
 
 
 private [crossdata] case class ImportTablesUsingWithOptions(provider: String, opts: Map[String, String])
@@ -48,11 +49,11 @@ private [crossdata] case class ImportTablesUsingWithOptions(provider: String, op
         !doExist
       })
     ) sqlContext.
-        catalog.registerTable(
-          tableid,
-          LogicalRelation(providerRelation.createRelation(
+        catalog.asInstanceOf[XDCatalog].persistTable(
+        CrossdataTable(t.tableName, t.database,  t.schema, provider,  Array.empty[String], opts),
+          Option(LogicalRelation(providerRelation.createRelation(
             sqlContext,
-            inventoryRelation.generateConnectorOpts(t, opts))
+            inventoryRelation.generateConnectorOpts(t, opts)))
           )
         )
     Seq.empty

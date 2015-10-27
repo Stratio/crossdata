@@ -150,7 +150,6 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     ctx.sql(importQuery)
 
     // TODO We need to create an unregister the table
-    // TODO Modify this test when the new catalog is ready
     tableCountInHighschool should be > initialLength
 
   }
