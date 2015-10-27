@@ -30,8 +30,10 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
   "The Cassandra connector" should "execute natively a (SELECT *)" in {
     assumeEnvironmentIsUpAndRunning
-
-    val result = sql(s"SELECT * FROM $Table ").collect(Native)
+    val dataframe = sql(s"SELECT * FROM $Table ")
+    val schema = dataframe.schema
+    val result = dataframe.collect(Native)
+    schema.fieldNames should equal (Seq("id", "age", "comment", "enrolled", "name"))
     result should have length 10
     result(0) should have length 5
   }
