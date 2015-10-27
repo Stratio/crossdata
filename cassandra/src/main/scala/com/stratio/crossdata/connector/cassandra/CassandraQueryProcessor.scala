@@ -23,7 +23,7 @@ import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelatio
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.crossdata.execution.{NativeUDFAttribute, NativeUDF}
+import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
@@ -53,7 +53,7 @@ object CassandraQueryProcessor {
     def expandAttribute(att: String): String = {
       udfs get(att) map { udf =>
         val actualParams = udf.children.collect { //TODO: Add type checker (maybe not here)
-          case at: NativeUDFAttribute => expandAttribute(at.toString)
+          case at: AttributeReference if(udfs contains at.toString) => expandAttribute(at.toString)
           case at: AttributeReference => at.name
           case lit @ Literal(_, DataTypes.StringType) => quoteString(lit.toString)
           case lit: Literal => lit.toString

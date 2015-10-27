@@ -32,7 +32,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
 import org.apache.spark.sql.catalyst.expressions.{Literal, AttributeReference, Attribute}
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.crossdata.execution.{NativeUDFAttribute, NativeUDF, EvaluateNativeUDF}
+import org.apache.spark.sql.crossdata.execution.{NativeUDF, EvaluateNativeUDF}
 import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.{DataTypes, StructType}
@@ -132,7 +132,7 @@ class CassandraXDSourceRelation(
   private def resolveUDFsReferences(strId: String, udfs: Map[String, NativeUDF]): Option[FunctionCallRef] =
     udfs get(strId) map { udf =>
       val actualParams = udf.children.collect {
-        case at: NativeUDFAttribute => Left(resolveUDFsReferences(at.toString, udfs).get)
+        case at: AttributeReference if(udfs contains at.toString) => Left(resolveUDFsReferences(at.toString, udfs).get)
         case at: AttributeReference => Left(ColumnName(at.name))
         case lit@Literal(_, DataTypes.StringType) => Right(s"$lit")
         case lit: Literal => Right(lit.toString)
