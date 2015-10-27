@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -81,8 +81,12 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
   private def buildFilters(sFilters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
 
-    val searchFilters = sFilters.map(
-      _ match {
+    val matchers = sFilters.collect {
+      case sources.StringContains(attribute, value) => termQuery(attribute, value.toLowerCase)
+      case sources.StringStartsWith(attribute, value) => prefixQuery(attribute, value.toLowerCase)
+    }
+
+    val searchFilters =  sFilters.collect {
         case sources.EqualTo(attribute, value) => termFilter(attribute, value)
         case sources.GreaterThan(attribute, value) => rangeFilter(attribute).gt(value)
         case sources.GreaterThanOrEqual(attribute, value) => rangeFilter(attribute).gte(value.toString)
@@ -92,14 +96,13 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
         case sources.IsNotNull(attribute) => existsFilter(attribute)
         case sources.IsNull(attribute) => missingFilter(attribute)
       }
-    )
 
-    val mustQuery = query postFilter bool {
-      must(searchFilters)
-    }
+    val matchQuery = query bool must(matchers)
 
-    log.info("LogicalPlan transformed to the Elasticsearch query:" + mustQuery.toString())
-    mustQuery
+    val finalQuery = if (searchFilters.isEmpty) matchQuery else matchQuery postFilter bool { must(searchFilters) }
+
+    log.debug("LogicalPlan transformed to the Elasticsearch query:" + finalQuery.toString())
+    finalQuery
 
   }
 
@@ -138,9 +141,9 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
     case _: sources.GreaterThanOrEqual => true
     case _: sources.IsNull => true
     case _: sources.IsNotNull => true
-    case _: sources.StringStartsWith => false
+    case _: sources.StringStartsWith => true
     case _: sources.StringEndsWith => false
-    case _: sources.StringContains => false
+    case _: sources.StringContains => true
     case sources.And(left, right) => checkNativeFilters(Array(left, right))
     case sources.Or(left, right) => false //checkNativeFilters(Array(left, right))
     // TODO add more filters (Not?)

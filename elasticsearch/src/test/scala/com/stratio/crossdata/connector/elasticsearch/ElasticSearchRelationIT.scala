@@ -33,8 +33,8 @@ class ElasticSearchRelationIT extends ElasticWithSharedContext {
     val result = dataframe.collect(Native)
 
     result should have length 10
-    schema.fieldNames should equal (Seq("id", "age", "description", "enrolled", "name", "optionalField"))
-    result.head.toSeq(2).toString should fullyMatch regex "description [0-9]+"
+    schema.fieldNames should equal (Seq("id", "age", "description", "enrolled", "name", "optionalField", "birthday"))
+    result.head.toSeq(4).toString should fullyMatch regex "Name [0-9]+"
   }
 
 
@@ -179,6 +179,71 @@ class ElasticSearchRelationIT extends ElasticWithSharedContext {
     result should have length 1
     result(0).get(0) should be ("Name 3")
     result(0).get(1) should be (13)
+  }
+
+  it should "select with Equals String" in {
+    assumeEnvironmentIsUpAndRunning
+
+    //Experimentation
+    val dataframe = sql(s"SELECT name, age FROM $Type where name ='Name 3'")
+
+    //Expectations
+    val result = dataframe.collect(Native)
+    result should have length 1
+    result(0).get(0) should be ("Name 3")
+    result(0).get(1) should be (13)
+  }
+
+  it should "select with Like String" in {
+    assumeEnvironmentIsUpAndRunning
+
+    //Experimentation
+    val dataframe = sql(s"SELECT name, age FROM $Type where name like 'Name 3'")
+
+    //Expectations
+    val result = dataframe.collect(Native)
+    result should have length 1
+    result(0).get(0) should be ("Name 3")
+    result(0).get(1) should be (13)
+  }
+
+  it should "select with Like %String%" in {
+    assumeEnvironmentIsUpAndRunning
+
+    //Experimentation
+    val dataframe = sql(s"SELECT name, age FROM $Type where description like '%name3%'")
+
+    //Expectations
+    val result = dataframe.collect(Native)
+    result should have length 1
+    result(0).get(0) should be ("Name 3")
+    result(0).get(1) should be (13)
+  }
+
+  it should "select with Like String%" in {
+    assumeEnvironmentIsUpAndRunning
+
+    //Experimentation
+    val dataframe = sql(s"SELECT name, age FROM $Type where description like '4des%'")
+
+    //Expectations
+    val result = dataframe.collect(Native)
+    result should have length 1
+    result(0).get(0) should be ("Name 4")
+  }
+
+  //TODO add support for dates in query?
+  ignore should "select with Date Range" in {
+    assumeEnvironmentIsUpAndRunning
+
+    //Experimentation
+    val dataframe = sql(s"SELECT name, age FROM $Type where birthday = '1984-01-01T10:00:00-00:00'")
+
+    //Expectations
+    val result = dataframe.collect(Native)
+    result should have length 1
+    result(0).get(0) should be ("Name 4")
+    result(0).get(1) should be (14)
   }
 }
 

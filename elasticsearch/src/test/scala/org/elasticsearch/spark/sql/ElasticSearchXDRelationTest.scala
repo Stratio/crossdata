@@ -28,17 +28,7 @@ import org.mockito.Mockito._
 class ElasticSearchXDRelationTest extends BaseXDTest with MockitoSugar {
 
 
-  "A ElasticSearchXDRelation " should "build a query using ESQueryProcessor" in {
-    //Fixture
-    val optimizedLogicalPlan = mock[LogicalPlan]
-    val esRelation = buildElasticSearchRelation
 
-    //Experimentation
-    val result = esRelation.buildScan(optimizedLogicalPlan)
-
-    //Expectations
-    result should not be null
-  }
 
   it should "support Limit Node" in {
     //Fixture

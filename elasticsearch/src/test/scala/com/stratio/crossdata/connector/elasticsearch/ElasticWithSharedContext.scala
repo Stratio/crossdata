@@ -15,11 +15,14 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
+
+
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.elasticsearch.common.joda.time.DateTime
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.scalatest.Suite
 
@@ -38,7 +41,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
 
       xdContext.sql(
         s"""|CREATE TEMPORARY TABLE $Type
-            |(id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)
+            |(id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN, birthday DATE)
             |USING $SourceProvider
             |OPTIONS (
             |resource '$Index/$Type',
@@ -66,16 +69,17 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
     val settings = ImmutableSettings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
     val elasticClient = ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
 
-    elasticClient.execute {
-      create index Index mappings (
-        Type as(
-          "id" typed IntegerType,
-          "age" typed IntegerType,
-          "description" typed StringType,
-          "enrolled" typed BooleanType,
-          "name" typed StringType
-          ))
-    }.await
+    val command = create index Index mappings (
+      Type as(
+        "id" typed IntegerType,
+        "age" typed IntegerType,
+        "description" typed StringType,
+        "enrolled" typed BooleanType,
+        "name" typed StringType index NotAnalyzed,
+        "birthday" typed DateType
+        ))
+
+    elasticClient.execute {command}.await
 
     saveTestData(elasticClient)
     elasticClient
@@ -89,13 +93,15 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
   private def saveTestData(elasticClient: ElasticClient): Unit = {
 
     for (a <- 1 to 10) {
+
       elasticClient.execute {
         index into Index / Type fields(
           "id" -> a,
           "age" -> (10 + a),
-          "description" -> s"description $a",
+          "description" -> s"A ${a}description about the Name$a",
           "enrolled" -> (if (a % 2 == 0) true else null),
-          "name" -> s"Name $a")
+          "name" -> s"Name $a",
+          "birthday" -> DateTime.parse((1980+a)+"-01-01T10:00:00-00:00").toDate)
       }.await
 
     }

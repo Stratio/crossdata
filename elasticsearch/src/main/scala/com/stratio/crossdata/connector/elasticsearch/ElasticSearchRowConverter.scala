@@ -16,9 +16,11 @@
 package com.stratio.crossdata.connector.elasticsearch
 
 import java.sql.Timestamp
+import java.util.Date
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.types._
+import org.elasticsearch.common.joda.time.DateTime
 import org.elasticsearch.search.{SearchHitField, SearchHit}
 import org.elasticsearch.search.internal.InternalSearchHitField
 
@@ -58,6 +60,8 @@ object ElasticSearchRowConverter {
     }.orNull
   }
 
+
+
   protected def enforceCorrectType(value: Any, desiredType: DataType): Any ={
     if (value == null) {
       null
@@ -72,6 +76,7 @@ object ElasticSearchRowConverter {
         case BooleanType => value.asInstanceOf[Boolean]
         case TimestampType => toTimestamp(value)
         case NullType => null
+        case DateType => toDate(value)
         case _ =>
           sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
           value
@@ -115,6 +120,12 @@ object ElasticSearchRowConverter {
   private def toTimestamp(value: Any): Timestamp = {
     value match {
       case value: java.util.Date => new Timestamp(value.getTime)
+    }
+  }
+
+  def toDate(value: Any): Date  = {
+    value match {
+      case value:String => DateTime.parse(value).toDate
     }
   }
 }
