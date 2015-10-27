@@ -29,7 +29,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
 import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.types.{StructField, DataTypes, StructType}
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 import scala.collection.mutable
@@ -159,10 +159,12 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   override def nativeBuiltinFunctions: Seq[UDF] = {
 
+
+
     //TODO: Complete the built-in function inventory
     Seq(
-      UDF("now", None, StructType(Nil), DataTypes.StringType),
-      UDF("dateOf", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.StringType),
+      UDF("now", None, StructType(Nil), types.UUIDType),
+      UDF("dateOf", None, StructType(StructField("date",types.UUIDType, false)::Nil), DataTypes.TimestampType),
       UDF("toDate", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.StringType),
       UDF("unixTimestampOf", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.LongType)
     )
