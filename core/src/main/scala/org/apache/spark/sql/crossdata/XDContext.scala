@@ -72,7 +72,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
   @transient
   class XDPlanner extends SparkPlanner with XDStrategies {
-    override def strategies: Seq[Strategy] = Seq(NativeUDFStrategy, ExtendedDataSourceStrategy) ++ super.strategies
+    override def strategies: Seq[Strategy] = Seq(ExtendedDataSourceStrategy/*, NativeUDFStrategy*/) ++ super.strategies
   }
 
   @transient

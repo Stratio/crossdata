@@ -2,7 +2,7 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import com.stratio.crossdata.connector.NativeFunctionExecutor
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.crossdata.execution.{NativeUDFAttribute, NativeUDF}
+import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.execution.datasources.{PartitionSpec, Partition, LogicalRelation}
 import org.apache.spark.{Logging, TaskContext}
 import org.apache.spark.deploy.SparkHadoopUtil
@@ -63,7 +63,8 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
         requestedColumns,
         scanBuilder(requestedColumns, pushedFilters, att2udf map {case (k,v) => k.toString() -> v}),
         relation.relation)
-      execution.Project(projects, filterCondition.map(execution.Filter(_, scan)).getOrElse(scan))
+      execution.Project(projects, filterCondition.map(execution.Filter(_, scan)).getOrElse(scan)
+      )
     //}
   }
 
@@ -76,22 +77,27 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
         (a, f) => toCatalystRDD(l, a, t.buildScan(a, f))) :: Nil
 
     case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: NativeFunctionExecutor)) =>
-      val scanBuilder: (Seq[Attribute], Array[Filter], Map[String, NativeUDF]) =>
-        RDD[InternalRow] = (a, f, a2udf) => toCatalystRDD(l, a, t.buildScan(
+      /*val scanBuilder: (Seq[Attribute], Array[Filter], Map[String, NativeUDF]) => RDD[InternalRow] = (a, f, a2udf) =>
+        toCatalystRDD(l, a, t.buildScan(
         a.map {
-          case nat: NativeUDFAttribute => nat.toString
+          case nat: AttributeReference if(a2udf contains nat.toString) => nat.toString
           case att => att.name
         }.toArray, f, a2udf)
-      )
+      )*/
       pruneFilterProjectUdfs(
         plan,
         l,
         projects,
         filters,
-        (requestedColumns, pushedFilters, attr2udf) => {
-          scanBuilder(requestedColumns, selectFilters(pushedFilters).toArray, attr2udf)
-        }
-        ) :: Nil
+        (requestedColumns, pushedFilters, attr2udf) => //{
+          toCatalystRDD(l, requestedColumns, t.buildScan(
+            requestedColumns.map {
+              case nat: AttributeReference if(attr2udf contains nat.toString) => nat.toString
+              case att => att.name
+            }.toArray, selectFilters(pushedFilters).toArray, attr2udf))
+          //scanBuilder(requestedColumns, selectFilters(pushedFilters).toArray, attr2udf)
+          //}
+        ):: Nil
 
     case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: PrunedScan)) =>
       pruneFilterProject(
