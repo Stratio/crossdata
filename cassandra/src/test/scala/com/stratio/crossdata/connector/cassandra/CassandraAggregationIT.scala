@@ -34,7 +34,7 @@ class CassandraAggregationIT extends CassandraWithSharedContext {
     val result = sql(s"SELECT count(*) FROM $Table ").collect(Native)
     result should have length 1
     result(0) should have length 1
-    result(0).getInt(0) should be (10)
+    result(0).getInt(0) should be(10)
   }
 
   it should "execute natively a (SELECT count(*) AS alias FROM _)" in {
@@ -43,27 +43,25 @@ class CassandraAggregationIT extends CassandraWithSharedContext {
     val result = dataframe.collect(Native)
     result should have length 1
     result(0) should have length 1
-    result(0).getInt(0) should be (10)
-    dataframe.schema.fieldNames should be (Array("alias"))
+    result(0).getInt(0) should be(10)
+    dataframe.schema.fieldNames should be(Array("agg"))
   }
 
 
   it should "execute natively a (SELECT count(*) FROM _ WHERE _)" in {
     assumeEnvironmentIsUpAndRunning
 
-    val result = sql(s"SELECT count(*) FROM $Table WHERE id > 5").collect(Native)
+    val result = sql(s"SELECT count(*) FROM $Table WHERE id = 5").collect(Native)
     result should have length 1
     result(0) should have length 1
-    result(0).getInt(0) should be (5)
+    result(0).getInt(0) should be(1)
   }
-
-
 
   // NOT SUPPORTED NATIVELY
   it should "not execute natively a (SELECT count(*) FROM _ GROUP BY _)" in {
     assumeEnvironmentIsUpAndRunning
 
-    the [CrossdataException] thrownBy {
+    the[CrossdataException] thrownBy {
       sql(s"SELECT count(*) FROM $Table GROUP BY id").collect(Native)
     } should have message "The operation cannot be executed without Spark"
 
@@ -73,14 +71,9 @@ class CassandraAggregationIT extends CassandraWithSharedContext {
   it should "not execute natively a (SELECT max(id) FROM _ )" in {
     assumeEnvironmentIsUpAndRunning
 
-    the [CrossdataException] thrownBy {
+    the[CrossdataException] thrownBy {
       sql(s"SELECT max(id) FROM $Table").collect(Native)
     } should have message "The operation cannot be executed without Spark"
   }
 
 }
-
-
-
-
-

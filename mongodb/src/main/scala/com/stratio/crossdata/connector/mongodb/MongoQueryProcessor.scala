@@ -25,9 +25,10 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.{Row, sources}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{Row, sources}
 
 object MongoQueryProcessor {
 
@@ -36,7 +37,7 @@ object MongoQueryProcessor {
 
   def apply(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) = new MongoQueryProcessor(logicalPlan, config, schemaProvided)
 
-  def buildNativeQuery(requiredColums: Array[ColumnName], filters: Array[SourceFilter]): (DBObject, DBObject) =
+  def buildNativeQuery(requiredColums: Seq[ColumnName], filters: Array[SourceFilter]): (DBObject, DBObject) =
     (filtersToDBObject(filters), selectFields(requiredColums))
 
   private def filtersToDBObject(sFilters: Array[SourceFilter]): DBObject = {
@@ -82,7 +83,7 @@ object MongoQueryProcessor {
    * @param fields Required fields
    * @return A mongodb object that represents required fields.
    */
-  private def selectFields(fields: Array[String]): DBObject =
+  private def selectFields(fields: Seq[String]): DBObject =
     MongoDBObject(
       if (fields.isEmpty) List()
       else fields.toList.filterNot(_ == "_id").map(_ -> 1) ::: {
@@ -129,16 +130,18 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
   }
 
 
-  def validatedNativePlan: Option[(Array[ColumnName], Array[SourceFilter], Option[Int])] = {
+  def validatedNativePlan: Option[(Seq[ColumnName], Array[SourceFilter], Option[Int])] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
-    def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter], Boolean) = {
+    def findProjectsFilters(lplan: LogicalPlan): (Seq[ColumnName], Array[SourceFilter], Boolean) = {
       lplan match {
         case Limit(_, child) => findProjectsFilters(child)
         case PhysicalOperation(projectList, filterList, _) =>
-          val (prjcts, fltrs, _, fltrsig) =
-            CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
-          (prjcts.map(_.name), fltrs, fltrsig)
+          val (crossdataPlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+          crossdataPlan match {
+            case SimpleLogicalPlan(projects, filters, _) => (projects.map(_.name), filters, filtersIgnored)
+            case _ => ??? // TODO
+          }
       }
     }
 
@@ -147,13 +150,13 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     if (filtersIgnored || !checkNativeFilters(filters)) {
       None
     } else {
-      Some(projects, filters, limit)
+      Some((projects, filters, limit))
     }
 
   }
 
 
-  private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = filters.forall {
+  private[this] def checkNativeFilters(filters: Seq[SourceFilter]): Boolean = filters.forall {
     case _: sources.EqualTo => true
     case _: sources.In => true
     case _: sources.LessThan => true
@@ -172,9 +175,9 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
 
   }
 
-  private[this] def sparkResultFromMongodb(requiredColumns: Array[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
+  private[this] def sparkResultFromMongodb(requiredColumns: Seq[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
     import com.stratio.datasource.mongodb.MongodbRelation._
-    MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns), resultSet)
+    MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns.toArray), resultSet)
   }
 
 }
