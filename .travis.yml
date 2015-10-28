@@ -7,7 +7,16 @@ scala:
 services:
   - cassandra
   - mongodb
-  
+  - elasticsearch
+
+before_install:
+  - git clone https://github.com/Stratio/spark-mongodb.git
+  - cd spark-mongodb
+  - mvn -q install -DskipUTs -DskipITs -DskipTests
+
+before_script:
+  - sleep 10
+
 script:
 
   - mvn test -Dmaven.test.failure=true

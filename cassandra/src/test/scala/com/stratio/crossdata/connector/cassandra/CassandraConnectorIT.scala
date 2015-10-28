@@ -36,14 +36,16 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     result(0) should have length 5
   }
 
-  "The Cassandra connector" should "execute natively a query with limit 0" in {
+
+  it should "execute natively a query with limit 0" in {
     assumeEnvironmentIsUpAndRunning
 
     val result = sql(s"SELECT * FROM $Table LIMIT 0").collect(Native)
     result should have length 0
   }
 
-  "The Cassandra connector" should "execute natively a (SELECT column)" in {
+  it should "execute natively a (SELECT column)" in {
+
     assumeEnvironmentIsUpAndRunning
 
     val result = sql(s"SELECT id FROM $Table ").collect(Native)
@@ -157,7 +159,6 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     ctx.sql(importQuery)
 
     // TODO We need to create an unregister the table
-    // TODO Modify this test when the new catalog is ready
     tableCountInHighschool should be > initialLength
 
   }

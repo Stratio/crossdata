@@ -124,7 +124,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   private def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
-    val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.provider, crossdataTable.opts)
+    val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
     LogicalRelation(resolved.relation)
   }
 
@@ -135,9 +135,9 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   // Defined by Crossdata
 
-  final def persistTable(crossdataTable: CrossdataTable): Unit = {
+  final def persistTable(crossdataTable: CrossdataTable, table: Option[LogicalPlan] = None): Unit = {
     logInfo(s"XDCatalog: Persisting table ${crossdataTable.tableName}")
-    persistTableMetadata(crossdataTable)
+    persistTableMetadata(crossdataTable, table)
   }
 
   final def dropTable(tableIdentifier: Seq[String]): Unit = {
@@ -157,7 +157,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)]
 
-  protected def persistTableMetadata(crossdataTable: CrossdataTable): Unit
+  protected def persistTableMetadata(crossdataTable: CrossdataTable, table: Option[LogicalPlan] = None): Unit
 
   protected def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit
 
