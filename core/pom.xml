@@ -42,7 +42,15 @@
             <version>${mysql.version}</version>
         </dependency>
         <!-- TODO spark should be provided-->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.3-1104-jdbc4</version>
+        </dependency>
+
     </dependencies>
+
+
 
     <build>
         <plugins>

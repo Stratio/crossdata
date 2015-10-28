@@ -42,7 +42,7 @@ object JDBCCatalog {
   val DatabaseField = "db"
   val TableNameField = "tableName"
   val SchemaField = "tableSchema"
-  val ProviderField = "provider"
+  val DatasourceField = "datasource"
   val PartitionColumnField = "partitionColumn"
   val OptionsField = "options"
   val CrossdataVersionField = "crossdataVersion"
@@ -71,21 +71,25 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     val url = config.getString(Url)
 
     Class.forName(driver)
-    val mysqlConnection = DriverManager.getConnection(url, user, pass)
+    val jdbcConnection = DriverManager.getConnection(url, user, pass)
 
     // CREATE PERSISTENT METADATA TABLE
-    mysqlConnection.createStatement().executeUpdate(s"CREATE DATABASE IF NOT EXISTS $db")
-    mysqlConnection.createStatement().executeUpdate(
-      s"""|CREATE TABLE IF NOT EXISTS $db.$table (
-          |$DatabaseField VARCHAR(50),
-          |$TableNameField VARCHAR(50),
-          |$SchemaField TEXT,
-          |$ProviderField TEXT,
-          |$PartitionColumnField TEXT,
-          |$OptionsField TEXT,
-          |$CrossdataVersionField TEXT,
-          |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
-    mysqlConnection
+
+    jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA IF NOT EXISTS $db")
+
+
+    jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE IF NOT EXISTS $db.$table (
+           |$DatabaseField VARCHAR(50),
+           |$TableNameField VARCHAR(50),
+           |$SchemaField TEXT,
+           |$DatasourceField TEXT,
+           |$PartitionColumnField TEXT,
+           |$OptionsField TEXT,
+           |$CrossdataVersionField TEXT,
+           |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+
+    jdbcConnection
   }
 
 
@@ -104,12 +108,12 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
       val table = resultSet.getString(TableNameField)
       val schemaJSON = resultSet.getString(SchemaField)
       val partitionColumn = resultSet.getString(PartitionColumnField)
-      val provider = resultSet.getString(ProviderField)
+      val datasource = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
       Some(
-        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), provider, getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
+        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource, getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
       )
     }
   }
@@ -142,25 +146,39 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
     connection.setAutoCommit(false)
-    val prepped = connection.prepareStatement(
-      s"""|INSERT INTO $db.$table (
-          | $DatabaseField, $TableNameField, $SchemaField, $ProviderField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
-          |) VALUES (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE
-          |$SchemaField = VALUES ($SchemaField),
-          |$ProviderField = VALUES ($ProviderField),
-          |$PartitionColumnField = VALUES ($PartitionColumnField),
-          |$OptionsField = VALUES ($OptionsField),
-          |$CrossdataVersionField = VALUES ($CrossdataVersionField)
-       """.stripMargin)
 
-    prepped.setString(1, crossdataTable.dbName.getOrElse(""))
-    prepped.setString(2, crossdataTable.tableName)
-    prepped.setString(3, tableSchema)
-    prepped.setString(4, crossdataTable.provider)
-    prepped.setString(5, partitionColumn)
-    prepped.setString(6, tableOptions)
-    prepped.setString(7, CrossdataVersion)
-    prepped.execute()
+    // check if the database-table exist in the persisted catalog
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
+    preparedStatement.setString(1, crossdataTable.dbName.getOrElse(""))
+    preparedStatement.setString(2, crossdataTable.tableName)
+    val resultSet = preparedStatement.executeQuery()
+
+    if (!resultSet.isBeforeFirst) {
+      val prepped = connection.prepareStatement(
+        s"""|INSERT INTO $db.$table (
+           | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
+           |) VALUES (?,?,?,?,?,?,?)
+       """.stripMargin)
+      prepped.setString(1, crossdataTable.dbName.getOrElse(""))
+      prepped.setString(2, crossdataTable.tableName)
+      prepped.setString(3, tableSchema)
+      prepped.setString(4, crossdataTable.datasource)
+      prepped.setString(5, partitionColumn)
+      prepped.setString(6, tableOptions)
+      prepped.setString(7, CrossdataVersion)
+      prepped.execute()
+    }
+    else {
+     val prepped = connection.prepareStatement(s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+          |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
+       """.stripMargin)
+      prepped.setString(1, tableSchema)
+      prepped.setString(2, crossdataTable.datasource)
+      prepped.setString(3, partitionColumn)
+      prepped.setString(4, tableOptions)
+      prepped.setString(5, CrossdataVersion)
+      prepped.execute()
+    }
     connection.commit()
     connection.setAutoCommit(true)
 
