@@ -74,7 +74,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
            |$DatabaseField VARCHAR(50),
            |$TableNameField VARCHAR(50),
            |$SchemaField LONG VARCHAR,
-           |$ProviderField LONG VARCHAR,
+           |$DatasourceField LONG VARCHAR,
            |$PartitionColumnField LONG VARCHAR,
            |$OptionsField LONG VARCHAR,
            |$CrossdataVersionField LONG VARCHAR,
@@ -99,7 +99,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       val table = resultSet.getString(TableNameField)
       val schemaJSON = resultSet.getString(SchemaField)
       val partitionColumn = resultSet.getString(PartitionColumnField)
-      val provider = resultSet.getString(ProviderField)
+      val provider = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
@@ -147,24 +147,24 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     if (!resultSet.next()) {
       val prepped = connection.prepareStatement(
         s"""|INSERT INTO $db.$table (
-           | $DatabaseField, $TableNameField, $SchemaField, $ProviderField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
+           | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
            |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
       prepped.setString(1, crossdataTable.dbName.getOrElse(""))
       prepped.setString(2, crossdataTable.tableName)
       prepped.setString(3, tableSchema)
-      prepped.setString(4, crossdataTable.provider)
+      prepped.setString(4, crossdataTable.datasource)
       prepped.setString(5, partitionColumn)
       prepped.setString(6, tableOptions)
       prepped.setString(7, CrossdataVersion)
       prepped.execute()
     }
     else {
-     val prepped = connection.prepareStatement(s"""|UPDATE $db.$table SET $SchemaField=?, $ProviderField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+     val prepped = connection.prepareStatement(s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
           |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}'
        """.stripMargin)
       prepped.setString(1, tableSchema)
-      prepped.setString(2, crossdataTable.provider)
+      prepped.setString(2, crossdataTable.datasource)
       prepped.setString(3, partitionColumn)
       prepped.setString(4, tableOptions)
       prepped.setString(5, CrossdataVersion)
