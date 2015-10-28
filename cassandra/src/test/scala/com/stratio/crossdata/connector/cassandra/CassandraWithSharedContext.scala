@@ -53,8 +53,8 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
   }
 
   override protected def afterAll() = {
+    _xdContext.dropAllTables()
     super.afterAll()
-
     clusterAndSession.foreach { case (cluster, session) => cleanEnvironment(cluster, session) }
 
   }
