@@ -71,7 +71,7 @@ class ElasticSearchQueryProcessorTest extends BaseXDTest with MockitoSugar {
 
     //Expectations
     result should not be null
-    result.toString().replace("\n", "").replace(" ", "") should be("{\"post_filter\":{\"bool\":{\"must\":{\"term\":{\"year\":\"1990\"}}}},\"fields\":\"title\"}")
+    result.toString().replace("\n", "").replace(" ", "") should be("{\"query\":{\"bool\":{}},\"post_filter\":{\"bool\":{\"must\":{\"term\":{\"year\":\"1990\"}}}},\"fields\":\"title\"}")
   }
 
 
@@ -94,6 +94,6 @@ class ElasticSearchQueryProcessorTest extends BaseXDTest with MockitoSugar {
 
     //Expectations
     result should not be null
-    result.toString().replace("\n", "").replace(" ", "") should be("{\"post_filter\":{\"bool\":{\"must\":[{\"term\":{\"year\":\"1990\"}},{\"term\":{\"Name\":\"Lord\"}}]}},\"fields\":\"title\"}")
+    result.toString().replace("\n", "").replace(" ", "") should be("{\"query\":{\"bool\":{}},\"post_filter\":{\"bool\":{\"must\":[{\"term\":{\"year\":\"1990\"}},{\"term\":{\"Name\":\"Lord\"}}]}},\"fields\":\"title\"}")
   }
 }
