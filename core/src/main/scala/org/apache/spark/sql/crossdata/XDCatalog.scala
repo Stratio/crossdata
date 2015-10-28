@@ -124,7 +124,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   private def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
-    val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.provider, crossdataTable.opts)
+    val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
     LogicalRelation(resolved.relation)
   }
 

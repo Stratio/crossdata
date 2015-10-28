@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common
+package com.stratio.tests.utils;
 
-import java.util.UUID
+/**
+ * Created by hdominguez on 13/10/15.
+ */
+public class XDContextUtil {
+    private static XDContextUtil instance = new XDContextUtil();
+    private final XDContextUtils cUtils = new XDContextUtils();
 
-import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.test.BaseXDTest
-import org.apache.spark.sql.Row
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+    private XDContextUtil() {
+    }
 
-@RunWith(classOf[JUnitRunner])
-class SQLResultSpec extends BaseXDTest {
+    public static XDContextUtil getInstance() {
+        return instance;
+    }
 
-  "An error result" should "have an empty result" in {
-    val error = ErrorResult(UUID.randomUUID(),"message")
-    error.hasError should be (true)
-    a [RuntimeException] should be thrownBy error.resultSet
-  }
+    public XDContextUtils getXdContext() {
+        return cUtils;
+    }
+
 }
