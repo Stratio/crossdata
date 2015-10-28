@@ -31,7 +31,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     val columns = StructType(fields)
     val opts = Map("path" -> "/fake_path")
     val tableIdentifier = Seq(TableName)
-    val crossdataTable = CrossdataTable(TableName, None, Option(columns), "org.apache.spark.sql.json", Array[String](), opts)
+    val crossdataTable = CrossdataTable(TableName, None, Option(columns), SourceDatasource, Array[String](), opts)
     xdContext.catalog.persistTable(crossdataTable)
     val dataframe = xdContext.sql(s"SELECT * FROM $TableName")
 
@@ -41,7 +41,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
   it should "persist a table with catalog and partitionColumns in Jdbc" in {
 
     val tableIdentifier = Seq(Database, TableName)
-    val crossdataTable = CrossdataTable(TableName, Option(Database), Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(TableName, Option(Database), Option(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     xdContext.catalog.persistTable(crossdataTable)
     xdContext.catalog.tableExists(tableIdentifier) shouldBe true
 
@@ -54,7 +54,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
   it should "persist a table with catalog and partitionColumns without schema in Jdbc" in {
 
     val tableIdentifier = Seq(Database, TableName)
-    val crossdataTable = CrossdataTable(TableName, Option(Database), None, "org.apache.spark.sql.json", Array[String](), OptsJSON)
+    val crossdataTable = CrossdataTable(TableName, Option(Database), None, SourceDatasource, Array.empty[String], OptsJSON)
     xdContext.catalog.persistTable(crossdataTable)
     xdContext.catalog.tableExists(tableIdentifier) shouldBe true
 
@@ -66,7 +66,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
   it should "persist a table with catalog and partitionColumns with multiple subdocuments as schema in JDBC" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
-    val crossdataTable = CrossdataTable(TableName, Option(Database), Option(ColumnsWithSubColumns), "org.apache.spark.sql.json", Array.empty[String], OptsJSON)
+    val crossdataTable = CrossdataTable(TableName, Option(Database), Option(ColumnsWithSubColumns), SourceDatasource, Array.empty[String], OptsJSON)
     xdContext.catalog.persistTable(crossdataTable)
 
     xdContext.catalog.unregisterTable(tableIdentifier)
@@ -80,8 +80,8 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
 
   it should "returns list of tables" in {
     xdContext.catalog.dropAllTables()
-    val crossdataTable1 = CrossdataTable(TableName, Option(Database), Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
-    val crossdataTable2 = CrossdataTable(TableName, None, Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
+    val crossdataTable1 = CrossdataTable(TableName, Option(Database), Option(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable2 = CrossdataTable(TableName, None, Option(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
 
     xdContext.catalog.persistTable(crossdataTable1)
     xdContext.catalog.persistTable(crossdataTable2)
@@ -97,8 +97,8 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
   it should "drop tables" in {
     xdContext.catalog.dropAllTables()
 
-    val crossdataTable1 = CrossdataTable(TableName, Option(Database), Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
-    val crossdataTable2 = CrossdataTable(TableName, None, Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
+    val crossdataTable1 = CrossdataTable(TableName, Option(Database), Option(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable2 = CrossdataTable(TableName, None, Option(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     val tableIdentifier1 = Seq(Database, TableName)
     val tableIdentifier2 = Seq(TableName)
     xdContext.catalog.persistTable(crossdataTable1)
@@ -116,7 +116,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
 
   it should "check if tables map is correct" in {
     xdContext.catalog.dropAllTables()
-    val crossdataTable1 = CrossdataTable(TableName, Option(Database), Option(Columns), "org.apache.spark.sql.json", Array[String](Field1Name), OptsJSON)
+    val crossdataTable1 = CrossdataTable(TableName, Option(Database), Option(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     val tableIdentifier2 = Seq(TableName)
 
     xdContext.catalog.persistTable(crossdataTable1)
@@ -148,7 +148,7 @@ sealed trait JDBCCatalogConstants {
   val Field2 = StructField(Field2Name, StringType, nullable = true)
   val SubField = StructField(SubField1Name, StringType, nullable = true)
   val SubField2 = StructField(SubField2Name, StringType, nullable = true)
-  val SourceProvider = "org.apache.spark.sql.json"
+  val SourceDatasource = "org.apache.spark.sql.json"
   val Fields = Seq[StructField](Field1, Field2)
   val SubFields = Seq(SubField, SubField2)
   val Columns = StructType(Fields)

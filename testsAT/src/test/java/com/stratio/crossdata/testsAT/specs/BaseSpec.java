@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common
+package com.stratio.crossdata.testsAT.specs;
 
-import java.util.UUID
+/**
+ * Created by hdominguez on 13/10/15.
+ */
+public class BaseSpec {
 
-import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.test.BaseXDTest
-import org.apache.spark.sql.Row
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+    protected Common commonspec;
 
-@RunWith(classOf[JUnitRunner])
-class SQLResultSpec extends BaseXDTest {
-
-  "An error result" should "have an empty result" in {
-    val error = ErrorResult(UUID.randomUUID(),"message")
-    error.hasError should be (true)
-    a [RuntimeException] should be thrownBy error.resultSet
-  }
+    public Common getCommonSpec() {
+        return this.commonspec;
+    }
 }

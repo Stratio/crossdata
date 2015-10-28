@@ -38,7 +38,16 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     result(0) should have length 5
   }
 
+
+  it should "execute natively a query with limit 0" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val result = sql(s"SELECT * FROM $Table LIMIT 0").collect(Native)
+    result should have length 0
+  }
+
   it should "execute natively a (SELECT column)" in {
+
     assumeEnvironmentIsUpAndRunning
 
     val result = sql(s"SELECT id FROM $Table ").collect(Native)

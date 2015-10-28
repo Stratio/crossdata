@@ -107,27 +107,31 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
     try {
       validatedNativePlan.map { cassandraPlan =>
+        if (cassandraPlan.limit.exists(_ == 0)) {
+          Array.empty[Row]
+        } else {
+          val projectsString: Seq[String] = cassandraPlan.basePlan match {
+            case SimpleLogicalPlan(projects, _, _) =>
+              projects.map(_.toString())
 
-        val projectsString: Seq[String] = cassandraPlan.basePlan match {
-          case SimpleLogicalPlan(projects, _, _) =>
-            projects.map(_.toString())
+            case AggregationLogicalPlan(projects, groupingExpression, _, _) =>
+              require(groupingExpression.isEmpty)
+              projects.map(buildAggregationExpression)
+          }
 
-          case AggregationLogicalPlan(projects, groupingExpression, _, _) =>
-            require(groupingExpression.isEmpty)
-            projects.map(buildAggregationExpression)
+          val cqlQuery = buildNativeQuery(
+            cassandraRelation.tableDef.name,
+            projectsString,
+            cassandraPlan.basePlan.filters,
+            cassandraPlan.limit.getOrElse(CassandraQueryProcessor.DefaultLimit),
+            cassandraPlan.basePlan.udfsMap map { case (k, v) => k.toString -> v }
+          )
+          val resultSet = cassandraRelation.connector.withSessionDo { session =>
+            session.execute(cqlQuery)
+          }
+          sparkResultFromCassandra(annotateRepeatedNames(cassandraPlan.basePlan.projects.map(_.name)).toArray, resultSet)
         }
 
-        val cqlQuery = buildNativeQuery(
-          cassandraRelation.tableDef.name,
-          projectsString,
-          cassandraPlan.basePlan.filters,
-          cassandraPlan.limit.getOrElse(CassandraQueryProcessor.DefaultLimit),
-          cassandraPlan.basePlan.udfsMap map { case (k, v) => k.toString -> v }
-        )
-        val resultSet = cassandraRelation.connector.withSessionDo { session =>
-          session.execute(cqlQuery)
-        }
-        sparkResultFromCassandra(annotateRepeatedNames(cassandraPlan.basePlan.projects.map(_.name)).toArray, resultSet)
       }
     } catch {
       case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage); None
