@@ -93,8 +93,8 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   def execute(): Option[Array[Row]] = {
     def annotateRepeatedNames(names: Seq[String]): Seq[String] = {
       val indexedNames = names zipWithIndex
-      val m = indexedNames.groupBy(_._1).values.flatMap(_.zipWithIndex.map(x => x._1._2 -> x._2)).toMap
-      indexedNames map { case (name, index) => val c = m(index); if (c > 0) s"$name$c" else name }
+      val name2pos = indexedNames.groupBy(_._1).values.flatMap(_.zipWithIndex.map(x => x._1._2 -> x._2)).toMap
+      indexedNames map { case (name, index) => val c = name2pos(index); if (c > 0) s"$name$c" else name }
     }
 
     def buildAggregationExpression(names: Expression): String = {
