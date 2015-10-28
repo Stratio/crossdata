@@ -19,21 +19,21 @@
 
 package org.apache.spark.sql.crossdata
 
+import java.lang.reflect.Constructor
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 
 import com.stratio.crossdata.connector.FunctionInventory
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst.analysis.Analyzer
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.execution.ExtractPythonUDFs
-import org.apache.spark.sql.crossdata.execution.{XDStrategies, NativeUDF, ExtractNativeUDFs}
-import org.apache.spark.sql.execution.datasources.{PreWriteCheck, PreInsertCastAndRename}
+import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.sources.crossdata.XDDdlParser
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
-import com.typesafe.config.{Config, ConfigFactory}
-import java.lang.reflect.Constructor
 
 /**
  * CrossdataContext leverages the features of [[SQLContext]]
@@ -41,14 +41,21 @@ import java.lang.reflect.Constructor
  * @param sc A [[SparkContext]].
  */
 class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging {
+
   self =>
 
   override protected[sql] lazy val catalog: XDCatalog = {
+    import XDContext._
     val xdConfig: Config = ConfigFactory.load
-    val catalogClass: String = xdConfig.getString("crossdata.catalog.class")
-    val caseSensitive: Boolean = xdConfig.getBoolean("crossdata.catalog.caseSensitive")
-    //val xdCatalog = Class.forName(catalogClass)
-    val xdCatalog = Class.forName("org.apache.spark.sql.crossdata.catalog.DerbyCatalog")
+
+    val catalogClass = if (xdConfig.hasPath(CatalogClass))
+      xdConfig.getString(CatalogClass)
+    else
+      DerbyClass
+
+    val xdCatalog = Class.forName(catalogClass)
+
+    val caseSensitive: Boolean = xdConfig.getBoolean(CaseSensitive)
 
     val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf], classOf[XDContext])
 
@@ -103,6 +110,10 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
  * or to get the last created XDContext instance.
  */
 object XDContext {
+
+  val CatalogClass = "crossdata.catalog.class"
+  val CaseSensitive = "crossdata.catalog.caseSensitive"
+  val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
 
   private val INSTANTIATION_LOCK = new Object()
 

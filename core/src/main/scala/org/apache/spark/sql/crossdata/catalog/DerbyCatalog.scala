@@ -184,7 +184,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   }
 
   override def dropAllPersistedTables(): Unit = {
-    connection.createStatement.executeUpdate(s"TRUNCATE TABLE $db.$table")
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table")
   }
 
 
