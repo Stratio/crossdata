@@ -20,20 +20,20 @@ package org.apache.spark.sql.cassandra
 import java.io.IOException
 
 import com.datastax.driver.core.Metadata
+import com.datastax.spark.connector._
 import com.datastax.spark.connector.cql.{CassandraConnector, CassandraConnectorConf, Schema}
 import com.datastax.spark.connector.rdd.{CassandraRDD, ReadConf}
 import com.datastax.spark.connector.util.NameTools
 import com.datastax.spark.connector.util.Quote._
 import com.datastax.spark.connector.writer.{SqlRowWriter, WriteConf}
-import com.datastax.spark.connector._
 import com.stratio.crossdata.connector.NativeScan
 import com.stratio.crossdata.connector.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
+import org.apache.spark.sql.catalyst.expressions.{Alias, Count, Literal}
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
-import org.apache.spark.sql.sources.Filter
-import org.apache.spark.sql.sources._
+import org.apache.spark.sql.sources.{Filter, _}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
 import org.apache.spark.{Logging, SparkConf}
@@ -71,10 +71,19 @@ class CassandraXDSourceRelation(
     case ln: LeafNode => true // TODO leafNode == LogicalRelation(xdSourceRelation)
     case un: UnaryNode => un match {
       case Limit(_, _) | Project(_, _) | Filter(_, _) | EvaluateNativeUDF(_, _, _) => true
+      case aggregatePlan: Aggregate => isAggregateSupported(aggregatePlan)
       case _ => false
-
     }
     case unsupportedLogicalPlan => log.debug(s"LogicalPlan $unsupportedLogicalPlan cannot be executed natively"); false
+  }
+
+  def isAggregateSupported(aggregateLogicalPlan: Aggregate): Boolean = aggregateLogicalPlan match {
+    case Aggregate(Nil, aggregateExpressions, _) if aggregateExpressions.length == 1 =>
+      aggregateExpressions.head match {
+        case Alias(Count(Literal(1, _)), _) => true
+        case _ => false
+      }
+    case _ => false
   }
 
   // ~~ NativeScan implementation 

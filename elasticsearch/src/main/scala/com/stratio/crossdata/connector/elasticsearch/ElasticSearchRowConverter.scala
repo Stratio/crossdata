@@ -28,7 +28,7 @@ object ElasticSearchRowConverter {
 
 
 
-  def asRows(schema: StructType, array: Array[SearchHit],requiredFields: Array[Attribute]): Array[Row] = {
+  def asRows(schema: StructType, array: Array[SearchHit],requiredFields: Seq[Attribute]): Array[Row] = {
     import scala.collection.JavaConverters._
     val schemaMap = schema.map(field => field.name -> field.dataType).toMap
 
@@ -40,7 +40,7 @@ object ElasticSearchRowConverter {
   def hitAsRow(
                 hitFields: Map[String, SearchHitField],
                 schemaMap: Map[String, DataType],
-                requiredFields:Array[String]): Row = {
+                requiredFields:Seq[String]): Row = {
     val values: Seq[Any] = requiredFields.map {
       name =>
           hitFields.get(name).flatMap(v => Option(v)).map(
