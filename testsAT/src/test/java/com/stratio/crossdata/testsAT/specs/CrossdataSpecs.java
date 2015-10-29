@@ -25,7 +25,7 @@ import static com.stratio.tests.utils.DataFrameAssert.asserThat;
  * Created by hdominguez on 13/10/15.
  */
 public class CrossdataSpecs extends BaseSpec  {
-    int a = 0;
+
     public CrossdataSpecs(Common spec) {
         this.commonspec = spec;
     }
