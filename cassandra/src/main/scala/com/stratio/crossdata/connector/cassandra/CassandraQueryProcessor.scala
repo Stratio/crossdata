@@ -94,17 +94,19 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
       indexedNames map { case (name, index) => val c = m(index); if(c>0) s"$name$c" else name }
     }
 
+    var cqlQuery: Option[String] = None //Its a mutable variable for error reporting sake
+
     try {
       validatedNativePlan.map { case (columnsRequired, filters, udfs: Map[Attribute, NativeUDF], limit) =>
-        val cqlQuery = buildNativeQuery(
+        cqlQuery = Some(buildNativeQuery(
           cassandraRelation.tableDef.name,
           columnsRequired.map(_.toString),
           filters,
           limit.getOrElse(CassandraQueryProcessor.DefaultLimit),
           udfs map { case (k,v) => k.toString -> v}
-        )
+        ))
         val resultSet = cassandraRelation.connector.withSessionDo { session =>
-          session.execute(cqlQuery)
+          session.execute(cqlQuery.get)
         }
         sparkResultFromCassandra(annotateRepeatedNames(columnsRequired.map(_.name)).toArray, resultSet)
       }
