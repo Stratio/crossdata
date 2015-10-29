@@ -121,7 +121,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       }
     }
 
-    findProjectsFilters(logicalPlan).filter(bp => checkNativeFilters(bp.filters)).map((_,limit))
+    findProjectsFilters(logicalPlan).collect{ case bp if checkNativeFilters(bp.filters) => (bp, limit) }
   }
 
   private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = filters.forall {

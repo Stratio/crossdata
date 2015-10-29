@@ -152,7 +152,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
         }
     }
 
-    findProjectsFilters(logicalPlan).filter{ case (_, f) => checkNativeFilters(f)}.map{ case (p,f) => (p,f,limit)}
+    findProjectsFilters(logicalPlan).collect{ case (p, f) if checkNativeFilters(f) => (p,f,limit)}
   }
 
 

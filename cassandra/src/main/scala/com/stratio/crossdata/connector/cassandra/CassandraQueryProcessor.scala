@@ -161,13 +161,11 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
           if (!filtersIgnored) Some(basePlan) else None
       }
     }
-
-    findBasePlan(logicalPlan).map(CassandraPlan(_, limit)).filter(cp => checkNativeFilters(cp.filters, cp.udfsMap))
+    findBasePlan(logicalPlan).collect{ case bp if checkNativeFilters(bp.filters, bp.udfsMap) => CassandraPlan(bp, limit)}
   }
 
-
-  private[this] def checkNativeFilters(filters: Array[SourceFilter], udfs: Map[Attribute, NativeUDF]):
-  Boolean = {
+  private[this] def checkNativeFilters(filters: Array[SourceFilter],
+                                       udfs: Map[Attribute, NativeUDF]): Boolean = {
 
     val udfNames = udfs.keys.map(_.toString).toSet
 
