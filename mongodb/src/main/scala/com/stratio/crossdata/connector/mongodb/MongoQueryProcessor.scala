@@ -20,26 +20,25 @@ import java.util.regex.Pattern
 import com.mongodb.casbah.Imports._
 import com.mongodb.{DBObject, QueryBuilder}
 import com.stratio.datasource.Config
-import com.stratio.datasource.mongodb.MongodbRelation._
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.sources
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
-
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{Row, sources}
 
 object MongoQueryProcessor {
 
   val DefaultLimit = 10000
   type ColumnName = String
+  type Limit = Option[Int]
 
   def apply(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) = new MongoQueryProcessor(logicalPlan, config, schemaProvided)
 
-  def buildNativeQuery(requiredColums: Array[ColumnName], filters: Array[SourceFilter]): (DBObject, DBObject) =
+  def buildNativeQuery(requiredColums: Seq[ColumnName], filters: Array[SourceFilter]): (DBObject, DBObject) =
     (filtersToDBObject(filters), selectFields(requiredColums))
 
   private def filtersToDBObject(sFilters: Array[SourceFilter]): DBObject = {
@@ -85,7 +84,7 @@ object MongoQueryProcessor {
    * @param fields Required fields
    * @return A mongodb object that represents required fields.
    */
-  private def selectFields(fields: Array[String]): DBObject =
+  private def selectFields(fields: Seq[String]): DBObject =
     MongoDBObject(
       if (fields.isEmpty) List()
       else fields.toList.filterNot(_ == "_id").map(_ -> 1) ::: {
@@ -109,15 +108,19 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     } else {
       try {
         validatedNativePlan.map { case (requiredColumns, filters, limit) =>
-          val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(requiredColumns, filters)
-          val resultSet = MongodbConnection.withCollectionDo(config) { collection =>
-            logDebug(s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
-            val cursor = collection.find(mongoFilters, mongoRequiredColumns)
-            val result = cursor.limit(limit.getOrElse(DefaultLimit)).toArray[DBObject]
-            cursor.close()
-            result
+          if (limit.exists(_ == 0)) {
+            Array.empty[Row]
+          } else {
+            val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(requiredColumns, filters)
+            val resultSet = MongodbConnection.withCollectionDo(config) { collection =>
+              logDebug(s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
+              val cursor = collection.find(mongoFilters, mongoRequiredColumns)
+              val result = cursor.limit(limit.getOrElse(DefaultLimit)).toArray[DBObject]
+              cursor.close()
+              result
+            }
+            sparkResultFromMongodb(requiredColumns, schemaProvided.get, resultSet)
           }
-          sparkResultFromMongodb(requiredColumns, schemaProvided.get, resultSet)
         }
       } catch {
         case exc: Exception =>
@@ -128,31 +131,32 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
   }
 
 
-  def validatedNativePlan: Option[(Array[ColumnName], Array[SourceFilter], Option[Int])] = {
+  def validatedNativePlan: Option[(Seq[ColumnName], Array[SourceFilter], Limit)] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
-    def findProjectsFilters(lplan: LogicalPlan): (Array[ColumnName], Array[SourceFilter], Boolean) = {
-      lplan match {
-        case Limit(_, child) => findProjectsFilters(child)
-        case PhysicalOperation(projectList, filterList, _) =>
-          val (prjcts, fltrs, _, fltrsig) =
-            CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
-          (prjcts.map(_.name), fltrs, fltrsig)
-      }
+    def findProjectsFilters(lplan: LogicalPlan): Option[(Seq[ColumnName], Array[SourceFilter])] = lplan match {
+
+      case Limit(_, child) =>
+        findProjectsFilters(child)
+
+      case PhysicalOperation(projectList, filterList, _) =>
+        val (crossdataPlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+        if (filtersIgnored) {
+          None
+        }
+        else {
+          crossdataPlan match {
+            case SimpleLogicalPlan(projects, filters, _) => Some(projects.map(_.name), filters)
+            case _ => ??? // TODO
+          }
+        }
     }
 
-    val (projects, filters, filtersIgnored) = findProjectsFilters(logicalPlan)
-
-    if (filtersIgnored || !checkNativeFilters(filters)) {
-      None
-    } else {
-      Some(projects, filters, limit)
-    }
-
+    findProjectsFilters(logicalPlan).collect{ case (p, f) if checkNativeFilters(f) => (p,f,limit)}
   }
 
 
-  private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = filters.forall {
+  private[this] def checkNativeFilters(filters: Seq[SourceFilter]): Boolean = filters.forall {
     case _: sources.EqualTo => true
     case _: sources.In => true
     case _: sources.LessThan => true
@@ -171,8 +175,9 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
 
   }
 
-  private[this] def sparkResultFromMongodb(requiredColumns: Array[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
-    MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns), resultSet)
+  private[this] def sparkResultFromMongodb(requiredColumns: Seq[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
+    import com.stratio.datasource.mongodb.MongodbRelation._
+    MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns.toArray), resultSet)
   }
 
 }

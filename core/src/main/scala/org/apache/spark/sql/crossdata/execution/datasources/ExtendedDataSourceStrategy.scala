@@ -4,6 +4,7 @@ import com.stratio.crossdata.connector.NativeFunctionExecutor
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
 import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.execution.datasources.{PartitionSpec, Partition, LogicalRelation}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
 import org.apache.spark.{Logging, TaskContext}
 import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.rdd.{MapPartitionsRDD, RDD, UnionRDD}
@@ -33,8 +34,11 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
                                          ) => RDD[InternalRow]
                                         ) = {
     import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
-    val (pro, fil, att2udf, _) = CatalystToCrossdataAdapter.getFilterProject(plan, projects, filterPredicates)
 
+    val (pro, fil, att2udf) =
+      (CatalystToCrossdataAdapter.getConnectorLogicalPlan(plan, projects, filterPredicates): @unchecked) match {
+      case (SimpleLogicalPlan(pro, fil, udfs), false) => (pro, fil, udfs)
+    }
 
     val projectSet = AttributeSet(pro)
     val filterSet = AttributeSet(filterPredicates.flatMap(

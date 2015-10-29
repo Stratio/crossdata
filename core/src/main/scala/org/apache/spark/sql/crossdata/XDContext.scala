@@ -32,7 +32,7 @@ import org.apache.spark.sql.sources.crossdata.XDDdlParser
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.catalyst.{TableIdentifier, CatalystConf, SimpleCatalystConf}
 import com.typesafe.config.{Config, ConfigFactory}
 import java.lang.reflect.Constructor
 
@@ -72,7 +72,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
   @transient
   class XDPlanner extends SparkPlanner with XDStrategies {
-    override def strategies: Seq[Strategy] = ExtendedDataSourceStrategy +: super.strategies
+    override def strategies: Seq[Strategy] = Seq(XDDDLStrategy, ExtendedDataSourceStrategy) ++ super.strategies
   }
 
   @transient
@@ -93,6 +93,29 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
         inventory = srv.getClass.newInstance();
         udf <- srv.nativeBuiltinFunctions
     ) functionRegistry.registerFunction(udf.name, e => NativeUDF(udf.name, udf.returnType, e))
+  }
+
+
+  /**
+   * Drops the table in the persistent catalog.
+   * It applies only to metadata, so data do not be deleted.
+   *
+   * @param tableIdentifier the table to be dropped.
+   *
+   */
+  def dropTable(tableIdentifier: TableIdentifier): Unit = {
+    cacheManager.tryUncacheQuery(table(tableIdentifier.unquotedString))
+    catalog.dropTable(tableIdentifier.toSeq)
+  }
+
+  /**
+   * Drops all tables in the persistent catalog.
+   * It applies only to metadata, so data do not be deleted.
+   *
+   */
+  def dropAllTables(): Unit = {
+    cacheManager.clearCache()
+    catalog.dropAllTables()
   }
 
   XDContext.setLastInstantiatedContext(self)

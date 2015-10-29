@@ -21,7 +21,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class QueryBuilderTest extends BaseXDTest {
+class QueryBuilderSpec extends BaseXDTest {
 
   def formatOutput(query: String): String = query.stripMargin.replace(System.lineSeparator(), " ").replaceAll ("""\s\s+""", " ").trim
 
@@ -50,7 +50,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a completed query without distinct" in {
+  it should " be able to build a completed query without distinct" in {
 
     val query = QueryBuilder
       .select()
@@ -75,7 +75,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with an empty having" in {
+  it should " be able to build a query with an empty having" in {
 
     val query = QueryBuilder
       .select()
@@ -97,7 +97,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with an empty group by" in {
+  it should " be able to build a query with an empty group by" in {
 
     val query = QueryBuilder
       .select()
@@ -118,7 +118,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with an empty limit" in {
+  it should " be able to build a query with an empty limit" in {
 
     val query = QueryBuilder
       .select()
@@ -138,7 +138,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with an empty where clause" in {
+  it should " be able to build a query with an empty where clause" in {
 
     val query = QueryBuilder
       .select()
@@ -157,7 +157,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with an empty order by" in {
+  it should " be able to build a query with an empty order by" in {
 
     val query = QueryBuilder
       .select()
@@ -175,7 +175,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with a subquery" in {
+  it should " be able to build a query with a subquery" in {
 
     val query = QueryBuilder
       .select()
@@ -202,7 +202,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with a join clause" in {
+  it should " be able to build a query with a join clause" in {
 
     val query = QueryBuilder
       .select()
@@ -220,7 +220,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query skipping the limit clause" in {
+  it should " be able to build a query skipping the limit clause" in {
 
     val query = QueryBuilder
       .select()
@@ -237,7 +237,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query skipping the order by clause" in {
+  it should " be able to build a query skipping the order by clause" in {
 
     val query = QueryBuilder
       .select()
@@ -253,7 +253,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query skipping the having clause" in {
+  it should " be able to build a query skipping the having clause" in {
 
     val query = QueryBuilder
       .select()
@@ -268,7 +268,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query skipping the group by clause" in {
+  it should " be able to build a query skipping the group by clause" in {
 
     val query = QueryBuilder
       .select()
@@ -282,7 +282,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query skipping the where clause" in {
+  it should " be able to build a query skipping the where clause" in {
 
     val query = QueryBuilder
       .select()
@@ -295,7 +295,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with the where clause missing from a from clause" in {
+  it should " be able to build a query with the where clause missing from a from clause" in {
 
     val query = QueryBuilder
       .select()
@@ -312,7 +312,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with the group by clause missing from a from clause" in {
+  it should " be able to build a query with the group by clause missing from a from clause" in {
 
     val query = QueryBuilder
       .select()
@@ -328,7 +328,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with the having clause missing from a from clause" in {
+  it should " be able to build a query with the having clause missing from a from clause" in {
 
     val query = QueryBuilder
       .select()
@@ -343,7 +343,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with the order by clause missing from a from clause" in {
+  it should " be able to build a query with the order by clause missing from a from clause" in {
 
     val query = QueryBuilder
       .select()
@@ -357,7 +357,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with the group by clause missing from a where clause" in {
+  it should " be able to build a query with the group by clause missing from a where clause" in {
 
     val query = QueryBuilder
       .select()
@@ -374,7 +374,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with the having clause missing from a where clause" in {
+  it should " be able to build a query with the having clause missing from a where clause" in {
 
     val query = QueryBuilder
       .select()
@@ -390,7 +390,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with the order by clause missing from a where clause" in {
+  it should " be able to build a query with the order by clause missing from a where clause" in {
 
     val query = QueryBuilder
       .select()
@@ -405,7 +405,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with the having clause missing from a group by clause" in {
+  it should " be able to build a query with the having clause missing from a group by clause" in {
 
     val query = QueryBuilder
       .select()
@@ -421,7 +421,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with the order by clause missing from a group by clause" in {
+  it should " be able to build a query with the order by clause missing from a group by clause" in {
 
     val query = QueryBuilder
       .select()
@@ -436,7 +436,7 @@ class QueryBuilderTest extends BaseXDTest {
     query should be (expected)
   }
 
-  "The Query Builder" should " be able to build a query with the order by clause missing from a having clause" in {
+  it should " be able to build a query with the order by clause missing from a having clause" in {
 
     val query = QueryBuilder
       .select()

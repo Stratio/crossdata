@@ -31,12 +31,4 @@ class SQLResultSpec extends BaseXDTest {
     error.hasError should be (true)
     a [RuntimeException] should be thrownBy error.resultSet
   }
-
-  "A successful result" should "return an array of rows" in {
-
-    val error = SuccessfulQueryResult(UUID.randomUUID(), Array(Row(1)))
-    error.hasError should be (false)
-    error.resultSet shouldEqual Array(Row(1))
-  }
-
 }

@@ -16,10 +16,10 @@
 package org.apache.spark.sql.sources
 
 import org.apache.spark.sql.catalyst.CatalystTypeConverters._
-import org.apache.spark.sql.catalyst.{CatalystTypeConverters, expressions}
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.execution.{NativeUDF, EvaluateNativeUDF}
+import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
+import org.apache.spark.sql.catalyst.{CatalystTypeConverters, expressions}
+import org.apache.spark.sql.crossdata.execution.{EvaluateNativeUDF, NativeUDF}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
@@ -28,22 +28,35 @@ import org.apache.spark.unsafe.types.UTF8String
 
 object CatalystToCrossdataAdapter {
 
+  abstract class BaseLogicalPlan(val projects: Seq[NamedExpression], val filters: Array[SourceFilter], val udfsMap: Map[Attribute, NativeUDF])
 
-  def getFilterProject(logicalPlan: LogicalPlan,
-                       projects: Seq[NamedExpression],
-                       filterPredicates: Seq[Expression]):
-  (Array[Attribute], Array[SourceFilter], Map[Attribute, NativeUDF], Boolean) = {
+  case class SimpleLogicalPlan(override val projects: Seq[Attribute],
+                               override val filters: Array[SourceFilter],
+                               override val udfsMap: Map[Attribute, NativeUDF]
+                                ) extends BaseLogicalPlan(projects, filters, udfsMap)
+  
+  case class AggregationLogicalPlan(override val projects: Seq[NamedExpression],
+                                    groupingExpresion: Seq[Expression],
+                                    override val filters: Array[SourceFilter],
+                                    override val udfsMap: Map[Attribute, NativeUDF]
+                                     ) extends BaseLogicalPlan(projects, filters, udfsMap)
 
-    val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
+
+  def getConnectorLogicalPlan(logicalPlan: LogicalPlan,
+                              projects: Seq[NamedExpression],
+                              filterPredicates: Seq[Expression]): (BaseLogicalPlan, Boolean) = {
+
+
+    val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l }.get
     implicit val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
-
+    
     val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap (
       _.references flatMap {
         case nat: AttributeReference if (att2udf contains nat) =>
           udfFlattenedActualParameters(nat, at => false -> relation.attributeMap(at)) :+ (true -> nat)
         case x => Seq(true -> relation.attributeMap(x))
       }
-    ) groupBy(_._1) mapValues(_.map(_._2))
+    ) groupBy (_._1) mapValues (_.map(_._2))
 
     val pushedFilters = filterPredicates.map {
       _ transform {
@@ -63,6 +76,16 @@ object CatalystToCrossdataAdapter {
     val (filters, ignored) = selectFilters(pushedFilters, att2udf.keySet)
     (requestedCols(true).toArray, filters.toArray, att2udf, ignored)
 
+    val aggregatePlan: Option[(Seq[Expression], Seq[NamedExpression])] = logicalPlan.collectFirst {
+      case Aggregate(groupingExpression, aggregationExpression, child) => (groupingExpression, aggregationExpression)
+    }
+
+    val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
+      SimpleLogicalPlan(requestedCols(true), filters.toArray, att2udf)
+    } { case (groupingExpression, selectExpression) =>
+      AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf)
+    }
+    (baseLogicalPlan, ignored)
   }
 
   def udfFlattenedActualParameters[B](
@@ -182,8 +205,6 @@ object CatalystToCrossdataAdapter {
     }
     val convertibleFilters = filters.flatMap(translate).toArray
 
-    // TODO fix bug, filtersIgnored could be false when some child filters within an 'Or', 'And' , 'Not' are ignored
-    // TODO the bug above has been resolved but the variable use should be revised.
     (convertibleFilters, ignored)
   }
 

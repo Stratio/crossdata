@@ -30,7 +30,7 @@ import com.stratio.crossdata.connector.{NativeFunctionExecutor, NativeScan}
 import com.stratio.crossdata.connector.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
-import org.apache.spark.sql.catalyst.expressions.{AttributeReference, Literal}
+import org.apache.spark.sql.catalyst.expressions.{Alias, Count, Literal, AttributeReference}
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.execution.{NativeUDF, EvaluateNativeUDF}
 import org.apache.spark.sql.sources.Filter
@@ -73,10 +73,19 @@ class CassandraXDSourceRelation(
     case ln: LeafNode => true // TODO leafNode == LogicalRelation(xdSourceRelation)
     case un: UnaryNode => un match {
       case Limit(_, _) | Project(_, _) | Filter(_, _) | EvaluateNativeUDF(_, _, _) => true
+      case aggregatePlan: Aggregate => isAggregateSupported(aggregatePlan)
       case _ => false
-
     }
     case unsupportedLogicalPlan => log.debug(s"LogicalPlan $unsupportedLogicalPlan cannot be executed natively"); false
+  }
+
+  def isAggregateSupported(aggregateLogicalPlan: Aggregate): Boolean = aggregateLogicalPlan match {
+    case Aggregate(Nil, aggregateExpressions, _) if aggregateExpressions.length == 1 =>
+      aggregateExpressions.head match {
+        case Alias(Count(Literal(1, _)), _) => true
+        case _ => false
+      }
+    case _ => false
   }
 
   // ~~ NativeScan implementation 

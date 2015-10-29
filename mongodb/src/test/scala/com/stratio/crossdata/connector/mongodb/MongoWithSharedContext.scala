@@ -54,6 +54,7 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
   }
 
   override protected def afterAll() = {
+    _xdContext.dropAllTables()
     super.afterAll()
     mongoClient.foreach(cleanEnvironment)
   }

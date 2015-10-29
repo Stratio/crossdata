@@ -43,7 +43,6 @@ class DriverIT extends EndToEndTest {
     result.asInstanceOf[ErrorResult].cause.get.getMessage should include regex "cannot resolve .*"
   }
 
-
   it should "return a SuccessfulQueryResult when executing a select *" in {
     assumeCrossdataUpAndRunning()
     val driver = Driver()
