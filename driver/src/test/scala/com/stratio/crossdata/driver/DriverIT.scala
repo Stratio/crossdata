@@ -17,7 +17,6 @@
 package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
-import java.util.concurrent.TimeoutException
 
 import akka.util.Timeout
 import com.stratio.crossdata.common.SQLCommand
@@ -26,7 +25,6 @@ import org.apache.spark.sql.AnalysisException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -70,22 +68,28 @@ class DriverIT extends EndToEndTest {
     */
   }
 
-  "Crossdata driver" should "fail with a timeout when there is no server" in {
-    val driver = Driver()
-    val sqlCommand = SQLCommand("select * from any")
-    val result = driver.syncQuery(sqlCommand, Timeout(1 seconds), 1)
-    result.hasError should be (true)
-    a [RuntimeException] should be thrownBy result.resultSet
-    result.queryId should be (sqlCommand.queryId)
-    result shouldBe an [ErrorResult]
-    result.asInstanceOf[ErrorResult].message should include regex "(?i)timeout was exceed"
+  it should "get a list of tables" in {
+     val driver = Driver()
+      driver.syncQuery {
+        SQLCommand(s"CREATE TABLE db.jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+        SQLCommand(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+      }
+      val tables = driver.listTables()
+     tables should contain allOf ( ("jsonTable", Some("db")), ("jsonTable",None) )
+
+  }
+
+  "The JavaDriver" should "get a list of tables" in {
+
+    val javadriver = new JavaDriver()
+    javadriver.syncQuery {
+      SQLCommand(s"CREATE TABLE db.jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+      SQLCommand(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    }
+    val javatables = javadriver.listTables()
+    javatables should contain allOf ( TableName("jsonTable", "db"), TableName("jsonTable","") )
 
   }
 
 
-  it should "return a future with a timeout when there is no server" in {
-    val driver = Driver()
-    val future = driver.asyncQuery(SQLCommand("select * from any"), Timeout(1 seconds), 1)
-    a [TimeoutException] should be thrownBy Await.result(future, 2 seconds)
-  }
 }
