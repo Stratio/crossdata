@@ -108,6 +108,6 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
       if (!options.contains(opName)) sys.error( s"""Option "$opName" is mandatory for IMPORT TABLES""")
     }
 
-
+    ElasticSearchMetadataBuilder
   }
 }
