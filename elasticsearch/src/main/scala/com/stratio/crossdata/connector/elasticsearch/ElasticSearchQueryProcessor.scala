@@ -148,10 +148,8 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
     case _: sources.IsNull => true
     case _: sources.IsNotNull => true
     case _: sources.StringStartsWith => true
-    case _: sources.StringEndsWith => false
     case _: sources.StringContains => true
     case sources.And(left, right) => checkNativeFilters(Array(left, right))
-    case sources.Or(left, right) => false //checkNativeFilters(Array(left, right))
     // TODO add more filters (Not?)
     case _ => false
 
