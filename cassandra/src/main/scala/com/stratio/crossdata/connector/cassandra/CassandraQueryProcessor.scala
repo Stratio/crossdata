@@ -34,7 +34,11 @@ object CassandraQueryProcessor {
   val DefaultLimit = 10000
   type ColumnName = String
 
-  case class CassandraPlan(basePlan: BaseLogicalPlan, limit: Option[Int])
+  case class CassandraPlan(basePlan: BaseLogicalPlan, limit: Option[Int]){
+    def projects: Seq[NamedExpression] = basePlan.projects
+    def filters: Array[SourceFilter] = basePlan.filters
+    def udfsMap: Map[Attribute, NativeUDF] = basePlan.udfsMap
+  }
 
 
   def apply(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) = new CassandraQueryProcessor(cassandraRelation, logicalPlan)
@@ -122,14 +126,14 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
           val cqlQuery = buildNativeQuery(
             cassandraRelation.tableDef.name,
             projectsString,
-            cassandraPlan.basePlan.filters,
+            cassandraPlan.filters,
             cassandraPlan.limit.getOrElse(CassandraQueryProcessor.DefaultLimit),
-            cassandraPlan.basePlan.udfsMap map { case (k, v) => k.toString -> v }
+            cassandraPlan.udfsMap map { case (k, v) => k.toString -> v }
           )
           val resultSet = cassandraRelation.connector.withSessionDo { session =>
             session.execute(cqlQuery)
           }
-          sparkResultFromCassandra(annotateRepeatedNames(cassandraPlan.basePlan.projects.map(_.name)).toArray, resultSet)
+          sparkResultFromCassandra(annotateRepeatedNames(cassandraPlan.projects.map(_.name)).toArray, resultSet)
         }
 
       }
@@ -143,22 +147,22 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   def validatedNativePlan: Option[CassandraPlan] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
-    def findCassandraPlan(lplan: LogicalPlan): (BaseLogicalPlan, Boolean) = {
+    def findBasePlan(lplan: LogicalPlan): Option[BaseLogicalPlan] = {
       lplan match {
         // TODO lines below seem to be duplicated in ExtendedPhysicalOperation when finding filters and projects
         case Limit(_, child) =>
-          findCassandraPlan(child)
+          findBasePlan(child)
 
         case Aggregate(_, _, child) =>
-          findCassandraPlan(child)
+          findBasePlan(child)
 
         case ExtendedPhysicalOperation(projectList, filterList, _) =>
-          CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+          val (basePlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+          if (!filtersIgnored) Some(basePlan) else None
       }
     }
 
-    val (basePlan, filtersIgnored) = findCassandraPlan(logicalPlan)
-    Option(CassandraPlan(basePlan, limit)) filter { _ => !filtersIgnored && checkNativeFilters(basePlan.filters, basePlan.udfsMap) }
+    findBasePlan(logicalPlan).map(CassandraPlan(_, limit)).filter(cp => checkNativeFilters(cp.filters, cp.udfsMap))
   }
 
 

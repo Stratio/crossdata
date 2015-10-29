@@ -109,21 +109,19 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
   def validatedNativePlan: Option[(BaseLogicalPlan, Limit)] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
-    def findProjectsFilters(lplan: LogicalPlan): (BaseLogicalPlan, Boolean) = {
+    def findProjectsFilters(lplan: LogicalPlan): Option[BaseLogicalPlan] = {
       lplan match {
-        case Limit(_, child) => findProjectsFilters(child)
-        case PhysicalOperation(projectList, filterList, _) => CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+
+        case Limit(_, child) =>
+          findProjectsFilters(child)
+
+        case PhysicalOperation(projectList, filterList, _) =>
+          val (basePlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+          if (!filtersIgnored) Some(basePlan) else None
       }
     }
 
-    val (baseLogicalPlan, filtersIgnored) = findProjectsFilters(logicalPlan)
-    val filters = baseLogicalPlan.filters
-
-    if (filtersIgnored || !checkNativeFilters(filters)) {
-      None
-    } else {
-      Some((baseLogicalPlan, limit))
-    }
+    findProjectsFilters(logicalPlan).filter(bp => checkNativeFilters(bp.filters)).map((_,limit))
   }
 
   private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = filters.forall {
