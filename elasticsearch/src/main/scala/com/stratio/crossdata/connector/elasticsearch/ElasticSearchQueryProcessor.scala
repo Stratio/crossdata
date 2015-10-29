@@ -21,7 +21,7 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
-import org.apache.spark.sql.crossdata.execution.NativeUDF
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, sources}
@@ -45,13 +45,20 @@ object ElasticSearchQueryProcessor {
  */
 class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String], val schemaProvided: Option[StructType] = None) extends Logging{
 
+  type Limit = Option[Int]
   import ElasticSearchQueryProcessor._
   /**
    * Executes the [[LogicalPlan]]] and query the ElasticSearch database
    * @return the query result
    */
   def execute(): Option[Array[Row]] = {
-    validatedNativePlan.map { case (requiredColumns, filters, limit) =>
+    validatedNativePlan.map { case (baseLogicalPlan, limit) =>
+      val requiredColumns = baseLogicalPlan match {
+        case SimpleLogicalPlan(projects, _, _) =>
+          projects
+      }
+
+      val filters = baseLogicalPlan.filters
 
       val (esIndex, esType) = {
         val resource = parameters.get(ES_RESOURCE).get.split("/")
@@ -73,7 +80,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
     }
   }
 
-  def buildNativeQuery(requiredColumns: Array[Attribute], filters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
+  def buildNativeQuery(requiredColumns: Seq[Attribute], filters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
     val queryWithFilters = buildFilters(filters, query)
     selectFields(requiredColumns, queryWithFilters)
   }
@@ -94,28 +101,27 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
     searchFilters
   }
 
-  private def selectFields(fields: Array[Attribute], query: SearchDefinition): SearchDefinition = {
+  private def selectFields(fields: Seq[Attribute], query: SearchDefinition): SearchDefinition = {
     query //TODO build projection
   }
 
 
-  def validatedNativePlan: Option[(Array[Attribute], Array[SourceFilter], Option[Int])] = {
+  def validatedNativePlan: Option[(BaseLogicalPlan, Limit)] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
-    def findProjectsFilters(lplan: LogicalPlan): (Array[Attribute], Array[SourceFilter], Map[Attribute, NativeUDF], Boolean) = {
+    def findProjectsFilters(lplan: LogicalPlan): Option[BaseLogicalPlan] = {
       lplan match {
-        case Limit(_, child) => findProjectsFilters(child)
-        case PhysicalOperation(projectList, filterList, _) => CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
+
+        case Limit(_, child) =>
+          findProjectsFilters(child)
+
+        case PhysicalOperation(projectList, filterList, _) =>
+          val (basePlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+          if (!filtersIgnored) Some(basePlan) else None
       }
     }
 
-    val (projects, filters, udf, filtersIgnored) = findProjectsFilters(logicalPlan)
-
-    if (filtersIgnored || !checkNativeFilters(filters)) {
-      None
-    } else {
-      Option(projects, filters, limit)
-    }
+    findProjectsFilters(logicalPlan).collect{ case bp if checkNativeFilters(bp.filters) => (bp, limit) }
   }
 
   private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = filters.forall {
