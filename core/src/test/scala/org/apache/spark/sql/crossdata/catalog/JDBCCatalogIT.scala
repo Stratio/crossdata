@@ -130,6 +130,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
   }
   override protected def afterAll() {
     xdContext.catalog.dropAllTables()
+    xdContext.catalog.dropSchema()
     super.afterAll()
   }
 

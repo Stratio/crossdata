@@ -251,4 +251,9 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     write(partitionColumn)
   }
 
+  override def dropSchema(): Unit = {
+    connection.createStatement.executeUpdate(s"DROP TABLE IF EXISTS $db.$table")
+    connection.createStatement.executeUpdate(s"DROP SCHEMA IF EXISTS $db")
+  }
+
 }

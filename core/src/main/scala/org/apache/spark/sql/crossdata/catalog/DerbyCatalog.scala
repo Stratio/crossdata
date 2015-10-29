@@ -52,7 +52,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   import org.apache.spark.sql.crossdata._
 
 
-  private val db = "crossdata"
+  private val db = "CROSSDATA"
   private val table = "crossdatatables"
 
   lazy val connection: Connection = {
@@ -242,12 +242,15 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   }
 
   private def schemaExists(schema: String, connection: Connection) : Boolean= {
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='CROSSDATA'")
-    //preparedStatement.setString(1, databaseName.getOrElse(""))
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$db'")
     val resultSet = preparedStatement.executeQuery()
 
     resultSet.next()
 
   }
 
+  override def dropSchema(): Unit = {
+    connection.createStatement.executeUpdate(s"DROP TABLE $db.$table")
+    connection.createStatement.executeUpdate(s"DROP SCHEMA $db RESTRICT")
+  }
 }

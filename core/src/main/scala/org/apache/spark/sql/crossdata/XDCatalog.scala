@@ -163,4 +163,5 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   protected def dropAllPersistedTables(): Unit
 
+  def dropSchema(): Unit
 }
