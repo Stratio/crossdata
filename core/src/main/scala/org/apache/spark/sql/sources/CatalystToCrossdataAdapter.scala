@@ -35,18 +35,12 @@ object CatalystToCrossdataAdapter {
   (Array[Attribute], Array[SourceFilter], Map[Attribute, NativeUDF], Boolean) = {
 
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
-    val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
-
-    def udfFlattenedActualParameters[B](udfAttr: AttributeReference)(f: Attribute => B): Seq[B] = {
-      att2udf(udfAttr).children.flatMap { case att: AttributeReference =>
-        if(att2udf contains att) udfFlattenedActualParameters(att)(f) else Seq(f(att))
-      }
-    }
+    implicit val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
 
     val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap (
       _.references flatMap {
         case nat: AttributeReference if (att2udf contains nat) =>
-          udfFlattenedActualParameters(nat)(at => false -> relation.attributeMap(at)) :+ (true -> nat)
+          udfFlattenedActualParameters(nat, at => false -> relation.attributeMap(at)) :+ (true -> nat)
         case x => Seq(true -> relation.attributeMap(x))
       }
     ) groupBy(_._1) mapValues(_.map(_._2))
@@ -69,6 +63,15 @@ object CatalystToCrossdataAdapter {
     val (filters, ignored) = selectFilters(pushedFilters, att2udf.keySet)
     (requestedCols(true).toArray, filters.toArray, att2udf, ignored)
 
+  }
+
+  def udfFlattenedActualParameters[B](
+                                       udfAttr: AttributeReference,
+                                       f: Attribute => B
+                                       )(implicit udfs: Map[Attribute, NativeUDF]): Seq[B] = {
+    udfs(udfAttr).children.flatMap { case att: AttributeReference =>
+      if(udfs contains att) udfFlattenedActualParameters(att, f) else Seq(f(att))
+    }
   }
 
   /**

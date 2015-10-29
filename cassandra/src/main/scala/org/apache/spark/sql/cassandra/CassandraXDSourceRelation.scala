@@ -30,7 +30,7 @@ import com.stratio.crossdata.connector.{NativeFunctionExecutor, NativeScan}
 import com.stratio.crossdata.connector.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
-import org.apache.spark.sql.catalyst.expressions.{Literal, AttributeReference, Attribute}
+import org.apache.spark.sql.catalyst.expressions.{AttributeReference, Literal}
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.execution.{NativeUDF, EvaluateNativeUDF}
 import org.apache.spark.sql.sources.Filter
@@ -153,7 +153,7 @@ class CassandraXDSourceRelation(
         val filterPushdown = new PredicatePushDown(filters.toSet, tableDef)
         val pushdownFilters = filterPushdown.predicatesToPushDown.toSeq
         logInfo(s"pushdown filters: ${pushdownFilters.toString()}")
-        val filteredRdd = maybePushdownFilters(prunedRdd, pushdownFilters)
+        val filteredRdd = maybePushdownFilters(prunedRdd, pushdownFilters, udfs)
         filteredRdd.asInstanceOf[RDD[Row]]
       } else {
         prunedRdd
@@ -179,22 +179,46 @@ class CassandraXDSourceRelation(
   }
 
   /** Push down filters to CQL query */
-  private def maybePushdownFilters(rdd: RDDType, filters: Seq[Filter]): RDDType = {
-    whereClause(filters) match {
-      case (cql, values) if values.nonEmpty => rdd.where(cql, values: _*)
+  private def maybePushdownFilters(rdd: RDDType,
+                                   filters: Seq[Filter],
+                                   udfs: Map[String, NativeUDF] = Map.empty): RDDType = {
+    whereClause(filters, udfs) match {
+      case (cql, values) if values.nonEmpty =>
+        val resVals = values.filter(v => resolveUDFsReferences(v.toString, udfs).isEmpty)
+        rdd.where(cql, resVals: _*)
       case _ => rdd
     }
   }
 
   /** Construct Cql clause and retrieve the values from filter */
-  private def filterToCqlAndValue(filter: Any): (String, Seq[Any]) = {
+  private def filterToCqlAndValue(filter: Any,
+                                  udfs: Map[String, NativeUDF] = Map.empty): (String, Seq[Any]) = {
+
+    def udfvalcmp(attribute: String, cmpOp: String, f: AttributeReference): (String, Seq[Any]) =
+      (s"${quote(attribute)} $cmpOp ${resolveUDFsReferences(f.toString, udfs).get.cql}", Seq())
+
     filter match {
+      case sources.EqualTo(attribute, f: AttributeReference) if(udfs contains f.toString) =>
+        udfvalcmp(attribute, "=", f)
       case sources.EqualTo(attribute, value) => (s"${quote(attribute)} = ?", Seq(value))
+
       case sources.In(attribute, values) =>
         (quote(attribute) + " IN " + values.map(_ => "?").mkString("(", ", ", ")"), values.toSeq)
+
+      case sources.LessThan(attribute, f: AttributeReference) if(udfs contains f.toString) =>
+        udfvalcmp(attribute, "<", f)
       case sources.LessThan(attribute, value) => (s"${quote(attribute)} < ?", Seq(value))
+
+      case sources.LessThanOrEqual(attribute, f: AttributeReference) if(udfs contains f.toString) =>
+        udfvalcmp(attribute, "<", f)
       case sources.LessThanOrEqual(attribute, value) => (s"${quote(attribute)} <= ?", Seq(value))
+
+      case sources.GreaterThan(attribute, f: AttributeReference) if(udfs contains f.toString) =>
+        udfvalcmp(attribute, ">", f)
       case sources.GreaterThan(attribute, value) => (s"${quote(attribute)} > ?", Seq(value))
+
+      case sources.GreaterThanOrEqual(attribute, f: AttributeReference) if(udfs contains f.toString) =>
+        udfvalcmp(attribute, ">=", f)
       case sources.GreaterThanOrEqual(attribute, value) => (s"${quote(attribute)} >= ?", Seq(value))
 
       case _ =>
@@ -204,8 +228,8 @@ class CassandraXDSourceRelation(
   }
 
   /** Construct where clause from pushdown filters */
-  private def whereClause(pushdownFilters: Seq[Any]): (String, Seq[Any]) = {
-    val cqlValue = pushdownFilters.map(filterToCqlAndValue)
+  private def whereClause(pushdownFilters: Seq[Any], udfs: Map[String, NativeUDF] = Map.empty): (String, Seq[Any]) = {
+    val cqlValue = pushdownFilters.map(filterToCqlAndValue(_, udfs))
     val cql = cqlValue.map(_._1).mkString(" AND ")
     val args = cqlValue.flatMap(_._2)
     (cql, args)
