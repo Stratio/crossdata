@@ -26,15 +26,6 @@ import org.apache.spark.sql.execution.{ExecutedCommand, SparkPlan, SparkStrategi
 
 import org.apache.spark.sql.Strategy
 
-case class NativeUDFSparkPlan(udfName: String, output: Seq[Attribute], child: SparkPlan) extends SparkPlan {
-  override def children: Seq[SparkPlan] = child :: Nil
-
-  override protected def doExecute(): RDD[InternalRow] = {
-    ???
-  }
-
-}
-
 trait XDStrategies extends SparkStrategies {
   self: XDContext#XDPlanner =>
 
@@ -51,13 +42,5 @@ trait XDStrategies extends SparkStrategies {
       case _ => Nil
     }
   }
-
-  object NativeUDFStrategy extends Strategy with Logging {
-    override def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {
-      case e @ EvaluateNativeUDF(udf, child, at) =>
-        NativeUDFSparkPlan(udf.name, e.output, planLater(child))::Nil
-      case _ => Nil
-    }
-  }
-
+  
 }
