@@ -23,7 +23,7 @@ Table of Contents
 
 -  `3) DDL <#data-definition-language>`__
 
-   -  `3.1) IMPORT EXISTING EXTERNAL TABLES <import-tables>`__
+   -  `3.1) IMPORT EXISTING EXTERNAL TABLES <#import-tables>`__
    -  `3.2) REGISTER EXISTING EXTERNAL TABLES <create-table>`__
    -  `3.3) TABLE CACHING <table-caching>`__
 
