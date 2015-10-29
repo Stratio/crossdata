@@ -16,6 +16,7 @@
 package com.stratio.tests.utils;
 
 import org.apache.spark.SparkConf;
+import org.apache.spark.sql.crossdata.ExecutionType;
 import org.apache.spark.sql.crossdata.XDContext;
 import org.apache.spark.api.java.*;
 import org.apache.spark.sql.crossdata.XDDataFrame;

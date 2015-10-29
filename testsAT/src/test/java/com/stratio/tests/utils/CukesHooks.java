@@ -127,6 +127,11 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
                     + ".0.1") + "',pushdown \"true\"," +
                     "spark_cassandra_connection_host '"+ System.getProperty("CASSANDRA_HOST", "127.0.0.1")+"')";
             commonspec.getXdContext().executeQuery(sql);
+            sql = "CREATE TEMPORARY TABLE sample_times USING com.stratio.crossdata.connector.cassandra OPTIONS "
+                    + "(table 'sample_times',keyspace 'databasetest',cluster '"+ System.getProperty("CASSANDRA_HOST", "127.0"
+                    + ".0.1") + "',pushdown \"true\"," +
+                    "spark_cassandra_connection_host '"+ System.getProperty("CASSANDRA_HOST", "127.0.0.1")+"')";
+            commonspec.getXdContext().executeQuery(sql);
 
         }else{
         commonspec.getXdContext().getXDContext().sql("CREATE TEMPORARY TABLE tabletest(ident INT, name STRING, money "
