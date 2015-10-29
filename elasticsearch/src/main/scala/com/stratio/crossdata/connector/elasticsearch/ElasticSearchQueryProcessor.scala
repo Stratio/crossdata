@@ -28,10 +28,9 @@ import org.apache.spark.sql.{Row, sources}
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
+import com.stratio.crossdata.connector.elasticsearch.DefaultSource._
 
 object ElasticSearchQueryProcessor {
-  val ElasticNativePort = "es.nativePort"
-  val ElasticCluster = "es.cluster"
 
   def apply(logicalPlan: LogicalPlan, parameters: Map[String, String], schemaProvided: Option[StructType] = None) = new ElasticSearchQueryProcessor(logicalPlan, parameters, schemaProvided)
 }
@@ -45,7 +44,7 @@ object ElasticSearchQueryProcessor {
  */
 class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String], val schemaProvided: Option[StructType] = None) extends Logging {
 
-  import ElasticSearchQueryProcessor._
+
 
   /**
    * Executes the [[LogicalPlan]]] and query the ElasticSearch database

@@ -20,9 +20,12 @@ Modifications and adaptations - Copyright (C) 2015 Stratio (http://stratio.com)
 */
 package com.stratio.crossdata.connector.elasticsearch
 
+import com.stratio.crossdata.connector.TableInventory
+import com.stratio.crossdata.connector.TableInventory.Table
 import org.apache.spark.sql.{DataFrame, SaveMode, SQLContext}
 import org.apache.spark.sql.sources.{CreatableRelationProvider, SchemaRelationProvider, BaseRelation, RelationProvider}
 import org.apache.spark.sql.types.StructType
+import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 import org.elasticsearch.hadoop.{EsHadoopIllegalArgumentException, EsHadoopIllegalStateException}
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions
 import org.elasticsearch.spark.sql.ElasticSearchXDRelation
@@ -31,13 +34,19 @@ import org.apache.spark.sql.SaveMode.ErrorIfExists
 import org.apache.spark.sql.SaveMode.Ignore
 import org.apache.spark.sql.SaveMode.Overwrite
 
+
+object DefaultSource{
+  val DATA_SOURCE_PUSH_DOWN: String = "es.internal.spark.sql.pushdown"
+  val DATA_SOURCE_PUSH_DOWN_STRICT: String = "es.internal.spark.sql.pushdown.strict"
+  val ElasticNativePort = "es.nativePort"
+  val ElasticCluster = "es.cluster"
+}
 /**
  * This class is used by Spark to create a new  [[ElasticSearchXDRelation]]
  */
-class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider {
+class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider  with TableInventory {
 
-  val DATA_SOURCE_PUSH_DOWN: String = "es.internal.spark.sql.pushdown"
-  val DATA_SOURCE_PUSH_DOWN_STRICT: String = "es.internal.spark.sql.pushdown.strict"
+  import DefaultSource._
 
   override def createRelation(@transient sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = {
     new ElasticSearchXDRelation(params(parameters), sqlContext)
@@ -83,5 +92,22 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     params
   }
 
+  /**
+   * @inheritdoc
+   */
+  override def generateConnectorOpts(item: Table, userOpts: Map[String, String]): Map[String, String] = Map(
+    ES_RESOURCE -> s"${item.database.get}/${item.tableName}"
+  ) ++ userOpts
 
+  /**
+   * @inheritdoc
+   */
+  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
+
+    Seq(ES_RESOURCE, ElasticCluster).foreach { opName =>
+      if (!options.contains(opName)) sys.error( s"""Option "$opName" is mandatory for IMPORT TABLES""")
+    }
+
+
+  }
 }
