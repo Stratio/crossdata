@@ -165,6 +165,31 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
   }
 
+  it should "infer schema after import all tables from a keyspace" in {
+    assumeEnvironmentIsUpAndRunning
+
+    def tableCountInHighschool: Long = ctx.sql("SHOW TABLES").count
+    val initialLength = tableCountInHighschool
+
+    val importQuery =
+      s"""
+         |IMPORT TABLES
+         |USING $SourceProvider
+         |OPTIONS (
+         | cluster "$ClusterName",
+         | spark_cassandra_connection_host '$CassandraHost'
+         |)
+      """.stripMargin
+
+    sql(importQuery)
+    sql("SHOW TABLES").show()
+    ctx.dropTempTable(s"""$Catalog.$Table""")
+    ctx.table(s"""$Catalog.$Table""").schema should have length 5
+
+
+
+  }
+
   val wrongImportTablesSentences = List(
     s"""
        |IMPORT TABLES

@@ -20,8 +20,12 @@ import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
+import org.apache.spark.sql.types.StructType
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization._
 
 import scala.collection.mutable
+import scala.util.parsing.json.JSON
 
 /**
  * CrossdataCatalog aims to provide a mechanism to persist the
@@ -153,6 +157,27 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     dropAllPersistedTables()
   }
 
+  protected def getPartitionColumn(partitionColumn: String): Array[String] =
+    JSON.parseFull(partitionColumn).toList.flatMap(_.asInstanceOf[List[String]]).toArray
+
+  protected def getOptions(optsJSON: String): Map[String, String] =
+    JSON.parseFull(optsJSON).get.asInstanceOf[Map[String, String]]
+
+  protected def serializeSchema(schema: StructType): String = {
+    implicit val formats = DefaultFormats
+    write(schema.jsonValue.values)
+  }
+
+  protected def serializeOptions(options: Map[String, Any]): String = {
+    implicit val formats = DefaultFormats
+    write(options)
+  }
+
+  protected def serializePartitionColumn(partitionColumn: Array[String]): String = {
+    implicit val formats = DefaultFormats
+    write(partitionColumn)
+  }
+
   protected def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable]
 
   def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)]
@@ -162,5 +187,8 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   protected def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit
 
   protected def dropAllPersistedTables(): Unit
+
+
+
 
 }

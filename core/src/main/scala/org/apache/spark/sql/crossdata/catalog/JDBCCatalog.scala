@@ -218,7 +218,10 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
       )
     }
     }
-    Some(StructType(structFields))
+    if(structFields.size == 0)
+      None
+    else
+      Some(StructType(structFields))
   }
 
   private def convertToGrammar (m: Map[String, Any]) : String = {
@@ -229,25 +232,6 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     else m.getOrElse("type", throw new Error("Type not found")).asInstanceOf[String]
   }
 
-  private def getPartitionColumn(partitionColumn: String): Array[String] =
-    JSON.parseFull(partitionColumn).toList.flatMap(_.asInstanceOf[List[String]]).toArray
 
-  private def getOptions(optsJSON: String): Map[String, String] =
-    JSON.parseFull(optsJSON).get.asInstanceOf[Map[String, String]]
-
-  private def serializeSchema(schema: StructType): String = {
-    implicit val formats = DefaultFormats
-    write(schema.jsonValue.values)
-  }
-
-  private def serializeOptions(options: Map[String, Any]): String = {
-    implicit val formats = DefaultFormats
-    write(options)
-  }
-
-  private def serializePartitionColumn(partitionColumn: Array[String]): String = {
-    implicit val formats = DefaultFormats
-    write(partitionColumn)
-  }
 
 }
