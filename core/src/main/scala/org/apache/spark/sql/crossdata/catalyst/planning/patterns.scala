@@ -16,7 +16,7 @@
 package org.apache.spark.sql.crossdata.catalyst.planning
 
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.plans.logical.{Filter, LogicalPlan, Project}
+import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Filter, LogicalPlan, Project}
 import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
 
 
@@ -42,6 +42,10 @@ object ExtendedPhysicalOperation extends PredicateHelper {
         (fields, filters ++ splitConjunctivePredicates(substitutedCondition), other, aliases)
 
       case EvaluateNativeUDF(udf, child, attribute) =>
+        collectProjectsAndFilters(child)
+
+      // TODO refactor. Having, udafs, etc...
+      case Aggregate(groupingExpressions, aggregateExpression, child) =>
         collectProjectsAndFilters(child)
 
       case other =>

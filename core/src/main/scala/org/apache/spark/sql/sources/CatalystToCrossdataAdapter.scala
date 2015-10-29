@@ -16,10 +16,10 @@
 package org.apache.spark.sql.sources
 
 import org.apache.spark.sql.catalyst.CatalystTypeConverters._
-import org.apache.spark.sql.catalyst.{CatalystTypeConverters, expressions}
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.execution.{NativeUDFAttribute, NativeUDF, EvaluateNativeUDF}
+import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
+import org.apache.spark.sql.catalyst.{CatalystTypeConverters, expressions}
+import org.apache.spark.sql.crossdata.execution.{EvaluateNativeUDF, NativeUDF, NativeUDFAttribute}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
@@ -28,13 +28,26 @@ import org.apache.spark.unsafe.types.UTF8String
 
 object CatalystToCrossdataAdapter {
 
+  abstract class BaseLogicalPlan(val projects: Seq[NamedExpression], val filters: Array[SourceFilter], val udfsMap: Map[Attribute, NativeUDF])
 
-  def getFilterProject(logicalPlan: LogicalPlan,
-                       projects: Seq[NamedExpression],
-                       filterPredicates: Seq[Expression]):
-  (Array[Attribute], Array[SourceFilter], Map[Attribute, NativeUDF], Boolean) = {
+  case class SimpleLogicalPlan(override val projects: Seq[Attribute],
+                               override val filters: Array[SourceFilter],
+                               override val udfsMap: Map[Attribute, NativeUDF]
+                                ) extends BaseLogicalPlan(projects, filters, udfsMap)
 
-    val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l}.get
+  case class AggregationLogicalPlan(override val projects: Seq[NamedExpression],
+                                    groupingExpresion: Seq[Expression],
+                                    override val filters: Array[SourceFilter],
+                                    override val udfsMap: Map[Attribute, NativeUDF]
+                                     ) extends BaseLogicalPlan(projects, filters, udfsMap)
+
+
+  def getConnectorLogicalPlan(logicalPlan: LogicalPlan,
+                              projects: Seq[NamedExpression],
+                              filterPredicates: Seq[Expression]): (BaseLogicalPlan, Boolean) = {
+
+
+    val relation: LogicalRelation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l }.get
     val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
 
     def udfFlattenedActualParameters[B](udfAttr: NativeUDFAttribute)(f: Attribute => B): Seq[B] = {
@@ -50,7 +63,7 @@ object CatalystToCrossdataAdapter {
           udfFlattenedActualParameters(nat)(at => false -> relation.attributeMap(at)) :+ (true -> nat)
         case x => Seq(true -> relation.attributeMap(x))
       }
-    ) groupBy(_._1) mapValues(_.map(_._2))
+    ) groupBy (_._1) mapValues (_.map(_._2))
 
     val pushedFilters = filterPredicates.map {
       _ transform {
@@ -59,17 +72,18 @@ object CatalystToCrossdataAdapter {
       }
     }
 
-    //`required` is the collection of columns which should be present at the table (all referenced columns)
-    val required = AttributeSet {
-      requestedCols.values.reduce[Seq[Attribute]]((a,b) => a ++ b) filter {
-        case _: NativeUDFAttribute => false
-        case _ => true
-      }
+    val (filters, ignored) = selectFilters(pushedFilters)
+
+    val aggregatePlan: Option[(Seq[Expression], Seq[NamedExpression])] = logicalPlan.collectFirst {
+      case Aggregate(groupingExpression, aggregationExpression, child) => (groupingExpression, aggregationExpression)
     }
 
-    val (filters, ignored) = selectFilters(pushedFilters)
-    (requestedCols(true).toArray, filters.toArray, att2udf, ignored)
-
+    val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
+      SimpleLogicalPlan(requestedCols(true), filters.toArray, att2udf)
+    } { case (groupingExpression, selectExpression) =>
+      AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf)
+    }
+    (baseLogicalPlan, ignored)
   }
 
   /**
