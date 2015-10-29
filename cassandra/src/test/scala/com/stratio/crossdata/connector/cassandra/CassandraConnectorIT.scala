@@ -28,7 +28,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
   // DEFAULT enrolled
   // SECONDARY_INDEX name
 
-  /*"The Cassandra connector" should "execute natively a (SELECT *)" in {
+  "The Cassandra connector" should "execute natively a (SELECT *)" in {
     assumeEnvironmentIsUpAndRunning
 
     val result = sql(s"SELECT * FROM $Table ").collect(Native)
@@ -179,21 +179,16 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     }
   }
 
-  it should "be able to natively select the built-in funcions `now`, `dateOf` and `unixTimeStampOf` " in {
-    assumeEnvironmentIsUpAndRunning
+  val execTypes: List[ExecutionType] = Native::Spark::Nil
 
-    val query = s"SELECT now() as t, now() as a, dateOf(now()) as dt, unixTimestampOf(now()) as ut FROM $Table"
-    sql(query).collect(Native) should have length 10
+  execTypes.foreach { exec =>
 
-  }*/
+    it should s"be able to ${exec.toString}ly select the built-in funcions `now`, `dateOf` and `unixTimeStampOf`" in {
+      assumeEnvironmentIsUpAndRunning
 
-  it should "bla bla bla" in {
-    assumeEnvironmentIsUpAndRunning
-
-    val query = s"SELECT now() FROM $Table"
-    val res = sql(query).collect(Spark)
-    res should have length 10
-
+      val query = s"SELECT now() as t, now() as a, dateOf(now()) as dt, unixTimestampOf(now()) as ut FROM $Table"
+      sql(query).collect(exec) should have length 10
+    }
   }
 
 
