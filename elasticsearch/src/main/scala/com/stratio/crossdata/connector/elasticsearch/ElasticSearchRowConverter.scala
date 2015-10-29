@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,66 +16,63 @@
 package com.stratio.crossdata.connector.elasticsearch
 
 import java.sql.Timestamp
+import java.util.Date
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.types._
-import org.elasticsearch.search.SearchHit
+import org.elasticsearch.common.joda.time.DateTime
+import org.elasticsearch.search.{SearchHit, SearchHitField}
 
 object ElasticSearchRowConverter {
 
-  def asRows(schema: StructType, array: Array[SearchHit]): Array[Row] = {
+
+  def asRows(schema: StructType, array: Array[SearchHit], requiredFields: Seq[Attribute]): Array[Row] = {
     import scala.collection.JavaConverters._
+    val schemaMap = schema.map(field => field.name -> field.dataType).toMap
+
     array map { hit =>
-      hitAsRow(hit.sourceAsMap().asScala.toMap, schema)
+      hitAsRow(hit.fields().asScala.toMap, schemaMap, requiredFields.map(_.name))
     }
   }
 
   def hitAsRow(
-                hits: Map[String, AnyRef],
-                schema: StructType): Row = {
-    val values: Seq[Any] = schema.fields.map {
-      case StructField(name, dataType, _, _) =>
-        hits.get(name).flatMap(v => Option(v)).map(
-          toSQL(_, dataType)).orNull
+                hitFields: Map[String, SearchHitField],
+                schemaMap: Map[String, DataType],
+                requiredFields: Seq[String]): Row = {
+    val values: Seq[Any] = requiredFields.map {
+      name =>
+        hitFields.get(name).flatMap(v => Option(v)).map(
+          toSQL(_, schemaMap(name))).orNull
     }
     Row.fromSeq(values)
   }
 
-  /**
-   * It converts some ES attribute value into
-   * a Row field
-   * @param value Elasticsearch attribute
-   * @param dataType Attribute type
-   * @return The converted value into a Row field.
-   */
-  def toSQL(value: Any, dataType: DataType): Any = {
-    Option(value).map { value =>
-      (value, dataType) match {
-        case _ =>
-          //Assure value is mapped to schema constrained type.
-          enforceCorrectType(value, dataType)
-      }
+  def toSQL(value: SearchHitField, dataType: DataType): Any = {
+
+    Option(value).map { case value =>
+      //Assure value is mapped to schema constrained type.
+      enforceCorrectType(value.getValue, dataType)
     }.orNull
   }
 
-  protected def enforceCorrectType(value: Any, desiredType: DataType): Any ={
-    if (value == null) {
-      null
-    } else {
-      desiredType match {
-        case StringType => value.toString
-        case _ if value == null || value == "" => null // guard the non string type
-        case IntegerType => toInt(value)
-        case LongType => toLong(value)
-        case DoubleType => toDouble(value)
-        case DecimalType() => toDecimal(value)
-        case BooleanType => value.asInstanceOf[Boolean]
-        case TimestampType => toTimestamp(value)
-        case NullType => null
-        case _ =>
-          sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
-          value
-      }
-    }
+
+  protected def enforceCorrectType(value: Any, desiredType: DataType): Any = {
+    Option(desiredType).map {
+      case StringType => value.toString
+      case _ if value == "" => null // guard the non string type
+      case IntegerType => toInt(value)
+      case LongType => toLong(value)
+      case DoubleType => toDouble(value)
+      case DecimalType() => toDecimal(value)
+      case BooleanType => value.asInstanceOf[Boolean]
+      case TimestampType => toTimestamp(value)
+      case NullType => null
+      case DateType => toDate(value)
+      case _ =>
+        sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
+        value
+    }.orNull
+
   }
 
   private def toInt(value: Any): Int = {
@@ -114,6 +111,12 @@ object ElasticSearchRowConverter {
   private def toTimestamp(value: Any): Timestamp = {
     value match {
       case value: java.util.Date => new Timestamp(value.getTime)
+    }
+  }
+
+  def toDate(value: Any): Date = {
+    value match {
+      case value: String => DateTime.parse(value).toDate
     }
   }
 }

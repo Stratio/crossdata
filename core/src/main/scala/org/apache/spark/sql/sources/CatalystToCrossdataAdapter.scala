@@ -47,7 +47,7 @@ object CatalystToCrossdataAdapter {
                               filterPredicates: Seq[Expression]): (BaseLogicalPlan, Boolean) = {
 
 
-    val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l }.get
+    val relation: LogicalRelation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l }.get
     val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
 
     def udfFlattenedActualParameters[B](udfAttr: NativeUDFAttribute)(f: Attribute => B): Seq[B] = {
