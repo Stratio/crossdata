@@ -143,7 +143,6 @@ class CassandraXDSourceRelation(
       val actualParams = udf.children.collect {
         case at: AttributeReference if(udfs contains at.toString) => Left(resolveUDFsReferences(at.toString, udfs).get)
         case at: AttributeReference => Left(ColumnName(at.name))
-        case lit@Literal(_, DataTypes.StringType) => Right(s"$lit")
         case lit: Literal => Right(lit.toString)
       }
       FunctionCallRef(udf.name, actualParams)
