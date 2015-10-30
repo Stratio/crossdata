@@ -48,9 +48,9 @@ class DriverIT extends EndToEndTest {
     assumeCrossdataUpAndRunning()
     val driver = Driver()
 
-    driver.syncQuery {
-      SQLCommand(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
-    }
+    driver.syncQuery(
+      SQLCommand(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')")
+    )
     // TODO how to process metadata ops?
 
     val sqlCommand = SQLCommand("SELECT * FROM jsonTable")
@@ -62,41 +62,34 @@ class DriverIT extends EndToEndTest {
     rows should have length 2
     rows(0) should have length 2
 
-    /* TODO unregister in afterAll
-    driver.syncQuery {
-      SQLCommand(s"UNREGISTER TABLES")
-    }
-    */
+    crossdataServer.flatMap(_.xdContext).foreach(_.dropTempTable("jsonTable"))
   }
 
   it should "get a list of tables" in {
-     val driver = Driver()
-      driver.syncQuery {
-        SQLCommand(s"CREATE TABLE db.jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    val driver = Driver()
 
-      }
-    driver.syncQuery {
-      SQLCommand(s"CREATE TABLE jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
-    }
-    Thread.sleep(1000)
-      val tables = driver.listTables()
-     tables should contain allOf ( ("jsonTable2", Some("db")), ("jsonTable2",None) )
+    driver.syncQuery(
+      SQLCommand(s"CREATE TABLE db.jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')")
+    )
+    driver.syncQuery(
+      SQLCommand(s"CREATE TABLE jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')")
+    )
 
+    driver.listTables() should contain allOf(("jsonTable2", Some("db")), ("jsonTable2", None))
   }
 
   "The JavaDriver" should "get a list of tables" in {
 
     val javadriver = new JavaDriver()
-    javadriver.syncQuery {
-     SQLCommand(s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
-    }
-    javadriver.syncQuery {
-      SQLCommand(s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
-    }
 
-    Thread.sleep(1000)
-    val javatables = javadriver.listTables()
-    javatables should contain allOf ( TableName("jsonTable3", "db"), TableName("jsonTable3","") )
+    javadriver.syncQuery(
+      SQLCommand(s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    )
+    javadriver.syncQuery(
+      SQLCommand(s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    )
+
+    javadriver.listTables() should contain allOf(TableName("jsonTable3", "db"), TableName("jsonTable3", ""))
 
   }
 
