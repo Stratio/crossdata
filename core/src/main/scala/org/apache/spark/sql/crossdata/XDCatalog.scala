@@ -20,8 +20,12 @@ import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
+import org.apache.spark.sql.types._
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization._
 
 import scala.collection.mutable
+import scala.util.parsing.json.JSON
 
 /**
  * CrossdataCatalog aims to provide a mechanism to persist the
@@ -162,5 +166,64 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   protected def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit
 
   protected def dropAllPersistedTables(): Unit
+
+}
+
+object XDCatalog{
+
+  def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
+    implicit val formats = DefaultFormats
+
+    val jsonMap = JSON.parseFull(schemaJSON).get.asInstanceOf[Map[String, Any]]
+    val fields = jsonMap.getOrElse("fields", throw new Error("Fields not found")).asInstanceOf[List[Map[String, Any]]]
+    val structFields = fields.map { x => {
+
+
+      val typeStr: String = x.getOrElse("type", throw new Error("Type not found")) match {
+        case structType: Map[String, Any] => convertToGrammar(structType)
+        case simpleType: String => simpleType
+        case _ => throw new Error("Invalid type")
+      }
+      StructField(
+        x.getOrElse("name", throw new Error("Name not found")).asInstanceOf[String],
+        DataTypeParser.parse(typeStr),
+        x.getOrElse("nullable", throw new Error("Nullable definition not found")).asInstanceOf[Boolean],
+        Metadata.fromJson(write(x.getOrElse("metadata", throw new Error("Metadata not found")).asInstanceOf[Map[String, Any]]))
+      )
+    }
+    }
+    structFields.headOption.map(_ => StructType(structFields))
+
+  }
+
+
+  def getPartitionColumn(partitionColumn: String): Array[String] =
+    JSON.parseFull(partitionColumn).toList.flatMap(_.asInstanceOf[List[String]]).toArray
+
+  def getOptions(optsJSON: String): Map[String, String] =
+    JSON.parseFull(optsJSON).get.asInstanceOf[Map[String, String]]
+
+  def serializeSchema(schema: StructType): String = {
+    implicit val formats = DefaultFormats
+    write(schema.jsonValue.values)
+  }
+
+  def serializeOptions(options: Map[String, Any]): String = {
+    implicit val formats = DefaultFormats
+    write(options)
+  }
+
+  def serializePartitionColumn(partitionColumn: Array[String]): String = {
+    implicit val formats = DefaultFormats
+    write(partitionColumn)
+  }
+
+  private def convertToGrammar (m: Map[String, Any]) : String = {
+    if(m.contains("fields")) {
+      val fields = m.get("fields").get.asInstanceOf[List[Map[String, Any]]].map(x=>{x.getOrElse("name", throw new Error("Name not found"))+":"+convertToGrammar(x)}) mkString ","
+      "struct<"+fields+">"
+    }
+    else m.getOrElse("type", throw new Error("Type not found")).asInstanceOf[String]
+  }
 
 }
