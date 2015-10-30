@@ -65,16 +65,7 @@ object CatalystToCrossdataAdapter {
       }
     }
 
-    //`required` is the collection of columns which should be present at the table (all referenced columns)
-    val required = AttributeSet {
-      requestedCols.values.reduce[Seq[Attribute]]((a,b) => a ++ b) filter {
-        case a: AttributeReference if(att2udf contains a) => false
-        case _ => true
-      }
-    }
-
     val (filters, ignored) = selectFilters(pushedFilters, att2udf.keySet)
-    (requestedCols(true).toArray, filters.toArray, att2udf, ignored)
 
     val aggregatePlan: Option[(Seq[Expression], Seq[NamedExpression])] = logicalPlan.collectFirst {
       case Aggregate(groupingExpression, aggregationExpression, child) => (groupingExpression, aggregationExpression)

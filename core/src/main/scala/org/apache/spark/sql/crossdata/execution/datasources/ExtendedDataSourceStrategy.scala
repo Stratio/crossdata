@@ -11,7 +11,7 @@ import org.apache.spark.rdd.{MapPartitionsRDD, RDD, UnionRDD}
 import org.apache.spark.sql.catalyst.CatalystTypeConverters.convertToScala
 import org.apache.spark.sql.catalyst.{CatalystTypeConverters, InternalRow, expressions}
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
 import org.apache.spark.sql.execution.SparkPlan
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.{StringType, StructType}
@@ -61,14 +61,8 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
   }
 
   def apply(plan: LogicalPlan): Seq[execution.SparkPlan] = plan match {
-    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: CatalystScan)) =>
-      pruneFilterProjectRaw(
-        l,
-        projects,
-        filters,
-        (a, f) => toCatalystRDD(l, a, t.buildScan(a, f))) :: Nil
-
-    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: NativeFunctionExecutor)) =>
+    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: NativeFunctionExecutor))
+      if plan.collectFirst { case _: Aggregate => false} getOrElse(true) =>
       pruneFilterProjectUdfs(
         plan,
         l,
@@ -81,56 +75,6 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
               case att => att.name
             }.toArray, srcFilters, attr2udf))
         ):: Nil
-
-    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: PrunedScan)) =>
-      pruneFilterProject(
-        l,
-        projects,
-        filters,
-        (a, _) => toCatalystRDD(l, a, t.buildScan(a.map(_.name).toArray))) :: Nil
-
-    // Scanning partitioned HadoopFsRelation
-    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: HadoopFsRelation))
-      if t.partitionSpec.partitionColumns.nonEmpty =>
-      val selectedPartitions = prunePartitions(filters, t.partitionSpec).toArray
-
-      logInfo {
-        val total = t.partitionSpec.partitions.length
-        val selected = selectedPartitions.length
-        val percentPruned = (1 - selected.toDouble / total.toDouble) * 100
-        s"Selected $selected partitions out of $total, pruned $percentPruned% partitions."
-      }
-
-      // Only pushes down predicates that do not reference partition columns.
-      val pushedFilters = {
-        val partitionColumnNames = t.partitionSpec.partitionColumns.map(_.name).toSet
-        filters.filter { f =>
-          val referencedColumnNames = f.references.map(_.name).toSet
-          referencedColumnNames.intersect(partitionColumnNames).isEmpty
-        }
-      }
-
-      buildPartitionedTableScan(
-        l,
-        projects,
-        pushedFilters,
-        t.partitionSpec.partitionColumns,
-        selectedPartitions) :: Nil
-
-    // Scanning non-partitioned HadoopFsRelation
-    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: HadoopFsRelation)) =>
-      // See buildPartitionedTableScan for the reason that we need to create a shard
-      // broadcast HadoopConf.
-      val sharedHadoopConf = SparkHadoopUtil.get.conf
-      val confBroadcast =
-        t.sqlContext.sparkContext.broadcast(new SerializableConfiguration(sharedHadoopConf))
-      pruneFilterProject(
-        l,
-        projects,
-        filters,
-        (a, f) =>
-          toCatalystRDD(l, a, t.buildScan(a.map(_.name).toArray, f, t.paths, confBroadcast))) :: Nil
-
     case _ => Nil
   }
 
