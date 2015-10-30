@@ -218,7 +218,7 @@ class CassandraXDSourceRelation(
       case sources.LessThan(attribute, value) => (s"${quote(attribute)} < ?", Seq(value))
 
       case sources.LessThanOrEqual(attribute, f: AttributeReference) if(udfs contains f.toString) =>
-        udfvalcmp(attribute, "<", f)
+        udfvalcmp(attribute, "<=", f)
       case sources.LessThanOrEqual(attribute, value) => (s"${quote(attribute)} <= ?", Seq(value))
 
       case sources.GreaterThan(attribute, f: AttributeReference) if(udfs contains f.toString) =>
