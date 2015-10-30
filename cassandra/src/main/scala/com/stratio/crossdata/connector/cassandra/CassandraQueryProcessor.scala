@@ -244,7 +244,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
   private[this] def sparkResultFromCassandra(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
     import scala.collection.JavaConversions._
-    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, requiredColumns)/*(ProtocolVersion.V3)*/).toArray
+    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, requiredColumns)).toArray
   }
 
 }
