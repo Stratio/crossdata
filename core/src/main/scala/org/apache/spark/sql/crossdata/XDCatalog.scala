@@ -157,7 +157,21 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     dropAllPersistedTables()
   }
 
-  protected def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
+  protected def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable]
+
+  def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)]
+
+  protected def persistTableMetadata(crossdataTable: CrossdataTable, table: Option[LogicalPlan] = None): Unit
+
+  protected def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit
+
+  protected def dropAllPersistedTables(): Unit
+
+}
+
+object XDCatalog{
+
+  def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
     implicit val formats = DefaultFormats
 
     val jsonMap = JSON.parseFull(schemaJSON).get.asInstanceOf[Map[String, Any]]
@@ -183,36 +197,26 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
 
-  protected def getPartitionColumn(partitionColumn: String): Array[String] =
+  def getPartitionColumn(partitionColumn: String): Array[String] =
     JSON.parseFull(partitionColumn).toList.flatMap(_.asInstanceOf[List[String]]).toArray
 
-  protected def getOptions(optsJSON: String): Map[String, String] =
+  def getOptions(optsJSON: String): Map[String, String] =
     JSON.parseFull(optsJSON).get.asInstanceOf[Map[String, String]]
 
-  protected def serializeSchema(schema: StructType): String = {
+  def serializeSchema(schema: StructType): String = {
     implicit val formats = DefaultFormats
     write(schema.jsonValue.values)
   }
 
-  protected def serializeOptions(options: Map[String, Any]): String = {
+  def serializeOptions(options: Map[String, Any]): String = {
     implicit val formats = DefaultFormats
     write(options)
   }
 
-  protected def serializePartitionColumn(partitionColumn: Array[String]): String = {
+  def serializePartitionColumn(partitionColumn: Array[String]): String = {
     implicit val formats = DefaultFormats
     write(partitionColumn)
   }
-
-  protected def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable]
-
-  def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)]
-
-  protected def persistTableMetadata(crossdataTable: CrossdataTable, table: Option[LogicalPlan] = None): Unit
-
-  protected def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit
-
-  protected def dropAllPersistedTables(): Unit
 
   private def convertToGrammar (m: Map[String, Any]) : String = {
     if(m.contains("fields")) {
@@ -221,7 +225,5 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     }
     else m.getOrElse("type", throw new Error("Type not found")).asInstanceOf[String]
   }
-
-
 
 }

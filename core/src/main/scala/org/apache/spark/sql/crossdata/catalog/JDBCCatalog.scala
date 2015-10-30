@@ -54,6 +54,7 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
   extends XDCatalog(conf, xdContext) with Logging {
 
   import JDBCCatalog._
+  import XDCatalog._
   import org.apache.spark.sql.crossdata._
 
   private val config: Config = ConfigFactory.load
