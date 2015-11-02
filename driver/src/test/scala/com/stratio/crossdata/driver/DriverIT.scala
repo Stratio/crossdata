@@ -17,16 +17,15 @@
 package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
-import java.util.concurrent.TimeoutException
 
 import akka.util.Timeout
 import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+import com.stratio.crossdata.driver.JavaDriver.TableName
 import org.apache.spark.sql.AnalysisException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -49,43 +48,50 @@ class DriverIT extends EndToEndTest {
     assumeCrossdataUpAndRunning()
     val driver = Driver()
 
-    driver.syncQuery {
-      SQLCommand(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
-    }
+    driver.syncQuery(
+      SQLCommand(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')")
+    )
     // TODO how to process metadata ops?
 
     val sqlCommand = SQLCommand("SELECT * FROM jsonTable")
     val result = driver.syncQuery(sqlCommand)
     result shouldBe an[SuccessfulQueryResult]
-    result.queryId should be (sqlCommand.queryId)
-    result.hasError should be (false)
+    result.queryId should be(sqlCommand.queryId)
+    result.hasError should be(false)
     val rows = result.resultSet
     rows should have length 2
     rows(0) should have length 2
 
-    /* TODO unregister in afterAll
-    driver.syncQuery {
-      SQLCommand(s"UNREGISTER TABLES")
-    }
-    */
+    crossdataServer.flatMap(_.xdContext).foreach(_.dropTempTable("jsonTable"))
   }
 
-  "Crossdata driver" should "fail with a timeout when there is no server" in {
+  it should "get a list of tables" in {
     val driver = Driver()
-    val sqlCommand = SQLCommand("select * from any")
-    val result = driver.syncQuery(sqlCommand, Timeout(1 seconds), 1)
-    result.hasError should be (true)
-    a [RuntimeException] should be thrownBy result.resultSet
-    result.queryId should be (sqlCommand.queryId)
-    result shouldBe an [ErrorResult]
-    result.asInstanceOf[ErrorResult].message should include regex "(?i)timeout was exceed"
+
+    driver.syncQuery(
+      SQLCommand(s"CREATE TABLE db.jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')")
+    )
+    driver.syncQuery(
+      SQLCommand(s"CREATE TABLE jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')")
+    )
+
+    driver.listTables() should contain allOf(("jsonTable2", Some("db")), ("jsonTable2", None))
+  }
+
+  "The JavaDriver" should "get a list of tables" in {
+
+    val javadriver = new JavaDriver()
+
+    javadriver.syncQuery(
+      SQLCommand(s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    )
+    javadriver.syncQuery(
+      SQLCommand(s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    )
+
+    javadriver.listTables() should contain allOf(TableName("jsonTable3", "db"), TableName("jsonTable3", ""))
 
   }
 
 
-  it should "return a future with a timeout when there is no server" in {
-    val driver = Driver()
-    val future = driver.asyncQuery(SQLCommand("select * from any"), Timeout(1 seconds), 1)
-    a [TimeoutException] should be thrownBy Await.result(future, 2 seconds)
-  }
 }

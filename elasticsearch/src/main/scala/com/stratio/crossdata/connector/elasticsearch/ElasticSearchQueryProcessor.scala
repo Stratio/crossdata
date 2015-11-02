@@ -21,7 +21,7 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
-import org.apache.spark.sql.crossdata.execution.NativeUDF
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, sources}
@@ -43,15 +43,23 @@ object ElasticSearchQueryProcessor {
  * @param parameters ElasticSearch Configuration Parameters
  * @param schemaProvided Spark used defined schema
  */
-class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String], val schemaProvided: Option[StructType] = None) extends Logging{
+class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String], val schemaProvided: Option[StructType] = None) extends Logging {
 
+  type Limit = Option[Int]
   import ElasticSearchQueryProcessor._
+
   /**
    * Executes the [[LogicalPlan]]] and query the ElasticSearch database
    * @return the query result
    */
   def execute(): Option[Array[Row]] = {
-    validatedNativePlan.map { case (requiredColumns, filters, limit) =>
+    validatedNativePlan.map { case (baseLogicalPlan, limit) =>
+      val requiredColumns = baseLogicalPlan match {
+        case SimpleLogicalPlan(projects, _, _) =>
+          projects
+      }
+
+      val filters = baseLogicalPlan.filters
 
       val (esIndex, esType) = {
         val resource = parameters.get(ES_RESOURCE).get.split("/")
@@ -69,70 +77,80 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
       val resp: SearchResponse = client.execute(finalQuery).await
 
-      ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits)
+      ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
     }
   }
 
-  def buildNativeQuery(requiredColumns: Array[Attribute], filters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
+
+  def buildNativeQuery(requiredColumns: Seq[Attribute], filters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
     val queryWithFilters = buildFilters(filters, query)
     selectFields(requiredColumns, queryWithFilters)
   }
 
   private def buildFilters(sFilters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
 
-    val searchFilters = (query /: sFilters) { (prev, next) =>
-      prev postFilter (
-        next match {
-          case sources.EqualTo(attribute, value) => termFilter(attribute, value)
-          case sources.GreaterThan(attribute, value) => rangeFilter(attribute).gt(value)
-        }
-        )
+    val matchers = sFilters.collect {
+      case sources.StringContains(attribute, value) => termQuery(attribute, value.toLowerCase)
+      case sources.StringStartsWith(attribute, value) => prefixQuery(attribute, value.toLowerCase)
     }
 
-    log.debug("LogicalPlan transformed to the Elasticsearch query:" + searchFilters.toString())
+    val searchFilters =  sFilters.collect {
+        case sources.EqualTo(attribute, value) => termFilter(attribute, value)
+        case sources.GreaterThan(attribute, value) => rangeFilter(attribute).gt(value)
+        case sources.GreaterThanOrEqual(attribute, value) => rangeFilter(attribute).gte(value.toString)
+        case sources.LessThan(attribute, value) => rangeFilter(attribute).lt(value)
+        case sources.LessThanOrEqual(attribute, value) => rangeFilter(attribute).lte(value.toString)
+        case sources.In(attribute, value) => termsFilter(attribute, value.toList: _*)
+        case sources.IsNotNull(attribute) => existsFilter(attribute)
+        case sources.IsNull(attribute) => missingFilter(attribute)
+      }
 
-    searchFilters
+    val matchQuery = query bool must(matchers)
+
+    val finalQuery = if (searchFilters.isEmpty) matchQuery else matchQuery postFilter bool { must(searchFilters) }
+
+    log.debug("LogicalPlan transformed to the Elasticsearch query:" + finalQuery.toString())
+    finalQuery
+
   }
 
-  private def selectFields(fields: Array[Attribute], query: SearchDefinition): SearchDefinition = {
-    query //TODO build projection
+  private def selectFields(fields: Seq[Attribute], query: SearchDefinition): SearchDefinition = {
+      val stringFields: Seq[String] = fields.map(_.name)
+      query.fields(stringFields.toList: _*)
   }
 
 
-  def validatedNativePlan: Option[(Array[Attribute], Array[SourceFilter], Option[Int])] = {
+  def validatedNativePlan: Option[(BaseLogicalPlan, Limit)] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
-    def findProjectsFilters(lplan: LogicalPlan): (Array[Attribute], Array[SourceFilter], Map[Attribute, NativeUDF], Boolean) = {
+    def findProjectsFilters(lplan: LogicalPlan): Option[BaseLogicalPlan] = {
       lplan match {
-        case Limit(_, child) => findProjectsFilters(child)
-        case PhysicalOperation(projectList, filterList, _) => CatalystToCrossdataAdapter.getFilterProject(logicalPlan, projectList, filterList)
+
+        case Limit(_, child) =>
+          findProjectsFilters(child)
+
+        case PhysicalOperation(projectList, filterList, _) =>
+          val (basePlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+          if (!filtersIgnored) Some(basePlan) else None
       }
     }
 
-    val (projects, filters, udf, filtersIgnored) = findProjectsFilters(logicalPlan)
-
-    if (filtersIgnored || !checkNativeFilters(filters)) {
-      None
-    } else {
-      Option(projects, filters, limit)
-    }
+    findProjectsFilters(logicalPlan).collect{ case bp if checkNativeFilters(bp.filters) => (bp, limit) }
   }
 
   private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = filters.forall {
     case _: sources.EqualTo => true
-        case _: sources.In => false
-        case _: sources.LessThan => false
-        case _: sources.GreaterThan => false
-        case _: sources.LessThanOrEqual => false
-        case _: sources.GreaterThanOrEqual => false
-        case _: sources.IsNull => false
-        case _: sources.IsNotNull => false
-        case _: sources.StringStartsWith => false
-        case _: sources.StringEndsWith => false
-        case _: sources.StringContains => false
-        case sources.And(left, right) => checkNativeFilters(Array(left, right))
-        case sources.Or(left, right) => checkNativeFilters(Array(left, right))
-        // TODO add more filters (Not?)
+    case _: sources.In => true
+    case _: sources.LessThan => true
+    case _: sources.GreaterThan => true
+    case _: sources.LessThanOrEqual => true
+    case _: sources.GreaterThanOrEqual => true
+    case _: sources.IsNull => true
+    case _: sources.IsNotNull => true
+    case _: sources.StringStartsWith => true
+    case _: sources.StringContains => true
+    case sources.And(left, right) => checkNativeFilters(Array(left, right))
+    // TODO add more filters (Not?)
     case _ => false
 
   }

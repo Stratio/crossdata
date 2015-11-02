@@ -50,19 +50,6 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
 
   }
 
-
-  it should "persist a table with catalog and partitionColumns without schema in Jdbc" in {
-
-    val tableIdentifier = Seq(Database, TableName)
-    val crossdataTable = CrossdataTable(TableName, Option(Database), None, SourceDatasource, Array.empty[String], OptsJSON)
-    xdContext.catalog.persistTable(crossdataTable)
-    xdContext.catalog.tableExists(tableIdentifier) shouldBe true
-
-    val df = xdContext.sql(s"SELECT * FROM $Database.$TableName")
-    df shouldBe a[XDDataFrame]
-
-  }
-
   it should "persist a table with catalog and partitionColumns with multiple subdocuments as schema in JDBC" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)

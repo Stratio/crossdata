@@ -126,8 +126,8 @@ echo "################################################"
 echo "Copy Crossdata scripts"
 echo "################################################"
 mkdir -p ${TMPDIR}/bin || { echo "Cannot create output bin directory"; exit 1; }
-cp crossdata-scripts/stratio-xd-init.scala ${TMPDIR}/bin || { echo "Cannot copy stratio-xd-init.scala"; exit 1; }
-cp crossdata-scripts/stratio-xd-shell ${TMPDIR}/bin || { echo "Cannot copy stratio-xd-shell"; exit 1; }
+cp scripts/stratio-xd-init.scala ${TMPDIR}/bin || { echo "Cannot copy stratio-xd-init.scala"; exit 1; }
+cp scripts/stratio-xd-shell ${TMPDIR}/bin || { echo "Cannot copy stratio-xd-shell"; exit 1; }
 
 chmod +x ${TMPDIR}/bin/stratio-xd-shell || { echo "Cannot modify stratio-xd-shell"; exit 1; }
 

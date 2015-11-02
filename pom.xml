@@ -216,6 +216,7 @@
                         <exclude>**/org/apache/spark/sql/crossdata/hive/XDHiveContext.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/hive/test/LocalXDHiveContext.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/acceptance/TestXDContext.scala</exclude>
+                        <exclude>**/testAT/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>

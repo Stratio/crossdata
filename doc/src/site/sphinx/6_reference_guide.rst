@@ -23,25 +23,25 @@ Table of Contents
 
 -  `3) DDL <#data-definition-language>`__
 
-   -  `3.1) IMPORT EXISTING EXTERNAL TABLES <import-tables>`__
-   -  `3.2) REGISTER EXISTING EXTERNAL TABLES <create-table>`__
-   -  `3.3) TABLE CACHING <table-caching>`__
+   -  `3.1) IMPORT EXISTING EXTERNAL TABLES <#import-tables>`__
+   -  `3.2) REGISTER EXISTING EXTERNAL TABLES <#create-table>`__
+   -  `3.3) TABLE CACHING <#table-caching>`__
 
 -  `4) DML <#data-manipulation-language>`__
 
-   -  `4.1) CREATE TABLE AS SELECT <create-table-as-select>`__
-   -  `4.2) INSERT INTO TABLE AS SELECT <insert-into-table-as-select>`__
+   -  `4.1) CREATE TABLE AS SELECT <#create-table-as-select>`__
+   -  `4.2) INSERT INTO TABLE AS SELECT <#insert-into-table-as-select>`__
 
 -  `5) SELECT STATEMENTS <#select-statements>`__
 
-   -  `5.1) GRAMMAR <grammar>`__
-   -  `5.2) EXAMPLES <examples>`__
+   -  `5.1) GRAMMAR <#grammar>`__
+   -  `5.2) EXAMPLES <#examples>`__
 
 -  `6) OTHER COMMANDS <#other-commands>`__
 
-   -  `6.1) SHOW COMMANDS <show-commands>`__
-   -  `6.2) DESCRIBE COMMANDS <describe-commands>`__
-   -  `6.3) SET COMMAND <set-command>`__
+   -  `6.1) SHOW COMMANDS <#show-commands>`__
+   -  `6.2) DESCRIBE COMMANDS <#describe-commands>`__
+   -  `6.3) SET COMMAND <#set-command>`__
    
 -  `7) SUPPORTED DATA TYPES <#supported-data-types>`__
 

@@ -24,6 +24,13 @@ import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
 
+object JavaDriver {
+  /**
+   * database can be empty ("")
+   */
+  case class TableName(tableName: String, database: String)
+}
+
 class JavaDriver(properties: java.util.Map[String, ConfigValue]) {
 
   def this(serverHosts: java.util.List[String]) =
@@ -31,6 +38,8 @@ class JavaDriver(properties: java.util.Map[String, ConfigValue]) {
 
   def this() = this(Map.empty[String, ConfigValue])
 
+  import JavaDriver._
+  
   private lazy val logger = Logger.getLogger(getClass)
 
   private val scalaDriver = new Driver(properties)
@@ -50,12 +59,12 @@ class JavaDriver(properties: java.util.Map[String, ConfigValue]) {
     scalaDriver.listDatabases()
   }
 
-  def listTables(): java.util.List[String] = {
-    scalaDriver.listTables(None)
+  def listTables(): java.util.List[TableName] = {
+    scalaDriver.listTables(None).map{ case (table, database) => TableName(table, database.getOrElse(""))}
   }
 
-  def listTables(database: String): java.util.List[String] = {
-    scalaDriver.listTables(Some(database))
+  def listTables(database: String): java.util.List[TableName] = {
+    scalaDriver.listTables(Some(database)).map{ case (table, database) => TableName(table, database.getOrElse(""))}
   }
 
   def describeTable(database: String, tableName: String): java.util.List[FieldMetadata] = {
@@ -67,3 +76,4 @@ class JavaDriver(properties: java.util.Map[String, ConfigValue]) {
   }
 
 }
+
