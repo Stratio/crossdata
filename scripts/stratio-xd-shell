@@ -18,7 +18,7 @@ function usage {
 
 export SPARK_HOME="$(cd `dirname $0`/..; pwd)"
 
-xdjars="$SPARK_HOME/lib/crossdata-core-1.0.0-SNAPSHOT.jar"
+xdjars="$SPARK_HOME/lib/crossdata-core-1.0.0-SNAPSHOT-jar-with-dependencies.jar"
 MONGODB_LIB="$SPARK_HOME/lib/crossdata-mongodb-1.0.0-SNAPSHOT-jar-with-dependencies.jar"
 CASSANDRA_LIB="$SPARK_HOME/lib/crossdata-cassandra-1.0.0-SNAPSHOT-jar-with-dependencies.jar"
 
