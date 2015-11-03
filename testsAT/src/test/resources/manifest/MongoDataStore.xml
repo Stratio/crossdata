@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Licensed to STRATIO (C) under one or more contributor license agreements.
+  ~ See the NOTICE file distributed with this work for additional information
+  ~ regarding copyright ownership.  The STRATIO (C) licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+<DataStore>
+    <Name>Mongo</Name>
+    <Version>0.3.0</Version>
+    <RequiredProperties>
+        <Property>
+            <PropertyName>Hosts</PropertyName>
+            <Description>The list of hosts ips (csv). Example: host1,host2,host3</Description>
+        </Property>
+        <Property>
+            <PropertyName>Port</PropertyName>
+            <Description>The list of ports (csv).</Description>
+        </Property>
+    </RequiredProperties>
+    <OptionalProperties>
+        <Property>
+            <PropertyName>mongo.readPreference</PropertyName>
+            <Description>primary, primarypreferred(default), secondary, secondarypreferred or nearest</Description>
+        </Property>
+        <Property>
+            <PropertyName>mongo.writeConcern</PropertyName>
+            <Description>acknowledged(default), unacknowledged, replica_acknowledged or journaled</Description>
+        </Property>
+        <Property>
+            <PropertyName>mongo.acceptableLatencyDifference</PropertyName>
+            <Description>the acceptable latency difference(ms)</Description>
+        </Property>
+        <Property>
+            <PropertyName>mongo.maxConnectionsPerHost</PropertyName>
+            <Description>the maximum number of connections allowed per host</Description>
+        </Property>
+        <Property>
+            <PropertyName>mongo.maxConnectionIdleTime</PropertyName>
+            <Description>The maximum idle time of a pooled connection(ms). A zero value indicates no limit</Description>
+        </Property>
+        <Property>
+            <PropertyName>mongo.connectTimeout</PropertyName>
+            <Description>the connection timeout(ms). A zero value indicates no timeout</Description>
+        </Property>
+    </OptionalProperties>
+    <Behaviors>
+        <Behavior>UPSERT_ON_INSERT</Behavior>
+    </Behaviors>
+</DataStore>
+
+

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataStore>
+    <Name>Cassandra</Name>
+    <Version>2.0.0</Version>
+    <RequiredProperties>
+        <Property>
+            <PropertyName>Hosts</PropertyName>
+            <Description>Host list with its own port. Example: [host1,host2,host3]</Description>
+        </Property>
+        <Property>
+            <PropertyName>Port</PropertyName>
+            <Description>Cassandra Port</Description>
+        </Property>
+    </RequiredProperties>
+    <Behaviors>
+        <Behavior>UPSERT_ON_INSERT</Behavior>
+    </Behaviors>
+    <Functions>
+        <Function>
+            <FunctionName>count</FunctionName>
+            <Signature>count(Tuple[Any*]):Tuple[Int]</Signature>
+            <FunctionType>aggregation</FunctionType>
+            <Description>It counts the number of rows</Description>
+        </Function>
+        <Function>
+            <FunctionName>now</FunctionName>
+            <Signature>now(Tuple[]):Tuple[Any]</Signature>
+            <FunctionType>simple</FunctionType>
+            <Description>Return the timestamp</Description>
+        </Function>
+        <Function>
+            <FunctionName>ttl</FunctionName>
+            <Signature>ttl(Tuple[Any*]):Tuple[Any]</Signature>
+            <FunctionType>simple</FunctionType>
+            <Description>Return the ttl of a column</Description>
+        </Function>
+        <Function>
+            <FunctionName>writetime</FunctionName>
+            <Signature>writetime(Tuple[Any*]):Tuple[Any]</Signature>
+            <FunctionType>simple</FunctionType>
+            <Description>Return the date of the insertion</Description>
+        </Function>
+        <Function>
+            <FunctionName>dateOf</FunctionName>
+            <Signature>dateof(Tuple[Any*]):Tuple[Any]</Signature>
+            <FunctionType>simple</FunctionType>
+            <Description>Return the date of a timeuuid</Description>
+        </Function>
+    </Functions>
+</DataStore>
+
+

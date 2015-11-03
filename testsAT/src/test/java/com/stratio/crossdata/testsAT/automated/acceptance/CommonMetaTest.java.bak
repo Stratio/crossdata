@@ -1,0 +1,51 @@
+package com.stratio.crossdata.testsAT.automated.acceptance;
+
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
+
+import com.stratio.crossdata.common.exceptions.ConnectionException;
+import com.stratio.crossdata.dataProvider.DataProviderCommonTests;
+import com.stratio.cucumber.testng.CucumberRunner;
+import com.stratio.tests.utils.BaseTest;
+import com.stratio.tests.utils.Driver;
+import com.stratio.tests.utils.ThreadProperty;
+
+public class CommonMetaTest extends BaseTest {
+
+    @Factory(dataProviderClass = DataProviderCommonTests.class, dataProvider = "dataProvider")
+    public CommonMetaTest(String data) {
+        this.setDataProvider(data);
+    }
+
+    @BeforeTest()
+    public void setUp() {
+        ThreadProperty.set("ExecutionType", "Crossdata");
+        //Reset Crossdata SErver
+        Driver CrossdataDriver = new Driver();
+        try {
+			CrossdataDriver.connect("TEST");
+		} catch (ConnectionException e) {
+			e.printStackTrace();
+		}
+        CrossdataDriver.resetMetadata();
+        try {
+			CrossdataDriver.disconnect();
+		} catch (ConnectionException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @AfterTest
+    public void cleanUp() {
+
+    }
+
+    @Test(enabled = true)
+    public void commonMetaTest() throws Exception {
+        new CucumberRunner(this.getClass(), this.getDataProvider()).runCukes();
+
+    }
+
+}

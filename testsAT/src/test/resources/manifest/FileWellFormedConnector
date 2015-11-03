@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Connector>
+    <ConnectorName>CassandraConnector</ConnectorName>
+    <DataStores>
+        <DataStoreName>Cassandra</DataStoreName>
+    </DataStores>
+    <Version>0.1.0</Version>
+    <RequiredProperties>
+        <Property>
+            <PropertyName>DefaultLimit</PropertyName>
+            <Description>It is necessary to indicate de default limit for the queries</Description>
+        </Property>
+    </RequiredProperties>
+    <SupportedOperations>
+        <operation>CREATE_CATALOG</operation>
+        <operation>DROP_CATALOG</operation>
+        <operation>CREATE_TABLE</operation>
+        <operation>DROP_TABLE</operation>
+        <operation>INSERT</operation>
+        <operation>PROJECT</operation>
+        <operation>SELECT_OPERATOR</operation>
+        <operation>SELECT_LIMIT</operation>
+        <operation>SELECT_ORDER_BY</operation>
+        <operation>FILTER_PK_EQ</operation>
+        <operation>FILTER_INDEXED_EQ</operation>
+    </SupportedOperations>
+</Connector>

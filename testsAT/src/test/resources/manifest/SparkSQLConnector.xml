@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Connector>
+    <ConnectorName>SparkSQLConnector</ConnectorName>
+    <DataStores>
+        <DataStoreName>hdfs</DataStoreName>
+    </DataStores>
+    <Version>0.1.0</Version>
+    <RequiredProperties>
+        <Property>
+            <PropertyName>DefaultLimit</PropertyName>
+            <Description>It is necessary to indicate de default limit for the queries</Description>
+        </Property>
+    </RequiredProperties>
+    <SupportedOperations>
+        <operation>PROJECT</operation>
+        <operation>SELECT_OPERATOR</operation>
+        <operation>SELECT_INNER_JOIN</operation>
+        <operation>SELECT_INNER_JOIN_PARTIALS_RESULTS</operation>
+        <operation>FILTER_PK_EQ</operation>
+        <operation>FILTER_PK_GT</operation>
+        <operation>FILTER_PK_LT</operation>
+        <operation>FILTER_PK_GET</operation>
+        <operation>FILTER_PK_LET</operation>
+        <operation>FILTER_PK_DISTINCT</operation>
+        <operation>FILTER_NON_INDEXED_EQ</operation>
+        <operation>FILTER_NON_INDEXED_GT</operation>
+        <operation>FILTER_NON_INDEXED_LT</operation>
+        <operation>FILTER_NON_INDEXED_GET</operation>
+        <operation>FILTER_NON_INDEXED_LET</operation>
+        <operation>FILTER_NON_INDEXED_DISTINCT</operation>
+        <operation>FILTER_INDEXED_EQ</operation>
+        <operation>FILTER_INDEXED_GT</operation>
+        <operation>FILTER_INDEXED_LT</operation>
+        <operation>FILTER_INDEXED_GET</operation>
+        <operation>FILTER_INDEXED_LET</operation>
+        <operation>FILTER_INDEXED_DISTINCT</operation>
+        <operation>FILTER_INDEXED_MATCH</operation>
+        <operation>PARTIAL_RESULTS</operation>
+        <operation>SELECT_GROUP_BY</operation>
+        <operation>SELECT_ORDER_BY</operation>
+    </SupportedOperations>
+</Connector>

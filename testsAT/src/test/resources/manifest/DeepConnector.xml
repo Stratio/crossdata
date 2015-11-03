@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Connector>
+    <ConnectorName>DeepConnector</ConnectorName>
+    <DataStores>
+        <DataStoreName>Cassandra</DataStoreName>
+        <!-- <DataStoreName>MongoDB</DataStoreName>
+        <DataStoreName>ElasticSearch</DataStoreName> -->
+    </DataStores>
+    <Version>0.1.0</Version>
+    <SupportedOperations>
+        <operation>PROJECT</operation>
+        <operation>SELECT_OPERATOR</operation>
+        <operation>FILTER_PK_EQ</operation>
+        <operation>FILTER_PK_GT</operation>
+        <operation>FILTER_PK_LT</operation>
+        <operation>FILTER_PK_GET</operation>
+        <operation>FILTER_PK_LET</operation>
+        <operation>FILTER_PK_DISTINCT</operation>
+        <operation>FILTER_NON_INDEXED_EQ</operation>
+        <operation>FILTER_NON_INDEXED_GT</operation>
+        <operation>FILTER_NON_INDEXED_LT</operation>
+        <operation>FILTER_NON_INDEXED_GET</operation>
+        <operation>FILTER_NON_INDEXED_LET</operation>
+        <operation>FILTER_NON_INDEXED_DISTINCT</operation>
+    </SupportedOperations>
+</Connector>
