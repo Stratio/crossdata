@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Licensed to STRATIO (C) under one or more contributor license agreements.
+  ~ See the NOTICE file distributed with this work for additional information
+  ~ regarding copyright ownership.  The STRATIO (C) licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+<Connector>
+    <ConnectorName>MongoConnector</ConnectorName>
+    <DataStores>
+        <DataStoreName>Mongo</DataStoreName>
+    </DataStores>
+    <Version>0.3.0</Version>
+    <OptionalProperties>
+        <Property>
+            <PropertyName>sample_probability</PropertyName>
+            <Description>Number between 0 and 1 with the probability of take part of the import process .
+            </Description>
+        </Property>
+    </OptionalProperties>
+    <SupportedOperations>
+        <operation>DROP_CATALOG</operation>
+        <operation>CREATE_TABLE</operation>
+        <operation>ALTER_TABLE</operation>
+        <operation>DROP_TABLE</operation> 
+        <operation>IMPORT_METADATA</operation> 
+        <operation>UPDATE_NO_FILTERS</operation> 
+        <operation>UPDATE_PK_EQ</operation>
+        <operation>UPDATE_PK_GT</operation>
+        <operation>UPDATE_PK_LT</operation>
+        <operation>UPDATE_PK_GET</operation>
+        <operation>UPDATE_PK_LET</operation>
+        <operation>UPDATE_NON_INDEXED_EQ</operation>
+        <operation>UPDATE_NON_INDEXED_GT</operation>
+        <operation>UPDATE_NON_INDEXED_LT</operation>
+        <operation>UPDATE_NON_INDEXED_GET</operation>
+        <operation>UPDATE_NON_INDEXED_LET</operation>
+        <operation>UPDATE_INDEXED_EQ</operation>
+        <operation>UPDATE_INDEXED_GT</operation>
+        <operation>UPDATE_INDEXED_LT</operation>
+        <operation>UPDATE_INDEXED_GET</operation>
+        <operation>UPDATE_INDEXED_LET</operation>
+        <operation>TRUNCATE_TABLE</operation>
+        <operation>INSERT</operation>
+        <operation>INSERT_IF_NOT_EXISTS</operation>
+        <operation>DELETE_NO_FILTERS</operation>
+        <operation>DELETE_PK_EQ</operation>
+        <operation>DELETE_PK_GT</operation>
+        <operation>DELETE_PK_LT</operation>
+        <operation>DELETE_PK_GET</operation>
+        <operation>DELETE_PK_LET</operation>
+        <operation>DELETE_NON_INDEXED_EQ</operation>
+        <operation>DELETE_NON_INDEXED_GT</operation>
+        <operation>DELETE_NON_INDEXED_LT</operation>
+        <operation>DELETE_NON_INDEXED_GET</operation>
+        <operation>DELETE_NON_INDEXED_LET</operation>
+        <operation>DELETE_INDEXED_EQ</operation>
+        <operation>DELETE_INDEXED_GT</operation>
+        <operation>DELETE_INDEXED_LT</operation>
+        <operation>DELETE_INDEXED_GET</operation>
+        <operation>DELETE_INDEXED_LET</operation>
+        <operation>CREATE_INDEX</operation>
+        <operation>DROP_INDEX</operation>
+        <operation>PROJECT</operation>
+        <operation>SELECT_OPERATOR</operation>
+        <operation>SELECT_LIMIT</operation>
+        <operation>SELECT_GROUP_BY</operation>
+        <operation>SELECT_ORDER_BY</operation>
+        <operation>FILTER_PK_EQ</operation>
+        <operation>FILTER_PK_GT</operation>
+        <operation>FILTER_PK_LT</operation>
+        <operation>FILTER_PK_GET</operation>
+        <operation>FILTER_PK_LET</operation>
+        <operation>FILTER_PK_DISTINCT</operation>
+        <operation>FILTER_NON_INDEXED_EQ</operation>
+        <operation>FILTER_NON_INDEXED_GT</operation>
+        <operation>FILTER_NON_INDEXED_LT</operation>
+        <operation>FILTER_NON_INDEXED_GET</operation>
+        <operation>FILTER_NON_INDEXED_LET</operation>
+        <operation>FILTER_NON_INDEXED_DISTINCT</operation>
+        <operation>FILTER_INDEXED_EQ</operation>
+        <operation>FILTER_INDEXED_GT</operation>
+        <operation>FILTER_INDEXED_LT</operation>
+        <operation>FILTER_INDEXED_GET</operation>
+        <operation>FILTER_INDEXED_LET</operation>
+        <operation>FILTER_INDEXED_DISTINCT</operation>
+    </SupportedOperations>
+</Connector>

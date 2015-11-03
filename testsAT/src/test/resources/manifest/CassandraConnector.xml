@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Connector>
+    <ConnectorName>CassandraConnector</ConnectorName>
+    <DataStores>
+        <DataStoreName>Cassandra</DataStoreName>
+    </DataStores>
+    <Version>0.3.0</Version>
+    <RequiredProperties>
+        <Property>
+            <PropertyName>DefaultLimit</PropertyName>
+            <Description>It is necessary to indicate de default limit for the queries</Description>
+        </Property>
+    </RequiredProperties>
+    <SupportedOperations>
+        <operation>CREATE_CATALOG</operation>
+        <operation>DROP_CATALOG</operation>
+        <operation>ALTER_CATALOG</operation>
+        <operation>CREATE_TABLE</operation>
+        <operation>DROP_TABLE</operation>
+        <operation>ALTER_TABLE</operation>
+        <operation>UPDATE_PK_EQ</operation>
+        <operation>TRUNCATE_TABLE</operation>
+        <operation>INSERT</operation>
+        <operation>INSERT_IF_NOT_EXISTS</operation>
+        <operation>DELETE_PK_EQ</operation>
+        <operation>CREATE_INDEX</operation>
+        <operation>DROP_INDEX</operation>
+        <operation>PROJECT</operation>
+        <operation>SELECT_OPERATOR</operation>
+        <operation>SELECT_LIMIT</operation>
+        <operation>SELECT_FUNCTIONS</operation>
+        <operation>FILTER_PK_EQ</operation>
+        <operation>FILTER_INDEXED_EQ</operation>
+        <operation>FILTER_INDEXED_MATCH</operation>
+        <operation>FILTER_PK_MATCH</operation>
+        <operation>FILTER_INDEXED_LIKE</operation>
+        <operation>IMPORT_METADATA</operation>
+        <operation>PAGINATION</operation>
+    </SupportedOperations>
+    <Functions>
+        <Function>
+            <FunctionName>range</FunctionName>
+            <Signature>range(Tuple[Any, Any]):Tuple[Any]</Signature>
+            <FunctionType>simple</FunctionType>
+            <Description>Generates a JSON with the specification of Lucene range</Description>
+        </Function>
+        <Function>
+            <FunctionName>should</FunctionName>
+            <Signature>should(Tuple[Any, Any]):Tuple[Any]</Signature>
+            <FunctionType>simple</FunctionType>
+            <Description>Generates a JSON with Lucene OR query </Description>
+        </Function>
+    </Functions>
+</Connector>
