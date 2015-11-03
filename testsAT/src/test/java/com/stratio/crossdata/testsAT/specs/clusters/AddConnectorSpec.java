@@ -12,11 +12,10 @@ import javax.xml.bind.JAXBException;
 import org.testng.Assert;
 
 import com.stratio.crossdata.common.exceptions.ApiException;
-import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
 import com.stratio.crossdata.common.result.Result;
-import com.stratio.crossdata.specs.BaseSpec;
-import com.stratio.crossdata.specs.Common;
+import com.stratio.crossdata.testsAT.specs.BaseSpec;
+import com.stratio.crossdata.testsAT.specs.Common;
 import com.stratio.tests.utils.ThreadProperty;
 
 import cucumber.api.java.en.Then;

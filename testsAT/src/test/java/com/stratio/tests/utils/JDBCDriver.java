@@ -1,4 +1,4 @@
-package com.stratio.crossdata.testsAT.specs.utils;
+package com.stratio.tests.utils;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -14,11 +14,12 @@ import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import com.stratio.tests.utils.MetadataHelper;
+
 import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.tests.utils.MetadataHelper;
 
 public class JDBCDriver {
     private static final String DEFAULT_DRIVER_CLASS = "com.stratio.jdbc.core.jdbc4.StratioDriver";

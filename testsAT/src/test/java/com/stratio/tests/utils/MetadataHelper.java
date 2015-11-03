@@ -1,4 +1,4 @@
-package com.stratio.crossdata.testsAT.specs.utils;
+package com.stratio.tests.utils;
 
 
 import com.stratio.crossdata.common.metadata.ColumnType;

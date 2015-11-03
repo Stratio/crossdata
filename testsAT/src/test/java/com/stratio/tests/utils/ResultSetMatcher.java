@@ -16,9 +16,8 @@
  * under the License.
  */
 
-package com.stratio.crossdata.testsAT.specs.utils;
+package com.stratio.tests.utils;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,20 +42,20 @@ import com.stratio.crossdata.common.metadata.DataType;
 
 import cucumber.api.DataTable;
 
-public class EqualsResultSet extends BaseMatcher<ResultSet> {
+public class ResultSetMatcher extends BaseMatcher<ResultSet> {
 
     private final DataTable table;
     private ResultSet result_obtained;
     private ResultSet expected_res;
     private static final Logger LOGGER = LoggerFactory.getLogger(ResultSetMatcher.class);
 
-    public EqualsResultSet(DataTable table) {
+    public ResultSetMatcher(DataTable table) {
         this.table = table;
     }
 
     @Factory
-    public static EqualsResultSet EqualsResult(DataTable table) {
-        return new EqualsResultSet(table);
+    public static ResultSetMatcher EqualsRecordSet(DataTable table) {
+        return new ResultSetMatcher(table);
     }
 
     @Override
@@ -77,7 +76,7 @@ public class EqualsResultSet extends BaseMatcher<ResultSet> {
         LOGGER.info("RESULT OBTAINED : " + stringResult(result_obtained));
         expected_res = dataTableToResultSet(table);
         LOGGER.info("RESULT EXPECTED " + stringResult(expected_res));
-        return assertEqualElements(expected_res, result_obtained);
+        return assertEqualElementsIgnoringOrder(expected_res, result_obtained);
     }
 
     // @Override
@@ -152,7 +151,9 @@ public class EqualsResultSet extends BaseMatcher<ResultSet> {
             // map_cells.put(column_name, cell);
         }
         return row;
+
     }
+
     private Map<String[], ColumnDefinition> getColumnDef(List<String> firstRow) {
         LinkedHashMap<String[], ColumnDefinition> columnsMap = new LinkedHashMap<String[], ColumnDefinition>();
         for (String s : firstRow) {
@@ -174,7 +175,7 @@ public class EqualsResultSet extends BaseMatcher<ResultSet> {
                 columnsMap.put(s_array, new ColumnDefinition(Double.class));
                 break;
             case "BigInteger":
-                columnsMap.put(s_array, new ColumnDefinition(BigInteger.class));
+                columnsMap.put(s_array, new ColumnDefinition(Long.class));
                 break;
             case "Long":
                 columnsMap.put(s_array, new ColumnDefinition(Long.class));
@@ -231,6 +232,9 @@ public class EqualsResultSet extends BaseMatcher<ResultSet> {
             break;
         case "Long":
             res = new ColumnType(DataType.FLOAT);
+            break;
+        case "Native":
+        	res = new ColumnType(DataType.NATIVE);
             break;
         }
         return res;
@@ -317,7 +321,7 @@ public class EqualsResultSet extends BaseMatcher<ResultSet> {
         return (c1.getValue().equals(c2.getValue()));
     }
 
-    private static boolean assertEqualElements(com.stratio.crossdata.common.data.ResultSet r1,
+    private static boolean assertEqualElementsIgnoringOrder(com.stratio.crossdata.common.data.ResultSet r1,
             com.stratio.crossdata.common.data.ResultSet r2) {
         // recorrer rows r1
         // comprobar por cada row de r1 que hay una igual en el otro result set
@@ -357,14 +361,21 @@ public class EqualsResultSet extends BaseMatcher<ResultSet> {
         if (r1.size() != r2.size())
             return false;
 
-        for (int i = 0; i < r1.size(); i++) {
-            if(!assertEqualsRows1(r1.getRows().get(i), r2.getRows().get(i))){
+        for (com.stratio.crossdata.common.data.Row r : r1) {
+            if (!isRowContained(r, r2))
                 return false;
-            }
-           
         }
 
         return true;
+    }
+
+    private static boolean isRowContained(com.stratio.crossdata.common.data.Row r,
+            com.stratio.crossdata.common.data.ResultSet resultSet) {
+        for (com.stratio.crossdata.common.data.Row rSet : resultSet) {
+            if (assertEqualsRows1(rSet, r))
+                return true;
+        }
+        return false;
     }
 
     public static String stringResult(com.stratio.crossdata.common.data.ResultSet metaResultSet) {

@@ -7,11 +7,10 @@ import static org.hamcrest.Matchers.hasSize;
 import org.testng.Assert;
 
 import com.stratio.crossdata.common.exceptions.ApiException;
-import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.result.Result;
-import com.stratio.crossdata.specs.BaseSpec;
-import com.stratio.crossdata.specs.Common;
+import com.stratio.crossdata.testsAT.specs.BaseSpec;
+import com.stratio.crossdata.testsAT.specs.Common;
 
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;

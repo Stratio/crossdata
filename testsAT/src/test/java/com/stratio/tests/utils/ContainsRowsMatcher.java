@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.testsAT.specs.utils;
+package com.stratio.tests.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,20 +42,20 @@ import com.stratio.crossdata.common.metadata.DataType;
 
 import cucumber.api.DataTable;
 
-public class ResultSetMatcher extends BaseMatcher<ResultSet> {
+public class ContainsRowsMatcher extends BaseMatcher<ResultSet> {
 
     private final DataTable table;
     private ResultSet result_obtained;
     private ResultSet expected_res;
-    private static final Logger LOGGER = LoggerFactory.getLogger(ResultSetMatcher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContainsRowsMatcher.class);
 
-    public ResultSetMatcher(DataTable table) {
+    public ContainsRowsMatcher(DataTable table) {
         this.table = table;
     }
 
     @Factory
-    public static ResultSetMatcher EqualsRecordSet(DataTable table) {
-        return new ResultSetMatcher(table);
+    public static ContainsRowsMatcher ContainsRows(DataTable table) {
+        return new ContainsRowsMatcher(table);
     }
 
     @Override
@@ -233,9 +233,6 @@ public class ResultSetMatcher extends BaseMatcher<ResultSet> {
         case "Long":
             res = new ColumnType(DataType.FLOAT);
             break;
-        case "Native":
-        	res = new ColumnType(DataType.NATIVE);
-            break;
         }
         return res;
 
@@ -358,11 +355,11 @@ public class ResultSetMatcher extends BaseMatcher<ResultSet> {
                 return false;
             }
         }
-        if (r1.size() != r2.size())
-            return false;
+//        if (r1.size() != r2.size())
+//            return false;
 
-        for (com.stratio.crossdata.common.data.Row r : r1) {
-            if (!isRowContained(r, r2))
+        for (com.stratio.crossdata.common.data.Row r : r2) {
+            if (!isRowContained(r, r1))
                 return false;
         }
 
@@ -379,7 +376,7 @@ public class ResultSetMatcher extends BaseMatcher<ResultSet> {
     }
 
     public static String stringResult(com.stratio.crossdata.common.data.ResultSet metaResultSet) {
-        if (metaResultSet.isEmpty()) {
+        if (metaResultSet.isEmpty() || metaResultSet.getRows().size() == 0) {
             return "OK";
         }
 

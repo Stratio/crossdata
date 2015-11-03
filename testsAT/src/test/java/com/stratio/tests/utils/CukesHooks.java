@@ -1,4 +1,4 @@
-package com.stratio.crossdata.testsAT.specs.utils;
+package com.stratio.tests.utils;
 
 import gherkin.formatter.model.Background;
 import gherkin.formatter.model.Examples;
@@ -18,8 +18,9 @@ import org.slf4j.LoggerFactory;
 import com.stratio.cucumber.testng.ICucumberFormatter;
 import com.stratio.cucumber.testng.ICucumberReporter;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
-import com.stratio.crossdata.specs.BaseSpec;
-import com.stratio.crossdata.specs.Common;
+import com.stratio.crossdata.testsAT.specs.BaseSpec;
+import com.stratio.crossdata.testsAT.specs.Common;
+import com.stratio.tests.utils.ThreadProperty;
 
 public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumberFormatter {
 

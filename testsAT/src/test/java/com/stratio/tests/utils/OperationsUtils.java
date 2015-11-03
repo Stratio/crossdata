@@ -1,4 +1,4 @@
-package com.stratio.crossdata.testsAT.specs.utils;
+package com.stratio.tests.utils;
 
 import java.util.ArrayList;
 
@@ -17,7 +17,7 @@ public class OperationsUtils {
 		for (int i = 0; i < node.getLength(); i++) {
 			switch (node.item(i).getTextContent()) {
 			case "SELECT_OPERATOR":
-				tests.add("/SelectQueries/BasicSelect");
+				tests.add("/automated/SelectQueries/BasicSelect");
 				break;
 //			case "PAGINATION":
 //				tests.add("/SelectQueries/Pagination");
@@ -133,18 +133,18 @@ public class OperationsUtils {
 		ArrayList<String> tests = new ArrayList<String>();
 		for (int i = 0; i < node.getLength(); i++) {
 			switch (node.item(i).getTextContent()) {
-			case "concat":
-				tests.add("/Functions/Concat");
-				break;
-			case "count":
-				tests.add("/Functions/Count");
-				break;
-			case "now":
-				tests.add("/Functions/Now");
-				break;
-			case "range":
-				tests.add("/Functions/Range");
-				break;
+//			case "concat":
+//				tests.add("/automated/Functions/Concat");
+//				break;
+//			case "count":
+//				tests.add("/automated/Functions/Count");
+//				break;
+//			case "now":
+//				tests.add("/automated/Functions/Now");
+//				break;
+//			case "range":
+//				tests.add("/Functions/Range");
+//				break;
 			}
 		}
 		return tests;

@@ -1,9 +1,6 @@
 package com.stratio.crossdata.testsAT.automated.acceptance;
 
-import java.io.FileNotFoundException;
 import java.net.URL;
-
-import javax.xml.bind.JAXBException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,16 +9,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.exceptions.ApiException;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
-import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
-import com.stratio.crossdata.dataProvider.DataProviderInMemoryConnector;
-import com.stratio.crossdata.specs.clusters.AddDatastoreSpec;
+import com.stratio.crossdata.testsAT.automated.dataProvider.DataProviderInMemoryConnector;
+import com.stratio.crossdata.testsAT.specs.clusters.AddDatastoreSpec;
 import com.stratio.cucumber.testng.CucumberRunner;
 import com.stratio.tests.utils.BaseTest;
 import com.stratio.tests.utils.Driver;

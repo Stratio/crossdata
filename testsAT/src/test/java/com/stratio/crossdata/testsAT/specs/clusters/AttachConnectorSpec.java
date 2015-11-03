@@ -14,8 +14,8 @@ import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.result.CommandResult;
-import com.stratio.crossdata.specs.BaseSpec;
-import com.stratio.crossdata.specs.Common;
+import com.stratio.crossdata.testsAT.specs.BaseSpec;
+import com.stratio.crossdata.testsAT.specs.Common;
 import com.stratio.tests.utils.ThreadProperty;
 
 import cucumber.api.DataTable;

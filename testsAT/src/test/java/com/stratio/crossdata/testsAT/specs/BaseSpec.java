@@ -1,4 +1,4 @@
-package com.stratio.crossdata.specs;
+package com.stratio.crossdata.testsAT.specs;
 
 public class BaseSpec {
 

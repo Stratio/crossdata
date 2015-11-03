@@ -16,8 +16,9 @@
  * under the License.
  */
 
-package com.stratio.crossdata.testsAT.specs.utils;
+package com.stratio.tests.utils;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,20 +43,20 @@ import com.stratio.crossdata.common.metadata.DataType;
 
 import cucumber.api.DataTable;
 
-public class ContainsRowsMatcher extends BaseMatcher<ResultSet> {
+public class EqualsResultSet extends BaseMatcher<ResultSet> {
 
     private final DataTable table;
     private ResultSet result_obtained;
     private ResultSet expected_res;
-    private static final Logger LOGGER = LoggerFactory.getLogger(ContainsRowsMatcher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResultSetMatcher.class);
 
-    public ContainsRowsMatcher(DataTable table) {
+    public EqualsResultSet(DataTable table) {
         this.table = table;
     }
 
     @Factory
-    public static ContainsRowsMatcher ContainsRows(DataTable table) {
-        return new ContainsRowsMatcher(table);
+    public static EqualsResultSet EqualsResult(DataTable table) {
+        return new EqualsResultSet(table);
     }
 
     @Override
@@ -76,7 +77,7 @@ public class ContainsRowsMatcher extends BaseMatcher<ResultSet> {
         LOGGER.info("RESULT OBTAINED : " + stringResult(result_obtained));
         expected_res = dataTableToResultSet(table);
         LOGGER.info("RESULT EXPECTED " + stringResult(expected_res));
-        return assertEqualElementsIgnoringOrder(expected_res, result_obtained);
+        return assertEqualElements(expected_res, result_obtained);
     }
 
     // @Override
@@ -151,9 +152,7 @@ public class ContainsRowsMatcher extends BaseMatcher<ResultSet> {
             // map_cells.put(column_name, cell);
         }
         return row;
-
     }
-
     private Map<String[], ColumnDefinition> getColumnDef(List<String> firstRow) {
         LinkedHashMap<String[], ColumnDefinition> columnsMap = new LinkedHashMap<String[], ColumnDefinition>();
         for (String s : firstRow) {
@@ -175,7 +174,7 @@ public class ContainsRowsMatcher extends BaseMatcher<ResultSet> {
                 columnsMap.put(s_array, new ColumnDefinition(Double.class));
                 break;
             case "BigInteger":
-                columnsMap.put(s_array, new ColumnDefinition(Long.class));
+                columnsMap.put(s_array, new ColumnDefinition(BigInteger.class));
                 break;
             case "Long":
                 columnsMap.put(s_array, new ColumnDefinition(Long.class));
@@ -318,7 +317,7 @@ public class ContainsRowsMatcher extends BaseMatcher<ResultSet> {
         return (c1.getValue().equals(c2.getValue()));
     }
 
-    private static boolean assertEqualElementsIgnoringOrder(com.stratio.crossdata.common.data.ResultSet r1,
+    private static boolean assertEqualElements(com.stratio.crossdata.common.data.ResultSet r1,
             com.stratio.crossdata.common.data.ResultSet r2) {
         // recorrer rows r1
         // comprobar por cada row de r1 que hay una igual en el otro result set
@@ -355,28 +354,21 @@ public class ContainsRowsMatcher extends BaseMatcher<ResultSet> {
                 return false;
             }
         }
-//        if (r1.size() != r2.size())
-//            return false;
+        if (r1.size() != r2.size())
+            return false;
 
-        for (com.stratio.crossdata.common.data.Row r : r2) {
-            if (!isRowContained(r, r1))
+        for (int i = 0; i < r1.size(); i++) {
+            if(!assertEqualsRows1(r1.getRows().get(i), r2.getRows().get(i))){
                 return false;
+            }
+           
         }
 
         return true;
     }
 
-    private static boolean isRowContained(com.stratio.crossdata.common.data.Row r,
-            com.stratio.crossdata.common.data.ResultSet resultSet) {
-        for (com.stratio.crossdata.common.data.Row rSet : resultSet) {
-            if (assertEqualsRows1(rSet, r))
-                return true;
-        }
-        return false;
-    }
-
     public static String stringResult(com.stratio.crossdata.common.data.ResultSet metaResultSet) {
-        if (metaResultSet.isEmpty() || metaResultSet.getRows().size() == 0) {
+        if (metaResultSet.isEmpty()) {
             return "OK";
         }
 

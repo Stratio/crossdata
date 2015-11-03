@@ -1,12 +1,12 @@
-package com.stratio.crossdata.specs.exceptions;
+package com.stratio.crossdata.testsAT.specs.exceptions;
 
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.specs.BaseSpec;
-import com.stratio.crossdata.specs.Common;
+import com.stratio.crossdata.testsAT.specs.BaseSpec;
+import com.stratio.crossdata.testsAT.specs.Common;
 
 import cucumber.api.java.en.When;
 

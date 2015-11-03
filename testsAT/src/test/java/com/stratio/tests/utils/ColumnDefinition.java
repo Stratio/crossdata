@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.testsAT.specs.utils;
+package com.stratio.tests.utils;
 
 import java.io.Serializable;
 

@@ -1,4 +1,4 @@
-package com.stratio.crossdata.testsAT.specs.utils;
+package com.stratio.tests.utils;
 
 public class DriverUtil {
 	private static DriverUtil instance = new DriverUtil();

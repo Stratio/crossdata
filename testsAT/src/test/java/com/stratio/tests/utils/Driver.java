@@ -1,4 +1,4 @@
-package com.stratio.crossdata.testsAT.specs.utils;
+package com.stratio.tests.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -131,7 +131,7 @@ public class Driver {
 			br = new BufferedReader(fr);
 			String linea;
 			while ((linea = br.readLine()) != null) {
-				System.out.println(linea);
+			//	System.out.println(linea);
 				if ((linea.length() != 0) || (!linea.equals(""))) {
 					executeQuery(linea);
 				}
@@ -309,10 +309,10 @@ public class Driver {
 	public void executeQuery(String query) throws ParsingException,
 			ValidationException, ExecutionException, UnsupportedException,
 			ConnectionException {
-		System.out.println("QUERY " + this.user + " " + query);
+	//	System.out.println("QUERY " + this.user + " " + query);
 		queryResult = null;
 		queryResult = crossdataConnection.executeQuery(query);
-		System.out.println("RESULTS OF QUERY " + query);
+	//	System.out.println("RESULTS OF QUERY " + query);
 		// queryResult = metaDriver.executeQuery(keyspace, query);
 	}
 

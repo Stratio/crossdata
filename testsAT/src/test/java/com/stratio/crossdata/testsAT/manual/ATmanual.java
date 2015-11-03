@@ -3,7 +3,7 @@ package com.stratio.crossdata.testsAT.manual;
 import org.testng.annotations.Test;
 
 import com.stratio.cucumber.testng.CucumberRunner;
-import com.stratio.crossdata.testsAT.utils.BaseTest;
+import com.stratio.tests.utils.BaseTest;
 
 import cucumber.api.CucumberOptions;
 

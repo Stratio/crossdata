@@ -1,4 +1,4 @@
-package com.stratio.crossdata.specs;
+package com.stratio.crossdata.testsAT.specs;
 
 import com.stratio.tests.utils.Driver;
 import com.stratio.tests.utils.QueryUtils;

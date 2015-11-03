@@ -1,7 +1,7 @@
 package com.stratio.crossdata.testsAT.specs.clusters;
 
-import com.stratio.crossdata.specs.BaseSpec;
-import com.stratio.crossdata.specs.Common;
+import com.stratio.crossdata.testsAT.specs.BaseSpec;
+import com.stratio.crossdata.testsAT.specs.Common;
 
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;

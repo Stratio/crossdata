@@ -1,8 +1,8 @@
 package com.stratio.crossdata.testsAT.specs.dataOperations;
 
-import static com.stratio.tests.utils.ResultSetMatcher.EqualsRecordSet;
 import static com.stratio.tests.utils.ContainsRowsMatcher.ContainsRows;
 import static com.stratio.tests.utils.EqualsResultSet.EqualsResult;
+import static com.stratio.tests.utils.ResultSetMatcher.EqualsRecordSet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -17,8 +17,8 @@ import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.result.QueryResult;
-import com.stratio.crossdata.specs.BaseSpec;
-import com.stratio.crossdata.specs.Common;
+import com.stratio.crossdata.testsAT.specs.BaseSpec;
+import com.stratio.crossdata.testsAT.specs.Common;
 import com.stratio.tests.utils.DriverResultHandler;
 import com.stratio.tests.utils.ThreadProperty;
 

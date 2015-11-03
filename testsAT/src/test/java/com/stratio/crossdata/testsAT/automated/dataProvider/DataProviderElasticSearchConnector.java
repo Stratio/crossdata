@@ -1,20 +1,14 @@
 package com.stratio.crossdata.testsAT.automated.dataProvider;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.testng.ITestContext;
 import org.testng.annotations.DataProvider;
 import org.testng.collections.Lists;
-import org.w3c.dom.Document;
 
-import com.stratio.tests.utils.OperationsUtils;
 import com.stratio.tests.utils.OperationsUtilsES;
 
 public class DataProviderElasticSearchConnector {

@@ -1,4 +1,4 @@
-package com.stratio.crossdata.specs;
+package com.stratio.crossdata.testsAT.specs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,6 @@ import com.stratio.tests.utils.Driver;
 import com.stratio.tests.utils.DriverUtil;
 import com.stratio.tests.utils.JDBCDriver;
 import com.stratio.tests.utils.JDBCDriverUtil;
-import com.stratio.tests.utils.MongoDBUtil;
 import com.stratio.tests.utils.QueryUtils;
 import com.stratio.tests.utils.ThreadProperty;
 
