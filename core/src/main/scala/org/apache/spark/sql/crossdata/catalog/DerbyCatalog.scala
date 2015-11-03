@@ -22,11 +22,8 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
 import org.apache.spark.sql.types._
-import org.json4s.DefaultFormats
-import org.json4s.jackson.Serialization.write
 
 import scala.annotation.tailrec
-import scala.util.parsing.json.JSON
 
 
 object DerbyCatalog {
@@ -34,7 +31,7 @@ object DerbyCatalog {
   val DatabaseField = "db"
   val TableNameField = "tableName"
   val SchemaField = "tableSchema"
-  val ProviderField = "provider"
+  val DatasourceField = "datasource"
   val PartitionColumnField = "partitionColumn"
   val OptionsField = "options"
   val CrossdataVersionField = "crossdataVersion"
@@ -48,7 +45,8 @@ object DerbyCatalog {
 class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) with Logging {
 
-  import JDBCCatalog._
+  import DerbyCatalog._
+  import XDCatalog._
   import org.apache.spark.sql.crossdata._
 
 
@@ -99,12 +97,12 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       val table = resultSet.getString(TableNameField)
       val schemaJSON = resultSet.getString(SchemaField)
       val partitionColumn = resultSet.getString(PartitionColumnField)
-      val provider = resultSet.getString(DatasourceField)
+      val datasource = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
       Some(
-        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), provider, getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
+        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource, getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
       )
     }
   }
@@ -187,60 +185,6 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$table")
   }
 
-
-  private def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
-    implicit val formats = DefaultFormats
-
-    val jsonMap = JSON.parseFull(schemaJSON).get.asInstanceOf[Map[String, Any]]
-    val fields = jsonMap.getOrElse("fields", throw new Error("Fields not found")).asInstanceOf[List[Map[String, Any]]]
-    val structFields = fields.map { x => {
-
-
-      val typeStr: String = x.getOrElse("type", throw new Error("Type not found")) match {
-        case structType: Map[String, Any] => convertToGrammar(structType)
-        case simpleType: String => simpleType
-        case _ => throw new Error("Invalid type")
-      }
-      StructField(
-        x.getOrElse("name", throw new Error("Name not found")).asInstanceOf[String],
-        DataTypeParser.parse(typeStr),
-        x.getOrElse("nullable", throw new Error("Nullable definition not found")).asInstanceOf[Boolean],
-        Metadata.fromJson(write(x.getOrElse("metadata", throw new Error("Metadata not found")).asInstanceOf[Map[String, Any]]))
-      )
-    }
-    }
-    Some(StructType(structFields))
-  }
-
-  private def convertToGrammar (m: Map[String, Any]) : String = {
-    if(m.contains("fields")) {
-      val fields = m.get("fields").get.asInstanceOf[List[Map[String, Any]]].map(x=>{x.getOrElse("name", throw new Error("Name not found"))+":"+convertToGrammar(x)}) mkString ","
-      "struct<"+fields+">"
-    }
-    else m.getOrElse("type", throw new Error("Type not found")).asInstanceOf[String]
-  }
-
-  private def getPartitionColumn(partitionColumn: String): Array[String] =
-    JSON.parseFull(partitionColumn).toList.flatMap(_.asInstanceOf[List[String]]).toArray
-
-  private def getOptions(optsJSON: String): Map[String, String] =
-    JSON.parseFull(optsJSON).get.asInstanceOf[Map[String, String]]
-
-  private def serializeSchema(schema: StructType): String = {
-    implicit val formats = DefaultFormats
-    write(schema.jsonValue.values)
-  }
-
-  private def serializeOptions(options: Map[String, Any]): String = {
-    implicit val formats = DefaultFormats
-    write(options)
-  }
-
-  private def serializePartitionColumn(partitionColumn: Array[String]): String = {
-    implicit val formats = DefaultFormats
-    write(partitionColumn)
-  }
-
   private def schemaExists(schema: String, connection: Connection) : Boolean= {
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$db'")
     val resultSet = preparedStatement.executeQuery()
@@ -249,8 +193,4 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   }
 
-  override def dropSchema(): Unit = {
-    connection.createStatement.executeUpdate(s"DROP TABLE $db.$table")
-    connection.createStatement.executeUpdate(s"DROP SCHEMA $db RESTRICT")
-  }
 }
