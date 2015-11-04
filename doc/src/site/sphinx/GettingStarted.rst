@@ -21,26 +21,36 @@ And then, run it::
 
 Now, from the Crossdata Shell we can write the following commands:
 
-Add a data store. We need to specified the XML manifest that defines the data store. The XML manifest can be found
-in the path of the Cassandra Connector in target/stratio-connector-cassandra-[version]/conf/CassandraDataStore.xml ::
-
-
-    xdsh:user>  ADD DATASTORE <Absolute path to Cassandra Datastore manifest>;
-
-
-Attach cluster on that data store. The data store name must be the same as the defined in the data store manifest.::
+Attach cluster on a data store. The data store name must be the same as the defined in the data store manifest (see next table). 
+::
 
     xdsh:user>  ATTACH CLUSTER <cluster_name> ON DATASTORE <datastore_name> WITH OPTIONS {'Hosts': '[<ipHost_1,ipHost_2,...ipHost_n>]', 'Port': <cassandra_port>};
 
 
-Add the connector manifest. The XML with the manifest can be found in the path of the Cassandra Connector in
-target/stratio-connector-cassandra-[version]/conf/CassandraConnector.xml::
+Here is a table with the available data stores:
 
-    xdsh:user>  ADD CONNECTOR <Path to Cassandra Connector Manifest>;
++----------------+----------------------------------------------+
+| datastore_name | connector_name available for each data store |
++================+==============================================+
+| Cassandra      | CassandraConnector and SparkSQLConnector     |
++----------------+----------------------------------------------+
+| elasticsearch  | elasticsearchconnector and SparkSQLConnector |
++----------------+----------------------------------------------+
+| Mongo          | MongoConnector and SparkSQLConnector         |
++----------------+----------------------------------------------+
+| Decision       | DecisionConnector                            |
++----------------+----------------------------------------------+
+| hdfs           | hdfsconnector and SparkSQLConnector          |
++----------------+----------------------------------------------+
+| jdbc           | SparkSQLConnector                            |
++----------------+----------------------------------------------+
+| json           | SparkSQLConnector                            |
++----------------+----------------------------------------------+
 
+**NOTE:** Native connectors like CassandraConnector cover basic functionalities (queries, insert, etc), and SparkSQLConnector provides additional operations not supported by the data store.
 
 Attach the connector to the previously defined cluster. The connector name must match the one defined in the
-Connector Manifest, and the cluster name must match with the previously defined in the ATTACH CLUSTER command.::
+Connector Manifest (see previous table), and the cluster name must match with the previously defined in the ATTACH CLUSTER command.::
 
     xdsh:user>  ATTACH CONNECTOR <connector name> TO <cluster name> WITH OPTIONS {'DefaultLimit': '1000'};
 
