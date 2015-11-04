@@ -64,7 +64,7 @@ if [ -z "$SPARK_REPO" ]; then
 fi
 
 if [ -z "$PROFILE" ]; then
-    PROFILE="hive"
+    PROFILE="package"
 fi
 
 TMPDIR=/tmp/stratio-crossdata-distribution
@@ -110,7 +110,7 @@ mvn clean package -DskipTests -P"$PROFILE" || { echo "Cannot build Crossdata pro
 
 mkdir -p ${TMPDIR}/lib || { echo "Cannot create output lib directory"; exit 1; }
 
-cp -u ./*/target/*.jar ${TMPDIR}/lib || { echo "Cannot copy target jars to output lib directory, aborting"; exit 1; }
+cp -u ./*/target/*-jar-with-dependencies.jar ${TMPDIR}/lib || { echo "Cannot copy target jars to output lib directory, aborting"; exit 1; }
 ###cp -u ./*/target/alternateLocation/*.jar ${TMPDIR}/lib || { echo "Cannot copy alternate jars to output lib directory, aborting"; exit 1; }
 
 git fetch --tags
@@ -157,6 +157,12 @@ rm -f ${STRATIOSPARKDIR}/lib/*-javadoc.jar
 rm -f ${STRATIOSPARKDIR}/lib/*-tests.jar
 
 mv ${STRATIOSPARKDIR}/ ${DISTDIR}
+
+for lib in `ls ${DISTDIR}/lib/*-jar-with-dependencies.jar`
+do
+    zip -d $lib META-INF/*.RSA META-INF/*.DSA META-INF/*.SF log4j.properties
+done
+
 cp ${TMPDIR}/ChangeLog.txt ${DISTDIR}/
 
 echo "DISTFILENAME: ${DISTFILENAME}"
