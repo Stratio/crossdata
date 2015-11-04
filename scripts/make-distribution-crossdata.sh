@@ -110,6 +110,7 @@ mvn clean package -DskipTests -P"$PROFILE" || { echo "Cannot build Crossdata pro
 
 mkdir -p ${TMPDIR}/lib || { echo "Cannot create output lib directory"; exit 1; }
 
+//TODO: For os x, we might to change from "cp -u ..." to "cp -nt ..." or "rsync -u ..." or just "cp ..."
 cp -u ./*/target/*-jar-with-dependencies.jar ${TMPDIR}/lib || { echo "Cannot copy target jars to output lib directory, aborting"; exit 1; }
 ###cp -u ./*/target/alternateLocation/*.jar ${TMPDIR}/lib || { echo "Cannot copy alternate jars to output lib directory, aborting"; exit 1; }
 
