@@ -39,22 +39,22 @@
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <version>1.2.3</version>
+            <version>${mariadb.version}</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.3-1104-jdbc4</version>
+            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
-            <version>10.12.1.1</version>
+            <version>${derby.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derbyclient</artifactId>
-            <version>10.12.1.1</version>
+            <version>${derby.version}</version>
         </dependency>
 
 

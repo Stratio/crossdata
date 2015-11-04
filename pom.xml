@@ -100,7 +100,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <outputFileName>stratio-crossdata</outputFileName>
-        <mysql.version>5.1.36</mysql.version>
+        <mariadb.version>1.2.3</mariadb.version>
+        <postgresql.version>9.3-1104-jdbc4</postgresql.version>
+        <derby.version>10.12.1.1</derby.version>
         <jackson4s.version>3.2.11</jackson4s.version>
 
     </properties>
