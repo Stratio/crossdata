@@ -80,18 +80,77 @@ Feature: Test crossdata shell metadata operations
     Then I expect a 'Parser exception' message
 
   Scenario: Create table
-    Given I run the shell command "CREATE TABLE myTable ON CLUSTER bugFestCluster (id int primary key);"
+    Given I run the shell command "CREATE TABLE myTable ON CLUSTER bugFestCluster (id int primary key, name varchar);"
     Then I expect a 'TABLE created successfully' message
 
   Scenario: Create same table
-    Given I run the shell command "CREATE TABLE myTable ON CLUSTER bugFestCluster (id int primary key);"
+    Given I run the shell command "CREATE TABLE myTable ON CLUSTER bugFestCluster (id int primary key, name varchar);"
     Then I expect a '[bugFestCatalog.myTable] exists already' message
   
-  # ALTER TABLE
+  # ALTER TABLE - DROP
+  Scenario: Alter table empty
+    Given I run the shell command "CREATE TABLE myTable ON CLUSTER bugFestCluster (id int primary key, name varchar);"
+    Then I expect a 'TABLE created successfully' message
+    When I run the shell command "ALTER TABLE DROP id;"
+    Then I expect a 'Parser exception' message
+
   Scenario: Alter non-existing table
-  
+    When I run the shell command "ALTER TABLE invalidTable DROP id;"
+    Then I expect a '[bugFestCatalog.invalidTable]  doesn't exist yet' message
+
+  Scenario: Alter table non-existing identifier
+    When I run the shell command "ALTER TABLE myTable DROP invalidID;"
+    Then I expect a '[bugFestCatalog.myTable.invalidID]  doesn't exist yet' message
+
+  Scenario: Alter table existing identifier
+    When I run the shell command "ALTER TABLE myTable DROP name;"
+    Then I expect a 'OK' message
+
+   # ALTER TABLE - ADD
+  Scenario: Alter table empty
+    When I run the shell command "ALTER TABLE ADD name varchar;"
+    Then I expect a 'Parser exception' message
+
+  Scenario:  Alter non-existing table
+    When I run the shell command "ALTER TABLE invalidTable ADD name varchar;"
+    Then I expect a '[bugFestCatalog.invalidTable]  doesn't exist yet' message
+
+  Scenario: Alter table empty identifier
+    When I run the shell command "ALTER TABLE myTable ADD;"
+    Then I expect a 'Parser Exception' message
+
+  Scenario: Alter table empty identifier type
+    When I run the shell command "ALTER TABLE myTable ADD name;"
+    Then I expect a 'Parser Exception' message
+
   Scenario: Alter table
-  
+    When I run the shell command "ALTER TABLE myTable ADD name varchar;"
+    Then I expect a 'OK' message
+
+  # ALTER TABLE - ALTER
+  Scenario: Alter table empty
+    When I run the shell command "ALTER TABLE ALTER name TYPE varchar;"
+    Then I expect a 'Parser exception' message
+
+  Scenario:  Alter non-existing table
+    When I run the shell command "ALTER TABLE invalidTable ADD name varchar;"
+    Then I expect a '[bugFestCatalog.invalidTable]  doesn't exist yet' message
+
+  Scenario: Alter table empty identifier
+    When I run the shell command "ALTER TABLE myTable ALTER TYPE varchar;"
+    Then I expect a '[bugFestCatalog.myTable.TYPE]  doesn't exist yet' message
+
+  Scenario: Alter table empty identifier type
+    When I run the shell command "ALTER TABLE myTable ALTER name TYPE;"
+    Then I expect a 'Parser Exception' message
+
+  Scenario: Alter table invalid identifier type
+    When I run the shell command "ALTER TABLE myTable ALTER name TYPE string;"
+    Then I expect a 'Unknown type bugFestCatalog.native' message
+
+  Scenario: [CROSSDATA-96] Alter table with options
+    When I run the shell command "ALTER TABLE myTable WITH comment = 'myComment';"
+    Then I expect a 'OK' message
 
   # DROP TABLE
   Scenario: Drop non-existing table
@@ -107,12 +166,62 @@ Feature: Test crossdata shell metadata operations
     Then I expect a 'TABLE dropped successfully' message
   
   # CREATE INDEX
+  Scenario: Create index with invalid index type
+    Given I run shell command "CREATE INVALID INDEX;"
+    Then I expect a 'Parser exception' message
+
+  Scenario: Create index with empty name
+    Given I run shell command "CREATE INDEX ON myTable(name);"
+    Then I expect a 'Parser exception' message
+
+  Scenario: Create index with empty table
+    Given I run shell command "CREATE INDEX myIndex ON;"
+    Then I expect a 'Parser exception' message
+
+  Scenario: Create index with non-existing table
+    Given I run shell command "CREATE INDEX myIndex ON invalidTable(name);"
+    Then I expect a '[bugFestCatalog.invalidTable]  doesn't exist yet' message
+
+  Scenario: Create index with empty column
+    Given I run shell command "CREATE INDEX myIndex ON myTable();"
+    Then I expect a 'Parser exception' message
+
   Scenario: Create index with non-existing column
-  
+    Given I run shell command "CREATE INDEX myIndex ON myTable(invalidColumn);"
+    Then I expect a '[bugFestCatalog.myTable.invalidColumn]  doesn't exist yet' message
+
+  Scenario: [CROSSDATA-97] Create default index with more than one column
+    Given I run shell command "CREATE INDEX myIndex ON myTable(id, name);"
+    Then I expect a 'Parser exception' message
+
   Scenario: Create index
-  
-  
+    Given I run shell command "CREATE INDEX myIndex ON myTable(name);"
+    Then I expect a 'INDEX created successfully' message
+
+  Scenario: [CROSSDATA-98] Create index with USING
+    Given I run shell command "CREATE INDEX myIndex ON myTable(name) USING 'org.apache.cassandra.db.index.SecondaryIndex';"
+    Then I expect a 'INDEX created successfully' message
+
+   Scenario: [CROSSDATA-99] Create index with WITH OPTIONS
+    Given I run shell command "CREATE INDEX myIndex ON myTable(name) WITH OPTIONS {};"
+    Then I expect a 'INDEX created successfully' message
+
+  # CREATE LUCENE INDEX
+  Scenario: [CROSSDATA-101] Create lucen index
+    Given I run shell command "CREATE LUCENE INDEX myIndex3 ON myTable(id,name);"
+    Then I expect a 'INDEX created successfully' message
+
   # DROP INDEX
+  Scenario: Drop empty index
+    Given I run shell command "DROP INDEX;"
+    Then I expect a 'Parser exception' message
+
   Scenario: Drop non-existing index
-  
-  Scenario: Drop index
+    Given I run shell command "DROP INDEX invalidIndex;"
+    Then I expect a '' message
+
+  Scenario: [CROSSDATA-100] Drop index
+    Given I run shell command "DROP INDEX myTable.myIndex;"
+    Then I expect a 'INDEX dropped successfully' message
+
+
