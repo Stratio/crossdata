@@ -58,9 +58,10 @@ Feature: Test crossdata shell metadata operations
     Given I run the shell command "DROP CATALOG invalidCatalog;"
     Then I expect a '[invalidCatalog]  doesn't exist yet' message
   
-  Scenario: Drop catalog
+  Scenario: [CROSSDATA-102] Drop catalog
     Given I run the shell command "DROP CATALOG bugFestCatalog;"
     Then I expect a 'CATALOG dropped successfully' message
+    And I expect KEYSPACE 'bugFestCatalog' to dissapear in Cassandra db
   
   # CREATE TABLE
   Scenario: Create table with empty cluster
