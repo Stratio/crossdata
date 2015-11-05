@@ -1,22 +1,17 @@
 Logical Workflows Explained
 ***************************
-This document will provided a detailed description of the types of elements that may appear in a Crossdata 
-*LogicalWorkflow* and how the should be interpreted by the connectors.
+This document will provide a detailed description of the types of elements that may appear in a Crossdata 
+*LogicalWorkflow* and how they should be interpreted by the connectors.
   
 Definition of LogicalWorkflow
 =============================
 
 The use of *LogicalWorkflow* is associated with *SELECT* statements. This type of statements is decomposed in a set 
-of *LogicalStep* and those steps are organized in a directed graph that contain all the information required to 
-perform a query. This approach is similar to the classical *Logical plan* found in databases. The difference is that
-in Crossdata we first characterize and define the *LogicalSteps* involved, and then we plan the execution of portions
- of this graph using the available connectors producing the final *ExecutionWorkflows*. Notice that a Crossdata 
- *LogicalWorkflow* is a similar concept to the classical database *LogicalPlan*.
+of *LogicalStep* and those steps are organized in a directed graph that contains all the information required to 
+perform a query. This approach is similar to the classical *Logical plan* found in databases. The difference is that in Crossdata we first characterize and define the *LogicalSteps* involved, and then we plan the execution of portions  of this graph using the available connectors producing the final *ExecutionWorkflows*. Notice that a Crossdata   *LogicalWorkflow* is a similar concept to the classical database *LogicalPlan*.
  
 A *LogicalWorkflow* is characterized by having several entry points for the graph. Those entry points are named 
-initial steps and contain a list of Project LogicalSteps. From each initial step we can navigate the graph until the 
-*last step* is reached. The motivation of allowing several initial steps is to facilitate the processing allowing 
-parallel reading of several tables in union-like sentences such as INNER JOIN.
+initial steps and contain a list of Project LogicalSteps. From each initial step we can navigate the graph until the*last step* is reached. The motivation of allowing several initial steps is to facilitate the processing allowing parallel reading of several tables in union-like sentences such as INNER JOIN.
 
 Types of LogicalSteps
 =====================
@@ -54,7 +49,7 @@ Filter
 ------
 
 The *Filter* operator specifies a filtering operation that should be applied to all the rows retrieved before that 
-filtering element. In a *SELECT* statement *Filter* operator are associated with the relations found in the where
+filtering element. In a *SELECT* statement *Filter* operator is associated with the relations found in the where
  clause. A *Filter* includes the left and right parts of the relationship as well as the *Operator* to be applied.
 
 Disjunction
@@ -87,7 +82,7 @@ to the system.
 Join
 ----
 
-The *Join* operator specifies that the results comming from 2 different branches (they will be started by a 
+The *Join* operator specifies that the results coming from 2 different branches (they will be started by a 
 *Project*) need to be merged. The operator contains information about the related *Project* logical steps, 
 as well as information about the conditions to be applied during the join.
 
@@ -95,8 +90,8 @@ PartialResults
 --------------
 
 The *PartialResults* operator specifies a source of rows to be used for further processing. As an example, 
-imagine a user trying to perform a *Join* between two datastore: d1 and d2; each of them accessible with a connector 
-c1 and c2 respectively. If non of the connectors (c1 and c2) is able to directly perform a *Join* between tables in 
+imagine a user trying to perform a *Join* between two datastores: d1 and d2; each of them accessible with a connector 
+c1 and c2 respectively. If none of the connectors (c1 and c2) is able to directly perform a *Join* between tables in 
 d1 and d2, but one of them supports joins with partial results the query will be solved in the following steps. 
 Crossdata will define a LogicalWorkflow and based on the available connector it decides that requires two of them. 
 Assuming c2 is the one with joins on partial results, Crossdata will send first a query to c1 to retrieve data from c1
