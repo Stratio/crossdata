@@ -388,7 +388,7 @@ Example:
 RESET SERVERDATA
 ----------------
 Remove all data stored in the system (in all servers), including information related to datastores, clusters and connectors.
-Connectors status are the only metadata kept by the system after issuing this command.
+Connectors statuses are the only metadata kept by the system after issuing this command.
 
 RESET SERVERDATA ';'
 
@@ -541,7 +541,7 @@ Example:
 
 IMPORT CATALOG
 --------------
-Import all the metadata from a specific catalog. This command incorporates to the the Crossdata servers a
+Import all the metadata from a specific catalog. This command incorporates to the Crossdata servers a
 catalog metadata and its underlying metadata.
 
 IMPORT CATALOG \<catalog-name\> FROM CLUSTER \<cluster-name\> ';'
