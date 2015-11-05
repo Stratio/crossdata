@@ -2,7 +2,7 @@
 Connector Operations
 ********************
 
-This document will provided a detailed description of the different operations that can be supported by a Crossdata 
+This document will provide a detailed description of the different operations that can be supported by a Crossdata 
 connector.
 
 Definition of Connector Operation
@@ -71,7 +71,7 @@ Types of Operations
 ===================
 
 The connector operations are organized attending to the type of operation to be performed: Metadata, Storage, 
-and Query. In order to simplify the definition of the different connector, two concepts are taken into account: 
+and Query. In order to simplify the definition of the different connectors, two concepts are taken into account: 
 *column_type*, and *relationship*.
 
 The column type is identified by Crossdata during the query analysis with the following types:
@@ -97,11 +97,11 @@ With respect to the relationship, Crossdata supports:
 +--------------+------------------------------------------+
 | GT           | Greater than.                            |
 +--------------+------------------------------------------+
-| LT           | Less than.                               |
+| LT           | Lower than.                              |
 +--------------+------------------------------------------+
 | GET          | Greater or equal than.                   |
 +--------------+------------------------------------------+
-| LET          | Less or equal than.                      |
+| LET          | Lower or equal than.                     |
 +--------------+------------------------------------------+
 | ASSIGN       | A value is to be assigned to a column.   |
 +--------------+------------------------------------------+
@@ -138,7 +138,7 @@ Metadata operations are those associated with the *IMetadataEngine* interface.
 *   **CREATE_INDEX**: Create a new index.
 *   **DROP_INDEX**: Drop an existing index.
 
-The next operations is related to Data Discovery.
+The next operations are related to Data Discovery.
 
 *   **IMPORT_METADATA**: Provide metadata of the existent tables.
 
