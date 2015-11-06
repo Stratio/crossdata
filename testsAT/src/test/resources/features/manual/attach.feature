@@ -66,3 +66,11 @@ Feature: Test crossdata shell attach/add operations
   Scenario: Attach same valid connector
     Given I run the shell command "ATTACH CONNECTOR CassandraConnector TO testCluster WITH OPTIONS {'DefaultLimit': '1000'};"
     Then I expect a 'ERROR: Couldn't connect to cluster: The connection to testCluster already exists.' message
+
+  Scenario: [CROSSDATA-107] Detach cluster before detaching connector causes corruption in infinispan
+    When I run the shell command "ATTACH CLUSTER mongoCluster ON DATASTORE Mongo WITH OPTIONS {'Hosts': '[172.31.13.46,172.31.15.233,172.31.5.190]', 'Port': '[27017,27017,27017]'};"
+    Then I expect a 'Cluster attached successfully' message
+    When  I run the shell command "ATTACH CONNECTOR MongoConnector TO mongoCluster;"
+    Then I expect a 'Connected to cluster successfully' message
+    When I run the shell command 'DETACH CLUSTER mongoCluster;'
+    Then I expect a 'Cluster cannot be detached while it has a connector attached';
