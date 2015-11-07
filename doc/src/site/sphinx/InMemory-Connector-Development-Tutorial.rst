@@ -2,6 +2,7 @@ Developing an In Memory Connector for Crossdata
 ***********************************************
 This tutorial will guide you through the different steps required to implement a Stratio Crossdata connector. The 
 tutorial takes the **InMemoryConnector** that is already included in the Crossdata packages, as an example.
+
 Preparing the environment
 =========================
 
@@ -10,21 +11,17 @@ Preparing the environment
     > $ git clone https://github.com/Stratio/crossdata.git
 
 2. Fork the `crossdata-connector-skeleton <https://github.com/Stratio/crossdata-connector-skeleton>`_ in your account
-3. Load the skeleton project in your IDE or choice (we have tested it on IntelliJ)
+3. Load the skeleton project in your IDE of choice (we have tested it on IntelliJ)
 
 Implementing IConnector
 =======================
 
 In order to create a Crossdata connector, you must provide an implementation of the *IConnector* interface. This 
-interface defines the basic set of operations required to connect the connector with the datastore of your choice and
- it will be the entry point to the connector system. In this example, the class 
- *com.stratio.connector.inmemory.InMemoryConnector* provides the implementation.
+interface defines the basic set of operations required to connect the connector with the datastore of your choice and it will be the entry point to the connector system. In this example, the class *com.stratio.connector.inmemory.InMemoryConnector* provides the implementation.
  
 First, we should define the name of the connector and the name of the datastores supported by the connector. This 
 information will be used by Crossdata to validate the different logical connections in the system. Remember that a 
-single connector may access different clusters of the same datastore technology, and it may support several datastore 
-technologies. In this example, the connector name is *InMemoryConnector*, and the datastore technology it access is 
-named *InMemoryDatastore*. The usual naming convention is to use *<DatastoreTechnology>Connector* and 
+single connector may access different clusters of the same datastore technology, and it may support several datastore technologies. In this example, the connector name is *InMemoryConnector*, and the datastore technology it access is named *InMemoryDatastore*. The usual naming convention is to use *<DatastoreTechnology>Connector* and 
 *<DatastoreTechnology>* respectively. For instance, the connector that access Cassandra is named CassandraConnector.
 ::
     @Override
@@ -105,22 +102,15 @@ service.::
 
 In order to facilitate the connector development, we provide a *ConnectorApp* class that works as a wrapper for the 
 execution of a connector. This class abstracts the inner workings of the Akka communication between the Crossdata 
-server and the Actor receiving messages for the connector. In this way, the Crossdata server will automatically detect 
-when a connector starts and joins the internal Akka cluster. It will also trigger the required operations when a user
- query is received from a Crossdata server and will transfer the results back to the server when the query have been 
- executed.
+server and the Actor receiving messages for the connector. In this way, the Crossdata server will automatically detect when a connector starts and joins the internal Akka cluster. It will also trigger the required operations when a user query is received from a Crossdata server and will transfer the results back to the server when the query have been executed.
  
-Once we have a basic skeleton for the main class, we should define the connector capabilities before implementing the
- remaining required interfaces.
+Once we have a basic skeleton for the main class, we should define the connector capabilities before implementing the remaining required interfaces.
 
 Defining the manifests
 ----------------------
 
 In Crossdata there are two important notions to consider: *datastores*, and *connectors*. A datastore describes 
-a particular storage technology describing its name, its properties, and its behaviours. This information is stored in
- a xml manifest file, and it is uploaded to Crossdata using the 
- `ADD DATASTORE <Grammar.html#add-datastore>`_
-sentence. For instance, the datastore manifest for Cassandra have the following definition::
+a particular storage technology describing its name, its properties, and its behaviours. This information is stored in a xml manifest file, and it is uploaded to Crossdata using the `ADD DATASTORE <Grammar.html#add-datastore>`_ sentence. For instance, the datastore manifest for Cassandra have the following definition::
 
 
     <?xml version="1.0" encoding="UTF-8"?>
@@ -145,7 +135,7 @@ sentence. For instance, the datastore manifest for Cassandra have the following 
 
 In this example, the datastore is characterized by a property named Hosts, and a property named Port. With this 
 information, the user can define as many clusters of type Cassandra as required. In the case of the 
-InMemoryConnector given that we are not connecting to any external system, the manifest has the following 
+InMemoryConnector, given that we are not connecting to any external system, the manifest has the following 
 content::
 
 
@@ -174,15 +164,9 @@ content::
     </DataStore>
 
 
-Crossdata will require the presence of these properties when the 
-`ATTACH CLUSTER <Grammar.html#attach-cluster>`_
-operation is executed, but it is responsibility of the connector itself to semantically check that the given parameters
-can be used.
+Crossdata will require the presence of these properties when the `ATTACH CLUSTER <Grammar.html#attach-cluster>`_ operation is executed, but it is responsibility of the connector itself to semantically check that the given parameters can be used.
 
-Once the datastore have been characterized, the next step is to define the properties and capabilities of the 
-connector. As before, a XML manifest is used and uploaded to Crossdata with the
- `ADD CONNECTOR <Grammar.html#add-connector>`_
-sentence. In the case of the *InMemoryConnector*, the manifest has the following contents::
+Once the datastore has been characterized, the next step is to define the properties and capabilities of the connector. As before, a XML manifest is used and uploaded to Crossdata with the `ADD CONNECTOR <Grammar.html#add-connector>`_ sentence. In the case of the *InMemoryConnector*, the manifest has the following contents::
 
 
     <?xml version="1.0" encoding="UTF-8"?>
@@ -233,20 +217,9 @@ sentence. In the case of the *InMemoryConnector*, the manifest has the following
     </Connector>
 
 
-The aforementioned manifest contains the connector name, the list of datastores it may access, 
-the properties required by the connector when an
-`ATTACH CONNECTOR <Grammar.html#attach-connector>`_
-command is issued, and the list of operations supported by the connector. This last part will be analyzed by 
-Crossdata on each query to determine which connector will be used to execute a particular query. For more information
- about the supported operation check the 
-`operations documentation <ConnectorOperations.html>`_.
+The aforementioned manifest contains the connector name, the list of datastores it may access, the properties required by the connector when an `ATTACH CONNECTOR <Grammar.html#attach-connector>`_ command is issued, and the list of operations supported by the connector. This last part will be analyzed by Crossdata on each query to determine which connector will be used to execute a particular query. For more information about the supported operations check the `operations documentation <ConnectorOperations.html>`_.
 
-For more information check the `datastore <https://github
-.com/Stratio/crossdata/blob/develop/crossdata-common/src/main/resources/com/stratio/crossdata/connector
-/DataStoreDefinition.xsd>`_
-and `connector <https://github.com/Stratio/crossdata/blob/develop/crossdata-common/src/main/resources/com/stratio
-/crossdata/connector/ConnectorDefinition.xsd>`_
-manifest schemas.
+For more information check the `datastore <https://github.com/Stratio/crossdata/blob/develop/crossdata-common/src/main/resources/com/stratio/crossdata/connector/DataStoreDefinition.xsd>`_ and `connector <https://github.com/Stratio/crossdata/blob/develop/crossdata-common/src/main/resources/com/stratio/crossdata/connector/ConnectorDefinition.xsd>`_ manifest schemas.
 
 Implementing IMetadataEngine
 ----------------------------
@@ -300,10 +273,7 @@ operation, the connector manifest should be modified accordingly. As an example,
 
 
 
-The first step is to determine whether this connector has an actual connection with the datastore. In a classical
- approach this would involve obtaining the connection previously established through the connect method. After that, we
- transform the Crossdata *TableMetatada* structure into the classes required by our datastore and execute the 
- equivalent createTable statement using the previously obtained connection.
+The first step is to determine whether this connector has an actual connection with the datastore. In a classical approach this would involve obtaining the connection previously established through the connect method. After that, we transform the Crossdata *TableMetatada* structure into the classes required by our datastore and execute the equivalent createTable statement using the previously obtained connection.
  
 It is important to highlight that the abstraction of what a table is for a particular connector needs to be decided 
 by the developer creating the connector. For example, a table depending on the connector we are creating may be 
@@ -314,9 +284,7 @@ catalogs, or tables.
 Implementing IStorageEngine
 ---------------------------
 
-The *IStorageEngine* defines the set of operations that are related to storing data in a datastore. In the case of the
- *InMemoryConnector*, we implement *insert*, *batch insert*, and *truncate* as specified in the connector manifest. As
-  an practical example, consider the *insert* method::
+The *IStorageEngine* defines the set of operations that are related to storing data in a datastore. In the case of the *InMemoryConnector*, we implement *insert*, *batch insert*, and *truncate* as specified in the connector manifest. As an practical example, consider the *insert* method::
 
 
     @Override
@@ -342,19 +310,13 @@ The *IStorageEngine* defines the set of operations that are related to storing d
     }    
 
 
-Similarly to the *IMetadataEngine* operations, the insert method transforms the data contained in the Crossdata Row 
-class into the ones required by the datastore interface, and triggers the insertion.
+Similarly to the *IMetadataEngine* operations, the insert method transforms the data contained in the Crossdata Row class into the ones required by the datastore interface, and triggers the insertion.
 
 Implementing IQueryEngine
 -------------------------
 
-The *IQueryEngine* defines the operations required to execute a
-`SELECT <Grammar.html#select>`_.
-Two methods are provided depending on the type of queries supported. The *execute* method is currently used for 
-synchronous queries, while the *asyncExecute* method is used for streaming selects. If the query introduced by the 
-user contains a **WITH WINDOW** clause, the *asyncExecute* method will be invoked. In the case of the 
-InMemoryConnector, as it does not support streaming queries, it only provides an implementation for the *execute* 
-method.::
+The *IQueryEngine* defines the operations required to execute a `SELECT <Grammar.html#select>`_.
+Two methods are provided depending on the type of queries supported. The *execute* method is currently used for synchronous queries, while the *asyncExecute* method is used for streaming selects. If the query introduced by the user contains a **WITH WINDOW** clause, the *asyncExecute* method will be invoked. In the case of the InMemoryConnector, as it does not support streaming queries, it only provides an implementation for the *execute* method.::
 
 
 
@@ -398,25 +360,16 @@ method.::
 
 
 For each incoming query in Crossdata, the query is analyzed, checked and processed in order to define an 
-*ExecutionWorkflow*. In the case of the *SELECT* statement, the *ExecutionWorkflow* contains a *LogicalWorkflow* that
- represents the workflow to be executed in order to obtain the required results. For more information about logical 
- workflow check the
-`Logical Workflows explained <Logical-Workflows-Explained.html>`_
-document.
+*ExecutionWorkflow*. In the case of the *SELECT* statement, the *ExecutionWorkflow* contains a *LogicalWorkflow* that represents the workflow to be executed in order to obtain the required results. For more information about logical workflow check the `Logical Workflows explained <Logical-Workflows-Explained.html>`_ document.
 
-In our case, given that we do not support *UnionStep*, we can take the *Project* and *Select* operator to build the 
-query that will be sent to the underlying datastore. Notice that the results returned by our datastore need to be 
-transformed in a valid *ResultSet* in order to return a *QueryResult*. It is important to highlight that the returned
- results need to have the column in the order and with the names specified in the *Select* operator.
+In our case, given that we do not support *UnionStep*, we can take the *Project* and *Select* operator to build the query that will be sent to the underlying datastore. Notice that the results returned by our datastore need to be 
+transformed in a valid *ResultSet* in order to return a *QueryResult*. It is important to highlight that the returned results need to have the column in the order and with the names specified in the *Select* operator.
 
 Throwing Exceptions
 -------------------
 
-All operations defined in the different interfaces throw **ConnectorException** in case of failure. When an exception
- is thrown, it is capture by the wrapping actor, and the error is propagated to the Crossdata server that sent the 
- request. That server will then forward the exception to the user issuing the request. The **ConnectorException** 
- hierarchy contains several subclasses: *ConnectionException*, *InitializationException*, *UnsupportedException*, 
- *ExecutionException*, and *CriticalExecutionException*.
+All operations defined in the different interfaces throw **ConnectorException** in case of failure. When an exception is thrown, it is captured by the wrapping actor, and the error is propagated to the Crossdata server that sent the  request. That server will then forward the exception to the user issuing the request. The **ConnectorException**  hierarchy contains several subclasses: *ConnectionException*, *InitializationException*, *UnsupportedException*,  *ExecutionException*, and *CriticalExecutionException*.
+
 +-------------------------------+------------------------------------------------------------------+
 | Option                        | Description                                                      |
 +===============================+==================================================================+
@@ -428,7 +381,7 @@ All operations defined in the different interfaces throw **ConnectorException** 
 +-------------------------------+------------------------------------------------------------------+
 | ExecutionException            | If the operation to be executed fails.                           |
 +-------------------------------+------------------------------------------------------------------+
-| CriticalExecutionException | If the operation to be executed fails, and the connector is not longer usable. In this situation the connector service is expected to be rebooted. |
+| CriticalExecutionException    | If the operation to be executed fails, and the connector is not longer usable. In this situation the connector service is expected to be rebooted.                                   |
 +-------------------------------+------------------------------------------------------------------+
 
 Running the Connector

@@ -17,7 +17,7 @@ or
 
 How to get the Crossdata sandbox (Vagrant)
 ============================================
-Start with Crossdata is very easy. Just follow this steps::
+Start with Crossdata is very easy. Just follow these steps::
 
     > mkdir CrossdataSandbox
     > cd CrossdataSandbox
@@ -45,12 +45,12 @@ and you can remove the vagrant instance.::
 How to get the Crossdata sandbox (OVA)
 ============================================
 You can get the OVA file with the Sandbox from this [link](http://www.stratio.com/download.html).
-Once it has been downloaded, just import in your Virtual Box.
+Once it has been downloaded, just import it in your Virtual Box.
 
 
 First Steps with Crossdata Sandbox
 =============================================
-Once you have started the sandbox you can follow this steps::
+Once you have started the sandbox you can follow these steps::
 
     > sudo su -
 
@@ -114,7 +114,7 @@ Let's create a full text index::
 F.A.Q about the sandbox
 =======================
 
-##### **I am in the same directory that I copy the Vagrant file but I have this error:**::
+##### **I am in the same directory that I copied the Vagrant file to but I have this error:**::
 
 
     A Vagrant environment or target machine is required to run this

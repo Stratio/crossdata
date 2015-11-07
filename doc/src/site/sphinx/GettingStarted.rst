@@ -5,14 +5,14 @@ Here is an example of Crossdata with a Cassandra Connector as an access to a Cas
 First of all `Stratio Cassandra <https://github.com/Stratio/stratio-cassandra>`_ is needed and must be installed and
 running.
 
-At this point Crossdata server must be running and it is need to start Crossdata shell. In this shell we will create
-a new catalog, with a new table, and after we will make a Select query.
+At this point Crossdata server must be running and starting Crossdata shell is needed. In this shell we will create
+a new catalog, with a new table, and afterwards we will make a Select query.
 
-Now, we need the `Cassandra Connector <https://github.com/Stratio/stratio-connector-cassandra>`_, install it::
+Now, we need the `Cassandra Connector <https://github.com/Stratio/stratio-connector-cassandra>`_, to install it::
 
     > mvn crossdata-connector:install
 
-And then, run it::
+And then, to run it::
 
     > target/stratio-connector-cassandra-[version]/bin/stratio-connector-cassandra-[version] start
 
@@ -50,12 +50,12 @@ Here is a table with the available data stores:
 **NOTE:** Native connectors like CassandraConnector cover basic functionalities (queries, insert, etc), and SparkSQLConnector provides additional operations not supported by the data store.
 
 Attach the connector to the previously defined cluster. The connector name must match the one defined in the
-Connector Manifest (see previous table), and the cluster name must match with the previously defined in the ATTACH CLUSTER command.::
+Connector Manifest (see previous table), and the cluster name must match the previously defined in the ATTACH CLUSTER command.::
 
     xdsh:user>  ATTACH CONNECTOR <connector name> TO <cluster name> WITH OPTIONS {'DefaultLimit': '1000'};
 
 
-At this point, we can start to send queries, that Crossdata execute with the connector specified.::
+At this point, we can start to send queries, that Crossdata executes with the specified connector.::
 
 
     xdsh:user> CREATE CATALOG catalogTest;

@@ -2,7 +2,7 @@ About
 *****
 
 Crossdata (aka Meta) is a distributed framework and a data layer that unifies the interaction with batch and
-streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies Crossdata defines a common unifying interface containing the set of operations that a datastore may support. New connectors can be easily added to increase its connectivity capabilities. Two types of connectors are defined: native and spark-based. Native connectors are faster for simple operations, while Spark-based connectors offer a larger set of functionality. The Crossdata planner decides which connector will be used for any request based its characteristics. We offer a shell, Java/REST APIs, JDBC and ODBC for BI.
+streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies Crossdata defines a common unifying interface containing the set of operations that a datastore may support. New connectors can be easily added to increase its connectivity capabilities. Two types of connectors are defined: native and spark-based. Native connectors are faster for simple operations, while Spark-based connectors offer a larger set of functionality. The Crossdata planner decides which connector will be used for any request based on its characteristics. We offer a shell, Java/REST APIs, JDBC and ODBC for BI.
 
 Compiling Crossdata
 ===================
@@ -57,7 +57,7 @@ means of the --sync parameter.::
     > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--sync"
 
 
-Additionally, you can execute an script upon launching the shell. The script will be executed first,
+Additionally, you can execute a script upon launching the shell. The script will be executed first,
 and the prompt will be shown afterwards.::
 
 
@@ -75,7 +75,7 @@ You can run our shell too, executing our crossdata-dist script::
 Useful commands
 ===============
 
-Once the shell is running, you can exit the program introducing the word **exit** or **quit** in the query prompt. A command help system is available by introducing the command **help**. A help entry is available per command, to check specify help topics use **help command**.
+Once the shell is running, you can exit the program introducing the word **exit** or **quit** in the query prompt. A command help system is available by introducing the command **help**. A help entry is available per command, to check specific help topics use **help command**.
 
 Send issues to Jira
 ===================
@@ -108,7 +108,7 @@ Connectors
 Sandbox
 =======
 
-If you want to test Crossdata you can get our Sandbox follow the instructions of this `link <Sandbox.html>`_
+If you want to test Crossdata you can get our Sandbox following the instructions of this `link <Sandbox.html>`_
 
 License
 =======

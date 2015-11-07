@@ -1,6 +1,6 @@
 List of Crossdata Connectors
 ****************************
-This document maintains an updated list of connector that work with current versions of Crossdata. Take into account 
+This document maintains an updated list of connectors that work with current versions of Crossdata. Take into account 
 that each connector listed may require different version of Crossdata.
 
 List of Native Connectors
