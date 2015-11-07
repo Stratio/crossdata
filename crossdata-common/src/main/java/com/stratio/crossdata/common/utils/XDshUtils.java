@@ -111,7 +111,6 @@ public final class XDshUtils implements Serializable {
             "MINS",
             "MINUTES",
             "MINUTE",
-            "NATURAL",
             "NOT",
             "NULL",
             "OR",

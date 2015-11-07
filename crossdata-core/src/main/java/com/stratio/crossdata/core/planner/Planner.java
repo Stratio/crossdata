@@ -1410,7 +1410,6 @@ public class Planner {
 
     }
 
-
     private MetadataWorkflow buildMetadataWorkflowDropCatalog(MetadataStatement metadataStatement, String queryId)
             throws PlanningException {
         MetadataWorkflow metadataWorkflow;
@@ -1426,6 +1425,7 @@ public class Planner {
                 catalogMetadata.getTables().isEmpty() ||
                 catalogMetadata.getTables() == null) {
             MetadataManager.MANAGER.deleteCatalog(catalog, dropCatalogStatement.isIfExists());
+            MetadataManager.MANAGER.deleteCatalogInClusters(catalog);
             // Create MetadataWorkFlow
             metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.DROP_CATALOG, ResultType.RESULTS);
         } else {
@@ -1435,24 +1435,72 @@ public class Planner {
         return metadataWorkflow;
     }
 
-    private MetadataWorkflow buildMetadataWorkflowAlterCatalog(MetadataStatement metadataStatement, String queryId) {
-        MetadataWorkflow metadataWorkflow;
+    private MetadataWorkflow buildMetadataWorkflowAlterCatalog(MetadataStatement metadataStatement, String queryId)
+            throws PlanningException {
+        MetadataWorkflow firstWorkflow;
+
+        Set <ClusterMetadata> clusters = findClusters(metadataStatement.getEffectiveCatalog());
+
+        Map<String, ClusterName> actorRefs = new HashMap<>();
+        for(ClusterMetadata cluster: clusters){
+            actorRefs.put(
+                    findAnyActorRef(cluster, Status.ONLINE, Operations.ALTER_CATALOG),
+                    cluster.getName());
+        }
+
         AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) metadataStatement;
         CatalogName catalog = alterCatalogStatement.getCatalogName();
         CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalog);
         catalogMetadata.setOptions(alterCatalogStatement.getOptions());
 
-        metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.ALTER_CATALOG, ResultType.RESULTS);
+        firstWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.ALTER_CATALOG, ResultType.RESULTS);
+        firstWorkflow.setCatalogMetadata(catalogMetadata);
+        firstWorkflow.setCatalogName(catalogMetadata.getName());
 
-        metadataWorkflow.setCatalogMetadata(catalogMetadata);
-        metadataWorkflow.setCatalogName(catalogMetadata.getName());
-        return metadataWorkflow;
+        if(!actorRefs.isEmpty()){
+            boolean firstWFAssigned = false;
+            MetadataWorkflow lastWF = firstWorkflow;
+            for(Map.Entry<String, ClusterName> entry: actorRefs.entrySet()){
+                if(firstWFAssigned){
+                    MetadataWorkflow metadataWorkflow = new MetadataWorkflow(
+                            queryId,
+                            entry.getKey(),
+                            ExecutionType.ALTER_CATALOG,
+                            ResultType.RESULTS);
+                    metadataWorkflow.setCatalogMetadata(catalogMetadata);
+                    metadataWorkflow.setCatalogName(catalogMetadata.getName());
+                    metadataWorkflow.setClusterName(entry.getValue());
+                    lastWF.setNextExecutionWorkflow(metadataWorkflow);
+                } else {
+                    firstWorkflow = new MetadataWorkflow(
+                            queryId,
+                            entry.getKey(),
+                            ExecutionType.ALTER_CATALOG,
+                            ResultType.RESULTS);
+                    firstWorkflow.setCatalogMetadata(catalogMetadata);
+                    firstWorkflow.setCatalogName(catalogMetadata.getName());
+                    firstWorkflow.setClusterName(entry.getValue());
+                    firstWFAssigned = true;
+                    lastWF = firstWorkflow;
+                }
+            }
+        }
+
+        return firstWorkflow;
+    }
+
+    private Set<ClusterMetadata> findClusters(CatalogName effectiveCatalog) {
+        Set<ClusterMetadata> clusters = new HashSet<>();
+        for(TableMetadata tb: MetadataManager.MANAGER.getTablesByCatalogName(effectiveCatalog.getName())){
+            clusters.add(MetadataManager.MANAGER.getCluster(tb.getClusterRef()));
+        }
+        return clusters;
     }
 
     private MetadataWorkflow buildMetadataWorkflowCreateIndex(MetadataStatement metadataStatement, String queryId)
             throws PlanningException {
 
-        MetadataWorkflow metadataWorkflow = null;
+        MetadataWorkflow metadataWorkflow;
         CreateIndexStatement createIndexStatement = (CreateIndexStatement) metadataStatement;
         TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(createIndexStatement.getTableName());
 

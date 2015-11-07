@@ -1680,4 +1680,10 @@ public enum MetadataManager {
         cluster.removePersistedCatalog(catalog);
         createCluster(cluster, false);
     }
+
+    public void deleteCatalogInClusters(CatalogName catalog) {
+        for(ClusterMetadata cm: getClusters()){
+            cm.removePersistedCatalog(catalog);
+        }
+    }
 }

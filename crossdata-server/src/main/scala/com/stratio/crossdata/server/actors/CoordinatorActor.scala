@@ -19,14 +19,12 @@
 package com.stratio.crossdata.server.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
-import akka.routing.RoundRobinPool
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.{ClusterName, ConnectorName, Status}
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.exceptions.validation.CoordinationException
 import com.stratio.crossdata.common.executionplan._
-import com.stratio.crossdata.common.logicalplan.PartialResults
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, ConnectorMetadata, TableMetadata, UpdatableMetadata}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
@@ -290,18 +288,41 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
       } else if (metadataWorkflow.getExecutionType == ExecutionType.ALTER_CATALOG) {
 
-        executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
-        executionInfo.setPersistOnSuccess(true)
-        executionInfo.setUpdateOnSuccess(true)
-        ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-        val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_CATALOG)
-        result.setQueryId(queryId)
-        explicitSender.fold{
-          sender ! result
-        }{
-          explSender =>
-            context.actorSelection(explSender) ! result
+        if(metadataWorkflow.getActorRef == null){
+          executionInfo.setQueryStatus(QueryStatus.EXECUTED)
+          executionInfo.setSender(StringUtils.getAkkaActorRefUri(explicitSender.getOrElse(sender), true))
+          executionInfo.setWorkflow(metadataWorkflow)
+
+          val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_CATALOG)
+          result.setQueryId(queryId)
+          explicitSender.fold{
+            sender ! result
+          }{
+            explSender =>
+              context.actorSelection(explSender) ! result
+          }
+
+        } else  {
+          executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+          executionInfo.setPersistOnSuccess(true)
+          executionInfo.setUpdateOnSuccess(true)
+          executionInfo.setRemoveOnSuccess(false)
+          executionInfo.setSender(StringUtils.getAkkaActorRefUri(explicitSender.getOrElse(sender), true))
+          executionInfo.setWorkflow(metadataWorkflow)
+
+          // Send action to the connector
+          val actorRef = context.actorSelection(metadataWorkflow.getActorRef)
+          actorRef.asInstanceOf[ActorSelection] ! metadataWorkflow.createMetadataOperationMessage()
+
+          var nextEW = metadataWorkflow.getNextExecutionWorkflow
+          while(nextEW != null){
+            val actorRef = context.actorSelection(metadataWorkflow.getActorRef)
+            actorRef.asInstanceOf[ActorSelection] ! metadataWorkflow.createMetadataOperationMessage()
+            nextEW = nextEW.getNextExecutionWorkflow
+          }
+
         }
+        ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
       } else if (metadataWorkflow.getExecutionType == ExecutionType.DROP_TABLE) {
 
@@ -353,7 +374,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         log.info("ActorRef: " + actorRef.toString())
         actorRef.asInstanceOf[ActorSelection] ! metadataWorkflow.createMetadataOperationMessage()
 
-      }else if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_INDEX
+      } else if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_INDEX
         || metadataWorkflow.getExecutionType == ExecutionType.CREATE_GLOBAL_INDEX) {
 
         if (metadataWorkflow.isIfNotExists && MetadataManager.MANAGER.exists(metadataWorkflow.getIndexName)) {

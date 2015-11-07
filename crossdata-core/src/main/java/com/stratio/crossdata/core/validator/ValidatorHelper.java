@@ -435,7 +435,7 @@ public class ValidatorHelper {
     }
 
     /**
-     * @see ValidationTypes#MUST_EXIST_PROPERTIES.
+     * @see ValidationTypes#MUST_EXIST_PROPERTIES .
      * @param stmt
      * @throws ValidationException
      */
@@ -443,13 +443,13 @@ public class ValidatorHelper {
 
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
-            if (alterCatalogStatement.getOptions() == null || alterCatalogStatement.getOptions().isEmpty()) {
+            if (alterCatalogStatement.getOptions() == null) {
                 throw new BadFormatException("AlterCatalog options can't be empty");
             }
 
         } else if (stmt instanceof AlterClusterStatement) {
             AlterClusterStatement alterClusterStatement = (AlterClusterStatement) stmt;
-            if (alterClusterStatement.getOptions() == null || alterClusterStatement.getOptions().isEmpty()) {
+            if (alterClusterStatement.getOptions() == null) {
                 throw new BadFormatException("AlterCluster options can't be empty");
             }
         }

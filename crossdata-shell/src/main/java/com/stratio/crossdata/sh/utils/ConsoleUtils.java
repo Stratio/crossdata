@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 
+import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -167,7 +168,13 @@ public final class ConsoleUtils {
         for (Row row : resultSet) {
             sb.append("| ");
             for (String columnName: columnNames) {
-                String str = String.valueOf(row.getCell(columnName).getValue());
+                String str = "null";
+                Cell cell = row.getCell(columnName);
+                if(cell != null){
+                    str = String.valueOf(cell.getValue());
+                } else {
+                    LOG.warn("Column name '" + columnName + "' not found in current row.");
+                }
                 sb.append(StringUtils.rightPad(str, colWidths.get(columnName)));
                 sb.append(" | ");
             }
