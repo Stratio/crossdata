@@ -155,7 +155,11 @@ public class Coordinator implements Serializable {
             result = persistDetachCluster(dc.targetCluster());
         } else if (AttachConnector.class.isInstance(workflow)) {
             AttachConnector ac = AttachConnector.class.cast(workflow);
-            result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options(), ac.priority(),
+            result = persistAttachConnector(
+                    ac.targetCluster(),
+                    ac.connectorName(),
+                    ac.options(),
+                    ac.priority(),
                     ac.pageSize());
         } else if (ForceDetachConnector.class.isInstance(workflow)) {
             result = CommandResult.createCommandResult("CONNECTOR detached successfully");
@@ -244,6 +248,10 @@ public class Coordinator implements Serializable {
         MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
 
         MetadataManager.MANAGER.deleteCluster(clusterName, false);
+
+        for(ConnectorMetadata connector: MetadataManager.MANAGER.getConnectors()){
+            connector.getClusterRefs().remove(clusterName);
+        }
 
         return CommandResult.createCommandResult("CLUSTER detached successfully");
     }
