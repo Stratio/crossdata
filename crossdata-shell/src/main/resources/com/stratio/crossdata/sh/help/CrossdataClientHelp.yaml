@@ -114,7 +114,7 @@ content:
           <index_name>? ON <tablename> (
           column_name_i, ..., column_name_k )
           (USING <cluster_name>)?
-          (WITH OPTIONS <option_map>)?
+          (WITH <option_map>)?
       
         The CREATE INDEX operation supports two types of indexes
         
@@ -129,7 +129,7 @@ content:
 
       Example:
         
-        CREATE INDEX index1 ON table1 (field1, field2);
+        CREATE CUSTOM INDEX index1 ON table1 (field1, field2) WITH {class: com.statio.connector.datastore.specialIndex};
 
 
   - entry: UPDATE
