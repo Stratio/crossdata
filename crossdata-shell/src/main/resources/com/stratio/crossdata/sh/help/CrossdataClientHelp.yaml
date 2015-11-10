@@ -352,12 +352,10 @@ content:
       
   - entry: DELETE
     help: |
-      Delete a complete rows or set of columns of a set of rows.
+      Delete a complete row or a set of rows.
       
       Syntax:
-        DELETE ( <column> (, <column> )* )?
-          FROM <tablename>
-          WHERE <where-clause>;      
+        DELETE FROM <tablename> WHERE <where-clause>;
 
       Example:
       
