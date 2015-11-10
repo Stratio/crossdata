@@ -130,7 +130,7 @@ T_HELP: H E L P;
 T_EXIT: E X I T;
 T_QUIT: Q U I T;
 T_DATATYPES: D A T A T Y P E S;
-T_LUCENE: L U C E N E;
+T_FULL_TEXT: F U L L '_' T E X T;
 T_DEFAULT: D E F A U L T;
 T_DESCRIBE: D E S C R I B E;
 
@@ -187,7 +187,7 @@ createHelpStatement returns [HelpType type]:
 		| T_TABLE {$type = HelpType.CREATE_TABLE;}
 		| T_INDEX {$type = HelpType.CREATE_INDEX;}
 		| (T_DEFAULT T_INDEX) {$type = HelpType.CREATE_INDEX;}
-		| (T_LUCENE T_INDEX) {$type = HelpType.CREATE_LUCENE_INDEX;}
+		| (T_FULL_TEXT T_INDEX) {$type = HelpType.CREATE_FULL_TEXT_INDEX;}
 	)?
 	;
 

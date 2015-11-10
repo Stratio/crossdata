@@ -1,8 +1,8 @@
-# Help contents for the META shell
+# Help contents for the Crossdata shell
 content:
   - entry: CONSOLE_HELP
     help: |
-      The META shell accepts the following commands
+      The Crossdata shell accepts the following commands
 
       === Shell commands ===
 
@@ -27,7 +27,7 @@ content:
         stop
         describe
 
-      === META related help ===
+      === Crossdata related help ===
       
         datatypes
 
@@ -36,9 +36,9 @@ content:
       > help <command>
       
   - entry: EXIT
-    help: Exit from the META shell.
+    help: Exit from the Crossdata shell.
   - entry: DATATYPES
-    help: The following data types are supported by META...
+    help: The following data types are supported by Crossdata...
   - entry: CREATE
     help: |
       The CREATE command can be used with different targets. For
@@ -113,48 +113,25 @@ content:
         CREATE (<index_type>)? INDEX (IF NOT EXISTS)?
           <index_name>? ON <tablename> (
           column_name_i, ..., column_name_k )
-          (USING <class_name>)?
+          (USING <cluster_name>)?
           (WITH OPTIONS <option_map>)?
       
         The CREATE INDEX operation supports two types of indexes
         
-        - DEFAULT: The classic Cassandra index that is able to index a
-          single column but do not supports range queries.
-        - LUCENE: An index backed by Lucene that permits to index a set of
-          columns. An internal Lucene index is created for each specified
-          columns. With the use of WITH OPTIONS the user can specify the
-          mapping options of the different columns.
+        - DEFAULT: A default index that is able to index one or more columns.
+        - FULL_TEXT: A special index with textual search capabilities. With the use of WITH OPTIONS the user can specify
+         the mapping options of the different columns.
+        - CUSTOM: A custom index for the different datastores. Properties can be specified in JSON format through the
+         options of the statement.
+        - GLOBAL: This type of index is specific for Crossdata and allow us to give textual search capabilities to
+        any datastore using inverted indexes and thanks to the Elasticsearch connector.
+
 
       Example:
         
         CREATE INDEX index1 ON table1 (field1, field2);
-      
-      For more information about specific types of indexes:
-      
-      > help create lucene index
 
-  - entry: CREATE_LUCENE_INDEX
-    help: |
-      Create Lucene backed index on a set of columns. For each column, the
-      a Lucene index is created using the data type specified in the table
-      schema. Additionally, the user can modify the mapping with the use of
-      the WITH OPTIONS statement.
-      
-      Syntax:
-        CREATE LUCENE INDEX (IF NOT EXISTS)?
-          <index_name>? ON <tablename> (
-          column_name_i, ..., column_name_k )
-          (USING <class_name>)?
-          (WITH OPTIONS <option_map>)?
 
-      For more information about the Lucene options, check the current
-      documentation:
-      
-        http://lucene.apache.org/core/documentation.html
-
-      Example:
-
-      
   - entry: UPDATE
     help: |
       Update a column in a row
@@ -318,7 +295,7 @@ content:
       
   - entry: ADD
     help: |
-      Add the classes of a JAR to the META system. The JAR file is inspected
+      Add the classes of a JAR to the Crossdata system. The JAR file is inspected
       looking for:
         - Classes annotated as UDFs.
         - Classes annotated as Triggers.

@@ -51,9 +51,9 @@ public enum HelpType {
      */
     CREATE_INDEX,
     /**
-     * Show create lucene index help.
+     * Show create full text index help.
      */
-    CREATE_LUCENE_INDEX,
+    CREATE_FULL_TEXT_INDEX,
     /**
      * Show update help.
      */
