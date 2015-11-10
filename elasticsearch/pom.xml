@@ -28,8 +28,8 @@
     <groupId>com.stratio.crossdata.connector</groupId>
     <artifactId>crossdata-elasticsearch</artifactId>
     <packaging>jar</packaging>
-    <name>elastic-search</name>
-    <description>Crossdata Elastic-Search Connector</description>
+    <name>Elasticsearch Connector</name>
+    <description>Crossdata Elasticsearch Connector</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
