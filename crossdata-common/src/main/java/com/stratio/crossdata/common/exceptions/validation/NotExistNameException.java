@@ -33,6 +33,6 @@ public class NotExistNameException extends ValidationException {
      * @param name The Name that is not found in Metadata Manager.
      */
     public NotExistNameException(Name name) {
-        super("[" + name + "]  doesn't exist yet");
+        super("[" + name.prettyString() + "]  doesn't exist yet");
     }
 }

@@ -49,6 +49,10 @@ public abstract class Name implements Serializable {
      */
     public abstract NameType getType();
 
+    public String prettyString(){
+        return toString().replaceAll(UNKNOWN_NAME+".", "");
+    }
+
     /**
      *
      * @return String representation of the object.
