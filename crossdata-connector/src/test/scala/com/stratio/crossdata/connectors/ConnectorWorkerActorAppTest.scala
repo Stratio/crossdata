@@ -40,7 +40,6 @@ import org.testng.Assert.assertNotNull
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-//class ConnectorActorAppTest extends FunSuite with MockFactory {
 class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite with MockFactory with ImplicitSender {
   this:Suite =>
 
@@ -56,118 +55,11 @@ class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite w
   val clusterRef: Option[ClusterName] = Some(new ClusterName("myCluster"))
   val partitionKey: Option[java.util.LinkedList[ColumnName]] = Some(new java.util.LinkedList[ColumnName]())
 
-
   test("Basic Connector Mock") {
     val m = mock[IConnector]
     assert(true)
-    //(m.getConnectorName _).expects().returning(connector)
-    //assert(m.getConnectorName().equals(connector))
   }
 
-  /*test("Basic Connector App listening on a given port does not break") {
-    val m = mock[IConnector]
-    (m.getConnectorManifestPath _).expects()
-    (m.init _).expects(*).returning(None)
-    (m.getDatastoreManifestPath _).expects()
-    val c = new ConnectorApp()
-    val myReference = c.startup(m)
-    assertNotNull(myReference, "Null reference returned")
-    c.stop
-  }
-  test("Send SelectInProgressQuery to Connector") {
-    val m = mock[IConnector]
-    val qe = mock[IQueryEngine]
-    (m.getQueryEngine _).expects().returning(qe)
-    (qe.execute(_: String, _:LogicalWorkflow)).expects(*,*).returning(QueryResult.createQueryResult(UUID.randomUUID()
-      .toString, new ResultSet(), 0, true))
-    (m.getConnectorName _).expects().returning(connector)
-    (m.init _).expects(*).returning(None)
-    (m.getConnectorName _).expects().returning(connector)
-
-    val queryId = "QID_test"
-
-      val c = new ConnectorApp()
-      val myReference = c.startup(m)
-      val steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
-      val step = new TransformationStep(Collections.singleton(Operations.SELECT_OPERATOR))
-      steps.add(step)
-      val workflow = new LogicalWorkflow(steps)
-      within(6000 millis) {
-        myReference ! Execute(queryId, workflow)
-        fishForMessage(6 seconds) {
-          case msg: QueryResult => {
-            assert(msg.getQueryId() == queryId )
-            true
-          }
-          case other: Any => {
-            logger.info("receiving message of type" + other.getClass() + " and ignoring it")
-            false
-          }
-        }
-        c.stop()
-      }
-    }
-
-  test("Send MetadataInProgressQuery to Connector") {
-    val port = "2560"
-    val m = mock[IConnector]
-    val me = mock[IMetadataEngine]
-
-    (m.getConnectorManifestPath _).expects().returning("*")
-    (m.init _).expects(*).returning(None)
-
-    val datastores=Array.ofDim[String](1)
-    (m.getDatastoreManifestPath _).expects().returning(datastores)
-    (me.createTable _).expects(*, *).returning(QueryResult.createQueryResult(UUID.randomUUID().toString, new ResultSet(), 0, true))
-    (m.getMetadataEngine _).expects().returning(me)
-
-    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
-    val c = new ConnectorApp()
-    val myReference = c.startup(m)
-    within(6000 millis) {
-
-      val message = CreateTable(
-        "queryId", new ClusterName("cluster"), new TableMetadata(new TableName("catalog", "mytable"),
-          options.get,
-          columns.get,
-          indexes.get,
-          clusterRef.get,
-          partitionKey.get,
-          partitionKey.get)
-      )
-      val future = ask(myReference.get, message)
-      val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
-      logger.debug("receive->" + result + " after sending Metadata query")
-    }
-    c.stop
-  }
-
-  test("Send StorageInProgressQuery to Connector") {
-    val port = "2561"
-    val m = mock[IConnector]
-    val ie = mock[IStorageEngine]
-    (ie.insert(_: ClusterName, _: TableMetadata, _: Row, _: Boolean)).expects(*, *, *, *).returning()
-    (m.getConnectorManifestPath _).expects()
-    (m.init _).expects(*).returning(None)
-    (m.getDatastoreManifestPath _).expects()
-    (m.getStorageEngine _).expects().returning(ie)
-
-    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
-    val c = new ConnectorApp()
-    val myReference = c.startup(m)
-
-    val message = Insert("query", new ClusterName("cluster"), new TableMetadata(new TableName("catalog", "mytable"),
-      options.get, columns.get, indexes.get, clusterRef.get, partitionKey.get, partitionKey.get), new Row(), false)
-    //val future=myReference ? message
-    logger.info("\n\nsending insert message to" + myReference + " \n\n")
-
-    val future = myReference ? message
-
-    val result = Await.result(future, 6 seconds).asInstanceOf[StorageResult]
-    logger.info("receiving->" + result + " after sending insert query")
-    c.stop
-  }
-*/
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE
 
   test("Create catalog Message") {
@@ -183,7 +75,6 @@ class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite w
     assert(message.catalogMetadata.getName.getName == "catalog")
 
     logger.info("\n\nsending create catalog message  \n\n")
-
   }
 
   test("Alter catalog Message") {
@@ -199,8 +90,7 @@ class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite w
 
     assert(message.catalogMetadata.getName.getName == "catalog")
 
-    logger.info("\n\nsending alter catalog message  \n\n")
-
+    logger.info(s"${System.lineSeparator}sending alter catalog message${System.lineSeparator}")
   }
 
   test("create index message") {
@@ -212,7 +102,6 @@ class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite w
     val message = CreateIndex("query", new ClusterName("cluster"), indexMetadata)
 
     assert(message.indexMetadata.getName.getName.equals("myIndex"))
-
   }
 
   test("drop catalog") {

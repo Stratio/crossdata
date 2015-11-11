@@ -37,7 +37,7 @@ public class HelpManagerTest {
         assertNotNull(entry.getHelp(), "Cannot read help");
 
         assertNotNull(content.getHelp(), "Null help map returned.");
-        for (HelpType type : HelpType.values()) {
+        for (HelpType type: HelpType.values()) {
             assertNotNull(content.getHelp().containsKey(type),
                     "Cannot find help associated with " + type + " in help map");
             assertNotNull(content.searchHelp(type), "Cannot find help associated with " + type);

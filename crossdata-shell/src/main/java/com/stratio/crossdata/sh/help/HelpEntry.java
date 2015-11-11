@@ -68,7 +68,7 @@ public class HelpEntry {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(entry);
-        sb.append("\n");
+        sb.append(System.lineSeparator());
         sb.append(help);
         return sb.toString();
     }

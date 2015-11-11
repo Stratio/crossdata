@@ -35,6 +35,9 @@ import org.apache.log4j.Logger
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.concurrent.duration.DurationInt
+import scala.util.Try
+import scala.util.Failure
+import scala.util.Success
 
 object State extends Enumeration {
   type state = Value
@@ -45,13 +48,17 @@ object ConnectorWorkerActor {
       Props = Props(new ConnectorWorkerActor(connector, observableMap, runningJobs))
 }
 
-class ConnectorWorkerActor(connector: IConnector, metadataMapAgent: Agent[ObservableMap[Name, UpdatableMetadata]], runningJobs:  Agent[mutable.ListMap[String, ActorRef]]) extends Actor with ActorLogging with IResultHandler {
+class ConnectorWorkerActor(connector: IConnector,
+                           metadataMapAgent: Agent[ObservableMap[Name, UpdatableMetadata]],
+                           runningJobs: Agent[mutable.ListMap[String, ActorRef]]) extends Actor with ActorLogging with IResultHandler {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorWorkerActor])
 
-  val xml = scala.xml.XML.loadFile(connector.getConnectorManifestPath)
 
-  val connectorName = (xml \\ "Connector" \\ "ConnectorName").text
+  val connectorName = Try(scala.xml.XML.loadFile(connector.getConnectorManifestPath)) match {
+    case Success(xml) => (xml \\ "Connector" \\ "ConnectorName").text
+    case Failure(x) => "XConnector"
+  }
 
   logger.info(s"Lifting connector worker actor: $connectorName")
 

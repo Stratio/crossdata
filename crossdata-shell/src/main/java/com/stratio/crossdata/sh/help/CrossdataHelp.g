@@ -187,7 +187,6 @@ createHelpStatement returns [HelpType type]:
 		| T_TABLE {$type = HelpType.CREATE_TABLE;}
 		| T_INDEX {$type = HelpType.CREATE_INDEX;}
 		| (T_DEFAULT T_INDEX) {$type = HelpType.CREATE_INDEX;}
-		| (T_FULL_TEXT T_INDEX) {$type = HelpType.CREATE_FULL_TEXT_INDEX;}
 	)?
 	;
 

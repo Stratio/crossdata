@@ -17,6 +17,8 @@
  */
 package com.stratio.crossdata.connectors
 
+import java.util
+
 import Mocks.DummyIConnector
 import akka.actor.{ActorRef, ActorSystem}
 import akka.agent.Agent
@@ -37,7 +39,6 @@ import org.scalatest.{FunSuite, Suite}
 import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import scala.io.Source
 
 object ConnectorWorkerActorTest
 
@@ -140,20 +141,27 @@ class ConnectorWorkerActorTest extends FunSuite with ConnectConfig with MockFact
         null
         }
     }
-    val observableMapMock = new ObservableMapMock() .asInstanceOf[ObservableMap[Name, UpdatableMetadata]]
+    val observableMapMock = (new ObservableMapMock()).asInstanceOf[ObservableMap[Name, UpdatableMetadata]]
 
     val agent = Agent(observableMapMock)(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
     val m=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorWorkerActor.props( m,agent, runningJobsAgent))
+    val ca1 = system1.actorOf(ConnectorWorkerActor.props(m, agent, runningJobsAgent))
 
-    val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
-    //Expectations(observableMock.put _).expects(table.getName, table)
+    val table = new TableMetadata(
+      new TableName("catalog", "name"),
+      new util.HashMap[Selector, Selector](),
+      new util.LinkedHashMap[ColumnName, ColumnMetadata     ](),
+      new util.HashMap[IndexName, IndexMetadata](),
+      new ClusterName("test"),
+      new util.ArrayList[ColumnName](),
+      new util.ArrayList[ColumnName]())
     ca1 ! UpdateMetadata(table, false)
-    Thread.sleep(200)
-    assert( observableMapMock.asInstanceOf[ObservableMapMock].testVals.size == 1, "The table metadata has not been updated")
-    expectResult(table.getName.toString+table.toString)( observableMapMock.asInstanceOf[ObservableMapMock].testVals.head)
-
+    Thread.sleep(900)
+    val mapSize = observableMapMock.asInstanceOf[ObservableMapMock].testVals.size
+    assert(mapSize == 1,
+      s"The table metadata has not been updated (Size: $mapSize)")
+    expectResult(table.getName.toString+table.toString)(observableMapMock.asInstanceOf[ObservableMapMock].testVals.head)
   }
 
 }

@@ -35,7 +35,7 @@ public class CrossdataHelpParserTest {
     protected static String[][] supportedHelpCommands = { { "exit", "EXIT" }, { "quit", "EXIT" },
             { "datatypes", "DATATYPES" }, { "create", "CREATE" }, { "create catalog", "CREATE_CATALOG" },
             { "create table", "CREATE_TABLE" }, { "create index", "CREATE_INDEX" },
-            { "create default index", "CREATE_INDEX" }, { "create full_text index", "CREATE_FULL_TEXT_INDEX" },
+            { "create default index", "CREATE_INDEX" },
             { "update", "UPDATE" }, { "insert", "INSERT_INTO" }, { "insert into", "INSERT_INTO" },
             { "truncate", "TRUNCATE" }, { "drop", "DROP" }, { "drop index", "DROP_INDEX" },
             { "drop table", "DROP_TABLE" }, { "drop catalog", "DROP_CATALOG" },

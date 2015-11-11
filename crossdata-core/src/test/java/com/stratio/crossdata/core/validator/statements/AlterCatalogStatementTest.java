@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.core.validator.statements;
 
+import static org.testng.Assert.assertNotNull;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -26,6 +28,7 @@ import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
+import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.statements.AlterCatalogStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
@@ -34,7 +37,7 @@ import com.stratio.crossdata.core.validator.Validator;
 public class AlterCatalogStatementTest extends BasicValidatorTest {
 
     @Test
-    public void alterCatalogInvalidOptions() {
+    public void alterCatalogWithoutOptions() {
         String query = "ALTER CATALOG demo WITH {};";
         AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("demo"), "");
         Validator validator = new Validator();
@@ -43,12 +46,10 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
-            validator.validate(parsedQuery);
-            Assert.fail("CATALOG options must exist");
-        } catch (ValidationException e) {
-            Assert.assertTrue(true);
-        } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            IValidatedQuery validatedQuery = validator.validate(parsedQuery);
+            assertNotNull(validatedQuery, "Validation of Alter Catalog with empty options should have succeed.");
+        } catch (ValidationException | IgnoreQueryException e) {
+            Assert.fail("ALTER CATALOG should accept empty options.");
         }
     }
 
