@@ -114,11 +114,7 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     syncQuery(SQLCommand(s"SHOW TABLES ${databaseName.fold("")("IN " + _)}")) match {
       case SuccessfulQueryResult(_, result, _) =>
         result.map(row => processTableName(row.getString(0)))
-      case ErrorResult(_, message, Some(cause)) =>
-        throw new RuntimeException(message, cause)
-      case ErrorResult(_, message, _) =>
-        throw new RuntimeException(message)
-      // TODO manage exceptions
+      case other => handleCommandError(other)
     }
   }
 
@@ -126,11 +122,16 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     syncQuery(SQLCommand(s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")) match {
       case SuccessfulQueryResult(_, result, _) =>
         result.map(row => FieldMetadata(row.getString(0), DataTypesUtils.toDataType(row.getString(1))))
-      case ErrorResult(_, message, Some(cause)) =>
-        throw new RuntimeException(message, cause)
-      case ErrorResult(_, message, _) =>
-        throw new RuntimeException(message)
+      case other => handleCommandError(other)
     }
+  }
+
+  private def handleCommandError(result: SQLResult) = result match {
+    case ErrorResult(_, message, Some(cause)) =>
+      throw new RuntimeException(message, cause)
+    case ErrorResult(_, message, _) =>
+      throw new RuntimeException(message)
+    // TODO manage exceptions
   }
 
 }
