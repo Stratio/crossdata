@@ -2,22 +2,33 @@
 Feature: Test crossdata shell queries operations
 
   # testTable and testTableJoin are the same
+  # keyspace name in C* must be the same as XD catalog name
   Background:
-    Given I populate a Cassandra DATASTORE with keyspace testKeyspace and table testTable
+    Given I populate a Cassandra DATASTORE with keyspace testCatalog and table testTable
     And I run command ATTACH CLUSTER testCluster ON DATASTORE Cassandra WITH OPTIONS "{'Hosts': '[${HOSTS}]',
   'Port': ${PORT}};"
-    And I run command ATTACH CONNECTOR testConnector TO testCluster WITH OPTIONS {'DefaultLimit': '2'};
+    And I run command ATTACH CONNECTOR CassandraConnector TO testCluster WITH OPTIONS {'DefaultLimit': '2'};
     And I run command CREATE CATALOG testCatalog;
     And I run command USE testCatalog;
     And I run command IMPORT TABLE testTable FROM CLUSTER testCluster;
     And I run command IMPORT TABLE testTableJoins FROM CLUSTER testCluster;
+    And I run command CREATE FULL_TEXT INDEX stringIndex ON testTable (catalogTest.testTable.name-name-String);
 
+  =>DELETE: ASK: Could it exist two indexes over the same table?
+  xdsh:ubuntu:testkeyspace> CREATE FULL_TEXT INDEX intIndex ON testtable (airtime);
+  [Driver] 11-11-2015 17:30:12.501 [INFO|Shell] Query 8472bd74-65f4-41d7-965e-54e02da6006f in progress
+
+  xdsh:ubuntu:testkeyspace>
+  Result: The operation for query 8472bd74-65f4-41d7-965e-54e02da6006f cannot be executed:
+  Other Lucene Index exists for table:testkeyspace.testtable
+
+    And I run command CREATE FULL_TEXT INDEX bigIntegerIndex ON testTable (catalogTest.testTable.phone-phone-BigInteger);
 
   # SELECT_OPERATOR
   Scenario: Retrieve all columns
     When I execute a query: 'SELECT * FROM testTable;'
     Then the result has to be:
-      | catalogTest.tableTest.id-id-Integer | catalogTest.tableTest.name-name-String | catalogTest.tableTest.age-age-Integer | catalogTest.tableTest.phone-phone-BigInteger | catalogTest.tableTest.salary-salary-Double | catalogTest.tableTest.reten-reten-Float | catalogTest.tableTest.new-new-Boolean |
+      | catalogTest.testTable.id-id-Integer | catalogTest.testTable.name-name-String | catalogTest.testTable.age-age-Integer | catalogTest.testTable.phone-phone-BigInteger | catalogTest.testTable.salary-salary-Double | catalogTest.testTable.reten-reten-Float | catalogTest.testTable.new-new-Boolean |
       | 1                                   | name_1                                 | 10                                    | 10000000                                     | 1111.11                                    | 11.11                                   | true                                  |
       | 2                                   | name_2                                 | 20                                    | 20000000                                     | 2222.22                                    | 12.11                                   | false                                 |
 
@@ -25,14 +36,14 @@ Feature: Test crossdata shell queries operations
   Scenario: Retrieve single column
     When I execute a query: 'SELECT phone-phone-BigInteger FROM testTable;'
     Then the result has to be:
-      | catalogTest.tableTest.phone-phone-BigInteger |
+      | catalogTest.testTable.phone-phone-BigInteger |
       | 10000000                                     |
       | 20000000                                     |
 
   Scenario: Retrieve twice columns
     When I execute a query: 'SELECT phone-phone-BigInteger, salary-salary-Double FROM testTable;'
     Then the result has to be:
-      | catalogTest.tableTest.phone-phone-BigInteger | catalogTest.tableTest.salary-salary-Double |
+      | catalogTest.testTable.phone-phone-BigInteger | catalogTest.testTable.salary-salary-Double |
       | 10000000                                     | 1111.11                                    |
       | 20000000                                     | 2222.22                                    |
 
@@ -41,7 +52,7 @@ Feature: Test crossdata shell queries operations
     Then I expect a 'testCatalog.testTable.error is not valid column in this sentence' message.
 
   Scenario: Retrieve no columns
-    When I execute a query: 'SELECT FROM tableTest;'
+    When I execute a query: 'SELECT FROM testTable;'
     Then I expect a 'Error recognized: Unknown parser error: Column name not found' message.
 
   # SELECT_WINDOW
@@ -57,15 +68,23 @@ Feature: Test crossdata shell queries operations
   Scenario: Select with valid limit
     When I execute a query: 'SELECT phone-phone-BigInteger, salary-salary-Double FROM testTable LIMIT 1;'
     Then the result has to be:
-      | catalogTest.tableTest.phone-phone-BigInteger | catalogTest.tableTest.salary-salary-Double |
+      | catalogTest.testTable.phone-phone-BigInteger | catalogTest.testTable.salary-salary-Double |
       | 10000000                                     | 1111.11                                    |
 
   Scenario: Select same amount as connector.DefaultLimit
     When I execute a query: 'SELECT phone-phone-BigInteger, salary-salary-Double FROM testTable;'
     Then the result has to be:
-      | catalogTest.tableTest.phone-phone-BigInteger | catalogTest.tableTest.salary-salary-Double |
+      | catalogTest.testTable.phone-phone-BigInteger | catalogTest.testTable.salary-salary-Double |
       | 10000000                                     | 1111.11                                    |
       | 20000000                                     | 2222.22                                    |
+
+  Scenario: Select greater amount than connector.DefaultLimit
+    When I execute a query: 'SELECT phone-phone-BigInteger, salary-salary-Double FROM testTable LIMIT 3;'
+    Then the result has to be:
+      | catalogTest.testTable.phone-phone-BigInteger | catalogTest.testTable.salary-salary-Double |
+      | 10000000                                     | 1111.11                                    |
+      | 20000000                                     | 2222.22                                    |
+      | 30000000                                     | 3333.33                                    |
 
   # SELECT_<join_type>_JOIN
   # INNER | (RIGHT | LEFT | FULL) OUTER | CROSS
@@ -88,74 +107,114 @@ Feature: Test crossdata shell queries operations
   # SELECT_ORDER_BY
   Scenario: Non-existing column
     When I execute query: 'SELECT phone-phone-BigInteger, salary-salary-Double FROM testTable ORDER BY non-existing;'
-    Then I expect a '' message.
+    Then I expect a 'Cannot determine execution path as no connector supports ORDER BY 'non-existing'' message.
 
   Scenario: Existing column
     When I execute query: 'SELECT phone-phone-BigInteger, salary-salary-Double FROM testTable ORDER BY phone-phone-BigInteger;'
-    Then the result has to be:
-      | catalogTest.tableTest.phone-phone-BigInteger | catalogTest.tableTest.salary-salary-Double |
-      | 10000000                                     | 1111.11                                    |
-      | 20000000                                     | 2222.22                                    |
+    Then I expect a 'Cannot determine execution path as no connector supports ORDER BY 'phone-phone-BigInteger'' message.
+
+  Scenario: Existing column with reserved keyword
+    When I execute query: 'SELECT phone-phone-BigInteger, "double" FROM testTable ORDER BY "double";'
+    Then I expect a 'Cannot determine execution path as no connector supports ORDER BY 'double'' message.
 
   # SELECT_GROUP_BY
   Scenario: Non-existing column
     When I execute query: 'SELECT phone-phone-BigInteger, salary-salary-Double FROM testTable GROUP BY non-existing;'
-    Then I expect a '' message.
+    Then I expect a 'Cannot determine execution path as no connector supports GROUP BY 'non-existing'' message.
 
   Scenario: Existing column
-    When I execute query: 'SELECT phone-phone-BigInteger, salary-salary-Double FROM testTable ORDER BY phone-phone-BigInteger;'
-    Then I expect a '' message.
+    When I execute query: 'SELECT phone-phone-BigInteger, salary-salary-Double FROM testTable GROUP BY phone-phone-BigInteger;'
+    Then I expect a 'Cannot determine execution path as no connector supports GROUP BY 'phone-phone-BigInteger'' message.
+
+  Scenario: Existing column with reserved keyword
+    When I execute query: 'SELECT phone-phone-BigInteger, "double" FROM testTable GROUP BY "double";'
+    Then I expect a 'Cannot determine execution path as no connector supports GROUP BY 'double'' message.
 
   # SELECT_CASE_WHEN
   Scenario: Non-existing column
-    When I execute query: 'SELECT phone-phone-BigInteger, SALARY = CASE non-existing WHEN price < 2000.00 THEN 'Low' WHEN non-existing BETWEEN 2000.01 AND 5000.00 THEN 'Moderate' WHEN non-existing > 5000.01 THEN 'High' ELSE 'Unknown' END, FROM testTable;'
-    Then I expect a '' message.
+    When I execute query: 'SELECT phone-phone-BigInteger, SALARY = CASE non-existing WHEN non-existing < 2000.00 THEN 'Low' WHEN non-existing > 5000.01 THEN 'High' ELSE 'Unknown' END, FROM testTable;'
+    Then I expect a 'Error recognized: Unknown parser error: Column name not found' message.
 
   Scenario: Existing column
-    When I execute query: 'SELECT phone-phone-BigInteger, SALARY = CASE salary-salary-Double WHEN price < 2000.00 THEN 'Low' WHEN salary-salary-Double BETWEEN 2000.01 AND 5000.00 THEN 'Moderate' WHEN salary-salary-Double > 5000.01 THEN 'High' ELSE 'Unknown' END, FROM testTable;'
+    When I execute query: 'SELECT phone-phone-BigInteger, CASE WHEN salary-salary-Double WHEN salary-salary-Double < 2000.00 THEN 'Low' WHEN salary-salary-Double > 2000.01 THEN 'High' ELSE 'Unknown' END, FROM testTable;'
     Then the result has to be:
-      | catalogTest.tableTest.phone-phone-BigInteger | SALARY   |
-      | 10000000                                     | Low      |
-      | 20000000                                     | Moderate |
+      | catalogTest.testTable.phone-phone-BigInteger | salary-salary-Double   |
+      | 10000000                                     | Low                    |
+      | 20000000                                     | High                   |
 
   # SELECT_FUNCTIONS
   # DEFINED BY CONNECTOR
+  # => CASE SENSITIVE
   # C* Connector. [range and should]
   # C* DataStore. [count, now, ttl, writetime and dateOf]
   Scenario: Query with RANGE
-    When I execute query: 'SELECT RANGE(salary-salary-Double, 1000.00,2000.00) FROM testTable;'
-    Then I expect a '' message.
+    When I execute query: 'SELECT catalogTest.testTable.id-id-Integer, catalogTest.testTable.name-name-String FROM testtable WHERE id=range(1,2);'
+    Then the result has to be:
+    | catalogTest.testTable.id-id-Integer | catalogTest.testTable.name-name-String |
+    | 1                                   | name_1                                 |
+    | 2                                   | name_2                                 |
 
   Scenario: Query with SHOULD
-    When I execute query: 'SELECT SHOULD(salary-salary-Double, 1000.00,2000.00) FROM testTable;'
-    Then I expect a '' message.
+    When I execute query: 'SELECT catalogTest.testTable.id-id-Integer, catalogTest.testTable.name-name-String FROM testTable WHERE id=should(1, 2);'
+    Then the result has to be:
+    | catalogTest.testTable.id-id-Integer | catalogTest.testTable.name-name-String |
+    | 1                                   | name_1                                 |
+    | 2                                   | name_2                                 |
 
+
+  # This scenario depends on the connector.DefaultLimit
   Scenario: Query with COUNT
-    When I execute query: 'SELECT COUNT(salary-salary-Double) FROM testTable;'
-    Then I expect a '' message.
+    When I execute query: 'SELECT count(*) FROM testTable;'
+    Then the result has to be:
+      | count(*)        |
+      | 2               |
+
+  Scenario: Query with COUNT and LIMIT
+    When I execute query: 'SELECT count(*) FROM testTable LIMIT 3;'
+    Then the result has to be:
+      | count(*)        |
+      | 3               |
 
   Scenario: Query with NOW
-    When I execute query: 'SELECT NOW FROM testTable;'
-    Then I expect a '' message.
+    When I execute query: 'SELECT now() FROM testTable LIMIT 1;'
+    Then the result has to be:
+      | now()                                              |
+      | 19d07c30-8890-11e5-ab99-99a70c254b38               |
 
   Scenario: Query with TTL
-    When I execute query: 'SELECT TTL FROM testTable;'
-    Then I expect a '' message.
+    When I execute query: 'SELECT ttl(catalogTest.testTable.name-name-String) FROM testTable LIMIT 1;'
+    Then the result has to be:
+      | ttl(catalogTest.testTable.name-name-String)        |
+      | 0                                                  |
 
   Scenario: Query with WRITETIME
-    When I execute query: 'SELECT WRITETIME FROM testTable;'
-    Then I expect a '' message.
+    When I execute query: 'SELECT writetime(catalogTest.testTable.name-name-String) FROM testTable LIMIT 1;'
+    Then the result has to be:
+      | writetime(catalogTest.testTable.name-name-String)        |
+      | 1447238887744173                                         |
 
   Scenario: Query with DATEOF
-    When I execute query: 'SELECT DATEOF FROM testTable;'
-    Then I expect a '' message.
+    When I execute query: 'SELECT dateOf(now()) FROM testTable LIMIT 1;'
+    Then the result has to be:
+      | dateOf(now())                          |
+      | 2015-11-11 16:55:04+0000               |
+
+  Scenario: Query with NON_FUNCTION
+    When I execute query: 'SELECT non_function() FROM testTable LIMIT 1;'
+    Then I expect a 'Error recognized: Unknown parser error: Function not found' message.
 
   # SELECT_SUBQUERY
   Scenario: Query with SUBQUERY
     When I execute query: 'SELECT phone-phone-BigInteger FROM testTable WHERE salary-salary-Double = (SELECT salary-salary-Double FROM testTable)'
-    Then I expect a '' message.
+    Then the result has to be:
+      | catalogTest.testTable.phone-phone-BigInteger |
+      | 10000000                                     |
+      | 20000000                                     |
 
   # FILTER_<column_type>_<relationship>
+
+  ---> DELETE: CREATE FULL_TEXT INDEX stringIndex ON testtable (origin);
+
   ## EVALUATE AS WHERE CLAUSE:
   ## FILTER_PK_EQ
   ## FILTER_PK_IN
@@ -166,32 +225,38 @@ Feature: Test crossdata shell queries operations
   ## FILTER_INDEXED_LIKE
 
   Scenario: Filter FILTER_PK_EQ
-    When I execute query: 'SELECT catalogTest.tableTest.phone-phone-BigInteger FROM testTable WHERE catalogTest.tableTest.id-id-Integer = 1'
-    Then I expect a '' message.
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.id-id-Integer = 1'
+    Then the result has to be:
+      | catalogTest.testTable.phone-phone-BigInteger |
+      | 10000000                                     |
 
   Scenario: Filter FILTER_PK_IN
-    When I execute query: 'SELECT catalogTest.tableTest.phone-phone-BigInteger FROM testTable WHERE catalogTest.tableTest.id-id-Integer IN(1,2)'
-    Then I expect a '' message.
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.id-id-Integer IN[1,2]'
+    Then the result has to be:
+      | catalogTest.testTable.phone-phone-BigInteger |
+      | 10000000                                     |
+      | 20000000                                     |
 
+  # must be a string field
   Scenario: Filter FILTER_PK_MATCH
-    When I execute query: 'SELECT catalogTest.tableTest.phone-phone-BigInteger FROM testTable WHERE catalogTest.tableTest.id-id-Integer MATCH(1,2)'
-    Then I expect a '' message.
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.id-id-Integer MATCH 1'
+    Then I expect a 'No mapper found for field 'id'' message.
 
   # MUST BE INDEXED A FIELD
   Scenario: Filter FILTER_INDEXED_EQ
-    When I execute query: 'SELECT catalogTest.tableTest.phone-phone-BigInteger FROM testTable WHERE catalogTest.tableTest.phone-phone-BigInteger = 10000000'
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String = 'name_1''
     Then I expect a '' message.
 
   Scenario: Filter FILTER_INDEXED_IN
-    When I execute query: 'SELECT catalogTest.tableTest.phone-phone-BigInteger FROM testTable WHERE catalogTest.tableTest.phone-phone-BigInteger IN(10000000,20000000)'
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String IN(10000000,20000000)'
     Then I expect a '' message.
 
   Scenario: Filter FILTER_INDEXED_MATCH
-    When I execute query: 'SELECT catalogTest.tableTest.phone-phone-BigInteger FROM testTable WHERE catalogTest.tableTest.phone-phone-BigInteger MATCH(10000000,20000000)'
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String MATCH 'name_1''
     Then I expect a '' message.
 
   Scenario: Filter FILTER_INDEXED_LIKE
-    When I execute query: 'SELECT catalogTest.tableTest.phone-phone-BigInteger FROM testTable WHERE catalogTest.tableTest.phone-phone-BigInteger LIKE %10000000%'
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String LIKE %10000000%'
     Then I expect a '' message.
 
   # Scenario: Filter from non-existing table
