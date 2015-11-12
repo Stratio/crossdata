@@ -49,7 +49,7 @@ Feature: Test crossdata shell attach/add operations
 
   Scenario: Use non-existing cluster
     Given I run the shell command "ATTACH CONNECTOR CassandraConnector TO invalidCluster WITH OPTIONS {'DefaultLimit': '1000'};"
-    Then I expect a 'CassandraConnector' message
+    Then I expect a '[cluster.invalidCluster]  doesn't exist yet' message
 
   Scenario: Use empty options
     Given I run the shell command "ATTACH CONNECTOR CassandraConnector TO testCluster WITH OPTIONS {};"
