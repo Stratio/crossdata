@@ -120,9 +120,8 @@ sealed trait CassandraDefaultTestConstants {
   val Catalog = "highschool"
   val Table = "students"
   val UnregisteredTable = "teachers"
-  val CassandraHost = {
-    import scala.collection.JavaConversions._
-    ConfigFactory.load().getStringList("cassandra.hosts").headOption.getOrElse("127.0.0.1")
+  val CassandraHost: String = {
+    Try(ConfigFactory.load().getStringList("cassandra.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
   }
   val SourceProvider = "com.stratio.crossdata.connector.cassandra"
 }
