@@ -1275,7 +1275,12 @@ getAllowedReservedWord returns [String str]:
     | T_BOOLEAN
     | T_TEXT
     | T_LUCENE
-    | T_KEY)
+    | T_KEY
+    | T_BIGINT
+    | T_DOUBLE
+    | T_FLOAT
+    | T_INTEGER
+    | T_VARCHAR)
     { $str = new String($ident.text); }
 ;
 
