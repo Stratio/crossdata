@@ -206,7 +206,7 @@ public class Planner {
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
 
         //Obtain the map of connector that is able to access those tables.
-        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = new HashMap<>();
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors;
         try {
             candidatesConnectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE, tables);
         } catch (MetadataManagerException mme) {
@@ -373,7 +373,7 @@ public class Planner {
         addPathsAndMergeSteps(unionSteps, mergeSteps, pathsMap);
         List<UnionStep> toConvertToPartial = new ArrayList<>();
 
-        for (UnionStep mergeStep : mergeSteps) {
+        for (UnionStep mergeStep: mergeSteps) {
             Set<ConnectorMetadata> toRemove = new LinkedHashSet<>();
             Set<ConnectorMetadata> mergeConnectors = new LinkedHashSet<>();
             Set<ExecutionWorkflow> workflows = new LinkedHashSet<>();
@@ -2304,7 +2304,12 @@ public class Planner {
                 Operations op = createOperation(tableMetadataMap, s, r);
                 if (op != null) {
                     convertSelectSelectors(r);
-                    Filter f = new Filter(Collections.singleton(op), r);
+                    Set<Operations> requiredOperations = new HashSet<>();
+                    requiredOperations.add(op);
+                    if(SelectSelector.class.isInstance(r.getRightTerm())){
+                        requiredOperations.add(Operations.SELECT_SUBQUERY);
+                    }
+                    Filter f = new Filter(requiredOperations, r);
                     LogicalStep previous = lastSteps.get(s.getSelectorTablesAsString());
                     previous.setNextStep(f);
                     f.setPrevious(previous);
