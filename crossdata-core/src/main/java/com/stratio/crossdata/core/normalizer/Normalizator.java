@@ -367,17 +367,21 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeGroupBy() throws ValidationException {
-        //Ensure that there is not any case-when selector
-        for (Selector s: fields.getSelectors()) {
-            if (CaseWhenSelector.class.isInstance(s)) {
-                throw new BadFormatException("Group By clause is not possible with Case When Selector");
-            }
-        }
-
         GroupByClause groupByClause = parsedQuery.getStatement().getGroupByClause();
         if (groupByClause != null) {
+            checkThereIsNoSelectorOfSpecificType(groupByClause.getSelectorIdentifier(), CaseWhenSelector.class);
             normalizeGroupBy(groupByClause);
             fields.setGroupByClause(groupByClause);
+        }
+    }
+
+    private void checkThereIsNoSelectorOfSpecificType(
+            List<Selector> selectors,
+            Class<CaseWhenSelector> selectorType) throws BadFormatException {
+        for(Selector s: selectors){
+            if (selectorType.isInstance(s)) {
+                throw new BadFormatException("Group By clause is not possible with Case When Selector");
+            }
         }
     }
 
