@@ -1084,7 +1084,8 @@ getFunctionSelector[TableName tablename] returns [Selector selector]
     }:
     functionName=getFunctionName
     T_START_PARENTHESIS
-        se = getSelectExpression[new LinkedHashMap<String, String>(), tablename]
+        {se = new SelectExpression(new ArrayList<Selector>()); }
+        (se = getSelectExpression[new LinkedHashMap<String, String>(), tablename])?
     T_END_PARENTHESIS
 ;
 
