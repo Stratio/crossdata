@@ -897,7 +897,8 @@ public class Planner {
                     throw new PlanningException(unregisteredFunctionMsg);
                 } else {
                     throw new PlanningException(
-                            "Cannot determine execution path as no connector supports " + current.toString());
+                            "There is no active connector supporting the operation/s: " + current.getOperations()
+                            + System.lineSeparator() + "NOTE: Active connectors: " + availableConnectors);
                 }
             } else {
                 availableConnectors.removeAll(toRemove);
