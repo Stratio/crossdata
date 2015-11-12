@@ -14,16 +14,6 @@ Feature: Test crossdata shell queries operations
     And I run command IMPORT TABLE testTableJoins FROM CLUSTER testCluster;
     And I run command CREATE FULL_TEXT INDEX stringIndex ON testTable (catalogTest.testTable.name-name-String);
 
-  =>DELETE: ASK: Could it exist two indexes over the same table?
-  xdsh:ubuntu:testkeyspace> CREATE FULL_TEXT INDEX intIndex ON testtable (airtime);
-  [Driver] 11-11-2015 17:30:12.501 [INFO|Shell] Query 8472bd74-65f4-41d7-965e-54e02da6006f in progress
-
-  xdsh:ubuntu:testkeyspace>
-  Result: The operation for query 8472bd74-65f4-41d7-965e-54e02da6006f cannot be executed:
-  Other Lucene Index exists for table:testkeyspace.testtable
-
-    And I run command CREATE FULL_TEXT INDEX bigIntegerIndex ON testTable (catalogTest.testTable.phone-phone-BigInteger);
-
   # SELECT_OPERATOR
   Scenario: Retrieve all columns
     When I execute a query: 'SELECT * FROM testTable;'
@@ -211,18 +201,14 @@ Feature: Test crossdata shell queries operations
       | 10000000                                     |
       | 20000000                                     |
 
-  # FILTER_<column_type>_<relationship>
-
-  ---> DELETE: CREATE FULL_TEXT INDEX stringIndex ON testtable (origin);
-
-  ## EVALUATE AS WHERE CLAUSE:
+  # FILTER_<column_type>_<relationship => It is as where clause:
   ## FILTER_PK_EQ
   ## FILTER_PK_IN
   ## FILTER_PK_MATCH
   ## FILTER_INDEXED_EQ
   ## FILTER_INDEXED_IN
   ## FILTER_INDEXED_MATCH
-  ## FILTER_INDEXED_LIKE
+  ## IT WILL BE REMOVED: FILTER_INDEXED_LIKE
 
   Scenario: Filter FILTER_PK_EQ
     When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.id-id-Integer = 1'
@@ -237,34 +223,55 @@ Feature: Test crossdata shell queries operations
       | 10000000                                     |
       | 20000000                                     |
 
-  # must be a string field
+  # must be a string type field
   Scenario: Filter FILTER_PK_MATCH
-    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.id-id-Integer MATCH 1'
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.id-id-Integer MATCH(1)'
     Then I expect a 'No mapper found for field 'id'' message.
 
   # MUST BE INDEXED A FIELD
   Scenario: Filter FILTER_INDEXED_EQ
     When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String = 'name_1''
-    Then I expect a '' message.
+    Then the result has to be:
+      | catalogTest.testTable.phone-phone-BigInteger |
+      | 10000000                                     |
 
   Scenario: Filter FILTER_INDEXED_IN
-    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String IN(10000000,20000000)'
-    Then I expect a '' message.
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String IN('name_1','name_2')'
+    Then the result has to be:
+      | catalogTest.testTable.phone-phone-BigInteger |
+      | 10000000                                     |
+      | 20000000                                     |
 
   Scenario: Filter FILTER_INDEXED_MATCH
-    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String MATCH 'name_1''
-    Then I expect a '' message.
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String MATCH('name_1')'
+    Then the result has to be:
+      | catalogTest.testTable.phone-phone-BigInteger |
+      | 10000000                                     |
 
-  Scenario: Filter FILTER_INDEXED_LIKE
-    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String LIKE %10000000%'
-    Then I expect a '' message.
+  Scenario: Filter FILTER_INDEXED_MATCH end with
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String MATCH('*_1')'
+    Then the result has to be:
+      | catalogTest.testTable.phone-phone-BigInteger |
+      | 10000000                                     |
 
-  # Scenario: Filter from non-existing table
+  Scenario: Filter FILTER_INDEXED_MATCH start with
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String MATCH('name*')'
+    Then the result has to be:
+      | catalogTest.testTable.phone-phone-BigInteger |
+      | 10000000                                     |
+      | 20000000                                     |
 
-  # Scenario: Filter with non-existing column_type
+  Scenario: Filter FILTER_INDEXED_MATCH contains
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String MATCH('*ame_*')'
+    Then the result has to be:
+      | catalogTest.testTable.phone-phone-BigInteger |
+      | 10000000                                     |
+      | 20000000                                     |
 
-  # Scenario: Filter with non-existing relation
+  Scenario: Filter FILTER_INDEXED_MATCH no results
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String MATCH('*no_results*')'
+    Then I expect a '0 results' message.
 
-  # Scenario: Filter with empty column_type
-
-  # Scenario: Filter with empty relation
+  Scenario: Filter FILTER_INDEXED_LIKE literal
+    When I execute query: 'SELECT catalogTest.testTable.phone-phone-BigInteger FROM testTable WHERE catalogTest.testTable.name-name-String LIKE('name_1')'
+    Then I expect a 'Function FILTER_INDEXED_LIKE is not supported' message.
