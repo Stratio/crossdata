@@ -56,12 +56,7 @@
             <artifactId>derbyclient</artifactId>
             <version>${derby.version}</version>
         </dependency>
-
-
-
-
     </dependencies>
-
 
 
     <build>
