@@ -7,7 +7,8 @@ function usage {
   echo "Example: ./stratio-xd-shell --cassandra --jars myApp.jar"
   echo ""
   echo "--cassandra         Add support for Cassandra"
-  echo "--mongodb           Add support for MongoDB"  
+  echo "--mongodb           Add support for MongoDB"
+  echo "--elasticsearch     Add support for ElasticSearch"
   echo ""
   echo "[SPARK_OPTIONS]"
   echo "Spark's specific options"
@@ -18,9 +19,10 @@ function usage {
 
 export SPARK_HOME="$(cd `dirname $0`/..; pwd)"
 
-xdjars="$SPARK_HOME/lib/crossdata-core-1.0.0-SNAPSHOT.jar"
+xdjars="$SPARK_HOME/lib/crossdata-core-1.0.0-SNAPSHOT-jar-with-dependencies.jar"
 MONGODB_LIB="$SPARK_HOME/lib/crossdata-mongodb-1.0.0-SNAPSHOT-jar-with-dependencies.jar"
 CASSANDRA_LIB="$SPARK_HOME/lib/crossdata-cassandra-1.0.0-SNAPSHOT-jar-with-dependencies.jar"
+ELASTICSEARCH_LIB="$SPARK_HOME/lib/crossdata-elasticsearch-1.0.0-SNAPSHOT-jar-with-dependencies.jar"
 
 
 # Keep all the arguments, then remove the XD specific ones and only keep the Spark arguments.
@@ -44,7 +46,11 @@ case $key in
   --mongodb)
   xdjars="$xdjars,$MONGODB_LIB"
     sparkArguments=${sparkArguments/--mongodb/}          
-    ;;  
+    ;;
+    --elasticsearch)
+  xdjars="$xdjars,$ELASTICSEARCH_LIB"
+    sparkArguments=${sparkArguments/--elasticsearch/}
+    ;;
     --help)
     usage
     ;;

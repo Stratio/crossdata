@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.stratio.tests;
 
 import java.util.List;
@@ -19,7 +34,8 @@ import cucumber.api.CucumberOptions;
 //Indicar feature
 @CucumberOptions(features = { "src/test/resources/features/Cassandra/CassandraSelectSimple.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectLimit.feature",
-		"src/test/resources/features/Cassandra/CassandraSelectEqualsFilter.feature" })
+		"src/test/resources/features/Cassandra/CassandraSelectEqualsFilter.feature",
+		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature" })
 public class ATCassandraXDTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()
 			.getCanonicalName());

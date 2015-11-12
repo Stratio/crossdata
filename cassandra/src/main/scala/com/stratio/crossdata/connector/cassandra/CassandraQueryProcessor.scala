@@ -34,7 +34,11 @@ object CassandraQueryProcessor {
   val DefaultLimit = 10000
   type ColumnName = String
 
-  case class CassandraPlan(basePlan: BaseLogicalPlan, limit: Option[Int])
+  case class CassandraPlan(basePlan: BaseLogicalPlan, limit: Option[Int]){
+    def projects: Seq[NamedExpression] = basePlan.projects
+    def filters: Array[SourceFilter] = basePlan.filters
+    def udfsMap: Map[Attribute, NativeUDF] = basePlan.udfsMap
+  }
 
 
   def apply(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) = new CassandraQueryProcessor(cassandraRelation, logicalPlan)
@@ -93,8 +97,8 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   def execute(): Option[Array[Row]] = {
     def annotateRepeatedNames(names: Seq[String]): Seq[String] = {
       val indexedNames = names zipWithIndex
-      val m = indexedNames.groupBy(_._1).values.flatMap(_.zipWithIndex.map(x => x._1._2 -> x._2)).toMap
-      indexedNames map { case (name, index) => val c = m(index); if (c > 0) s"$name$c" else name }
+      val name2pos = indexedNames.groupBy(_._1).values.flatMap(_.zipWithIndex.map(x => x._1._2 -> x._2)).toMap
+      indexedNames map { case (name, index) => val c = name2pos(index); if (c > 0) s"$name$c" else name }
     }
 
     def buildAggregationExpression(names: Expression): String = {
@@ -107,27 +111,31 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
     try {
       validatedNativePlan.map { cassandraPlan =>
+        if (cassandraPlan.limit.exists(_ == 0)) {
+          Array.empty[Row]
+        } else {
+          val projectsString: Seq[String] = cassandraPlan.basePlan match {
+            case SimpleLogicalPlan(projects, _, _) =>
+              projects.map(_.toString())
 
-        val projectsString: Seq[String] = cassandraPlan.basePlan match {
-          case SimpleLogicalPlan(projects, _, _) =>
-            projects.map(_.toString())
+            case AggregationLogicalPlan(projects, groupingExpression, _, _) =>
+              require(groupingExpression.isEmpty)
+              projects.map(buildAggregationExpression)
+          }
 
-          case AggregationLogicalPlan(projects, groupingExpression, _, _) =>
-            require(groupingExpression.isEmpty)
-            projects.map(buildAggregationExpression)
+          val cqlQuery = buildNativeQuery(
+            cassandraRelation.tableDef.name,
+            projectsString,
+            cassandraPlan.filters,
+            cassandraPlan.limit.getOrElse(CassandraQueryProcessor.DefaultLimit),
+            cassandraPlan.udfsMap map { case (k, v) => k.toString -> v }
+          )
+          val resultSet = cassandraRelation.connector.withSessionDo { session =>
+            session.execute(cqlQuery)
+          }
+          sparkResultFromCassandra(annotateRepeatedNames(cassandraPlan.projects.map(_.name)).toArray, resultSet)
         }
 
-        val cqlQuery = buildNativeQuery(
-          cassandraRelation.tableDef.name,
-          projectsString,
-          cassandraPlan.basePlan.filters,
-          cassandraPlan.limit.getOrElse(CassandraQueryProcessor.DefaultLimit),
-          cassandraPlan.basePlan.udfsMap map { case (k, v) => k.toString -> v }
-        )
-        val resultSet = cassandraRelation.connector.withSessionDo { session =>
-          session.execute(cqlQuery)
-        }
-        sparkResultFromCassandra(annotateRepeatedNames(cassandraPlan.basePlan.projects.map(_.name)).toArray, resultSet)
       }
     } catch {
       case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage); None
@@ -139,27 +147,25 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   def validatedNativePlan: Option[CassandraPlan] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
-    def findCassandraPlan(lplan: LogicalPlan): (BaseLogicalPlan, Boolean) = {
+    def findBasePlan(lplan: LogicalPlan): Option[BaseLogicalPlan] = {
       lplan match {
         // TODO lines below seem to be duplicated in ExtendedPhysicalOperation when finding filters and projects
         case Limit(_, child) =>
-          findCassandraPlan(child)
+          findBasePlan(child)
 
         case Aggregate(_, _, child) =>
-          findCassandraPlan(child)
+          findBasePlan(child)
 
         case ExtendedPhysicalOperation(projectList, filterList, _) =>
-          CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+          val (basePlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+          if (!filtersIgnored) Some(basePlan) else None
       }
     }
-
-    val (basePlan, filtersIgnored) = findCassandraPlan(logicalPlan)
-    Option(CassandraPlan(basePlan, limit)) filter { _ => !filtersIgnored && checkNativeFilters(basePlan.filters, basePlan.udfsMap) }
+    findBasePlan(logicalPlan).collect{ case bp if checkNativeFilters(bp.filters, bp.udfsMap) => CassandraPlan(bp, limit)}
   }
 
-
-  private[this] def checkNativeFilters(filters: Array[SourceFilter], udfs: Map[Attribute, NativeUDF]):
-  Boolean = {
+  private[this] def checkNativeFilters(filters: Array[SourceFilter],
+                                       udfs: Map[Attribute, NativeUDF]): Boolean = {
 
     val udfNames = udfs.keys.map(_.toString).toSet
 

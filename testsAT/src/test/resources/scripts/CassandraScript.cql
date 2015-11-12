@@ -18,3 +18,5 @@ INSERT INTO databasetest.tab3(new) VALUES (true);
 INSERT INTO databasetest.tab3(new) VALUES (false);
 CREATE TABLE databasetest.tab4(date Timestamp PRIMARY KEY);
 INSERT INTO databasetest.tab4(date) VALUES ('1999-11-30');
+CREATE TABLE databasetest.sample_times (a int, c timeuuid, PRIMARY KEY (a,c));
+INSERT INTO databasetest.sample_times (a,c) VALUES (1,50554d6e-29bb-11e5-b345-feff819cdc9f);

@@ -22,7 +22,6 @@ import akka.util.Timeout
 import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.common.result.ErrorResult
 import com.stratio.crossdata.test.BaseXDTest
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
 

@@ -34,6 +34,7 @@ object MongoQueryProcessor {
 
   val DefaultLimit = 10000
   type ColumnName = String
+  type Limit = Option[Int]
 
   def apply(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) = new MongoQueryProcessor(logicalPlan, config, schemaProvided)
 
@@ -130,29 +131,28 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
   }
 
 
-  def validatedNativePlan: Option[(Seq[ColumnName], Array[SourceFilter], Option[Int])] = {
+  def validatedNativePlan: Option[(Seq[ColumnName], Array[SourceFilter], Limit)] = {
     lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
-    def findProjectsFilters(lplan: LogicalPlan): (Seq[ColumnName], Array[SourceFilter], Boolean) = {
-      lplan match {
-        case Limit(_, child) => findProjectsFilters(child)
-        case PhysicalOperation(projectList, filterList, _) =>
-          val (crossdataPlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+    def findProjectsFilters(lplan: LogicalPlan): Option[(Seq[ColumnName], Array[SourceFilter])] = lplan match {
+
+      case Limit(_, child) =>
+        findProjectsFilters(child)
+
+      case PhysicalOperation(projectList, filterList, _) =>
+        val (crossdataPlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
+        if (filtersIgnored) {
+          None
+        }
+        else {
           crossdataPlan match {
-            case SimpleLogicalPlan(projects, filters, _) => (projects.map(_.name), filters, filtersIgnored)
+            case SimpleLogicalPlan(projects, filters, _) => Some(projects.map(_.name), filters)
             case _ => ??? // TODO
           }
-      }
+        }
     }
 
-    val (projects, filters, filtersIgnored) = findProjectsFilters(logicalPlan)
-
-    if (filtersIgnored || !checkNativeFilters(filters)) {
-      None
-    } else {
-      Some((projects, filters, limit))
-    }
-
+    findProjectsFilters(logicalPlan).collect{ case (p, f) if checkNativeFilters(f) => (p,f,limit)}
   }
 
 

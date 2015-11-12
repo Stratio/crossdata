@@ -31,6 +31,7 @@ trait EndToEndTest extends BaseXDTest with BeforeAndAfterAll {
   }
 
   def stop() = {
+    crossdataServer.get.xdContext.get.dropAllTables()
     crossdataServer.foreach(_.stop())
     crossdataServer.foreach(_.destroy())
   }

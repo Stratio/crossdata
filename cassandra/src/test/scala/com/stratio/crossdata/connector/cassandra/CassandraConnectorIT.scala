@@ -38,7 +38,16 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     result(0) should have length 5
   }
 
+
+  it should "execute natively a query with limit 0" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val result = sql(s"SELECT * FROM $Table LIMIT 0").collect(Native)
+    result should have length 0
+  }
+
   it should "execute natively a (SELECT column)" in {
+
     assumeEnvironmentIsUpAndRunning
 
     val result = sql(s"SELECT id FROM $Table ").collect(Native)
@@ -154,6 +163,24 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     // TODO We need to create an unregister the table
     tableCountInHighschool should be > initialLength
 
+  }
+
+  it should "infer schema after import all tables from a keyspace" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val importQuery =
+      s"""
+         |IMPORT TABLES
+         |USING $SourceProvider
+         |OPTIONS (
+         | cluster "$ClusterName",
+         | spark_cassandra_connection_host '$CassandraHost'
+         |)
+      """.stripMargin
+
+    sql(importQuery)
+    ctx.dropTempTable(s"$Catalog.$Table")
+    ctx.table(s"$Catalog.$Table").schema should have length 5
   }
 
   val wrongImportTablesSentences = List(
