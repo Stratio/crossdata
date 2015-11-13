@@ -255,14 +255,14 @@ content:
       
       Syntax:
       
-        SELECT <select-clause> FROM <tablename>
+        SELECT <select-clause> FROM (<tablename> | <subquery>)
           ( WITH WINDOW (LAST | (<n> (ROWS|<time-unit>)))?
-          ( INNER JOIN <tablename> ON <field1>=<field2>...)?
+          ( <join-type> JOIN <tablename> ON <field1>=<field2>...)?
           ( WHERE <where-clause> )?
+          ( GROUP BY <group-by> (HAVING <having-clause>)?)?
           ( ORDER BY <order-by> )?
-          ( GROUP BY <group-by>)?
           ( LIMIT <integer> )?
-          ( DISABLE ANALYTICS )?
+          ( WITH <json-options> )?
 
         where,
         - <select-clause> contains the list of columns to be retrieved
@@ -276,7 +276,7 @@ content:
           - <n> <time-unit>: The select statement is executed with the
             tuples received in the last <n> SECONDS, MINUTES, HOURS
             or DAYS.
-        - INNER JOIN permits to combine two tables A and B by comparing
+        - JOIN permits to combine two tables A and B by comparing
           each row in A with each one in B selecting all rows that match
           the join-predicate.
         - WHERE <where-clause> specifies the conditions that a row in 
@@ -285,30 +285,12 @@ content:
         - GROUP BY <group-by> specifies the grouping criteria.
         - LIMIT <integer> specifies the maximum number of rows to be
           returned.
-        - DISABLE ANALYTICS disables the use of intelligent analytics
-          provided by platform relying only the Cassandra specification.
 
       
       Example:
       
         SELECT column1 FROM table1 WITH WINDOW 5 SECONDS WHERE column2 = 3;
-      
-  - entry: ADD
-    help: |
-      Add the classes of a JAR to the Crossdata system. The JAR file is inspected
-      looking for:
-        - Classes annotated as UDFs.
-        - Classes annotated as Triggers.
-        - Classes annotated as Custom indexes.
 
-      Syntax:
-      
-        ADD <jar-path>;
-      
-      Example:
-      
-        ADD "/home/user/custom.jar";
-      
   - entry: LIST
     help: |
       The LIST command can be used with different targets. For
