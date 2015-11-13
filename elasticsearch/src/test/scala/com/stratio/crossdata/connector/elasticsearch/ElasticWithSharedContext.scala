@@ -36,6 +36,8 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
   var elasticClient: Option[ElasticClient] = None
   var isEnvironmentReady = false
 
+  log.warn(s"ESHost -> $ElasticHost | ESCluster -> $ElasticClusterName")
+
   override protected def beforeAll() = {
     super.beforeAll()
 
