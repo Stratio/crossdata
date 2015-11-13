@@ -3,6 +3,9 @@ language: scala
 scala:
    - 2.10.4
    - 2.11.6
+   
+jdk:
+  - oraclejdk8
 
 services:
   - cassandra
