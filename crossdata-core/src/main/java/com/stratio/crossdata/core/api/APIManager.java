@@ -300,12 +300,14 @@ public class APIManager {
                 ClusterName clustername = ref.getKey();
                 stringBuilder = stringBuilder.append("\tCluster ").append(clustername.getName())
                         .append(":").append(System.getProperty("line.separator"));
-                ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(clustername);
-                Set<Map.Entry<ConnectorName, ConnectorAttachedMetadata>> connectors = cluster.getConnectorAttachedRefs()
-                        .entrySet();
-                for (Map.Entry<ConnectorName, ConnectorAttachedMetadata> c : connectors) {
-                    stringBuilder = stringBuilder.append("\t\tConnector ").append(c.getKey().getName())
-                            .append(System.getProperty("line.separator"));
+                if(MetadataManager.MANAGER.exists(clustername)){
+                    ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(clustername);
+                    Set<Map.Entry<ConnectorName, ConnectorAttachedMetadata>> connectors = cluster.getConnectorAttachedRefs()
+                            .entrySet();
+                    for (Map.Entry<ConnectorName, ConnectorAttachedMetadata> c : connectors) {
+                        stringBuilder = stringBuilder.append("\t\tConnector ").append(c.getKey().getName())
+                                .append(System.getProperty("line.separator"));
+                    }
                 }
             }
         }
