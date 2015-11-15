@@ -879,15 +879,19 @@ public class Normalizator {
     //TODO refactor -> merge with applyAlias(columnName)
     private ColumnName applyAlias(ColumnSelector columnSelector) {
         ColumnName result = columnSelector.getName();
-        if (columnSelector.getName().getTableName() != null && fields
-                .existTableAlias(columnSelector.getName().getTableName().getName())) {
+        if (columnSelector.getName().getTableName() != null &&
+                fields.existTableAlias(columnSelector.getName().getTableName().getName())) {
             TableName table = fields.getTableName(columnSelector.getName().getTableName().getName());
             columnSelector.getName().setTableName(table);
             columnSelector.setTableName(table);
         }
 
         if (fields.existColumnAlias(columnSelector.getName().getName())) {
-            result = fields.getColumnName(columnSelector.getName().getName());
+            ColumnName proposedResult = fields.getColumnName(columnSelector.getName().getName());
+            if((columnSelector.getColumnName().getTableName() == null)
+                    || proposedResult.getTableName().equals(columnSelector.getTableName())){
+                result = proposedResult;
+            }
         }
         return result;
     }
@@ -1018,32 +1022,50 @@ public class Normalizator {
             List<Selector> selectors) throws ValidationException {
         List<Selector> result = new ArrayList<>();
         TableName firstTableName = fields.getPreferredTableNames().iterator().next();
+        Set<String> fixedAliases = new HashSet<>();
+        for (Selector selector: selectors) {
+            String fixedAlias = selector.getAlias();
+            if(fixedAlias != null){
+                fixedAliases.add(fixedAlias);
+            }
+        }
+        String proposedAlias;
         for (Selector selector : selectors) {
             switch (selector.getType()) {
             case FUNCTION:
                 FunctionSelector functionSelector = getFunctionSelector(firstTableName, (FunctionSelector) selector);
-                functionSelector.setAlias(
-                        selector.getAlias() == null ? selector.getColumnName().getName() : selector.getAlias());
+                proposedAlias =
+                        selector.getAlias() == null ? selector.getColumnName().getName(): selector.getAlias();
+                if(fixedAliases.contains(proposedAlias) && (selector.getAlias() == null)){
+                    proposedAlias = functionSelector.getTableName().getName() + "_" + proposedAlias;
+                }
+                functionSelector.setAlias(proposedAlias);
                 result.add(functionSelector);
                 break;
             case COLUMN:
                 ColumnSelector columnSelector = getColumnSelector((ColumnSelector) selector);
                 if(columnSelector.getAlias()!=null){
                     if(aliasSet.contains(columnSelector.getAlias())){
-                        throw new BadFormatException("Duplicate Alias in select expression: " + columnSelector
-                                .getAlias());
+                        throw new BadFormatException("Duplicate Alias in select expression: " +
+                                columnSelector.getAlias());
                     }else{
                         aliasSet.add(columnSelector.getAlias());
                     }
                 }
-                columnSelector.setAlias(
-                        selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias());
+                proposedAlias = selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias();
+                if(fixedAliases.contains(proposedAlias) && (selector.getAlias() == null)){
+                    proposedAlias = columnSelector.getTableName().getName() + "_" + proposedAlias;
+                }
+                columnSelector.setAlias(proposedAlias);
                 result.add(columnSelector);
                 break;
             case RELATION:
                 RelationSelector rs = getRelationSelector((RelationSelector) selector);
-                rs.setAlias(
-                        selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias());
+                proposedAlias = selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias();
+                if(fixedAliases.contains(proposedAlias) && (selector.getAlias() == null)){
+                    proposedAlias = rs.getTableName().getName() + "_" + proposedAlias;
+                }
+                rs.setAlias(proposedAlias);
                 result.add(rs);
                 break;
             case ASTERISK:
@@ -1051,15 +1073,21 @@ public class Normalizator {
                 break;
             case CASE_WHEN:
                 CaseWhenSelector caseWhenSelector = getCaseWhenSelector((CaseWhenSelector) selector);
-                caseWhenSelector.setAlias(
-                        selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias());
+                proposedAlias = selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias();
+                if(fixedAliases.contains(proposedAlias) && (selector.getAlias() == null)){
+                    proposedAlias = caseWhenSelector.getTableName().getName() + "_" + proposedAlias;
+                }
+                caseWhenSelector.setAlias(proposedAlias);
                 result.add(caseWhenSelector);
                 break;
             default:
                 Selector defaultSelector = selector;
                 defaultSelector.setTableName(firstTableName);
-                defaultSelector.setAlias(
-                        selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias());
+                proposedAlias = selector.getAlias()==null?selector.getColumnName().getName():selector.getAlias();
+                if(fixedAliases.contains(proposedAlias) && (selector.getAlias() == null)){
+                    proposedAlias = defaultSelector.getTableName().getName() + "_" + proposedAlias;
+                }
+                defaultSelector.setAlias(proposedAlias);
                 result.add(defaultSelector);
                 break;
             }

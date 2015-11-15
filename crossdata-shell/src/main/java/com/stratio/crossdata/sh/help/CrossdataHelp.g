@@ -202,7 +202,6 @@ helpStatement returns [HelpType type]
 	| (T_TRUNCATE) {t = HelpType.TRUNCATE;}
 	| (dropType=dropHelpStatement) {t = dropType;}
 	| (T_SELECT) {t = HelpType.SELECT;}
-	| (T_ADD) {t = HelpType.ADD;}
 	| (listType=listHelpStatement) {t = listType;}
 	| (T_REMOVE T_UDF) {t = HelpType.REMOVE_UDF;}
 	| (T_DELETE) {t = HelpType.DELETE;}

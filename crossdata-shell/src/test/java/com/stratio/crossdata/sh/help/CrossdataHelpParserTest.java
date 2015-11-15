@@ -39,7 +39,7 @@ public class CrossdataHelpParserTest {
             { "update", "UPDATE" }, { "insert", "INSERT_INTO" }, { "insert into", "INSERT_INTO" },
             { "truncate", "TRUNCATE" }, { "drop", "DROP" }, { "drop index", "DROP_INDEX" },
             { "drop table", "DROP_TABLE" }, { "drop catalog", "DROP_CATALOG" },
-            { "drop trigger", "DROP_TRIGGER" }, { "select", "SELECT" }, { "add", "ADD" }, { "list", "LIST" },
+            { "drop trigger", "DROP_TRIGGER" }, { "select", "SELECT" }, { "list", "LIST" },
             { "list process", "LIST_PROCESS" }, { "list udf", "LIST_UDF" }, { "list trigger", "LIST_TRIGGER" },
             { "remove udf", "REMOVE_UDF" }, { "delete", "DELETE" }, { "set options", "SET_OPTIONS" },
             { "explain plan", "EXPLAIN_PLAN" }, { "alter", "ALTER" }, { "alter catalog", "ALTER_CATALOG" },

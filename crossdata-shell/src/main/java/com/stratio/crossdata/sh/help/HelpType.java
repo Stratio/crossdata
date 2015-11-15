@@ -87,10 +87,6 @@ public enum HelpType {
      */
     SELECT,
     /**
-     * Show add help.
-     */
-    ADD,
-    /**
      * Show list help.
      */
     LIST,

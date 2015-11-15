@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.validator.statements;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.*;
@@ -1961,7 +1962,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
 
     @Test
-    public void simpleSubqueryWithAmbiguousNameTest(){
+    public void simpleSubqueryWithCollisionNameTest(){
 
         String inputText = "SELECT * FROM ( SELECT demo.users.name , demo.users.age AS name FROM demo.users )'";
 
@@ -1988,10 +1989,10 @@ public class SelectStatementTest extends BasicValidatorTest {
         BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
         try {
-            validator.validate(parsedQuery);
-            fail("Duplicate names within the subquery should not be validated");
+            IValidatedQuery validatedQuery = validator.validate(parsedQuery);
+            assertNotNull(validatedQuery, "Validation shouldn't have failed.");
         } catch (ValidationException | IgnoreQueryException e) {
-            Assert.assertTrue( e instanceof AmbiguousNameException);
+            fail("Normalizator should provide a new alias in case of collision");
         }
 
     }
