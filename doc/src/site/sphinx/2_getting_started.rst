@@ -89,5 +89,5 @@ Now that Crossdata server is running you can use the Crossdata driver importing 
 Next Steps
 ===========
 Now Crossdata is running and it is possible to start executing different queries. Please see `Using Crossdata
-Section <4_using_crossdata>`_ to know how exactly use Crossdata.
+Section <4_using_crossdata.rst>`_ to know how exactly use Crossdata.
 
