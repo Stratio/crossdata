@@ -1,5 +1,5 @@
 ===========================
-Crossdata MongoDB Connector
+Crossdata Cassandra Connector
 ===========================
 
 This connector allows to send SQL-Like queries to Cassandra and execute them natively on Cassandra.
