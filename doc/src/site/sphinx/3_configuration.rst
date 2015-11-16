@@ -9,11 +9,15 @@ Once the requirements are installed it's necessary to set up the server and driv
 crossdata runs in a distributed environments. In other case, it is possible to use Crossdata with a default values,
 and it will run in localhost mode.
 
+Server Configuration for standalone execution
+==============================================
+If Crossdata will be use in a standalone mode it is not necessary to change any default configuration. Just run it !!!
+
 Server Configuration for Distributed Environment
 =================================================
 
 To configure the servers in a distributed environment it is needed to create a server-application.conf file in every
-crossdata instance, with the following params:
+crossdata instance, $CROSSDATA_HOME/conf/server-application.conf, with the following params:
 
  - crossdata-server.akka.remote.netty.tcp.hostname: This is the IP of the local machine where Crossdata server instance is running.
 
@@ -32,7 +36,9 @@ This is an example of server-application.conf file::
 
 Driver configuration
 ======================
-To start a crossdata client is needed to create the configuration file driver-application.conf. In any other case the driver tries to connect to a localhost server of Crossdata.
+To start a crossdata client is needed to create the configuration file driver-application.conf,
+$CROSSDATA_HOME/conf/driver-application.conf. In any other case the driver tries to connect to a local host server of
+Crossdata.
 This file must contain:
 
  - crossdata-driver.config.cluster.name: The name of the Crossdata cluster.
