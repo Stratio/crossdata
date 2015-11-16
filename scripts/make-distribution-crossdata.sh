@@ -64,7 +64,7 @@ if [ -z "$SPARK_REPO" ]; then
 fi
 
 if [ -z "$PROFILE" ]; then
-    PROFILE="hive"
+    PROFILE="package"
 fi
 
 TMPDIR=/tmp/stratio-crossdata-distribution
@@ -110,7 +110,8 @@ mvn clean package -DskipTests -P"$PROFILE" || { echo "Cannot build Crossdata pro
 
 mkdir -p ${TMPDIR}/lib || { echo "Cannot create output lib directory"; exit 1; }
 
-cp -u ./*/target/*.jar ${TMPDIR}/lib || { echo "Cannot copy target jars to output lib directory, aborting"; exit 1; }
+//TODO: For os x, we might to change from "cp -u ..." to "cp -nt ..." or "rsync -u ..." or just "cp ..."
+cp -u ./*/target/*-jar-with-dependencies.jar ${TMPDIR}/lib || { echo "Cannot copy target jars to output lib directory, aborting"; exit 1; }
 ###cp -u ./*/target/alternateLocation/*.jar ${TMPDIR}/lib || { echo "Cannot copy alternate jars to output lib directory, aborting"; exit 1; }
 
 git fetch --tags
@@ -126,8 +127,8 @@ echo "################################################"
 echo "Copy Crossdata scripts"
 echo "################################################"
 mkdir -p ${TMPDIR}/bin || { echo "Cannot create output bin directory"; exit 1; }
-cp crossdata-scripts/stratio-xd-init.scala ${TMPDIR}/bin || { echo "Cannot copy stratio-xd-init.scala"; exit 1; }
-cp crossdata-scripts/stratio-xd-shell ${TMPDIR}/bin || { echo "Cannot copy stratio-xd-shell"; exit 1; }
+cp scripts/stratio-xd-init.scala ${TMPDIR}/bin || { echo "Cannot copy stratio-xd-init.scala"; exit 1; }
+cp scripts/stratio-xd-shell ${TMPDIR}/bin || { echo "Cannot copy stratio-xd-shell"; exit 1; }
 
 chmod +x ${TMPDIR}/bin/stratio-xd-shell || { echo "Cannot modify stratio-xd-shell"; exit 1; }
 
@@ -157,6 +158,12 @@ rm -f ${STRATIOSPARKDIR}/lib/*-javadoc.jar
 rm -f ${STRATIOSPARKDIR}/lib/*-tests.jar
 
 mv ${STRATIOSPARKDIR}/ ${DISTDIR}
+
+for lib in `ls ${DISTDIR}/lib/*-jar-with-dependencies.jar`
+do
+    zip -d $lib META-INF/*.RSA META-INF/*.DSA META-INF/*.SF log4j.properties
+done
+
 cp ${TMPDIR}/ChangeLog.txt ${DISTDIR}/
 
 echo "DISTFILENAME: ${DISTFILENAME}"
