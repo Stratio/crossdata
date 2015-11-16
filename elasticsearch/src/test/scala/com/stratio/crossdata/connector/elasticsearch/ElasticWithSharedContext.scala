@@ -20,11 +20,14 @@ package com.stratio.crossdata.connector.elasticsearch
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.elasticsearch.common.joda.time.DateTime
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.scalatest.Suite
+
+import scala.util.Try
 
 
 trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDefaultConstants with Logging {
@@ -32,6 +35,8 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
 
   var elasticClient: Option[ElasticClient] = None
   var isEnvironmentReady = false
+
+  log.info(s"Test configuration: ES Host -> $ElasticHost | ES Cluster -> $ElasticClusterName")
 
   override protected def beforeAll() = {
     super.beforeAll()
@@ -120,11 +125,17 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
 
 
 sealed trait ElasticSearchDefaultConstants {
+  private lazy val config = ConfigFactory.load()
   val Index = "highschool"
   val Type = "students"
-  val ElasticHost = "127.0.0.1"
+  val ElasticHost: String = {
+    Try(config.getStringList("elasticsearch.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
+  }
   val ElasticRestPort = 9200
   val ElasticNativePort = 9300
   val SourceProvider = "com.stratio.crossdata.connector.elasticsearch"
-  val ElasticClusterName = "esCluster"
+  val ElasticClusterName: String = {
+    Try(config.getString("elasticsearch.cluster")).getOrElse("esCluster")
+  }
+
 }
