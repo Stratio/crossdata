@@ -29,7 +29,7 @@ connector developed by the Spark community.
 
 - Apache Cassandra connector powered by Datastax-Spark-Connector
 - MongoDB connector powered by Stratio-Spark-Connector
-- (Coming soon) ElasticSearch connector powered by Elastic-Spark-Connector
+- ElasticSearch connector powered by Elastic-Spark-Connector
 
 (Coming soon) Crossdata will allow us to merge data from batch and streaming resources using the extended SQL-like
 grammar of Spark and the Crossdata API.
@@ -61,6 +61,7 @@ You can send us issues in https://crossdata.atlassian.net/
 
 You can also find help in https://groups.google.com/forum/#!forum/crossdata-users
 
+Alternatively, you can try to reach us at our IRC channel `#stratio-crossdata <http://webchat.freenode.net/?channels=#stratio-crossdata>`_ . Feel free to ask, if we are available we'll try to help you.
 
 =============
 Release notes

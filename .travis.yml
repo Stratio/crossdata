@@ -3,19 +3,14 @@ language: scala
 scala:
    - 2.10.4
    - 2.11.6
+   
+jdk:
+  - oraclejdk8
 
 services:
   - cassandra
   - mongodb
   - elasticsearch
-
-before_install:
-  - git clone https://github.com/Stratio/spark-mongodb.git
-  - cd spark-mongodb
-  - mvn -q install -DskipUTs -DskipITs -DskipTests
-
-before_script:
-  - sleep 10
 
 script:
 
