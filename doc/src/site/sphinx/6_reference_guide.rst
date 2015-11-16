@@ -356,16 +356,24 @@ Some examples using common statements are shown below:
 6.1 Show commands
 -----------------
 
-SHOW TABLES [IN \<database\>]
+- SHOW TABLES [IN \<database\>]
 
-SHOW FUNCTIONS [\<functionid\>]
+List tables registered in Crossdata catalog (persisted and in-memory).
+
+- SHOW FUNCTIONS [\<functionid\>]
+
+List functions registered in Crossdata catalog.
 
 6.2 Describe commands
 ---------------------
 
-DESCRIBE [EXTENDED] \<tablename\>
+- DESCRIBE [EXTENDED] \<tablename\>
 
-DESCRIBE FUNCTION [EXTENDED] \<functionid\>
+Show the table metadata.
+
+- DESCRIBE FUNCTION [EXTENDED] \<functionid\>
+
+Show useful information like description, arguments, etc...
 
 6.3 Set command
 ---------------
