@@ -57,8 +57,7 @@
             <version>${derby.version}</version>
         </dependency>
     </dependencies>
-
-
+    
     <build>
         <plugins>
             <plugin>

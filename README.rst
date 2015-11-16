@@ -72,6 +72,7 @@ You can send us issues in https://crossdata.atlassian.net/
 
 You can also find help in https://groups.google.com/forum/#!forum/crossdata-users
 
+Alternatively, you can try to reach us at our IRC channel `#stratio-crossdata <http://webchat.freenode.net/?channels=#stratio-crossdata>`_ . Feel free to ask, if we are available we'll try to help you.
 
 =============
 Release notes
