@@ -358,22 +358,22 @@ Some examples using common statements are shown below:
 
 - SHOW TABLES [IN \<database\>]
 
-List tables registered in Crossdata catalog (persisted and in-memory).
+Lists tables registered in Crossdata catalog (persisted and in-memory).
 
 - SHOW FUNCTIONS [\<functionid\>]
 
-List functions registered in Crossdata catalog.
+Lists functions registered in Crossdata catalog.
 
 6.2 Describe commands
 ---------------------
 
 - DESCRIBE [EXTENDED] \<tablename\>
 
-Show the table metadata.
+Shows the table metadata.
 
 - DESCRIBE FUNCTION [EXTENDED] \<functionid\>
 
-Show useful information like description, arguments, etc...
+Shows useful information like description, arguments, etc...
 
 6.3 Set command
 ---------------
@@ -435,7 +435,7 @@ Connectors taking advantage of Crossdata extension
 
 -  connector-cassandra
 -  connector-mongodb
--  connector-elasticsearch (coming soon)
+-  connector-elasticsearch
 
 List of Datasources (or Spark-based Connectors)
 -----------------------------------------------
