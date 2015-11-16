@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.stratio.crossdata.driver
 
 import java.util.concurrent.TimeoutException
@@ -21,13 +22,9 @@ import akka.util.Timeout
 import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.common.result.ErrorResult
 import com.stratio.crossdata.test.BaseXDTest
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-@RunWith(classOf[JUnitRunner])
 class DriverStandaloneIT extends BaseXDTest {
 
   "Crossdata driver" should "fail with a timeout when there is no server" in {

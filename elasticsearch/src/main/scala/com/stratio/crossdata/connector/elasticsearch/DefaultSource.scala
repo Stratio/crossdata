@@ -40,7 +40,9 @@ object DefaultSource{
   val DATA_SOURCE_PUSH_DOWN_STRICT: String = "es.internal.spark.sql.pushdown.strict"
   val ElasticNativePort = "es.nativePort"
   val ElasticCluster = "es.cluster"
+  val ElasticIndex = "es.index"
 }
+
 /**
  * This class is used by Spark to create a new  [[ElasticSearchXDRelation]]
  */
@@ -104,10 +106,10 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
    */
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
-    Seq(ES_RESOURCE, ElasticCluster).foreach { opName =>
+    Seq(ElasticCluster).foreach { opName =>
       if (!options.contains(opName)) sys.error( s"""Option "$opName" is mandatory for IMPORT TABLES""")
     }
+    null
 
-    ElasticSearchMetadataBuilder
   }
 }

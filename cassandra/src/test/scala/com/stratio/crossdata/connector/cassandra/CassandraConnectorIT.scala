@@ -30,8 +30,10 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
   "The Cassandra connector" should "execute natively a (SELECT *)" in {
     assumeEnvironmentIsUpAndRunning
-
-    val result = sql(s"SELECT * FROM $Table ").collect(Native)
+    val dataframe = sql(s"SELECT * FROM $Table ")
+    val schema = dataframe.schema
+    val result = dataframe.collect(Native)
+    schema.fieldNames should equal (Seq("id", "age", "comment", "enrolled", "name"))
     result should have length 10
     result(0) should have length 5
   }
@@ -103,7 +105,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
     the [CrossdataException] thrownBy {
       sql(s"""
-         |SELECT * FROM $Table
+          |SELECT * FROM $Table
           |WHERE name >
           |'{ filter  :
           |  {type:"fuzzy", field:"comment", value:"Komment"}
@@ -115,7 +117,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
   it should "not execute natively a (SELECT * ...  WHERE DEFAULT_COLUM = _ )" in {
     assumeEnvironmentIsUpAndRunning
 
-    the [CrossdataException] thrownBy {
+    the[CrossdataException] thrownBy {
       sql(s"SELECT * FROM $Table WHERE enrolled = 'true'").collect(Native)
     } should have message "The operation cannot be executed without Spark"
   }
@@ -123,7 +125,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
   it should "not execute natively a (SELECT * ...  WHERE PK > _ )" in {
     assumeEnvironmentIsUpAndRunning
 
-    the [CrossdataException] thrownBy {
+    the[CrossdataException] thrownBy {
       sql(s"SELECT * FROM $Table WHERE id > 3").collect(Native)
     } should have message "The operation cannot be executed without Spark"
   }
@@ -131,7 +133,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
   it should "not execute natively a (SELECT * ...  ORDER BY _ )" in {
     assumeEnvironmentIsUpAndRunning
 
-    the [CrossdataException] thrownBy {
+    the[CrossdataException] thrownBy {
       sql(s"SELECT * FROM $Table ORDER BY age").collect(Native)
     } should have message "The operation cannot be executed without Spark"
   }
@@ -148,8 +150,8 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
     val importQuery =
       s"""
-          |IMPORT TABLES
-          |USING $SourceProvider
+         |IMPORT TABLES
+         |USING $SourceProvider
           |OPTIONS (
           | cluster "$ClusterName",
           | spark_cassandra_connection_host '$CassandraHost'
@@ -183,7 +185,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
   wrongImportTablesSentences.take(1) foreach { sentence =>
     it should s"not import tables for sentences lacking mandatory options: $sentence" in {
       assumeEnvironmentIsUpAndRunning
-      an [Exception] shouldBe thrownBy(ctx.sql(sentence))
+      an[Exception] shouldBe thrownBy(ctx.sql(sentence))
     }
   }
 
@@ -194,7 +196,6 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     sql(query).collect(Native) should have length 10
 
   }
-
 
 }
 

@@ -25,7 +25,7 @@ import static com.stratio.tests.utils.DataFrameAssert.asserThat;
  * Created by hdominguez on 13/10/15.
  */
 public class CrossdataSpecs extends BaseSpec  {
-    int a = 0;
+
     public CrossdataSpecs(Common spec) {
         this.commonspec = spec;
     }
@@ -38,12 +38,21 @@ public class CrossdataSpecs extends BaseSpec  {
     }
 
     @Then(value = "The result has to have '(.*?)' rows:$")
-    public void assertResultLengh(String rows, DataTable table){
+    public void assertResult(String rows, DataTable table){
         commonspec.getLogger().info("The result obtained is: ");
         commonspec.getXdContext().showDataframe();
         asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResults(table.raw());
+    }
+
+    @Then(value = "The result has to have '(.*?)' rows$")
+    public void assertResultLengh(String rows, DataTable table){
+        commonspec.getLogger().info("The result obtained is: ");
+        commonspec.getXdContext().showDataframe();
+        asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
+        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
+
     }
 
     @Then(value = "The result has to have '(.*?)' rows ignoring the order:$")

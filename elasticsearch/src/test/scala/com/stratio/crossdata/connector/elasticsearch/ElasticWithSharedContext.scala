@@ -119,7 +119,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
 }
 
 
-sealed trait ElasticSearchDefaultConstants {
+trait ElasticSearchDefaultConstants {
   val Index = "highschool"
   val Type = "students"
   val ElasticHost = "127.0.0.1"
