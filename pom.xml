@@ -104,7 +104,7 @@
         <module>crossdata-driver</module>
         <module>crossdata-server</module>
         <module>crossdata-shell</module>
-        <module>crossdata-dist</module>
+        <module>dist</module>
         <module>crossdata-connector</module>
         <module>crossdata-connector-maven-plugin</module>
         <module>crossdata-connector-inmemory</module>

@@ -27,7 +27,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
-    <artifactId>crossdata-dist</artifactId>
+    <artifactId>dist</artifactId>
     <name>Stratio Crossdata distribution</name>
     <description>Stratio Crossdata Distribution</description>
     <url>http://stratio.github.io/crossdata/</url>
@@ -107,7 +107,7 @@
                     <configurationDirectory>conf</configurationDirectory>
                     <copyConfigurationDirectory>true</copyConfigurationDirectory>
                     <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
-                    <assembleDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}
+                    <assembleDirectory>${project.build.directory}/dist-${project.parent.version}
                     </assembleDirectory>
                     <extraJvmArguments>-Xms512m</extraJvmArguments>
                     <repositoryLayout>flat</repositoryLayout>
@@ -194,7 +194,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}
+                            <outputDirectory>${project.build.directory}/dist-${project.parent.version}
                             </outputDirectory>
                             <resources>
                                 <resource>
@@ -295,7 +295,7 @@
                                     </attributes>
                                 </mkdirs>
                                 <copyDirectory>
-                                    <from>target/crossdata-dist-${project.version}/bin</from>
+                                    <from>target/dist-${project.version}/bin</from>
                                     <to>/opt/sds/crossdata/bin</to>
                                     <!-- afects all files on this directory -->
                                     <fileAttributes>
@@ -305,11 +305,11 @@
                                     </fileAttributes>
                                 </copyDirectory>
                                 <copyDirectory>
-                                    <from>target/crossdata-dist-${project.version}/conf</from>
+                                    <from>target/dist-${project.version}/conf</from>
                                     <to>/etc/sds/crossdata</to>
                                 </copyDirectory>
                                 <copyDirectory>
-                                    <from>target/crossdata-dist-${project.version}/lib</from>
+                                    <from>target/dist-${project.version}/lib</from>
                                     <to>/opt/sds/crossdata/lib</to>
                                 </copyDirectory>
 
@@ -323,11 +323,11 @@
                                 </attributes>
                             </copyFile>
                             <copyFile>
-                                <path>target/crossdata-dist-${project.version}/LICENSE</path>
+                                <path>target/dist-${project.version}/LICENSE</path>
                                 <toFile>/opt/sds/crossdata/LICENSE</toFile>
                             </copyFile>
                             <copyFile>
-                                <path>target/crossdata-dist-${project.version}/NOTICE</path>
+                                <path>target/dist-${project.version}/NOTICE</path>
                                 <toFile>/opt/sds/crossdata/NOTICE</toFile>
                             </copyFile>
                             <copyFile>
