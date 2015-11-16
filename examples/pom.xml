@@ -55,6 +55,11 @@
             <artifactId>crossdata-mongodb</artifactId>
             <version>${crossdata.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata.connector</groupId>
+            <artifactId>crossdata-elasticsearch</artifactId>
+            <version>${crossdata.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
