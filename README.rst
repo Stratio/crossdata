@@ -7,7 +7,9 @@ Introduction
 .. |ImageLink| image:: https://api.travis-ci.org/Stratio/Crossdata.svg?branch=master
 .. _ImageLink: https://travis-ci.org/Stratio/Crossdata?branch=master
 
+
 |ImageLink|_
+
 .. |ImageLink| image:: https://badges.gitter.im/Stratio/Crossdata.svg
 .. _ImageLink: https://gitter.im/Stratio/Crossdata
 
