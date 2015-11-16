@@ -60,11 +60,11 @@ Feature: Test crossdata shell attach/add operations
     Then I expect a 'Some required properties are missing' message
 
   Scenario: Attach valid connector
-    Given I run the shell command "ATTACH CONNECTOR MongoConnector TO testCluster WITH OPTIONS {'DefaultLimit': '1000'};"
+    Given I run the shell command "ATTACH CONNECTOR MongoConnector TO testCluster WITH OPTIONS {};"
     Then I expect a 'Connected to cluster successfully' message
 
   Scenario: Attach same valid connector
-    Given I run the shell command "ATTACH CONNECTOR MongoConnector TO testCluster WITH OPTIONS {'DefaultLimit': '1000'};"
+    Given I run the shell command "ATTACH CONNECTOR MongoConnector TO testCluster WITH OPTIONS {};"
     Then I expect a 'ERROR: Couldn't connect to cluster: The connection to testCluster already exists.' message
 
   Scenario: [CROSSDATA-107] Detach cluster before detaching connector causes corruption in infinispan
