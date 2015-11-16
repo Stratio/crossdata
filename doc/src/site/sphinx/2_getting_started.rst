@@ -150,8 +150,5 @@ and specify the master as a shell option (--master spark://IP:PORT)
 
 Next Steps
 ==========
-
-More information check out the `Reference guide <6_reference guide.rst>`_
-Scala driver exaw the modules it depends on are installed and configured. For example, how would you configure GoSec
-as it pertains to Crossdata, its benefits, etc. Examples in `github <https://github.com/Stratio/Crossdata/tree/master/examples/src/main/scala/com/stratio/crossdata/examples>`_
+To learn more about Crossdata, you can visit the `Reference guide <6_reference guide.rst>`_ or check out some examples at `github <https://github.com/Stratio/Crossdata/tree/master/examples/src/main/scala/com/stratio/crossdata/examples>`_
 
