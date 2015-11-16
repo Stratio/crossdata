@@ -7,12 +7,11 @@ Crossdata can be installed in a single computer as a proof of concept, or can be
 The minimum requisites are the same as `Spark requisites <http://spark.apache.org/docs/latest/hardware-provisioning.html>`_.
 
 It is necessary too, to install `Apache Maven 3 <https://maven.apache.org/>`_ due to the build script use it to get
-all dependencies of Crossdata, `Mongo Provider <https://github.com/Stratio/spark-mongodb>`_ to get the features of
-Mongo into Spark, and Apache Cassandra to run the Crossdata examples.
+all dependencies of Crossdata and Apache Cassandra to run the Crossdata examples.
 
 Finally, it is necessary to have a minimum knowledge on Apache Spark, specifically in `SparkSQL Grammar 
 <https://spark.apache.org/docs/1.5.1/sql-programming-guide.html>`_.
-It could be useful take a look to `Crossdata reference guide <6_reference_guide.rst>`_ before start with Crossdata.
+It could be useful take a look at `Crossdata reference guide <6_reference_guide.rst>`_ before start with Crossdata.
 
 Download
 =========
