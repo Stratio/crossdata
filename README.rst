@@ -7,6 +7,10 @@ Introduction
 .. |ImageLink| image:: https://api.travis-ci.org/Stratio/Crossdata.svg?branch=master
 .. _ImageLink: https://travis-ci.org/Stratio/Crossdata?branch=master
 
+|ImageLink|_
+.. |ImageLink| image:: https://badges.gitter.im/Stratio/Crossdata.svg
+.. _ImageLink: (https://gitter.im/Stratio/Crossdata
+
 Crossdata is a distributed framework and a fast and general-purpose computing system powered by Apache Spark. It
 unifies the interaction with different sources supporting multiple datastore technologies thanks to its generic
 architecture and a custom SQL-like language using SparkSQL as the core of the project. Supporting multiple
