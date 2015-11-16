@@ -103,3 +103,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 
+
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/Stratio/Crossdata
+   :target: https://gitter.im/Stratio/Crossdata?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
