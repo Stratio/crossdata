@@ -76,14 +76,6 @@ Configure
 Please see the `Configuration section <3_configuration.rst>`_.
 
 
-Running Crossdata standalone
-=============================
-Crossdata can be used in a standalone mode as it happened with Apache Spark. It can be useful for testing purposes or
-simple computation tasks. This kind of use, includes Cassandra and Mongo datasources.
-
-To run Crossdata in a standalone mode, it's necessary to install Crossdata using the make-distribution-crossdata
-script first.
-
 Run Crossdata server (Crossdata as a client-server service)
 ============================================================
 
@@ -106,8 +98,10 @@ Or it is possible to start using the server jar generated previously and server 
 Now that Crossdata server is running you can use the Crossdata driver importing the jar in your own project.
 
 
-Run Crossdata shell
-====================
+Run Crossdata shell (Standalone mode)
+======================================
+Crossdata can be used in a standalone mode as it happened with Apache Spark. It can be useful for testing purposes or
+simple computation tasks. This kind of use, includes Cassandra and Mongo datasources.
 
 If you are using Crossdata core and connectors as a library, you have the following options:
 
@@ -151,7 +145,7 @@ and specify the master as a shell option (--master spark://IP:PORT)
 Next Steps
 ==========
 
-More information check out the `Reference guide <6_reference guide.rst>`_
+More information check out the `Reference guide <6_reference_guide.rst>`_
 Scala driver exaw the modules it depends on are installed and configured. For example, how would you configure GoSec
 as it pertains to Crossdata, its benefits, etc. Examples in `github <https://github.com/Stratio/Crossdata/tree/master/examples/src/main/scala/com/stratio/crossdata/examples>`_
 

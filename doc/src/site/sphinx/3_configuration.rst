@@ -1,17 +1,11 @@
 Crossdata Configuration
 ************************
 
-Crossdata has the following requirements:
- - `MySQL <http://dev.mysql.com/downloads/mysql/>`_ to persist metadata in the Crossdata Catalog.
- - `Mongo Provider <https://github.com/Stratio/spark-mongodb>`_ to get the features of Mongo into Spark.
+Crossdata has as a requirement `MySQL <http://dev.mysql.com/downloads/mysql/>`_ to persist metadata in the Crossdata Catalog.
 
-Once the requirements are installed it's necessary to set up the server and driver configuration files to allow
+Once this requirements are installed it's necessary to set up the server and driver configuration files to allow
 crossdata runs in a distributed environments. In other case, it is possible to use Crossdata with a default values,
 and it will run in localhost mode.
-
-Server Configuration for standalone execution
-==============================================
-If Crossdata will be use in a standalone mode it is not necessary to change any default configuration. Just run it !!!
 
 Server Configuration for Distributed Environment
 =================================================
