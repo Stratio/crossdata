@@ -11,7 +11,7 @@ all dependencies of Crossdata and Apache Cassandra to run the Crossdata examples
 
 Finally, it is necessary to have a minimum knowledge on Apache Spark, specifically in `SparkSQL Grammar 
 <https://spark.apache.org/docs/1.5.1/sql-programming-guide.html>`_.
-It could be useful take a look at `Crossdata reference guide <6_reference_guide.rst>`_ before start with Crossdata.
+It could be useful take a look at `Crossdata reference guide <6_reference_guide.rst>`_ before starting with Crossdata.
 
 Download
 =========
