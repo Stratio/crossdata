@@ -13,6 +13,8 @@ also provides some improvements such as more efficient filter push-downs, metada
 Other important point is that it also aims to unify the combination between batch and streaming resources, from both the
 SQL-interface and the API.
 
+.. image:: images/Architecture.png
+
 Scalability and high availability are two of the main goals of Crossdata and the use of the
 `Akka framework <http://akka.io/>`_ and the actor model system allow us to have a reliable P2P architecture where
 bottleneck are not present and load balance is a key characteristic of the Crossdata architecture. Akka contributes to
