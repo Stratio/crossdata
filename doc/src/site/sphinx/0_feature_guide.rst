@@ -8,7 +8,7 @@ combining data among Apache Cassandra (Stratio Cassandra shortly), MongoDB and E
 More accesses to different datastores will be available soon.
 
 - **Native access to datastores**: When a query can be resolved natively in the datastore,
-Crossdata will detect it and the query will be redirect directly to the datastore API in order to skip the unnecessary use of the Spark Cluster.
+Crossdata will detect it and the query will be directly redirected to the datastore API in order to skip the unnecessary use of the Spark Cluster.
  This feature gives two advantages:
 
     - *Faster queries*: for queries that can be resolved natively, avoiding the usage of the Spark Cluster usually save a great amount of network traffic as data
