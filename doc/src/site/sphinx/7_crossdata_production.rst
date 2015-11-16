@@ -25,7 +25,7 @@ SERVER:
     - crossdata-mongodb-{version}.jar
 - Ensure full bidirectional network connectivity between the Server machine, the Spark Cluster and the Datastore machines:
     - The port *13420* used by Crossdata crossdata-server ir required to be open.
-    - The Datastore specifics ports must be accessible (27000 for MongoDB, 9200 & 9300 for Elastic, 7000 for Cassandra, etc)
+    - The Datastore specifics ports must be accessible (27017 for MongoDB, 9200 & 9300 for Elastic, 9042 & 9160 for Cassandra, etc)
 - For distributed Crossdata servers, you need to change some parameters in the Crossdata servers configuration_.
 
 
