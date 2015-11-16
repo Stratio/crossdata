@@ -9,7 +9,7 @@ Introduction
 
 |GitterIL|_
 
-.. |GitterIL| image:: https://badges.gitter.im/Stratio/Crossdata.svg
+.. |GitterIL| image:: https://badges.gitter.im/Stratio/Crossdata.svg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. _GitterIL: https://gitter.im/Stratio/Crossdata
 
 Crossdata is a distributed framework and a fast and general-purpose computing system powered by Apache Spark. It
