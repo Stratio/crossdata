@@ -3,7 +3,7 @@ Getting started
 
 Prerequisites
 ==============
-Crossdata can be installed in a single computer as a proof of concept, or can be installed in a cluster.
+Crossdata can be installed in a single computer as a standalone deployment, or can be installed in a cluster.
 The minimum requisites are the same as `Spark requisites <http://spark.apache.org/docs/latest/hardware-provisioning.html>`_.
 
 It is necessary too, to install `Apache Maven 3 <https://maven.apache.org/>`_ due to the build script use it to get
@@ -100,8 +100,8 @@ Now that Crossdata server is running you can use the Crossdata driver importing 
 
 Run Crossdata shell (Standalone mode)
 ======================================
-Crossdata can be used in a standalone mode as it happened with Apache Spark. It can be useful for testing purposes or
-simple computation tasks. This kind of use, includes Cassandra and Mongo datasources.
+Crossdata can be used in a standalone mode as it happens with Apache Spark. It can be useful for testing purposes or
+simple computation tasks. This kind of use, includes Cassandra, Mongo and ElasticSearch datasources.
 
 If you are using Crossdata core and connectors as a library, you have the following options:
 
