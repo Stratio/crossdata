@@ -3,7 +3,7 @@ Crossdata Configuration
 
 Crossdata has as a requirement `MySQL <http://dev.mysql.com/downloads/mysql/>`_ to persist metadata in the Crossdata Catalog.
 
-Once this requirements are installed it's necessary to set up the server and driver configuration files to allow
+Once these requirements are installed, it's necessary to set up the server and driver configuration files to allow
 crossdata runs in a distributed environments. In other case, it is possible to use Crossdata with a default values,
 and it will run in localhost mode.
 
@@ -30,8 +30,8 @@ This is an example of server-application.conf file::
 
 Driver configuration
 ======================
-To start a crossdata client is needed to create the configuration file driver-application.conf,
-$CROSSDATA_HOME/conf/driver-application.conf. In any other case the driver tries to connect to a local host server of
+To connect Crossdata client to a remote environment, is needed to create the configuration file driver-application.conf,
+$CROSSDATA_HOME/conf/driver-application.conf. In any other case, the driver tries to connect to a local host server of
 Crossdata.
 This file must contain:
 
