@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.sources.crossdata
+package org.apache.spark.sql.crossdata.execution.datasources
+
 import com.stratio.crossdata.test.BaseXDTest
-import org.apache.spark.sql.execution.datasources.{DescribeCommand, RefreshTable, CreateTableUsing}
+import org.apache.spark.sql.execution.datasources.{CreateTableUsing, DescribeCommand, RefreshTable}
 
 class XDDdlParserSpec extends BaseXDTest {
 

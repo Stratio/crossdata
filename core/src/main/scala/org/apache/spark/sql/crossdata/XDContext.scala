@@ -27,10 +27,10 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.Analyzer
+import org.apache.spark.sql.crossdata.execution.datasources.XDDdlParser
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
-import org.apache.spark.sql.sources.crossdata.XDDdlParser
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}

@@ -163,6 +163,9 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   protected def persistTableMetadata(crossdataTable: CrossdataTable, table: Option[LogicalPlan] = None): Unit
 
+  /**
+   * Drop table if exists.
+   */
   protected def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit
 
   protected def dropAllPersistedTables(): Unit
