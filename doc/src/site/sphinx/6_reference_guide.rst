@@ -26,6 +26,7 @@ Table of Contents
    -  `3.1) IMPORT EXISTING EXTERNAL TABLES <#import-tables>`__
    -  `3.2) REGISTER EXISTING EXTERNAL TABLES <#create-table>`__
    -  `3.3) TABLE CACHING <#table-caching>`__
+   -  `3.4) DROP TABLE <#drop-table>`__
 
 -  `4) DML <#data-manipulation-language>`__
 
@@ -119,6 +120,7 @@ CROSSDATA which are not supported by SparkSQL.
 Expansion main features:
 -   Added new table import capabilities:
         -   IMPORT TABLES: Catalog registration of every single table accessible by a specific datasource.
+-   Drop table statement
         
 
 
@@ -207,6 +209,17 @@ waiting for the first time the data is needed.
 - REFRESH TABLE \<tablename\> (coming soon) => Refresh the metadata cache.
 
 
+3.4) DROP TABLE
+---------------
+
+Removes the table from Crossdata catalog.
+
+DROP TABLE \<tablename\>
+
+Example:
+::
+
+    DROP TABLE dbname.tablename
 
 
 4. DATA MANIPULATION LANGUAGE
