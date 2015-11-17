@@ -20,7 +20,11 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ElasticSearchRelationIT extends ElasticWithSharedContext {
+class
+
+
+
+ElasticSearchRelationIT extends ElasticWithSharedContext {
 
   "The ElasticSearch Connector execute natively a" should " select *" in {
     assumeEnvironmentIsUpAndRunning

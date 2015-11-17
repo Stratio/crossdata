@@ -69,7 +69,13 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
     val settings = ImmutableSettings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
     val elasticClient = ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
 
-    val command = create index Index mappings (
+    createIndex(elasticClient, Index)
+    saveTestData(elasticClient)
+    elasticClient
+  }
+
+  def createIndex(elasticClient: ElasticClient, indexName:String): Unit ={
+    val command = create index indexName mappings (
       Type as(
         "id" typed IntegerType,
         "age" typed IntegerType,
@@ -80,13 +86,10 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
         ))
 
     elasticClient.execute {command}.await
-
-    saveTestData(elasticClient)
-    elasticClient
   }
 
   def cleanEnvironment(elasticClient: ElasticClient) = {
-    cleanTestData(elasticClient)
+    cleanTestData(elasticClient, Index)
     elasticClient.close()
   }
 
@@ -107,9 +110,9 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
     }
   }
 
-  private def cleanTestData(elasticClient: ElasticClient): Unit = {
+  def cleanTestData(elasticClient: ElasticClient, indexName:String): Unit = {
     elasticClient.execute {
-      deleteIndex(Index)
+      deleteIndex(indexName)
     }
   }
 

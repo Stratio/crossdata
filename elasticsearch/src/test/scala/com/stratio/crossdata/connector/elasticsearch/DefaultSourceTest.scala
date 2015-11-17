@@ -76,5 +76,4 @@ class DefaultSourceTest extends BaseXDTest with MockitoSugar {
     result.get(ES_HOST).get should be ("localhost")
 
   }
-
 }

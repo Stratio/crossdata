@@ -50,20 +50,17 @@ object ElasticSearchConnectionUtils {
 
     val adminClient = buildClient(options).admin.indices()
     options.get(ElasticIndex).fold(listAllIndexTypes(adminClient))(indexName => listIndexTypes(adminClient, indexName))
-
   }
 
   import collection.JavaConversions._
   private def listAllIndexTypes(adminClient: IndicesAdminClient): Seq[Table] = {
 
     val mappings: ImmutableOpenMap[String, ImmutableOpenMap[String, MappingMetaData]]  = adminClient.prepareGetIndex().get().mappings
-
-    for (index <- mappings.keys()){
+    mappings.keys().flatMap { index =>
       getIndexDetails(index.value, mappings.get(index.value))
-    }
-    null
-  }
+    } toSeq
 
+  }
 
   private def listIndexTypes(adminClient: IndicesAdminClient, indexName: String): Seq[Table] = {
 
@@ -82,17 +79,32 @@ object ElasticSearchConnectionUtils {
   }
 
 
-  private def convertType(typeName:Any): DataType = {
+  private def convertType(typeName:String): DataType = {
 
-    null
+    Option(typeName).map{
+      case "string"=> StringType
+      case "integer" => IntegerType
+      case "date" => DateType
+      case "boolean" => BooleanType
+      case "double" => DoubleType
+      case "long" => LongType
+      case "float" => FloatType
+      case "null" => NullType
+
+      case _ => null
+    }.orNull
+
   }
 
   private def buildStructType(mapping: MappingMetaData): StructType ={
 
-    val fields:Seq[StructField] = mapping.sourceAsMap().get("properties").asInstanceOf[util.LinkedHashMap].map {
-          case (k:String,v:util.LinkedHashMap) =>  StructField(k,convertType(v.get("type")), false)
+    val esFields = mapping.sourceAsMap().get("properties").asInstanceOf[java.util.LinkedHashMap[String,java.util.LinkedHashMap[String, String]]].toMap;
+
+    val fields:Seq[StructField] = esFields.map {
+          case (k:String,v:util.LinkedHashMap[String, String]) =>  StructField(k,convertType(v.get("type")), false)
     }(collection.breakOut)
 
     StructType(fields)
+
   }
 }

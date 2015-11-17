@@ -109,7 +109,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     Seq(ElasticCluster).foreach { opName =>
       if (!options.contains(opName)) sys.error( s"""Option "$opName" is mandatory for IMPORT TABLES""")
     }
-    null
 
+    ElasticSearchConnectionUtils.listTypes(params(options))
   }
 }
