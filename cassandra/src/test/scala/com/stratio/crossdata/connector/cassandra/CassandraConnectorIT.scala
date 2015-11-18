@@ -150,8 +150,8 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
     val importQuery =
       s"""
-         |IMPORT TABLES
-         |USING $SourceProvider
+          |IMPORT TABLES
+          |USING $SourceProvider
           |OPTIONS (
           | cluster "$ClusterName",
           | spark_cassandra_connection_host '$CassandraHost'
