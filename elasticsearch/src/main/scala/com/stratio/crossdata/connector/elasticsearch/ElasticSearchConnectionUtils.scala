@@ -33,9 +33,9 @@ object ElasticSearchConnectionUtils {
 
 
   def buildClient(parameters: Map[String, String]): ElasticClient = {
-    val host: String = parameters.getOrElse(ES_NODES, ES_NODES_DEFAULT)
-    val port: Int = parameters.getOrElse(ElasticNativePort, 9300).toString.toInt
-    val clusterName: String = parameters.get(ElasticCluster).get
+    val host: String = parameters.getOrElse(ES_NODES, ES_NODES_DEFAULT) //TODO support for multiple host
+    val port: Int = parameters.getOrElse(ElasticNativePort, "9300").toString.toInt
+    val clusterName = parameters(ElasticCluster)
 
     val settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build()
     ElasticClient.remote(settings, host, port)
@@ -70,7 +70,7 @@ object ElasticSearchConnectionUtils {
   }
 
   private def getIndexDetails(indexName:String, indexData: ImmutableOpenMap[String, MappingMetaData]): Seq[Table] ={
-    var result = Seq[Table]()
+    var result = Seq.empty[Table]
     for (typeES <- indexData.keys()){
       val typeMetadata = indexData.get(typeES.value)
       result = result ++ Seq[Table](new Table(typeES.value, Some(indexName), Some(buildStructType(typeMetadata))))
@@ -81,7 +81,7 @@ object ElasticSearchConnectionUtils {
 
   private def convertType(typeName:String): DataType = {
 
-    Option(typeName).map{
+    typeName match {
       case "string"=> StringType
       case "integer" => IntegerType
       case "date" => DateType
@@ -90,9 +90,8 @@ object ElasticSearchConnectionUtils {
       case "long" => LongType
       case "float" => FloatType
       case "null" => NullType
-
-      case _ => null
-    }.orNull
+      case _ => throw new RuntimeException (s"The type $typeName isn't supported yet in Elasticsearch connector.")
+    }
 
   }
 
@@ -100,11 +99,10 @@ object ElasticSearchConnectionUtils {
 
     val esFields = mapping.sourceAsMap().get("properties").asInstanceOf[java.util.LinkedHashMap[String,java.util.LinkedHashMap[String, String]]].toMap;
 
-    val fields:Seq[StructField] = esFields.map {
-          case (k:String,v:util.LinkedHashMap[String, String]) =>  StructField(k,convertType(v.get("type")), false)
+    val fields: Seq[StructField] = esFields.map {
+          case (colName, propertyValueMap) => StructField(colName, convertType(propertyValueMap.get("type")), false)
     }(collection.breakOut)
 
     StructType(fields)
-
   }
 }

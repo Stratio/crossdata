@@ -93,7 +93,8 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
     val matchQuery = query bool must(matchers)
 
-    val finalQuery = if (searchFilters.isEmpty) matchQuery
+    val finalQuery = if (searchFilters.isEmpty)
+      matchQuery
     else matchQuery postFilter bool {
       must(searchFilters)
     }

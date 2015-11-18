@@ -38,6 +38,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     client should not be (null)
   }
 
+
   it should "List ElasticSearch Tables in One Index" in {
     assumeEnvironmentIsUpAndRunning
 
