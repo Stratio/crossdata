@@ -203,6 +203,9 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
 
     sparkRow shouldBe a[Seq[_]]
     nativeRow shouldBe a[Seq[_]]
+
+    sparkRow.asInstanceOf[Seq[_]](0) shouldBe a [java.lang.Integer]
+    nativeRow.asInstanceOf[Seq[_]](0) shouldBe a [java.lang.Integer]
   }
 
   it should "XD Mongodb connector support simple Array<STRING> type" in {
@@ -282,7 +285,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a [Seq[_]]
   }
 
-  it should "XD Mongodb connector support STRUCT type" in {
+  it should "XD Mongodb connector support structs of structs" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT structofstruct FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
