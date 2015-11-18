@@ -17,27 +17,16 @@ package org.apache.spark.sql.crossdata.catalog
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
-import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
 import org.apache.spark.sql.types._
 
-
-
 import scala.annotation.tailrec
 
 
-
-object JDBCCatalog {
-  // SQLConfig
-  val Driver = "crossdata.catalog.jdbc.driver"
-  val Url = "crossdata.catalog.jdbc.url"
-  val Database = "crossdata.catalog.jdbc.db.name"
-  val Table = "crossdata.catalog.jdbc.db.table"
-  val User = "crossdata.catalog.jdbc.db.user"
-  val Pass = "crossdata.catalog.jdbc.db.pass"
+object DerbyCatalog {
   // CatalogFields
   val DatabaseField = "db"
   val TableNameField = "tableName"
@@ -50,47 +39,45 @@ object JDBCCatalog {
 
 /**
  * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
- * Jdbc.
- * Supported MySQL and PostgreSQL
+ * Derby.
  * @param conf An implementation of the [[CatalystConf]].
  */
-class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
+class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) with Logging {
 
-  import JDBCCatalog._
+  import DerbyCatalog._
   import XDCatalog._
   import org.apache.spark.sql.crossdata._
 
-  private val config: Config = ConfigFactory.load
-  private val db = config.getString(Database)
-  private val table = config.getString(Table)
+
+  private val db = "CROSSDATA"
+  private val table = "crossdatatables"
 
   lazy val connection: Connection = {
 
-    val driver = config.getString(Driver)
-    val user = config.getString(User)
-    val pass = config.getString(Pass)
-    val url = config.getString(Url)
+    val driver = "org.apache.derby.jdbc.EmbeddedDriver"
+    val url = "jdbc:derby:sampledb/crossdata;create=true"
 
     Class.forName(driver)
-    val jdbcConnection = DriverManager.getConnection(url, user, pass)
+    val jdbcConnection = DriverManager.getConnection(url)
 
     // CREATE PERSISTENT METADATA TABLE
 
-    jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA IF NOT EXISTS $db")
+    if(!schemaExists(s"$db", jdbcConnection)) {
+      jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
 
 
-    jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE IF NOT EXISTS $db.$table (
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE $db.$table (
            |$DatabaseField VARCHAR(50),
            |$TableNameField VARCHAR(50),
-           |$SchemaField TEXT,
-           |$DatasourceField TEXT,
-           |$PartitionColumnField TEXT,
-           |$OptionsField TEXT,
-           |$CrossdataVersionField TEXT,
+           |$SchemaField LONG VARCHAR,
+           |$DatasourceField LONG VARCHAR,
+           |$PartitionColumnField LONG VARCHAR,
+           |$OptionsField LONG VARCHAR,
+           |$CrossdataVersionField LONG VARCHAR,
            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
-
+    }
     jdbcConnection
   }
 
@@ -102,10 +89,10 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     preparedStatement.setString(2, tableName)
     val resultSet = preparedStatement.executeQuery()
 
-    if (!resultSet.isBeforeFirst) {
+    if (!resultSet.next) {
       None
     } else {
-      resultSet.next()
+
       val database = resultSet.getString(DatabaseField)
       val table = resultSet.getString(TableNameField)
       val schemaJSON = resultSet.getString(SchemaField)
@@ -155,9 +142,9 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     preparedStatement.setString(2, crossdataTable.tableName)
     val resultSet = preparedStatement.executeQuery()
 
-    if (!resultSet.isBeforeFirst) {
+    if (!resultSet.next()) {
       val prepped = connection.prepareStatement(
-       s"""|INSERT INTO $db.$table (
+        s"""|INSERT INTO $db.$table (
            | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
            |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
@@ -171,11 +158,9 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
       prepped.execute()
     }
     else {
-     val prepped = connection.prepareStatement(
-      s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-          |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
-       """.stripMargin.replaceAll("\n", " "))
-
+     val prepped = connection.prepareStatement(s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+          |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}'
+       """.stripMargin)
       prepped.setString(1, tableSchema)
       prepped.setString(2, crossdataTable.datasource)
       prepped.setString(3, partitionColumn)
@@ -196,8 +181,16 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
   }
 
-  override def dropAllPersistedTables(): Unit = 
-    connection.createStatement.executeUpdate(s"TRUNCATE $db.$table")
-  
+  override def dropAllPersistedTables(): Unit = {
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table")
+  }
+
+  private def schemaExists(schema: String, connection: Connection) : Boolean= {
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$db'")
+    val resultSet = preparedStatement.executeQuery()
+
+    resultSet.next()
+
+  }
 
 }

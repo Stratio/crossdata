@@ -55,6 +55,11 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
 
   import Driver._
 
+  /**
+   * Tuple (tableName, Optional(databaeName))
+   */
+  type TableIdentifier = (String, Option[String])
+
   private lazy val logger = Driver.logger
 
   private val proxyActor = {
@@ -99,15 +104,17 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     ???
   }
 
-  def listTables(databaseName: Option[String] = None): Seq[String] = {
+  def listTables(databaseName: Option[String] = None): Seq[TableIdentifier] = {
+    def processTableName(qualifiedName: String) : (String, Option[String]) = {
+      qualifiedName.split('.') match {
+        case table if table.length == 1 => (table(0), None)
+        case table if table.length == 2 => (table(1), Some(table(0)))
+      }
+    }
     syncQuery(SQLCommand(s"SHOW TABLES ${databaseName.fold("")("IN " + _)}")) match {
       case SuccessfulQueryResult(_, result, _) =>
-        result.map(row => row.getString(0))
-      case ErrorResult(_, message, Some(cause)) =>
-        throw new RuntimeException(message, cause)
-      case ErrorResult(_, message, _) =>
-        throw new RuntimeException(message)
-      // TODO manage exceptions
+        result.map(row => processTableName(row.getString(0)))
+      case other => handleCommandError(other)
     }
   }
 
@@ -115,11 +122,16 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     syncQuery(SQLCommand(s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")) match {
       case SuccessfulQueryResult(_, result, _) =>
         result.map(row => FieldMetadata(row.getString(0), DataTypesUtils.toDataType(row.getString(1))))
-      case ErrorResult(_, message, Some(cause)) =>
-        throw new RuntimeException(message, cause)
-      case ErrorResult(_, message, _) =>
-        throw new RuntimeException(message)
+      case other => handleCommandError(other)
     }
+  }
+
+  private def handleCommandError(result: SQLResult) = result match {
+    case ErrorResult(_, message, Some(cause)) =>
+      throw new RuntimeException(message, cause)
+    case ErrorResult(_, message, _) =>
+      throw new RuntimeException(message)
+    // TODO manage exceptions
   }
 
 }

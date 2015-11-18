@@ -34,7 +34,7 @@ object CatalystToCrossdataAdapter {
                                override val filters: Array[SourceFilter],
                                override val udfsMap: Map[Attribute, NativeUDF]
                                 ) extends BaseLogicalPlan(projects, filters, udfsMap)
-  
+
   case class AggregationLogicalPlan(override val projects: Seq[NamedExpression],
                                     groupingExpresion: Seq[Expression],
                                     override val filters: Array[SourceFilter],
@@ -49,7 +49,7 @@ object CatalystToCrossdataAdapter {
 
     val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l }.get
     implicit val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
-    
+
     val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap (
       _.references flatMap {
         case nat: AttributeReference if (att2udf contains nat) =>

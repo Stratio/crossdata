@@ -18,9 +18,12 @@ package com.stratio.crossdata.connector.mongodb
 import com.mongodb.QueryBuilder
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.scalatest.Suite
+
+import scala.util.Try
 
 trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConstants with Logging {
   this: Suite =>
@@ -101,7 +104,9 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
 sealed trait MongoDefaultConstants {
   val Database = "highschool"
   val Collection = "students"
-  val MongoHost = "127.0.0.1"
+  val MongoHost: String = {
+    Try(ConfigFactory.load().getStringList("mongo.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
+  }
   val MongoPort = 27017
   val SourceProvider = "com.stratio.crossdata.connector.mongodb"
 }

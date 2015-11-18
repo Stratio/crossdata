@@ -2,10 +2,15 @@
 Introduction
 ============
 
-|ImageLink|_
+|TravisIL|_
 
-.. |ImageLink| image:: https://api.travis-ci.org/Stratio/Crossdata.svg?branch=master
-.. _ImageLink: https://travis-ci.org/Stratio/Crossdata?branch=master
+.. |TravisIL| image:: https://api.travis-ci.org/Stratio/Crossdata.svg?branch=master
+.. _TravisIL: https://travis-ci.org/Stratio/Crossdata?branch=master
+
+|GitterIL|_
+
+.. |GitterIL| image:: https://badges.gitter.im/Stratio/Crossdata.svg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+.. _GitterIL: https://gitter.im/Stratio/Crossdata
 
 Crossdata is a distributed framework and a fast and general-purpose computing system powered by Apache Spark. It
 unifies the interaction with different sources supporting multiple datastore technologies thanks to its generic
@@ -15,24 +20,35 @@ datastore limitations. Crossdata provides connectors which can access to multipl
 the queries by avoiding the overhead and the block of resources of the Spark Cluster when possible. We offer a shell,
 Java and Scala APIs, JDBC and ODBC for BI tools.
 
-In addition, Crossdata expands the functionalities of Apache Spark in order to provide a richer SQL-like language, to
-improve some aspects (metadastore, execution trees, ...) and to give a more reliable architecture with
-high-availability and scalability out of the box.
-
 This project is aimed for those who want to manage only one API to access to multiple datastores with different nature,
 get rid of the drawbacks of Apache Spark, perform analytics from a BI tool and speed up your queries effortlessly.
-Moreover, Crossdata is a library that you can deploy in any existent system using Spark with no changes, just add the
-Crossdata jar file.
+
+Crossdata is broken up into the following components:
+
+- Crossdata Core: It is a library that you can deploy in any existent system using Spark with no changes, just add the Crossdata jar file.
+SparkSQL extension with improvements in the DataSource API and new features. Crossdata expands the functionalities
+of Apache Spark in order to provide a richer SQL-like language, to improve some aspects (metastore, execution trees, ...)
+- Crossdata Server: Provides a multi-user environment to SparkSQL, giving a reliable architecture with
+high-availability and scalability out of the box.
+- Crossdata Driver: Entry point with an API for both Scala and Java. Crossdata ODBC/JDBC uses this driver.
+- Crossdata Connectors: Take advantage of the Crossdata DataSource API to speed up the queries in specific datasources
+and provide new features.
 
 We include some Spark connectors optimized to access to each datasource, but Crossdata is fully compatible with any
 connector developed by the Spark community.
 
 - Apache Cassandra connector powered by Datastax-Spark-Connector
 - MongoDB connector powered by Stratio-Spark-Connector
-- (Coming soon) ElasticSearch connector powered by Elastic-Spark-Connector
+- ElasticSearch connector powered by Elastic-Spark-Connector
 
-(Coming soon) Crossdata will allow us to merge data from batch and streaming resources using the extended SQL-like
-grammar of Spark and the Crossdata API.
+
+Main Crossdata's advantages over other options:
+
+- JDBC/ODBC self-contained. Other solutions require Hive.
+- Faster queries using native access.
+- Metadata discovery.
+- Datasource functions (Spark only can execute its own UDFs).
+- High-availability.
 
 
 =============
@@ -57,17 +73,19 @@ Documentation
 Get support
 ===========
 
-You can send us issues in https://crossdata.atlassian.net/
+You can send us issues in https://crossdata.atlassian.net.
 
-You can also find help in https://groups.google.com/forum/#!forum/crossdata-users
+You can also find help in https://groups.google.com/forum/#!forum/crossdata-users.
+
+Alternatively, you can try to reach us at gitter or our IRC channel `#stratio-crossdata <http://webchat.freenode.net/?channels=#stratio-crossdata>`_. Feel free to ask,
+if we are available we'll try to help you.
 
 
 =============
 Release notes
 =============
 
-TODO
-
+Features and changes are detailed in the `changelog <CHANGELOG.md>`_.
 
 =======
 License

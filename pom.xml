@@ -64,6 +64,16 @@
             <name>Luis Cisneros</name>
             <email>lcisneros at stratio dot com</email>
         </developer>
+        <developer>
+            <id>pmadrigal</id>
+            <name>Pedro Madrigal</name>
+            <email>pmadrigal at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>ccaballe</id>
+            <name>Cristian Caballero</name>
+            <email>ccaballero at stratio dot com</email>
+        </developer>
     </developers>
 
     <modules>
@@ -90,7 +100,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <outputFileName>stratio-crossdata</outputFileName>
-        <mysql.version>5.1.36</mysql.version>
+        <mariadb.version>1.2.3</mariadb.version>
+        <postgresql.version>9.3-1104-jdbc4</postgresql.version>
+        <derby.version>10.12.1.1</derby.version>
         <jackson4s.version>3.2.11</jackson4s.version>
 
     </properties>
@@ -147,6 +159,8 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
@@ -180,6 +194,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                    <argLine>-Xmx1024m</argLine>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -216,6 +235,7 @@
                         <exclude>**/org/apache/spark/sql/crossdata/hive/XDHiveContext.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/hive/test/LocalXDHiveContext.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/acceptance/TestXDContext.scala</exclude>
+                        <exclude>**/testAT/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
