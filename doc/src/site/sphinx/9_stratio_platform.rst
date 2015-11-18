@@ -19,9 +19,10 @@ Viewer
 Viewer uses *Crossdata*'s driver to perform queries to its server. That's is why *Viewer* project includes it as a
 maven dependency.
 
-..
-    Explorer
-    ^^^^^^^^
+Explorer
+^^^^^^^^
+
+Explorer makes use of *Crossdata* in the same way than *Viewer*.
 
 
 Manager
