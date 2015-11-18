@@ -16,18 +16,20 @@
 package com.stratio.crossdata.connector.cassandra
 
 
-import com.datastax.driver.core.{ProtocolVersion, ResultSet}
-import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole._
+
+import com.datastax.driver.core.ResultSet
 import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.crossdata.execution.{NativeUDF, NativeUDFAttribute}
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{AggregationLogicalPlan, BaseLogicalPlan, SimpleLogicalPlan}
-import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
+import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{Row, sources}
+import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
+
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole._
 
 object CassandraQueryProcessor {
 
@@ -58,9 +60,9 @@ object CassandraQueryProcessor {
 
     // UDFs are string references in both filters and projects => lookup in udfsMap
     def expandAttribute(att: String): String = {
-      udfs get (att) map { udf =>
-        val actualParams = udf.children.collect { // TODO: Add type checker (maybe not here)
-          case at: NativeUDFAttribute => expandAttribute(at.toString)
+      udfs get(att) map { udf =>
+        val actualParams = udf.children.collect { //TODO: Add type checker (maybe not here)
+          case at: AttributeReference if(udfs contains at.toString) => expandAttribute(at.toString)
           case at: AttributeReference => at.name
           case lit @ Literal(_, DataTypes.StringType) => quoteString(lit.toString)
           case lit: Literal => lit.toString
@@ -242,7 +244,9 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
   private[this] def sparkResultFromCassandra(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
     import scala.collection.JavaConversions._
-    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, requiredColumns)(ProtocolVersion.V3)).toArray
+    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, requiredColumns)).toArray
   }
 
 }
+
+
