@@ -122,9 +122,9 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     val tableIdentifier2 = Seq(TableName)
     xdContext.catalog.persistTable(crossdataTable1)
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
-    val tables = xdContext.catalog.getTables(None).groupBy(_._1)
-    tables(s"$Database.$TableName").map(_._2 shouldBe false)
-    tables(TableName).map(_._2 shouldBe true)
+    val tables = xdContext.catalog.getTables(None).toMap
+    tables(s"$Database.$TableName") shouldBe false
+    tables(TableName) shouldBe true
   }
 
   override protected def afterAll() {
