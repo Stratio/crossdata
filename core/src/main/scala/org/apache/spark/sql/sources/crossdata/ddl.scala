@@ -71,7 +71,7 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
       tableId = TableIdentifier(table.tableName, table.database).toSeq
       if inventoryRelation.exclusionFilter(table) && !tableExists(tableId)
     } yield {
-      logInfo(s"Importing table $tableId")
+      logInfo(s"Importing table ${tableId mkString "."}")
       persistTable(table, inventoryRelation, relationProvider)
       Row(tableId)
     }
