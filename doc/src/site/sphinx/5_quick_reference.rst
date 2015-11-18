@@ -6,6 +6,7 @@ Quick SQL Statement reference. More details can be found at `reference guide. <6
 
 CREATE TABLE
 ------------
+Registers a table in Crossdata catalog. A temporary table won't be persisted.
 
 CREATE [TEMPORARY] TABLE [IF NOT EXISTS] \<tablename\> [<schema>] USING \<datasource\> OPTIONS \<options\>
 
@@ -20,10 +21,13 @@ TABLE CACHING
 -------------
 
 - CACHE [LAZY] TABLE \<tablename\>
+Caches the underlying RDD.
 
 - UNCACHE TABLE \<tablename\>
+Uncaches the table in order to free Spark resources or to revalue the RDD.
 
 - CLEAR CACHE
+Uncaches all tables.
 
 Example:
 ::
@@ -32,6 +36,8 @@ Example:
 
 SELECT STATEMENTS
 -----------------
+Query statements to retrieve data.
+
 ::
 
   SELECT [DISTINCT] \<projections\>
@@ -70,13 +76,17 @@ Examples:
 ADMIN COMMANDS
 --------------
 
-SHOW TABLES [IN \<database\>]
+- SHOW TABLES [IN \<database\>]
+Lists tables registered in Crossdata catalog (persisted and in-memory).
 
-SHOW FUNCTIONS [\<functionid\>]
+- SHOW FUNCTIONS [\<functionid\>]
+Lists functions registered in Crossdata catalog.
 
-DESCRIBE [EXTENDED] \<tablename\>
+- DESCRIBE [EXTENDED] \<tablename\>
+Shows the table metadata.
 
-DESCRIBE FUNCTION [EXTENDED] \<functionid\>
+- DESCRIBE FUNCTION [EXTENDED] \<functionid\>
+Shows useful information like description, arguments, etc...
 
 Examples:
 ::
