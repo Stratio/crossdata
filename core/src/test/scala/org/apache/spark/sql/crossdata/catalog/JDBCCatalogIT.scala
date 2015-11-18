@@ -115,6 +115,18 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     tables.size shouldBe 1
 
   }
+
+  it should "check if persisted tables are marked as not temporary" in {
+    xdContext.catalog.dropAllTables()
+    val crossdataTable1 = CrossdataTable(TableName, Option(Database), Option(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val tableIdentifier2 = Seq(TableName)
+    xdContext.catalog.persistTable(crossdataTable1)
+    xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
+    val tables = xdContext.catalog.getTables(None).groupBy(_._1)
+    tables(s"$Database.$TableName").map(_._2 shouldBe false)
+    tables(TableName).map(_._2 shouldBe true)
+  }
+
   override protected def afterAll() {
     xdContext.catalog.dropAllTables()
     super.afterAll()

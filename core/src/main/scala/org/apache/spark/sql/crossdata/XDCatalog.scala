@@ -72,7 +72,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
       }.toSeq
     }
 
-    (cachedTables ++ listPersistedTables(databaseName)).distinct
+    (cachedTables ++ listPersistedTables(databaseName)).groupBy(_._1).mapValues(v => v.forall(_._2)).toSeq
   }
 
   override def lookupRelation(tableIdentifier: Seq[String], alias: Option[String]): LogicalPlan = {
