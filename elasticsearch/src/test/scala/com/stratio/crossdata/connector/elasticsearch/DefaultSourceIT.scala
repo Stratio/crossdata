@@ -36,12 +36,15 @@ class DefaultSourceIT extends ElasticWithSharedContext with ElasticSearchDefault
     val defaultDatasource = new DefaultSource()
     val sqlContext = mock[SQLContext]
 
+
     val options: Map[String, String] = Map(
       "es.node" -> s"$ElasticHost",
       "es.port" -> s"$ElasticRestPort",
       "es.nativePort" -> s"$ElasticNativePort",
       "es.cluster" -> s"$ElasticClusterName",
-      "es.index" -> s"$Index"
+      "es.index" -> s"$Index",
+      ES_RESOURCE -> s"$Index/$Type"
+
     )
 
     //Experimentation

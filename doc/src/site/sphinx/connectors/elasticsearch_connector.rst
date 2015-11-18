@@ -2,14 +2,14 @@
 Crossdata Elasticsearch Connector
 =================================
 
-This connector allows to send SQL-Like queries to Elasticsearch and execute they natively on Elasticsearch.
+This connector allows to send SQL-Like queries to Elasticsearch and execute them natively on Elasticsearch.
 
 Requirements
 ************
 
 This version was developed using Elasticsearch 1.7, lower versions are not tested and may cause failures.
 
-To register a Elasticsearch Index/Type as a Spark Table in the Crossdata Context execute this::
+To register an Elasticsearch Index/Type as a Spark Table in the Crossdata Context execute this::
 
    xdContext.sql("CREATE TEMPORARY TABLE <TABLE-NAME> (<FIELDS>)USING com.stratio.crossdata.connector.elasticsearch
             OPTIONS (es.resource '<INDEX-NAME>/<TYPE-NAME>', es.cluster '<CLUSTER-NAME>',
@@ -29,7 +29,7 @@ Also, you can use the elasticsearch-hadoop configuration to be used if the query
 Querying
 ********
 
-To execute a SQL query using Crossdata after register the table, just use the xdContext to send a valid SQL query::
+To execute a SQL query using Crossdata after registering the table, just use the xdContext to send a valid SQL query::
 
     val dataframe = xdContext.sql("SELECT * FROM <TABLE-NAME> ")
 
@@ -57,7 +57,7 @@ Example::
 Supported Operators
 *******************
 
-The following operators can be used in the WHERE clause:
+The following operators are executed natively in the WHERE clause:
 
 +-------------+---------------------------------------------------------------------------------+
 |Operator     |Description                                                                      |

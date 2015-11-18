@@ -16,6 +16,7 @@
 package com.stratio.crossdata.connector.cassandra
 
 import com.datastax.driver.core.{Cluster, Session}
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.scalatest.Suite
@@ -119,6 +120,8 @@ sealed trait CassandraDefaultTestConstants {
   val Catalog = "highschool"
   val Table = "students"
   val UnregisteredTable = "teachers"
-  val CassandraHost = "127.0.0.1"
+  val CassandraHost: String = {
+    Try(ConfigFactory.load().getStringList("cassandra.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
+  }
   val SourceProvider = "com.stratio.crossdata.connector.cassandra"
 }
