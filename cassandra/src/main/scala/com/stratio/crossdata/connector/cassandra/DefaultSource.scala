@@ -20,6 +20,7 @@ package com.stratio.crossdata.connector.cassandra
 import com.datastax.driver.core.{TableMetadata, KeyspaceMetadata}
 import com.datastax.spark.connector.cql._
 import com.datastax.spark.connector.rdd.ReadConf
+import com.datastax.spark.connector.types.UUIDType
 import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.FunctionInventory.UDF
 import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
@@ -29,8 +30,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
 import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.types.{StructField, DataTypes, StructType}
-import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{types, DataFrame, SQLContext, SaveMode}
 
 import scala.collection.mutable
 import scala.collection.JavaConversions.iterableAsScalaIterable
@@ -159,12 +160,13 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   override def nativeBuiltinFunctions: Seq[UDF] = {
 
+
+
     //TODO: Complete the built-in function inventory
     Seq(
-      UDF("now", None, StructType(Nil), DataTypes.StringType),
-      UDF("dateOf", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.StringType),
-      UDF("toDate", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.StringType),
-      UDF("unixTimestampOf", None, StructType(StructField("date",DataTypes.StringType, false)::Nil), DataTypes.LongType)
+      UDF("now", None, StructType(Nil), StringType),
+      UDF("dateOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.TimestampType),
+      UDF("unixTimestampOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.LongType)
     )
 
   }
