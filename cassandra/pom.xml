@@ -32,7 +32,7 @@
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
-        <cassandra.connector.version>1.5.0-M1</cassandra.connector.version>
+        <cassandra.connector.version>1.5.0-SNAPSHOT</cassandra.connector.version>
     </properties>
 
     <dependencies>
@@ -41,9 +41,28 @@
             <artifactId>crossdata-core</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- TODO: Remove this dependency when the official connector artifact gets published -->
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>3.0.0-alpha3</version>
+        </dependency>
+        <!-- TODO: Remove this dependency when the official connector artifact gets published -->
+        <dependency>
+            <groupId>org.joda</groupId>
+            <artifactId>joda-convert</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <!-- TODO: Remove this dependency when the official connector artifact gets published -->
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.3</version>
+        </dependency>
         <dependency>
             <groupId>com.datastax.spark</groupId>
-            <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
+            <!-- TODO: Include scala version selection when the official connector artifact gets published -->
+            <artifactId>spark-cassandra-connector</artifactId> <!-- _${scala.binary.version} -->
             <version>${cassandra.connector.version}</version>
         </dependency>
         <dependency>

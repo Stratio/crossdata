@@ -20,21 +20,22 @@ package org.apache.spark.sql.cassandra
 import java.io.IOException
 
 import com.datastax.driver.core.Metadata
-import com.datastax.spark.connector._
 import com.datastax.spark.connector.cql.{CassandraConnector, CassandraConnectorConf, Schema}
 import com.datastax.spark.connector.rdd.{CassandraRDD, ReadConf}
 import com.datastax.spark.connector.util.NameTools
 import com.datastax.spark.connector.util.Quote._
 import com.datastax.spark.connector.writer.{SqlRowWriter, WriteConf}
-import com.stratio.crossdata.connector.NativeScan
+import com.datastax.spark.connector._
+import com.stratio.crossdata.connector.{NativeFunctionExecutor, NativeScan}
 import com.stratio.crossdata.connector.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
-import org.apache.spark.sql.catalyst.expressions.{Alias, Count, Literal}
+import org.apache.spark.sql.catalyst.expressions.{Alias, Count, Literal, AttributeReference}
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
-import org.apache.spark.sql.sources.{Filter, _}
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.crossdata.execution.{NativeUDF, EvaluateNativeUDF}
+import org.apache.spark.sql.sources.Filter
+import org.apache.spark.sql.sources._
+import org.apache.spark.sql.types.{DataTypes, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
 import org.apache.spark.{Logging, SparkConf}
 
@@ -57,6 +58,7 @@ class CassandraXDSourceRelation(
   extends BaseRelation
   with InsertableRelation
   with PrunedFilteredScan
+  with NativeFunctionExecutor
   with NativeScan with Logging {
 
   // NativeScan implementation ~~
@@ -133,14 +135,33 @@ class CassandraXDSourceRelation(
   def buildScan(): RDD[Row] = baseRdd.asInstanceOf[RDD[Row]]
 
   override def buildScan(requiredColumns: Array[String], filters: Array[Filter]): RDD[Row] = {
-    val prunedRdd = maybeSelect(baseRdd, requiredColumns)
+    buildScan(requiredColumns, filters, Map.empty)
+  }
+
+  private def resolveUDFsReferences(strId: String, udfs: Map[String, NativeUDF]): Option[FunctionCallRef] =
+    udfs get(strId) map { udf =>
+      val actualParams = udf.children.collect {
+        case at: AttributeReference if(udfs contains at.toString) => Left(resolveUDFsReferences(at.toString, udfs).get)
+        case at: AttributeReference => Left(ColumnName(at.name))
+        case lit: Literal => Right(lit.toString)
+      }
+      FunctionCallRef(udf.name, actualParams)
+    }
+
+
+  override def buildScan(requiredColumns: Array[String],
+                         filters: Array[Filter],
+                         udfs: Map[String, NativeUDF]): RDD[Row] = {
+
+
+    val prunedRdd = maybeSelect(baseRdd, requiredColumns, udfs)
     logInfo(s"filters: ${filters.mkString(", ")}")
     val prunedFilteredRdd = {
       if (filterPushdown) {
         val filterPushdown = new PredicatePushDown(filters.toSet, tableDef)
         val pushdownFilters = filterPushdown.predicatesToPushDown.toSeq
         logInfo(s"pushdown filters: ${pushdownFilters.toString()}")
-        val filteredRdd = maybePushdownFilters(prunedRdd, pushdownFilters)
+        val filteredRdd = maybePushdownFilters(prunedRdd, pushdownFilters, udfs)
         filteredRdd.asInstanceOf[RDD[Row]]
       } else {
         prunedRdd
@@ -153,31 +174,59 @@ class CassandraXDSourceRelation(
   private type RDDType = CassandraRDD[CassandraSQLRow]
 
   /** Transfer selection to limit to columns specified */
-  private def maybeSelect(rdd: RDDType, requiredColumns: Array[String]): RDDType = {
+  private def maybeSelect(
+                           rdd: RDDType,
+                           requiredColumns: Array[String],
+                           udfs: Map[String, NativeUDF] = Map.empty): RDDType = {
     if (requiredColumns.nonEmpty) {
-      rdd.select(requiredColumns.map(column => column: ColumnRef): _*)
+      val cols = requiredColumns.map(column => resolveUDFsReferences(column, udfs).getOrElse(column: ColumnRef))
+      rdd.select(cols: _*)
     } else {
       rdd
     }
   }
 
   /** Push down filters to CQL query */
-  private def maybePushdownFilters(rdd: RDDType, filters: Seq[Filter]): RDDType = {
-    whereClause(filters) match {
-      case (cql, values) if values.nonEmpty => rdd.where(cql, values: _*)
+  private def maybePushdownFilters(rdd: RDDType,
+                                   filters: Seq[Filter],
+                                   udfs: Map[String, NativeUDF] = Map.empty): RDDType = {
+    whereClause(filters, udfs) match {
+      case (cql, values) if values.nonEmpty =>
+        val resVals = values.filter(v => resolveUDFsReferences(v.toString, udfs).isEmpty)
+        rdd.where(cql, resVals: _*)
       case _ => rdd
     }
   }
 
   /** Construct Cql clause and retrieve the values from filter */
-  private def filterToCqlAndValue(filter: Any): (String, Seq[Any]) = {
+  private def filterToCqlAndValue(filter: Any,
+                                  udfs: Map[String, NativeUDF] = Map.empty): (String, Seq[Any]) = {
+
+    def udfvalcmp(attribute: String, cmpOp: String, f: AttributeReference): (String, Seq[Any]) =
+      (s"${quote(attribute)} $cmpOp ${resolveUDFsReferences(f.toString, udfs).get.cql}", Seq())
+
     filter match {
+      case sources.EqualTo(attribute, f: AttributeReference) if(udfs contains f.toString) =>
+        udfvalcmp(attribute, "=", f)
       case sources.EqualTo(attribute, value) => (s"${quote(attribute)} = ?", Seq(value))
+
       case sources.In(attribute, values) =>
         (quote(attribute) + " IN " + values.map(_ => "?").mkString("(", ", ", ")"), values.toSeq)
+
+      case sources.LessThan(attribute, f: AttributeReference) if(udfs contains f.toString) =>
+        udfvalcmp(attribute, "<", f)
       case sources.LessThan(attribute, value) => (s"${quote(attribute)} < ?", Seq(value))
+
+      case sources.LessThanOrEqual(attribute, f: AttributeReference) if(udfs contains f.toString) =>
+        udfvalcmp(attribute, "<=", f)
       case sources.LessThanOrEqual(attribute, value) => (s"${quote(attribute)} <= ?", Seq(value))
+
+      case sources.GreaterThan(attribute, f: AttributeReference) if(udfs contains f.toString) =>
+        udfvalcmp(attribute, ">", f)
       case sources.GreaterThan(attribute, value) => (s"${quote(attribute)} > ?", Seq(value))
+
+      case sources.GreaterThanOrEqual(attribute, f: AttributeReference) if(udfs contains f.toString) =>
+        udfvalcmp(attribute, ">=", f)
       case sources.GreaterThanOrEqual(attribute, value) => (s"${quote(attribute)} >= ?", Seq(value))
 
       case _ =>
@@ -187,8 +236,8 @@ class CassandraXDSourceRelation(
   }
 
   /** Construct where clause from pushdown filters */
-  private def whereClause(pushdownFilters: Seq[Any]): (String, Seq[Any]) = {
-    val cqlValue = pushdownFilters.map(filterToCqlAndValue)
+  private def whereClause(pushdownFilters: Seq[Any], udfs: Map[String, NativeUDF] = Map.empty): (String, Seq[Any]) = {
+    val cqlValue = pushdownFilters.map(filterToCqlAndValue(_, udfs))
     val cql = cqlValue.map(_._1).mkString(" AND ")
     val args = cqlValue.flatMap(_._2)
     (cql, args)

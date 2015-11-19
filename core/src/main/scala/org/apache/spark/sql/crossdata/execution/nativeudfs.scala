@@ -45,70 +45,9 @@ case class EvaluateNativeUDF(
 
 }
 
-case class NativeUDFAttribute(name: String, dataType: DataType, nullable: Boolean = true)(
-  val exprId: ExprId = NamedExpression.newExprId,
-  val qualifiers: Seq[String] = Nil) extends Attribute with Unevaluable {
-
-  def sameRef(other: NativeUDFAttribute): Boolean = this.exprId == other.exprId
-
-  override def equals(other: Any): Boolean = other match {
-    case ar: NativeUDFAttribute => name == ar.name && exprId == ar.exprId && dataType == ar.dataType
-    case _ => false
-  }
-
-  override def semanticEquals(other: Expression): Boolean = other match {
-    case ar: NativeUDFAttribute => sameRef(ar)
-    case _ => false
-  }
-
-  override def hashCode: Int = {
-    // See http://stackoverflow.com/questions/113511/hash-code-implementation
-    var h = 17
-    h = h * 37 + exprId.hashCode()
-    h = h * 37 + dataType.hashCode()
-    h = h * 37 + metadata.hashCode()
-    h
-  }
-
-  override def newInstance(): NativeUDFAttribute =
-    NativeUDFAttribute(name, dataType, nullable)(qualifiers = qualifiers)
-
-  /**
-   * Returns a copy of this [[AttributeReference]] with changed nullability.
-   */
-  override def withNullability(newNullability: Boolean): NativeUDFAttribute = {
-    if (nullable == newNullability) {
-      this
-    } else {
-      NativeUDFAttribute(name, dataType, newNullability)(exprId, qualifiers)
-    }
-  }
-
-  override def withName(newName: String): NativeUDFAttribute = {
-    if (name == newName) {
-      this
-    } else {
-      NativeUDFAttribute(newName, dataType, nullable)(exprId, qualifiers)
-    }
-  }
-
-  /**
-   * Returns a copy of this [[AttributeReference]] with new qualifiers.
-   */
-  override def withQualifiers(newQualifiers: Seq[String]): NativeUDFAttribute = {
-    if (newQualifiers.toSet == qualifiers.toSet) {
-      this
-    } else {
-      NativeUDFAttribute(name, dataType, nullable)(exprId, newQualifiers)
-    }
-  }
-
-  override def toString: String = s"$name#${exprId.id}$typeSuffix"
-}
-
 object EvaluateNativeUDF {
   def apply(udf: NativeUDF, child: LogicalPlan): EvaluateNativeUDF =
-    new EvaluateNativeUDF(udf, child, NativeUDFAttribute(udf.name, udf.dataType, false)())
+    new EvaluateNativeUDF(udf, child, AttributeReference(udf.name, udf.dataType, false)())
 }
 
 //case class NativeUDFEvaluation(udf: NativeUDF, output: Seq[Attribute], child: SparkPlan) extends SparkPlan
