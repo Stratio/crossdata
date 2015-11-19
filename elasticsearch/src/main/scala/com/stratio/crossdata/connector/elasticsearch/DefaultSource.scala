@@ -88,7 +88,6 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
       else if (k == "strict") (DATA_SOURCE_PUSH_DOWN_STRICT, v)
       else ("es." + k, v)
     }
-    params.getOrElse(ConfigurationOptions.ES_RESOURCE, throw new EsHadoopIllegalArgumentException("resource must be specified for Elasticsearch resources."))
     //TODO Validate required parameters
 
     params
