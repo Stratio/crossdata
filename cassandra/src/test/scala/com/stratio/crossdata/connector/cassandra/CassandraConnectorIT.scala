@@ -150,15 +150,18 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
     val importQuery =
       s"""
-         |IMPORT TABLES
-         |USING $SourceProvider
+          |IMPORT TABLES
+          |USING $SourceProvider
           |OPTIONS (
           | cluster "$ClusterName",
           | spark_cassandra_connection_host '$CassandraHost'
           |)
       """.stripMargin
 
-    ctx.sql(importQuery)
+    val importedTables = ctx.sql(importQuery)
+
+    importedTables.schema.fieldNames shouldBe Array("tableIdentifier")
+    importedTables.collect.length should be > 0
 
     // TODO We need to create an unregister the table
     tableCountInHighschool should be > initialLength
@@ -179,6 +182,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
       """.stripMargin
 
     sql(importQuery)
+
     ctx.dropTempTable(s"$Catalog.$Table")
     ctx.table(s"$Catalog.$Table").schema should have length 5
   }
