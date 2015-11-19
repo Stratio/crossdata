@@ -133,7 +133,7 @@ trait ElasticSearchDefaultConstants {
   val Index = "highschool"
   val Type = "students"
   val ElasticHost: String = {
-    Try(config.getStringList("elasticsearch.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
+    Try(config.getStringList("elasticsearch.hosts.0")).map(_.get(0)).getOrElse("127.0.0.1")
   }
   val ElasticRestPort = 9200
   val ElasticNativePort = 9300
