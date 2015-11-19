@@ -16,8 +16,6 @@ Example:
 mvn verify -DMONGO_HOST="127.0.0.1" -DMONGO_PORT="27017" -DCASSANDRA_HOST="127.0.0.1" -DCASSANDRA_CLUSTER="Test 
 Cluster" -DSPARK_MASTER="local[4]" -DSPARK_APP_NAME="appTest"
 
-mvn verify -DVIEWER_HOST=localhost -DVIEWER_PORT=9000 -Dit.test=com.stratio.viewer.testsAT
-.automated.roles.ATwAddNewRole.java
 
 By default, in jenkins we will execute the group basic, which should contain a subset of tests, that are key to the functioning of the module and the ones generated for the new feature.
 
