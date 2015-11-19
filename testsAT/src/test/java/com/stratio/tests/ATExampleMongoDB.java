@@ -1,4 +1,5 @@
-/**
+/*
+*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
 package com.stratio.tests;
 
 import java.net.UnknownHostException;
@@ -82,7 +82,6 @@ public class ATExampleMongoDB extends BaseTest{
       //  java.sql.Date aux1 = (java.sql.Date)aux.get("date");
         mongoClient.close();
         String connector = "Mongo";
-        //Preparamos las cositas para compartir
         ThreadProperty.set("Host", "127.0.0.1");
         ThreadProperty.set("Connector", connector);
 
@@ -98,3 +97,5 @@ public class ATExampleMongoDB extends BaseTest{
         new CucumberRunner(this.getClass()).runCukes();
     }
 }
+*/
+
