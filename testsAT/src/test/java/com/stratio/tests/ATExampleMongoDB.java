@@ -82,7 +82,6 @@ public class ATExampleMongoDB extends BaseTest{
       //  java.sql.Date aux1 = (java.sql.Date)aux.get("date");
         mongoClient.close();
         String connector = "Mongo";
-        //Preparamos las cositas para compartir
         ThreadProperty.set("Host", "127.0.0.1");
         ThreadProperty.set("Connector", connector);
 
@@ -98,3 +97,4 @@ public class ATExampleMongoDB extends BaseTest{
         new CucumberRunner(this.getClass()).runCukes();
     }
 }
+

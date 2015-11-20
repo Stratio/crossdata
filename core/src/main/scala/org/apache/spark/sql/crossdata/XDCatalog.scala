@@ -71,8 +71,8 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
         case (tableName, _) => (tableName.split("\\.")(0) + "." + tableName.split("\\.")(1), true)
       }.toSeq
     }
-
-    (cachedTables ++ listPersistedTables(databaseName)).distinct
+    // persisted tables replace temporary tables
+    (cachedTables.toMap ++ listPersistedTables(databaseName).toMap).toSeq
   }
 
   override def lookupRelation(tableIdentifier: Seq[String], alias: Option[String]): LogicalPlan = {

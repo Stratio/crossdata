@@ -1,26 +1,27 @@
 Getting started
 ***************
 
-TODO
-
 Prerequisites
-=============
+==============
+Crossdata can be installed in a single computer as a standalone deployment, or can be installed in a cluster.
+The minimum requisites are the same as `Spark requisites <http://spark.apache.org/docs/latest/hardware-provisioning.html>`_.
 
-- **System requirements**: TODO
+It is necessary too, to install `Apache Maven 3 <https://maven.apache.org/>`_ due to the build script use it to get
+all dependencies of Crossdata and Apache Cassandra to run the Crossdata examples.
 
-- **Other modules**:
-    There are no strict requirements but in order to use external datasources you need to install them.
-    You will need Apache Cassandra to run the examples described below.
+Finally, it is necessary to have a minimum knowledge on Apache Spark, specifically in `SparkSQL Grammar 
+<https://spark.apache.org/docs/1.5.1/sql-programming-guide.html>`_.
+It could be useful take a look at `Crossdata reference guide <6_reference_guide.rst>`_ before starting with Crossdata.
 
-- **Skills needed**: SQL knowledge
+Download
+=========
+Crossdata can be downloaded from `Stratio Crossdata Github repository <https://github.com/Stratio/Crossdata>`_ or directly using Stratio Platform.
 
-How to build Crossdata
-======================
+Build
+======
 There are different ways to build Crossdata core and connectors depending of your necessities.
 
 - **A) Using an external Spark installation**:
-
-One way is using maven by running::
 
     > mvn clean package -Ppackage
 
@@ -51,7 +52,7 @@ For others options run ./make-distribution-crossdata.sh --help
 
 
 How to install Crossdata
-========================
+=========================
 
 - **A) Using an external Spark installation**:
 
@@ -71,19 +72,20 @@ Download a prebuilt targz: TODO
 
 
 Configure
-=========
-
-TODO
-If you want to use Crossdata as a client-server service, please see the `Configuration document <3_configuration.rst>`_
+==========
+Please see the `Configuration section <3_configuration.rst>`_.
 
 
 Run Crossdata server (Crossdata as a client-server service)
-===========================================================
+============================================================
 
 If you don't need concurrent clients within a Spark cluster, skip this step.
 
 Crossdata has a Scala/Java API driver to allow to make queries programmatically on your own projects. Before do it,
 please see the `Configuration document <3_configuration.rst>`_
+
+This kind of execution is necessary when Crossdata need to be connected with an ODBC or an external software that
+uses the Crossdata Driver.
 
 Run Crossdata Server using maven::
 
@@ -96,8 +98,10 @@ Or it is possible to start using the server jar generated previously and server 
 Now that Crossdata server is running you can use the Crossdata driver importing the jar in your own project.
 
 
-Run Crossdata shell
-===================
+Run Crossdata shell (Standalone mode)
+======================================
+Crossdata can be used in a standalone mode as it happens with Apache Spark. It can be useful for testing purposes or
+simple computation tasks. This kind of use, includes Cassandra, Mongo and ElasticSearch datasources.
 
 If you are using Crossdata core and connectors as a library, you have the following options:
 
@@ -140,6 +144,6 @@ and specify the master as a shell option (--master spark://IP:PORT)
 
 Next Steps
 ==========
+To learn more about Crossdata, you can visit the `Reference guide <6_reference guide.rst>`_ or check out some examples at `github <https://github.com/Stratio/Crossdata/tree/master/examples/src/main/scala/com/stratio/crossdata/examples>`_
 
-More information check out the `Reference guide <6_reference guide.rst>`_
-Scala driver exaw the modules it depends on are installed and configured. For example, how would you configure GoSec as it pertains to Crossdata, its benefits, etc.mples in `github <https://github.com/Stratio/Crossdata/tree/master/examples/src/main/scala/com/stratio/crossdata/examples>`_
+
