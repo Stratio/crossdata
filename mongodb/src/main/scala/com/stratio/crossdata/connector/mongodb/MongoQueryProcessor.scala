@@ -20,15 +20,19 @@ import java.util.regex.Pattern
 import com.mongodb.casbah.Imports._
 import com.mongodb.{DBObject, QueryBuilder}
 import com.stratio.datasource.Config
+import com.stratio.datasource.mongodb.MongodbConfig
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
-import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
+import org.apache.spark.sql.sources.{Filter => SourceFilter, CatalystToCrossdataAdapter}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{Row, sources}
+import org.apache.spark.sql.Row
+
+import scala.util.Try
 
 object MongoQueryProcessor {
 
@@ -38,47 +42,66 @@ object MongoQueryProcessor {
 
   def apply(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) = new MongoQueryProcessor(logicalPlan, config, schemaProvided)
 
-  def buildNativeQuery(requiredColums: Seq[ColumnName], filters: Array[SourceFilter]): (DBObject, DBObject) =
-    (filtersToDBObject(filters), selectFields(requiredColums))
+  def buildNativeQuery(requiredColums: Seq[ColumnName], filters: Array[SourceFilter], config: Config): (DBObject, DBObject) = {
+    (filtersToDBObject(config, filters), selectFields(requiredColums))
+  }
 
-  private def filtersToDBObject(sFilters: Array[SourceFilter]): DBObject = {
+  def filtersToDBObject(config: Config, sFilters: Array[SourceFilter], parentFilterIsNot: Boolean = false): DBObject = {
     val queryBuilder: QueryBuilder = QueryBuilder.start
 
+    if (parentFilterIsNot) queryBuilder.not()
     sFilters.foreach {
       case sources.EqualTo(attribute, value) =>
-        queryBuilder.put(attribute).is(convertToStandardType(value))
+        queryBuilder.put(attribute).is(checkObjectID(attribute, value, config))
       case sources.GreaterThan(attribute, value) =>
-        queryBuilder.put(attribute).greaterThan(convertToStandardType(value))
+        queryBuilder.put(attribute).greaterThan(checkObjectID(attribute, value, config))
       case sources.GreaterThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).greaterThanEquals(convertToStandardType(value))
+        queryBuilder.put(attribute).greaterThanEquals(checkObjectID(attribute, value, config))
       case sources.In(attribute, values) =>
-        queryBuilder.put(attribute).in(values.map(convertToStandardType))
+        queryBuilder.put(attribute).in(values.map(value => checkObjectID(attribute, value, config)))
       case sources.LessThan(attribute, value) =>
-        queryBuilder.put(attribute).lessThan(convertToStandardType(value))
+        queryBuilder.put(attribute).lessThan(checkObjectID(attribute, value, config))
       case sources.LessThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).lessThanEquals(convertToStandardType(value))
+        queryBuilder.put(attribute).lessThanEquals(checkObjectID(attribute, value, config))
       case sources.IsNull(attribute) =>
         queryBuilder.put(attribute).is(null)
       case sources.IsNotNull(attribute) =>
         queryBuilder.put(attribute).notEquals(null)
-      case sources.And(leftFilter, rightFilter) =>
-        queryBuilder.and(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
-      case sources.Or(leftFilter, rightFilter) =>
-        queryBuilder.or(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
-      case sources.StringStartsWith(attribute, value) =>
+      case sources.And(leftFilter, rightFilter) if !parentFilterIsNot =>
+        queryBuilder.and(filtersToDBObject(config, Array(leftFilter)), filtersToDBObject(config, Array(rightFilter)))
+      case sources.Or(leftFilter, rightFilter) if !parentFilterIsNot =>
+        queryBuilder.or(filtersToDBObject(config, Array(leftFilter)), filtersToDBObject(config, Array(rightFilter)))
+      case sources.StringStartsWith(attribute, value) if !parentFilterIsNot =>
         queryBuilder.put(attribute).regex(Pattern.compile("^" + value + ".*$"))
-      case sources.StringEndsWith(attribute, value) =>
+      case sources.StringEndsWith(attribute, value) if !parentFilterIsNot =>
         queryBuilder.put(attribute).regex(Pattern.compile("^.*" + value + "$"))
-      case sources.StringContains(attribute, value) =>
+      case sources.StringContains(attribute, value) if !parentFilterIsNot =>
         queryBuilder.put(attribute).regex(Pattern.compile(".*" + value + ".*"))
-      // TODO Not filter
+      case sources.Not(filter) =>
+        filtersToDBObject(config, Array(filter), true)
     }
+
     queryBuilder.get
   }
 
-  private def convertToStandardType(value: Any): Any = value
+    /**
+      * Check if the field is "_id" and if the user wants to filter by this field as an ObjectId
+      *
+      * @param attribute Name of the file
+      * @param value Value for the attribute
+      * @return The value in the correct data type
+      */
+     private def checkObjectID(attribute: String, value: Any, config: Config) : Any = {
 
-  /**
+      val idAsObjectId: Boolean = config.getOrElse[String](MongodbConfig.IdAsObjectId, MongodbConfig.DefaultIdAsObjectId).equalsIgnoreCase("true")
+
+      attribute match {
+        case "_id" if idAsObjectId => new ObjectId(value.toString)
+        case _ => value
+      }
+    }
+
+    /**
    *
    * Prepared DBObject used to specify required fields in mongodb 'find'
    * @param fields Required fields
@@ -90,7 +113,6 @@ object MongoQueryProcessor {
       else fields.toList.filterNot(_ == "_id").map(_ -> 1) ::: {
         List("_id" -> fields.find(_ == "_id").fold(0)(_ => 1))
       })
-
 
 }
 
@@ -111,7 +133,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
           if (limit.exists(_ == 0)) {
             Array.empty[Row]
           } else {
-            val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(requiredColumns, filters)
+            val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(requiredColumns, filters, config)
             val resultSet = MongodbConnection.withCollectionDo(config) { collection =>
               logDebug(s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
               val cursor = collection.find(mongoFilters, mongoRequiredColumns)
@@ -170,7 +192,8 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     case _: sources.StringContains => true
     case sources.And(left, right) => checkNativeFilters(Array(left, right))
     case sources.Or(left, right) => checkNativeFilters(Array(left, right))
-    // TODO add more filters (Not?)
+    case sources.Not(filter) => checkNativeFilters(Array(filter))
+    // TODO add more filters
     case _ => false
 
   }

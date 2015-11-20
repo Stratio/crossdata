@@ -20,6 +20,7 @@ import java.util.regex.Pattern
 
 import com.mongodb.{DBObject, QueryOperators}
 import com.stratio.crossdata.test.BaseXDTest
+import com.stratio.datasource.mongodb.{MongodbConfig, MongodbConfigBuilder}
 import org.apache.spark.sql.sources._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -37,9 +38,14 @@ class MongoQueryProcessorSpec extends BaseXDTest {
   val ValueAge = 25
   val ValueAge2 = 30
   val ValueId = "00123"
+  val config = MongodbConfigBuilder()
+    .set(MongodbConfig.Host, List("host:port"))
+    .set(MongodbConfig.Database, "db")
+    .set(MongodbConfig.Collection, "collection")
+    .build()
 
   "A MongoQueryProcessor" should "build a query requiring some columns" in {
-    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId, ColumnAge), Array())
+    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId, ColumnAge), Array(), config)
     val columnsSet = requiredColumns.keySet
 
     filters.keySet should have size 0
@@ -52,7 +58,7 @@ class MongoQueryProcessorSpec extends BaseXDTest {
   }
 
   it should "build a query with two equal filters" in {
-    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(EqualTo(ColumnAge, ValueAge), EqualTo(ColumnId, ValueId)))
+    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(EqualTo(ColumnAge, ValueAge), EqualTo(ColumnId, ValueId)), config)
     val filterSet = filters.keySet
 
     requiredColumns.keySet should contain(ColumnId)
@@ -66,7 +72,7 @@ class MongoQueryProcessorSpec extends BaseXDTest {
   }
 
   it should "build a query with an IN clause" in {
-    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(In(ColumnAge, Array(ValueAge, ValueAge2))))
+    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(In(ColumnAge, Array(ValueAge, ValueAge2))), config)
     val filterSet = filters.keySet
 
     requiredColumns.keySet should contain (ColumnId)
@@ -84,7 +90,7 @@ class MongoQueryProcessorSpec extends BaseXDTest {
   }
 
   it should "build a query with a LT clause" in {
-    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(LessThan(ColumnAge, ValueAge)))
+    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(LessThan(ColumnAge, ValueAge)), config)
     val filterSet = filters.keySet
 
     requiredColumns.keySet should contain(ColumnId)
@@ -99,7 +105,7 @@ class MongoQueryProcessorSpec extends BaseXDTest {
   }
 
   it should "build a query with a LTE clause" in {
-    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(LessThanOrEqual(ColumnAge, ValueAge)))
+    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(LessThanOrEqual(ColumnAge, ValueAge)), config)
     val filterSet = filters.keySet
 
     requiredColumns.keySet should contain(ColumnId)
@@ -114,7 +120,7 @@ class MongoQueryProcessorSpec extends BaseXDTest {
 
 
   it should "build a query with a GTE clause" in {
-    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(GreaterThanOrEqual(ColumnAge, ValueAge)))
+    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(GreaterThanOrEqual(ColumnAge, ValueAge)), config)
     val filterSet = filters.keySet
 
     requiredColumns.keySet should contain(ColumnId)
@@ -129,7 +135,7 @@ class MongoQueryProcessorSpec extends BaseXDTest {
   }
 
   it should "build a query with an IS NOT NULL clause" in {
-    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(IsNotNull(ColumnAge)))
+    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(IsNotNull(ColumnAge)), config)
     val filterSet = filters.keySet
 
     requiredColumns.keySet should contain(ColumnId)
@@ -144,7 +150,7 @@ class MongoQueryProcessorSpec extends BaseXDTest {
   }
 
   it should "build a query with an AND(v1 > x <= v2)" in {
-    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(And(GreaterThan(ColumnAge, ValueAge), LessThanOrEqual(ColumnAge, ValueAge2))))
+    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(And(GreaterThan(ColumnAge, ValueAge), LessThanOrEqual(ColumnAge, ValueAge2))), config)
     val filterSet = filters.keySet
 
     requiredColumns.keySet should contain (ColumnId)
@@ -166,7 +172,7 @@ class MongoQueryProcessorSpec extends BaseXDTest {
 
   it should "build a query with a REGEX clause " in {
 
-    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(StringContains(ColumnId, ValueId.toString)))
+    val (filters, requiredColumns) = MongoQueryProcessor.buildNativeQuery(Array(ColumnId), Array(StringContains(ColumnId, ValueId.toString)), config)
     val filterSet = filters.keySet
 
     requiredColumns.keySet should contain (ColumnId)
