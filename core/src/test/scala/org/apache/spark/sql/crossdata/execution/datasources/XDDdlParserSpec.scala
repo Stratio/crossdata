@@ -13,10 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.sources.crossdata
-import com.stratio.crossdata.test.BaseXDTest
-import org.apache.spark.sql.execution.datasources.{DescribeCommand, RefreshTable, CreateTableUsing}
+package org.apache.spark.sql.crossdata.execution.datasources
 
+import com.stratio.crossdata.test.BaseXDTest
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.execution.datasources.{CreateTableUsing, DescribeCommand, RefreshTable}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+@RunWith(classOf[JUnitRunner])
 class XDDdlParserSpec extends BaseXDTest {
 
   val parser = new XDDdlParser(_ => null)
@@ -82,5 +87,20 @@ class XDDdlParserSpec extends BaseXDTest {
     it should s"fail when parsing wrong sentences: $sentence" in {
       an [Exception] should be thrownBy parser.parse(sentence)
     }
+  }
+
+
+  it should "successfully parse a DROP TABLE into a DropTable RunnableCommand" in {
+
+    val sentence = "DROP TABLE tableId"
+    parser.parse(sentence) shouldBe DropTable( TableIdentifier("tableId", None))
+
+  }
+
+  it should "successfully parse a DROP TABLE with a qualified table name into a DropTable RunnableCommand" in {
+
+    val sentence = "DROP TABLE dbId.tableId"
+    parser.parse(sentence) shouldBe DropTable( TableIdentifier("tableId", Some("dbId")))
+
   }
 }

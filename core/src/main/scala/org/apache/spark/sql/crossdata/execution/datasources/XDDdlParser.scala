@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.sources.crossdata
+package org.apache.spark.sql.crossdata.execution.datasources
 
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.datasources.DDLParser
@@ -22,14 +22,21 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
 
   protected val IMPORT = Keyword("IMPORT")
   protected val TABLES = Keyword("TABLES")
+  protected val DROP = Keyword("DROP")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
-    createTable | describeTable | refreshTable | importStart
+    createTable | describeTable | refreshTable | importStart | dropTable
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
       case provider ~ ops =>
         ImportTablesUsingWithOptions(provider.asInstanceOf[String], ops.getOrElse(Map.empty))
+    }
+
+  protected lazy val dropTable: Parser[LogicalPlan] =
+    DROP ~> TABLE ~> tableIdentifier ^^ {
+      case tableId =>
+        DropTable(tableId)
     }
 
 }
