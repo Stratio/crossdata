@@ -99,7 +99,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     )
 
     val client = ElasticSearchConnectionUtils.buildClient(options)
-    createIndex(client,"empty_index",  Type as())
+    createIndex(client,"empty_index",  null)
 
     try {
       //Experimentation

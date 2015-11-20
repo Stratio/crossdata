@@ -74,7 +74,6 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
   def prepareEnvironment(): ElasticClient = {
     val settings = ImmutableSettings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
     val elasticClient = ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
-    ctx.dropAllTables()
 
     createIndex(elasticClient, Index, typeMapping())
     saveTestData(elasticClient)
@@ -82,7 +81,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
   }
 
   def createIndex(elasticClient: ElasticClient, indexName:String, mappings:MappingDefinition): Unit ={
-    val command = create index indexName mappings mappings
+    val command = Option(mappings).fold(create index indexName)(create index indexName mappings _)
     elasticClient.execute {command}.await
   }
 
