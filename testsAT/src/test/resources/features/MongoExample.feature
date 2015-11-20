@@ -19,3 +19,5 @@
         Then The result has to have '1' rows:
           | ident-integer | name-string   | money-double  |
           |    0          |name_0         | 10.2          |
+
+
