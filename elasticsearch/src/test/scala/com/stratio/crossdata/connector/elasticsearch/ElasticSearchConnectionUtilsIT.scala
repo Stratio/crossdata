@@ -17,6 +17,7 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import com.sksamuel.elastic4s.ElasticDsl._
 
 @RunWith(classOf[JUnitRunner])
 class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with ElasticSearchDefaultConstants {
@@ -71,7 +72,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     )
 
     val client = ElasticSearchConnectionUtils.buildClient(options)
-    createIndex(client,"index_test")
+    createIndex(client,"index_test",  typeMapping())
     try {
       //Experimentation
       val types = ElasticSearchConnectionUtils.listTypes(options)
@@ -82,6 +83,34 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
 
     }finally {
       cleanTestData(client, "index_test")
+    }
+  }
+
+
+  it should "List tables on an empty index" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val options: Map[String, String] = Map(
+      "es.node" -> s"$ElasticHost",
+      "es.port" -> s"$ElasticRestPort",
+      "es.nativePort" -> s"$ElasticNativePort",
+      "es.cluster" -> s"$ElasticClusterName",
+      "es.index" -> "empty_index"
+    )
+
+    val client = ElasticSearchConnectionUtils.buildClient(options)
+    createIndex(client,"empty_index",  Type as())
+
+    try {
+      //Experimentation
+      val types = ElasticSearchConnectionUtils.listTypes(options)
+
+      //Expectations
+      types should not be (null)
+      types.size should be (0)
+
+    }finally {
+      cleanTestData(client, "empty_index")
     }
   }
 }

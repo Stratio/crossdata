@@ -70,12 +70,7 @@ object ElasticSearchConnectionUtils {
   }
 
   private def getIndexDetails(indexName:String, indexData: ImmutableOpenMap[String, MappingMetaData]): Seq[Table] ={
-    var result = Seq.empty[Table]
-    for (typeES <- indexData.keys()){
-      val typeMetadata = indexData.get(typeES.value)
-      result = result ++ Seq[Table](new Table(typeES.value, Some(indexName), Some(buildStructType(typeMetadata))))
-    }
-    result
+    indexData.keys().map(typeES => new Table(typeES.value, Some(indexName), Some(buildStructType(indexData.get(typeES.value))))).toSeq
   }
 
 

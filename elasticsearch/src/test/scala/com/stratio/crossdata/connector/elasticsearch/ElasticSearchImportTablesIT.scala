@@ -79,7 +79,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     )
 
     val client = ElasticSearchConnectionUtils.buildClient(options)
-    createIndex(client,"index_test")
+    createIndex(client,"index_test", typeMapping())
     try {
       val importQuery =
         s"""

@@ -20,6 +20,7 @@ package com.stratio.crossdata.connector.elasticsearch
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
+import com.sksamuel.elastic4s.mappings.MappingDefinition
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
@@ -75,23 +76,25 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
     val elasticClient = ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
     ctx.dropAllTables()
 
-    createIndex(elasticClient, Index)
+    createIndex(elasticClient, Index, typeMapping())
     saveTestData(elasticClient)
     elasticClient
   }
 
-  def createIndex(elasticClient: ElasticClient, indexName:String): Unit ={
-    val command = create index indexName mappings (
-      Type as(
-        "id" typed IntegerType,
-        "age" typed IntegerType,
-        "description" typed StringType,
-        "enrolled" typed BooleanType,
-        "name" typed StringType index NotAnalyzed,
-        "birthday" typed DateType
-        ))
-
+  def createIndex(elasticClient: ElasticClient, indexName:String, mappings:MappingDefinition): Unit ={
+    val command = create index indexName mappings mappings
     elasticClient.execute {command}.await
+  }
+
+  def typeMapping(): MappingDefinition ={
+    Type as(
+      "id" typed IntegerType,
+      "age" typed IntegerType,
+      "description" typed StringType,
+      "enrolled" typed BooleanType,
+      "name" typed StringType index NotAnalyzed,
+      "birthday" typed DateType
+      )
   }
 
   def cleanEnvironment(elasticClient: ElasticClient) = {
@@ -133,7 +136,7 @@ trait ElasticSearchDefaultConstants {
   val Index = "highschool"
   val Type = "students"
   val ElasticHost: String = {
-    Try(config.getStringList("elasticsearch.hosts.0")).map(_.get(0)).getOrElse("127.0.0.1")
+    Try(config.getStringList("elasticsearch.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
   }
   val ElasticRestPort = 9200
   val ElasticNativePort = 9300
