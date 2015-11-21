@@ -74,7 +74,7 @@ rpm --quiet -q stratio-connector-sparksql || yum -y -q --nogpgcheck install stra
 echo "Configuring SparkSQL connector..."
 sed -i "s/^\(spark.home             =\).*$/\1\"\/opt\/sds\/spark\"/" /etc/sds/connectors/sparksql/connector-application.conf
 sed -i 's/..\/repo\//\/opt\/sds\/connectors\/sparksql\/repo\//' /etc/sds/connectors/sparksql/connector-application.conf
-sed -i 's/local[4]/local[2]/' /etc/sds/connectors/sparksql/connector-application.conf
+sed -i 's/local\[4\]/local\[2\]/' /etc/sds/connectors/sparksql/connector-application.conf
 
 chkconfig --add crossdata
 chkconfig --add cassandra
@@ -92,9 +92,6 @@ echo "Starting services..."
 service cassandra start
 service mongodb start
 
-mv /etc/sds/connectors/sparksql/hive-site.xml /etc/sds/connectors/sparksql/hive-site.xml_bak
-mv /etc/sds/connectors/sparksql/hdfs-site.xml /etc/sds/connectors/sparksql/hdfs-site.xml_bak
-mv /etc/sds/connectors/sparksql/core-site.xml /etc/sds/connectors/sparksql/core-site.xml_bak
 sudo mkdir -p /user/hive/warehouse/
 sudo chown -R stratio:stratio /user/hive/
 
