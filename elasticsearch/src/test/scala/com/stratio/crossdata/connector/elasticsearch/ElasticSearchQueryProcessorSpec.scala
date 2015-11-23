@@ -26,7 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
-class ElasticSearchQueryProcessorTest extends BaseXDTest with MockitoSugar {
+class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
 
 
   "A ElasticSearchQueryProcessor " should "build a Match All query in ES" in {

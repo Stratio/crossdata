@@ -43,7 +43,7 @@ private[sql] object XDDataFrame {
 
     def allLeafsAreNative(leafs: Seq[LeafNode]): Boolean = {
       leafs.forall {
-        case LogicalRelation(ns: NativeScan) => true
+        case LogicalRelation(ns: NativeScan, _) => true
         case _ => false
       }
     }
@@ -52,7 +52,7 @@ private[sql] object XDDataFrame {
     if (!allLeafsAreNative(leafs)) {
       None
     } else {
-      val nativeExecutors: Seq[NativeScan] = leafs.map { case LogicalRelation(ns: NativeScan) => ns }
+      val nativeExecutors: Seq[NativeScan] = leafs.map { case LogicalRelation(ns: NativeScan, _) => ns }
 
       nativeExecutors match {
         case Seq(head) => Some(head)
