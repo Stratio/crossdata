@@ -54,12 +54,69 @@ class MongoFilterIT extends MongoWithSharedContext {
 
   }
 
+  it should "XD Mongodb connector supports filter DATE greater than" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date > '1970'").collect(ExecutionType.Spark)
+    sparkRow.length should be (10)
+
+  }
+
   it should "XD Mongodb connector supports filter DATE equals to" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date = '1970-01-01'").collect(ExecutionType.Spark)
+    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date = '1970-01-02'").collect(ExecutionType.Spark)
+    sparkRow.length should be (1)
 
+  }
+
+  it should "XD Mongodb connector supports filter DATE BETWEEN two dates" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date BETWEEN '1970' AND '1971'").collect(ExecutionType.Spark)
     sparkRow.length should be (10)
+
+  }
+
+
+  it should "XD Mongodb connector supports filter DATE NOT BETWEEN two dates" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date NOT BETWEEN '1970-01-03' AND '1971'").collect(ExecutionType.Spark)
+    sparkRow.length should be (1)
+
+  }
+
+  it should "XD Mongodb connector supports filter TIMESTAMP greater than" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp > '1970'").collect(ExecutionType.Spark)
+    sparkRow.length should be (10)
+    sparkRow.foreach(println)
+
+  }
+
+  it should "XD Mongodb connector supports filter TIMESTAMP equals to" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp = '1970-01-02 04:46:42.015'").collect(ExecutionType.Spark)
+    sparkRow.length should be (1)
+
+  }
+
+  it should "XD Mongodb connector supports filter TIMESTAMP BETWEEN two times" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp BETWEEN '1970' AND '1971'").collect(ExecutionType.Spark)
+    sparkRow.length should be (10)
+
+  }
+
+  it should "XD Mongodb connector supports filter TIMESTAMP NOT BETWEEN two times" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp NOT BETWEEN '1970-01-03' AND '1971'").collect(ExecutionType.Spark)
+    sparkRow.length should be (1)
 
   }
 
