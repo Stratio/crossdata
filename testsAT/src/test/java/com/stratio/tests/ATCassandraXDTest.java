@@ -35,7 +35,8 @@ import cucumber.api.CucumberOptions;
 @CucumberOptions(features = { "src/test/resources/features/Cassandra/CassandraSelectSimple.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectLimit.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectEqualsFilter.feature",
-		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature" })
+		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature",
+		"src/test/resources/features/Cassandra/CassandraPureNativeAggregation.feature"})
 public class ATCassandraXDTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()
 			.getCanonicalName());
