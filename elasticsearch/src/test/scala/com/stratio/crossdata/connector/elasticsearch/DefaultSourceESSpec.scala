@@ -71,7 +71,7 @@ class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
     val result:Map[String, String] = defaultDatasource.generateConnectorOpts(item, userOpts)
 
     //Expectations
-    result should not be (null)
+    result should not be null
     result.get(ES_RESOURCE).get should be ("index/type")
     result.get(ES_HOST).get should be ("localhost")
 
