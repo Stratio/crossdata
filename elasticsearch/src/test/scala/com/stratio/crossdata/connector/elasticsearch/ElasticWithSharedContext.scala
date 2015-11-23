@@ -20,6 +20,7 @@ package com.stratio.crossdata.connector.elasticsearch
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
+import com.sksamuel.elastic4s.mappings.MappingDefinition
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
@@ -36,13 +37,13 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
   var elasticClient: Option[ElasticClient] = None
   var isEnvironmentReady = false
 
-  log.info(s"Test configuration: ES Host -> $ElasticHost | ES Cluster -> $ElasticClusterName")
-
   override protected def beforeAll() = {
     super.beforeAll()
 
     try {
       elasticClient = Some(prepareEnvironment())
+
+      log.info(s"Test configuration: ES Host -> $ElasticHost | ES Cluster -> $ElasticClusterName")
 
       xdContext.sql(
         s"""|CREATE TEMPORARY TABLE $Type
@@ -50,7 +51,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
             |USING $SourceProvider
             |OPTIONS (
             |resource '$Index/$Type',
-            |es.node '$ElasticHost',
+            |es.nodes '$ElasticHost',
             |es.port '$ElasticRestPort',
             |es.nativePort '$ElasticNativePort',
             |es.cluster '$ElasticClusterName'
@@ -71,27 +72,34 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
 
 
   def prepareEnvironment(): ElasticClient = {
+    logInfo(s"Connection to elastic search, ElasticHost: $ElasticHost, ElasticNativePort:$ElasticNativePort, ElasticClusterName $ElasticClusterName")
+
     val settings = ImmutableSettings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
     val elasticClient = ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
 
-    val command = create index Index mappings (
-      Type as(
-        "id" typed IntegerType,
-        "age" typed IntegerType,
-        "description" typed StringType,
-        "enrolled" typed BooleanType,
-        "name" typed StringType index NotAnalyzed,
-        "birthday" typed DateType
-        ))
-
-    elasticClient.execute {command}.await
-
+    createIndex(elasticClient, Index, typeMapping())
     saveTestData(elasticClient)
     elasticClient
   }
 
+  def createIndex(elasticClient: ElasticClient, indexName:String, mappings:MappingDefinition): Unit ={
+    val command = Option(mappings).fold(create index indexName)(create index indexName mappings _)
+    elasticClient.execute {command}.await
+  }
+
+  def typeMapping(): MappingDefinition ={
+    Type as(
+      "id" typed IntegerType,
+      "age" typed IntegerType,
+      "description" typed StringType,
+      "enrolled" typed BooleanType,
+      "name" typed StringType index NotAnalyzed,
+      "birthday" typed DateType
+      )
+  }
+
   def cleanEnvironment(elasticClient: ElasticClient) = {
-    cleanTestData(elasticClient)
+    cleanTestData(elasticClient, Index)
     elasticClient.close()
   }
 
@@ -112,9 +120,9 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
     }
   }
 
-  private def cleanTestData(elasticClient: ElasticClient): Unit = {
+  def cleanTestData(elasticClient: ElasticClient, indexName:String): Unit = {
     elasticClient.execute {
-      deleteIndex(Index)
+      deleteIndex(indexName)
     }
   }
 
@@ -124,7 +132,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
 }
 
 
-sealed trait ElasticSearchDefaultConstants {
+trait ElasticSearchDefaultConstants {
   private lazy val config = ConfigFactory.load()
   val Index = "highschool"
   val Type = "students"
