@@ -35,7 +35,8 @@ import java.text.ParseException;
 import cucumber.api.CucumberOptions;
 
 //Indicar feature
-@CucumberOptions(features = { "src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
+@CucumberOptions(features = { //"src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
+		"src/test/resources/features/Catalog/PersistentCatalogMySQLDropTable.feature"
 	})
 public class ATPersistentCatalogXDTest extends BaseTest {
 	//Defaul mongoHost property
@@ -79,8 +80,6 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 					.add("date", new java.sql.Date(parsedDate.getTime()));
 			tabletest.insert(documentBuilder.get());
 		}
-		//   DBObject aux = tabletest.findOne();
-		//  java.sql.Date aux1 = (java.sql.Date)aux.get("date");
 		mongoClient.close();
 	}
 

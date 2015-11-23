@@ -69,11 +69,6 @@ public class XDContextUtils {
 
         public void executeQuery(String query){
             df = (XDDataFrame)xdContext.sql(query);
-            if(query.equals("SHOW TABLES")){
-                System.out.print("a");
-                df.show();
-            }
-
         }
 
         public void dropTables(){
