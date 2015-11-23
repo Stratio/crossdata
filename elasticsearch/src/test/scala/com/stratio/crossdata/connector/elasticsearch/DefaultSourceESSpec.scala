@@ -29,7 +29,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito._
 
 @RunWith(classOf[JUnitRunner])
-class DefaultSourceTest extends BaseXDTest with MockitoSugar {
+class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
 
 
   "A DefaultSource " should "build a ElasticSearchXDRelation without schema" in {
