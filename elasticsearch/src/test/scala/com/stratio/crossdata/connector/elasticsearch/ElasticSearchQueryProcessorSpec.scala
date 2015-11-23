@@ -48,7 +48,7 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
 
     //Expectations
     result should not be null
-    result.toString().replace("\n", "").replace(" ", "") should be("{\"fields\":\"title\"}")
+    result.toString().replace("\n", "").replace(" ", "") should be ("{\"fields\":\"title\"}")
   }
 
 

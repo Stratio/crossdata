@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
-class ElasticSearchXDRelationTest extends BaseXDTest with MockitoSugar {
+class ElasticSearchXDRelationSpec extends BaseXDTest with MockitoSugar {
 
 
   "An ElasticSearchXDRelation " should "support Limit Node" in {
