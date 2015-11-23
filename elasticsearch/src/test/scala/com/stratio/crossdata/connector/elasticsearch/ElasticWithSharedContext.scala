@@ -76,7 +76,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
 
     val settings = ImmutableSettings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
     val elasticClient = ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
-    
+
     createIndex(elasticClient, Index, typeMapping())
     saveTestData(elasticClient)
     elasticClient
