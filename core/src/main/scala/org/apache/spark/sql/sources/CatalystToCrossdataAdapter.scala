@@ -47,10 +47,10 @@ object CatalystToCrossdataAdapter {
                               filterPredicates: Seq[Expression]): (BaseLogicalPlan, Boolean) = {
 
 
-    val relation = logicalPlan.collectFirst { case l@LogicalRelation(_) => l }.get
+    val relation = logicalPlan.collectFirst { case lr: LogicalRelation => lr }.get
     implicit val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
 
-    val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap (
+    val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap(
       _.references flatMap {
         case nat: AttributeReference if (att2udf contains nat) =>
           udfFlattenedActualParameters(nat, at => false -> relation.attributeMap(at)) :+ (true -> nat)
@@ -60,7 +60,7 @@ object CatalystToCrossdataAdapter {
 
     val pushedFilters = filterPredicates.map {
       _ transform {
-        case a: AttributeReference if(att2udf contains a) => a
+        case a: AttributeReference if att2udf contains a => a
         case a: Attribute => relation.attributeMap(a) // Match original case of attributes.
       }
     }
@@ -102,9 +102,9 @@ object CatalystToCrossdataAdapter {
         Some(sources.EqualTo(a.name, convertToScala(v, t)))
       case expressions.EqualTo(Literal(v, t), a: Attribute) =>
         Some(sources.EqualTo(a.name, convertToScala(v, t)))
-      case expressions.EqualTo(a: AttributeReference, b: Attribute) if(udfs contains a) =>
+      case expressions.EqualTo(a: AttributeReference, b: Attribute) if udfs contains a =>
         Some(sources.EqualTo(b.name, a))
-      case expressions.EqualTo(b: Attribute, a: AttributeReference) if(udfs contains a) =>
+      case expressions.EqualTo(b: Attribute, a: AttributeReference) if udfs contains a =>
         Some(sources.EqualTo(b.name, a))
 
       /* TODO
@@ -118,9 +118,9 @@ object CatalystToCrossdataAdapter {
         Some(sources.GreaterThan(a.name, convertToScala(v, t)))
       case expressions.GreaterThan(Literal(v, t), a: Attribute) =>
         Some(sources.LessThan(a.name, convertToScala(v, t)))
-      case expressions.GreaterThan(b: Attribute, a: AttributeReference) if(udfs contains a) =>
+      case expressions.GreaterThan(b: Attribute, a: AttributeReference) if udfs contains a =>
         Some(sources.GreaterThan(b.name, a))
-      case expressions.GreaterThan(a: AttributeReference, b: Attribute) if(udfs contains a) =>
+      case expressions.GreaterThan(a: AttributeReference, b: Attribute) if udfs contains a =>
         Some(sources.LessThan(b.name, a))
 
 
@@ -128,27 +128,27 @@ object CatalystToCrossdataAdapter {
         Some(sources.LessThan(a.name, convertToScala(v, t)))
       case expressions.LessThan(Literal(v, t), a: Attribute) =>
         Some(sources.GreaterThan(a.name, convertToScala(v, t)))
-      case expressions.LessThan(b: Attribute, a: AttributeReference) if(udfs contains a) =>
+      case expressions.LessThan(b: Attribute, a: AttributeReference) if udfs contains a =>
         Some(sources.LessThan(b.name, a))
-      case expressions.LessThan(a: AttributeReference, b: Attribute) if(udfs contains a) =>
+      case expressions.LessThan(a: AttributeReference, b: Attribute) if udfs contains a =>
         Some(sources.GreaterThan(b.name, a))
 
       case expressions.GreaterThanOrEqual(a: Attribute, Literal(v, t)) =>
         Some(sources.GreaterThanOrEqual(a.name, convertToScala(v, t)))
       case expressions.GreaterThanOrEqual(Literal(v, t), a: Attribute) =>
         Some(sources.LessThanOrEqual(a.name, convertToScala(v, t)))
-      case expressions.GreaterThanOrEqual(b: Attribute, a: AttributeReference) if(udfs contains a) =>
+      case expressions.GreaterThanOrEqual(b: Attribute, a: AttributeReference) if udfs contains a =>
         Some(sources.GreaterThanOrEqual(b.name, a))
-      case expressions.GreaterThanOrEqual(a: AttributeReference, b: Attribute) if(udfs contains a) =>
+      case expressions.GreaterThanOrEqual(a: AttributeReference, b: Attribute) if udfs contains a =>
         Some(sources.LessThanOrEqual(b.name, a))
 
       case expressions.LessThanOrEqual(a: Attribute, Literal(v, t)) =>
         Some(sources.LessThanOrEqual(a.name, convertToScala(v, t)))
       case expressions.LessThanOrEqual(Literal(v, t), a: Attribute) =>
         Some(sources.GreaterThanOrEqual(a.name, convertToScala(v, t)))
-      case expressions.LessThanOrEqual(b: Attribute, a: AttributeReference) if(udfs contains a) =>
+      case expressions.LessThanOrEqual(b: Attribute, a: AttributeReference) if udfs contains a =>
         Some(sources.LessThanOrEqual(b.name, a))
-      case expressions.LessThanOrEqual(a: AttributeReference, b: Attribute) if(udfs contains a) =>
+      case expressions.LessThanOrEqual(a: AttributeReference, b: Attribute) if udfs contains a =>
         Some(sources.GreaterThanOrEqual(b.name, a))
 
       case expressions.InSet(a: Attribute, set) =>

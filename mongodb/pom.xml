@@ -39,7 +39,7 @@
     </licenses>
 
     <properties>
-        <mongodb.datasource.version>0.10.0</mongodb.datasource.version>
+        <mongodb.datasource.version>0.10.1</mongodb.datasource.version>
     </properties>
 
     <!--TODO exclude spark dependencies from crossdata-ng-->

@@ -16,6 +16,7 @@
 package com.stratio.tests.utils;
 
 import org.apache.spark.SparkConf;
+import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.crossdata.ExecutionType;
 import org.apache.spark.sql.crossdata.XDContext;
 import org.apache.spark.api.java.*;
@@ -32,6 +33,7 @@ public class XDContextUtils {
         private XDContext xdContext;
         private JavaSparkContext sparkContext;
         private XDDataFrame df;
+        private DataFrame df_spark;
         public XDContextUtils(){
             this.appName = System.getProperty("SPARK_APP_NAME", "appTests");
             this.master = System.getProperty("SPARK_MASTER", "local[4]");
@@ -67,6 +69,15 @@ public class XDContextUtils {
 
         public void executeQuery(String query){
             df = (XDDataFrame)xdContext.sql(query);
+            if(query.equals("SHOW TABLES")){
+                System.out.print("a");
+                df.show();
+            }
+
+        }
+
+        public void dropTables(){
+            xdContext.dropAllTables();
         }
 
         public XDDataFrame getXDDataFrame(){
@@ -76,5 +87,6 @@ public class XDContextUtils {
         public void showDataframe(){
             df.show();
         }
+
 
 }

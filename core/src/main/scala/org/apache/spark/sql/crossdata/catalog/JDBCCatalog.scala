@@ -137,7 +137,7 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
     val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$table $dbFilter")
 
-    getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, true)).toSeq
+    getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
   }
 
   override def persistTableMetadata(crossdataTable: CrossdataTable, logicalRelation: Option[LogicalPlan]): Unit = {

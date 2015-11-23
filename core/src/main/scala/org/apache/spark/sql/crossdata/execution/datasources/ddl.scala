@@ -13,23 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.sources.crossdata
+package org.apache.spark.sql.crossdata.execution.datasources
 
 import com.stratio.crossdata.connector.TableInventory
+
+import org.apache.spark.Logging
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.{CrossdataTable, XDCatalog}
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.RelationProvider
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext}
 
 
 private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
-  extends LogicalPlan with RunnableCommand {
+  extends LogicalPlan with RunnableCommand with Logging {
+
+  // The result of IMPORT TABLE has only tableIdentifier so far.
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      StructField("tableIdentifier", ArrayType(StringType), false) :: Nil
+    )
+    schema.toAttributes
+  }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    def tableExists(tableId: List[String]): Boolean = {
+    def tableExists(tableId: Seq[String]): Boolean = {
       val doExist = sqlContext.catalog.tableExists(tableId)
       if (doExist) log.info(s"IMPORT TABLE omitted already registered table: ${tableId mkString "."}")
       doExist
@@ -53,11 +66,26 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
     //Obtains the list of tables and persist it (if persistence implemented)
     val tables = inventoryRelation.listTables(sqlContext, opts)
 
+
     for {
-      t: TableInventory.Table <- tables
-      tableid = s"`${(t.database.toList :+ t.tableName) mkString "."}`" :: Nil
-      if inventoryRelation.exclusionFilter(t) && !tableExists(tableid)
-    } persistTable(t, inventoryRelation, relationProvider)
+      table: TableInventory.Table <- tables
+      tableId = TableIdentifier(table.tableName, table.database).toSeq
+      if inventoryRelation.exclusionFilter(table) && !tableExists(tableId)
+    } yield {
+      logInfo(s"Importing table ${tableId mkString "."}")
+      persistTable(table, inventoryRelation, relationProvider)
+      Row(tableId)
+    }
+
+  }
+}
+
+
+private [crossdata] case class DropTable(tableIdentifier: TableIdentifier)
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    sqlContext.catalog.asInstanceOf[XDCatalog].dropTable(tableIdentifier.toSeq)
     Seq.empty
   }
 
