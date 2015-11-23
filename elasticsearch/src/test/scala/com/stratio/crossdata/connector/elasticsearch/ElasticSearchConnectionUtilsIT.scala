@@ -26,7 +26,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
   it should "Build a native ES Connection" in {
 
     val options: Map[String, String] = Map(
-      "es.node" -> s"$ElasticHost",
+      "es.nodes" -> s"$ElasticHost",
       "es.port" -> s"$ElasticRestPort",
       "es.nativePort" -> s"$ElasticNativePort",
       "es.cluster" -> s"$ElasticClusterName"
@@ -44,7 +44,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     assumeEnvironmentIsUpAndRunning
 
     val options: Map[String, String] = Map(
-      "es.node" -> s"$ElasticHost",
+      "es.nodes" -> s"$ElasticHost",
       "es.port" -> s"$ElasticRestPort",
       "es.nativePort" -> s"$ElasticNativePort",
       "es.cluster" -> s"$ElasticClusterName",
@@ -65,7 +65,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     assumeEnvironmentIsUpAndRunning
 
     val options: Map[String, String] = Map(
-      "es.node" -> s"$ElasticHost",
+      "es.nodes" -> s"$ElasticHost",
       "es.port" -> s"$ElasticRestPort",
       "es.nativePort" -> s"$ElasticNativePort",
       "es.cluster" -> s"$ElasticClusterName"
@@ -91,7 +91,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     assumeEnvironmentIsUpAndRunning
 
     val options: Map[String, String] = Map(
-      "es.node" -> s"$ElasticHost",
+      "es.nodes" -> s"$ElasticHost",
       "es.port" -> s"$ElasticRestPort",
       "es.nativePort" -> s"$ElasticNativePort",
       "es.cluster" -> s"$ElasticClusterName",
