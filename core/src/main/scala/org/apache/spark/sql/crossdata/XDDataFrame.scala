@@ -18,6 +18,7 @@ package org.apache.spark.sql.crossdata
 import com.stratio.crossdata.connector.NativeScan
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql._
+import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.ExecutionType._
@@ -149,18 +150,17 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
   private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
 
     val planSupported = queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
-    if(planSupported) provider.buildScan(queryExecution.optimizedPlan) else None
 
-    /*if (!planSupported) {
-      None
-    } else {
-      val rowsOption = provider.buildScan(queryExecution.optimizedPlan)
-      // TODO is it possible to avoid the step below?
-      rowsOption.map { rows =>
-        val converter = CatalystTypeConverters.createToScalaConverter(schema)
-        rows.map(converter(_).asInstanceOf[Row])
+    if(planSupported) {
+      val toCatalyst = CatalystTypeConverters.createToCatalystConverter(schema)
+      val toScala = CatalystTypeConverters.createToScalaConverter(schema)
+      provider.buildScan(queryExecution.optimizedPlan) map { rows =>
+        rows.map { row =>
+          val iRow = toCatalyst(row)
+          toScala(iRow).asInstanceOf[GenericRowWithSchema]
+        }
       }
-    }*/
+    } else None
 
   }
 
