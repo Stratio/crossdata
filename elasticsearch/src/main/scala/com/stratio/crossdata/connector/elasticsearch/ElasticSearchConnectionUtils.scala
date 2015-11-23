@@ -35,12 +35,12 @@ object ElasticSearchConnectionUtils {
   def buildClient(parameters: Map[String, String]): ElasticClient = {
     val host: String = parameters.getOrElse(ES_NODES, ES_NODES_DEFAULT) //TODO support for multiple host, no documentation found with expected format.
     val port: Int = parameters.getOrElse(ElasticNativePort, "9300").toInt
- //   val clusterName = parameters(ElasticCluster)
+    val clusterName = parameters(ElasticCluster)
 
     val uri = ElasticsearchClientUri(s"elasticsearch://$host:$port")
 
-   // val settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build()
-    ElasticClient.remote(uri)
+    val settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build()
+    ElasticClient.remote(settings, uri)
   }
 
   def extractIndexAndType(options: Map[String, String]): (String, String) = {

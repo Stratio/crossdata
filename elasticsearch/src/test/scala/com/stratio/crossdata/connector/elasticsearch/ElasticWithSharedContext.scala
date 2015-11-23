@@ -37,13 +37,13 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
   var elasticClient: Option[ElasticClient] = None
   var isEnvironmentReady = false
 
-  log.info(s"Test configuration: ES Host -> $ElasticHost | ES Cluster -> $ElasticClusterName")
-
   override protected def beforeAll() = {
     super.beforeAll()
 
     try {
       elasticClient = Some(prepareEnvironment())
+
+      log.info(s"Test configuration: ES Host -> $ElasticHost | ES Cluster -> $ElasticClusterName")
 
       xdContext.sql(
         s"""|CREATE TEMPORARY TABLE $Type
@@ -51,7 +51,7 @@ trait ElasticWithSharedContext extends SharedXDContextTest with ElasticSearchDef
             |USING $SourceProvider
             |OPTIONS (
             |resource '$Index/$Type',
-            |es.node '$ElasticHost',
+            |es.nodes '$ElasticHost',
             |es.port '$ElasticRestPort',
             |es.nativePort '$ElasticNativePort',
             |es.cluster '$ElasticClusterName'
