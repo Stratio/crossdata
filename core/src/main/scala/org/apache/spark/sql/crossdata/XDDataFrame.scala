@@ -152,13 +152,15 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     val planSupported = queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
     //if(planSupported) provider.buildScan(queryExecution.optimizedPlan) else None
 
-    if(planSupported)
+    if(planSupported) {
+      val toCatalyst = CatalystTypeConverters.createToCatalystConverter(schema)
+      val toScala = CatalystTypeConverters.createToScalaConverter(schema)
       provider.buildScan(queryExecution.optimizedPlan) map { rows =>
-        val converter = CatalystTypeConverters.createToScalaConverter(schema)
         rows.map { row =>
-          val iRow = new GenericInternalRow(row.toSeq.toArray)
-          converter(iRow).asInstanceOf[GenericRowWithSchema]
+          val iRow = toCatalyst(row)
+          toScala(iRow).asInstanceOf[GenericRowWithSchema]
         }
+      }
     } else None
 
   }
