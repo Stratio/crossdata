@@ -2,6 +2,24 @@
 Using Crossdata
 ===============
 
+
+Table of Contents
+*****************
+
+-  `1) APIS <#apis>`__
+
+   -  `1.1) Driver <#driver>`__
+   -  `1.2) Core <#core>`__
+
+-  `2) SQL <#sql>`__
+
+   -  `2.1) Cassandra Connector <#cassandra-connector>`__
+   -  `2.2) MongoDB Connector <#mongodb-connector>`__
+   -  `2.3) Elasticsearch Connector <#elasticsearch-connector>`__
+   -  `2.4) More examples <#more-examples>`__
+
+
+
 If you want to test Crossdata you can get our Sandbox follow the instructions of this
 `link <Sandbox.rst>`__ (Coming soon)
 
@@ -9,30 +27,48 @@ TODO:
 
 - APIs for writing custom transformations, interceptors and SQL Syntax–where applicable
 
+1. APIs
+================
+
+1.1 Driver
+----------
+
+Driver:
+
+syncQuery [explicar QueryBuilder]
+asyncQuery
+listDatabases
+listTables
+describeTable
+
+1.2 Core
+----------
+
+Core: Same as spark [url] + XDContext function (dropTable, dropAllTable)
 
 
+2. SQL
+=========
 
-MongoDB Connector
+A complete set of available operations are described `here <6_reference_guide.rst>`__
+
+2.1 Cassandra Connector
 -----------------
 
-TODO
+You can view some examples using the Cassandra Connector `here <../cassandra_connector.rst>`__
 
-Elasticsearch Connector
+
+2.2 MongoDB Connector
+-----------------
+
+You can view some examples using the MongoDB Connector `here <../mongodb_connector.rst>`__
+
+2.3 Elasticsearch Connector
 -----------------------
 
-This example register the existent type "students" of the Elasticsearch Index "highschool" that has a few rows inserted.
-Once the table is registered then execute a query by the native way::
+You can view some examples using the ElasticSearch Connector `here <../elasticsearch_connector.rst>`__
 
-    >xdContext.sql("CREATE TEMPORARY TABLE students USING com.stratio.crossdata.connector.elasticsearch
-            OPTIONS (es.resource 'highschool/students', es.cluster 'elasticsearch',
-            es.node '127.0.0.1', es.port '9200', es.nativePort '9300')")
-    >xdContext.sql("SELECT * FROM students").collect()
+2.4 More Examples
+----------------
 
-The Option required for basic functions are:
-  - es.resource: Elasticsearch resource location, where data is read and written to. Requires the format <index>/<type>, Required.
-  - es.cluster: indicates the name of the Elastic Search cluster, Required.
-  - es.node: List of Elasticsearch nodes to connect to. (default localhost)
-  - es.port: HTTP/REST port used for connecting to Elasticsearch (default 9200)
-  - es.nativePort Native port used for connecting to Elasticsearch (default 9300)
-
-The Elasticsearch-Hadoop configuration options are in: https://www.elastic.co/guide/en/elasticsearch/hadoop/current/configuration.html
+Join between C* and ES, etc.
