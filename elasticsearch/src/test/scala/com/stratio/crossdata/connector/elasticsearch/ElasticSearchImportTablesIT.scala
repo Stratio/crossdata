@@ -24,6 +24,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     def tableCountInHighschool: Long = sql("SHOW TABLES").count
     val initialLength = tableCountInHighschool
+    xdContext.dropAllTables()
 
     val importQuery =
       s"""
@@ -37,17 +38,16 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
           |es.index '$Index'
           |)
       """.stripMargin
-
     //Experimentation
     sql(importQuery)
 
     //Expectations
-    tableCountInHighschool should be > initialLength
+    tableCountInHighschool should be (1)
   }
 
   it should "infer schema after import all tables from a keyspace" in {
     assumeEnvironmentIsUpAndRunning
-
+    xdContext.dropAllTables()
     val importQuery =
       s"""
          |IMPORT TABLES
@@ -70,6 +70,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
   it should "infer schema after import all tables from a Cluster" in {
     assumeEnvironmentIsUpAndRunning
+    xdContext.dropAllTables()
 
     val options: Map[String, String] = Map(
       "es.node" -> s"$ElasticHost",
