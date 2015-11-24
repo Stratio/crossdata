@@ -91,11 +91,14 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
   { //Register built-in UDFs for each provider available.
     import scala.collection.JavaConversions._
+    def qualifyUDF(datasourceName: String, udfName: String) = s"${datasourceName}_$udfName"
+
     val loader = Utils.getContextOrSparkClassLoader
     val serviceLoader = ServiceLoader.load(classOf[FunctionInventory], loader)
     for {srv <- serviceLoader.iterator()
+         datasourceName = srv.shortName()
          udf <- srv.nativeBuiltinFunctions
-    } functionRegistry.registerFunction(udf.name, e => NativeUDF(udf.name, udf.returnType, e))
+    } functionRegistry.registerFunction(qualifyUDF(datasourceName, udf.name), e => NativeUDF(udf.name, udf.returnType, e))
   }
 
   override def sql(sqlText: String): DataFrame = {

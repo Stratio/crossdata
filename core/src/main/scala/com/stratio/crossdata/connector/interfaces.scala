@@ -17,12 +17,11 @@ package com.stratio.crossdata.connector
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.sources.Filter
-import org.apache.spark.sql.{SQLContext, Row}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.execution.NativeUDF
+import org.apache.spark.sql.sources.{DataSourceRegister, Filter}
 import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.{Row, SQLContext}
 
 
 /**
@@ -95,7 +94,7 @@ object TableInventory {
 }
 
 /* Interface for providing lists and UDF discovery services */
-trait FunctionInventory {
+trait FunctionInventory extends DataSourceRegister{
   import FunctionInventory._
 
   //Get builtin functions manifest
