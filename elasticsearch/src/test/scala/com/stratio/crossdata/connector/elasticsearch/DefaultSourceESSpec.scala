@@ -15,15 +15,18 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
+import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.types.StructType
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions
+import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 ;
 
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
 import org.junit.runner.RunWith
+import org.mockito.Mockito._
 
 @RunWith(classOf[JUnitRunner])
 class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
@@ -56,4 +59,21 @@ class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
     result should not be null
   }
 
+  it should "Build a Map with the default opts" in {
+
+    val defaultDatasource = new DefaultSource()
+    val item: Table = mock[Table]
+    when(item.database).thenReturn(Some("index"))
+    when(item.tableName).thenReturn("type")
+    val userOpts: Map[String, String] = Map(ES_HOST -> "localhost")
+
+    //Experimentation
+    val result:Map[String, String] = defaultDatasource.generateConnectorOpts(item, userOpts)
+
+    //Expectations
+    result should not be null
+    result.get(ES_RESOURCE).get should be ("index/type")
+    result.get(ES_HOST).get should be ("localhost")
+
+  }
 }
