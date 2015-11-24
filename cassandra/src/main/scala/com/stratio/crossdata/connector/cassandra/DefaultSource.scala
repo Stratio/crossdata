@@ -17,24 +17,23 @@
 
 package com.stratio.crossdata.connector.cassandra
 
-import com.datastax.driver.core.{TableMetadata, KeyspaceMetadata}
+import com.datastax.driver.core.{KeyspaceMetadata, TableMetadata}
 import com.datastax.spark.connector.cql._
 import com.datastax.spark.connector.rdd.ReadConf
-import com.datastax.spark.connector.types.UUIDType
 import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.FunctionInventory.UDF
+import com.stratio.crossdata.connector.TableInventory.Table
+import com.stratio.crossdata.connector.cassandra.DefaultSource._
 import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
-import TableInventory.Table
-import DefaultSource._
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
-import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.sources.{DataSourceRegister, BaseRelation}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{types, DataFrame, SQLContext, SaveMode}
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
-import scala.collection.mutable
 import scala.collection.JavaConversions.iterableAsScalaIterable
+import scala.collection.mutable
 
 
 
@@ -57,7 +56,9 @@ import scala.collection.JavaConversions.iterableAsScalaIterable
  *       spark_cassandra_connection_timeout_ms "1000"
  *      )
  */
-class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory {
+class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory with DataSourceRegister {
+
+  override def shortName(): String = "cassandra"
 
   /**
    * Creates a new relation for a cassandra table.
@@ -74,9 +75,8 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
    * When push_down is true, some filters are pushed down to CQL.
    *
    */
-  override def createRelation(
-                               sqlContext: SQLContext,
-                               parameters: Map[String, String]): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext,
+                              parameters: Map[String, String]): BaseRelation = {
 
     val (tableRef, options) = tableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options)
@@ -86,10 +86,9 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
    * Creates a new relation for a cassandra table given table, keyspace, cluster and push_down
    * as parameters and explicitly pass schema [[StructType]] as a parameter
    */
-  override def createRelation(
-                               sqlContext: SQLContext,
-                               parameters: Map[String, String],
-                               schema: StructType): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext,
+                              parameters: Map[String, String],
+                              schema: StructType): BaseRelation = {
 
     val (tableRef, options) = tableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options, Option(schema))
@@ -99,11 +98,10 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
    * Creates a new relation for a cassandra table given table, keyspace, cluster, push_down and schema
    * as parameters. It saves the data to the Cassandra table depends on [[SaveMode]]
    */
-  override def createRelation(
-                               sqlContext: SQLContext,
-                               mode: SaveMode,
-                               parameters: Map[String, String],
-                               data: DataFrame): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext,
+                              mode: SaveMode,
+                              parameters: Map[String, String],
+                              data: DataFrame): BaseRelation = {
 
     val (tableRef, options) = tableRefAndOptions(parameters)
     val table = CassandraXDSourceRelation(tableRef, sqlContext, options)
@@ -125,13 +123,32 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
     CassandraXDSourceRelation(tableRef, sqlContext, options)
   }
-  
-  /**
-   * @param tMeta C* Metadata for a given table
-   * @return A table description obtained after translate its C* meta data.
-   */
-  private def tableMeta2Table(tMeta: TableMetadata): Table =
-      Table(tMeta.getName, Some(tMeta.getKeyspace.getName))
+
+
+
+  override def nativeBuiltinFunctions: Seq[UDF] = {
+    def qualifiedUDF(udfName: String) = udfName //s"${shortName()}_$udfName"
+    //TODO: Complete the built-in function inventory
+    Seq(
+      UDF(qualifiedUDF("now"), None, StructType(Nil), StringType),
+      UDF(qualifiedUDF("dateOf"), None, StructType(StructField("date", StringType, false)::Nil), DataTypes.TimestampType),
+      UDF(qualifiedUDF("unixTimestampOf"), None, StructType(StructField("date", StringType, false)::Nil), DataTypes.LongType)
+    )
+
+  }
+
+
+
+  //-----------MetadataInventory-----------------
+
+  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
+    buildCassandraConnector(context, options).withSessionDo { s =>
+      val tablesIt: Iterable[Table] = for(
+        ksMeta: KeyspaceMetadata <- s.getCluster.getMetadata.getKeyspaces;
+        tMeta: TableMetadata <- ksMeta.getTables) yield tableMeta2Table(tMeta)
+      tablesIt.toSeq
+    }
+  }
 
   private def buildCassandraConnector(context: SQLContext, options: Map[String, String]): CassandraConnector = {
 
@@ -148,28 +165,13 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
     CassandraConnector(cfg)
   }
-  
-  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
-    buildCassandraConnector(context, options).withSessionDo { s =>
-      val tablesIt: Iterable[Table] = for(
-        ksMeta: KeyspaceMetadata <- s.getCluster.getMetadata.getKeyspaces;
-        tMeta: TableMetadata <- ksMeta.getTables) yield tableMeta2Table(tMeta)
-      tablesIt.toSeq
-    }
-  }
 
-  override def nativeBuiltinFunctions: Seq[UDF] = {
-
-
-
-    //TODO: Complete the built-in function inventory
-    Seq(
-      UDF("now", None, StructType(Nil), StringType),
-      UDF("dateOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.TimestampType),
-      UDF("unixTimestampOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.LongType)
-    )
-
-  }
+  /**
+   * @param tMeta C* Metadata for a given table
+   * @return A table description obtained after translate its C* meta data.
+   */
+  private def tableMeta2Table(tMeta: TableMetadata): Table =
+    Table(tMeta.getName, Some(tMeta.getKeyspace.getName))
 
   //Avoids importing system tables
   override def exclusionFilter(t: TableInventory.Table): Boolean =
@@ -180,6 +182,8 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     CassandraDataSourceTableNameProperty -> item.tableName,
     CassandraDataSourceKeyspaceNameProperty -> item.database.get
   ) ++ opts.filterKeys(Set(CassandraConnectionHostProperty, CassandraDataSourceClusterNameProperty).contains(_))
+
+  //------------MetadataInventory-----------------
 
 }
 

@@ -1,0 +1,6 @@
+org.apache.spark.sql.execution.datasources.jdbc.DefaultSource
+org.apache.spark.sql.execution.datasources.json.DefaultSource
+org.apache.spark.sql.execution.datasources.parquet.DefaultSource
+com.stratio.crossdata.connector.cassandra.DefaultSource
+com.stratio.crossdata.connector.mongodb.DefaultSource
+com.stratio.crossdata.connector.elasticsearch.DefaultSource
