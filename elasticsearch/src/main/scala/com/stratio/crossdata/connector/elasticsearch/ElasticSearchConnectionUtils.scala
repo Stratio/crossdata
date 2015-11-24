@@ -51,7 +51,9 @@ object ElasticSearchConnectionUtils {
   def listTypes(options: Map[String, String]): Seq[Table] = {
 
     val adminClient = buildClient(options).admin.indices()
-    options.get(ElasticIndex).fold(listAllIndexTypes(adminClient))(indexName => listIndexTypes(adminClient, indexName))
+    options.get(ES_RESOURCE).fold(
+        options.get(ElasticIndex).fold(listAllIndexTypes(adminClient))(indexName => listIndexTypes(adminClient, indexName))){
+      resourceName => getType(adminClient, resourceName)}
   }
 
   import collection.JavaConversions._
@@ -71,10 +73,16 @@ object ElasticSearchConnectionUtils {
 
   }
 
+  private def getType(adminClient: IndicesAdminClient, resourceName:String): Seq[Table] = {
+    val resource = resourceName.split("/")
+    val mappings: ImmutableOpenMap[String, ImmutableOpenMap[String, MappingMetaData]]  = adminClient.prepareGetIndex().addIndices(resource(0)).addTypes(resource(1)).get().mappings
+    getIndexDetails(resource(0), mappings.get(resource(0)))
+
+  }
+
   private def getIndexDetails(indexName:String, indexData: ImmutableOpenMap[String, MappingMetaData]): Seq[Table] ={
     indexData.keys().map(typeES => new Table(typeES.value, Some(indexName), Some(buildStructType(indexData.get(typeES.value))))).toSeq
   }
-
 
   private def convertType(typeName:String): DataType = {
 
