@@ -43,7 +43,7 @@ private[sql] object XDDataFrame {
 
     def allLeafsAreNative(leafs: Seq[LeafNode]): Boolean = {
       leafs.forall {
-        case LogicalRelation(ns: NativeScan) => true
+        case LogicalRelation(ns: NativeScan, _) => true
         case _ => false
       }
     }
@@ -52,7 +52,7 @@ private[sql] object XDDataFrame {
     if (!allLeafsAreNative(leafs)) {
       None
     } else {
-      val nativeExecutors: Seq[NativeScan] = leafs.map { case LogicalRelation(ns: NativeScan) => ns }
+      val nativeExecutors: Seq[NativeScan] = leafs.map { case LogicalRelation(ns: NativeScan, _) => ns }
 
       nativeExecutors match {
         case Seq(head) => Some(head)
@@ -150,17 +150,6 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
 
     val planSupported = queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
     if(planSupported) provider.buildScan(queryExecution.optimizedPlan) else None
-
-    /*if (!planSupported) {
-      None
-    } else {
-      val rowsOption = provider.buildScan(queryExecution.optimizedPlan)
-      // TODO is it possible to avoid the step below?
-      rowsOption.map { rows =>
-        val converter = CatalystTypeConverters.createToScalaConverter(schema)
-        rows.map(converter(_).asInstanceOf[Row])
-      }
-    }*/
 
   }
 

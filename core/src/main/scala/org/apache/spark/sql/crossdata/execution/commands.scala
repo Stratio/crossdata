@@ -82,7 +82,7 @@ case class PersistSelectAsTable(
             sqlContext, Some(query.schema.asNullable), partitionColumns, provider, options)
           val createdRelation = LogicalRelation(resolved.relation)
           EliminateSubQueries(sqlContext.catalog.lookupRelation(tableIdent.toSeq)) match {
-            case l@LogicalRelation(_: InsertableRelation | _: HadoopFsRelation) =>
+            case l @ LogicalRelation(_: InsertableRelation | _: HadoopFsRelation, _) =>
               if (l.relation != createdRelation.relation) {
                 val errorDescription =
                   s"Cannot append to table ${tableIdent.unquotedString} because the resolved relation does not " +
