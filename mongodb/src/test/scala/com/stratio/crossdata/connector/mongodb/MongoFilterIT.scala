@@ -67,7 +67,6 @@ class MongoFilterIT extends MongoWithSharedContext {
 
     val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date = '1970-01-02'").collect(ExecutionType.Spark)
     sparkRow.length should be (1)
-
   }
 
   it should "XD Mongodb connector supports filter DATE BETWEEN two dates" in {
@@ -77,7 +76,6 @@ class MongoFilterIT extends MongoWithSharedContext {
     sparkRow.length should be (10)
 
   }
-
 
   it should "XD Mongodb connector supports filter DATE NOT BETWEEN two dates" in {
     assumeEnvironmentIsUpAndRunning
@@ -92,8 +90,6 @@ class MongoFilterIT extends MongoWithSharedContext {
 
     val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp > '1970'").collect(ExecutionType.Spark)
     sparkRow.length should be (10)
-    sparkRow.foreach(println)
-
   }
 
   it should "XD Mongodb connector supports filter TIMESTAMP equals to" in {
