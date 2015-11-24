@@ -76,7 +76,7 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
   }
 
   def apply(plan: LogicalPlan): Seq[execution.SparkPlan] = plan match {
-    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: NativeFunctionExecutor))
+    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: NativeFunctionExecutor, _))
       if plan.collectFirst { case _: Aggregate => false} getOrElse(true) =>
       pruneFilterProjectUdfs(
         plan,

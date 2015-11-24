@@ -143,8 +143,8 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
           "decimalLong" -> decimalLong,
           "decimalDouble" -> decimalDouble,
           "decimalFloat" -> decimalFloat,
-          "date" -> date,
-          "timestamp" -> timestamp,
+          "date" -> new java.sql.Date(2015+100000000*a),
+          "timestamp" -> new java.sql.Timestamp(2015+100000000*a),
           "tinyint" -> tinyint,
           "smallint" -> smallint,
           "binary" -> binary,
@@ -191,11 +191,6 @@ sealed trait MongoDefaultConstants {
   val MongoPort = 27017
   val SourceProvider = "com.stratio.crossdata.connector.mongodb"
 
-  // Date types
-  val date = new java.sql.Date(2015)
-  val dt = new java.util.Date().getTime
-  val timestamp =  new java.sql.Timestamp(dt)
-
   // Types supported in MongoDB for write decimal
   val decimalInt = 10
   val decimalLong = 10l
@@ -209,6 +204,7 @@ sealed trait MongoDefaultConstants {
 
   val byte = Byte.MaxValue
   val binary = Array(byte, byte)
+  val date = new java.sql.Date(100000000)
 
   // Arrays
   val arrayint = Seq(1,2,3)
