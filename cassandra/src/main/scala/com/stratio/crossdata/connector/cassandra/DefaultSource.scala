@@ -127,7 +127,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
 
   override def nativeBuiltinFunctions: Seq[UDF] = {
-    def qualifiedUDF(udfName: String) = udfName
+    def qualifiedUDF(udfName: String) = s"${shortName()}_$udfName"
     //TODO: Complete the built-in function inventory
     Seq(
       UDF(qualifiedUDF("now"), None, StructType(Nil), StringType),
