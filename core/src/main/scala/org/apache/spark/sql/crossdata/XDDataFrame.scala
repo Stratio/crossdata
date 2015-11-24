@@ -151,17 +151,6 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     val planSupported = queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
     if(planSupported) provider.buildScan(queryExecution.optimizedPlan) else None
 
-    /*if (!planSupported) {
-      None
-    } else {
-      val rowsOption = provider.buildScan(queryExecution.optimizedPlan)
-      // TODO is it possible to avoid the step below?
-      rowsOption.map { rows =>
-        val converter = CatalystTypeConverters.createToScalaConverter(schema)
-        rows.map(converter(_).asInstanceOf[Row])
-      }
-    }*/
-
   }
 
 }
