@@ -34,7 +34,7 @@ class CassandraAggregationIT extends CassandraWithSharedContext {
     val result = sql(s"SELECT count(*) FROM $Table ").collect(Native)
     result should have length 1
     result(0) should have length 1
-    result(0).getInt(0) should be(10)
+    result(0).getLong(0) should be(10)
   }
 
   it should "execute natively a (SELECT count(*) AS alias FROM _)" in {
@@ -43,7 +43,7 @@ class CassandraAggregationIT extends CassandraWithSharedContext {
     val result = dataframe.collect(Native)
     result should have length 1
     result(0) should have length 1
-    result(0).getInt(0) should be(10)
+    result(0).getLong(0) should be(10)
     dataframe.schema.fieldNames should be(Array("agg"))
   }
 
@@ -54,7 +54,7 @@ class CassandraAggregationIT extends CassandraWithSharedContext {
     val result = sql(s"SELECT count(*) FROM $Table WHERE id = 5").collect(Native)
     result should have length 1
     result(0) should have length 1
-    result(0).getInt(0) should be(1)
+    result(0).getLong(0) should be(1)
   }
 
   // NOT SUPPORTED NATIVELY
