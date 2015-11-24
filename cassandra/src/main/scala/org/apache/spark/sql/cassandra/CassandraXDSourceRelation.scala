@@ -30,12 +30,13 @@ import com.stratio.crossdata.connector.{NativeFunctionExecutor, NativeScan}
 import com.stratio.crossdata.connector.cassandra.CassandraQueryProcessor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter._
-import org.apache.spark.sql.catalyst.expressions.{Alias, Count, Literal, AttributeReference}
+import org.apache.spark.sql.catalyst.CatalystTypeConverters
+import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.execution.{NativeUDF, EvaluateNativeUDF}
 import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.sources._
-import org.apache.spark.sql.types.{DataTypes, StructType}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
 import org.apache.spark.{Logging, SparkConf}
 
@@ -65,7 +66,16 @@ class CassandraXDSourceRelation(
   override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
     logDebug(s"Processing ${optimizedLogicalPlan.toString()}")
     val queryExecutor = CassandraQueryProcessor(this, optimizedLogicalPlan)
-    queryExecutor.execute()
+
+    val toCatalyst = CatalystTypeConverters.createToCatalystConverter(optimizedLogicalPlan.schema)
+    val toScala = CatalystTypeConverters.createToScalaConverter(optimizedLogicalPlan.schema)
+
+    queryExecutor.execute() map { rows =>
+      rows map { row =>
+        val iRow = toCatalyst(row)
+        toScala(iRow).asInstanceOf[GenericRowWithSchema]
+      }
+    }
 
   }
 
