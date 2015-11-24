@@ -29,7 +29,7 @@ class CassandraFunctionIT extends CassandraWithSharedContext {
     "The Cassandra connector" should s"be able to ${exec.toString}ly select the built-in funcions `now`, `dateOf` and `unixTimeStampOf`" in {
       assumeEnvironmentIsUpAndRunning
 
-      val query = s"SELECT now() as t, now() as a, dateOf(now()) as dt, unixTimestampOf(now()) as ut FROM $Table"
+      val query = s"SELECT cassandra_now() as t, cassandra_now() as a, cassandra_dateOf(cassandra_now()) as dt, cassandra_unixTimestampOf(cassandra_now()) as ut FROM $Table"
       sql(query).collect(exec) should have length 10
     }
   }
