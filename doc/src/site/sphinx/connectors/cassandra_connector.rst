@@ -51,3 +51,22 @@ Cassandra native functions
 - now()
 - dateOf(<date>)
 - toDate(<date>)
+
+
+Import existing tables into Crossdata
+*************************************
+To import existing tables into the Crossdata Catalog, execute this query::
+
+         IMPORT TABLES
+         USING com.stratio.crossdata.connector.cassandra
+         OPTIONS (
+          cluster "MuClusterName",
+          keyspace "MyKeyspace",
+          table "MyTable",
+          spark_cassandra_connection_host "localhost"
+          )
+
+
+Where:
+- keyspace (Optional): The Cassandra Keyspace name to import, if is omitted, Crossdata will import all keyspaces in the cluster.
+- table (Optional): The Cassandra Table name to import, if is omitted, Crossdata will import All the tables in the Keyspace or Keyspaces.

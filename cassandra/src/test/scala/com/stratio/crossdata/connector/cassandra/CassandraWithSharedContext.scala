@@ -72,7 +72,7 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
   }
 
 
-  private def createSession(): (Cluster, Session) = {
+  def createSession(): (Cluster, Session) = {
     val cluster = Cluster.builder().addContactPoint(CassandraHost).build()
     (cluster, cluster.connect())
   }
@@ -104,7 +104,7 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
     session.execute(s"DROP KEYSPACE $Catalog")
   }
 
-  private def closeSession(cluster: Cluster, session: Session): Unit = {
+  def closeSession(cluster: Cluster, session: Session): Unit = {
     session.close()
     cluster.close()
   }
