@@ -43,34 +43,34 @@ object MongoQueryProcessor {
   def apply(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) = new MongoQueryProcessor(logicalPlan, config, schemaProvided)
 
   def buildNativeQuery(requiredColums: Seq[ColumnName], filters: Array[SourceFilter], config: Config): (DBObject, DBObject) = {
-    (filtersToDBObject(config, filters), selectFields(requiredColums))
+    (filtersToDBObject(filters)(config), selectFields(requiredColums))
   }
 
-  def filtersToDBObject(config: Config, sFilters: Array[SourceFilter], parentFilterIsNot: Boolean = false): DBObject = {
+  def filtersToDBObject(sFilters: Array[SourceFilter], parentFilterIsNot: Boolean = false)(implicit config: Config): DBObject = {
     val queryBuilder: QueryBuilder = QueryBuilder.start
 
     if (parentFilterIsNot) queryBuilder.not()
     sFilters.foreach {
       case sources.EqualTo(attribute, value) =>
-        queryBuilder.put(attribute).is(checkObjectID(attribute, value, config))
+        queryBuilder.put(attribute).is(correctIdValue(attribute, value))
       case sources.GreaterThan(attribute, value) =>
-        queryBuilder.put(attribute).greaterThan(checkObjectID(attribute, value, config))
+        queryBuilder.put(attribute).greaterThan(correctIdValue(attribute, value))
       case sources.GreaterThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).greaterThanEquals(checkObjectID(attribute, value, config))
+        queryBuilder.put(attribute).greaterThanEquals(correctIdValue(attribute, value))
       case sources.In(attribute, values) =>
-        queryBuilder.put(attribute).in(values.map(value => checkObjectID(attribute, value, config)))
+        queryBuilder.put(attribute).in(values.map(value => correctIdValue(attribute, value)))
       case sources.LessThan(attribute, value) =>
-        queryBuilder.put(attribute).lessThan(checkObjectID(attribute, value, config))
+        queryBuilder.put(attribute).lessThan(correctIdValue(attribute, value))
       case sources.LessThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).lessThanEquals(checkObjectID(attribute, value, config))
+        queryBuilder.put(attribute).lessThanEquals(correctIdValue(attribute, value))
       case sources.IsNull(attribute) =>
         queryBuilder.put(attribute).is(null)
       case sources.IsNotNull(attribute) =>
         queryBuilder.put(attribute).notEquals(null)
       case sources.And(leftFilter, rightFilter) if !parentFilterIsNot =>
-        queryBuilder.and(filtersToDBObject(config, Array(leftFilter)), filtersToDBObject(config, Array(rightFilter)))
+        queryBuilder.and(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
       case sources.Or(leftFilter, rightFilter) if !parentFilterIsNot =>
-        queryBuilder.or(filtersToDBObject(config, Array(leftFilter)), filtersToDBObject(config, Array(rightFilter)))
+        queryBuilder.or(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
       case sources.StringStartsWith(attribute, value) if !parentFilterIsNot =>
         queryBuilder.put(attribute).regex(Pattern.compile("^" + value + ".*$"))
       case sources.StringEndsWith(attribute, value) if !parentFilterIsNot =>
@@ -78,7 +78,7 @@ object MongoQueryProcessor {
       case sources.StringContains(attribute, value) if !parentFilterIsNot =>
         queryBuilder.put(attribute).regex(Pattern.compile(".*" + value + ".*"))
       case sources.Not(filter) =>
-        filtersToDBObject(config, Array(filter), true)
+        filtersToDBObject(Array(filter), true)
     }
 
     queryBuilder.get
@@ -91,7 +91,7 @@ object MongoQueryProcessor {
       * @param value Value for the attribute
       * @return The value in the correct data type
       */
-     private def checkObjectID(attribute: String, value: Any, config: Config) : Any = {
+     private def correctIdValue(attribute: String, value: Any)(implicit config: Config) : Any = {
 
       val idAsObjectId: Boolean = config.getOrElse[String](MongodbConfig.IdAsObjectId, MongodbConfig.DefaultIdAsObjectId).equalsIgnoreCase("true")
 
