@@ -1,11 +1,11 @@
-===========================
+==============================
 Crossdata Cassandra Connector
-===========================
+==============================
 
 This connector allows to send SQL-Like queries to Cassandra and execute them natively on Cassandra.
 
-Requirements
-************
+1. Requirements
+-----------------
 
 This version was developed using Datastax Cassandra connector, which uses Cassandra 2.1, lower versions are not tested and may cause failures.
 
@@ -19,8 +19,8 @@ To register a Cassandra Keyspace/Table as a Spark Table in the Crossdata Context
 Also, you can see the datasource configuration for specific options:
     - https://github.com/datastax/spark-cassandra-connector/tree/v1.5.0-M2
 
-First steps
-**********
+2. First steps
+--------------
 
 To execute a SQL query using Crossdata after registering the table, just use the xdContext to send a valid SQL query::
 
@@ -44,8 +44,8 @@ Example::
       val schema = dataframe.schema
       val result = dataframe.collect(Native)
 
-Import tables
-***************
+2.1 Import tables
+-----------------
 
 It is possible to register every table from a cluster. This is an example::
 
@@ -69,15 +69,17 @@ And the dataframe returned must contain the following::
     |[highschool, students]|
     +----------------------+
 
-Advanced queries
-****************
+3. ADVANCED QUERIES
+--------------------
 
-We can perform some advanced queries that cannot be executed natively by the connector using Spark. Here there are some examples
+We can perform some advanced queries that cannot be executed natively by the connector using Spark. Here there are some examples.
 
-ORDER BY::
+3.1 ORDER BY
+-------------
 
-    xdContext.sql(s"SELECT * FROM highschool ORDER BY age DESC")
+   ::
 
+     xdContext.sql(s"SELECT * FROM highschool ORDER BY age DESC")
 
     +---+---+----------+--------+----+
     | id|age|   comment|enrolled|name|
@@ -94,9 +96,14 @@ ORDER BY::
     |  1| 11| Comment 1|   false|null|
     +---+---+----------+--------+----+
 
-GROUP BY::
 
-    xdContext.sql("SELECT count(enrolled) FROM students GROUP BY enrolled")
+3.2 GROUP BY
+-------------
+
+
+  ::
+
+    xdContext.sql(("SELECT count(enrolled) FROM students GROUP BY enrolled")
 
     +---+
     |_c0|
@@ -105,7 +112,14 @@ GROUP BY::
     |  5|
     +---+
 
-BETWEEN::
+
+
+3.3 BETWEEN
+------------
+
+
+   ::
+
 
     xdContext.sql(s"SELECT * FROM students WHERE age NOT BETWEEN 10 AND 15")
 
@@ -119,7 +133,13 @@ BETWEEN::
     |  3| 13|Comment 3|   false|null|
     +---+---+---------+--------+----+
 
-NOT BETWEEN::
+
+3.4 NOT BETWEEN
+----------------
+
+   ::
+
+
 
     xdContext.sql(s"SELECT * FROM students WHERE age NOT BETWEEN 10 AND 15").show
 
@@ -133,7 +153,12 @@ NOT BETWEEN::
     |  9| 19| Comment 9|   false|null|
     +---+---+----------+--------+----+
 
-LIKE::
+
+3.5 LIKE
+----------
+
+   ::
+
 
     xdContext.sql(s"SELECT * FROM students WHERE comment LIKE 'Comment 1%'").show
 
@@ -144,7 +169,12 @@ LIKE::
     |  1| 11| Comment 1|   false|null|
     +---+---+----------+--------+----+
 
-NOT LIKE::
+
+
+3.6 NOT LIKE
+-------------
+
+   ::
 
     xdContext.sql(s"SELECT * FROM students WHERE comment NOT LIKE 'Comment 1%'").show
 
@@ -161,9 +191,10 @@ NOT LIKE::
     |  3| 13|Comment 3|   false|null|
     +---+---+---------+--------+----+
 
-Built-in functions
-******************
-Cassandra native functions
+4.0 Built-in functions
+-----------------------
+
+The following cassandra native functions are supported:
 
 - now()
 - dateOf(<date>)
