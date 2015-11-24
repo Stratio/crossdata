@@ -48,14 +48,13 @@ object CassandraExample extends App with CassandraDefaultConstants {
       """.stripMargin.replaceAll("\n", " "))
 
     // Native
-/*    xdContext.sql(s"SELECT comment as b FROM $Table WHERE id = 1").show(5)
+    xdContext.sql(s"SELECT comment as b FROM $Table WHERE id = 1").show(5)
     xdContext.sql(s"SELECT comment as b FROM $Table WHERE id IN(1,2,3,4,5,6,7,8,9,10) limit 2").show(5)
-    xdContext.sql(s"SELECT *  FROM $Table ").show(5)*/
+    xdContext.sql(s"SELECT *  FROM $Table ").show(5)
 
     // Spark
-    // xdContext.sql(s"SELECT name as b FROM $Table WHERE age > 1 limit 7").show(5)
-    // xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 'A'").show(5)
-    xdContext.sql(s"SELECT cassandra_now() FROM $Table LIMIT 1").show(5)
+    xdContext.sql(s"SELECT name as b FROM $Table WHERE age > 1 limit 7").show(5)
+    //xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 'A'").show(5)
     //xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 1 AND id = 5").show(5)
 
   }
