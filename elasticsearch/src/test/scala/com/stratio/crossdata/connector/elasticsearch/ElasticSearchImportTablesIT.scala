@@ -46,6 +46,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
     //Expectations
     tableCountInHighschool should be (1)
+    ctx.tableNames() should contain (s"$Index.$Type")
   }
 
   it should "infer schema after import all tables from an Index" in {
@@ -68,7 +69,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     sql(importQuery)
 
     //Expectations
-    ctx.tableNames().size should be (1)
+    ctx.tableNames() should contain (s"$Index.$Type")
     ctx.table(s"$Index.$Type").schema should have length 6
   }
 
@@ -99,7 +100,8 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     sql(importQuery)
 
     //Expectations
-    ctx.tableNames().size should be (1)
+    ctx.tableNames() should contain (s"$Index.$Type")
+    ctx.tableNames() should not contain s"$Index.NewMapping"
   }
 
   it should "infer schema after import all tables from a Cluster" in {

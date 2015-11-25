@@ -16,8 +16,6 @@
 package com.stratio.crossdata.connector.cassandra
 
 import com.datastax.driver.core.{Cluster, Session}
-import org.apache.spark.sql.crossdata.ExecutionType._
-import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -95,7 +93,8 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     try {
       ctx.dropAllTables()
       sql(importQuery)
-      ctx.tableNames().size should be (2)
+      ctx.tableNames()  should  contain (s"$Catalog.$Table")
+      ctx.tableNames()  should  not contain "NewKeyspace.NewTable"
     } finally {
       cleanOtherTables(cluster, session)
     }
@@ -117,9 +116,12 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
           |)
     """.stripMargin
 
-      sql(importQuery)
-      ctx.tableNames().size should be (1)
+    //Experimentation
+    sql(importQuery)
 
+    //Expectations
+    ctx.tableNames() should contain(s"$Catalog.$Table")
+    ctx.tableNames() should not contain "highschool.teachers"
   }
 
   val wrongImportTablesSentences = List(
