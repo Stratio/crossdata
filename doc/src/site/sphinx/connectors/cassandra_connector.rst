@@ -2,6 +2,26 @@
 Crossdata Cassandra Connector
 ==============================
 
+Table of Contents
+*****************
+
+-  `1) Requirements <#requirements>`__
+
+-  `2) First steps <#first-steps>`__
+
+   -  `2.1) Import tables <#import-tables>`__
+
+-  `3) Advanced queries <#advanced-queries>`__
+
+   -  `3.1) Order by <#order-by>`__
+   -  `3.2) Group by <#order-by>`__
+   -  `3.3) Between <#between>`__
+   -  `3.4) Not between <#not-between>`__
+   -  `3.5) Like <#like>`__
+   -  `3.6) Not Like <#not-like>`__
+
+-  `4) Built-in functions <#built_in-functions>`__
+
 This connector allows to send SQL-Like queries to Cassandra and execute them natively on Cassandra.
 
 1. Requirements

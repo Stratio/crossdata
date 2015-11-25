@@ -2,10 +2,32 @@
 Crossdata Elasticsearch Connector
 =================================
 
+
+Table of Contents
+*****************
+
+-  `1) Requirements <#requirements>`__
+
+-  `2) First steps <#first-steps>`__
+
+   -  `2.1) Import tables <#import-tables>`__
+
+-  `3) Supported operators <#supported-operators>`__
+
+-  `4) Advanced queries <#advanced-queries>`__
+
+   -  `4.1) Order by <#order-by>`__
+   -  `4.2) Group by <#order-by>`__
+   -  `4.3) Between <#between>`__
+   -  `4.4) Not between <#not-between>`__
+   -  `4.5) Not Like <#not-like>`__
+
 This connector allows to send SQL-Like queries to Elasticsearch and execute them natively on Elasticsearch.
 
-Requirements
-************
+
+
+1. Requirements
+----------------
 
 This version was developed using Elasticsearch 1.7, lower versions are not tested and may cause failures.
 
@@ -26,8 +48,8 @@ Also, you can use the elasticsearch-hadoop configuration to be used if the query
     - https://www.elastic.co/guide/en/elasticsearch/hadoop/master/configuration.html
     - https://www.elastic.co/guide/en/elasticsearch/hadoop/master/spark.html
 
-Querying
-********
+2. First Steps
+---------------
 
 To execute a SQL query using Crossdata after registering the table, just use the xdContext to send a valid SQL query::
 
@@ -53,13 +75,13 @@ Example::
       val schema = dataframe.schema
       val result = dataframe.collect(Native)
 
-Import tables
-***************
+2.1 Import tables
+-----------------
 
 Coming soon...
 
-Supported Operators
-*******************
+3. Supported Operators
+----------------------
 
 The following operators are executed natively in the WHERE clause:
 
@@ -85,15 +107,17 @@ The following operators are executed natively in the WHERE clause:
 | Is Not Null | To specify Not Null value for a column                                          |
 +-------------+---------------------------------------------------------------------------------+
 
-Advanced queries
-****************
+4. ADVANCED QUERIES
+--------------------
 
-We can perform some advanced queries that cannot be executed natively by the connector using Spark. Here there are some examples
+We can perform some advanced queries that cannot be executed natively by the connector using Spark. Here there are some examples.
 
-ORDER BY::
+4.1 ORDER BY
+-------------
 
-    xdContext.sql(s"SELECT * FROM highschool ORDER BY age DESC")
+   ::
 
+     xdContext.sql(s"SELECT * FROM highschool ORDER BY age DESC")
 
     +---+---+----------+--------+----+
     | id|age|   comment|enrolled|name|
@@ -110,9 +134,14 @@ ORDER BY::
     |  1| 11| Comment 1|   false|null|
     +---+---+----------+--------+----+
 
-GROUP BY::
 
-    xdContext.sql("SELECT count(enrolled) FROM students GROUP BY enrolled")
+4.2 GROUP BY
+-------------
+
+
+  ::
+
+    xdContext.sql(("SELECT count(enrolled) FROM students GROUP BY enrolled")
 
     +---+
     |_c0|
@@ -121,7 +150,14 @@ GROUP BY::
     |  5|
     +---+
 
-BETWEEN::
+
+
+4.3 BETWEEN
+------------
+
+
+   ::
+
 
     xdContext.sql(s"SELECT * FROM students WHERE age NOT BETWEEN 10 AND 15")
 
@@ -135,7 +171,13 @@ BETWEEN::
     |  3| 13|Comment 3|   false|null|
     +---+---+---------+--------+----+
 
-NOT BETWEEN::
+
+4.4 NOT BETWEEN
+----------------
+
+   ::
+
+
 
     xdContext.sql(s"SELECT * FROM students WHERE age NOT BETWEEN 10 AND 15").show
 
@@ -149,7 +191,12 @@ NOT BETWEEN::
     |  9| 19| Comment 9|   false|null|
     +---+---+----------+--------+----+
 
-NOT LIKE::
+
+
+4.5 NOT LIKE
+-------------
+
+   ::
 
     xdContext.sql(s"SELECT * FROM students WHERE comment NOT LIKE 'Comment 1%'").show
 

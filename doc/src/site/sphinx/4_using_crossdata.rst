@@ -55,20 +55,20 @@ A complete set of available operations are described `here <6_reference_guide.rs
 2.1 Cassandra Connector
 -----------------
 
-You can view some examples using the Cassandra Connector `here <../cassandra_connector.rst>`__
+You can view some examples using the Cassandra Connector `here <connectors/connectcassandra_connector.rst>`__
 
 
 2.2 MongoDB Connector
 -----------------
 
-You can view some examples using the MongoDB Connector `here <../mongodb_connector.rst>`__
+You can view some examples using the MongoDB Connector `here <connectors/mongodb_connector.rst>`__
 
 2.3 Elasticsearch Connector
 -----------------------
 
-You can view some examples using the ElasticSearch Connector `here <../elasticsearch_connector.rst>`__
+You can view some examples using the ElasticSearch Connector `here <connectors/elasticsearch_connector.rst>`__
 
 2.4 More Examples
-----------------
+-----------------
 
 Join between C* and ES, etc.
