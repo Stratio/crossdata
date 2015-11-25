@@ -104,6 +104,8 @@ trait FunctionInventory extends DataSourceRegister{
 object FunctionInventory {
   //Native function (either built-in or user defined) description.
   case class UDF(name: String, database: Option[String] = None, formalParameters: StructType, returnType: DataType)
+
+  def qualifyUDF(datasourceName: String, udfName: String) = s"${datasourceName}_$udfName"
 }
 
 /**
