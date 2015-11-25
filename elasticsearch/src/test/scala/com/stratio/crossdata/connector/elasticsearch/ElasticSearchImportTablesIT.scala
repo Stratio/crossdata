@@ -104,6 +104,38 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     ctx.tableNames() should not contain s"$Index.NewMapping"
   }
 
+
+  it should " Fail when infer schema with bad reesource" in {
+    assumeEnvironmentIsUpAndRunning
+    xdContext.dropAllTables()
+
+    val client = ElasticSearchConnectionUtils.buildClient(connectionOptions)
+
+    client.execute { index into Index -> "NewMapping" fields {
+      "name" -> "luis"
+    }}
+
+    val importQuery =
+      s"""
+         |IMPORT TABLES
+         |USING $SourceProvider
+          |OPTIONS (
+          |es.node '$ElasticHost',
+          |es.port '$ElasticRestPort',
+          |es.nativePort '$ElasticNativePort',
+          |es.cluster '$ElasticClusterName',
+          |es.resource '$Type'
+                                                                                                                                                                |)
+      """.stripMargin
+
+    //Experimentation
+    sql(importQuery)
+
+    //Expectations
+    ctx.tableNames() should contain (s"$Index.$Type")
+    ctx.tableNames() should not contain s"$Index.NewMapping"
+  }
+
   it should "infer schema after import all tables from a Cluster" in {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
