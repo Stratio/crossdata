@@ -56,7 +56,7 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
   import Driver._
 
   /**
-   * Tuple (tableName, Optional(databaeName))
+   * Tuple (tableName, Optional(databaseName))
    */
   type TableIdentifier = (String, Option[String])
 
@@ -69,6 +69,8 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     }
 
     val system = ActorSystem("CrossdataServerCluster", finalConfig)
+
+    def close() = system.shutdown()
 
     if (logger.isDebugEnabled) {
       system.logConfiguration()

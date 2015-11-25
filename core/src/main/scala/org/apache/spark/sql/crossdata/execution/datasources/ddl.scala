@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.sources.crossdata
+package org.apache.spark.sql.crossdata.execution.datasources
 
 import com.stratio.crossdata.connector.TableInventory
+
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
@@ -77,4 +78,16 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
     }
 
   }
+}
+
+
+private [crossdata] case class DropTable(tableIdentifier: TableIdentifier)
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    sqlContext.catalog.asInstanceOf[XDCatalog].dropTable(tableIdentifier.toSeq)
+    Seq.empty
+  }
+
+
 }

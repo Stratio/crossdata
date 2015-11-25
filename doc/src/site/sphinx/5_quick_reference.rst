@@ -17,6 +17,17 @@ Example:
     USING com.databricks.spark.csv
     OPTIONS (path "events.csv", header "true")
 
+DROP TABLE
+----------
+Removes the table from Crossdata catalog.
+
+DROP TABLE \<tablename\>
+
+Example:
+::
+
+    DROP TABLE dbname.tablename
+
 TABLE CACHING
 -------------
 
