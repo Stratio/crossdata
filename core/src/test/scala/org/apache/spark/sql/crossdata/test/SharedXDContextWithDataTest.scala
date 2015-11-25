@@ -11,7 +11,7 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest  with Logging {
   var client: Option[ClientParams] = None
   var isEnvironmentReady = false
   val runningError: String
-  val sparkRegisterTableSQL: String
+  val sparkRegisterTableSQL: Seq[String]
 
   lazy val assumeEnvironmentIsUpAndRunning = {
     assume(isEnvironmentReady, runningError)
@@ -32,7 +32,7 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest  with Logging {
     isEnvironmentReady = Try {
       client = prepareClient
       saveTestData
-      sql(sparkRegisterTableSQL)
+      sparkRegisterTableSQL.foreach(sql)
       client.isDefined
     } recover { case e: Throwable =>
       logError(e.getMessage)

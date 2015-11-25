@@ -65,16 +65,16 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest with Cassan
     (cluster, cluster.connect())
   } toOption
 
-  override val sparkRegisterTableSQL: String = s"""|CREATE TEMPORARY TABLE $Table
-                                                   |USING $SourceProvider
-                                                   |OPTIONS (
-                                                   | table '$Table',
-                                                   | keyspace '$Catalog',
-                                                   | cluster '$ClusterName',
-                                                   | pushdown "true",
-                                                   | spark_cassandra_connection_host '$CassandraHost'
-                                                   |)
-                                                """.stripMargin.replaceAll("\n", " ")
+  override val sparkRegisterTableSQL: Seq[String] = s"""|CREATE TEMPORARY TABLE $Table
+                                                    |USING $SourceProvider
+                                                    |OPTIONS (
+                                                    | table '$Table',
+                                                    | keyspace '$Catalog',
+                                                    | cluster '$ClusterName',
+                                                    | pushdown "true",
+                                                    | spark_cassandra_connection_host '$CassandraHost'
+                                                    |)
+                                                    """.stripMargin.replaceAll("\n", " ")::Nil
 
   override val runningError: String = "Cassandra and Spark must be up and running"
 
