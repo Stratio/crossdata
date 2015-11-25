@@ -18,76 +18,28 @@ package com.stratio.crossdata.connector.cassandra
 import com.datastax.driver.core.{Cluster, Session}
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.scalatest.Suite
 
 import scala.util.Try
 
-trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefaultTestConstants with Logging {
+trait CassandraWithSharedContext extends SharedXDContextWithDataTest with CassandraDefaultTestConstants with Logging {
   this: Suite =>
 
-  var clusterAndSession: Option[(Cluster, Session)] = None
-  var isEnvironmentReady = false
+  override type ClientParams = (Cluster, Session)
 
-  override protected def beforeAll() = {
-    super.beforeAll()
-
-    isEnvironmentReady = Try {
-      clusterAndSession = Some(prepareEnvironment())
-      sql(
-        s"""|CREATE TEMPORARY TABLE $Table
-            |USING $SourceProvider
-            |OPTIONS (
-            | table '$Table',
-            | keyspace '$Catalog',
-            | cluster '$ClusterName',
-            | pushdown "true",
-            | spark_cassandra_connection_host '$CassandraHost'
-            |)
-      """.stripMargin.replaceAll("\n", " "))
-      clusterAndSession.isDefined
-    } recover { case e: Throwable =>
-      logError(e.getMessage)
-      false
-    } get
-
-  }
-
-  override protected def afterAll() = {
-    _xdContext.dropAllTables()
-    super.afterAll()
-    clusterAndSession.foreach { case (cluster, session) => cleanEnvironment(cluster, session) }
-
-  }
-
-  def prepareEnvironment(): (Cluster, Session) = {
-    val (cluster, session) = createSession()
-    saveTestData(session)
-    (cluster, session)
-  }
-
-  def cleanEnvironment(cluster: Cluster, session: Session) = {
-    cleanTestData(session)
-    closeSession(cluster, session)
-  }
-
-
-  def createSession(): (Cluster, Session) = {
-    val cluster = Cluster.builder().addContactPoint(CassandraHost).build()
-    (cluster, cluster.connect())
-  }
-
-  private def saveTestData(session: Session): Unit = {
+  override protected def saveTestData: Unit = {
+    val session = client.get._2
 
     session.execute(s"CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
     session.execute(s"CREATE TABLE $Catalog.$Table (id int, age int,comment text, enrolled boolean, name text, PRIMARY KEY ((id), age, comment))")
     session.execute( s"""
-        |CREATE CUSTOM INDEX student_index ON $Catalog.$Table (name)
-        |USING 'com.stratio.cassandra.lucene.Index'
-        |WITH OPTIONS = {
-        | 'refresh_seconds' : '1',
-        | 'schema' : '{ fields : {comment  : {type : "text", analyzer : "english"}} }'
-        |}
+                        |CREATE CUSTOM INDEX student_index ON $Catalog.$Table (name)
+                        |USING 'com.stratio.cassandra.lucene.Index'
+                        |WITH OPTIONS = {
+                        | 'refresh_seconds' : '1',
+                        | 'schema' : '{ fields : {comment  : {type : "text", analyzer : "english"}} }'
+                        |}
       """.stripMargin.replaceAll("\n", " "))
 
     for (a <- 1 to 10) {
@@ -97,21 +49,34 @@ trait CassandraWithSharedContext extends SharedXDContextTest with CassandraDefau
 
     //This crates a new table in the keyspace which will not be initially registered at the Spark
     session.execute(s"CREATE TABLE $Catalog.$UnregisteredTable (id int, age int, comment text, name text, PRIMARY KEY ((id), age, comment))")
-
   }
 
-  private def cleanTestData(session: Session): Unit = {
-    session.execute(s"DROP KEYSPACE $Catalog")
-  }
+  override protected def terminateClient: Unit = {
+    val (cluster, session) = client.get
 
-  def closeSession(cluster: Cluster, session: Session): Unit = {
     session.close()
     cluster.close()
   }
 
-  lazy val assumeEnvironmentIsUpAndRunning = {
-    assume(isEnvironmentReady, "Cassandra and Spark must be up and running")
-  }
+  override protected def cleanTestData: Unit = client.get._2.execute(s"DROP KEYSPACE $Catalog")
+
+  override protected def prepareClient: Option[ClientParams] = Try {
+    val cluster = Cluster.builder().addContactPoint(CassandraHost).build()
+    (cluster, cluster.connect())
+  } toOption
+
+  override val sparkRegisterTableSQL: Seq[String] = s"""|CREATE TEMPORARY TABLE $Table
+                                                    |USING $SourceProvider
+                                                    |OPTIONS (
+                                                    | table '$Table',
+                                                    | keyspace '$Catalog',
+                                                    | cluster '$ClusterName',
+                                                    | pushdown "true",
+                                                    | spark_cassandra_connection_host '$CassandraHost'
+                                                    |)
+                                                    """.stripMargin.replaceAll("\n", " ")::Nil
+
+  override val runningError: String = "Cassandra and Spark must be up and running"
 
 }
 

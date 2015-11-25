@@ -42,6 +42,7 @@ object ElasticSearchConnectionUtils {
   def extractIndexAndType(options: Map[String, String]): Option[(String, String)] = {
     options.get(ES_RESOURCE).map{ indexType =>
       val indexTypeArray = indexType.split("/")
+      require(indexTypeArray.size==2, s"$ES_RESOURCE option has an invalid format")
       (indexTypeArray(0), indexTypeArray(1))
     }
   }

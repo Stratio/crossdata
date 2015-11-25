@@ -150,7 +150,8 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
 
   def createOtherTables(): (Cluster, Session) ={
-    val  (cluster, session) = createSession
+    val  (cluster, session) =  prepareClient.get
+
     session.execute(s"CREATE KEYSPACE NewKeyspace WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
     session.execute(s"CREATE TABLE NewKeyspace.NewTable (id int, coolstuff text, PRIMARY KEY (id))")
 
@@ -159,7 +160,9 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
   def cleanOtherTables(cluster:Cluster, session:Session): Unit ={
     session.execute(s"DROP KEYSPACE NewKeyspace")
-    closeSession(cluster, session)
+
+    session.close()
+    cluster.close()
   }
 }
 

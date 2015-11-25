@@ -104,8 +104,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     ctx.tableNames() should not contain s"$Index.NewMapping"
   }
 
-
-  it should " Fail when infer schema with bad reesource" in {
+  it should "fail when infer schema with bad es.resource" in {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
@@ -129,11 +128,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
       """.stripMargin
 
     //Experimentation
-    sql(importQuery)
-
-    //Expectations
-    ctx.tableNames() should contain (s"$Index.$Type")
-    ctx.tableNames() should not contain s"$Index.NewMapping"
+    an [IllegalArgumentException] should be thrownBy sql(importQuery)
   }
 
   it should "infer schema after import all tables from a Cluster" in {
