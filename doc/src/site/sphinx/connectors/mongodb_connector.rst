@@ -48,7 +48,7 @@ Import existing collections as tables into Crossdata
 To import existing collections into the Crossdata Catalog, execute this query::
 
          IMPORT TABLES
-            USING com.stratio.crossdata.connector.elasticsearch
+            USING com.stratio.crossdata.connector.mongodb
             OPTIONS (
             host 'HOST:PORT',
             database 'highschool',
