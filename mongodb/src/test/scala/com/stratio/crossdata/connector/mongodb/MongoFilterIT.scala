@@ -92,8 +92,8 @@ class MongoFilterIT extends MongoWithSharedContext {
     sparkRow.length should be (10)
   }
 
-  @ignore //TODO fix broken test by pmadrigal
-  it should "XD Mongodb connector supports filter TIMESTAMP equals to" in {
+   //TODO fix broken test by pmadrigal
+  ignore should "XD Mongodb connector supports filter TIMESTAMP equals to" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp = '1970-01-02 04:46:42.015'").collect(ExecutionType.Spark)
