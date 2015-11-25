@@ -65,7 +65,28 @@ Example::
 2.1 Import tables
 ------------------
 
-Coming soon...
+It is possible to register every table from a cluster. This is an example::
+
+    xdContext.sql(
+      s"""
+         |IMPORT TABLES
+         |USING com.stratio.crossdata.connector.mongodb
+         |OPTIONS (
+         |host '127.0.0.1:27017',
+         |schema_samplingRatio  '0.1'
+         |)
+      """.stripMargin)
+
+And the dataframe returned must contain the following::
+
+    +----------------------+
+    |       tableIdentifier|
+    +----------------------+
+    |[highschool, teachers]|
+    |[highschool, students]|
+    +----------------------+
+
+
 
 3. ADVANCED QUERIES
 --------------------
@@ -77,7 +98,7 @@ We can perform some advanced queries that cannot be executed natively by the con
 
    ::
 
-     xdContext.sql(s"SELECT * FROM highschool ORDER BY age DESC")
+     xdContext.sql(s"SELECT * FROM students ORDER BY age DESC")
 
     +---+---+----------+--------+----+
     | id|age|   comment|enrolled|name|

@@ -99,7 +99,7 @@ We can perform some advanced queries that cannot be executed natively by the con
 
    ::
 
-     xdContext.sql(s"SELECT * FROM highschool ORDER BY age DESC")
+     xdContext.sql(s"SELECT * FROM students ORDER BY age DESC")
 
     +---+---+----------+--------+----+
     | id|age|   comment|enrolled|name|
