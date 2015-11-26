@@ -67,7 +67,6 @@ public class ATCassandraXDTest extends BaseTest {
 		cassandra.createKeyspace(catalog);
 		cassandra.loadTestData(catalog, "/scripts/CassandraScript.cql");
 		List<String> tables = cassandra.getTables(catalog);
-		//Compartimos las variablescd
 		String connector = "Cassandra";
 		ThreadProperty.set("Cluster", cluster);
 		ThreadProperty.set("Catalog", catalog);
