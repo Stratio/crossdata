@@ -22,12 +22,11 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, sources}
 import org.elasticsearch.action.search.SearchResponse
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 
 object ElasticSearchQueryProcessor {
 
@@ -120,8 +119,10 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
           findProjectsFilters(child)
 
         case PhysicalOperation(projectList, filterList, _) =>
-          val (basePlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
-          if (!filtersIgnored) Some(basePlan) else None
+          CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
+            case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
+            case (basePlan, _) => Some(basePlan)
+          }
       }
     }
 

@@ -26,13 +26,10 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.sources
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
-import org.apache.spark.sql.sources.{Filter => SourceFilter, CatalystToCrossdataAdapter}
+import org.apache.spark.sql.{Row, sources}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.Row
-
-import scala.util.Try
 
 object MongoQueryProcessor {
 
@@ -162,16 +159,12 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
         findProjectsFilters(child)
 
       case PhysicalOperation(projectList, filterList, _) =>
-        val (crossdataPlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
-        if (filtersIgnored) {
-          None
+        CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
+          case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
+          case (SimpleLogicalPlan(projects, filters, _), _) => Some(projects.map(_.name), filters)
+          case _ => ??? // TODO
         }
-        else {
-          crossdataPlan match {
-            case SimpleLogicalPlan(projects, filters, _) => Some(projects.map(_.name), filters)
-            case _ => ??? // TODO
-          }
-        }
+
     }
 
     findProjectsFilters(logicalPlan).collect{ case (p, f) if checkNativeFilters(f) => (p,f,limit)}
