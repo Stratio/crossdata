@@ -234,7 +234,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
   }
 
 
-  it should "test the CROSSDATA-173 ISSUE" in {
+  it should "test retrieve a date value" in {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
