@@ -17,6 +17,7 @@
 
 package com.stratio.crossdata.connector.cassandra
 
+
 import java.util.Collection
 
 import com.datastax.driver.core.{KeyspaceMetadata, TableMetadata}
@@ -30,7 +31,7 @@ import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
-import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
@@ -57,7 +58,9 @@ import scala.collection.mutable
  *       spark_cassandra_connection_timeout_ms "1000"
  *      )
  */
-class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory {
+class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory with DataSourceRegister {
+
+  override def shortName(): String = "cassandra"
 
   /**
    * Creates a new relation for a cassandra table.
@@ -74,9 +77,8 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
    * When push_down is true, some filters are pushed down to CQL.
    *
    */
-  override def createRelation(
-                               sqlContext: SQLContext,
-                               parameters: Map[String, String]): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext,
+                              parameters: Map[String, String]): BaseRelation = {
 
     val (tableRef, options) = tableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options)
@@ -86,10 +88,9 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
    * Creates a new relation for a cassandra table given table, keyspace, cluster and push_down
    * as parameters and explicitly pass schema [[StructType]] as a parameter
    */
-  override def createRelation(
-                               sqlContext: SQLContext,
-                               parameters: Map[String, String],
-                               schema: StructType): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext,
+                              parameters: Map[String, String],
+                              schema: StructType): BaseRelation = {
 
     val (tableRef, options) = tableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options, Option(schema))
@@ -99,11 +100,10 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
    * Creates a new relation for a cassandra table given table, keyspace, cluster, push_down and schema
    * as parameters. It saves the data to the Cassandra table depends on [[SaveMode]]
    */
-  override def createRelation(
-                               sqlContext: SQLContext,
-                               mode: SaveMode,
-                               parameters: Map[String, String],
-                               data: DataFrame): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext,
+                              mode: SaveMode,
+                              parameters: Map[String, String],
+                              data: DataFrame): BaseRelation = {
 
     val (tableRef, options) = tableRefAndOptions(parameters)
     val table = CassandraXDSourceRelation(tableRef, sqlContext, options)
@@ -125,31 +125,26 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
     CassandraXDSourceRelation(tableRef, sqlContext, options)
   }
-  
-  /**
-   * @param tMeta C* Metadata for a given table
-   * @return A table description obtained after translate its C* meta data.
-   */
-  private def tableMeta2Table(tMeta: TableMetadata): Table =
-      Table(tMeta.getName, Some(tMeta.getKeyspace.getName))
 
-  private def buildCassandraConnector(context: SQLContext, options: Map[String, String]): CassandraConnector = {
 
-    val conParams = (CassandraDataSourceClusterNameProperty::CassandraConnectionHostProperty::Nil) map { opName =>
-      if(!options.contains(opName)) sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
-      else options(opName)
-    }
-    val (clusterName, host) = (conParams zip conParams.tail) head
 
-    val cfg: SparkConf = context.sparkContext.getConf.clone()
-    for (prop <- DefaultSource.confProperties;
-         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop")) cfg.set(prop, clusterLevelValue)
-    cfg.set("spark.cassandra.connection.host", host)
+  override def nativeBuiltinFunctions: Seq[UDF] = {
+    def qualifiedUDF(udfName: String) = udfName
+    //TODO: Complete the built-in function inventory
+    Seq(
+      UDF(qualifiedUDF("now"), None, StructType(Nil), StringType),
+      UDF(qualifiedUDF("dateOf"), None, StructType(StructField("date", StringType, false)::Nil), DataTypes.TimestampType),
+      UDF(qualifiedUDF("unixTimestampOf"), None, StructType(StructField("date", StringType, false)::Nil), DataTypes.LongType)
+    )
 
-    CassandraConnector(cfg)
   }
 
+
+  //-----------MetadataInventory-----------------
+
+
   import collection.JavaConversions._
+
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
     if (options.contains(CassandraDataSourceTableNameProperty))
@@ -167,23 +162,35 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     }
   }
 
+
+  private def buildCassandraConnector(context: SQLContext, options: Map[String, String]): CassandraConnector = {
+
+    val conParams = (CassandraDataSourceClusterNameProperty::CassandraConnectionHostProperty::Nil) map { opName =>
+      if(!options.contains(opName)) sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
+      else options(opName)
+    }
+    val (clusterName, host) = (conParams zip conParams.tail) head
+
+    val cfg: SparkConf = context.sparkContext.getConf.clone()
+    for (prop <- DefaultSource.confProperties;
+         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop")) cfg.set(prop, clusterLevelValue)
+    cfg.set("spark.cassandra.connection.host", host)
+
+    CassandraConnector(cfg)
+  }
+
   private def pickTables(ksMeta: KeyspaceMetadata, options: Map[String, String]): Collection[TableMetadata] = {
     options.get(CassandraDataSourceTableNameProperty).fold(ksMeta.getTables) { tableName =>
       ksMeta.getTable(tableName) :: Nil
     }
   }
 
-  override def nativeBuiltinFunctions: Seq[UDF] = {
-
-
-    //TODO: Complete the built-in function inventory
-    Seq(
-      UDF("now", None, StructType(Nil), StringType),
-      UDF("dateOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.TimestampType),
-      UDF("unixTimestampOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.LongType)
-    )
-
-  }
+  /**
+   * @param tMeta C* Metadata for a given table
+   * @return A table description obtained after translate its C* meta data.
+   */
+  private def tableMeta2Table(tMeta: TableMetadata): Table =
+    Table(tMeta.getName, Some(tMeta.getKeyspace.getName))
 
   //Avoids importing system tables
   override def exclusionFilter(t: TableInventory.Table): Boolean =
@@ -194,6 +201,8 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     CassandraDataSourceTableNameProperty -> item.tableName,
     CassandraDataSourceKeyspaceNameProperty -> item.database.get
   ) ++ opts.filterKeys(Set(CassandraConnectionHostProperty, CassandraDataSourceClusterNameProperty).contains(_))
+
+  //------------MetadataInventory-----------------
 
 }
 

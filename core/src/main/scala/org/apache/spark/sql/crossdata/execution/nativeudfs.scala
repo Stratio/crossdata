@@ -16,27 +16,23 @@
 package org.apache.spark.sql.crossdata.execution
 
 import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.plans.logical
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.rules.Rule
-import org.apache.spark.sql.types.{Metadata, DataType}
-import org.apache.spark.sql.catalyst.plans.logical
+import org.apache.spark.sql.types.DataType
 
 
-case class NativeUDF(
-                              name: String,
-                              dataType: DataType,
-                              children: Seq[Expression]
-                              ) extends Expression with Unevaluable {
+case class NativeUDF(name: String,
+                     dataType: DataType,
+                     children: Seq[Expression]) extends Expression with Unevaluable {
 
   override def toString: String = s"NativeUDF#$name(${children.mkString(",")})"
   override def nullable: Boolean = true
 }
 
-case class EvaluateNativeUDF(
-                            udf: NativeUDF,
-                            child: LogicalPlan,
-                            resultAttribute: Attribute
-                              ) extends logical.UnaryNode {
+case class EvaluateNativeUDF(udf: NativeUDF,
+                             child: LogicalPlan,
+                             resultAttribute: Attribute) extends logical.UnaryNode {
 
   def output: Seq[Attribute] = child.output :+ resultAttribute
 

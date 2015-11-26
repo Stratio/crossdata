@@ -27,9 +27,8 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.Analyzer
-import org.apache.spark.sql.crossdata.execution.datasources.XDDdlParser
+import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
-import org.apache.spark.sql.crossdata.execution.datasources.ExtendedDataSourceStrategy
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
@@ -88,20 +87,20 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   @transient
   protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_))
 
-  override def sql(sqlText: String): DataFrame = {
-    XDDataFrame(this, parseSql(sqlText))
-  }
 
   { //Register built-in UDFs for each provider available.
     import scala.collection.JavaConversions._
     val loader = Utils.getContextOrSparkClassLoader
     val serviceLoader = ServiceLoader.load(classOf[FunctionInventory], loader)
-    for(srv <- serviceLoader.iterator();
-        inventory = srv.getClass.newInstance();
-        udf <- srv.nativeBuiltinFunctions
-    ) functionRegistry.registerFunction(udf.name, e => NativeUDF(udf.name, udf.returnType, e))
+    for {
+      srv <- serviceLoader.iterator()
+      udf <- srv.nativeBuiltinFunctions
+    } functionRegistry.registerFunction(udf.name, e => NativeUDF(udf.name, udf.returnType, e))
   }
 
+  override def sql(sqlText: String): DataFrame = {
+    XDDataFrame(this, parseSql(sqlText))
+  }
 
   /**
    * Drops the table in the persistent catalog.
