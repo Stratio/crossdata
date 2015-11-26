@@ -136,8 +136,6 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
     catalog.dropAllTables()
   }
 
-  XDContext.setLastInstantiatedContext(self)
-
   /**
    * Imports tables from a DataSource in the persistent catalog.
    *
@@ -145,8 +143,10 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
    * @param opts
    */
   def importTables(datasource:String, opts: Map[String,String]): Unit ={
-    new ImportTablesUsingWithOptions(datasource, opts).run(this)
+    ImportTablesUsingWithOptions(datasource, opts).run(this)
   }
+
+  XDContext.setLastInstantiatedContext(self)
 }
 
 /**
