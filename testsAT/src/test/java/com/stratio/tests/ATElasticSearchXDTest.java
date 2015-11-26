@@ -50,7 +50,8 @@ import cucumber.api.CucumberOptions;
 //Indicar feature
 @CucumberOptions(features = { //"src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
 //        "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
-        "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature"})
+       // "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature"
+         "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature"})
 public class ATElasticSearchXDTest extends BaseTest {
 	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearch");
     private String elasticSearchIP = System.getProperty("ELASTICSEARCH_HOST","172.17.0.2");
@@ -118,7 +119,8 @@ public class ATElasticSearchXDTest extends BaseTest {
         try {
             client = new TransportClient(settings)
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
-            DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest("databasetest")).actionGet();
+            DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest("databasetest"))
+                    .actionGet();
 
            // System.out.println(response.toString());
         } catch (UnknownHostException e) {

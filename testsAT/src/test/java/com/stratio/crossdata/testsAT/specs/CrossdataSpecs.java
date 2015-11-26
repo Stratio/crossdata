@@ -63,7 +63,7 @@ public class CrossdataSpecs extends BaseSpec  {
     @Then(value = "The result has to have '(.*?)' rows ignoring the order:$")
     public void assertResultLenghIgnoringOrder(String rows, DataTable table){
         commonspec.getLogger().info("The result obtained is: ");
-     //   commonspec.getXdContext().showDataframe();
+        commonspec.getXdContext().showDataframe();
         asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsIgnoringOrder(table.raw());
