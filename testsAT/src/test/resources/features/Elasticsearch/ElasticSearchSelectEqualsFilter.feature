@@ -1,4 +1,4 @@
-Feature: MongoSelectEqualsFilter
+Feature: ElasticSearchSelectEqualsFilter
 
   Scenario: [CROSSDATA-18: ES NATIVE]  SELECT * FROM tabletest WHERE ident = 0;
     When I execute 'SELECT * FROM tabletest WHERE ident = 0'
