@@ -15,8 +15,6 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
-import java.util
-
 import com.sksamuel.elastic4s.{ElasticsearchClientUri, ElasticClient}
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.elasticsearch.DefaultSource._
@@ -26,8 +24,6 @@ import org.elasticsearch.cluster.metadata.MappingMetaData
 import org.elasticsearch.common.collect.ImmutableOpenMap
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
-
-import scala.collection.mutable
 
 object ElasticSearchConnectionUtils {
 
@@ -43,15 +39,25 @@ object ElasticSearchConnectionUtils {
     ElasticClient.remote(settings, uri)
   }
 
-  def extractIndexAndType(options: Map[String, String]): (String, String) = {
-    val resource = options.get(ES_RESOURCE).get.split("/")
-    (resource(0), resource(1))
+  def extractIndexAndType(options: Map[String, String]): Option[(String, String)] = {
+    options.get(ES_RESOURCE).map{ indexType =>
+      val indexTypeArray = indexType.split("/")
+      require(indexTypeArray.size==2, s"$ES_RESOURCE option has an invalid format")
+      (indexTypeArray(0), indexTypeArray(1))
+    }
   }
 
   def listTypes(options: Map[String, String]): Seq[Table] = {
 
     val adminClient = buildClient(options).admin.indices()
-    options.get(ElasticIndex).fold(listAllIndexTypes(adminClient))(indexName => listIndexTypes(adminClient, indexName))
+
+    val indexType: Option[(String, String)] =  extractIndexAndType(options)
+    val index = indexType.map(_._1).orElse(options.get(ElasticIndex))
+
+    index.fold(listAllIndexTypes(adminClient)){indexName =>
+      listIndexTypes(adminClient, indexName, indexType.map(_._2))
+    }
+
   }
 
   import collection.JavaConversions._
@@ -64,17 +70,19 @@ object ElasticSearchConnectionUtils {
 
   }
 
-  private def listIndexTypes(adminClient: IndicesAdminClient, indexName: String): Seq[Table] = {
+  private def listIndexTypes(adminClient: IndicesAdminClient, indexName: String, typeName: Option[String] = None): Seq[Table] = {
 
-    val mappings: ImmutableOpenMap[String, ImmutableOpenMap[String, MappingMetaData]]  = adminClient.prepareGetIndex().addIndices(indexName).get().mappings
+    val elasticBuilder = adminClient.prepareGetIndex().addIndices(indexName)
+    val elasticBuilderWithTypes = typeName.fold(elasticBuilder)(elasticBuilder.addTypes(_))
+    val mappings: ImmutableOpenMap[String, ImmutableOpenMap[String, MappingMetaData]] =  elasticBuilderWithTypes.get().mappings
     getIndexDetails(indexName, mappings.get(indexName))
 
   }
 
+
   private def getIndexDetails(indexName:String, indexData: ImmutableOpenMap[String, MappingMetaData]): Seq[Table] ={
     indexData.keys().map(typeES => new Table(typeES.value, Some(indexName), Some(buildStructType(indexData.get(typeES.value))))).toSeq
   }
-
 
   private def convertType(typeName:String): DataType = {
 

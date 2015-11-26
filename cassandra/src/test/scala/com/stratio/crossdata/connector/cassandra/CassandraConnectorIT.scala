@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.connector.cassandra
 
+import com.datastax.driver.core.{Cluster, Session}
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.junit.runner.RunWith
@@ -139,77 +140,6 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
   }
 
   // TODO test filter on PKs (=) and CKs(any) (right -> left)
-
-  // IMPORT OPERATIONS
-
-  it should "import all tables from a keyspace" in {
-    assumeEnvironmentIsUpAndRunning
-
-    def tableCountInHighschool: Long = ctx.sql("SHOW TABLES").count
-    val initialLength = tableCountInHighschool
-
-    val importQuery =
-      s"""
-          |IMPORT TABLES
-          |USING $SourceProvider
-          |OPTIONS (
-          | cluster "$ClusterName",
-          | spark_cassandra_connection_host '$CassandraHost'
-          |)
-      """.stripMargin
-
-    val importedTables = ctx.sql(importQuery)
-
-    importedTables.schema.fieldNames shouldBe Array("tableIdentifier")
-    importedTables.collect.length should be > 0
-
-    // TODO We need to create an unregister the table
-    tableCountInHighschool should be > initialLength
-
-  }
-
-  it should "infer schema after import all tables from a keyspace" in {
-    assumeEnvironmentIsUpAndRunning
-
-    val importQuery =
-      s"""
-         |IMPORT TABLES
-         |USING $SourceProvider
-         |OPTIONS (
-         | cluster "$ClusterName",
-         | spark_cassandra_connection_host '$CassandraHost'
-         |)
-      """.stripMargin
-
-    sql(importQuery)
-
-    ctx.dropTempTable(s"$Catalog.$Table")
-    ctx.table(s"$Catalog.$Table").schema should have length 5
-  }
-
-  val wrongImportTablesSentences = List(
-    s"""
-       |IMPORT TABLES
-       |USING $SourceProvider
-       |OPTIONS (
-       | cluster "$ClusterName"
-       |)
-    """.stripMargin,
-    s"""
-       |IMPORT TABLES
-       |USING $SourceProvider
-       |OPTIONS (
-       | spark_cassandra_connection_host '$CassandraHost'
-       |)
-     """.stripMargin
-  )
-
-  wrongImportTablesSentences.take(1) foreach { sentence =>
-    it should s"not import tables for sentences lacking mandatory options: $sentence" in {
-      assumeEnvironmentIsUpAndRunning
-      an[Exception] shouldBe thrownBy(ctx.sql(sentence))
-    }
-  }
 
 }
 

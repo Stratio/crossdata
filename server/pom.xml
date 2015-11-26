@@ -41,6 +41,19 @@
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-core</artifactId>
         </dependency>
+        <!--TODO remove connector dependencies if the server is executed on Spark cluster-->
+        <dependency>
+            <groupId>com.stratio.crossdata.connector</groupId>
+            <artifactId>crossdata-cassandra</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata.connector</groupId>
+            <artifactId>crossdata-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata.connector</groupId>
+            <artifactId>crossdata-elasticsearch</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-remote_${scala.binary.version}</artifactId>
