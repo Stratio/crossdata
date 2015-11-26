@@ -1,4 +1,4 @@
-Feature: MongoSelectINFilter
+Feature: ElasticSearchSelectINFilter
 
   Scenario: SELECT * FROM tabletest WHERE ident IN (0,10,5,27);
     When I execute 'SELECT * FROM tabletest WHERE ident IN (0,10,5,27)'
