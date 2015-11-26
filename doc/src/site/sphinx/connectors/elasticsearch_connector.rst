@@ -87,3 +87,22 @@ Given the Elasticsearch nature, you can't use *Equals* operator in String column
 If you need use *Equals* operator in a String column, see this Elasticsearch documentation:
 https://www.elastic.co/guide/en/elasticsearch/guide/current/_finding_exact_values.html#_term_filter_with_text
 
+Import existing Types as tables into Crossdata
+**********************************************
+To import existing types into the Crossdata Catalog, execute this query::
+
+         IMPORT TABLES
+            USING com.stratio.crossdata.connector.elasticsearch
+            OPTIONS (
+            es.resource 'highschool/students',
+            es.index 'highschool',
+            es.node 'localhost',
+            es.port '9200',
+            es.nativePort '9300',
+            es.cluster 'elasticCluster'
+            )
+
+
+Where:
+- es.index (Optional): The Elasticsearch index name to import; when omitted, Crossdata will import all indexes in the cluster.
+- es.resource (Optional): Elasticsearch resource location. Requires the format <index>/<type>; when omitted, Crossdata will import all Types in this Cluster or Index.

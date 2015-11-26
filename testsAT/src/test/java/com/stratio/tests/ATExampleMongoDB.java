@@ -69,7 +69,6 @@ public class ATExampleMongoDB extends BaseTest{
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            System.out.println(new java.sql.Date(parsedDate.getTime()).toString());
             BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
                 .add("ident", i)
                 .add("name", "name_" + i)
@@ -78,8 +77,6 @@ public class ATExampleMongoDB extends BaseTest{
                 .add("date", new java.sql.Date(parsedDate.getTime()));
             tabletest.insert(documentBuilder.get());
         }
-     //   DBObject aux = tabletest.findOne();
-      //  java.sql.Date aux1 = (java.sql.Date)aux.get("date");
         mongoClient.close();
         String connector = "Mongo";
         ThreadProperty.set("Host", "127.0.0.1");
