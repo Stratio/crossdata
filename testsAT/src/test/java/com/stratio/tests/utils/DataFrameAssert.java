@@ -229,7 +229,7 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
     }
 
     public DataFrameAssert equalsResultsIgnoringOrder(List<List<String>> table){
-        Row[] actualRows = actual.collect(ExecutionType.Native());
+        Row[] actualRows = actual.collect(ExecutionType.Spark());
         for(int i = 0; i < actualRows.length; i++) {
             Row actualRow = actualRows[i];
             if(!rowIsContainedInDataTable(table, actualRow)){
