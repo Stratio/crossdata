@@ -25,7 +25,7 @@ class MongoImportTablesIT extends MongoWithSharedContext {
 
   /**All tables imported after dropAllTables won't be temporary**/
 
-  it should "import all tables from MongoDB" in {
+  "MongoConnector" should "import all tables from MongoDB" in {
     assumeEnvironmentIsUpAndRunning
 
     xdContext.dropAllTables()
@@ -40,9 +40,9 @@ class MongoImportTablesIT extends MongoWithSharedContext {
          |)
       """.stripMargin
 
-    sql(importQuery)
-    sql("SHOW TABLES").collect() should be (Array(Row(s"highschool.$Collection", false),Row(s"highschool.$DataTypesCollection", false)))
+    val importedTables = sql(importQuery).collect().map(_.getSeq(0))
 
+    importedTables should contain allOf (Seq("highschool",Collection), Seq("highschool",DataTypesCollection))
   }
 
   it should "import tables from a MongoDB database" in {
@@ -62,7 +62,7 @@ class MongoImportTablesIT extends MongoWithSharedContext {
       """.stripMargin
 
     sql(importQuery)
-    sql("SHOW TABLES").collect() should be (Array(Row(s"highschool.$Collection", false),Row(s"highschool.$DataTypesCollection", false)))
+    sql("SHOW TABLES").collect() should contain allOf (Row(s"highschool.$Collection", false),Row(s"highschool.$DataTypesCollection", false))
 
   }
 
@@ -83,8 +83,9 @@ class MongoImportTablesIT extends MongoWithSharedContext {
          |)
       """.stripMargin
 
-    sql(importQuery)
-    sql("SHOW TABLES").collect() should be (Array(Row(s"highschool.$Collection", false)))
+    val importedTables = sql(importQuery).collect().map(_.getSeq(0))
+
+    importedTables should contain only Seq("highschool",Collection)
   }
 
   it should "import table from a collection with incorrect database" in {
@@ -104,8 +105,7 @@ class MongoImportTablesIT extends MongoWithSharedContext {
          |)
       """.stripMargin
 
-    sql(importQuery)
-    sql("SHOW TABLES").count() should be (0l)
+    sql(importQuery).collect().isEmpty shouldBe true
   }
 
   it should "import table from a MongoDB collection without indicate the database" in {
@@ -125,7 +125,7 @@ class MongoImportTablesIT extends MongoWithSharedContext {
       """.stripMargin
 
     sql(importQuery)
-    sql("SHOW TABLES").collect() should be (Array(Row(s"highschool.$Collection", false)))
+    sql("SHOW TABLES").collect() should contain (Row(s"highschool.$Collection", false))
 
   }
 

@@ -129,12 +129,11 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
 
   override def nativeBuiltinFunctions: Seq[UDF] = {
-    def qualifiedUDF(udfName: String) = udfName
     //TODO: Complete the built-in function inventory
     Seq(
-      UDF(qualifiedUDF("now"), None, StructType(Nil), StringType),
-      UDF(qualifiedUDF("dateOf"), None, StructType(StructField("date", StringType, false)::Nil), DataTypes.TimestampType),
-      UDF(qualifiedUDF("unixTimestampOf"), None, StructType(StructField("date", StringType, false)::Nil), DataTypes.LongType)
+      UDF("now", None, StructType(Nil), StringType),
+      UDF("dateOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.TimestampType),
+      UDF("unixTimestampOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.LongType)
     )
 
   }
