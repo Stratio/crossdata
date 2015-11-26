@@ -22,7 +22,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class CassandraImportTablesIT extends CassandraWithSharedContext {
 
-  it should "import all tables from a keyspace" in {
+  it should "import all tables from datasource" in {
     assumeEnvironmentIsUpAndRunning
 
     def tableCountInHighschool: Long = ctx.sql("SHOW TABLES").count
@@ -183,7 +183,27 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     session.close()
     cluster.close()
   }
+
+
+  it should "infer schema after import One table from a keyspace using API" in {
+    assumeEnvironmentIsUpAndRunning
+    ctx.dropAllTables()
+
+    val options = Map(
+      "cluster" -> ClusterName,
+      "keyspace" -> Catalog,
+      "table" -> Table,
+      "spark_cassandra_connection_host" -> CassandraHost)
+
+    //Experimentation
+    ctx.importTables(SourceProvider, options)
+
+    //Expectations
+    ctx.tableNames() should contain(s"$Catalog.$Table")
+    ctx.tableNames() should not contain "highschool.teachers"
+  }
 }
+
 
 
 

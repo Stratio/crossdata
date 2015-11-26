@@ -27,7 +27,7 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.Analyzer
-import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, XDDdlParser}
+import org.apache.spark.sql.crossdata.execution.datasources.{ImportTablesUsingWithOptions, ExtendedDataSourceStrategy, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
@@ -125,6 +125,16 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   }
 
   XDContext.setLastInstantiatedContext(self)
+
+  /**
+   * Imports tables from a DataSource in the persistent catalog.
+   *
+   * @param datasource
+   * @param opts
+   */
+  def importTables(datasource:String, opts: Map[String,String]): Unit ={
+    new ImportTablesUsingWithOptions(datasource, opts).run(this)
+  }
 }
 
 /**
