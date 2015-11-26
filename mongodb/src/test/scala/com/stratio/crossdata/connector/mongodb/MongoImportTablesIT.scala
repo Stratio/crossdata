@@ -84,7 +84,6 @@ class MongoImportTablesIT extends MongoWithSharedContext {
       """.stripMargin
 
     sql(importQuery)
-    sql("SHOW TABLES").count() should be (1l)
     sql("SHOW TABLES").collect() should be (Array(Row(s"highschool.$Collection", false)))
   }
 
