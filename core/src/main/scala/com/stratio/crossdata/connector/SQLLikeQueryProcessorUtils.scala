@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.connector
 
-trait QueryProcessorUtils {
+trait SQLLikeQueryProcessorUtils {
   type ProcessingContext
   def quoteString(in: Any)(implicit context: ProcessingContext): String
 }

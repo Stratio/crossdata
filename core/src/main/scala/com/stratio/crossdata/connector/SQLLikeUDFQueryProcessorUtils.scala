@@ -19,17 +19,17 @@ import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal, AttributeR
 import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.types.DataTypes
 
-object UDFQueryProcessorUtils {
+object SQLLikeUDFQueryProcessorUtils {
   trait ContextWithUDFs {
     val udfs: Map[String, NativeUDF]
   }
 }
 
-trait UDFQueryProcessorUtils {
-  self: QueryProcessorUtils =>
+trait SQLLikeUDFQueryProcessorUtils {
+  self: SQLLikeQueryProcessorUtils =>
 
 
-  import UDFQueryProcessorUtils._
+  import SQLLikeUDFQueryProcessorUtils._
 
   override type ProcessingContext <: ContextWithUDFs
 
@@ -41,7 +41,7 @@ trait UDFQueryProcessorUtils {
 
   // UDFs are string references in both filters and projects => lookup in udfsMap
   def expandAttribute(att: String)(implicit context: ProcessingContext): String = {
-    implicit val udfs = context.asInstanceOf[UDFQueryProcessorUtils#ProcessingContext].udfs
+    implicit val udfs = context.asInstanceOf[SQLLikeUDFQueryProcessorUtils#ProcessingContext].udfs
     udfs get(att) map { udf =>
       val actualParams = udf.children.collect { //TODO: Add type checker (maybe not here)
         case at: AttributeReference if(udfs contains at.toString) => expandAttribute(at.toString)

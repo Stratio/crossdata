@@ -17,7 +17,7 @@ package com.stratio.crossdata.connector.cassandra
 
 
 import com.datastax.driver.core.ResultSet
-import com.stratio.crossdata.connector.{UDFQueryProcessorUtils, QueryProcessorUtils}
+import com.stratio.crossdata.connector.{SQLLikeUDFQueryProcessorUtils, SQLLikeQueryProcessorUtils}
 import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions._
@@ -30,12 +30,12 @@ import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => Sourc
 
 import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole._
 
-object CassandraQueryProcessor extends QueryProcessorUtils with UDFQueryProcessorUtils {
+object CassandraQueryProcessor extends SQLLikeQueryProcessorUtils with SQLLikeUDFQueryProcessorUtils {
 
   val DefaultLimit = 10000
   type ColumnName = String
 
-  case class CassandraQueryProcessorContext(val udfs: Map[String, NativeUDF]) extends UDFQueryProcessorUtils.ContextWithUDFs
+  case class CassandraQueryProcessorContext(val udfs: Map[String, NativeUDF]) extends SQLLikeUDFQueryProcessorUtils.ContextWithUDFs
   override type ProcessingContext = CassandraQueryProcessorContext
 
   case class CassandraPlan(basePlan: BaseLogicalPlan, limit: Option[Int]){
