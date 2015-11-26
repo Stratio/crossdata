@@ -27,9 +27,8 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.Analyzer
-import org.apache.spark.sql.crossdata.execution.datasources.XDDdlParser
+import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
-import org.apache.spark.sql.crossdata.execution.datasources.ExtendedDataSourceStrategy
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
@@ -93,8 +92,9 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
     import scala.collection.JavaConversions._
     val loader = Utils.getContextOrSparkClassLoader
     val serviceLoader = ServiceLoader.load(classOf[FunctionInventory], loader)
-    for {srv <- serviceLoader.iterator()
-         udf <- srv.nativeBuiltinFunctions
+    for {
+      srv <- serviceLoader.iterator()
+      udf <- srv.nativeBuiltinFunctions
     } functionRegistry.registerFunction(udf.name, e => NativeUDF(udf.name, udf.returnType, e))
   }
 
