@@ -39,10 +39,10 @@ If you want to test Crossdata you can get our Sandbox follow the instructions of
     - *timeout*: The timeout in seconds.
     - *retries*: Number of retries if the timeout was exceeded.
 
-- **listTables**: Get a list of tables from a database or all if the database is None. Returns a sequence of tables and the database. Params are:
+- **listTables**: Gets a list of tables from a database or all if the database is None. Returns a sequence of tables and the database. Params are:
     - *databaseName*: The name of the database.
 
-- **describeTable**: Get the metadata from a specific table. Returns a sequence with the metadata fields of the table. Params are:
+- **describeTable**: Gets the metadata from a specific table. Returns a sequence with the metadata fields of the table. Params are:
     - *database*: The database of the table.
     - *tableName*: The name of the table.
 
@@ -105,7 +105,7 @@ First of all, we need to register the tables as follows::
             |USING com.stratio.crossdata.connector.elasticsearch
             |OPTIONS (
             |resource 'highschool/students',
-            |es.nodes 'localhost',
+            |es.node 'localhost',
             |es.port '9200',
             |es.nativePort '9300',
             |es.cluster 'elasticCluster'

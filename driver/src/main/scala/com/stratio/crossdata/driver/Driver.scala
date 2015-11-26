@@ -121,7 +121,7 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
   }
 
   /**
-    * Get a list of tables from a database or all if the database is None
+    * Gets a list of tables from a database or all if the database is None
     * @param databaseName The database name
     * @return A sequence of tables an its database
     */
@@ -140,7 +140,7 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
   }
 
   /**
-    * Get the metadata from a specific table.
+    * Gets the metadata from a specific table.
     * @param database Database of the table.
     * @param tableName The name of the table.
     * @return A sequence with the metadata of the fields of the table.

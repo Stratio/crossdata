@@ -64,7 +64,7 @@ Example::
             |USING com.stratio.crossdata.connector.elasticsearch
             |OPTIONS (
             |resource 'highschool/students',
-            |es.nodes 'localhost',
+            |es.node 'localhost',
             |es.port '9200',
             |es.nativePort '9300',
             |es.cluster 'elasticCluster'
