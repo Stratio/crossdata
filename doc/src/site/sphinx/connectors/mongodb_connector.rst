@@ -41,12 +41,16 @@ Also, you can see the datasource configuration for specific options:
 2. First steps
 ---------------
 
-To execute a SQL query using Crossdata after registering the table, just use the xdContext to send a valid SQL query::
+To execute a SQL query using Crossdata after registering the table, just use the xdContext to send a valid SQL query:
+
+   ::
 
     val dataframe = xdContext.sql("SELECT * FROM <TABLE-NAME> ")
 
 
-Example::
+Example:
+
+     ::
 
       xdContext.sql(
         s"""|CREATE TEMPORARY TABLE students
@@ -65,28 +69,33 @@ Example::
 2.1 Import tables
 ------------------
 
-It is possible to register every table from a cluster. This is an example::
+To import existing collections into the Crossdata Catalog, execute this query:
 
-    xdContext.sql(
-      s"""
-         |IMPORT TABLES
-         |USING com.stratio.crossdata.connector.mongodb
-         |OPTIONS (
-         |host '127.0.0.1:27017',
-         |schema_samplingRatio  '0.1'
-         |)
-      """.stripMargin)
+        ::
 
-And the dataframe returned must contain the following::
-
-    +----------------------+
-    |       tableIdentifier|
-    +----------------------+
-    |[highschool, teachers]|
-    |[highschool, students]|
-    +----------------------+
+         IMPORT TABLES
+            USING com.stratio.crossdata.connector.mongodb
+            OPTIONS (
+            host 'HOST:PORT',
+            database 'highschool',
+            collection 'students',
+            schema_samplingRatio '0.1'
+            )
 
 
+Where:
+
+- **host** (Mandatory): Host and port to connect with the database.
+- **database** (Optional): Database to import its collections.
+- **collection** (Optional): Collection to import.
+- **schema_samplingRatio** (Optional and recommended): Ratio of documents that will be scanned to infer the schema.
+
+Tips:
+
+- To import every collection stored in MongoDB, don't specify database neither collection.
+- To import every collection for a specific database, don't specify the collection.
+- To import only a collection, should specify database and collection.
+- If you specify a collection without a database, all the existing collections with this name will be imported.
 
 3. ADVANCED QUERIES
 --------------------
@@ -209,3 +218,4 @@ We can perform some advanced queries that cannot be executed natively by the con
     |  9| 19|Comment 9|   false|null|
     |  3| 13|Comment 3|   false|null|
     +---+---+---------+--------+----+
+

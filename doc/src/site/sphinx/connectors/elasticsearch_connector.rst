@@ -38,11 +38,11 @@ To register an Elasticsearch Index/Type as a Spark Table in the Crossdata Contex
             es.nodes '<HOSTS>', es.port '<REST-PORT>', es.nativePort '<NATIVE-PORT>')")
 
 The Option required for basic functions are:
-  - es.resource: Elasticsearch resource location, where data is read and written to. Requires the format <index>/<type>, Required.
-  - es.cluster: indicates the name of the Elastic Search cluster, Required.
-  - es.node: List of Elasticsearch nodes to connect to. (default localhost)
-  - es.port: HTTP/REST port used for connecting to Elasticsearch (default 9200)
-  - es.nativePort Native port used for connecting to Elasticsearch (default 9300)
+  - **es.resource**: Elasticsearch resource location, where data is read and written to. Requires the format <index>/<type>, Required.
+  - **es.cluster**: indicates the name of the Elastic Search cluster, Required.
+  - **es.node**: List of Elasticsearch nodes to connect to. (default localhost)
+  - **es.port**: HTTP/REST port used for connecting to Elasticsearch (default 9200)
+  - **es.nativePort**: Native port used for connecting to Elasticsearch (default 9300)
 
 Also, you can use the elasticsearch-hadoop configuration to be used if the query can not be executed natively and needs to run in Spark, more info in:
     - https://www.elastic.co/guide/en/elasticsearch/hadoop/master/configuration.html
@@ -51,12 +51,16 @@ Also, you can use the elasticsearch-hadoop configuration to be used if the query
 2. First Steps
 ---------------
 
-To execute a SQL query using Crossdata after registering the table, just use the xdContext to send a valid SQL query::
+To execute a SQL query using Crossdata after registering the table, just use the xdContext to send a valid SQL query:
+
+  ::
 
     val dataframe = xdContext.sql("SELECT * FROM <TABLE-NAME> ")
 
 
-Example::
+Example:
+
+     ::
 
       xdContext.sql(
         s"""|CREATE TEMPORARY TABLE students
@@ -78,7 +82,26 @@ Example::
 2.1 Import tables
 -----------------
 
-Coming soon...
+To import existing types into the Crossdata Catalog, execute this query:
+
+       ::
+
+         IMPORT TABLES
+            USING com.stratio.crossdata.connector.elasticsearch
+            OPTIONS (
+            es.resource 'highschool/students',
+            es.index 'highschool',
+            es.node 'localhost',
+            es.port '9200',
+            es.nativePort '9300',
+            es.cluster 'elasticCluster'
+            )
+
+
+Where:
+
+- **es.index** (Optional): The Elasticsearch index name to import; when omitted, Crossdata will import all indexes in the cluster.
+- **es.resource** (Optional): Elasticsearch resource location. Requires the format <index>/<type>; when omitted, Crossdata will import all Types in this Cluster or Index.
 
 3. Supported Operators
 ----------------------

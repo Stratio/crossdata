@@ -47,7 +47,9 @@ To execute a SQL query using Crossdata after registering the table, just use the
     val dataframe = xdContext.sql("SELECT * FROM <TABLE-NAME> ")
 
 
-Example::
+Example:
+
+    ::
 
       xdContext.sql(
         s"""|CREATE TEMPORARY TABLE students
@@ -67,27 +69,24 @@ Example::
 2.1 Import tables
 -----------------
 
-It is possible to register every table from a cluster. This is an example::
+To import existing tables into the Crossdata Catalog, execute this query
 
-    xdContext.sql(
-      s"""
-          |IMPORT TABLES
-          |USING com.stratio.crossdata.connector.cassandra
-          |OPTIONS (
-          | cluster "Test Cluster",
-          | spark_cassandra_connection_host '127.0.0.1'
-          |)
-      """.stripMargin
+       ::
+
+         IMPORT TABLES
+         USING com.stratio.crossdata.connector.cassandra
+         OPTIONS (
+          cluster "MuClusterName",
+          keyspace "MyKeyspace",
+          table "MyTable",
+          spark_cassandra_connection_host "localhost"
+          )
 
 
-And the dataframe returned must contain the following::
+Where:
 
-    +----------------------+
-    |       tableIdentifier|
-    +----------------------+
-    |[highschool, teachers]|
-    |[highschool, students]|
-    +----------------------+
+- **keyspace** (Optional): The Cassandra keyspace to import; when omitted, Crossdata will import all keyspaces in the cluster.
+- **table** (Optional): The Cassandra Table name to import, *keyspace* is required when use this options. When omitted, Crossdata will import all tables in the Keyspace or Keyspaces.
 
 3. ADVANCED QUERIES
 --------------------
@@ -219,3 +218,4 @@ The following cassandra native functions are supported:
 - now()
 - dateOf(<date>)
 - toDate(<date>)
+

@@ -28,7 +28,7 @@
         </Console>
     </Appenders>
     <Loggers>
-        <logger name="org.apache.spark" level="ERROR"/>
+        <logger name="org.apache.spark" level="WARN"/>
         <logger name="org.apache.flume.test.util.Agent" level="ERROR"/>
         <Root level="${sys:logLevel}">
             <AppenderRef ref="Console"/>

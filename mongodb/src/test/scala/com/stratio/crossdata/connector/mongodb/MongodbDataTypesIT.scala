@@ -15,17 +15,16 @@
  */
 package com.stratio.crossdata.connector.mongodb
 
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.ExecutionType
-import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.apache.spark.sql.Row
 
 @RunWith(classOf[JUnitRunner])
 class MongodbDataTypesIT extends MongoWithSharedContext {
 
 
-  it should "XD Mongodb connector support _id" in {
+  "MongoConnector" should "support _id" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT _id FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -35,7 +34,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.lang.String]
   }
 
-  it should "XD Mongodb connector support Int type" in {
+  it should "support Int type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT int FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -45,7 +44,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.lang.Integer]
   }
 
-  it should "XD Mongodb connector support BigInt type" in {
+  it should "support BigInt type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT bigint FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -55,7 +54,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.lang.Long]
   }
 
-  it should "XD Mongodb connector support Long type" in {
+  it should "support Long type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT long FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -65,7 +64,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.lang.Long]
   }
 
-  it should "XD Mongodb connector support String type" in {
+  it should "support String type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT string FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -75,7 +74,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.lang.String]
   }
 
-  it should "XD Mongodb connector support Boolean type" in {
+  it should "support Boolean type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT boolean FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -85,7 +84,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.lang.Boolean]
   }
 
-  it should "XD Mongodb connector support Double type" in {
+  it should "support Double type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT double FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -95,7 +94,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.lang.Double]
   }
 
-  it should "XD Mongodb connector support Decimal type writting a Int in mongodb" in {
+  it should "support Decimal type writting a Int in mongodb" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT decimalInt FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -105,7 +104,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.math.BigDecimal]
   }
 
-  it should "XD Mongodb connector support Decimal type writting a Long in mongodb" in {
+  it should "support Decimal type writting a Long in mongodb" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT decimalLong FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -115,7 +114,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.math.BigDecimal]
   }
 
-  it should "XD Mongodb connector support Decimal type writting a Double in mongodb" in {
+  it should "support Decimal type writting a Double in mongodb" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT decimalDouble FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -125,7 +124,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.math.BigDecimal]
   }
 
-  it should "XD Mongodb connector support Decimal type writting a Float in mongodb" in {
+  it should "support Decimal type writting a Float in mongodb" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT decimalFloat FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -135,7 +134,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.math.BigDecimal]
   }
 
-  it should "XD Mongodb connector support Date type" in {
+  it should "support Date type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT date FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -145,7 +144,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.sql.Date]
   }
 
-  it should "XD Mongodb connector support Timestamp type" in {
+  it should "support Timestamp type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -155,7 +154,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.sql.Timestamp]
   }
 
-  it should "XD Mongodb connector support Float type" in {
+  it should "support Float type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT float FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -165,7 +164,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.lang.Float]
   }
 
-  it should "XD Mongodb connector support TinyInt type: 8 bits integer precision" in {
+  it should "support TinyInt type: 8 bits integer precision" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT tinyint FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -175,7 +174,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.lang.Byte]
   }
 
-  it should "XD Mongodb connector support SmallInt type: 16 bits integer precision" in {
+  it should "support SmallInt type: 16 bits integer precision" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT smallint FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -185,7 +184,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[java.lang.Short]
   }
 
-  it should "XD Mongodb connector support Binary type" in {
+  it should "support Binary type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT binary FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -195,7 +194,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[Array[Byte]]
   }
 
-  it should "XD Mongodb connector support simple Array<INT> type" in {
+  it should "support simple Array<INT> type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT arrayint FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -208,7 +207,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow.asInstanceOf[Seq[_]](0) shouldBe a [java.lang.Integer]
   }
 
-  it should "XD Mongodb connector support simple Array<STRING> type" in {
+  it should "support simple Array<STRING> type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT arraystring FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -218,7 +217,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[Seq[_]]
   }
 
-  it should "XD Mongodb connector support simple Map<INT,INT> type" in {
+  it should "support simple Map<INT,INT> type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT mapintint FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -228,7 +227,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[Map[_, _]]
   }
 
-  it should "XD Mongodb connector support simple Map<STRING,INT> type" in {
+  it should "support simple Map<STRING,INT> type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT mapstringint FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -238,7 +237,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[Map[_, _]]
   }
 
-  it should "XD Mongodb connector support simple Map<STRING,STRING> type" in {
+  it should "support simple Map<STRING,STRING> type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT mapstringstring FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -248,7 +247,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[Map[_, _]]
   }
 
-  it should "XD Mongodb connector support struct type" in {
+  it should "support struct type" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT struct FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -258,14 +257,14 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a[Row]
   }
 
-  it should "XD Mongodb connector support access to struct fields" in {
+  it should "support access to struct fields" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRowStructField = sql(s"SELECT struct.field1 FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
     sparkRowStructField shouldBe a[java.sql.Date]
   }
 
-  it should "XD Mongodb connector support array of structs" in {
+  it should "support array of structs" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT arraystruct FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -275,7 +274,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a [Seq[_]]
   }
 
-  it should "XD Mongodb connector support Array of structs with Date inside the struct" in {
+  it should "support Array of structs with Date inside the struct" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT arraystructwithdate FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -285,7 +284,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
     nativeRow shouldBe a [Seq[_]]
   }
 
-  it should "XD Mongodb connector support structs of structs" in {
+  it should "support structs of structs" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT structofstruct FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -296,7 +295,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
 
   }
 
-  it should "XD Mongodb connector support nested structs" in {
+  it should "support nested structs" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRowsStruct = sql(s"SELECT structofstruct.struct1 FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -304,7 +303,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
 
   }
 
-  it should "XD Mongodb connector support access to fields in nested structs" in {
+  it should "support access to fields in nested structs" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRowsStructField = sql(s"SELECT structofstruct.struct1.structField1 FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)
@@ -312,7 +311,7 @@ class MongodbDataTypesIT extends MongoWithSharedContext {
   }
 
 
-  it should "XD Mongodb connector support MAP type with STRUCT inside" in {
+  it should "support MAP type with STRUCT inside" in {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT mapstruct FROM $DataTypesCollection").collect(ExecutionType.Spark).head(0)

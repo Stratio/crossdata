@@ -16,6 +16,7 @@
 package com.stratio.crossdata.connector.elasticsearch
 
 import org.apache.spark.sql.crossdata.ExecutionType._
+import org.elasticsearch.common.joda.time.DateTime
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -230,6 +231,21 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     val result = dataframe.collect(Native)
     result should have length 1
     result(0).get(0) should be ("Name 4")
+  }
+
+
+  it should "test retrieve a date value" in {
+    assumeEnvironmentIsUpAndRunning
+
+    //Experimentation
+    val dataframe = sql(s"SELECT name, birthday FROM $Type where id =1")
+
+    //Expectations
+    val schema = dataframe.schema
+    val result = dataframe.collect(Native)
+
+    result should have length 1
+    result(0).getDate(1) should be (DateTime.parse((1981)+"-01-01T10:00:00-00:00").toDate)
   }
 
   //TODO add support for dates in query?

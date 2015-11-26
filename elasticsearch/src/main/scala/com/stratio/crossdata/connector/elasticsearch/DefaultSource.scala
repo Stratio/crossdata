@@ -23,7 +23,7 @@ package com.stratio.crossdata.connector.elasticsearch
 import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
 import org.apache.spark.sql.{DataFrame, SaveMode, SQLContext}
-import org.apache.spark.sql.sources.{CreatableRelationProvider, SchemaRelationProvider, BaseRelation, RelationProvider}
+import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 import org.elasticsearch.hadoop.{EsHadoopIllegalArgumentException, EsHadoopIllegalStateException}
@@ -46,9 +46,11 @@ object DefaultSource{
 /**
  * This class is used by Spark to create a new  [[ElasticSearchXDRelation]]
  */
-class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider  with TableInventory {
+class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider with TableInventory with DataSourceRegister {
 
   import DefaultSource._
+
+  override def shortName(): String = "elasticsearch"
 
   override def createRelation(@transient sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = {
     new ElasticSearchXDRelation(params(parameters), sqlContext)
@@ -90,6 +92,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     }
     //TODO Validate required parameters
 
+
     params
   }
 
@@ -111,4 +114,5 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
 
     ElasticSearchConnectionUtils.listTypes(params(options))
   }
+
 }

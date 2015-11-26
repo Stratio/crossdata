@@ -83,7 +83,7 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
         return this;
     }
 
-    public DataFrameAssert equalsResults(List<List<String>> table){
+    public DataFrameAssert equalsResultsNative(List<List<String>> table){
         Row[] actualRows = actual.collect(ExecutionType.Native());
         List<String> firstRow = table.get(0);
         boolean isEquals = false;
@@ -228,7 +228,7 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
         return this;
     }
 
-    public DataFrameAssert equalsResultsIgnoringOrder(List<List<String>> table){
+    public DataFrameAssert equalsResultsIgnoringOrderNative(List<List<String>> table){
         Row[] actualRows = actual.collect(ExecutionType.Native());
         for(int i = 0; i < actualRows.length; i++) {
             Row actualRow = actualRows[i];

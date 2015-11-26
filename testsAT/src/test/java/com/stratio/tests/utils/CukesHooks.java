@@ -168,6 +168,7 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
     public void scenario(Scenario scenario) {
         logger.info("Got to scenario {} ", scenario.getName());
         this.scenario = scenario;
+        commonspec.getExceptions().clear();
 
     }
 
