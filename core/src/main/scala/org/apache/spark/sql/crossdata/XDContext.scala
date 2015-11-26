@@ -107,6 +107,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
          datasourceName = srv.shortName()
          udf <- srv.nativeBuiltinFunctions
     } functionRegistry.registerFunction(qualifyUDF(datasourceName, udf.name), e => NativeUDF(udf.name, udf.returnType, e))
+
   }
 
 

@@ -15,6 +15,9 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
+import com.sksamuel.elastic4s.mappings.FieldType.IntegerType
+import com.sksamuel.elastic4s.ElasticDsl._
+
 class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
 
@@ -24,6 +27,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     def tableCountInHighschool: Long = sql("SHOW TABLES").count
     val initialLength = tableCountInHighschool
+    xdContext.dropAllTables()
 
     val importQuery =
       s"""
@@ -37,17 +41,17 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
           |es.index '$Index'
           |)
       """.stripMargin
-
     //Experimentation
     sql(importQuery)
 
     //Expectations
-    tableCountInHighschool should be > initialLength
+    tableCountInHighschool should be (1)
+    ctx.tableNames() should contain (s"$Index.$Type")
   }
 
-  it should "infer schema after import all tables from a keyspace" in {
+  it should "infer schema after import all tables from an Index" in {
     assumeEnvironmentIsUpAndRunning
-
+    xdContext.dropAllTables()
     val importQuery =
       s"""
          |IMPORT TABLES
@@ -65,20 +69,73 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     sql(importQuery)
 
     //Expectations
+    ctx.tableNames() should contain (s"$Index.$Type")
     ctx.table(s"$Index.$Type").schema should have length 6
+  }
+
+  it should "infer schema after import One table from an Index" in {
+    assumeEnvironmentIsUpAndRunning
+    xdContext.dropAllTables()
+
+    val client = ElasticSearchConnectionUtils.buildClient(connectionOptions)
+
+    client.execute { index into Index -> "NewMapping" fields {
+      "name" -> "luis"
+    }}
+
+    val importQuery =
+      s"""
+         |IMPORT TABLES
+         |USING $SourceProvider
+          |OPTIONS (
+          |es.node '$ElasticHost',
+          |es.port '$ElasticRestPort',
+          |es.nativePort '$ElasticNativePort',
+          |es.cluster '$ElasticClusterName',
+          |es.resource '$Index/$Type'
+          |)
+      """.stripMargin
+
+    //Experimentation
+    sql(importQuery)
+
+    //Expectations
+    ctx.tableNames() should contain (s"$Index.$Type")
+    ctx.tableNames() should not contain s"$Index.NewMapping"
+  }
+
+  it should "fail when infer schema with bad es.resource" in {
+    assumeEnvironmentIsUpAndRunning
+    xdContext.dropAllTables()
+
+    val client = ElasticSearchConnectionUtils.buildClient(connectionOptions)
+
+    client.execute { index into Index -> "NewMapping" fields {
+      "name" -> "luis"
+    }}
+
+    val importQuery =
+      s"""
+         |IMPORT TABLES
+         |USING $SourceProvider
+          |OPTIONS (
+          |es.node '$ElasticHost',
+          |es.port '$ElasticRestPort',
+          |es.nativePort '$ElasticNativePort',
+          |es.cluster '$ElasticClusterName',
+          |es.resource '$Type'
+                                                                                                                                                                |)
+      """.stripMargin
+
+    //Experimentation
+    an [IllegalArgumentException] should be thrownBy sql(importQuery)
   }
 
   it should "infer schema after import all tables from a Cluster" in {
     assumeEnvironmentIsUpAndRunning
+    xdContext.dropAllTables()
 
-    val options: Map[String, String] = Map(
-      "es.node" -> s"$ElasticHost",
-      "es.port" -> s"$ElasticRestPort",
-      "es.nativePort" -> s"$ElasticNativePort",
-      "es.cluster" -> s"$ElasticClusterName"
-    )
-
-    val client = ElasticSearchConnectionUtils.buildClient(options)
+    val client = ElasticSearchConnectionUtils.buildClient(connectionOptions)
     createIndex(client,"index_test", typeMapping())
     try {
       val importQuery =
@@ -103,4 +160,11 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
       cleanTestData(client, "index_test")
     }
   }
+
+  lazy val connectionOptions: Map[String, String] = Map(
+    "es.node" -> s"$ElasticHost",
+    "es.port" -> s"$ElasticRestPort",
+    "es.nativePort" -> s"$ElasticNativePort",
+    "es.cluster" -> s"$ElasticClusterName"
+  )
 }

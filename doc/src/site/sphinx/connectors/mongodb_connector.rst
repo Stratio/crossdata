@@ -42,3 +42,29 @@ Example::
       val dataframe = xdContext.sql(s"SELECT * FROM students")
       val schema = dataframe.schema
       val result = dataframe.collect(Native)
+
+Import existing collections as tables into Crossdata
+**********************************************
+To import existing collections into the Crossdata Catalog, execute this query::
+
+         IMPORT TABLES
+            USING com.stratio.crossdata.connector.mongodb
+            OPTIONS (
+            host 'HOST:PORT',
+            database 'highschool',
+            collection 'students',
+            schema_samplingRatio '0.1'
+            )
+
+
+Where:
+- host (Mandatory): Host and port to connect with the database.
+- database (Optional): Database to import its collections.
+- collection (Optional): Collection to import.
+- schema_samplingRatio (Optional and recommended): Ratio of documents that will be scanned to infer the schema.
+
+Tips:
+- To import every collection stored in MongoDB, don't specify database neither collection.
+- To import every collection for a specific database, don't specify the collection.
+- To import only a collection, should specify database and collection.
+- If you specify a collection without a database, all the existing collections with this name will be imported.
