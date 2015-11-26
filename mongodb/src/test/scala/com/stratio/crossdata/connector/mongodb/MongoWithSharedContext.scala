@@ -20,100 +20,18 @@ import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.scalatest.Suite
 
 import scala.util.Try
 
-trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConstants with Logging {
+trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefaultConstants with Logging {
   this: Suite =>
 
-  var mongoClient: Option[MongoClient] = None
-  var isEnvironmentReady = false
-  val UnregisteredCollection = "unregistered"
+  override type ClientParams = MongoClient
 
-  override protected def beforeAll() = {
-    super.beforeAll()
-
-    try {
-      mongoClient = Some(prepareEnvironment())
-
-      xdContext.sql(
-        s"""|CREATE TEMPORARY TABLE $Collection
-            |(id BIGINT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)
-            |USING $SourceProvider
-            |OPTIONS (
-            |host '$MongoHost:$MongoPort',
-            |database '$Database',
-            |collection '$Collection'
-            |)
-         """.stripMargin.replaceAll("\n", " "))
-
-      xdContext.sql(
-        s"""|CREATE TEMPORARY TABLE $DataTypesCollection
-            |(
-            |_id STRING,
-            |int INT,
-            |bigint BIGINT,
-            |long LONG,
-            |string STRING,
-            |boolean BOOLEAN,
-            |double DOUBLE,
-            |float FLOAT,
-            |decimalInt DECIMAL,
-            |decimalLong DECIMAL,
-            |decimalDouble DECIMAL,
-            |decimalFloat DECIMAL,
-            |date DATE,
-            |timestamp TIMESTAMP,
-            |tinyint TINYINT,
-            |smallint SMALLINT,
-            |binary BINARY,
-            |arrayint ARRAY<INT>,
-            |arraystring ARRAY<STRING>,
-            |mapintint MAP<INT, INT>,
-            |mapstringint MAP<STRING, INT>,
-            |mapstringstring MAP<STRING, STRING>,
-            |struct STRUCT<field1: DATE, field2: INT>,
-            |arraystruct ARRAY<STRUCT<field1: INT, field2: INT>>,
-            |arraystructwithdate ARRAY<STRUCT<field1: DATE, field2: INT>>,
-            |structofstruct STRUCT<field1: DATE, field2: INT, struct1: STRUCT<structField1: STRING, structField2: INT>>,
-            |mapstruct MAP<STRING, STRUCT<structField1: DATE, structField2: INT>>
-            |)
-            |USING $SourceProvider
-            |OPTIONS (
-            |host '$MongoHost:$MongoPort',
-            |database '$Database',
-            |collection '$DataTypesCollection'
-            |)
-         """.stripMargin.replaceAll("\n", " "))
-
-    } catch {
-      case e: Throwable => logError(e.getMessage)
-    }
-
-    isEnvironmentReady = mongoClient.isDefined
-  }
-
-  override protected def afterAll() = {
-    _xdContext.dropAllTables()
-    super.afterAll()
-    mongoClient.foreach(cleanEnvironment)
-  }
-
-  def prepareEnvironment(): MongoClient = {
-    val mongoClient = MongoClient(MongoHost, MongoPort)
-    saveTestData(mongoClient)
-    mongoClient
-  }
-
-  def cleanEnvironment(mongoClient: MongoClient) = {
-    cleanTestData(mongoClient)
-    mongoClient.close()
-  }
-
-
-  private def saveTestData(client: MongoClient): Unit = {
+  override protected def saveTestData: Unit = {
+    val client = this.client.get
 
     val collection = client(Database)(Collection)
     for (a <- 1 to 10) {
@@ -143,8 +61,8 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
           "decimalLong" -> decimalLong,
           "decimalDouble" -> decimalDouble,
           "decimalFloat" -> decimalFloat,
-          "date" -> date,
-          "timestamp" -> timestamp,
+          "date" -> new java.sql.Date(2015+100000000*a),
+          "timestamp" -> new java.sql.Timestamp(2015+100000000*a),
           "tinyint" -> tinyint,
           "smallint" -> smallint,
           "binary" -> binary,
@@ -161,20 +79,76 @@ trait MongoWithSharedContext extends SharedXDContextTest with MongoDefaultConsta
         )
       }
     }
-
   }
 
-  private def cleanTestData(client: MongoClient): Unit = {
+  override protected def terminateClient: Unit = client.foreach(_.close)
+
+  override protected def cleanTestData: Unit = {
+    val client = this.client.get
+
     val collection = client(Database)(Collection)
+
     collection.dropCollection()
 
     val dataTypesCollection = client(Database)(DataTypesCollection)
     dataTypesCollection.dropCollection()
   }
 
-  lazy val assumeEnvironmentIsUpAndRunning = {
-    assume(isEnvironmentReady, "MongoDB and Spark must be up and running")
-  }
+  override protected def prepareClient: Option[ClientParams] = Try {
+    MongoClient(MongoHost, MongoPort)
+  } toOption
+
+  override val sparkRegisterTableSQL: Seq[String] =
+    s"""|CREATE TEMPORARY TABLE $Collection
+        |(id BIGINT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)
+        |USING $SourceProvider
+        |OPTIONS (
+        |host '$MongoHost:$MongoPort',
+        |database '$Database',
+        |collection '$Collection'
+        |)
+         """.stripMargin.replaceAll("\n", " ")::
+    s"""|CREATE TEMPORARY TABLE $DataTypesCollection
+        |(
+        |  _id STRING,
+        |  int INT,
+        |  bigint BIGINT,
+        |  long LONG,
+        |  string STRING,
+        |  boolean BOOLEAN,
+        |  double DOUBLE,
+        |  float FLOAT,
+        |  decimalInt DECIMAL,
+        |  decimalLong DECIMAL,
+        |  decimalDouble DECIMAL,
+        |  decimalFloat DECIMAL,
+        |  date DATE,
+        |  timestamp TIMESTAMP,
+        |  tinyint TINYINT,
+        |  smallint SMALLINT,
+        |  binary BINARY,
+        |  arrayint ARRAY<INT>,
+        |  arraystring ARRAY<STRING>,
+        |  mapintint MAP<INT, INT>,
+        |  mapstringint MAP<STRING, INT>,
+        |  mapstringstring MAP<STRING, STRING>,
+        |  struct STRUCT<field1: DATE, field2: INT>,
+        |  arraystruct ARRAY<STRUCT<field1: INT, field2: INT>>,
+        |  arraystructwithdate ARRAY<STRUCT<field1: DATE, field2: INT>>,
+        |  structofstruct STRUCT<field1: DATE, field2: INT, struct1: STRUCT<structField1: STRING, structField2: INT>>,
+        |  mapstruct MAP<STRING, STRUCT<structField1: DATE, structField2: INT>>
+        |)
+        |  USING $SourceProvider
+        |  OPTIONS (
+        |  host '$MongoHost:$MongoPort',
+        |  database '$Database',
+        |  collection '$DataTypesCollection'
+        |)""".stripMargin.replaceAll("\n", " ")::Nil
+
+  override val runningError: String = "MongoDB and Spark must be up and running"
+
+  val UnregisteredCollection = "unregistered"
+
 }
 
 sealed trait MongoDefaultConstants {
@@ -191,11 +165,6 @@ sealed trait MongoDefaultConstants {
   val MongoPort = 27017
   val SourceProvider = "com.stratio.crossdata.connector.mongodb"
 
-  // Date types
-  val date = new java.sql.Date(2015)
-  val dt = new java.util.Date().getTime
-  val timestamp =  new java.sql.Timestamp(dt)
-
   // Types supported in MongoDB for write decimal
   val decimalInt = 10
   val decimalLong = 10l
@@ -209,6 +178,7 @@ sealed trait MongoDefaultConstants {
 
   val byte = Byte.MaxValue
   val binary = Array(byte, byte)
+  val date = new java.sql.Date(100000000)
 
   // Arrays
   val arrayint = Seq(1,2,3)

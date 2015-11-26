@@ -24,34 +24,62 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import com.mongodb.BasicDBObjectBuilder;
 import com.stratio.cucumber.testng.CucumberRunner;
 import com.stratio.tests.utils.BaseTest;
+import com.stratio.tests.utils.CassandraUtils;
 import com.stratio.tests.utils.ThreadProperty;
 import java.text.ParseException;
 import cucumber.api.CucumberOptions;
 
 //Indicar feature
+<<<<<<< HEAD
 @CucumberOptions(features = { //"src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
 		"src/test/resources/features/Catalog/PersistentCatalogMySQLDropTable.feature"
+=======
+@CucumberOptions(features = {// "src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
+		"src/test/resources/features/Catalog/PersistentCatalogMySQLImportTables.feature"
+>>>>>>> upstream/master
 	})
 public class ATPersistentCatalogXDTest extends BaseTest {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass()
+			.getCanonicalName());
 	//Defaul mongoHost property
 	private String mongoHost = System.getProperty("MONGO_HOST", "127.0.0.1");
 	//Default mongoPort property
 	private String mongoPortString = System.getProperty("MONGO_PORT", "27017");
 	private int mongoPort = Integer.parseInt(mongoPortString);
 	private String dataBase = "databasetest";
-
+	CassandraUtils cassandra = new CassandraUtils();
+	private String catalog = "databasetest";
+	// Global for C*
+	private String cluster = System.getProperty("CASSANDRA_CLUSTER",
+			"Test Cluster");
+	private String host = System.getProperty("CASSANDRA_HOST", "127.0.0.1");
+	private String sourceProvider = System.getProperty("SOURCE_PROVIDER",
+			"com.stratio.crossdata.sql.sources.cassandra");
 	public ATPersistentCatalogXDTest() {
 	}
 
 	@BeforeClass
 	public void setUp() {
 		ThreadProperty.set("Connector", "Persistence MYSQL");
+		logger.info("Connecting to Cassandra Cluster");
+		cassandra.connect();
+		logger.info("Checking if the catalog exists");
+		if (cassandra.existsKeyspace(catalog, false)) {
+			logger.info("The catalog exists");
+			cassandra.dropKeyspace(catalog);
+			logger.info("The catalog has benn dropped");
+		}
+		cassandra.createKeyspace(catalog);
+		cassandra.loadTestData(catalog, "/scripts/CassandraScript.cql");
+		List<String> tables = cassandra.getTables(catalog);
 		MongoClient mongoClient = null;
 		try {
 			mongoClient = new MongoClient(mongoHost, mongoPort);
@@ -71,7 +99,6 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
-			System.out.println(new java.sql.Date(parsedDate.getTime()).toString());
 			BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
 					.add("ident", i)
 					.add("name", "name_" + i)

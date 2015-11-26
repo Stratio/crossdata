@@ -17,24 +17,24 @@
 
 package com.stratio.crossdata.connector.cassandra
 
-import com.datastax.driver.core.{TableMetadata, KeyspaceMetadata}
+import java.util.Collection
+
+import com.datastax.driver.core.{KeyspaceMetadata, TableMetadata}
 import com.datastax.spark.connector.cql._
 import com.datastax.spark.connector.rdd.ReadConf
-import com.datastax.spark.connector.types.UUIDType
 import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.FunctionInventory.UDF
+import com.stratio.crossdata.connector.TableInventory.Table
+import com.stratio.crossdata.connector.cassandra.DefaultSource._
 import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
-import TableInventory.Table
-import DefaultSource._
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
 import org.apache.spark.sql.sources.BaseRelation
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{types, DataFrame, SQLContext, SaveMode}
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 import scala.collection.mutable
-import scala.collection.JavaConversions.iterableAsScalaIterable
 
 
 
@@ -148,18 +148,32 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
     CassandraConnector(cfg)
   }
-  
+
+  import collection.JavaConversions._
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
+
+    if (options.contains(CassandraDataSourceTableNameProperty))
+      require(options.contains(CassandraDataSourceKeyspaceNameProperty), s"$CassandraDataSourceKeyspaceNameProperty required when use $CassandraDataSourceTableNameProperty")
+
     buildCassandraConnector(context, options).withSessionDo { s =>
+      val keyspaces = options.get(CassandraDataSourceKeyspaceNameProperty).fold(s.getCluster.getMetadata.getKeyspaces){
+        keySpaceName => s.getCluster.getMetadata.getKeyspace(keySpaceName) :: Nil
+      }
+
       val tablesIt: Iterable[Table] = for(
-        ksMeta: KeyspaceMetadata <- s.getCluster.getMetadata.getKeyspaces;
-        tMeta: TableMetadata <- ksMeta.getTables) yield tableMeta2Table(tMeta)
+        ksMeta: KeyspaceMetadata <- keyspaces;
+        tMeta: TableMetadata <- pickTables(ksMeta, options)) yield tableMeta2Table(tMeta)
       tablesIt.toSeq
     }
   }
 
-  override def nativeBuiltinFunctions: Seq[UDF] = {
+  private def pickTables(ksMeta: KeyspaceMetadata, options: Map[String, String]): Collection[TableMetadata] = {
+    options.get(CassandraDataSourceTableNameProperty).fold(ksMeta.getTables) { tableName =>
+      ksMeta.getTable(tableName) :: Nil
+    }
+  }
 
+  override def nativeBuiltinFunctions: Seq[UDF] = {
 
 
     //TODO: Complete the built-in function inventory
