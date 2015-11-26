@@ -35,7 +35,7 @@ To register an Elasticsearch Index/Type as a Spark Table in the Crossdata Contex
 
    xdContext.sql("CREATE TEMPORARY TABLE <TABLE-NAME> (<FIELDS>)USING com.stratio.crossdata.connector.elasticsearch
             OPTIONS (es.resource '<INDEX-NAME>/<TYPE-NAME>', es.cluster '<CLUSTER-NAME>',
-            es.nodes '<HOSTS>', es.port '<REST-PORT>', es.nativePort '<NATIVE-PORT>')")
+            es.node '<HOSTS>', es.port '<REST-PORT>', es.nativePort '<NATIVE-PORT>')")
 
 The Option required for basic functions are:
   - **es.resource**: Elasticsearch resource location, where data is read and written to. Requires the format <index>/<type>, Required.
