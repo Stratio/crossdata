@@ -23,7 +23,7 @@ import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.datasource.Config._
 import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions, MongodbConfig, MongodbRelation}
 import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.sources.{DataSourceRegister, BaseRelation}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
@@ -32,9 +32,11 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
  * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
  * Required options are detailed in [[com.stratio.datasource.mongodb.MongodbConfig]]
  */
-class DefaultSource extends ProviderDS with TableInventory {
+class DefaultSource extends ProviderDS with TableInventory with DataSourceRegister {
 
   import MongodbConfig._
+
+  override def shortName(): String = "mongodb"
 
   override def createRelation(
                                sqlContext: SQLContext,

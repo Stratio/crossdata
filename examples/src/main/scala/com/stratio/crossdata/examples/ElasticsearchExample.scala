@@ -30,7 +30,7 @@ sealed trait ElasticsearchDefaultConstants {
   val ElasticHost = "127.0.0.1"
   val ElasticRestPort = 9200
   val ElasticNativePort = 9300
-  val SourceProvider = "com.stratio.crossdata.connector.elasticsearch"
+  val SourceProvider = "elasticsearch"
   val ElasticClusterName = "esCluster"
 }
 
