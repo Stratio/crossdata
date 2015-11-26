@@ -89,6 +89,13 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     hosts map (host=>s"akka.tcp://$clusterName@$host$ActorsPath" )
   }
 
+  /**
+    * Executes a SQL sentence in a synchronous way.
+    * @param sqlCommand The SQL Command.
+    * @param timeout Timeout in seconds.
+    * @param retries Number of retries if the timeout was exceeded
+    * @return A list of rows with the result of the query
+    */
   // TODO syncQuery and asynQuery should be private when the driver get improved
   def syncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(180 seconds), retries: Int = 3): SQLResult = {
     Try {
@@ -96,6 +103,13 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     } getOrElse ErrorResult(sqlCommand.queryId, s"Not found answer to query ${sqlCommand.query}. Timeout was exceed.")
   }
 
+  /**
+    * Executes a SQL sentence in an asynchronous way.
+    * @param sqlCommand The SQL Command.
+    * @param timeout Timeout in seconds.
+    * @param retries Number of retries if the timeout was exceeded
+    * @return A list of rows with the result of the query
+    */
   def asyncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 2): Future[SQLResult] = {
     RetryPolitics.askRetry(proxyActor, sqlCommand, timeout, retries)
   }
@@ -106,6 +120,11 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     ???
   }
 
+  /**
+    * Gets a list of tables from a database or all if the database is None
+    * @param databaseName The database name
+    * @return A sequence of tables an its database
+    */
   def listTables(databaseName: Option[String] = None): Seq[TableIdentifier] = {
     def processTableName(qualifiedName: String) : (String, Option[String]) = {
       qualifiedName.split('.') match {
@@ -120,6 +139,12 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     }
   }
 
+  /**
+    * Gets the metadata from a specific table.
+    * @param database Database of the table.
+    * @param tableName The name of the table.
+    * @return A sequence with the metadata of the fields of the table.
+    */
   def describeTable(database: Option[String], tableName: String): Seq[FieldMetadata] = {
     syncQuery(SQLCommand(s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")) match {
       case SuccessfulQueryResult(_, result, _) =>
