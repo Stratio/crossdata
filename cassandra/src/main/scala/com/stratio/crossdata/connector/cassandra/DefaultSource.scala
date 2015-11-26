@@ -151,6 +151,10 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   import collection.JavaConversions._
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
+
+    if (options.contains(CassandraDataSourceTableNameProperty))
+      require(options.contains(CassandraDataSourceKeyspaceNameProperty), s"$CassandraDataSourceKeyspaceNameProperty required when use $CassandraDataSourceTableNameProperty")
+
     buildCassandraConnector(context, options).withSessionDo { s =>
       val keyspaces = options.get(CassandraDataSourceKeyspaceNameProperty).fold(s.getCluster.getMetadata.getKeyspaces){
         keySpaceName => s.getCluster.getMetadata.getKeyspace(keySpaceName) :: Nil

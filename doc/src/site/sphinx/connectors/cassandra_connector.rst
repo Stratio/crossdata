@@ -69,4 +69,4 @@ To import existing tables into the Crossdata Catalog, execute this query::
 
 Where:
 - keyspace (Optional): The Cassandra keyspace to import; when omitted, Crossdata will import all keyspaces in the cluster.
-- table (Optional): The Cassandra Table name to import, when omitted, Crossdata will import all tables in the Keyspace or Keyspaces.
+- table (Optional): The Cassandra Table name to import, *keyspace* is required when use this options. When omitted, Crossdata will import all tables in the Keyspace or Keyspaces.

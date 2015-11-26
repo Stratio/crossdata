@@ -124,6 +124,25 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     ctx.tableNames() should not contain "highschool.teachers"
   }
 
+  it should "fail when infer schema using table without keyspace" in {
+    assumeEnvironmentIsUpAndRunning
+    ctx.dropAllTables()
+
+    val importQuery =
+      s"""
+         |IMPORT TABLES
+         |USING $SourceProvider
+          |OPTIONS (
+          | cluster "$ClusterName",
+          | table "$Table",
+          | spark_cassandra_connection_host "$CassandraHost"
+          |)
+    """.stripMargin
+
+    //Experimentation
+    an [IllegalArgumentException] should be thrownBy sql(importQuery)
+  }
+
   val wrongImportTablesSentences = List(
     s"""
        |IMPORT TABLES
