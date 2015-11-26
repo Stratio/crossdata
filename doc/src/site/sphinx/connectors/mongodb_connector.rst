@@ -59,7 +59,7 @@ To import existing collections into the Crossdata Catalog, execute this query::
 
 Where:
 - host (Mandatory): Host and port to connect with the database.
-- database (Optional): Database to import their collections.
+- database (Optional): Database to import its collections.
 - collection (Optional): Collection to import.
 - schema_samplingRatio (Optional and recommended): Ratio of documents that will be scanned to infer the schema.
 
