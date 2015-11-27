@@ -34,7 +34,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
          |IMPORT TABLES
          |USING $SourceProvider
           |OPTIONS (
-          |es.node '$ElasticHost',
+          |es.nodes '$ElasticHost',
           |es.port '$ElasticRestPort',
           |es.nativePort '$ElasticNativePort',
           |es.cluster '$ElasticClusterName',
@@ -57,7 +57,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
          |IMPORT TABLES
          |USING $SourceProvider
           |OPTIONS (
-          |es.node '$ElasticHost',
+          |es.nodes '$ElasticHost',
           |es.port '$ElasticRestPort',
           |es.nativePort '$ElasticNativePort',
           |es.cluster '$ElasticClusterName',
@@ -88,7 +88,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
          |IMPORT TABLES
          |USING $SourceProvider
           |OPTIONS (
-          |es.node '$ElasticHost',
+          |es.nodes '$ElasticHost',
           |es.port '$ElasticRestPort',
           |es.nativePort '$ElasticNativePort',
           |es.cluster '$ElasticClusterName',
@@ -119,7 +119,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
          |IMPORT TABLES
          |USING $SourceProvider
           |OPTIONS (
-          |es.node '$ElasticHost',
+          |es.nodes '$ElasticHost',
           |es.port '$ElasticRestPort',
           |es.nativePort '$ElasticNativePort',
           |es.cluster '$ElasticClusterName',
@@ -143,7 +143,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
            |IMPORT TABLES
            |USING $SourceProvider
             |OPTIONS (
-            |es.node '$ElasticHost',
+            |es.nodes '$ElasticHost',
             |es.port '$ElasticRestPort',
             |es.nativePort '$ElasticNativePort',
             |es.cluster '$ElasticClusterName'
@@ -162,7 +162,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
   }
 
   lazy val connectionOptions: Map[String, String] = Map(
-    "es.node" -> s"$ElasticHost",
+    "es.nodes" -> s"$ElasticHost",
     "es.port" -> s"$ElasticRestPort",
     "es.nativePort" -> s"$ElasticNativePort",
     "es.cluster" -> s"$ElasticClusterName"
