@@ -25,8 +25,11 @@ import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.unsafe.types.UTF8String
+import scala.collection.mutable.ListBuffer
 
 object CatalystToCrossdataAdapter {
+
+  case class FilterReport(filtersIgnored: Seq[Expression], ignoredNativeUDFReferences: Seq[AttributeReference])
 
   abstract class BaseLogicalPlan(val projects: Seq[NamedExpression], val filters: Array[SourceFilter], val udfsMap: Map[Attribute, NativeUDF])
 
@@ -42,9 +45,14 @@ object CatalystToCrossdataAdapter {
                                      ) extends BaseLogicalPlan(projects, filters, udfsMap)
 
 
+  /**
+   * Transforms a Catalyst Logical Plan to a Crossdata Logical Plan
+   * @param logicalPlan catalyst logical plan
+   * @return A tuple of (Crossdata BaseLogicalPlan, FilterReport)
+   */
   def getConnectorLogicalPlan(logicalPlan: LogicalPlan,
                               projects: Seq[NamedExpression],
-                              filterPredicates: Seq[Expression]): (BaseLogicalPlan, Boolean) = {
+                              filterPredicates: Seq[Expression]): (BaseLogicalPlan, FilterReport) = {
 
 
     val relation = logicalPlan.collectFirst { case lr: LogicalRelation => lr }.get
@@ -65,7 +73,7 @@ object CatalystToCrossdataAdapter {
       }
     }
 
-    val (filters, ignored) = selectFilters(pushedFilters, att2udf.keySet)
+    val (filters, filterReport) = selectFilters(pushedFilters, att2udf.keySet)
 
     val aggregatePlan: Option[(Seq[Expression], Seq[NamedExpression])] = logicalPlan.collectFirst {
       case Aggregate(groupingExpression, aggregationExpression, child) => (groupingExpression, aggregationExpression)
@@ -76,7 +84,7 @@ object CatalystToCrossdataAdapter {
     } { case (groupingExpression, selectExpression) =>
       AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf)
     }
-    (baseLogicalPlan, ignored)
+    (baseLogicalPlan, filterReport)
   }
 
   def udfFlattenedActualParameters[B](
@@ -95,8 +103,10 @@ object CatalystToCrossdataAdapter {
    * @param filters catalyst filters
    * @return filters which are convertible and a boolean indicating whether any filter has been ignored.
    */
-  private[this] def selectFilters(filters: Seq[Expression], udfs: Set[Attribute]): (Array[SourceFilter], Boolean) = {
-    var ignored = false
+  private[this] def selectFilters(filters: Seq[Expression], udfs: Set[Attribute]): (Array[SourceFilter], FilterReport) = {
+    val ignoredExpressions: ListBuffer[Expression] = ListBuffer.empty
+    val ignoredNativeUDFReferences: ListBuffer[AttributeReference] = ListBuffer.empty
+
     def translate(predicate: Expression): Option[SourceFilter] = predicate match {
       case expressions.EqualTo(a: Attribute, Literal(v, t)) =>
         Some(sources.EqualTo(a.name, convertToScala(v, t)))
@@ -189,14 +199,16 @@ object CatalystToCrossdataAdapter {
       case expressions.Contains(a: Attribute, Literal(v: UTF8String, StringType)) =>
         Some(sources.StringContains(a.name, v.toString))
 
-      case _ =>
-        ignored = true
+      case expression =>
+        ignoredExpressions += expression
+        ignoredNativeUDFReferences ++= expression.collect{case att: AttributeReference if udfs contains att => att}
         None
 
     }
     val convertibleFilters = filters.flatMap(translate).toArray
 
-    (convertibleFilters, ignored)
+    val filterReport = FilterReport(ignoredExpressions, ignoredNativeUDFReferences)
+    (convertibleFilters, filterReport)
   }
 
 }

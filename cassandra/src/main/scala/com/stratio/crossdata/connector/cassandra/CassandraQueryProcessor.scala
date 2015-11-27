@@ -23,7 +23,7 @@ import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelatio
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{AggregationLogicalPlan, BaseLogicalPlan, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, AggregationLogicalPlan, BaseLogicalPlan, SimpleLogicalPlan}
 import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
@@ -143,8 +143,10 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
           findBasePlan(child)
 
         case ExtendedPhysicalOperation(projectList, filterList, _) =>
-          val (basePlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
-          if (!filtersIgnored) Some(basePlan) else None
+          CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
+            case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
+            case (basePlan, _) => Some(basePlan)
+          }
       }
     }
     findBasePlan(logicalPlan).collect{ case bp if checkNativeFilters(bp.filters, bp.udfsMap) => CassandraPlan(bp, limit)}

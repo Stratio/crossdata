@@ -35,12 +35,12 @@ To register an Elasticsearch Index/Type as a Spark Table in the Crossdata Contex
 
    xdContext.sql("CREATE TEMPORARY TABLE <TABLE-NAME> (<FIELDS>)USING com.stratio.crossdata.connector.elasticsearch
             OPTIONS (es.resource '<INDEX-NAME>/<TYPE-NAME>', es.cluster '<CLUSTER-NAME>',
-            es.node '<HOSTS>', es.port '<REST-PORT>', es.nativePort '<NATIVE-PORT>')")
+            es.nodes '<HOSTS>', es.port '<REST-PORT>', es.nativePort '<NATIVE-PORT>')")
 
 The Option required for basic functions are:
   - **es.resource**: Elasticsearch resource location, where data is read and written to. Requires the format <index>/<type>, Required.
   - **es.cluster**: indicates the name of the Elastic Search cluster, Required.
-  - **es.node**: List of Elasticsearch nodes to connect to. (default localhost)
+  - **es.nodes**: List of Elasticsearch nodes to connect to. (default localhost)
   - **es.port**: HTTP/REST port used for connecting to Elasticsearch (default 9200)
   - **es.nativePort**: Native port used for connecting to Elasticsearch (default 9300)
 
@@ -68,7 +68,7 @@ Example:
             |USING com.stratio.crossdata.connector.elasticsearch
             |OPTIONS (
             |resource 'highschool/students',
-            |es.node 'localhost',
+            |es.nodes 'localhost',
             |es.port '9200',
             |es.nativePort '9300',
             |es.cluster 'elasticCluster'
@@ -91,7 +91,7 @@ To import existing types into the Crossdata Catalog, execute this query:
             OPTIONS (
             es.resource 'highschool/students',
             es.index 'highschool',
-            es.node 'localhost',
+            es.nodes 'localhost',
             es.port '9200',
             es.nativePort '9300',
             es.cluster 'elasticCluster'
