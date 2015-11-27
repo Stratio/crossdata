@@ -108,7 +108,7 @@ First of all, we need to register the tables as follows::
             |USING com.stratio.crossdata.connector.elasticsearch
             |OPTIONS (
             |resource 'highschool/students',
-            |es.node 'localhost',
+            |es.nodes 'localhost',
             |es.port '9200',
             |es.nativePort '9300',
             |es.cluster 'elasticCluster'
