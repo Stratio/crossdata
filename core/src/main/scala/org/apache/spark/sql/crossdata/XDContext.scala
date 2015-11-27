@@ -22,14 +22,12 @@ package org.apache.spark.sql.crossdata
 import java.lang.reflect.Constructor
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
-
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst._
-import org.apache.spark.sql.catalyst.analysis.Analyzer
-import org.apache.spark.sql.crossdata.execution.datasources.XDDdlParser
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
+import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
-import org.apache.spark.sql.crossdata.execution.datasources.ExtendedDataSourceStrategy
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
@@ -88,20 +86,33 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   @transient
   protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_))
 
-  override def sql(sqlText: String): DataFrame = {
-    XDDataFrame(this, parseSql(sqlText))
+  @transient
+  override protected[sql] lazy val functionRegistry: FunctionRegistry =
+    new XDFunctionRegistry(FunctionRegistry.builtin, functionInventoryServices)
+
+  private def functionInventoryLoader = {
+    val loader = Utils.getContextOrSparkClassLoader
+    ServiceLoader.load(classOf[FunctionInventory], loader)
+  }
+
+  private lazy val functionInventoryServices: Seq[FunctionInventory] = {
+    import scala.collection.JavaConversions._
+    functionInventoryLoader.iterator().toSeq
   }
 
   { //Register built-in UDFs for each provider available.
-    import scala.collection.JavaConversions._
-    val loader = Utils.getContextOrSparkClassLoader
-    val serviceLoader = ServiceLoader.load(classOf[FunctionInventory], loader)
-    for(srv <- serviceLoader.iterator();
-        inventory = srv.getClass.newInstance();
-        udf <- srv.nativeBuiltinFunctions
-    ) functionRegistry.registerFunction(udf.name, e => NativeUDF(udf.name, udf.returnType, e))
+    import FunctionInventory._
+    for {srv <- functionInventoryServices
+         datasourceName = srv.shortName()
+         udf <- srv.nativeBuiltinFunctions
+    } functionRegistry.registerFunction(qualifyUDF(datasourceName, udf.name), e => NativeUDF(udf.name, udf.returnType, e))
+
   }
 
+
+  override def sql(sqlText: String): DataFrame = {
+    XDDataFrame(this, parseSql(sqlText))
+  }
 
   /**
    * Drops the table in the persistent catalog.
@@ -123,6 +134,16 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   def dropAllTables(): Unit = {
     cacheManager.clearCache()
     catalog.dropAllTables()
+  }
+
+  /**
+   * Imports tables from a DataSource in the persistent catalog.
+   *
+   * @param datasource
+   * @param opts
+   */
+  def importTables(datasource:String, opts: Map[String,String]): Unit ={
+    ImportTablesUsingWithOptions(datasource, opts).run(this)
   }
 
   XDContext.setLastInstantiatedContext(self)

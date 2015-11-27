@@ -80,7 +80,6 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
   }
 }
 
-
 private [crossdata] case class DropTable(tableIdentifier: TableIdentifier)
   extends LogicalPlan with RunnableCommand {
 
