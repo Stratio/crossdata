@@ -88,7 +88,7 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
 
 
   private def cannotExecuteNativeUDF(udfsIgnored: Seq[AttributeReference]) =
-    throw new AnalysisException("Some filters containing native UDFS cannot be executed on the datasource. It may happen when casting are applied by Spark, so try using the same type")
+    throw new AnalysisException("Some filters containing native UDFS cannot be executed on the datasource. It may happen when a cast is automatically applied by Spark, so try using the same type")
 
 
   /**
