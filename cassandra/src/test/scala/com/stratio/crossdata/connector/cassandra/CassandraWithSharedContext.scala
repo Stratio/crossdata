@@ -29,7 +29,6 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest with Cassan
   override type ClientParams = (Cluster, Session)
 
   override protected def saveTestData: Unit = {
-
     val session = client.get._2
 
     session.execute(s"CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
@@ -54,6 +53,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest with Cassan
 
   override protected def terminateClient: Unit = {
     val (cluster, session) = client.get
+
     session.close()
     cluster.close()
   }

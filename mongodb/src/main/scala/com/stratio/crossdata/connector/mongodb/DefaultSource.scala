@@ -23,7 +23,7 @@ import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.datasource.Config._
 import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions, MongodbConfig, MongodbRelation}
 import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.sources.{DataSourceRegister, BaseRelation}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
@@ -32,9 +32,11 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
  * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
  * Required options are detailed in [[com.stratio.datasource.mongodb.MongodbConfig]]
  */
-class DefaultSource extends ProviderDS with TableInventory {
+class DefaultSource extends ProviderDS with TableInventory with DataSourceRegister {
 
   import MongodbConfig._
+
+  override def shortName(): String = "mongodb"
 
   override def createRelation(
                                sqlContext: SQLContext,
@@ -96,15 +98,24 @@ class DefaultSource extends ProviderDS with TableInventory {
       if (!options.contains(opName)) sys.error( s"""Option "$opName" is mandatory for IMPORT TABLES""")
     }
 
-    // TODO optional database
-    // TODO optional collection
-    val hosts: List[String] = options(Host).split(",").toList
 
+    val hosts: List[String] = options(Host).split(",").toList
     MongodbConnection.withClientDo(hosts) { mongoClient =>
+
+      def extractAllDatabases: Seq[MongoDB] =
+        mongoClient.getDatabaseNames().map(mongoClient.getDB)
+
+      def extractAllCollections(db: MongoDB): Seq[DBCollection] =
+        db.getCollectionNames().map(db.getCollection).toSeq
+
       val tablesIt: Iterable[Table] = for {
-        database: MongoDB <- mongoClient.getDatabaseNames().map(mongoClient.getDB)
-        collection: DBCollection <- database.getCollectionNames().map(database.getCollection)
-      } yield collectionToTable(context, options, collection)
+        database: MongoDB <- extractAllDatabases
+        collection: DBCollection <- extractAllCollections(database)
+        if options.get(Database).forall( _ == collection.getDB.getName)
+        if options.get(Collection).forall(_ == collection.getName)
+      } yield {
+        collectionToTable(context, options, database.getName, collection.getName)
+      }
       tablesIt.toSeq
     }
   }
@@ -113,13 +124,12 @@ class DefaultSource extends ProviderDS with TableInventory {
   override def exclusionFilter(t: TableInventory.Table): Boolean =
     !t.tableName.startsWith("""system.""") && !t.database.get.equals("local")
 
-  private def collectionToTable(context: SQLContext, options: Map[String, String], collection: DBCollection): Table = {
-    val databaseName = collection.getDB.getName
-    val collectionName = collection.getName
+  private def collectionToTable(context: SQLContext, options: Map[String, String], database: String, collection: String): Table = {
+
     val collectionConfig = MongodbConfigBuilder()
-      .apply(parseParameters(options + (Database -> databaseName) + (Collection -> collectionName)))
+      .apply(parseParameters(options + (Database -> database) + (Collection -> collection)))
       .build()
-    Table(collectionName, Some(databaseName), Some(new MongodbRelation(collectionConfig)(context).schema))
+    Table(collection, Some(database), Some(new MongodbRelation(collectionConfig)(context).schema))
   }
 
 

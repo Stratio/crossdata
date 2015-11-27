@@ -57,7 +57,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
       val filters = baseLogicalPlan.filters
 
-      val (esIndex, esType) = extractIndexAndType(parameters)
+      val (esIndex, esType) = extractIndexAndType(parameters).get
 
       val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
       val resp: SearchResponse = buildClient(parameters).execute(finalQuery).await
