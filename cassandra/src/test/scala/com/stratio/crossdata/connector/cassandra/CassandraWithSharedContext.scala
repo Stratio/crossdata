@@ -19,6 +19,7 @@ import com.datastax.driver.core.{Cluster, Session}
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
+import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.Sentence
 import org.scalatest.Suite
 
 import scala.util.Try
@@ -27,6 +28,14 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest with Cassan
   this: Suite =>
 
   override type ClientParams = (Cluster, Session)
+  override val provider: String = SourceProvider
+  override val options = Map(
+    "table"    -> Table,
+    "keyspace" -> Catalog,
+    "cluster"  -> ClusterName,
+    "pushdown" -> "true",
+    "spark_cassandra_connection_host" -> CassandraHost
+  )
 
   override protected def saveTestData: Unit = {
     val session = client.get._2
@@ -65,16 +74,8 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest with Cassan
     (cluster, cluster.connect())
   } toOption
 
-  override val sparkRegisterTableSQL: Seq[String] = s"""|CREATE TEMPORARY TABLE $Table
-                                                    |USING $SourceProvider
-                                                    |OPTIONS (
-                                                    | table '$Table',
-                                                    | keyspace '$Catalog',
-                                                    | cluster '$ClusterName',
-                                                    | pushdown "true",
-                                                    | spark_cassandra_connection_host '$CassandraHost'
-                                                    |)
-                                                    """.stripMargin.replaceAll("\n", " ")::Nil
+  abstract override def sparkRegisterTableSQL: Seq[String] = super.sparkRegisterTableSQL :+
+    s"CREATE TEMPORARY TABLE $Table"
 
   override val runningError: String = "Cassandra and Spark must be up and running"
 
