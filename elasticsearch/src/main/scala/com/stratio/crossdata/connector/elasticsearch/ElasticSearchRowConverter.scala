@@ -17,6 +17,7 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import java.sql.Timestamp
 import java.util.Date
+import java.sql.{Date => SQLDate}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.types._
@@ -57,22 +58,22 @@ object ElasticSearchRowConverter {
 
 
   protected def enforceCorrectType(value: Any, desiredType: DataType): Any = {
-    Option(desiredType).map {
-      case StringType => value.toString
-      case _ if value == "" => null // guard the non string type
-      case IntegerType => toInt(value)
-      case LongType => toLong(value)
-      case DoubleType => toDouble(value)
-      case DecimalType() => toDecimal(value)
-      case BooleanType => value.asInstanceOf[Boolean]
-      case TimestampType => toTimestamp(value)
-      case NullType => null
-      case DateType => toDate(value)
-      case _ =>
-        sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
-        value
-    }.orNull
-
+      //TODO check if value==null
+      Option(desiredType).map {
+        case StringType => value.toString
+        case _ if value == "" => null // guard the non string type
+        case IntegerType => toInt(value)
+        case LongType => toLong(value)
+        case DoubleType => toDouble(value)
+        case DecimalType() => toDecimal(value)
+        case BooleanType => value.asInstanceOf[Boolean]
+        case TimestampType => toTimestamp(value)
+        case NullType => null
+        case DateType => toDate(value)
+        case _ =>
+          sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
+          value
+      }.orNull
   }
 
   private def toInt(value: Any): Int = {
@@ -116,7 +117,7 @@ object ElasticSearchRowConverter {
 
   def toDate(value: Any): Date = {
     value match {
-      case value: String => DateTime.parse(value).toDate
+      case value: String => new SQLDate(DateTime.parse(value).getMillis)
     }
   }
 }

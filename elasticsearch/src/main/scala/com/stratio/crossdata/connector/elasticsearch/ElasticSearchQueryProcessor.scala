@@ -17,21 +17,18 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
+import com.stratio.crossdata.connector.elasticsearch.ElasticSearchConnectionUtils._
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, sources}
 import org.elasticsearch.action.search.SearchResponse
-import org.elasticsearch.common.settings.ImmutableSettings
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 
 object ElasticSearchQueryProcessor {
-  val ElasticNativePort = "es.nativePort"
-  val ElasticCluster = "es.cluster"
 
   def apply(logicalPlan: LogicalPlan, parameters: Map[String, String], schemaProvided: Option[StructType] = None) = new ElasticSearchQueryProcessor(logicalPlan, parameters, schemaProvided)
 }
@@ -46,7 +43,6 @@ object ElasticSearchQueryProcessor {
 class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String], val schemaProvided: Option[StructType] = None) extends Logging {
 
   type Limit = Option[Int]
-  import ElasticSearchQueryProcessor._
 
   /**
    * Executes the [[LogicalPlan]]] and query the ElasticSearch database
@@ -61,21 +57,10 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
       val filters = baseLogicalPlan.filters
 
-      val (esIndex, esType) = {
-        val resource = parameters.get(ES_RESOURCE).get.split("/")
-        (resource(0), resource(1))
-      }
-
-      val host: String = parameters.getOrElse(ES_NODES, ES_NODES_DEFAULT)
-      val port: Int = parameters.getOrElse(ElasticNativePort, 9300).toString.toInt
-      val clusterName: String = parameters.get(ElasticCluster).get
+      val (esIndex, esType) = extractIndexAndType(parameters).get
 
       val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
-
-      val settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build()
-      val client = ElasticClient.remote(settings, host, port)
-
-      val resp: SearchResponse = client.execute(finalQuery).await
+      val resp: SearchResponse = buildClient(parameters).execute(finalQuery).await
 
       ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
     }
@@ -94,20 +79,24 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       case sources.StringStartsWith(attribute, value) => prefixQuery(attribute, value.toLowerCase)
     }
 
-    val searchFilters =  sFilters.collect {
-        case sources.EqualTo(attribute, value) => termFilter(attribute, value)
-        case sources.GreaterThan(attribute, value) => rangeFilter(attribute).gt(value)
-        case sources.GreaterThanOrEqual(attribute, value) => rangeFilter(attribute).gte(value.toString)
-        case sources.LessThan(attribute, value) => rangeFilter(attribute).lt(value)
-        case sources.LessThanOrEqual(attribute, value) => rangeFilter(attribute).lte(value.toString)
-        case sources.In(attribute, value) => termsFilter(attribute, value.toList: _*)
-        case sources.IsNotNull(attribute) => existsFilter(attribute)
-        case sources.IsNull(attribute) => missingFilter(attribute)
-      }
+    val searchFilters = sFilters.collect {
+      case sources.EqualTo(attribute, value) => termFilter(attribute, value)
+      case sources.GreaterThan(attribute, value) => rangeFilter(attribute).gt(value)
+      case sources.GreaterThanOrEqual(attribute, value) => rangeFilter(attribute).gte(value.toString)
+      case sources.LessThan(attribute, value) => rangeFilter(attribute).lt(value)
+      case sources.LessThanOrEqual(attribute, value) => rangeFilter(attribute).lte(value.toString)
+      case sources.In(attribute, value) => termsFilter(attribute, value.toList: _*)
+      case sources.IsNotNull(attribute) => existsFilter(attribute)
+      case sources.IsNull(attribute) => missingFilter(attribute)
+    }
 
     val matchQuery = query bool must(matchers)
 
-    val finalQuery = if (searchFilters.isEmpty) matchQuery else matchQuery postFilter bool { must(searchFilters) }
+    val finalQuery = if (searchFilters.isEmpty)
+      matchQuery
+    else matchQuery postFilter bool {
+      must(searchFilters)
+    }
 
     log.debug("LogicalPlan transformed to the Elasticsearch query:" + finalQuery.toString())
     finalQuery
@@ -130,8 +119,10 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
           findProjectsFilters(child)
 
         case PhysicalOperation(projectList, filterList, _) =>
-          val (basePlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
-          if (!filtersIgnored) Some(basePlan) else None
+          CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
+            case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
+            case (basePlan, _) => Some(basePlan)
+          }
       }
     }
 

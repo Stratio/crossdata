@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.connector.cassandra
 
+import com.datastax.driver.core.{Cluster, Session}
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.junit.runner.RunWith
@@ -139,81 +140,6 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
   }
 
   // TODO test filter on PKs (=) and CKs(any) (right -> left)
-
-  // IMPORT OPERATIONS
-
-  it should "import all tables from a keyspace" in {
-    assumeEnvironmentIsUpAndRunning
-
-    def tableCountInHighschool: Long = ctx.sql("SHOW TABLES").count
-    val initialLength = tableCountInHighschool
-
-    val importQuery =
-      s"""
-         |IMPORT TABLES
-         |USING $SourceProvider
-          |OPTIONS (
-          | cluster "$ClusterName",
-          | spark_cassandra_connection_host '$CassandraHost'
-          |)
-      """.stripMargin
-
-    ctx.sql(importQuery)
-
-    // TODO We need to create an unregister the table
-    tableCountInHighschool should be > initialLength
-
-  }
-
-  it should "infer schema after import all tables from a keyspace" in {
-    assumeEnvironmentIsUpAndRunning
-
-    val importQuery =
-      s"""
-         |IMPORT TABLES
-         |USING $SourceProvider
-         |OPTIONS (
-         | cluster "$ClusterName",
-         | spark_cassandra_connection_host '$CassandraHost'
-         |)
-      """.stripMargin
-
-    sql(importQuery)
-    ctx.dropTempTable(s"$Catalog.$Table")
-    ctx.table(s"$Catalog.$Table").schema should have length 5
-  }
-
-  val wrongImportTablesSentences = List(
-    s"""
-       |IMPORT TABLES
-       |USING $SourceProvider
-       |OPTIONS (
-       | cluster "$ClusterName"
-       |)
-    """.stripMargin,
-    s"""
-       |IMPORT TABLES
-       |USING $SourceProvider
-       |OPTIONS (
-       | spark_cassandra_connection_host '$CassandraHost'
-       |)
-     """.stripMargin
-  )
-
-  wrongImportTablesSentences.take(1) foreach { sentence =>
-    it should s"not import tables for sentences lacking mandatory options: $sentence" in {
-      assumeEnvironmentIsUpAndRunning
-      an[Exception] shouldBe thrownBy(ctx.sql(sentence))
-    }
-  }
-
-  it should "be able to natively select the built-in funcions `now`, `dateOf` and `unixTimeStampOf` " in {
-    assumeEnvironmentIsUpAndRunning
-
-    val query = s"SELECT now() as t, now() as a, dateOf(now()) as dt, unixTimestampOf(now()) as ut FROM $Table"
-    sql(query).collect(Native) should have length 10
-
-  }
 
 }
 

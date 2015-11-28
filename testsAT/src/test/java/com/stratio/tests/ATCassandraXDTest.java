@@ -35,7 +35,8 @@ import cucumber.api.CucumberOptions;
 @CucumberOptions(features = { "src/test/resources/features/Cassandra/CassandraSelectSimple.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectLimit.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectEqualsFilter.feature",
-		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature" })
+		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature",
+		"src/test/resources/features/Cassandra/CassandraPureNativeAggregation.feature"})
 public class ATCassandraXDTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()
 			.getCanonicalName());
@@ -64,7 +65,6 @@ public class ATCassandraXDTest extends BaseTest {
 		cassandra.createKeyspace(catalog);
 		cassandra.loadTestData(catalog, "/scripts/CassandraScript.cql");
 		List<String> tables = cassandra.getTables(catalog);
-		//Compartimos las variablescd
 		String connector = "Cassandra";
 		ThreadProperty.set("Cluster", cluster);
 		ThreadProperty.set("Catalog", catalog);

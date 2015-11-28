@@ -16,9 +16,12 @@
 package com.stratio.crossdata.connector
 
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.sql.{SQLContext, Row}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.execution.NativeUDF
+import org.apache.spark.sql.sources.{DataSourceRegister, Filter}
 import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.{Row, SQLContext}
 
 
 /**
@@ -91,7 +94,7 @@ object TableInventory {
 }
 
 /* Interface for providing lists and UDF discovery services */
-trait FunctionInventory {
+trait FunctionInventory extends DataSourceRegister{
   import FunctionInventory._
 
   //Get builtin functions manifest
@@ -101,4 +104,13 @@ trait FunctionInventory {
 object FunctionInventory {
   //Native function (either built-in or user defined) description.
   case class UDF(name: String, database: Option[String] = None, formalParameters: StructType, returnType: DataType)
+
+  def qualifyUDF(datasourceName: String, udfName: String) = s"${datasourceName}_$udfName"
+}
+
+/**
+  Interface for data sources which are able to execute functions (native or user defined) natively
+ */
+trait NativeFunctionExecutor {
+  def buildScan(requiredColumns: Array[String], filters: Array[Filter], udfs: Map[String, NativeUDF]): RDD[Row]
 }

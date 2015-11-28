@@ -103,7 +103,8 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
         commonspec.getXdContext().setSparkContext();
         commonspec.getXdContext().setXDContext();
         System.out.println(ThreadProperty.get("Connector"));
-        if(ThreadProperty.get("Connector").equals("Cassandra")){
+        switch(ThreadProperty.get("Connector")){
+        case "Cassandra":
             StringBuilder sql = new StringBuilder("CREATE TEMPORARY TABLE tabletest USING com.stratio.crossdata"
                     + ".connector.cassandra OPTIONS ");
             sql.append("(table 'tabletest',keyspace 'databasetest',cluster '").append(System.getProperty("CASSANDRA_HOST",
@@ -146,15 +147,19 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             sql.append("',pushdown \"true\",spark_cassandra_connection_host '");
             sql.append( System.getProperty("CASSANDRA_HOST", "127.0.0.1")).append("')");
             commonspec.getXdContext().executeQuery(sql.toString());
-        }else{
-            StringBuilder sql =  new StringBuilder();
-            sql.append("CREATE TEMPORARY TABLE tabletest(ident INT, name STRING, money ");
-            sql.append("DOUBLE, new BOOLEAN, date DATE) USING ");
-            sql.append("com.stratio.crossdata.connector.mongodb OPTIONS (host '");
-            sql.append(System.getProperty("MONGO_HOST", "127.0.0.1"));
-            sql.append(":").append(System.getProperty("MONGO_PORT", "27017"));
-            sql.append("',database 'databasetest',collection 'tabletest')");
-            commonspec.getXdContext().executeQuery(sql.toString());
+            break;
+        case "Mongo":
+            StringBuilder sqlMongo = new StringBuilder();
+            sqlMongo.append("CREATE TEMPORARY TABLE tabletest(ident INT, name STRING, money ");
+            sqlMongo.append("DOUBLE, new BOOLEAN, date DATE) USING ");
+            sqlMongo.append("com.stratio.crossdata.connector.mongodb OPTIONS (host '");
+            sqlMongo.append(System.getProperty("MONGO_HOST", "127.0.0.1"));
+            sqlMongo.append(":").append(System.getProperty("MONGO_PORT", "27017"));
+            sqlMongo.append("',database 'databasetest',collection 'tabletest')");
+            commonspec.getXdContext().executeQuery(sqlMongo.toString());
+            break;
+        default:
+            break;
         }
 
     }
@@ -163,6 +168,7 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
     public void scenario(Scenario scenario) {
         logger.info("Got to scenario {} ", scenario.getName());
         this.scenario = scenario;
+        commonspec.getExceptions().clear();
 
     }
 

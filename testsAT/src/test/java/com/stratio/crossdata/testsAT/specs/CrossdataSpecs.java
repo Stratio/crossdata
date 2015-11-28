@@ -29,11 +29,16 @@ public class CrossdataSpecs extends BaseSpec  {
     public CrossdataSpecs(Common spec) {
         this.commonspec = spec;
     }
-    DataFrame df;
     @When(value = "^I execute '(.*?)'$")
     public void execute(String query){
+        commonspec.getExceptions().clear();
         commonspec.getLogger().info("Executing native query: " + query );
-        commonspec.getXdContext().executeQuery(query);
+        try {
+            commonspec.getXdContext().executeQuery(query);
+        }catch(Exception e){
+            commonspec.getLogger().info(e.toString());
+            commonspec.getExceptions().add(e);
+        }
         commonspec.getLogger().info("Query executed");
     }
 
@@ -43,7 +48,7 @@ public class CrossdataSpecs extends BaseSpec  {
         commonspec.getXdContext().showDataframe();
         asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
-        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResults(table.raw());
+        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsNative(table.raw());
     }
 
     @Then(value = "The result has to have '(.*?)' rows$")
@@ -61,7 +66,12 @@ public class CrossdataSpecs extends BaseSpec  {
         commonspec.getXdContext().showDataframe();
         asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
-        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsIgnoringOrder(table.raw());
+        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsIgnoringOrderNative(table.raw());
     }
 
+    @Then(value = "^Drop the spark tables$")
+    public void dropTables(){
+        commonspec.getLogger().info("The result obtained is: ");
+        commonspec.getXdContext().dropTables();
+    }
 }
