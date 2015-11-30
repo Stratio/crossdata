@@ -18,13 +18,17 @@ package com.stratio.crossdata.connector.cassandra
 import com.datastax.driver.core.{Cluster, Session}
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
-import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
+import org.apache.spark.sql.crossdata.test.{SharedXDContextTypesTest, SharedXDContextWithDataTest}
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.Sentence
 import org.scalatest.Suite
 
 import scala.util.Try
 
-trait CassandraWithSharedContext extends SharedXDContextWithDataTest with CassandraDefaultTestConstants with Logging {
+trait CassandraWithSharedContext extends SharedXDContextWithDataTest
+  with SharedXDContextTypesTest
+  with CassandraDefaultTestConstants
+  with Logging {
+
   this: Suite =>
 
   override type ClientParams = (Cluster, Session)
@@ -78,7 +82,73 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest with Cassan
     s"CREATE TEMPORARY TABLE $Table"
 
   override val runningError: String = "Cassandra and Spark must be up and running"
+  override val emptySetError: String = "Type test entries should have been already inserted"
 
+  override def saveTypesData: Int = {
+    val session = client.get._2
+
+    val tableDDL: Seq[String] =
+      "CREATE TYPE STRUCT (field1 INT, field2 INT)"::
+      "CREATE TYPE STRUCT1 (structField1 VARCHAR, structField2 INT)"::
+      "CREATE TYPE STRUCT_DATE (field1 TIMESTAMP, field2 INT)"::
+      "CREATE TYPE STRUCT_STRUCT (field1 TIMESTAMP, field2 INT, struct1 frozen<STRUCT1>)"::
+      "CREATE TYPE STRUCT_DATE1 (structField1 TIMESTAMP, structField2 INT)"::
+      """
+        |CREATE TABLE dataTypesTableName
+        |(
+        |  int INT,
+        |  bigint BIGINT,
+        |  long BIGINT,
+        |  string VARCHAR,
+        |  boolean BOOLEAN,
+        |  double DOUBLE,
+        |  float FLOAT,
+        |  decimalInt DECIMAL,
+        |  decimalLong DECIMAL,
+        |  decimalDouble DECIMAL,
+        |  decimalFloat DECIMAL,
+        |  date TIMESTAMP,
+        |  timestamp TIMESTAMP,
+        |  tinyint INT,
+        |  smallint INT,
+        |  binary BLOB,
+        |  arrayint LIST<INT>,
+        |  arraystring LIST<VARCHAR>,
+        |  mapintint MAP<INT, INT>,
+        |  mapstringint MAP<VARCHAR, INT>,
+        |  mapstringstring MAP<VARCHAR, VARCHAR>,
+        |  struct frozen<STRUCT>,
+        |  arraystruct LIST<frozen<STRUCT>>,
+        |  arraystructwithdate LIST<frozen<STRUCT_DATE>>,
+        |  structofstruct frozen<STRUCT1>,
+        |  mapstruct MAP<VARCHAR, frozen<STRUCT_DATE1>>
+        |)
+      """.stripMargin::Nil
+
+    tableDDL.foreach(session.execute)
+
+    val dataQuery =
+      """
+        |INSERT INTO dataTypesTableName (
+        |  id, int, bigint, long, string, boolean, double, float, decimalInt, decimalLong,
+        |  decimalDouble, decimalFloat, date, timestamp, tinyint, smallint, binary,
+        |  arrayint, arraystring, mapintint, mapstringint, mapstringstring, struct, arraystruct,
+        |  arraystructwithdate, structofstruct, mapstruct
+        |  )
+        |VALUES (
+        |	'1',  2147483647, 9223372036854775807, 9223372036854775807, 'string', true,
+        |	3.3, 3.3, 42, 42, 42.0, 42.0, '2015-11-30 10:00', '2015-11-30 10:00', 1, 1, textAsBlob('binary data'),
+        |	[4, 42], ['hello', 'world'], { 0 : 1 }, {'b' : 2 }, {'a':'A', 'b':'B'}, {field1: 1, field2: 2}, [{field1: 1, field2: 2}],
+        |	[{field1: 9223372036854775807, field2: 2}], {field1: 9223372036854775807, field2: 2, struct1: {structField1: 'string', structField2: 42}},
+        |	{'structid' : {structField1: 9223372036854775807, structField2: 42}}
+        |);
+      """.stripMargin
+
+    Try(session.execute(dataQuery)).map(_ => 1).getOrElse(0)
+
+  }
+
+  override def sparkAdditionalKeyColumns: Seq[(String, String)] = Seq("id" -> "VARCHAR PRIMARY KEY")
 }
 
 sealed trait CassandraDefaultTestConstants {
