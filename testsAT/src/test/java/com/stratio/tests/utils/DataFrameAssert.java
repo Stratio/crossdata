@@ -228,15 +228,13 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
         return this;
     }
 
-    public DataFrameAssert equalsResultsIgnoringOrderNative(List<List<String>> table){
+   public DataFrameAssert equalsResultsIgnoringOrderNative(List<List<String>> table){
         Row[] actualRows = actual.collect(ExecutionType.Native());
         for(int i = 0; i < actualRows.length; i++) {
             Row actualRow = actualRows[i];
             if(!rowIsContainedInDataTable(table, actualRow)){
                 failWithMessage("The row <%s> is not conained in the expected result result", i);
             }
-
-
         }
         return this;
     }

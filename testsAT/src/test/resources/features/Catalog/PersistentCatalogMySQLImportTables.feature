@@ -18,7 +18,7 @@ Feature: [CROSSDATA-86, CROSSDATA-167]Import tables from persistence
     Then an exception 'IS NOT' thrown
     Then The result has to be '1'
     Then The result has to have '8' rows
-      |ident-string|
+      |tableIdentifier-string|
     Then I execute a jdbc select 'TRUNCATE TABLE crossdataTables'
     And Drop the spark tables
 
