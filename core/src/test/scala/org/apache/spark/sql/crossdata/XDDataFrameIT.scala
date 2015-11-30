@@ -34,7 +34,6 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
   lazy val sparkRows = xdContext.createDataFrame(ctx.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).collect()
   lazy val nativeRows = Array(Row(2l))
 
-
   "A XDDataFrame (select * from nativeRelation)" should "be executed natively" in {
     val result = XDDataFrame(xdContext, LogicalRelation(mockNativeRelation)).collect()
     result should have length 1
