@@ -98,7 +98,7 @@ class MongoFilterIT extends MongoWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp = '1970-01-02 04:46:42.015'").collect(ExecutionType.Native)
-    sparkRow.length should be (1)
+    sparkRow.head(0) should be (java.sql.Timestamp.valueOf("1970-01-02 04:46:42.015"))
 
   }
 

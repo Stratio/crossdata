@@ -22,12 +22,11 @@ package org.apache.spark.sql.crossdata
 import java.lang.reflect.Constructor
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
-
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst._
-import org.apache.spark.sql.catalyst.analysis.{FunctionRegistry, Analyzer}
-import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, XDDdlParser}
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
+import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
@@ -135,6 +134,16 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   def dropAllTables(): Unit = {
     cacheManager.clearCache()
     catalog.dropAllTables()
+  }
+
+  /**
+   * Imports tables from a DataSource in the persistent catalog.
+   *
+   * @param datasource
+   * @param opts
+   */
+  def importTables(datasource:String, opts: Map[String,String]): Unit ={
+    ImportTablesUsingWithOptions(datasource, opts).run(this)
   }
 
   XDContext.setLastInstantiatedContext(self)

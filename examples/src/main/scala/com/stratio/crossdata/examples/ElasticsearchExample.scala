@@ -46,7 +46,7 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
           |USING $SourceProvider
           |OPTIONS (
           |resource '$Index/$Type',
-          |es.node '$ElasticHost',
+          |es.nodes '$ElasticHost',
           |es.port '$ElasticRestPort',
           |es.nativePort '$ElasticNativePort',
           |es.cluster '$ElasticClusterName'

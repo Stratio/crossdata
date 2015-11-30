@@ -16,32 +16,33 @@
 package com.stratio.crossdata.connector.cassandra
 
 
-
 import com.datastax.driver.core.ResultSet
+import com.stratio.crossdata.connector.{SQLLikeUDFQueryProcessorUtils, SQLLikeQueryProcessorUtils}
 import org.apache.spark.Logging
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{AggregationLogicalPlan, BaseLogicalPlan, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, AggregationLogicalPlan, BaseLogicalPlan, SimpleLogicalPlan}
 import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 
 import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole._
 
-object CassandraQueryProcessor {
+object CassandraQueryProcessor extends SQLLikeQueryProcessorUtils with SQLLikeUDFQueryProcessorUtils {
 
   val DefaultLimit = 10000
   type ColumnName = String
+
+  case class CassandraQueryProcessorContext(val udfs: Map[String, NativeUDF]) extends SQLLikeUDFQueryProcessorUtils.ContextWithUDFs
+  override type ProcessingContext = CassandraQueryProcessorContext
 
   case class CassandraPlan(basePlan: BaseLogicalPlan, limit: Option[Int]){
     def projects: Seq[NamedExpression] = basePlan.projects
     def filters: Array[SourceFilter] = basePlan.filters
     def udfsMap: Map[Attribute, NativeUDF] = basePlan.udfsMap
   }
-
 
   def apply(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) = new CassandraQueryProcessor(cassandraRelation, logicalPlan)
 
@@ -52,24 +53,7 @@ object CassandraQueryProcessor {
                         limit: Int,
                         udfs: Map[String, NativeUDF] = Map.empty): String = {
 
-    def quoteString(in: Any): String = in match {
-      case s: String => s"'$s'"
-      case a: Attribute => expandAttribute(a.toString)
-      case other => other.toString
-    }
-
-    // UDFs are string references in both filters and projects => lookup in udfsMap
-    def expandAttribute(att: String): String = {
-      udfs get(att) map { udf =>
-        val actualParams = udf.children.collect { //TODO: Add type checker (maybe not here)
-          case at: AttributeReference if(udfs contains at.toString) => expandAttribute(at.toString)
-          case at: AttributeReference => at.name
-          case lit @ Literal(_, DataTypes.StringType) => quoteString(lit.toString)
-          case lit: Literal => lit.toString
-        } mkString ","
-        s"${udf.name}($actualParams)"
-      } getOrElse att.split("#").head.trim // TODO: Try a more sophisticated way...
-    }
+    implicit val procCtx = CassandraQueryProcessorContext(udfs)
 
     def filterToCQL(filter: SourceFilter): String = filter match {
 
@@ -159,8 +143,10 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
           findBasePlan(child)
 
         case ExtendedPhysicalOperation(projectList, filterList, _) =>
-          val (basePlan, filtersIgnored) = CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList)
-          if (!filtersIgnored) Some(basePlan) else None
+          CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
+            case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
+            case (basePlan, _) => Some(basePlan)
+          }
       }
     }
     findBasePlan(logicalPlan).collect{ case bp if checkNativeFilters(bp.filters, bp.udfsMap) => CassandraPlan(bp, limit)}

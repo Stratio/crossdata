@@ -51,14 +51,17 @@ If you want to test Crossdata you can get our Sandbox follow the instructions of
 
 XDContext extends SqlContext, so you can perform every operation of the `SQLContext <https://spark.apache.org/docs/1.5.1/api/scala/index.html#org.apache.spark.package>`__.
 
-XDContext also add two new functions described as follows:
+XDContext also add new functions described as follows:
+
+- **importTables**: Imports tables from a DataSource in the persistent catalog.
+    - *datasource*: Datasource name.
+    - *opts*: The options maps with the specific datasource options, check datasource documentation for more info. 
 
 - **dropTable**: Drops the table in the persistent catalog. It applies only to metadata, so data do not be deleted.Params are:
     - *tableIdentifier*: the table to be dropped
 
 
 - **dropAllTables**: Drops all the tables in the persistent catalog. It applies only to metadata, so data do not be deleted.
-
 
 2. SQL
 =========
@@ -105,7 +108,7 @@ First of all, we need to register the tables as follows::
             |USING com.stratio.crossdata.connector.elasticsearch
             |OPTIONS (
             |resource 'highschool/students',
-            |es.node 'localhost',
+            |es.nodes 'localhost',
             |es.port '9200',
             |es.nativePort '9300',
             |es.cluster 'elasticCluster'
