@@ -49,13 +49,13 @@ import cucumber.api.CucumberOptions;
 
 //Indicar feature
 @CucumberOptions(features = { "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature"
+//          "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature"
 })
 public class ATElasticSearchXDTest extends BaseTest {
 	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearch");
@@ -102,7 +102,7 @@ public class ATElasticSearchXDTest extends BaseTest {
                                                     .field("name", lineArray[1])
                                                     .field("money", Double.parseDouble(lineArray[2]))
                                                     .field("new", new Boolean(lineArray[3]))
-                                                    .field("date", new java.sql.Timestamp(parsed.getTime()))
+                                                    .field("date", new java.sql.Date(parsed.getTime()))
                                                     .endObject()
                                     );
                             bulkRequest.add(res);
@@ -124,8 +124,8 @@ public class ATElasticSearchXDTest extends BaseTest {
         try {
             client = new TransportClient(settings)
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
-            DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest("databasetest"))
-                    .actionGet();
+          //  DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest("databasetest"))
+          //          .actionGet();
 
            // System.out.println(response.toString());
         } catch (UnknownHostException e) {
