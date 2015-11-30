@@ -28,6 +28,7 @@ import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
+import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
@@ -106,6 +107,9 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
          datasourceName = srv.shortName()
          udf <- srv.nativeBuiltinFunctions
     } functionRegistry.registerFunction(qualifyUDF(datasourceName, udf.name), e => NativeUDF(udf.name, udf.returnType, e))
+
+    val gc = new GroupConcat(", ")
+    udf.register("group_concat", gc)
 
   }
 
