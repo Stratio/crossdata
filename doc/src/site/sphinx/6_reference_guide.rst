@@ -597,3 +597,7 @@ Spark built-in functions (last update: Spark v1.5.1):
    -  crc32
    -  md5
    -  sha
+
+- Spark UDAFs
+
+    - group_concat
