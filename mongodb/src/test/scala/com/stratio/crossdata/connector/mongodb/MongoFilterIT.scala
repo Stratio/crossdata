@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.stratio.crossdata.connector.mongodb
 
+import org.apache.log4j.Logger
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.ExecutionType
 import org.junit.runner.RunWith
@@ -95,6 +97,10 @@ class MongoFilterIT extends MongoWithSharedContext {
    //TODO fix broken test
   it should "supports filter TIMESTAMP equals to" in {
     assumeEnvironmentIsUpAndRunning
+
+    lazy val logger = Logger.getLogger(classOf[MongoFilterIT])
+    val timestamp = sql(s"SELECT timestamp FROM $DataTypesCollection").collect(ExecutionType.Native)
+    timestamp.foreach(logger.error(_))
 
     val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp = '1970-01-02 04:46:42.015'").collect(ExecutionType.Native)
     sparkRow.head(0) should be (java.sql.Timestamp.valueOf("1970-01-02 04:46:42.015"))

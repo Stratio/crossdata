@@ -37,14 +37,9 @@ import com.stratio.tests.utils.ThreadProperty;
 import java.text.ParseException;
 import cucumber.api.CucumberOptions;
 
-//Indicar feature
-<<<<<<< HEAD
-@CucumberOptions(features = { //"src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
-		"src/test/resources/features/Catalog/PersistentCatalogMySQLDropTable.feature"
-=======
 @CucumberOptions(features = {// "src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
+		//"src/test/resources/features/Catalog/PersistentCatalogMySQLDropTable.feature",
 		"src/test/resources/features/Catalog/PersistentCatalogMySQLImportTables.feature"
->>>>>>> upstream/master
 	})
 public class ATPersistentCatalogXDTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()

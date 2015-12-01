@@ -44,7 +44,7 @@ import com.stratio.tests.utils.ThreadProperty;
         "src/test/resources/features/Mongo/MongoSelectAnd.feature"
 })
 
-public class ATExampleMongoDB extends BaseTest{
+public class ATEMongoDBXDTest extends BaseTest{
 
     //Defaul mongoHost property
     private String mongoHost = System.getProperty("MONGO_HOST", "127.0.0.1");
@@ -90,8 +90,7 @@ public class ATExampleMongoDB extends BaseTest{
     }
 
     @Test(enabled = true)
-    public void ATExampleMongoDB() throws Exception{
+    public void ATMongoDBXDTest() throws Exception{
         new CucumberRunner(this.getClass()).runCukes();
     }
 }
-
