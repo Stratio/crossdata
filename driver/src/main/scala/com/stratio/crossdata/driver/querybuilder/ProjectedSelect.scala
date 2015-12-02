@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.stratio.crossdata.driver.querybuilder
 
-class ProjectedSelect(private[querybuilder] val initialSelect: InitialSelect, projections: List[String], distinct: Boolean = false) {
+class ProjectedSelect(selection: Expression*) {
 
-  def from(relations: List[String]): RelatedSelect = new RelatedSelect(this, relations)
-
-  override def toString: String = {
-    if(distinct)
-      s"DISTINCT ${projections.mkString(", ")} "
-    else
-      s" ${projections.mkString(", ")}"
+  def from(relations: Relation*): SimpleRunnableQuery = {
+    val rel = relations.reduce { case (a: Relation, b: Relation) => a.join(b) }
+    new SimpleRunnableQuery(selection, rel)
   }
+  def from(relation: Relation): SimpleRunnableQuery = new SimpleRunnableQuery(selection, relation)
+
 }

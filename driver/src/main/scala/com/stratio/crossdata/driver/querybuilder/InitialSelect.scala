@@ -15,11 +15,7 @@
  */
 package com.stratio.crossdata.driver.querybuilder
 
-class InitialSelect(private[querybuilder] val bracketed: Boolean){
+class InitialSelect(val projections: Seq[Expression]) {
 
-  def distinct(projections: List[String]): ProjectedSelect = new ProjectedSelect(this, projections, true)
 
-  def projections(projections: List[String]): ProjectedSelect = new ProjectedSelect(this, projections)
-
-  override def toString: String = s"SELECT "
 }

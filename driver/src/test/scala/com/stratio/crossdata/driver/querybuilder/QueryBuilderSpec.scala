@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.driver.querybuilder
+package com.stratio.crossdata.driver.querybuilder
 
-import com.stratio.crossdata.driver.querybuilder.QueryBuilder
+import com.stratio.crossdata.driver.querybuilder.dslentities.And
 import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -25,9 +25,13 @@ class QueryBuilderSpec extends BaseXDTest {
 
   def formatOutput(query: String): String = query.stripMargin.replace(System.lineSeparator(), " ").replaceAll ("""\s\s+""", " ").trim
 
-  "The Query Builder" should " be able to build a completed query with distinct" in {
+  import com.stratio.crossdata.driver.querybuilder._
 
-    val query = QueryBuilder
+  "The Query Builder" should " be able to build a completed query with distinct" in {
+    //import Literal
+
+    val query = select("count(*)", 'col).from('table join 'table2 on "5 + 4" = 'columna6).where("a = 5")
+/*    val query = QueryBuilder
       .select()
       .distinct(List("*"))
       .from(List("test"))
@@ -37,7 +41,7 @@ class QueryBuilderSpec extends BaseXDTest {
       .orderBy("age")
       .limit("10")
       .build()
-      .toString
+      .toString*/
 
     val expected = formatOutput("""SELECT DISTINCT *
                      | FROM test
@@ -50,7 +54,7 @@ class QueryBuilderSpec extends BaseXDTest {
     query should be (expected)
   }
 
-  it should " be able to build a completed query without distinct" in {
+/*  it should " be able to build a completed query without distinct" in {
 
     val query = QueryBuilder
       .select()
@@ -450,6 +454,6 @@ class QueryBuilderSpec extends BaseXDTest {
     val expected = formatOutput("""SELECT name, age, quantity
                                   | FROM test""")
     query should be (expected)
-  }
+  }*/
 
 }
