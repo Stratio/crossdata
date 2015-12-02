@@ -23,14 +23,14 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest  with Logging {
 
   import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest._
 
-  //Template settings: Override hem
+  //Template settings: Override them
 
   type ClientParams
 
   val runningError: String
   val provider: String
-  val options: Map[String, String] = Map.empty
-  def sparkRegisterTableSQL: Seq[String] = Nil
+  val defaultOptions: Map[String, String] = Map.empty
+  def sparkRegisterTableSQL: Seq[SparkTable] = Nil
 
   lazy val assumeEnvironmentIsUpAndRunning = {
     assume(isEnvironmentReady, runningError)
@@ -40,10 +40,12 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest  with Logging {
   protected def prepareClient: Option[ClientParams]
   protected def terminateClient: Unit
 
-  protected def saveTestData: Unit
+  protected def saveTestData: Unit = ()
   protected def cleanTestData: Unit
 
   //Template
+  implicit def str2sparkTableDesc(query: String): SparkTable = SparkTable(query, defaultOptions)
+
   var client: Option[ClientParams] = None
   var isEnvironmentReady = false
   protected override def beforeAll(): Unit = {
@@ -52,7 +54,7 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest  with Logging {
     isEnvironmentReady = Try {
       client = prepareClient
       saveTestData
-      sparkRegisterTableSQL.foreach(s => sql(Sentence(s, provider, options).toString))
+      sparkRegisterTableSQL.foreach { case SparkTable(s, opts) => sql(Sentence(s, provider, opts).toString) }
       client.isDefined
     } recover { case e: Throwable =>
       logError(e.getMessage)
@@ -80,4 +82,5 @@ object SharedXDContextWithDataTest {
       s"$query USING $provider" + options.headOption.fold("")(_ => s" OPTIONS ( $opt ) ")
     }
   }
+  case class SparkTable(sql: String, options: Map[String, String])
 }

@@ -139,6 +139,9 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     } should have message "The operation cannot be executed without Spark"
   }
 
+  //Test types
+  //doTypesTest("The Cassandra connector")
+
   // TODO test filter on PKs (=) and CKs(any) (right -> left)
 
 }

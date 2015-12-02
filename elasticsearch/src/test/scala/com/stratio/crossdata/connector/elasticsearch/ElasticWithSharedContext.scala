@@ -24,6 +24,7 @@ import com.sksamuel.elastic4s.mappings.MappingDefinition
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
+import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.elasticsearch.common.joda.time.DateTime
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.scalatest.Suite
@@ -35,6 +36,7 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
   this: Suite =>
 
   override type ClientParams = ElasticClient
+  override val provider: String = SourceProvider
 
   override protected def saveTestData: Unit = for (a <- 1 to 10) {
     client.get.execute {
@@ -61,17 +63,17 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
     elasticClient
   } toOption
 
-  override val sparkRegisterTableSQL: Seq[String] = s"""|CREATE TEMPORARY TABLE $Type
-                                                        |(
-                                                        |  id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN, birthday DATE)
-                                                        |  USING $SourceProvider
-                                                        |  OPTIONS (
-                                                        |  resource '$Index/$Type',
-                                                        |  es.nodes '$ElasticHost',
-                                                        |  es.port '$ElasticRestPort',
-                                                        |  es.nativePort '$ElasticNativePort',
-                                                        |  es.cluster '$ElasticClusterName'
-                                                        |)""".stripMargin.replaceAll("\n", " ")::Nil
+  override val sparkRegisterTableSQL: Seq[SparkTable] = s"""|CREATE TEMPORARY TABLE $Type
+                                                            |(
+                                                            |  id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN, birthday DATE)
+                                                            |  USING $SourceProvider
+                                                            |  OPTIONS (
+                                                            |  resource '$Index/$Type',
+                                                            |  es.nodes '$ElasticHost',
+                                                            |  es.port '$ElasticRestPort',
+                                                            |  es.nativePort '$ElasticNativePort',
+                                                            |  es.cluster '$ElasticClusterName'
+                                                            |)""".stripMargin.replaceAll("\n", " ")::Nil
 
   override val runningError: String = "ElasticSearch and Spark must be up and running"
 

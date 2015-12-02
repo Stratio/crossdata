@@ -1,30 +1,40 @@
 package org.apache.spark.sql.crossdata.test
 
+import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.crossdata.ExecutionType
+import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
+
 import scala.reflect.runtime.universe.{typeOf, Type}
 
 trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
+  this: BaseXDTest =>
 
   import SharedXDContextTypesTest._
 
   //Template steps: Override them
   val emptySetError: String
-
   def saveTypesData: Int
-
   def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef]
+  def dataTypesSparkOptions: Map[String, String]
 
   //Template
+  def doTypesTest(datasourceName: String): Unit = {
+
+    for(tpe <- typesSet; executionType <- ExecutionType.Spark::ExecutionType.Native::Nil)
+      datasourceName should s"support $tpe for $executionType execution" in {
+        val dframe = sql("SELECT " + typesSet.map(_.colname).mkString(", ") + s" FROM $dataTypesTableName")
+        dframe.collect(executionType).head(0) shouldBe a[tpe.type]
+      }
+
+  }
+
   abstract override def saveTestData: Unit = {
     super.saveTestData
     require(saveTypesData > 0, emptySetError)
   }
 
-  val typesAndExpectations: Seq[SparkSQLColdDef] = Seq(
-    SparkSQLColdDef
-  )
-
-  val typesSet = Seq(
+  protected val typesSet = Seq(
     SparkSQLColdDef("int", "INT", Some(typeOf[java.lang.Integer])),
     SparkSQLColdDef("bigint", "BIGINT", Some(typeOf[java.lang.Long])),
     SparkSQLColdDef("long", "LONG", Some(typeOf[java.lang.Long])),
@@ -53,16 +63,16 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
     SparkSQLColdDef("mapstruct", "MAP<STRING, STRUCT<structField1: DATE, structField2: INT>>", Some(typeOf[Map[_,_]]))
   )
 
-  override def sparkRegisterTableSQL: Seq[String] = super.sparkRegisterTableSQL :+ {
+  override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+ {
     val fields = (sparkAdditionalKeyColumns ++ typesSet) map {
       case SparkSQLColdDef(name, tpe, _) => s"$name $tpe"
-    } mkString ","
-    s"CREATE TEMPORARY TABLE $dataTypesTableName ( $fields )"
+    } mkString ", "
+    SparkTable(s"CREATE TEMPORARY TABLE $dataTypesTableName ( $fields )", dataTypesSparkOptions)
   }
 
 }
 
 object SharedXDContextTypesTest {
-  lazy val dataTypesTableName = "testDataTypes"
-  case class SparkSQLColdDef(colname: String, sqlType: String, expectedType: Option[Type])
+  val dataTypesTableName = "typesCheckTable"
+  case class SparkSQLColdDef(colname: String, sqlType: String, expectedType: Option[Type] = None)
 }

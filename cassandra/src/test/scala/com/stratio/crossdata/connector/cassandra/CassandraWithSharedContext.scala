@@ -18,8 +18,9 @@ package com.stratio.crossdata.connector.cassandra
 import com.datastax.driver.core.{Cluster, Session}
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
+import org.apache.spark.sql.crossdata.test.SharedXDContextTypesTest.SparkSQLColdDef
+import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.apache.spark.sql.crossdata.test.{SharedXDContextTypesTest, SharedXDContextWithDataTest}
-import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.Sentence
 import org.scalatest.Suite
 
 import scala.util.Try
@@ -33,7 +34,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
 
   override type ClientParams = (Cluster, Session)
   override val provider: String = SourceProvider
-  override val options = Map(
+  override val defaultOptions = Map(
     "table"    -> Table,
     "keyspace" -> Catalog,
     "cluster"  -> ClusterName,
@@ -41,7 +42,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
     "spark_cassandra_connection_host" -> CassandraHost
   )
 
-  override protected def saveTestData: Unit = {
+  abstract override def saveTestData: Unit = {
     val session = client.get._2
 
     session.execute(s"CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
@@ -62,6 +63,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
 
     //This crates a new table in the keyspace which will not be initially registered at the Spark
     session.execute(s"CREATE TABLE $Catalog.$UnregisteredTable (id int, age int, comment text, name text, PRIMARY KEY ((id), age, comment))")
+    super.saveTestData
   }
 
   override protected def terminateClient: Unit = {
@@ -78,8 +80,8 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
     (cluster, cluster.connect())
   } toOption
 
-  abstract override def sparkRegisterTableSQL: Seq[String] = super.sparkRegisterTableSQL :+
-    s"CREATE TEMPORARY TABLE $Table"
+  abstract override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
+    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Table")
 
   override val runningError: String = "Cassandra and Spark must be up and running"
   override val emptySetError: String = "Type test entries should have been already inserted"
@@ -88,15 +90,15 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
     val session = client.get._2
 
     val tableDDL: Seq[String] =
-      "CREATE TYPE STRUCT (field1 INT, field2 INT)"::
-      "CREATE TYPE STRUCT1 (structField1 VARCHAR, structField2 INT)"::
-      "CREATE TYPE STRUCT_DATE (field1 TIMESTAMP, field2 INT)"::
-      "CREATE TYPE STRUCT_STRUCT (field1 TIMESTAMP, field2 INT, struct1 frozen<STRUCT1>)"::
-      "CREATE TYPE STRUCT_DATE1 (structField1 TIMESTAMP, structField2 INT)"::
-      """
-        |CREATE TABLE dataTypesTableName
+      s"CREATE TYPE $Catalog.STRUCT (field1 INT, field2 INT)"::
+      s"CREATE TYPE $Catalog.STRUCT1 (structField1 VARCHAR, structField2 INT)"::
+      s"CREATE TYPE $Catalog.STRUCT_DATE (field1 TIMESTAMP, field2 INT)"::
+      s"CREATE TYPE $Catalog.STRUCT_STRUCT (field1 TIMESTAMP, field2 INT, struct1 frozen<STRUCT1>)"::
+      s"CREATE TYPE $Catalog.STRUCT_DATE1 (structField1 TIMESTAMP, structField2 INT)"::
+      s"""
+        |CREATE TABLE $Catalog.$TypesTable
         |(
-        |  int INT,
+        |  int INT PRIMARY KEY,
         |  bigint BIGINT,
         |  long BIGINT,
         |  string VARCHAR,
@@ -136,7 +138,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
         |  arraystructwithdate, structofstruct, mapstruct
         |  )
         |VALUES (
-        |	'1',  2147483647, 9223372036854775807, 9223372036854775807, 'string', true,
+        |	1,  2147483647, 9223372036854775807, 9223372036854775807, 'string', true,
         |	3.3, 3.3, 42, 42, 42.0, 42.0, '2015-11-30 10:00', '2015-11-30 10:00', 1, 1, textAsBlob('binary data'),
         |	[4, 42], ['hello', 'world'], { 0 : 1 }, {'b' : 2 }, {'a':'A', 'b':'B'}, {field1: 1, field2: 2}, [{field1: 1, field2: 2}],
         |	[{field1: 9223372036854775807, field2: 2}], {field1: 9223372036854775807, field2: 2, struct1: {structField1: 'string', structField2: 42}},
@@ -148,13 +150,21 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
 
   }
 
-  override def sparkAdditionalKeyColumns: Seq[(String, String)] = Seq("id" -> "VARCHAR PRIMARY KEY")
+  override def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef] = Seq(SparkSQLColdDef("id", "INT"))
+  override def dataTypesSparkOptions: Map[String, String] = Map(
+    "table"    -> TypesTable,
+    "keyspace" -> Catalog,
+    "cluster"  -> ClusterName,
+    "pushdown" -> "true",
+    "spark_cassandra_connection_host" -> CassandraHost
+  )
 }
 
 sealed trait CassandraDefaultTestConstants {
   val ClusterName = "Test Cluster"
   val Catalog = "highschool"
   val Table = "students"
+  val TypesTable = "dataTypesTableName"
   val UnregisteredTable = "teachers"
   val CassandraHost: String = {
     Try(ConfigFactory.load().getStringList("cassandra.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
