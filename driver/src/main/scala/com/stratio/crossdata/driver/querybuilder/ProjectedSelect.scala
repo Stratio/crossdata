@@ -19,7 +19,7 @@ package com.stratio.crossdata.driver.querybuilder
 class ProjectedSelect(selection: Expression*) {
 
   def from(relations: Relation*): SimpleRunnableQuery = {
-    val rel = relations.reduce { case (a: Relation, b: Relation) => a.join(b) }
+    val rel = relations.reduce((a: Relation, b: Relation) => a.join(b))
     new SimpleRunnableQuery(selection, rel)
   }
   def from(relation: Relation): SimpleRunnableQuery = new SimpleRunnableQuery(selection, relation)

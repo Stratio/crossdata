@@ -30,7 +30,19 @@ class QueryBuilderSpec extends BaseXDTest {
   "The Query Builder" should " be able to build a completed query with distinct" in {
     //import Literal
 
-    val query = select("count(*)", 'col).from('table join 'table2 on "5 + 4" = 'columna6).where("a = 5")
+    val q1 = select('c) from 'table
+
+    val query =
+      select("count(*)", 'col, select('c) from 't)
+        .from('table join 'table2 on "aaa" join 'table3 join (q1))
+        .where("a = 5" && q1)
+        .groupBy("aa").having("a<5" && 'c)
+        .orderBy('c).limit(1) union (select('c) from 'table)
+
+    println(">>>>>>>>>>>>>>>>>>>>" + query.toXDQL)
+
+    //val q2 = select('c) from 't where ("a" && ("b"))
+
 /*    val query = QueryBuilder
       .select()
       .distinct(List("*"))

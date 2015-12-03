@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.driver.querybuilder
 
-class OrderedSelect(private[querybuilder] val havingSelect: HavingSelect, ordering: String) {
+/*class OrderedSelect(private[querybuilder] val havingSelect: HavingSelect, ordering: String) {
 
   def limit(expression: String = ""): LimitedSelect = new LimitedSelect(this, expression)
 
@@ -42,4 +42,4 @@ class OrderedSelect(private[querybuilder] val havingSelect: HavingSelect, orderi
     else
       s"ORDER BY $ordering "
   }
-}
+}*/

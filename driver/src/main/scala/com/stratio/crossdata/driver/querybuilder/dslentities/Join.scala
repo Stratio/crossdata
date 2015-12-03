@@ -1,8 +1,6 @@
 package com.stratio.crossdata.driver.querybuilder.dslentities
 
-
 import com.stratio.crossdata.driver.querybuilder.{Predicate, Expression, Relation}
-
 
 object JoinType extends Enumeration {
   type JoinType = Value
@@ -16,6 +14,9 @@ case class Join(left: Relation,
            joinType: JoinType,
            condition: Option[Expression] = None) extends Relation {
 
+  def on(condition: String): Relation = on(XDQLStatement(condition))
   def on(condition: Predicate): Relation =
     Join(left, right, joinType, Some(condition))
+
+  override def toXDQL: String = ???
 }

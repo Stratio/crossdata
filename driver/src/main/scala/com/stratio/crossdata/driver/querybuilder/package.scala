@@ -2,7 +2,7 @@ package com.stratio.crossdata.driver
 
 import java.sql.{Timestamp, Date}
 
-import com.stratio.crossdata.driver.querybuilder.dslentities.{Identifier, Literal}
+import com.stratio.crossdata.driver.querybuilder.dslentities.{Ascending, SortOrder, Identifier, Literal}
 import org.apache.spark.sql.types.Decimal
 
 package object querybuilder {
@@ -28,7 +28,5 @@ package object querybuilder {
     //Identifiers
     implicit def symbol2Identifier(s: Symbol): Identifier = Identifier(s.name)
 
-    //String predicates
-    implicit def string2Predicate(s: String): Predicate = Predi
 
 }

@@ -1,16 +1,30 @@
 package com.stratio.crossdata.driver.querybuilder
 
-import com.stratio.crossdata.driver.querybuilder.dslentities.{Join, JoinType}
+import com.stratio.crossdata.driver.querybuilder.dslentities._
 
 trait CrossdataSQLStatement{
   def toXDQL: String
 }
 
-trait Expression extends CrossdataSQLStatement
+object Expression {
+  implicit def exp2sortorder(exp: Expression): SortOrder = SortOrder(exp, Ascending)
+}
+
+trait Expression extends CrossdataSQLStatement {
+  def && (other: Expression): Predicate = And(this, other)
+  def || (other: Expression): Predicate = Or(this, other)
+  def ASC: SortOrder = SortOrder(this, Ascending)
+}
 
 trait BinaryExpression extends Expression{
   val left: Expression
   val right: Expression
+
+  val tokenStr: String
+  def childExpansion(child: Expression): String = child.toXDQL
+
+  override def toXDQL: String = Seq(left, right) map(childExpansion) mkString s" $tokenStr "
+
 }
 
 trait UnaryExpression extends Expression{
