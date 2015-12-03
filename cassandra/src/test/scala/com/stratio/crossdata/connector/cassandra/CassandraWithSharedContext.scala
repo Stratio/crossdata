@@ -84,7 +84,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
     str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Table")
 
   override val runningError: String = "Cassandra and Spark must be up and running"
-  override val emptySetError: String = "Type test entries should have been already inserted"
+  override val emptyTypesSetError: String = "Type test entries should have been already inserted"
 
   override def saveTypesData: Int = {
     val session = client.get._2
@@ -98,6 +98,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
       s"""
         |CREATE TABLE $Catalog.$TypesTable
         |(
+        |  id INT,
         |  int INT PRIMARY KEY,
         |  bigint BIGINT,
         |  long BIGINT,
@@ -122,7 +123,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
         |  struct frozen<STRUCT>,
         |  arraystruct LIST<frozen<STRUCT>>,
         |  arraystructwithdate LIST<frozen<STRUCT_DATE>>,
-        |  structofstruct frozen<STRUCT1>,
+        |  structofstruct frozen<STRUCT_STRUCT>,
         |  mapstruct MAP<VARCHAR, frozen<STRUCT_DATE1>>
         |)
       """.stripMargin::Nil
@@ -130,8 +131,8 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
     tableDDL.foreach(session.execute)
 
     val dataQuery =
-      """
-        |INSERT INTO dataTypesTableName (
+      s"""|
+        |INSERT INTO $Catalog.$TypesTable (
         |  id, int, bigint, long, string, boolean, double, float, decimalInt, decimalLong,
         |  decimalDouble, decimalFloat, date, timestamp, tinyint, smallint, binary,
         |  arrayint, arraystring, mapintint, mapstringint, mapstringstring, struct, arraystruct,
