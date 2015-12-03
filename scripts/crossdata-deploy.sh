@@ -9,6 +9,11 @@ configFile="$1"
 
 echo "Configuration File: $1"
 
+CWD=$(pwd)
+echo "cwd: $CWD"
+CWD="${CWD%scripts}"
+echo "cwd: $CWD"
+
 COMMAND="bin/spark-submit"
 
 function process_line {
@@ -25,6 +30,7 @@ function process_line {
         echo "VALUE: $VALUE"
         if [[ $KEY == spark.path ]]
         then
+            VALUE=$(cd $(dirname "$VALUE") && pwd -P)/$(basename "$VALUE")
             COMMAND="$VALUE/$COMMAND"
         fi
         if [[ $KEY == spark.mainClass ]]
@@ -69,10 +75,12 @@ function process_line {
         fi
         if [[ $KEY == server.config ]]
         then
+            VALUE=$(cd $(dirname "$VALUE") && pwd -P)/$(basename "$VALUE")
             COMMAND="$COMMAND --files $VALUE"
         fi
         if [[ $KEY == spark.appJar ]]
         then
+            VALUE=$(cd $(dirname "$VALUE") && pwd -P)/$(basename "$VALUE")
             COMMAND="$COMMAND --jars $VALUE"
             COMMAND="$COMMAND $VALUE"
         fi
