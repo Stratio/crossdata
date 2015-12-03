@@ -64,8 +64,9 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-driver</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${crossdata.version}</version>
         </dependency>
+
     </dependencies>
 
     <build>
