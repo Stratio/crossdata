@@ -101,7 +101,7 @@
 
     <profiles>
         <profile>
-            <id>fatjar</id>
+            <id>package</id>
             <build>
                 <plugins>
                     <plugin>
