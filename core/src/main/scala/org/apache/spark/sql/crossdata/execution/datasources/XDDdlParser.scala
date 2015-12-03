@@ -23,9 +23,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val IMPORT = Keyword("IMPORT")
   protected val TABLES = Keyword("TABLES")
   protected val DROP = Keyword("DROP")
+  protected val VIEW = Keyword("VIEW")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
-    createTable | describeTable | refreshTable | importStart | dropTable
+    createTable | describeTable | refreshTable | importStart | dropTable | createView
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -38,5 +39,19 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
       case tableId =>
         DropTable(tableId)
     }
+
+
+  protected lazy val createView: Parser[LogicalPlan] = {
+    // TODO: Support database.table.
+    (CREATE ~> TEMPORARY.? <~ VIEW) ~ tableIdentifier ~ (AS ~> restInput) ^^ {
+      case temp  ~ viewIdentifier ~ query =>
+        if (temp.isDefined) {
+          CreateTempView(viewIdentifier, parseQuery(query))
+        } else {
+          CreateView(viewIdentifier, query)
+        }
+
+    }
+  }
 
 }
