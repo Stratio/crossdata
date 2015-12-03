@@ -32,8 +32,7 @@ import com.stratio.tests.utils.ThreadProperty;
 import cucumber.api.CucumberOptions;
 
 //Indicar feature
-@CucumberOptions(features = { "src/test/resources/features/Cassandra/CassandraSelectSimple.feature"
-,
+@CucumberOptions(features = { "src/test/resources/features/Cassandra/CassandraSelectSimple.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectLimit.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectEqualsFilter.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature",

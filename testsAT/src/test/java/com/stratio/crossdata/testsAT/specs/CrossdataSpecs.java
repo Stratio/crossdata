@@ -51,6 +51,15 @@ public class CrossdataSpecs extends BaseSpec  {
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsNative(table.raw());
     }
 
+    @Then(value = "The spark result has to have '(.*?)' rows:$")
+    public void assertResultSpark(String rows, DataTable table){
+        commonspec.getLogger().info("The result obtained is: ");
+        commonspec.getXdContext().showDataframe();
+        asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
+        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
+        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsSpark(table.raw());
+    }
+
     @Then(value = "The result has to have '(.*?)' rows$")
     public void assertResultLengh(String rows, DataTable table){
         commonspec.getLogger().info("The result obtained is: ");
