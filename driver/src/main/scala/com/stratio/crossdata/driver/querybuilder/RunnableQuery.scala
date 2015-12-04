@@ -20,12 +20,12 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
                     protected val groupingExpressions: Seq[Expression] = Seq.empty,
                     protected val havingExpressions: Seq[Expression] = Seq.empty,
                     protected val ordering: Option[SortCriteria] = None,
-                    protected val limit: Option[Int] = None
+                    protected val limit: Option[Int] = None,
+                    protected val composition: Option[CombinationInfo] = None
                      ) extends CombinableQuery {
 
   def this(projections: Seq[Expression], relations: Relation,filters: Predicate) =
     this(projections, relations, Some(filters))
-
 
   def where(condition: String): this.type = where(XDQLStatement(condition))
   // It has to be abstract (simple runnable query has transitions) and concrete
@@ -47,18 +47,12 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
        | ${stringfyXDQL("HAVING", havingExpressions)}
        | ${stringfyXDQL("ORDER BY", ordering.toSeq)}
        | ${stringfy[Int]("LIMIT", limit.toSeq, _.toString)}
+       | ${composition.fold("")(_.toXDQL)}
     """.stripMargin
   }
 
 
- /*       | ${projectedSelect}
-        | ${relatedSelect}
-        | ${filteredSelect.getOrElse("")}
-        | ${groupedSelect.getOrElse("")}
-        | ${havingSelect.getOrElse("")}
-        | ${orderedSelect.getOrElse("")}
-        | ${limitedSelect.getOrElse("")}"""
-      .stripMargin
+ /*   .stripMargin
       .replace(System.lineSeparator(), " ")
       .replaceAll ("""\s\s+""", " ").trim
   }

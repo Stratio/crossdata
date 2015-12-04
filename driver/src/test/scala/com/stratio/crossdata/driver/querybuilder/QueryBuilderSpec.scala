@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.driver.querybuilder
 
-import com.stratio.crossdata.driver.querybuilder.dslentities.And
 import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -37,7 +36,7 @@ class QueryBuilderSpec extends BaseXDTest {
         .from('table join 'table2 on "aaa" join 'table3 join (q1))
         .where("a = 5" && q1)
         .groupBy("aa").having("a<5" && 'c)
-        .orderBy('c).limit(1) union (select('c) from 'table)
+        .orderBy('c).limit(1) unionAll (select('c) from 'table)
 
     println(">>>>>>>>>>>>>>>>>>>>" + query.toXDQL)
 
