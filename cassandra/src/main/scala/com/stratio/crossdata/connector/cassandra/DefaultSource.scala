@@ -23,6 +23,7 @@ import java.util.Collection
 import com.datastax.driver.core.{KeyspaceMetadata, TableMetadata}
 import com.datastax.spark.connector.cql._
 import com.datastax.spark.connector.rdd.ReadConf
+import com.datastax.spark.connector.util.ConfigParameter
 import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.FunctionInventory.UDF
 import com.stratio.crossdata.connector.TableInventory.Table
@@ -171,7 +172,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     val (clusterName, host) = (conParams zip conParams.tail) head
 
     val cfg: SparkConf = context.sparkContext.getConf.clone()
-    for (prop <- DefaultSource.confProperties;
+    for (ConfigParameter(prop, _, _, _) <- DefaultSource.confProperties;
          clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop")) cfg.set(prop, clusterLevelValue)
     cfg.set("spark.cassandra.connection.host", host)
 
@@ -236,7 +237,7 @@ object DefaultSource {
   // Map converted property to origin property name
   // TODO check SPARK 1.4 it may be fixed
   private val propertiesMap: Map[String, String] = {
-    confProperties.map(prop => (prop.replace(".", "_"), prop)).toMap
+    confProperties.map { case ConfigParameter(prop, _, _, _) => (prop.replace(".", "_"), prop)} toMap
   }
 
   /** Construct a map stores Cassandra Conf settings from options */
