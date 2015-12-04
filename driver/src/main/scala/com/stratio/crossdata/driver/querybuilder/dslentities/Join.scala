@@ -18,5 +18,5 @@ case class Join(left: Relation,
   def on(condition: Predicate): Relation =
     Join(left, right, joinType, Some(condition))
 
-  override def toXDQL: String = ???
+  override private[querybuilder] def toXDQL: String = ???
 }

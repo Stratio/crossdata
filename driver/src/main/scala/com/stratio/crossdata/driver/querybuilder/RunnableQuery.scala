@@ -5,11 +5,11 @@ import com.stratio.crossdata.driver.querybuilder.dslentities.{XDQLStatement, Sor
 object RunnableQuery {
 
   implicit class RunnaBleQueryAsExpression(runnableQuery: RunnableQuery) extends Expression {
-    override def toXDQL: String = s"(${runnableQuery.toXDQL})"
+    override private[querybuilder] def toXDQL: String = s"(${runnableQuery.toXDQL})"
   }
 
   implicit class RunnaBleQueryAsRelation(runnableQuery: RunnableQuery) extends Relation {
-    override def toXDQL: String = s"(${runnableQuery.toXDQL})"
+    override private[querybuilder] def toXDQL: String = s"(${runnableQuery.toXDQL})"
   }
 
 }
@@ -32,7 +32,7 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
   // implementations (grouped, limited, sorted...) should return their own type
   def where(condition: Predicate): this.type
 
-  override def toXDQL: String = {
+  override private[querybuilder] def toXDQL: String = {
     def stringfy[T](head: String, elements: Seq[T], element2str: T => String): String =
       elements.headOption.fold("")(_ => s"$head ${elements.map(element2str) mkString ", "}")
 
@@ -51,6 +51,7 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
     """.stripMargin
   }
 
+  def build: String = toXDQL
 
  /*   .stripMargin
       .replace(System.lineSeparator(), " ")

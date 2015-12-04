@@ -13,10 +13,10 @@ object SortOrder {
 }
 
 class SortOrder private(val expression: Expression, val direction: Option[SortDirection] = None) extends Expression {
-  override def toXDQL: String = ???
+  override private[querybuilder] def toXDQL: String = ???
 }
 
 
 case class SortCriteria(global: Boolean, expressions: Seq[SortOrder]) extends CrossdataSQLStatement {
-  override def toXDQL: String = ???
+  override private[querybuilder] def toXDQL: String = ???
 }

@@ -38,7 +38,7 @@ class QueryBuilderSpec extends BaseXDTest {
         .groupBy("aa").having("a<5" && 'c)
         .orderBy('c).limit(1) unionAll (select('c) from 'table)
 
-    println(">>>>>>>>>>>>>>>>>>>>" + query.toXDQL)
+    println(">>>>>>>>>>>>>>>>>>>>" + query.build)
 
     //val q2 = select('c) from 't where ("a" && ("b"))
 

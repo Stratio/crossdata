@@ -3,7 +3,7 @@ package com.stratio.crossdata.driver.querybuilder
 import com.stratio.crossdata.driver.querybuilder.dslentities._
 
 trait CrossdataSQLStatement{
-  def toXDQL: String
+  private[querybuilder] def toXDQL: String
 }
 
 object Expression {
@@ -23,7 +23,7 @@ trait BinaryExpression extends Expression{
   val tokenStr: String
   def childExpansion(child: Expression): String = child.toXDQL
 
-  override def toXDQL: String = Seq(left, right) map(childExpansion) mkString s" $tokenStr "
+  override private[querybuilder] def toXDQL: String = Seq(left, right) map(childExpansion) mkString s" $tokenStr "
 
 }
 
