@@ -44,14 +44,20 @@ object Driver extends DriverConfig {
 
   def apply() = new Driver()
 
+  def apply(flattenTables:Boolean) = new Driver(flattenTables:Boolean)
+
 }
 
-class Driver(properties: java.util.Map[String, ConfigValue]) {
+class Driver(properties: java.util.Map[String, ConfigValue], flattenTables:Boolean) {
+
+  def this (properties: java.util.Map[String, ConfigValue]) = this(properties, false)
 
   def this(serverHosts: java.util.List[String]) =
-    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)))
+    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)), false)
 
-  def this() = this(Map.empty[String, ConfigValue])
+  def this(flattenTables:Boolean) = this(Map.empty[String, ConfigValue],flattenTables)
+
+  def this() = this(false)
 
   import Driver._
 
