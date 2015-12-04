@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.driver.querybuilder
 
+import com.stratio.crossdata.driver.querybuilder.dslentities.And
 import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

@@ -27,6 +27,7 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
   def this(projections: Seq[Expression], relations: Relation,filters: Predicate) =
     this(projections, relations, Some(filters))
 
+
   def where(condition: String): this.type = where(XDQLStatement(condition))
   // It has to be abstract (simple runnable query has transitions) and concrete
   // implementations (grouped, limited, sorted...) should return their own type
@@ -39,21 +40,29 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
     def stringfyXDQL(head: String, elements: Seq[CrossdataSQLStatement]) =
       stringfy[CrossdataSQLStatement](head, elements, _.toXDQL)
 
+    //Intentionally this way spaced
     s"""
        | SELECT ${projections map(_.toXDQL) mkString ", "}
        | FROM ${relation.toXDQL}
-       | ${stringfyXDQL("WHERE ", filters.toSeq)}
-       | ${stringfyXDQL("GROUP BY", groupingExpressions)}
-       | ${stringfyXDQL("HAVING", havingExpressions)}
-       | ${stringfyXDQL("ORDER BY", ordering.toSeq)}
-       | ${stringfy[Int]("LIMIT", limit.toSeq, _.toString)}
-       | ${composition.fold("")(_.toXDQL)}
-    """.stripMargin
+       | ${stringfyXDQL(" WHERE", filters.toSeq)}
+       |${stringfyXDQL(" GROUP BY", groupingExpressions)}
+       |${stringfyXDQL(" HAVING", havingExpressions)}
+       |${stringfyXDQL("", ordering.toSeq)}
+       |${stringfy[Int](" LIMIT", limit.toSeq, _.toString)}
+       |${composition.fold("")(_.toXDQL)}
+    """.stripMargin.replace("\n","")
   }
 
   def build: String = toXDQL
 
- /*   .stripMargin
+ /*       | ${projectedSelect}
+        | ${relatedSelect}
+        | ${filteredSelect.getOrElse("")}
+        | ${groupedSelect.getOrElse("")}
+        | ${havingSelect.getOrElse("")}
+        | ${orderedSelect.getOrElse("")}
+        | ${limitedSelect.getOrElse("")}"""
+      .stripMargin
       .replace(System.lineSeparator(), " ")
       .replaceAll ("""\s\s+""", " ").trim
   }

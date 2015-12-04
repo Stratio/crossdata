@@ -7,7 +7,7 @@ import org.apache.spark.sql.types.Decimal
 
 package object querybuilder {
 
-    def select(projections: Expression*): ProjectedSelect = new ProjectedSelect()
+    def select(projections: Expression*): ProjectedSelect = new ProjectedSelect(projections:_*)
 
     //def createTempView(name: String): ViewStatement = new ViewStatement()
     //def createTable

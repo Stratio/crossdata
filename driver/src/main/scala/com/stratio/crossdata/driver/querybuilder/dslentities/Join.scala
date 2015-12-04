@@ -4,7 +4,14 @@ import com.stratio.crossdata.driver.querybuilder.{Predicate, Expression, Relatio
 
 object JoinType extends Enumeration {
   type JoinType = Value
-  val Inner, LeftOuter, RightOuter, FullOuter, LeftSemi = Value
+  val Inner      = Value(join())
+  val LeftOuter  = Value(outer("LEFT"))
+  val RightOuter = Value(outer("RIGHT"))
+  val FullOuter  = Value(outer("FULL"))
+  val LeftSemi   = Value("LEFT SEMI JOIN")
+
+  private def outer(tpStr: String): String = join(s"$tpStr OUTER ")
+  private def join(tpStr: String = ""): String = s"${tpStr}JOIN"
 }
 
 import JoinType._
@@ -18,5 +25,6 @@ case class Join(left: Relation,
   def on(condition: Predicate): Relation =
     Join(left, right, joinType, Some(condition))
 
-  override private[querybuilder] def toXDQL: String = ???
+  override private[querybuilder] def toXDQL: String =
+    s"${left.toXDQL} ${joinType} ${right.toXDQL}" + condition.map(c => s"ON ${c.toXDQL}").getOrElse("")
 }

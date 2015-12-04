@@ -1,6 +1,8 @@
 package com.stratio.crossdata.driver.querybuilder
 
 import com.stratio.crossdata.driver.querybuilder.dslentities._
+import com.stratio.crossdata.driver.querybuilder.dslentities.SortDirection._
+
 
 trait CrossdataSQLStatement{
   private[querybuilder] def toXDQL: String
