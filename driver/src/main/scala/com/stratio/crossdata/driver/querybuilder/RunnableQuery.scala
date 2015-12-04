@@ -5,11 +5,11 @@ import com.stratio.crossdata.driver.querybuilder.dslentities.{XDQLStatement, Sor
 object RunnableQuery {
 
   implicit class RunnaBleQueryAsExpression(runnableQuery: RunnableQuery) extends Expression {
-    override def toXDQL: String = s"(${runnableQuery.toXDQL})"
+    override private[querybuilder] def toXDQL: String = s"(${runnableQuery.toXDQL})"
   }
 
   implicit class RunnaBleQueryAsRelation(runnableQuery: RunnableQuery) extends Relation {
-    override def toXDQL: String = s"(${runnableQuery.toXDQL})"
+    override private[querybuilder] def toXDQL: String = s"(${runnableQuery.toXDQL})"
   }
 
 }
@@ -20,7 +20,8 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
                     protected val groupingExpressions: Seq[Expression] = Seq.empty,
                     protected val havingExpressions: Seq[Expression] = Seq.empty,
                     protected val ordering: Option[SortCriteria] = None,
-                    protected val limit: Option[Int] = None
+                    protected val limit: Option[Int] = None,
+                    protected val composition: Option[CombinationInfo] = None
                      ) extends CombinableQuery {
 
   def this(projections: Seq[Expression], relations: Relation,filters: Predicate) =
@@ -32,7 +33,7 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
   // implementations (grouped, limited, sorted...) should return their own type
   def where(condition: Predicate): this.type
 
-  override def toXDQL: String = {
+  override private[querybuilder] def toXDQL: String = {
     def stringfy[T](head: String, elements: Seq[T], element2str: T => String): String =
       elements.headOption.fold("")(_ => s"$head ${elements.map(element2str) mkString ", "}")
 
@@ -48,9 +49,11 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
        |${stringfyXDQL(" HAVING", havingExpressions)}
        |${stringfyXDQL("", ordering.toSeq)}
        |${stringfy[Int](" LIMIT", limit.toSeq, _.toString)}
+       |${composition.fold("")(_.toXDQL)}
     """.stripMargin.replace("\n","")
   }
 
+  def build: String = toXDQL
 
  /*       | ${projectedSelect}
         | ${relatedSelect}

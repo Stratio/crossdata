@@ -20,7 +20,6 @@ class SimpleRunnableQuery private (
   override def where(condition: Predicate): this.type =
     new SimpleRunnableQuery(projections, relation, Some(condition)).asInstanceOf[this.type] //TODO: Check this out
 
-  override def union(runnableQuery: CombinableQuery): CombinableQuery = ???
 }
 
 class GroupedQuery(projections: Seq[Expression],
@@ -36,7 +35,6 @@ class GroupedQuery(projections: Seq[Expression],
   // It has to be abstract (simple runnable query has transitions) and concrete
   override def where(condition: Predicate): this.type = ???
 
-  override def union(runnableQuery: CombinableQuery): CombinableQuery = ???
 }
 
 class HavingQuery(projections: Seq[Expression],
@@ -50,7 +48,6 @@ class HavingQuery(projections: Seq[Expression],
   // It has to be abstract (simple runnable query has transitions) and concrete
   override def where(condition: Predicate): this.type = ???
 
-  override def union(runnableQuery: CombinableQuery): CombinableQuery = ???
 }
 
 class SortedQuery(projections: Seq[Expression],
@@ -64,7 +61,6 @@ class SortedQuery(projections: Seq[Expression],
   // It has to be abstract (simple runnable query has transitions) and concrete
   override def where(condition: Predicate): this.type = ???
 
-  override def union(runnableQuery: CombinableQuery): CombinableQuery = ???
 }
 
 class LimitedQuery(projections: Seq[Expression],
@@ -78,20 +74,36 @@ class LimitedQuery(projections: Seq[Expression],
   // It has to be abstract (simple runnable query has transitions) and concrete
   override def where(condition: Predicate): this.type = ???
 
-  override def union(runnableQuery: CombinableQuery): CombinableQuery = ???
+
 }
 
 
 object CombineType extends Enumeration {
   type CombineType = Value
-  val UnionAll, Intersect, Except, FullOuter, LeftSemi = Value
+  val UnionAll = Value("UNION ALL")
+  val Intersect = Value("INTERSECT")
+  val Except = Value("EXCEPT")
+  val UnionDistinct = Value("UNION DISTINCT")
 }
+
 
 import com.stratio.crossdata.driver.querybuilder.CombineType._
 
-class CombinedQuery(leftQuery: RunnableQuery, combineType: CombineType, rightQuery: RunnableQuery) extends Relation with CombinableQuery {
-  override def union(runnableQuery: CombinableQuery): CombinableQuery = ???
+case class CombinationInfo(combineType: CombineType, runnableQuery: RunnableQuery) extends CrossdataSQLStatement {
+  override private[querybuilder] def toXDQL: String = s"${combineType.toString} ${runnableQuery.toXDQL}"
+}
 
-  override def toXDQL: String = ???
+
+class CombinedQuery(projections: Seq[Expression],
+                    relation: Relation,
+                    filters: Option[Predicate] = None,
+                    groupingExpressions: Seq[Expression] = Seq.empty,
+                    havingExpressions: Seq[Expression] = Seq.empty,
+                    ordering: Option[SortCriteria],
+                    limit: Option[Int],
+                    combinationInfo: CombinationInfo)
+  extends RunnableQuery(projections, relation, filters, groupingExpressions, havingExpressions, ordering, limit, Some(combinationInfo)) with CombinableQuery {
+  def where(condition: Predicate): this.type = throw new Error("Predicates cannot by applied to combined queries")
+
 }
 // relation => alias

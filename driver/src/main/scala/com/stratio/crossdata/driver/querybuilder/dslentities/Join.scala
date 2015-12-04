@@ -25,6 +25,6 @@ case class Join(left: Relation,
   def on(condition: Predicate): Relation =
     Join(left, right, joinType, Some(condition))
 
-  override def toXDQL: String =
+  override private[querybuilder] def toXDQL: String =
     s"${left.toXDQL} ${joinType} ${right.toXDQL}" + condition.map(c => s"ON ${c.toXDQL}").getOrElse("")
 }

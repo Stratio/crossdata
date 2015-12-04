@@ -32,5 +32,5 @@ case class Or(left: Expression, right: Expression) extends BinaryExpression
 case class Eq(left: Expression, right: Expression) extends BinaryExpression //TODO: Review
   with Predicate {
   override val tokenStr: String = "="
-  override def toXDQL: String = s"${left.toXDQL} = ${right.toXDQL}"
+  override private[querybuilder] def toXDQL: String = s"${left.toXDQL} = ${right.toXDQL}"
 }

@@ -1,6 +1,6 @@
 package com.stratio.crossdata.driver.querybuilder
 
-import com.stratio.crossdata.driver.querybuilder.dslentities.{XDQLStatement, SortCriteria, SortOrder}
+import com.stratio.crossdata.driver.querybuilder.dslentities.{SortCriteria, SortOrder, XDQLStatement}
 
 
 trait Groupable {
@@ -42,5 +42,15 @@ trait Limitable {
 }
 
 trait CombinableQuery extends CrossdataSQLStatement {
-  def union(runnableQuery: CombinableQuery): CombinableQuery
+  this: RunnableQuery =>
+  def unionAll(other: RunnableQuery): CombinedQuery =
+    new CombinedQuery(
+      this.projections,
+      this.relation,
+      this.filters,
+      this.groupingExpressions,
+      this.havingExpressions,
+      this.ordering,
+      this.limit,
+      CombinationInfo(CombineType.UnionAll, other))
 }
