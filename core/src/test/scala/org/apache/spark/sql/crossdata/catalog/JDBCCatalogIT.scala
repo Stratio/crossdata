@@ -75,7 +75,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     val df = xdContext.sql(s"SELECT $Field1Name FROM $Database.$TableName")
 
     df shouldBe a[XDDataFrame]
-    df.schema.apply(0).dataType.asInstanceOf[ArrayType].elementType shouldBe (StringType)
+    df.schema.apply(0).dataType.asInstanceOf[StringType].elementType shouldBe (StringType)
   }
 
 
