@@ -2,12 +2,12 @@ package com.stratio.crossdata.driver
 
 import java.sql.{Timestamp, Date}
 
-import com.stratio.crossdata.driver.querybuilder.dslentities.{Ascending, SortOrder, Identifier, Literal}
+import com.stratio.crossdata.driver.querybuilder.dslentities.{Identifier, Literal}
 import org.apache.spark.sql.types.Decimal
 
 package object querybuilder {
 
-    def select(projections: Expression*): ProjectedSelect = new ProjectedSelect()
+    def select(projections: Expression*): ProjectedSelect = new ProjectedSelect(projections:_*)
 
     //Literals
     implicit def boolean2Literal(b: Boolean): Literal = Literal(b)
