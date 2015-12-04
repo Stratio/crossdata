@@ -1,13 +1,17 @@
 package com.stratio.crossdata.driver
 
-import java.sql.{Timestamp, Date}
+import java.sql.{Date, Timestamp}
 
-import com.stratio.crossdata.driver.querybuilder.dslentities.{Ascending, SortOrder, Identifier, Literal}
+import com.stratio.crossdata.driver.querybuilder.dslentities.{Identifier, Literal}
 import org.apache.spark.sql.types.Decimal
 
 package object querybuilder {
 
     def select(projections: Expression*): ProjectedSelect = new ProjectedSelect()
+
+    //def createTempView(name: String): ViewStatement = new ViewStatement()
+    //def createTable
+    //def importTable
 
     //Literals
     implicit def boolean2Literal(b: Boolean): Literal = Literal(b)
