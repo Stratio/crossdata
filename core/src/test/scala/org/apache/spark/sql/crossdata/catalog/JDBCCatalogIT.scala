@@ -64,6 +64,20 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     df.schema.apply(0).dataType.asInstanceOf[StructType].size shouldBe (2)
   }
 
+  it should "persist a table with catalog and partitionColumns with arrays as schema in JDBC" in {
+    xdContext.catalog.dropAllTables()
+    val tableIdentifier = Seq(Database, TableName)
+    val crossdataTable = CrossdataTable(TableName, Option(Database), Option(ColumnsWithArray), SourceDatasource, Array.empty[String], OptsJSON)
+    xdContext.catalog.persistTable(crossdataTable)
+
+    xdContext.catalog.unregisterTable(tableIdentifier)
+    xdContext.catalog.tableExists(tableIdentifier) shouldBe true
+    val df = xdContext.sql(s"SELECT $Field1Name FROM $Database.$TableName")
+
+    df shouldBe a[XDDataFrame]
+    df.schema.apply(0).dataType.asInstanceOf[ArrayType].elementType shouldBe (StringType)
+  }
+
 
   it should "returns list of tables" in {
     xdContext.catalog.dropAllTables()
@@ -127,6 +141,15 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     tables(TableName) shouldBe true
   }
 
+  it should "describe a table persisted and non persisted with subcolumns" in {
+    xdContext.catalog.dropAllTables()
+    val crossdataTable = CrossdataTable(TableName, Option(Database), Option(ColumnsWithSubColumns), SourceDatasource, Array.empty[String], OptsJSON)
+    xdContext.catalog.persistTable(crossdataTable)
+    xdContext.sql(s"DESCRIBE $Database.$TableName").count() should not be 0
+  }
+
+
+
   override protected def afterAll() {
     xdContext.catalog.dropAllTables()
     super.afterAll()
@@ -147,10 +170,12 @@ sealed trait JDBCCatalogConstants {
   val Field2 = StructField(Field2Name, StringType, nullable = true)
   val SubField = StructField(SubField1Name, StringType, nullable = true)
   val SubField2 = StructField(SubField2Name, StringType, nullable = true)
+  val arrayField = StructField(SubField2Name, ArrayType(StringType), nullable = true)
   val SourceDatasource = "org.apache.spark.sql.json"
   val Fields = Seq[StructField](Field1, Field2)
   val SubFields = Seq(SubField, SubField2)
   val Columns = StructType(Fields)
   val ColumnsWithSubColumns = StructType(Seq(StructField(Field1Name, StringType, nullable = true), StructField(FieldWithSubcolumnsName, StructType(SubFields), nullable = true)) )
+  val ColumnsWithArray = StructType(Seq(StructField(Field1Name, StringType, nullable = true), StructField(FieldWithSubcolumnsName, StructType(SubFields), nullable = true), arrayField) )
   val OptsJSON = Map("path" -> "/fake_path")
 }
