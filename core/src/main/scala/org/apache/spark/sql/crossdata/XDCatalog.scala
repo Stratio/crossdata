@@ -222,13 +222,17 @@ object XDCatalog{
   }
 
   private def convertToGrammar (m: Map[String, Any]) : String = {
-    val res = if(m.contains("fields") ) {
-      val fields = m.get("fields").get.asInstanceOf[List[Map[String, Any]]].map(x=>"`"+{x.getOrElse("name", throw new Error("Name not found"))+"`:"+convertToGrammar(x)}) mkString ","
-      "struct<"+fields+">"
-    }
-    else {
-      val a = m.getOrElse("type", throw new Error("Type not found"))
-      a match {
+    {
+      val fieldsStr = {
+        for {
+          obj <- m get "fields"
+          fields = obj.asInstanceOf[List[Map[String, Any]]]
+          maps <- Option(fields)
+        } yield fields.map { x => s"`${x.getOrElse("name", throw new Error("Name not found"))}`:" + convertToGrammar(x) } mkString ","
+      }
+      fieldsStr.headOption
+    } map ("struct<" + _ + ">") getOrElse {
+      m.getOrElse("type", throw new Error("Type not found")) match {
         case "array" => {
           val tpeArray = m.getOrElse("elementType", throw new Error("Array type not found")) match {
             case tpeStr: String => tpeStr
@@ -237,11 +241,10 @@ object XDCatalog{
           s"array<$tpeArray>"
         }
         case tpeMap: Map[String, Any] => convertToGrammar(tpeMap)
-        case tpe:String => tpe
+        case tpe: String => tpe
         case _ => throw new Error("Type is not correct")
       }
     }
-    res.asInstanceOf[String]
   }
 
 }
