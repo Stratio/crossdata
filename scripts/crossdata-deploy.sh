@@ -9,6 +9,8 @@ configFile="$1"
 
 echo "Configuration File: $1"
 
+sparkVersion="spark-1.5.2-bin-hadoop2.6"
+
 CWD=$(pwd)
 echo "cwd: $CWD"
 CWD="${CWD%scripts}"
@@ -32,6 +34,7 @@ function process_line {
         then
             VALUE=$(cd $(dirname "$VALUE") && pwd -P)/$(basename "$VALUE")
             COMMAND="$VALUE/$COMMAND"
+            spark_path_found=true
         fi
         if [[ $KEY == spark.mainClass ]]
         then
@@ -91,6 +94,8 @@ function process_line {
     fi
 }
 
+spark_path_found=false
+
 while read line
 do
     if [[ $line == crossdata-deploy* ]] ;
@@ -102,6 +107,18 @@ do
         process_line $tmp1
     fi
 done < $1
+
+echo "$spark_path_found"
+
+if [ $spark_path_found == false ]
+then
+    #echo "Downloading Spark..."
+    wget http://d3kbcqa49mib13.cloudfront.net/$sparkVersion.tgz
+    tar -zxvf $sparkVersion.tgz
+    VALUE=$(pwd)
+    VALUE="$VALUE/$sparkVersion"
+    COMMAND="$VALUE/$COMMAND"
+fi
 
 echo "Executing: $COMMAND"
 
