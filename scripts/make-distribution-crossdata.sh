@@ -23,9 +23,10 @@ function usage {
   echo "Tool for build binary distributions of Spark with the Stratio Crossdata Pluggins"
   echo "Example: ./make-distribution-crossdata.sh --skip-java-test"
   echo ""
-  echo "--profile            Crossdata Build Profile, Default: hive"
-  echo "--sparkDistibution   Spark Distribution Bynaries used to build The Crossdata  distribution "
-  echo "                     Default: http://apache.rediris.es/spark/spark-1.5.1/spark-1.5.1-bin-hadoop2.6.tgz"
+  echo "--profile            Crossdata Build Profile, Default: package"
+  echo "--sparkDistibution   Spark Distribution URL to download used to build The Crossdata  distribution "
+  echo "--sparkDistibutionFile Spark Distribution Bynaries used to build The Crossdata  distribution "
+  echo "                     Default: http://apache.rediris.es/spark/spark-1.5.2/spark-1.5.2-bin-hadoop2.6.tgz"
   echo ""
   exit 1
 }
@@ -48,6 +49,11 @@ case $key in
     SPARK_BUILD_OPTIONS=${SPARK_BUILD_OPTIONS/"--sparkDistribution $SPARK_REPO"/}
     shift # past argument
     ;;
+    --sparkDistibutionFile)
+    SPARK_FILE="$2"
+    SPARK_BUILD_OPTIONS=${SPARK_BUILD_OPTIONS/"--sparkDistibutionFile $SPARK_FILE"/}
+    shift # past argument
+    ;;
     --help)
     usage
     ;;
@@ -60,7 +66,7 @@ done
 
 #Default Arguments
 if [ -z "$SPARK_REPO" ]; then
-    SPARK_DISTRIBUTION="http://apache.rediris.es/spark/spark-1.5.1/spark-1.5.1-bin-hadoop2.6.tgz"
+    SPARK_DISTRIBUTION="http://apache.rediris.es/spark/spark-1.5.2/spark-1.5.2-bin-hadoop2.6.tgz"
 fi
 
 if [ -z "$PROFILE" ]; then
@@ -71,7 +77,6 @@ TMPDIR=/tmp/stratio-crossdata-distribution
 
 rm -rf ${TMPDIR}
 mkdir -p ${TMPDIR}
-
 
 LOCAL_EDITOR=$(which vim)
 
@@ -142,7 +147,13 @@ cd ${TMPDIR}
 SPARK_DISTRIBUTION_FILE=$(basename "$SPARK_DISTRIBUTION")
 STRATIOSPARKDIR="${SPARK_DISTRIBUTION_FILE%.*}"
 
-wget $SPARK_DISTRIBUTION || { echo "Cannot download Spark Distribution: ${SPARK_DISTRIBUTION}"; exit 1; }
+
+if [ -z "$SPARK_FILE" ]; then
+    wget $SPARK_DISTRIBUTION || { echo "Cannot download Spark Distribution: ${SPARK_DISTRIBUTION}"; exit 1; }
+else
+    cp $SPARK_FILE .
+fi
+
 tar -xvf $SPARK_DISTRIBUTION_FILE || { echo "Cannot unzip Spark distribution $SPARK_DISTRIBUTION_FILE"; exit 1; }
 rm -f $SPARK_DISTRIBUTION_FILE
 
