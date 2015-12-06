@@ -60,28 +60,35 @@
             <artifactId>crossdata-elasticsearch</artifactId>
             <version>${crossdata.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-driver</artifactId>
+            <version>${crossdata.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
-            <plugins>
-                <plugin>
-                    <groupId>net.alchim31.maven</groupId>
-                    <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.2.0</version>
-                    <configuration>
-                        <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>compile</goal>
-                                <goal>testCompile</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
+        <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
