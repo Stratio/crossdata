@@ -163,11 +163,15 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables:Boole
   }
 
   private def getFields(dataType:DataType, fieldName:String): Seq[FieldMetadata] = {
-    dataType match{
-      case structType:StructType =>
-        structType.flatMap(field => getFields(field.dataType,s"${fieldName}.${field.name}"))
-      case _ =>
-        FieldMetadata(fieldName, dataType) :: Nil
+    if (flattenTables){
+      dataType match{
+        case structType:StructType =>
+          structType.flatMap(field => getFields(field.dataType,s"${fieldName}.${field.name}"))
+        case _ =>
+          FieldMetadata(fieldName, dataType) :: Nil
+      }
+    }else {
+      FieldMetadata(fieldName, dataType) :: Nil
     }
   }
 

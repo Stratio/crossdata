@@ -16,14 +16,14 @@
 package com.stratio.crossdata.driver
 
 import com.stratio.crossdata.common.metadata.FieldMetadata
-import org.apache.spark.sql.types.{IntegerType, StringType}
+import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class FlattenedTablesIT extends MongoWithSharedContext {
 
-  "The Driver" should " The table description with nested fields flattened" in {
+  "The Driver" should " List table's description with nested fields flattened" in {
     assumeCrossdataUpAndRunning
 
     val flattenedDriver = Driver(true)
@@ -35,6 +35,23 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     result should contain (new FieldMetadata("address.street", StringType))
     result should contain (new FieldMetadata("address.zip", IntegerType))
     result should contain (new FieldMetadata("account.details.bank", StringType))
+  }
+
+  it should " List table's description with nested fields Not flattened" in {
+    assumeCrossdataUpAndRunning
+
+    val driver = Driver()
+
+    //Experimentation
+    val result:Seq[FieldMetadata] = driver.describeTable(Some(Database), Collection)
+
+    //Expectations
+    val addressType = StructType(Seq(StructField("street", StringType), StructField("city", StringType), StructField("zip", IntegerType)))
+    val detailAccount = StructType(Seq(StructField("bank", StringType), StructField("office", IntegerType)))
+    val accountType = StructType(Seq(StructField("number", IntegerType), StructField("details", detailAccount)))
+
+    result should contain (new FieldMetadata("address", addressType))
+    result should contain (new FieldMetadata("account", accountType))
   }
 }
 
