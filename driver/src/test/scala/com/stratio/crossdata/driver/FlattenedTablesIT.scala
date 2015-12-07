@@ -32,8 +32,8 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     val result:Seq[FieldMetadata] = flattenedDriver.describeTable(Some(Database), Collection)
 
     //Expectations
-    result should contain (new FieldMetadata("addres.street", StringType))
-    result should contain (new FieldMetadata("addres.zip", IntegerType))
+    result should contain (new FieldMetadata("address.street", StringType))
+    result should contain (new FieldMetadata("address.zip", IntegerType))
     result should contain (new FieldMetadata("account.details.bank", StringType))
   }
 }

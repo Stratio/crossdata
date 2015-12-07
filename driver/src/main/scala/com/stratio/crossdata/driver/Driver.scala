@@ -27,7 +27,9 @@ import com.stratio.crossdata.driver.config.DriverConfig._
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import com.typesafe.config.{ConfigValue, ConfigValueFactory}
 import org.apache.log4j.Logger
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
+import org.apache.spark.sql.types.{StructField, StructType, DataType}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
@@ -154,8 +156,18 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables:Boole
   def describeTable(database: Option[String], tableName: String): Seq[FieldMetadata] = {
     syncQuery(SQLCommand(s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")) match {
       case SuccessfulQueryResult(_, result, _) =>
-        result.map(row => FieldMetadata(row.getString(0), DataTypesUtils.toDataType(row.getString(1))))
+        result.flatMap(row =>
+          getFields(DataTypesUtils.toDataType(row.getString(1)), row.getString(0))) toSeq
       case other => handleCommandError(other)
+    }
+  }
+
+  private def getFields(dataType:DataType, fieldName:String): Seq[FieldMetadata] = {
+    dataType match{
+      case structType:StructType =>
+        structType.flatMap(field => getFields(field.dataType,s"${fieldName}.${field.name}"))
+      case _ =>
+        FieldMetadata(fieldName, dataType) :: Nil
     }
   }
 
