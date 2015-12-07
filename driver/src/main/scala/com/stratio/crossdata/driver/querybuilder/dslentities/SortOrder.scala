@@ -8,10 +8,10 @@ object SortDirection extends Enumeration {
   val Descending = Value("DESC")
 }
 
-
-  def apply(expression: Expression,
-            direction: SortDirection.SortDirection = SortDirection.Ascending): SortOrder =
+object SortOrder{
+  def apply(expression: Expression, direction: SortDirection.SortDirection = SortDirection.Ascending): SortOrder =
     new SortOrder(expression, Some(direction))
+
   def apply(order: String): SortOrder = SortOrder(XDQLStatement(order))
 }
 

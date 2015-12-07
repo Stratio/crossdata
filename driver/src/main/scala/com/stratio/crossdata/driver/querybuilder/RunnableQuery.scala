@@ -1,14 +1,14 @@
 package com.stratio.crossdata.driver.querybuilder
 
-import com.stratio.crossdata.driver.querybuilder.dslentities.{XDQLStatement, SortCriteria}
+import com.stratio.crossdata.driver.querybuilder.dslentities.{And, XDQLStatement, SortCriteria}
 
 object RunnableQuery {
 
-  implicit class RunnaBleQueryAsExpression(runnableQuery: RunnableQuery) extends Expression {
+  implicit class RunnableQueryAsExpression(runnableQuery: RunnableQuery) extends Expression {
     override private[querybuilder] def toXDQL: String = s"(${runnableQuery.toXDQL})"
   }
 
-  implicit class RunnaBleQueryAsRelation(runnableQuery: RunnableQuery) extends Relation {
+  implicit class RunnableQueryAsRelation(runnableQuery: RunnableQuery) extends Relation {
     override private[querybuilder] def toXDQL: String = s"(${runnableQuery.toXDQL})"
   }
 
@@ -18,20 +18,24 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
                     protected val relation: Relation,
                     protected val filters: Option[Predicate] = None,
                     protected val groupingExpressions: Seq[Expression] = Seq.empty,
-                    protected val havingExpressions: Seq[Expression] = Seq.empty,
+                    protected val havingExpressions: Option[Predicate] = None,
                     protected val ordering: Option[SortCriteria] = None,
                     protected val limit: Option[Int] = None,
                     protected val composition: Option[CombinationInfo] = None
                      ) extends CombinableQuery {
 
-  def this(projections: Seq[Expression], relations: Relation,filters: Predicate) =
+  /*def this(projections: Seq[Expression], relations: Relation, filters: Predicate) =
     this(projections, relations, Some(filters))
-
+*/
 
   def where(condition: String): this.type = where(XDQLStatement(condition))
+
   // It has to be abstract (simple runnable query has transitions) and concrete
   // implementations (grouped, limited, sorted...) should return their own type
   def where(condition: Predicate): this.type
+
+  protected def combinePredicates(newCondition: Predicate): Predicate =
+    filters.map(And(_,newCondition)).getOrElse(newCondition)
 
   override private[querybuilder] def toXDQL: String = {
     def stringfy[T](head: String, elements: Seq[T], element2str: T => String): String =
@@ -40,37 +44,21 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
     def stringfyXDQL(head: String, elements: Seq[CrossdataSQLStatement]) =
       stringfy[CrossdataSQLStatement](head, elements, _.toXDQL)
 
+    val debug = 1
     //Intentionally this way spaced
     s"""
-       | SELECT ${projections map(_.toXDQL) mkString ", "}
+       |SELECT ${projections map (_.toXDQL) mkString ", "}
        | FROM ${relation.toXDQL}
        | ${stringfyXDQL(" WHERE", filters.toSeq)}
        |${stringfyXDQL(" GROUP BY", groupingExpressions)}
-       |${stringfyXDQL(" HAVING", havingExpressions)}
+       |${stringfyXDQL(" HAVING", havingExpressions.toSeq)}
        |${stringfyXDQL("", ordering.toSeq)}
        |${stringfy[Int](" LIMIT", limit.toSeq, _.toString)}
        |${composition.fold("")(_.toXDQL)}
-    """.stripMargin.replace("\n","")
+     """.stripMargin.replace(System.lineSeparator(),"")
+    //.replaceAll ("""\s\s+""", " ").trim
   }
 
   def build: String = toXDQL
 
- /*       | ${projectedSelect}
-        | ${relatedSelect}
-        | ${filteredSelect.getOrElse("")}
-        | ${groupedSelect.getOrElse("")}
-        | ${havingSelect.getOrElse("")}
-        | ${orderedSelect.getOrElse("")}
-        | ${limitedSelect.getOrElse("")}"""
-      .stripMargin
-      .replace(System.lineSeparator(), " ")
-      .replaceAll ("""\s\s+""", " ").trim
-  }
-
-  override def toString: String = {
-    if(initialSelect.bracketed)
-      s"(${buildSelect()})"
-    else
-      s"${buildSelect()}"
-  }*/
 }

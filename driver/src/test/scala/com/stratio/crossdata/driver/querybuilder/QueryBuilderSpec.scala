@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.driver.querybuilder
 
-import com.stratio.crossdata.driver.querybuilder.dslentities.And
 import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -23,24 +22,35 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class QueryBuilderSpec extends BaseXDTest {
 
-  def formatOutput(query: String): String = query.stripMargin.replace(System.lineSeparator(), " ").replaceAll ("""\s\s+""", " ").trim
+  def formatOutput(query: String): String =
+    query.stripMargin.replace(System.lineSeparator(), " ").replaceAll ("""\s\s+""", " ").trim
 
-  import com.stratio.crossdata.driver.querybuilder._
+
 
   "The Query Builder" should " be able to build a completed query with distinct" in {
-    //import Literal
 
-    val q1 = select('c) from 'table
+    val q2 = (select ("count(*), c") from "t1 INNER JOIN t2" where "a = 5" groupBy "substr(col), col2" orderBy "col2 desc" limit 10 where "b=10") unionAll (select ("ad") from "table")
+
+    // TEST and + - or, partenthesis, etc...
+    // TEST unionAll => cannot do where
+
+    println(">>>>>>>>>>>>>>>>>>>>" + q2.build)
+
+    //import Literal
+   /* val q1 = select('c) from 'table
+    val q2 = selectStr("count(*), col") from 'table
 
     val query =
-      select("count(*)", 'col, select('c) from 't)
+      select('col + 4, 'col)
         .from('table join 'table2 on "aaa" join 'table3 join (q1))
-        .where("a = 5" && q1)
+        .where((select('c) from 't) && q1 && 5 === 'aa)
         .groupBy("aa").having("a<5" && 'c)
         .orderBy('c).limit(1) unionAll (select('c) from 'table)
 
     println(">>>>>>>>>>>>>>>>>>>>" + query.build)
 
+    println(">>>>>>>>>>>>>>>>>>>>" + (select('c) from 'tablequery where "a = 5" ).build )
+*/
     //val q2 = select('c) from 't where ("a" && ("b"))
 
 /*    val query = QueryBuilder
@@ -55,7 +65,7 @@ class QueryBuilderSpec extends BaseXDTest {
       .build()
       .toString*/
 
-    val expected = formatOutput("""SELECT DISTINCT *
+/*    val expected = formatOutput("""SELECT DISTINCT *
                      | FROM test
                      | WHERE quantity > 10
                      | GROUP BY age
@@ -63,7 +73,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | ORDER BY age
                      | LIMIT 10""")
 
-    query should be (expected)
+    query should be (expected)*/
   }
 
 /*  it should " be able to build a completed query without distinct" in {

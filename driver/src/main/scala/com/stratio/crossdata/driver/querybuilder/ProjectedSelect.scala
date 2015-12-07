@@ -16,6 +16,8 @@
 
 package com.stratio.crossdata.driver.querybuilder
 
+import com.stratio.crossdata.driver.querybuilder.dslentities.XDQLStatement
+
 class ProjectedSelect(selection: Expression*) {
 
   def from(relations: Relation*): SimpleRunnableQuery = {
@@ -23,5 +25,5 @@ class ProjectedSelect(selection: Expression*) {
     new SimpleRunnableQuery(selection, rel)
   }
   def from(relation: Relation): SimpleRunnableQuery = new SimpleRunnableQuery(selection, relation)
-
+  def from(strRelation: String): SimpleRunnableQuery = new SimpleRunnableQuery(selection, XDQLStatement(strRelation))
 }

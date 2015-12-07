@@ -15,6 +15,10 @@ object Expression {
 trait Expression extends CrossdataSQLStatement {
   def && (other: Expression): Predicate = And(this, other)
   def || (other: Expression): Predicate = Or(this, other)
+  def === (other: Expression): Predicate = Eq(this, other)
+
+  def + (other: Expression): Expression = Add(this, other)
+
   def ASC: SortOrder = SortOrder(this, Ascending)
 }
 
@@ -25,7 +29,7 @@ trait BinaryExpression extends Expression{
   val tokenStr: String
   def childExpansion(child: Expression): String = child.toXDQL
 
-  override private[querybuilder] def toXDQL: String = Seq(left, right) map(childExpansion) mkString s" $tokenStr "
+  override private[querybuilder] def toXDQL: String = Seq(left, right) map childExpansion mkString s" $tokenStr "
 
 }
 

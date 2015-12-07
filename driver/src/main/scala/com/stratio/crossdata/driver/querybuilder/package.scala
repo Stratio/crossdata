@@ -2,13 +2,14 @@ package com.stratio.crossdata.driver
 
 import java.sql.{Date, Timestamp}
 
-import com.stratio.crossdata.driver.querybuilder.dslentities.{Identifier, Literal}
+import com.stratio.crossdata.driver.querybuilder.dslentities.{XDQLStatement, Identifier, Literal}
 import org.apache.spark.sql.types.Decimal
 
 package object querybuilder {
 
     def select(projections: Expression*): ProjectedSelect = new ProjectedSelect(projections:_*)
-
+    def select(projections: String): ProjectedSelect = select(XDQLStatement(projections))
+    //selectAll and all
     //def createTempView(name: String): ViewStatement = new ViewStatement()
     //def createTable
     //def importTable

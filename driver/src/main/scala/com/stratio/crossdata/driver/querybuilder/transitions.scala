@@ -24,7 +24,7 @@ trait Sortable {
   def orderBy(ordering: SortOrder*) : SortedQuery = orderOrSortBy(global = true, ordering)
 
   private def orderOrSortBy(global: Boolean, ordering: Seq[SortOrder]) : SortedQuery =
-    new SortedQuery(projections, relation, filters, groupingExpressions, havingExpressions, Some(SortCriteria(global, ordering)))
+    new SortedQuery(projections, relation, filters, groupingExpressions, havingExpressions, SortCriteria(global, ordering))
 
 }
 
