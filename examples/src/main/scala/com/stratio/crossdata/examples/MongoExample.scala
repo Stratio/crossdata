@@ -30,7 +30,7 @@ object MongoExample extends App with MongoDefaultConstants {
     xdContext.sql(
       s"""|CREATE TEMPORARY TABLE $Collection
           |(id STRING, age INT, description STRING, enrolled BOOLEAN, name STRING)
-          |USING $MongoProvider
+          |USING $MongoConnector
           |OPTIONS (
           |host '$MongoHost:$MongoPort',
           |database '$Database',
