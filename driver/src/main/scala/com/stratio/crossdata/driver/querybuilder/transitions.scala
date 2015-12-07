@@ -43,6 +43,7 @@ trait Limitable {
 
 trait CombinableQuery extends CrossdataSQLStatement {
   this: RunnableQuery =>
+
   def unionAll(other: RunnableQuery): CombinedQuery =
     new CombinedQuery(
       this.projections,
@@ -53,4 +54,37 @@ trait CombinableQuery extends CrossdataSQLStatement {
       this.ordering,
       this.limit,
       CombinationInfo(CombineType.UnionAll, other))
+
+  def unionDistinct(other: RunnableQuery): CombinedQuery =
+    new CombinedQuery(
+      this.projections,
+      this.relation,
+      this.filters,
+      this.groupingExpressions,
+      this.havingExpressions,
+      this.ordering,
+      this.limit,
+      CombinationInfo(CombineType.UnionDistinct, other))
+
+  def intersect(other: RunnableQuery): CombinedQuery =
+    new CombinedQuery(
+      this.projections,
+      this.relation,
+      this.filters,
+      this.groupingExpressions,
+      this.havingExpressions,
+      this.ordering,
+      this.limit,
+      CombinationInfo(CombineType.Intersect, other))
+
+  def except(other: RunnableQuery): CombinedQuery =
+    new CombinedQuery(
+      this.projections,
+      this.relation,
+      this.filters,
+      this.groupingExpressions,
+      this.havingExpressions,
+      this.ordering,
+      this.limit,
+      CombinationInfo(CombineType.Except, other))
 }

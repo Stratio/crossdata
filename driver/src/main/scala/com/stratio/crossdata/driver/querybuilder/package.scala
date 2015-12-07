@@ -2,14 +2,15 @@ package com.stratio.crossdata.driver
 
 import java.sql.{Date, Timestamp}
 
-import com.stratio.crossdata.driver.querybuilder.dslentities.{XDQLStatement, Identifier, Literal}
+import com.stratio.crossdata.driver.querybuilder.dslentities.{Identifier, Literal, XDQLStatement}
 import org.apache.spark.sql.types.Decimal
 
 package object querybuilder {
 
     def select(projections: Expression*): ProjectedSelect = new ProjectedSelect(projections:_*)
     def select(projections: String): ProjectedSelect = select(XDQLStatement(projections))
-    //selectAll and all
+    def selectAll: ProjectedSelect = new ProjectedSelect(AsteriskExpression())
+
     //def createTempView(name: String): ViewStatement = new ViewStatement()
     //def createTable
     //def importTable
@@ -32,6 +33,19 @@ package object querybuilder {
 
     //Identifiers
     implicit def symbol2Identifier(s: Symbol): Identifier = Identifier(s.name)
+
+    //Expression Operators
+    // TODO use implicits?
+    def distinct(e: Expression*): Expression = Distinct(e:_*)
+    def sum(e: Expression): Expression = Sum(e)
+    def sumDistinct(e: Expression): Expression = SumDistinct(e)
+    def count(e: Expression): Expression = Count(e)
+    def countDistinct(e: Expression*): Expression = CountDistinct(e:_*)
+    def approxCountDistinct(e: Expression, rsd: Double): Expression = ApproxCountDistinct(e, rsd)
+    def avg(e: Expression): Expression = Avg(e)
+    def min(e: Expression): Expression = Min(e)
+    def max(e: Expression): Expression = Max(e)
+    def abs(e: Expression): Expression = Abs(e)
 
 
 }

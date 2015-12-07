@@ -8,10 +8,10 @@ object JoinType extends Enumeration {
   val LeftOuter  = Value(outer("LEFT"))
   val RightOuter = Value(outer("RIGHT"))
   val FullOuter  = Value(outer("FULL"))
-  val LeftSemi   = Value("LEFT SEMI JOIN")
+  val LeftSemi   = Value(join("LEFT SEMI"))
 
-  private def outer(tpStr: String): String = join(s"$tpStr OUTER ")
-  private def join(tpStr: String = ""): String = s"${tpStr}JOIN"
+  private def outer(tpStr: String): String = join(s" $tpStr OUTER ")
+  private def join(tpStr: String = ""): String = s" ${tpStr}JOIN"
 }
 
 import JoinType._
