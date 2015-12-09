@@ -1,5 +1,6 @@
 package com.stratio.crossdata.driver.querybuilder
 
+import com.stratio.crossdata.driver.querybuilder.dslentities.Literal
 
 
 case class AsteriskExpression() extends Expression{
@@ -9,10 +10,17 @@ case class AsteriskExpression() extends Expression{
 
 case class Minus(child: Expression) extends UnaryExpression {
   override val tokenStr: String = " -"
+  override def childExpansion(child: Expression): String = child match {
+    case _: Literal => child.toXDQL
+    case _ => s"(${child.toXDQL})"
+  }
 }
 
 case class Not(child: Expression) extends Predicate {
-  override private[querybuilder] def toXDQL: String = s" !${child.toXDQL}} "
+  override private[querybuilder] def toXDQL: String = child match {
+    case _:Literal => s" !${child.toXDQL}} "
+    case _ =>s" !(${child.toXDQL})} "
+  }
 }
 
 
@@ -24,33 +32,46 @@ case class Add(left: Expression, right: Expression) extends BinaryExpression {
   // TODO review operator precedence
   override def childExpansion(child: Expression): String = child match {
     case _: Add => child.toXDQL
+    case _: Literal => child.toXDQL
     case _ => s"(${child.toXDQL})"
   }
 }
 
 case class Subtract(left: Expression, right: Expression) extends BinaryExpression {
   override val tokenStr = "-"
-  override def childExpansion(child: Expression): String = s"(${child.toXDQL})"
+  override def childExpansion(child: Expression): String = child match {
+    case _: Literal => child.toXDQL
+    case _ => s"(${child.toXDQL})"
+  }
 }
 
 case class Multiply(left: Expression, right: Expression) extends BinaryExpression {
   override val tokenStr = "*"
-  override def childExpansion(child: Expression): String = s"(${child.toXDQL})"
+  override def childExpansion(child: Expression): String = child match {
+    case _: Literal => child.toXDQL
+    case _ => s"(${child.toXDQL})"
+  }
 }
 
 case class Divide(left: Expression, right: Expression) extends BinaryExpression {
   override val tokenStr = "/"
-  override def childExpansion(child: Expression): String = s"(${child.toXDQL})"
+  override def childExpansion(child: Expression): String = child match {
+    case _: Literal => child.toXDQL
+    case _ => s"(${child.toXDQL})"
+  }
 }
 
 case class Remainder(left: Expression, right: Expression) extends BinaryExpression {
   override val tokenStr = "%"
-  override def childExpansion(child: Expression): String = s"(${child.toXDQL})"
+  override def childExpansion(child: Expression): String = child match {
+    case _: Literal => child.toXDQL
+    case _ => s"(${child.toXDQL})"
+  }
 }
 
 // Other cases
 case class In(left: Expression, right: Expression*) extends Expression {
-  override private[querybuilder] def toXDQL: String = s" ${left.toXDQL} IN ${right mkString ("(",",",")")}"
+  override private[querybuilder] def toXDQL: String = s" ${left.toXDQL} IN ${right map (_.toXDQL) mkString ("(",",",")")}"
 }
 
 case class Like(left: Expression, right: Expression) extends BinaryExpression {

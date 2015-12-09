@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.driver.querybuilder
 
+import java.sql.Date
+
 import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -30,7 +32,10 @@ class QueryBuilderSpec extends BaseXDTest {
   "The Query Builder" should " be able to build a completed query with distinct" in {
 
     //val q2 = (select ("count(*), c") from "t1 INNER JOIN t2" where "a = 5" groupBy "substr(col), col2" orderBy "col2 desc" limit 10 where "b=10") unionAll (select ("ad") from "table")
-    val q2 = select ('c as "alias", "1" as 'hola, distinct('col), sum('col), approxCountDistinct('col, 0.05)) from( 'table)
+    //val q2 = select ('c as "alias", "1" as 'hola, distinct('col), sum('col), approxCountDistinct('col, 0.05)) from( 'table)
+
+
+    val q2 = selectAll from 'table where ('a < new Date(10))
 
     //selectAll from "t1"
     // TEST and + - or, parenthesis, etc...

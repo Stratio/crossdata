@@ -11,6 +11,7 @@ case class And(left: Expression, right: Expression) extends BinaryExpression
 
   override def childExpansion(child: Expression): String = child match {
     case _: And => child.toXDQL
+    case _: Literal => child.toXDQL
     case _ => s"(${child.toXDQL})"
   }
 }
@@ -22,6 +23,7 @@ case class Or(left: Expression, right: Expression) extends BinaryExpression
 
   override def childExpansion(child: Expression): String = child match {
     case _: Or => child.toXDQL
+    case _: Literal => child.toXDQL
     case _ => s"(${child.toXDQL})"
   }
 
@@ -33,35 +35,50 @@ case class Equal(left: Expression, right: Expression) extends BinaryExpression /
   with Predicate {
 
   override val tokenStr: String = "="
-  override def childExpansion(child: Expression): String = s"(${child.toXDQL})"
+  override def childExpansion(child: Expression): String = child match {
+    case _: Literal => child.toXDQL
+    case _ => s"(${child.toXDQL})"
+  }
 }
 
 case class LessThan(left: Expression, right: Expression) extends BinaryExpression //TODO: Review
 with Predicate {
 
   override val tokenStr: String = "<"
-  override def childExpansion(child: Expression): String = s"(${child.toXDQL})"
+  override def childExpansion(child: Expression): String = child match {
+    case _: Literal => child.toXDQL
+    case _ => s"(${child.toXDQL})"
+  }
 }
 
 case class LessThanOrEqual(left: Expression, right: Expression) extends BinaryExpression //TODO: Review
 with Predicate {
 
   override val tokenStr: String = "<="
-  override def childExpansion(child: Expression): String = s"(${child.toXDQL})"
+  override def childExpansion(child: Expression): String = child match {
+    case _: Literal => child.toXDQL
+    case _ => s"(${child.toXDQL})"
+  }
 }
 
 case class GreaterThan(left: Expression, right: Expression) extends BinaryExpression //TODO: Review
 with Predicate {
 
   override val tokenStr: String = ">"
-  override def childExpansion(child: Expression): String = s"(${child.toXDQL})"
+  override def childExpansion(child: Expression): String = child match {
+    case _: Literal => child.toXDQL
+    case _ => s"(${child.toXDQL})"
+  }
 }
 
 case class GreaterThanOrEqual(left: Expression, right: Expression) extends BinaryExpression //TODO: Review
 with Predicate {
 
   override val tokenStr: String = ">="
-  override def childExpansion(child: Expression): String = s"(${child.toXDQL})"
+  override def childExpansion(child: Expression): String = child match {
+    case _: Literal => child.toXDQL
+    case _ => s"(${child.toXDQL})"
+  }
 }
 
 
