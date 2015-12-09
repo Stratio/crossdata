@@ -35,7 +35,7 @@ class QueryBuilderSpec extends BaseXDTest {
     //val q2 = select ('c as "alias", "1" as 'hola, distinct('col), sum('col), approxCountDistinct('col, 0.05)) from( 'table)
 
 
-    val q2 = selectAll from 'table where ('a < new Date(10))
+    val q2 = selectAll from 'table where ('a < new Date(10) || 'a > 5)
 
     //selectAll from "t1"
     // TEST and + - or, parenthesis, etc...

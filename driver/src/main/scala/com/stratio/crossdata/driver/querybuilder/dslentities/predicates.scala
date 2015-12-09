@@ -11,6 +11,7 @@ case class And(left: Expression, right: Expression) extends BinaryExpression
 
   override def childExpansion(child: Expression): String = child match {
     case _: And => child.toXDQL
+    case _: Predicate => s"(${child.toXDQL})"
     case _: Expression => child.toXDQL
     case _ => s"(${child.toXDQL})"
   }
@@ -23,6 +24,7 @@ case class Or(left: Expression, right: Expression) extends BinaryExpression
 
   override def childExpansion(child: Expression): String = child match {
     case _: Or => child.toXDQL
+    case _: Predicate => s"(${child.toXDQL})"
     case _: Expression => child.toXDQL
     case _ => s"(${child.toXDQL})"
   }
