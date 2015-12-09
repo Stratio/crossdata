@@ -44,7 +44,6 @@ abstract class RunnableQuery protected (protected val projections: Seq[Expressio
     def stringfyXDQL(head: String, elements: Seq[CrossdataSQLStatement]) =
       stringfy[CrossdataSQLStatement](head, elements, _.toXDQL)
 
-    val debug = 1
     //Intentionally this way spaced
     s"""
        |SELECT ${projections map (_.toXDQL) mkString ", "}
