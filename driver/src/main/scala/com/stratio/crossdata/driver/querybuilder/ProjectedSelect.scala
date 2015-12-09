@@ -20,10 +20,13 @@ import com.stratio.crossdata.driver.querybuilder.dslentities.XDQLStatement
 
 class ProjectedSelect(selection: Expression*) {
 
+  def from(relation: Relation): SimpleRunnableQuery = new SimpleRunnableQuery(selection, relation)
+
   def from(relations: Relation*): SimpleRunnableQuery = {
     val rel = relations.reduce((a: Relation, b: Relation) => a.join(b))
     new SimpleRunnableQuery(selection, rel)
   }
-  def from(relation: Relation): SimpleRunnableQuery = new SimpleRunnableQuery(selection, relation)
-  def from(strRelation: String): SimpleRunnableQuery = new SimpleRunnableQuery(selection, XDQLStatement(strRelation))
+
+  def from(strRelation: String): SimpleRunnableQuery =
+    new SimpleRunnableQuery(selection, XDQLStatement(strRelation))
 }

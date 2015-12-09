@@ -15,8 +15,20 @@
  */
 package com.stratio.crossdata.driver.querybuilder.dslentities
 
-import com.stratio.crossdata.driver.querybuilder.{Relation, Predicate}
+import com.stratio.crossdata.driver.querybuilder.{CrossdataSQLStatement, RunnableQuery}
 
-case class XDQLStatement(queryStr: String) extends Predicate with Relation{
-  override private[querybuilder] def toXDQL: String = queryStr
+
+object CombineType extends Enumeration {
+  type CombineType = Value
+  val UnionAll = Value("UNION ALL")
+  val Intersect = Value("INTERSECT")
+  val Except = Value("EXCEPT")
+  val UnionDistinct = Value("UNION DISTINCT")
+}
+
+
+import CombineType._
+
+case class CombinationInfo(combineType: CombineType, runnableQuery: RunnableQuery) extends CrossdataSQLStatement {
+  override private[querybuilder] def toXDQL: String = s" ${combineType.toString} ${runnableQuery.toXDQL}"
 }
