@@ -140,7 +140,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
   }
 
   //Test types
-  //doTypesTest("The Cassandra connector")
+  doTypesTest("The Cassandra connector")
 
   // TODO test filter on PKs (=) and CKs(any) (right -> left)
 

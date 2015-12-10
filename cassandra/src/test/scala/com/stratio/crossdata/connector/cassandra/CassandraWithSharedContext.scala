@@ -106,10 +106,10 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
         |  boolean BOOLEAN,
         |  double DOUBLE,
         |  float FLOAT,
-        |  decimalInt DECIMAL,
-        |  decimalLong DECIMAL,
-        |  decimalDouble DECIMAL,
-        |  decimalFloat DECIMAL,
+        |  decimalint DECIMAL,
+        |  decimallong DECIMAL,
+        |  decimaldouble DECIMAL,
+        |  decimalfloat DECIMAL,
         |  date TIMESTAMP,
         |  timestamp TIMESTAMP,
         |  tinyint INT,
@@ -165,7 +165,7 @@ sealed trait CassandraDefaultTestConstants {
   val ClusterName = "Test Cluster"
   val Catalog = "highschool"
   val Table = "students"
-  val TypesTable = "dataTypesTableName"
+  val TypesTable = "datatypestablename"
   val UnregisteredTable = "teachers"
   val CassandraHost: String = {
     Try(ConfigFactory.load().getStringList("cassandra.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
