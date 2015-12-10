@@ -32,14 +32,6 @@ object ServerConfig {
   val SERVER_USER_CONFIG_FILE = "external.config.filename"
   val SERVER_USER_CONFIG_RESOURCE = "external.config.resource"
 
-  // spark context values
-  val SERVER_CONFIG_SPARK_MASTER="config.spark.master"
-  val SERVER_CONFIG_SPARK_DRIVER_MEMORY="config.spark.driver.memory"
-  val SERVER_CONFIG_SPARK_EXECUTOR_MEMORY="config.spark.executor.memory"
-  val SERVER_CONFIG_SPARK_CORES="config.spark.cores.max"
-  val SERVER_CONFIG_SPARK_JARS="config.spark.jars"
-
-  //val SERVER_ACTOR_NUM= "config.akka.number.server-actor"
 }
 
 trait ServerConfig extends NumberActorConfig {
@@ -59,11 +51,6 @@ trait ServerConfig extends NumberActorConfig {
 
   lazy val clusterName = config.getString(ServerConfig.SERVER_CLUSTER_NAME_KEY)
   lazy val actorName = config.getString(ServerConfig.SERVER_ACTOR_NAME_KEY)
-  lazy val sparkMaster = config.getString(ServerConfig.SERVER_CONFIG_SPARK_MASTER)
-  lazy val sparkDriverMemory = config.getString(ServerConfig.SERVER_CONFIG_SPARK_DRIVER_MEMORY)
-  lazy val sparkExecutorMemory = config.getString(ServerConfig.SERVER_CONFIG_SPARK_EXECUTOR_MEMORY)
-  lazy val sparkCores = config.getString(ServerConfig.SERVER_CONFIG_SPARK_CORES)
-  lazy val sparkJars = config.getStringList(ServerConfig.SERVER_CONFIG_SPARK_JARS)
 
   override val config: Config = {
 
