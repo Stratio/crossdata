@@ -53,7 +53,7 @@ Feature: [CROSSDATA-86, CROSSDATA-167]Import tables from persistence
     Then I execute a jdbc select 'TRUNCATE TABLE crossdataTables'
     And Drop the spark tables
 
-  Scenario: Import a simple Mongo table and the same table from cassandra
+  Scenario: Import a simple ES table
     Given I execute 'IMPORT TABLES USING com.stratio.crossdata.connector.elasticsearch OPTIONS (resource 'databasetest/tabletest', es.nodes '172.17.0.3', es.port '9200', es.nativePort '9300', es.cluster 'elasticsearch')'
     When I execute a jdbc select 'SELECT count(*) FROM crossdataTables WHERE db = 'databasetest' AND tableName='tabletest' AND datasource='com.stratio.crossdata.connector.elasticsearch''
     Then an exception 'IS NOT' thrown
