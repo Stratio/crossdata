@@ -1,3 +1,4 @@
+server/dependency-reduced-pom.xml
 .classpath
 .project
 .settings
@@ -11,7 +12,7 @@ nb-configuration.xml
 *.xml.asc
 src/main/resources/history.txt
 *.orig
-/crossdata-hive/derby.log
+crossdata-hive/derby.log
 sonar-project.properties
 */.sonar
 */test-output
