@@ -115,12 +115,13 @@ class MongoFilterIT extends MongoWithSharedContext {
 
   }
 
-  it should "supports filter TIMESTAMP NOT BETWEEN two times" in {
+  ignore should "supports Projection with DOT notation" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp NOT BETWEEN '1970-01-02' AND '1971'").collect(ExecutionType.Spark)
+    val sparkRow = sql(s"SELECT mapstruct.structField2 FROM $DataTypesCollection").collect(ExecutionType.Native)
     sparkRow.length should be (1)
-
   }
+
+
 
 }
