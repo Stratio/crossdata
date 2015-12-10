@@ -20,11 +20,11 @@ import com.stratio.crossdata.driver.querybuilder.dslentities.{And, CombinationIn
 object RunnableQuery {
 
   implicit class RunnableQueryAsExpression(runnableQuery: RunnableQuery) extends Expression {
-    override private[querybuilder] def toXDQL: String = s"(${runnableQuery.toXDQL})"
+    override private[querybuilder] def toXDQL: String = s"( ${runnableQuery.toXDQL})"
   }
 
   implicit class RunnableQueryAsRelation(runnableQuery: RunnableQuery) extends Relation {
-    override private[querybuilder] def toXDQL: String = s"(${runnableQuery.toXDQL})"
+    override private[querybuilder] def toXDQL: String = s"( ${runnableQuery.toXDQL})"
   }
 
 }

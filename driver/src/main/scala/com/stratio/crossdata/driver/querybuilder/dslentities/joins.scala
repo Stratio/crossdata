@@ -32,10 +32,10 @@ object JoinType extends Enumeration {
 
 import JoinType._
 
-case class Join(left: Relation,
-                right: Relation,
-                joinType: JoinType,
-                condition: Option[Expression] = None) extends Relation {
+case class Join(private val left: Relation,
+                private val right: Relation,
+                private val joinType: JoinType,
+                private val condition: Option[Expression] = None) extends Relation {
 
   def on(condition: String): Relation = on(XDQLStatement(condition))
 
