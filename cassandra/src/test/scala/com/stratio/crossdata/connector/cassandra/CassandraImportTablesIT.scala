@@ -203,9 +203,3 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     ctx.tableNames() should not contain "highschool.teachers"
   }
 }
-
-
-
-
-
-
