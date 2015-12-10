@@ -66,9 +66,6 @@ trait Combinable extends CrossdataSQLStatement {
 
   import CombineType._
 
-  // TODO pfperez improvements. It has to keep the original order.
-  // Options => just a Seq vs right side composition
-
   def unionAll(newQuery: RunnableQuery): CombinedQuery =
       generateCombinedQuery {
         computeCombinationInfo(newQuery, UnionAll, query => query.unionAll(newQuery))
