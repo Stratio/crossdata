@@ -154,26 +154,33 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables:Boole
     * @return A sequence with the metadata of the fields of the table.
     */
   def describeTable(database: Option[String], tableName: String): Seq[FieldMetadata] = {
+
+    def extractNameDataType: Row => (String, String) = row => (row.getString(0), row.getString(1))
+
     syncQuery(SQLCommand(s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")) match {
+
       case SuccessfulQueryResult(_, result, _) =>
-        result.flatMap(row =>
-          getFields(DataTypesUtils.toDataType(row.getString(1)), row.getString(0))) toSeq
-      case other => handleCommandError(other)
+        result.map(extractNameDataType) flatMap { case (name, dataType) =>
+          if (!flattenTables) {
+            FieldMetadata(name, DataTypesUtils.toDataType(dataType)) :: Nil
+          } else {
+            getFlattenedFields(name, DataTypesUtils.toDataType(dataType))
+          }
+        } toSeq
+
+      case other =>
+        handleCommandError(other)
     }
   }
 
-  private def getFields(dataType:DataType, fieldName:String): Seq[FieldMetadata] = {
-    if (flattenTables){
-      dataType match{
+
+  private def getFlattenedFields( fieldName:String, dataType:DataType): Seq[FieldMetadata] = dataType match{
         case structType:StructType =>
-          structType.flatMap(field => getFields(field.dataType,s"${fieldName}.${field.name}"))
+          structType.flatMap(field => getFlattenedFields(s"$fieldName.${field.name}", field.dataType))
         case _ =>
           FieldMetadata(fieldName, dataType) :: Nil
       }
-    }else {
-      FieldMetadata(fieldName, dataType) :: Nil
-    }
-  }
+
 
   private def handleCommandError(result: SQLResult) = result match {
     case ErrorResult(_, message, Some(cause)) =>

@@ -94,7 +94,7 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
   }
 
   def assumeCrossdataUpAndRunning() = {
-    assume(crossdataServer.isDefined, "Crossdata server is not up and running")
+    assume(crossdataServer.isDefined, "Crossdata server is not up and running.")
   }
 }
 
