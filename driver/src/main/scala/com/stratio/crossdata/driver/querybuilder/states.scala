@@ -30,7 +30,8 @@ class SimpleRunnableQuery private(projections: Seq[Expression],
 
   // It has to be abstract (simple runnable query has transitions) and concrete
   override def where(condition: Predicate): this.type =
-    new SimpleRunnableQuery(projections, relation, Some(combinePredicates(condition))).asInstanceOf[this.type] //TODO: Check this out
+    //Not knew alternatices to `asInstanceOf`: http://stackoverflow.com/a/791157/1893995
+    new SimpleRunnableQuery(projections, relation, Some(combinePredicates(condition))).asInstanceOf[this.type]
 
 }
 
@@ -49,7 +50,8 @@ class GroupedQuery(projections: Seq[Expression],
 
 
   override def where(condition: Predicate): this.type =
-    new GroupedQuery(projections, relation, Some(combinePredicates(condition)), groupingExpressions).asInstanceOf[this.type] //TODO: Check this out
+    //Not knew alternatices to `asInstanceOf`: http://stackoverflow.com/a/791157/1893995
+    new GroupedQuery(projections, relation, Some(combinePredicates(condition)), groupingExpressions).asInstanceOf[this.type]
 
 
 }

@@ -107,9 +107,12 @@ trait Combinable extends CrossdataSQLStatement {
    *                         It will be applied if the query is already a combined query
    * @return the new combination info
    */
-  private def computeCombinationInfo(newQuery: RunnableQuery, newCombineType: CombineType, childCombination: RunnableQuery => CombinedQuery): CombinationInfo =
-    this.composition map { existingCombInfo =>
-      CombinationInfo(existingCombInfo.combineType, childCombination(existingCombInfo.runnableQuery))
+  private def computeCombinationInfo( //TODO: Simplify this
+                                      newQuery: RunnableQuery,
+                                      newCombineType: CombineType,
+                                      childCombination: RunnableQuery => CombinedQuery): CombinationInfo =
+    this.composition map {
+      case CombinationInfo(combType, previous) => CombinationInfo(combType, childCombination(previous))
     } getOrElse {
       CombinationInfo(newCombineType, newQuery)
     }
