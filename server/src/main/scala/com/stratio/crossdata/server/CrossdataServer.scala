@@ -25,6 +25,7 @@ import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
+import scala.collection.JavaConversions._
 
 
 class CrossdataServer extends Daemon with ServerConfig {
@@ -37,12 +38,31 @@ class CrossdataServer extends Daemon with ServerConfig {
   override def init(p1: DaemonContext): Unit = ()
 
   override def start(): Unit = {
+
+    println(s"Entryset size: ${config.entrySet().size()}")
+    config.entrySet().foreach(e => println(s"ENTRY: ${e.getKey} = ${e.getValue}"))
+
+    val tmp = config.entrySet().filter(e => e.getKey.startsWith("config.spark"))
+    tmp.foreach(e => s"FILTERED: $e")
+
+    val sparkMapProps = tmp.foreach(e => (e.getKey -> e.getValue.toString))
+
+    println("SPARK_MAP_PROPS: " + sparkMapProps)
+
     xdContext = {
       val sparkContext = new SparkContext(new SparkConf()
         .setAppName("Crossdata")
         .setMaster(sparkMaster)
+        .setJars(sparkJars)
+        //.set("spark.jars",
+        //"../core/target/crossdata-core-1.0.0-SNAPSHOT.jar," +
+        //"../cassandra/target/crossdata-cassandra-1.0.0-SNAPSHOT.jar," +
+        //"../mongodb/target/crossdata-mongodb-1.0.0-SNAPSHOT.jar," +
+        //"../elasticsearch/target/crossdata-elasticsearch-1.0.0-SNAPSHOT.jar")
         .setAll(
-          List(sparkDriverMemory, sparkExecutorMemory, sparkCores).filter(config.hasPath).map(k => k -> config.getString(k))
+            List(sparkDriverMemory, sparkExecutorMemory, sparkCores).collect {
+              case s if config.hasPath(s) => s -> config.getString(s)
+            }
         ))
       Some(new XDContext(sparkContext))
     }
