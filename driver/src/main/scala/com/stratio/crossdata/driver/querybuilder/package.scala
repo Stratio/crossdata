@@ -17,25 +17,12 @@ package com.stratio.crossdata.driver
 
 import java.sql.{Date, Timestamp}
 
+import com.stratio.crossdata.driver.querybuilder.{ProjectedSelect, Expression}
 import com.stratio.crossdata.driver.querybuilder.dslentities._
 
 import scala.language.implicitConversions
 
-package object querybuilder {
-
-  def select(projections: Expression*): ProjectedSelect = new ProjectedSelect(projections: _*)
-
-  def select(projections: String): ProjectedSelect = select(XDQLStatement(projections))
-
-  def selectAll: ProjectedSelect = new ProjectedSelect(AsteriskExpression())
-
-  // TODO def createTempView(name: String): ViewStatement = new ViewStatement()
-  // TODO def createTable
-  // TODO def importTable
-  // TODO drop table
-  // TODO insertFromSelect
-
-  //Literals
+trait Literals {
   implicit def boolean2Literal(b: Boolean): Literal = Literal(b)
   implicit def byte2Literal(b: Byte): Literal = Literal(b)
   implicit def short2Literal(s: Short): Literal = Literal(s)
@@ -49,12 +36,27 @@ package object querybuilder {
   implicit def bigDecimal2Literal(d: java.math.BigDecimal): Literal = Literal(d)
   implicit def timestamp2Literal(t: Timestamp): Literal = Literal(t)
   implicit def binary2Literal(a: Array[Byte]): Literal = Literal(a)
+}
 
-  //Identifiers
+trait Identifiers {
   implicit def symbol2Identifier(s: Symbol): Identifier = EntityIdentifier(s.name)
+}
 
-  //Expression Operators
-  // TODO use implicits?
+trait InitialPhrases {
+  def select(projections: Expression*): ProjectedSelect = new ProjectedSelect(projections: _*)
+
+  def select(projections: String): ProjectedSelect = select(XDQLStatement(projections))
+
+  def selectAll: ProjectedSelect = new ProjectedSelect(AsteriskExpression())
+
+  // TODO def createTempView(name: String): ViewStatement = new ViewStatement()
+  // TODO def createTable
+  // TODO def importTable
+  // TODO drop table
+  // TODO insertFromSelect
+}
+
+trait ExpressionOperators {
   def distinct(e: Expression*): Expression = Distinct(e: _*)
 
   def sum(e: Expression): Expression = Sum(e)
@@ -75,3 +77,8 @@ package object querybuilder {
 
   def abs(e: Expression): Expression = Abs(e)
 }
+
+package object querybuilder extends InitialPhrases
+  with Literals
+  with Identifiers
+  with ExpressionOperators
