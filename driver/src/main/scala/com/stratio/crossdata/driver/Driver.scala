@@ -27,9 +27,7 @@ import com.stratio.crossdata.driver.config.DriverConfig._
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import com.typesafe.config.{ConfigValue, ConfigValueFactory}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
-import org.apache.spark.sql.types.{StructField, StructType, DataType}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
@@ -46,20 +44,14 @@ object Driver extends DriverConfig {
 
   def apply() = new Driver()
 
-  def apply(flattenTables:Boolean) = new Driver(flattenTables:Boolean)
-
 }
 
-class Driver(properties: java.util.Map[String, ConfigValue], flattenTables:Boolean) {
-
-  def this (properties: java.util.Map[String, ConfigValue]) = this(properties, false)
+class Driver(properties: java.util.Map[String, ConfigValue]) {
 
   def this(serverHosts: java.util.List[String]) =
-    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)), false)
+    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)))
 
-  def this(flattenTables:Boolean) = this(Map.empty[String, ConfigValue],flattenTables)
-
-  def this() = this(false)
+  def this() = this(Map.empty[String, ConfigValue])
 
   import Driver._
 
@@ -156,22 +148,8 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables:Boole
   def describeTable(database: Option[String], tableName: String): Seq[FieldMetadata] = {
     syncQuery(SQLCommand(s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")) match {
       case SuccessfulQueryResult(_, result, _) =>
-        result.flatMap(row =>
-          getFields(DataTypesUtils.toDataType(row.getString(1)), row.getString(0))) toSeq
+        result.map(row => FieldMetadata(row.getString(0), DataTypesUtils.toDataType(row.getString(1))))
       case other => handleCommandError(other)
-    }
-  }
-
-  private def getFields(dataType:DataType, fieldName:String): Seq[FieldMetadata] = {
-    if (flattenTables){
-      dataType match{
-        case structType:StructType =>
-          structType.flatMap(field => getFields(field.dataType,s"${fieldName}.${field.name}"))
-        case _ =>
-          FieldMetadata(fieldName, dataType) :: Nil
-      }
-    }else {
-      FieldMetadata(fieldName, dataType) :: Nil
     }
   }
 
