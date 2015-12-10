@@ -84,6 +84,45 @@ class QueryBuilderSpec extends BaseXDTest {
     compareAfterFormatting(query.build, expected)
   }
 
+  it should "support union distinct to join runnable queries" in {
+
+    val query = (selectAll from 'table) unionDistinct (selectAll from 'table2)
+
+    val expected = """
+                     | SELECT * FROM table
+                     | UNION DISTINCT
+                     | SELECT * FROM table2
+                   """
+
+    compareAfterFormatting(query.build, expected)
+  }
+
+  it should "support intersect to join runnable queries" in {
+
+    val query = (selectAll from 'table) intersect (selectAll from 'table2)
+
+    val expected = """
+                     | SELECT * FROM table
+                     | INTERSECT
+                     | SELECT * FROM table2
+                   """
+
+    compareAfterFormatting(query.build, expected)
+  }
+
+  it should "support except to join runnable queries" in {
+
+    val query = (selectAll from 'table) except (selectAll from 'table2)
+
+    val expected = """
+                     | SELECT * FROM table
+                     | EXCEPT
+                     | SELECT * FROM table2
+                   """
+
+    compareAfterFormatting(query.build, expected)
+  }
+
   it should "not allow to add a filter on a combined query" in {
 
     the[Error] thrownBy {
@@ -175,21 +214,48 @@ class QueryBuilderSpec extends BaseXDTest {
                      | LEFT SEMI JOIN
                      | t2
                    """
-    println(query.build)
-    println(expected)
 
     compareAfterFormatting(query.build, expected)
   }
-  /*
-  def leftOuterJoin(other: Relation): Join = Join(this, other, JoinType.LeftOuter)
 
-  def rightOuterJoin(other: Relation): Join = Join(this, other, JoinType.RightOuter)
+  it should "be able to build a query with a left outer join clause" in {
 
-  def fullOuterJoin(other: Relation): Join = Join(this, other, JoinType.FullOuter)
+    val query = selectAll from ('t1 leftOuterJoin 't2)
 
-  def leftSemiJoin(other: Relation): Join = Join(this, other, JoinType.LeftSemi)*/
+    val expected = """
+                     | SELECT * FROM t1
+                     | LEFT OUTER JOIN
+                     | t2
+                   """
 
+    compareAfterFormatting(query.build, expected)
+  }
 
+  it should "be able to build a query with a right outer join clause" in {
+
+    val query = selectAll from ('t1 rightOuterJoin 't2)
+
+    val expected = """
+                     | SELECT * FROM t1
+                     | RIGHT OUTER JOIN
+                     | t2
+                   """
+
+    compareAfterFormatting(query.build, expected)
+  }
+
+  it should "be able to build a query with a full outer join clause" in {
+
+    val query = selectAll from ('t1 fullOuterJoin  't2)
+
+    val expected = """
+                     | SELECT * FROM t1
+                     | FULL OUTER JOIN
+                     | t2
+                   """
+
+    compareAfterFormatting(query.build, expected)
+  }
 
   it should "be able to maintain user associations" in {
 
@@ -204,6 +270,18 @@ class QueryBuilderSpec extends BaseXDTest {
   }
 
 
+  it should "be able to support aliases" in {
+
+    val query = select ('a as 'alias) from ('test as 'talias, (selectAll from 'table) as 'qalias)
+
+    val expected = """
+                     | SELECT a AS alias
+                     | FROM test AS talias JOIN ( SELECT * FROM table ) AS qalias
+                   """
+
+    compareAfterFormatting(query.build, expected)
+  }
+
 
 
   def compareAfterFormatting(query: String, expected: String) = {
@@ -215,19 +293,8 @@ class QueryBuilderSpec extends BaseXDTest {
     query.stripMargin.replaceAll(System.lineSeparator(), " ").trim.replaceAll(" +", " ")
 
 
-
-
-
-
-
-/* ALIAS columns, tables and queries
-  def as(alias: String): Identifier = AliasIdentifier(this, alias)
-
-  def as(alias: Symbol): Identifier = AliasIdentifier(this, alias.name)*/
-
-
-/*  def unary_- : Expression = Minus(this)
-
+/*
+  def unary_- : Expression = Minus(this)
   def unary_! : Predicate = Not(this)
 
   def +(other: Expression): Expression = Add(this, other)
@@ -307,26 +374,5 @@ class QueryBuilderSpec extends BaseXDTest {
   implicit def bigDecimal2Literal(d: java.math.BigDecimal): Literal = Literal(d)
   implicit def timestamp2Literal(t: Timestamp): Literal = Literal(t)
   implicit def binary2Literal(a: Array[Byte]): Literal = Literal(a)*/
-
-/*  def unionAll(newQuery: RunnableQuery): CombinedQuery =
-    generateCombinedQuery {
-      computeCombinationInfo(newQuery, UnionAll, query => query.unionAll(newQuery))
-    }
-
-  def unionDistinct(newQuery: RunnableQuery): CombinedQuery =
-    generateCombinedQuery {
-      computeCombinationInfo(newQuery, UnionDistinct, query => query.unionDistinct(newQuery))
-    }
-
-
-  def intersect(newQuery: RunnableQuery): CombinedQuery =
-    generateCombinedQuery {
-      computeCombinationInfo(newQuery, Intersect, query => query.intersect(newQuery))
-    }
-
-  def except(newQuery: RunnableQuery): CombinedQuery =
-    generateCombinedQuery {
-      computeCombinationInfo(newQuery, Except, query => query.except(newQuery))
-    }*/
 
 }
