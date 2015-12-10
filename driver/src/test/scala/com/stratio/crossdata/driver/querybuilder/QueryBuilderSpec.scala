@@ -15,8 +15,6 @@
  */
 package com.stratio.crossdata.driver.querybuilder
 
-import java.sql.Date
-
 import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -24,43 +22,70 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class QueryBuilderSpec extends BaseXDTest {
 
-  def formatOutput(query: String): String =
-    query.stripMargin.replace(System.lineSeparator(), " ").replaceAll ("""\s\s+""", " ").trim
+  "The Query Builder" should "be able to build a completed query using strings" in {
+
+    val query = select ("col, '1', max(col)") from "table inner join table2 on a = b" where "a = b" groupBy "col" having "a = b" orderBy "col ASC" limit 5
+
+    val expected = """
+                     | SELECT col, '1', max(col)
+                     | FROM table inner join table2 on a = b
+                     | WHERE a = b
+                     | GROUP BY col
+                     | HAVING a = b
+                     | ORDER BY col ASC
+                     | LIMIT 5
+                   """
+
+    compareAfterFormatting(query.build, expected)
+  }
+
+  it should "be able to join several queries" in {
+
+    val query = (selectAll from 'table) unionAll (selectAll from 'table2) unionAll (selectAll from 'table3)
+
+    val expected = """
+                     | SELECT * FROM table
+                     | UNION ALL
+                     | SELECT * FROM table2
+                     | UNION ALL
+                     | SELECT * FROM table3
+                   """
+
+    compareAfterFormatting(query.build, expected)
+  }
+
+  it should "not allow to add a filter on a combined query" in {
+
+    the [Error] thrownBy {
+      (selectAll from 'table) unionAll (selectAll from 'table2) where "a = b"
+    } should have message "Predicates cannot by applied to combined queries"
+
+  }
 
 
+  // TODO types tests
 
-  "The Query Builder" should " be able to build a completed query with distinct" in {
+  // TODO precedence tests
 
-    //val q2 = (select ("count(*), c") from "t1 INNER JOIN t2" where "a = 5" groupBy "substr(col), col2" orderBy "col2 desc" limit 10 where "b=10") unionAll (select ("ad") from "table")
-    //val q2 = select ('c as "alias", "1" as 'hola, distinct('col), sum('col), approxCountDistinct('col, 0.05)) from( 'table)
+  // TODO test by class
+
+  // TODO tests below
+
+  it should " be able to build a completed query with distinct" in {
+
+    //val q2 = selectAll from 'table where ('a < new Date(10) || 'a > 5) unionAll (selectAll from "table") unionDistinct   (selectAll from ('t1 as 'alias))
 
 
-    val q2 = selectAll from 'table where ('a < new Date(10) || 'a > 5) unionAll (selectAll from "table") unionDistinct   (selectAll from ('t1 as 'alias))
-
-    //selectAll from "t1"
-    // TEST and + - or, parenthesis, etc...
-    // TEST unionAll => cannot do where
-
-    // TODO relation alias??
-
-    println(">>>>>>>>>>>>>>>>>>>>" + q2.build)
-
-    //import Literal
-   /* val q1 = select('c) from 'table
-    val q2 = selectStr("count(*), col") from 'table
-
-    val query =
+    /*val query =
       select('col + 4, 'col)
         .from('table join 'table2 on "aaa" join 'table3 join (q1))
         .where((select('c) from 't) && q1 && 5 === 'aa)
         .groupBy("aa").having("a<5" && 'c)
         .orderBy('c).limit(1) unionAll (select('c) from 'table)
 
-    println(">>>>>>>>>>>>>>>>>>>>" + query.build)
-
-    println(">>>>>>>>>>>>>>>>>>>>" + (select('c) from 'tablequery where "a = 5" ).build )
-*/
     //val q2 = select('c) from 't where ("a" && ("b"))
+    */
+
 
 /*    val query = QueryBuilder
       .select()
@@ -486,5 +511,11 @@ class QueryBuilderSpec extends BaseXDTest {
                                   | FROM test""")
     query should be (expected)
   }*/
+
+  def compareAfterFormatting(query: String, expected: String) =
+    formatOutput(query) should be (formatOutput(expected))
+
+  def formatOutput(query: String): String =
+    query.stripMargin.replace(System.lineSeparator(), " ").trim.replaceAll(" +", " ")
 
 }

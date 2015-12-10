@@ -21,16 +21,19 @@ object SortDirection extends Enumeration {
   type SortDirection = Value
   val Ascending = Value("ASC")
   val Descending = Value("DESC")
+  val Default = Value("")
 }
 
 import SortDirection._
 
 object SortOrder {
-  def apply(expression: Expression, direction: SortDirection = Ascending): SortOrder =
+  def apply(expression: Expression, direction: SortDirection = Default): SortOrder =
     new SortOrder(expression, Some(direction))
 
   def apply(order: String): SortOrder = SortOrder(XDQLStatement(order))
+
 }
+
 
 class SortOrder private(val expression: Expression,
                         val direction: Option[SortDirection] = None) extends Expression {
