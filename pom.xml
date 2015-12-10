@@ -30,8 +30,8 @@
     <artifactId>parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Parent</name>
-    <description>Crossdata Parent</description>
+    <name>Stratio Crossdata Parent</name>
+    <description>Stratio Crossdata reactor</description>
     <url>http://stratio.github.io/crossdata/</url>
     <inceptionYear>2015</inceptionYear>
 

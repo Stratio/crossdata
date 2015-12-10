@@ -27,7 +27,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe = sql(s"SELECT * FROM $Type")
+    val dataframe = sql(s"SELECT * FROM $Type ")
 
     //Expectations
     val schema = dataframe.schema
