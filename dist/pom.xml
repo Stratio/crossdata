@@ -143,6 +143,23 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-config</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}/conf
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/config</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -204,7 +221,7 @@
                                 <mkdirs>
                                     <paths>
                                         <path>etc/sds/crossdata</path>
-                                        <path>etc/default</path>
+                                        <path>etc/default/crossdata</path>
                                         <path>var/run/sds</path>
                                         <path>var/log/sds/crossdata</path>
                                         <path>var/sds/crossdata</path>
@@ -217,6 +234,10 @@
                                 </mkdirs>
 
                                 <copyDirectory>
+                                    <from>target/crossdata-dist-${project.version}/conf/</from>
+                                    <to>/etc/sds/crossdata</to>
+                                </copyDirectory>
+                                <copyDirectory>
                                     <from>target/crossdata-dist-${project.version}/bin</from>
                                     <to>/opt/sds/crossdata/bin</to>
                                     <!-- afects all files on this directory -->
@@ -226,15 +247,24 @@
                                         <mode>0775</mode>
                                     </fileAttributes>
                                 </copyDirectory>
-                                <copyDirectory>
-                                    <from>target/crossdata-dist-${project.version}/conf</from>
-                                    <to>/etc/sds/crossdata</to>
-                                </copyDirectory>
+
                                 <copyDirectory>
                                     <from>target/crossdata-dist-${project.version}/lib</from>
                                     <to>/opt/sds/crossdata/lib</to>
                                 </copyDirectory>
 
+                                <copyFile>
+                                    <path>target/crossdata-dist-${project.version}/conf/server-application.conf</path>
+                                    <toFile>/etc/default/crossdata/server-application.conf</toFile>
+                                </copyFile>
+                                <copyFile>
+                                    <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
+                                    <toFile>/etc/default/crossdata/crossdata-env.sh</toFile>
+                                </copyFile>
+                                <copyFile>
+                                    <path>target/crossdata-dist-${project.version}/conf/server-log.properties</path>
+                                    <toFile>/etc/default/crossdata/server-log.properties</toFile>
+                                </copyFile>
                                 <copyFile>
                                     <path>src/main/include/README.rst</path>
                                     <toFile>/opt/sds/crossdata/README.rst</toFile>

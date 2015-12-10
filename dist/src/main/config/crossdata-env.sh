@@ -5,7 +5,7 @@
 # JSVCCMD
 # JAVA_HOME
 if [ -z $CROSSDATA_HOME ];then
-	CROSSDATA_HOME=$(pwd)
+	CROSSDATA_HOME="$(cd "`dirname "$0"`"/..; pwd)"
 	#CROSSDATA_HOME=/opt/sds/crossdata
 fi 
 if [ -z $CROSSDATA_LOGS ];then
@@ -23,6 +23,8 @@ CROSSDATA_LOG_ERR="${CROSSDATA_LOGS}/crossdata-server.err"
 CROSSDATA_SERVER_USER="root"
 # CROSSDATA_SERVER_PID
 CROSSDATA_SERVER_PID="${CROSSDATA_HOME}/crossdata-server.pid"
+
+CROSSDATA_CONF="/etc/sds/crossdata"
 
 echo "CROSSDATA_HOME = $CROSSDATA_HOME"
 echo "CROSSDATA_CONF = $CROSSDATA_CONF"
