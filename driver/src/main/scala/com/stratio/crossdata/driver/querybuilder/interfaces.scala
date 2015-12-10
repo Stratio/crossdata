@@ -35,8 +35,10 @@ trait Expression extends CrossdataSQLStatement {
   def unary_! : Predicate = Not(this)
 
   def +(other: Expression): Expression = Add(this, other)
+  def add(other: Expression): Expression = Add(this, other)
 
   def -(other: Expression): Expression = Subtract(this, other)
+  def substract(other: Expression): Expression = Subtract(this, other)
 
   def *(other: Expression): Expression = Multiply(this, other)
 
@@ -45,8 +47,10 @@ trait Expression extends CrossdataSQLStatement {
   def %(other: Expression): Expression = Remainder(this, other)
 
   def &&(other: Expression): Predicate = And(this, other)
+  def and(other: Expression): Predicate = And(this, other)
 
   def ||(other: Expression): Predicate = Or(this, other)
+  def or(other: Expression): Predicate = Or(this, other)
 
   def <(other: Expression): Predicate = LessThan(this, other)
 
