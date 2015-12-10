@@ -228,6 +228,8 @@
                         <exclude>**/*.rst</exclude>
                         <exclude>**/*.feature</exclude>
                         <exclude>**/*.conf</exclude>
+                        <exclude>**/*.sh</exclude>
+                        <exclude>**/*.properties</exclude>
                         <exclude>**/com/stratio/crossdata/connector/cassandra/DefaultSource.scala</exclude>
                         <exclude>**/com/stratio/crossdata/connector/elasticsearch/DefaultSource.scala</exclude>
                         <exclude>**/org/apache/spark/sql/cassandra/CassandraXDSourceRelation.scala</exclude>
@@ -241,6 +243,7 @@
                         <exclude>**/org/apache/spark/sql/crossdata/hive/test/LocalXDHiveContext.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/acceptance/TestXDContext.scala</exclude>
                         <exclude>**/testAT/**</exclude>
+                        <exclude>**/unix/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
