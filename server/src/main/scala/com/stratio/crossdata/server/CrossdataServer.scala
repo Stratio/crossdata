@@ -25,6 +25,7 @@ import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
+import scala.collection.JavaConversions._
 
 
 class CrossdataServer extends Daemon with ServerConfig {
@@ -37,13 +38,15 @@ class CrossdataServer extends Daemon with ServerConfig {
   override def init(p1: DaemonContext): Unit = ()
 
   override def start(): Unit = {
+
+    val sparkParams = config.entrySet()
+      .map(e => (e.getKey, e.getValue.unwrapped().toString))
+      .toMap
+      .filterKeys(_.startsWith("config.spark"))
+      .map(e => (e._1.replace("config.", ""), e._2))
+
     xdContext = {
-      val sparkContext = new SparkContext(new SparkConf()
-        .setAppName("Crossdata")
-        .setMaster(sparkMaster)
-        .setAll(
-          List(sparkDriverMemory, sparkExecutorMemory, sparkCores).filter(config.hasPath).map(k => k -> config.getString(k))
-        ))
+      val sparkContext = new SparkContext(new SparkConf().setAll(sparkParams))
       Some(new XDContext(sparkContext))
     }
 
