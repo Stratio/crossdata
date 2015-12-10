@@ -161,7 +161,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
       case PhysicalOperation(projectList, filterList, _) =>
         CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
           case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
-          case (SimpleLogicalPlan(projects, filters, _), _) => Some(projects.map(_.name), filters)
+          case (SimpleLogicalPlan(projects, filters, _), _) => Some(projects.map(_.name), filters) //TODOOOO
           case _ => ??? // TODO
         }
 
