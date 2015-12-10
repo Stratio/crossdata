@@ -27,7 +27,7 @@ object JoinType extends Enumeration {
 
   private def outer(tpStr: String): String = join(s" $tpStr OUTER ")
 
-  private def join(tpStr: String = ""): String = s" ${tpStr}JOIN"
+  private def join(tpStr: String = ""): String = s" ${tpStr} JOIN"
 }
 
 import JoinType._
