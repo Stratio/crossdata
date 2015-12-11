@@ -25,6 +25,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class QueryBuilderSpec extends BaseXDTest {
 
+
   "The Query Builder" should "be able to build a completed query using strings" in {
 
     val query = select("col, '1', max(col)") from "table inner join table2 on a = b" where "a = b" groupBy "col" having "a = b" orderBy "col ASC" limit 5
@@ -39,7 +40,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | LIMIT 5
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
 
@@ -53,7 +54,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | LIMIT 1
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "be able to add a where clause on a limited query which contains filters" in {
@@ -66,7 +67,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | LIMIT 1
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
 
@@ -82,7 +83,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | SELECT * FROM table3
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "support union distinct to join runnable queries" in {
@@ -95,7 +96,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | SELECT * FROM table2
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "support intersect to join runnable queries" in {
@@ -108,7 +109,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | SELECT * FROM table2
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "support except to join runnable queries" in {
@@ -121,7 +122,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | SELECT * FROM table2
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "not allow to add a filter on a combined query" in {
@@ -144,7 +145,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | (a > 5)
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "be able to build a query containing a subquery as a predicate" in {
@@ -155,7 +156,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | SELECT c + 4 FROM table
                      | WHERE col = ( SELECT c FROM t )
                    """
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
 
   }
 
@@ -173,7 +174,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | LIMIT 10
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
 
   }
 
@@ -188,7 +189,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | ) AS alias
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
 
   }
 
@@ -203,7 +204,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | ON test.id = animals.id
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "be able to build a query with a left semi join clause" in {
@@ -216,7 +217,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | t2
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "be able to build a query with a left outer join clause" in {
@@ -229,7 +230,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | t2
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "be able to build a query with a right outer join clause" in {
@@ -242,7 +243,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | t2
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "be able to build a query with a full outer join clause" in {
@@ -255,7 +256,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | t2
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
   it should "be able to maintain user associations" in {
@@ -267,7 +268,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | FROM test
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
 
@@ -280,11 +281,35 @@ class QueryBuilderSpec extends BaseXDTest {
                      | FROM test AS talias JOIN ( SELECT * FROM table ) AS qalias
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
-  it should "be able to support common functions in the select expression" in {
 
+  /*
+  This test is here as documentation. Actually, its testing Scala since
+  a mathematical precedence order is guaranteed by Scala's method names precedence table.
+
+  Check "Programming in Scala: A comprehensive step-by-step guide", M.Ordersky,
+  Section "5.8 - Operator precedence and associativity".
+  */
+  it should "make use of Scala's method names precedence rules" in {
+    val query = select ('a, 'c - 'd * 'a) from 'test
+
+    val expected = "SELECT a, c - (d * a) FROM test"
+
+    compareAfterFormatting(query, expected)
+  }
+
+  it should "keep operator precedence provided by the user through the use of parenthesis" in {
+    val query = select ('a, 'b * ( 'c - 'd )) from 'test
+
+    val expected = "SELECT a, b * (c - d) FROM test"
+
+    compareAfterFormatting(query, expected)
+  }
+
+
+  it should "be able to support common functions in the select expression" in {
     val query = select(
       distinct('col), countDistinct('col), sumDistinct('col),
       count(querybuilder.all), approxCountDistinct('col, 0.95),
@@ -298,7 +323,7 @@ class QueryBuilderSpec extends BaseXDTest {
                      | FROM table
                    """
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
 
@@ -356,11 +381,11 @@ class QueryBuilderSpec extends BaseXDTest {
    def isNotNull: Predicate = IsNotNull(this)*/
 
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
   }
 
-  def compareAfterFormatting(query: String, expected: String) = {
-    formatOutput(query) should be(formatOutput(expected))
+  def compareAfterFormatting(query: RunnableQuery, expected: String) = {
+    formatOutput(query.build) should be(formatOutput(expected))
   }
 
 
