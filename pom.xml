@@ -248,12 +248,6 @@
     </build>
 
     <profiles>
-        <profile>
-            <id>hive</id>
-            <modules>
-                <module>hive</module>
-            </modules>
-        </profile>
 
         <profile>
             <id>scala-2.10</id>
