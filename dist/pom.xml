@@ -31,15 +31,122 @@
     <description>${project.name}</description>
     <packaging>pom</packaging>
 
+
+    <dependencies>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-server</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.8</version>
+                <configuration>
+                    <configurationDirectory>conf</configurationDirectory>
+                    <copyConfigurationDirectory>true</copyConfigurationDirectory>
+                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+                    <assembleDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}
+                    </assembleDirectory>
+                    <extraJvmArguments>-Xms512m</extraJvmArguments>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <generateRepository>true</generateRepository>
+                    <licenseHeaderFile>${project.basedir}/src/main/include/LICENSE</licenseHeaderFile>
+                    <repositoryName>lib</repositoryName>
+                    <platforms>
+                        <platform>unix</platform>
+                    </platforms>
+
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>Assembler-Script</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <unixScriptTemplate>${project.basedir}/src/main/template/unix-script.sh</unixScriptTemplate>
+                            <programs>
+                                <program>
+                                    <mainClass>com.stratio.crossdata.server.CrossdataApplication</mainClass>
+                                    <id>crossdata-server</id>
+                                    <platforms>
+                                        <platform>unix</platform>
+                                    </platforms>
+                                    <jvmSettings>
+                                        <systemProperties>
+                                            <systemProperty>log4j.configuration=server-log.properties</systemProperty>
+                                        </systemProperties>
+                                    </jvmSettings>
+                                </program>
+                            </programs>
+                        </configuration>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/include</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-config</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}/conf
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/config</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.1</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
@@ -90,10 +197,11 @@
                                 <mkdirs>
                                     <paths>
                                         <path>etc/sds/crossdata</path>
-                                        <path>etc/default</path>
+                                        <path>etc/default/crossdata</path>
                                         <path>var/run/sds</path>
                                         <path>var/log/sds/crossdata</path>
                                         <path>var/sds/crossdata</path>
+                                        <path>/var/lock/subsys</path>
                                     </paths>
                                     <attributes>
                                         <user>stratio</user>
@@ -101,6 +209,27 @@
                                         <mode>775</mode>
                                     </attributes>
                                 </mkdirs>
+
+                                <copyDirectory>
+                                    <from>target/crossdata-dist-${project.version}/conf/</from>
+                                    <to>/etc/sds/crossdata</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>target/crossdata-dist-${project.version}/bin</from>
+                                    <to>/opt/sds/crossdata/bin</to>
+                                    <!-- afects all files on this directory -->
+                                    <fileAttributes>
+                                        <user>stratio</user>
+                                        <group>stratio</group>
+                                        <mode>0775</mode>
+                                    </fileAttributes>
+                                </copyDirectory>
+
+                                <copyDirectory>
+                                    <from>target/crossdata-dist-${project.version}/lib</from>
+                                    <to>/opt/sds/crossdata/lib</to>
+                                </copyDirectory>
+
                             </assembly>
                         </configuration>
                         <executions>
@@ -112,6 +241,55 @@
                                 </goals>
                                 <configuration>
                                     <architecture>noarch</architecture>
+                                    <assembly>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/init.d/rpm/crossdata</path>
+                                            <toFile>/etc/init.d/crossdata</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
+                                                <mode>755</mode>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/server-application.conf</path>
+                                            <toFile>/etc/default/crossdata/server-application.conf</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
+                                            <toFile>/etc/default/crossdata/crossdata-env.sh</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/server-log.properties</path>
+                                            <toFile>/etc/default/crossdata/server-log.properties</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/include/README.rst</path>
+                                            <toFile>/opt/sds/crossdata/README.rst</toFile>
+                                            <attributes>
+                                                <user>stratio</user>
+                                                <group>stratio</group>
+                                                <mode>644</mode>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/LICENSE</path>
+                                            <toFile>/opt/sds/crossdata/LICENSE</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/NOTICE</path>
+                                            <toFile>/opt/sds/crossdata/NOTICE</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
+                                            <toFile>/etc/default/crossdata-variables</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
+                                                <mode>755</mode>
+                                            </attributes>
+                                        </copyFile>
+                                    </assembly>
                                 </configuration>
                             </execution>
                             <execution>
@@ -122,6 +300,55 @@
                                 </goals>
                                 <configuration>
                                     <architecture>all</architecture>
+                                    <assembly>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/init.d/deb/crossdata</path>
+                                            <toFile>/etc/init.d/crossdata</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
+                                                <mode>755</mode>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/server-application.conf</path>
+                                            <toFile>/etc/default/crossdata/server-application.conf</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
+                                            <toFile>/etc/default/crossdata/crossdata-env.sh</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/server-log.properties</path>
+                                            <toFile>/etc/default/crossdata/server-log.properties</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/include/README.rst</path>
+                                            <toFile>/opt/sds/crossdata/README.rst</toFile>
+                                            <attributes>
+                                                <user>stratio</user>
+                                                <group>stratio</group>
+                                                <mode>644</mode>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/LICENSE</path>
+                                            <toFile>/opt/sds/crossdata/LICENSE</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/NOTICE</path>
+                                            <toFile>/opt/sds/crossdata/NOTICE</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
+                                            <toFile>/etc/default/crossdata-variables</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
+                                                <mode>755</mode>
+                                            </attributes>
+                                        </copyFile>
+                                    </assembly>
                                 </configuration>
                             </execution>
                         </executions>
