@@ -309,6 +309,26 @@ class QueryBuilderSpec extends BaseXDTest {
     compareAfterFormatting(query, expected)
   }
 
+  it should "generate correct queries using arithmetic operators" in {
+
+    val arithmeticExpressions = ('a + 'b)::('c - 'd)::('e * 'f)::('g / 'h)::('i % 'j)::Nil
+    val baseQuery = select (arithmeticExpressions:_*) from 'test
+
+    val query = (baseQuery /: arithmeticExpressions) {
+      (q, op) => q.where(op === 'ref)
+    }
+
+    val expectedExpressions = "a + b"::"c - d"::"e * f"::"g / h"::"i % j"::Nil
+    val expected = s"""
+                   |SELECT ${expectedExpressions mkString ", "}
+                   |FROM test
+                   |WHERE ${expectedExpressions.map(exp => s"($exp = ref)") mkString " AND "}
+                   |""".stripMargin
+
+    compareAfterFormatting(query.build, expected)
+
+  }
+
 
   it should "be able to support common functions in the select expression" in {
     val query = select(
