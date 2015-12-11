@@ -33,7 +33,7 @@ case class Minus(child: Expression) extends UnaryExpression {
 
 case class Not(child: Expression) extends Predicate {
   override private[querybuilder] def toXDQL: String = child match {
-    case _: Predicate => s"(${child.toXDQL})"
+    case _: Predicate => s" !(${child.toXDQL})"
     case _: Expression => s" !${child.toXDQL}} "
     case _ => s" !(${child.toXDQL})} "
   }
@@ -85,15 +85,6 @@ case class Remainder(left: Expression, right: Expression) extends BinaryExpressi
     case _: Literal | _: Identifier => child.toXDQL
     case _ => s"(${child.toXDQL})"
   }
-}
-
-// Other cases
-case class In(left: Expression, right: Expression*) extends Expression {
-  override private[querybuilder] def toXDQL: String = s" ${left.toXDQL} IN ${right map (_.toXDQL) mkString("(", ",", ")")}"
-}
-
-case class Like(left: Expression, right: Expression) extends BinaryExpression {
-  override val tokenStr = "LIKE"
 }
 
 //Select expressions

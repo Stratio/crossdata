@@ -112,3 +112,11 @@ case class IsNull(expr: Expression) extends Predicate {
 case class IsNotNull(expr: Expression) extends Predicate {
   override private[querybuilder] def toXDQL: String = s" ${expr.toXDQL} IS NOT NULL"
 }
+
+case class In(left: Expression, right: Expression*) extends Expression with Predicate {
+  override private[querybuilder] def toXDQL: String = s" ${left.toXDQL} IN ${right map (_.toXDQL) mkString("(", ",", ")")}"
+}
+
+case class Like(left: Expression, right: Expression) extends BinaryExpression with Predicate {
+  override val tokenStr = "LIKE"
+}
