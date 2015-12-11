@@ -69,9 +69,9 @@ trait Expression extends CrossdataSQLStatement {
   def desc: SortOrder = SortOrder(this, Descending)
 
 
-  def in(list: Expression*): Expression = In(this, list: _*)
+  def in(list: Expression*): Predicate = In(this, list: _*)
 
-  def like(other: Expression): Expression = Like(this, other)
+  def like(other: Expression): Predicate = Like(this, other)
 
 
   def isNull: Predicate = IsNull(this)

@@ -327,61 +327,95 @@ class QueryBuilderSpec extends BaseXDTest {
   }
 
 
-  it should "be able to support minus...jsdofj" in {
+  it should "be able to allow different order selections" in {
 
-    val query = select(
-      distinct('col), countDistinct('col), sumDistinct('col),
-      count(querybuilder.all), approxCountDistinct('col, 0.95),
-      avg('col), min('col), max('col), sum('col), abs('col)
-    ) from 'table
+    val queryAsc = selectAll from 'table orderBy('col asc)
+    val queryDesc = selectAll from 'table sortBy('col desc)
 
-    val expected = """
-                     | SELECT DISTINCT col, count( DISTINCT col), sum( DISTINCT col),
-                     | count(*), APPROXIMATE (0.95) count ( DISTINCT col),
-                     | avg(col), min(col), max(col), sum(col), abs(col)
-                     | FROM table
-                   """
-    println(formatOutput(expected))
-    println (formatOutput(query.build))
+    val expectedAsc =
+      """
+        | SELECT *
+        | FROM table
+        | ORDER BY col ASC
+      """
 
-    /*
+    val expectedDesc =
+      """
+        | SELECT *
+        | FROM table
+        | SORT BY col DESC
+      """
 
-   def unary_! : Predicate = Not(this)
+    compareAfterFormatting(queryAsc, expectedAsc)
+    compareAfterFormatting(queryDesc, expectedDesc)
 
-   def &&(other: Expression): Predicate = And(this, other)
-   def and(other: Expression): Predicate = And(this, other)
-
-   def ||(other: Expression): Predicate = Or(this, other)
-   def or(other: Expression): Predicate = Or(this, other)
-
-   def <(other: Expression): Predicate = LessThan(this, other)
-
-   def <=(other: Expression): Predicate = LessThanOrEqual(this, other)
-
-   def >(other: Expression): Predicate = GreaterThan(this, other)
-
-   def >=(other: Expression): Predicate = GreaterThanOrEqual(this, other)
-
-   def ===(other: Expression): Predicate = Equal(this, other)
-
-   def <>(other: Expression): Predicate = Equal(this, other)
-
-   def asc: SortOrder = SortOrder(this, Ascending)
-
-   def desc: SortOrder = SortOrder(this, Descending)
+  }
 
 
-   def in(list: Expression*): Expression = In(this, list: _*)
+  it should "be able to support comparison predicates" in {
 
-   def like(other: Expression): Expression = Like(this, other)
+    val query = selectAll from 'table where( !('a < 5 && 'a <= 5 && 'a > 5 && 'a >=5 && 'a === 5 && 'a <> 5 || false))
 
-
-   def isNull: Predicate = IsNull(this)
-
-   def isNotNull: Predicate = IsNotNull(this)*/
-
+    val expected =
+      """
+        | SELECT *
+        | FROM table
+        | WHERE !(((a < 5) AND (a <= 5) AND (a > 5) AND (a >= 5) AND (a = 5) AND (a <> 5)) OR false)
+      """
 
     compareAfterFormatting(query, expected)
+
+  }
+
+  it should "be able to support common predicates" in {
+
+    val query = selectAll from 'table where ( ('a in (2,3,4)) && ('b like "%R") && ('b isNull) && ('b isNotNull))
+
+    val expected =
+      """
+        | SELECT *
+        | FROM table
+        | WHERE ( a IN (2,3,4)) AND (b LIKE '%R') AND ( b IS NULL) AND ( b IS NOT NULL)
+      """
+
+    println(formatOutput(query.build))
+    println(formatOutput(expected))
+
+    compareAfterFormatting(query, expected)
+
+  }
+
+
+  it should "be able to support SparkSQL types" in {
+
+    val query = selectAll from 'table where ( ('a in (2,3,4)) && ('b like "%R") && ('b isNull) && ('b isNotNull))
+
+    val expected =
+      """
+        | SELECT *
+        | FROM table
+        | WHERE ( a IN (2,3,4)) AND (b LIKE '%R') AND ( b IS NULL) AND ( b IS NOT NULL)
+      """
+
+    println(formatOutput(query.build))
+    println(formatOutput(expected))
+
+    /* TODO implicit def boolean2Literal(b: Boolean): Literal = Literal(b)
+  implicit def byte2Literal(b: Byte): Literal = Literal(b)
+  implicit def short2Literal(s: Short): Literal = Literal(s)
+  implicit def int2Literal(i: Int): Literal = Literal(i)
+  implicit def long2Literal(l: Long): Literal = Literal(l)
+  implicit def float2Literal(f: Float): Literal = Literal(f)
+  implicit def double2Literal(d: Double): Literal = Literal(d)
+  implicit def string2Literal(s: String): Literal = Literal(s)
+  implicit def date2Literal(d: Date): Literal = Literal(d)
+  implicit def bigDecimal2Literal(d: BigDecimal): Literal = Literal(d.underlying())
+  implicit def bigDecimal2Literal(d: java.math.BigDecimal): Literal = Literal(d)
+  implicit def timestamp2Literal(t: Timestamp): Literal = Literal(t)
+  implicit def binary2Literal(a: Array[Byte]): Literal = Literal(a)*/
+
+    compareAfterFormatting(query, expected)
+
   }
 
   def compareAfterFormatting(query: RunnableQuery, expected: String) = {
@@ -395,18 +429,6 @@ class QueryBuilderSpec extends BaseXDTest {
 
 
 
-  /*  implicit def boolean2Literal(b: Boolean): Literal = Literal(b)
-    implicit def byte2Literal(b: Byte): Literal = Literal(b)
-    implicit def short2Literal(s: Short): Literal = Literal(s)
-    implicit def int2Literal(i: Int): Literal = Literal(i)
-    implicit def long2Literal(l: Long): Literal = Literal(l)
-    implicit def float2Literal(f: Float): Literal = Literal(f)
-    implicit def double2Literal(d: Double): Literal = Literal(d)
-    implicit def string2Literal(s: String): Literal = Literal(s)
-    implicit def date2Literal(d: Date): Literal = Literal(d)
-    implicit def bigDecimal2Literal(d: BigDecimal): Literal = Literal(d.underlying())
-    implicit def bigDecimal2Literal(d: java.math.BigDecimal): Literal = Literal(d)
-    implicit def timestamp2Literal(t: Timestamp): Literal = Literal(t)
-    implicit def binary2Literal(a: Array[Byte]): Literal = Literal(a)*/
+
 
 }
