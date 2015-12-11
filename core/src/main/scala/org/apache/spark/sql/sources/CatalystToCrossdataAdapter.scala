@@ -60,11 +60,13 @@ object CatalystToCrossdataAdapter {
 
     val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap(
       _.references flatMap {
-        case nat: AttributeReference if (att2udf contains nat) => //TODOOOOOOOOOO
+        case nat: AttributeReference if (att2udf contains nat) =>
           udfFlattenedActualParameters(nat, at => false -> relation.attributeMap(at)) :+ (true -> nat)
         case x => Seq(true -> relation.attributeMap(x))
       }
     ) groupBy (_._1) mapValues (_.map(_._2))
+
+
 
     val pushedFilters = filterPredicates.map {
       _ transform {
