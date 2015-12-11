@@ -17,13 +17,11 @@ package com.stratio.crossdata.server.actors
 
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
-import akka.routing.RoundRobinPool
 import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.{SparkConf, SparkContext}
 
 
 object ServerActor {

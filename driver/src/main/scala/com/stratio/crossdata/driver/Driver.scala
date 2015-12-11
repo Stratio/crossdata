@@ -27,7 +27,9 @@ import com.stratio.crossdata.driver.config.DriverConfig._
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import com.typesafe.config.{ConfigValue, ConfigValueFactory}
 import org.apache.log4j.Logger
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
+import org.apache.spark.sql.types.{StructType, DataType}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
@@ -44,20 +46,25 @@ object Driver extends DriverConfig {
 
   def apply() = new Driver()
 
+  def apply(flattenTables: Boolean) = new Driver(flattenTables: Boolean)
 }
 
-class Driver(properties: java.util.Map[String, ConfigValue]) {
+class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean) {
+
+  def this(properties: java.util.Map[String, ConfigValue]) = this(properties, false)
 
   def this(serverHosts: java.util.List[String]) =
-    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)))
+    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)), false)
 
-  def this() = this(Map.empty[String, ConfigValue])
+  def this(flattenTables: Boolean) = this(Map.empty[String, ConfigValue], flattenTables)
+
+  def this() = this(false)
 
   import Driver._
 
   /**
-   * Tuple (tableName, Optional(databaseName))
-   */
+    * Tuple (tableName, Optional(databaseName))
+    */
   type TableIdentifier = (String, Option[String])
 
   private lazy val logger = Driver.logger
@@ -76,6 +83,12 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
       system.logConfiguration()
     }
 
+    val contactPoints: List[String] = {
+      val hosts = finalConfig.getStringList("config.cluster.hosts").toList
+      val clusterName = Driver.config.getString("config.cluster.name")
+      hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
+    }
+
     val initialContacts: Set[ActorSelection] = contactPoints.map(system.actorSelection).toSet
 
     logger.debug("Initial contacts: " + initialContacts)
@@ -83,11 +96,7 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     system.actorOf(ProxyActor.props(clusterClientActor, this), "proxy-actor")
   }
 
-  private lazy val contactPoints: List[String] = {
-    val hosts = Driver.config.getStringList("config.cluster.hosts").toList
-    val clusterName = Driver.config.getString("config.cluster.name")
-    hosts map (host=>s"akka.tcp://$clusterName@$host$ActorsPath" )
-  }
+
 
   /**
     * Executes a SQL sentence in a synchronous way.
@@ -126,7 +135,7 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     * @return A sequence of tables an its database
     */
   def listTables(databaseName: Option[String] = None): Seq[TableIdentifier] = {
-    def processTableName(qualifiedName: String) : (String, Option[String]) = {
+    def processTableName(qualifiedName: String): (String, Option[String]) = {
       qualifiedName.split('.') match {
         case table if table.length == 1 => (table(0), None)
         case table if table.length == 2 => (table(1), Some(table(0)))
@@ -146,11 +155,31 @@ class Driver(properties: java.util.Map[String, ConfigValue]) {
     * @return A sequence with the metadata of the fields of the table.
     */
   def describeTable(database: Option[String], tableName: String): Seq[FieldMetadata] = {
+
+    def extractNameDataType: Row => (String, String) = row => (row.getString(0), row.getString(1))
+
     syncQuery(SQLCommand(s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")) match {
+
       case SuccessfulQueryResult(_, result, _) =>
-        result.map(row => FieldMetadata(row.getString(0), DataTypesUtils.toDataType(row.getString(1))))
-      case other => handleCommandError(other)
+        result.map(extractNameDataType) flatMap { case (name, dataType) =>
+          if (!flattenTables) {
+            FieldMetadata(name, DataTypesUtils.toDataType(dataType)) :: Nil
+          } else {
+            getFlattenedFields(name, DataTypesUtils.toDataType(dataType))
+          }
+        } toSeq
+
+      case other =>
+        handleCommandError(other)
     }
+  }
+
+
+  private def getFlattenedFields(fieldName: String, dataType: DataType): Seq[FieldMetadata] = dataType match {
+    case structType: StructType =>
+      structType.flatMap(field => getFlattenedFields(s"$fieldName.${field.name}", field.dataType))
+    case _ =>
+      FieldMetadata(fieldName, dataType) :: Nil
   }
 
   private def handleCommandError(result: SQLResult) = result match {

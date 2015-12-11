@@ -21,15 +21,6 @@ import com.mongodb.casbah.commons.MongoDBObject
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
 
-sealed trait MongoDefaultConstants {
-  val Database = "highschool"
-  val Collection = "students"
-  val MongoHost = "127.0.0.1"
-  val MongoPort = 27017
-  val SourceProvider = "mongodb"
-  val MongoProvider = "com.stratio.provider.mongodb"
-}
-
 object MongoExample extends App with MongoDefaultConstants {
 
   val mongoClient = prepareEnvironment()
@@ -39,7 +30,7 @@ object MongoExample extends App with MongoDefaultConstants {
     xdContext.sql(
       s"""|CREATE TEMPORARY TABLE $Collection
           |(id STRING, age INT, description STRING, enrolled BOOLEAN, name STRING)
-          |USING $SourceProvider
+          |USING $MongoConnector
           |OPTIONS (
           |host '$MongoHost:$MongoPort',
           |database '$Database',
