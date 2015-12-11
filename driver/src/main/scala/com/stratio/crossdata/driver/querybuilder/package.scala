@@ -17,7 +17,7 @@ package com.stratio.crossdata.driver
 
 import java.sql.{Date, Timestamp}
 
-import com.stratio.crossdata.driver.querybuilder.{ProjectedSelect, Expression}
+import com.stratio.crossdata.driver.querybuilder.{Insert, ProjectedSelect, Expression}
 import com.stratio.crossdata.driver.querybuilder.dslentities._
 
 import scala.language.implicitConversions
@@ -42,18 +42,19 @@ trait Identifiers {
   implicit def symbol2Identifier(s: Symbol): Identifier = EntityIdentifier(s.name)
 }
 
-trait InitialPhrases {
-  def select(projections: Expression*): ProjectedSelect = new ProjectedSelect(projections: _*)
+trait InitialSelectPhrases {
+  def select(projections: Expression*): ProjectedSelect = select(projections)
 
-  def select(projections: String): ProjectedSelect = select(XDQLStatement(projections))
+  def select(projections: String): ProjectedSelect = select(XDQLStatement(projections)::Nil)
 
-  def selectAll: ProjectedSelect = new ProjectedSelect(AsteriskExpression())
+  def selectAll: ProjectedSelect = select(AsteriskExpression()::Nil)
 
-  // TODO def createTempView(name: String): ViewStatement = new ViewStatement()
-  // TODO def createTable
-  // TODO def importTable
-  // TODO drop table
-  // TODO insertFromSelect
+  protected def select(projections: Seq[Expression], context: String => String = x => x): ProjectedSelect =
+    new ProjectedSelect(projections:_*)(context)
+}
+
+trait InitialInsertPhrases {
+  def insert: Insert = new Insert
 }
 
 trait ExpressionOperators {
@@ -80,7 +81,7 @@ trait ExpressionOperators {
   def all: Expression = AsteriskExpression()
 }
 
-package object querybuilder extends InitialPhrases
+package object querybuilder extends InitialSelectPhrases with InitialInsertPhrases
   with Literals
   with Identifiers
   with ExpressionOperators

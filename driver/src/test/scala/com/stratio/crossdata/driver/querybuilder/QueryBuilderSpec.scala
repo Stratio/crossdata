@@ -329,6 +329,18 @@ class QueryBuilderSpec extends BaseXDTest {
 
   }
 
+  it should "generate insert-select queries" in {
+
+    val selQueryStr = "SELECT a FROM sourceTable"
+
+    Seq(
+      (insert into 'test select 'a from 'sourceTable, s"INSERT INTO test $selQueryStr"),
+      (insert overwrite 'test select 'a from 'sourceTable, s"INSERT OVERWRITE test $selQueryStr")
+    ) foreach { case (query, expected) =>
+      compareAfterFormatting(query.build, expected)
+    }
+
+  }
 
   it should "be able to support common functions in the select expression" in {
     val query = select(

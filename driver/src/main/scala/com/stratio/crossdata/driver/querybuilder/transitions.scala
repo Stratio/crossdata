@@ -24,7 +24,7 @@ trait Groupable {
   def groupBy(groupingExpressions: String): GroupedQuery = groupBy(XDQLStatement(groupingExpressions))
 
   def groupBy(groupingExpressions: Expression*): GroupedQuery =
-    new GroupedQuery(projections, relation, filters, groupingExpressions)
+    new GroupedQuery(projections, relation, context, filters, groupingExpressions)
 
 }
 
@@ -44,7 +44,14 @@ trait Sortable {
   def orderBy(ordering: SortOrder*): SortedQuery = orderOrSortBy(global = true, ordering)
 
   private def orderOrSortBy(global: Boolean, ordering: Seq[SortOrder]): SortedQuery =
-    new SortedQuery(projections, relation, filters, groupingExpressions, havingExpressions, SortCriteria(global, ordering))
+    new SortedQuery(projections,
+      relation,
+      context,
+      filters,
+      groupingExpressions,
+      havingExpressions,
+      SortCriteria(global, ordering)
+    )
 
 }
 
@@ -54,6 +61,7 @@ trait Limitable {
   def limit(value: Int): LimitedQuery = new LimitedQuery(
     projections,
     relation,
+    context,
     filters,
     groupingExpressions,
     havingExpressions,
@@ -118,6 +126,7 @@ trait Combinable extends CrossdataSQLStatement {
     new CombinedQuery(
       this.projections,
       this.relation,
+      this.context,
       this.filters,
       this.groupingExpressions,
       this.havingExpressions,

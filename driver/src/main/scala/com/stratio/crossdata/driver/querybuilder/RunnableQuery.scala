@@ -31,6 +31,7 @@ object RunnableQuery {
 
 abstract class RunnableQuery protected(protected val projections: Seq[Expression],
                                        protected val relation: Relation,
+                                       protected val context: String => String,
                                        protected val filters: Option[Predicate] = None,
                                        protected val groupingExpressions: Seq[Expression] = Seq.empty,
                                        protected val havingExpressions: Option[Predicate] = None,
@@ -56,17 +57,18 @@ abstract class RunnableQuery protected(protected val projections: Seq[Expression
       stringfy[CrossdataSQLStatement](head, elements, _.toXDQL)
 
     //Intentionally this way spaced
-    s"""
-        |SELECT ${projections map (_.toXDQL) mkString ", "}
-        | FROM ${relation.toXDQL}
-        | ${stringfyXDQL(" WHERE", filters.toSeq)}
-        |${stringfyXDQL(" GROUP BY", groupingExpressions)}
-        |${stringfyXDQL(" HAVING", havingExpressions.toSeq)}
-        |${stringfyXDQL("", ordering.toSeq)}
-        |${stringfy[Int](" LIMIT", limit.toSeq, _.toString)}
-        |${composition.fold("")(_.toXDQL)}
+    context {
+      s"""
+         |SELECT ${projections map (_.toXDQL) mkString ", "}
+         | FROM ${relation.toXDQL}
+         | ${stringfyXDQL(" WHERE", filters.toSeq)}
+         |${stringfyXDQL(" GROUP BY", groupingExpressions)}
+         |${stringfyXDQL(" HAVING", havingExpressions.toSeq)}
+         |${stringfyXDQL("", ordering.toSeq)}
+         |${stringfy[Int](" LIMIT", limit.toSeq, _.toString)}
+         |${composition.fold("")(_.toXDQL)}
      """.stripMargin.replace(System.lineSeparator(), "")
-    //.replaceAll ("""\s\s+""", " ").trim
+    }
   }
 
   def build: String = toXDQL
