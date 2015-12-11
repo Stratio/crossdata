@@ -45,16 +45,20 @@ with Predicate {
 
 }
 
+private[dslentities] trait EqualityCheckers extends BinaryExpression {
+  //TODO: Improve management of cases as `x === y === z`
+  override def childExpansion(child: Expression): String = child.toXDQL
+}
+
 // Comparison predicates
-case class Equal(left: Expression, right: Expression) extends BinaryExpression //TODO: Review
+case class Equal(left: Expression, right: Expression) extends EqualityCheckers
 with Predicate {
-
   override val tokenStr: String = "="
+}
 
-  override def childExpansion(child: Expression): String = child match {
-    case _: Expression => child.toXDQL
-    case _ => s"(${child.toXDQL})"
-  }
+case class Different(left: Expression, right: Expression) extends EqualityCheckers
+with Predicate {
+  override val tokenStr: String = "<>"
 }
 
 case class LessThan(left: Expression, right: Expression) extends BinaryExpression //TODO: Review

@@ -62,6 +62,8 @@ trait Expression extends CrossdataSQLStatement {
 
   def ===(other: Expression): Predicate = Equal(this, other)
 
+  def <>(other: Expression): Predicate = Different(this, other)
+
   def asc: SortOrder = SortOrder(this, Ascending)
 
   def desc: SortOrder = SortOrder(this, Descending)
