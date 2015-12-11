@@ -43,6 +43,8 @@ case "$1" in
   chmod -R 775 $DIR_INSTALL
   chmod 775 $DIR_LOG
 
+  touch /var/run/sds/crossdata.pid
+
   update-rc.d crossdata defaults
   ;;
 

@@ -40,6 +40,7 @@ chmod 775 $DIR_LOG
 chmod 755 /etc/init.d/crossdata
 chmod 755 /opt/sds/crossdata/bin/*
 chmod +x /etc/default/crossdata
+touch /var/run/sds/crossdata.pid
 
 /sbin/chkconfig --add crossdata
 

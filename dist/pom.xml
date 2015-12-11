@@ -96,30 +96,6 @@
                             <goal>assemble</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>Assembler-Daemon</id>
-                        <phase>package</phase>
-                        <configuration>
-                            <unixScriptTemplate>${project.basedir}/src/main/template/unix-daemon.sh</unixScriptTemplate>
-                            <programs>
-                                <program>
-                                    <mainClass>com.stratio.crossdata.server.CrossdataServer</mainClass>
-                                    <id>crossdata-server-daemon</id>
-                                    <platforms>
-                                        <platform>unix</platform>
-                                    </platforms>
-                                    <jvmSettings>
-                                        <systemProperties>
-                                            <systemProperty>log4j.configuration=server-log.properties</systemProperty>
-                                        </systemProperties>
-                                    </jvmSettings>
-                                </program>
-                            </programs>
-                        </configuration>
-                        <goals>
-                            <goal>assemble</goal>
-                        </goals>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -225,6 +201,7 @@
                                         <path>var/run/sds</path>
                                         <path>var/log/sds/crossdata</path>
                                         <path>var/sds/crossdata</path>
+                                        <path>/var/lock/subsys</path>
                                     </paths>
                                     <attributes>
                                         <user>stratio</user>
@@ -253,54 +230,6 @@
                                     <to>/opt/sds/crossdata/lib</to>
                                 </copyDirectory>
 
-                                <copyFile>
-                                    <path>target/crossdata-dist-${project.version}/conf/server-application.conf</path>
-                                    <toFile>/etc/default/crossdata/server-application.conf</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
-                                    <toFile>/etc/default/crossdata/crossdata-env.sh</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>target/crossdata-dist-${project.version}/conf/server-log.properties</path>
-                                    <toFile>/etc/default/crossdata/server-log.properties</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>src/main/include/README.rst</path>
-                                    <toFile>/opt/sds/crossdata/README.rst</toFile>
-                                    <attributes>
-                                        <user>stratio</user>
-                                        <group>stratio</group>
-                                        <mode>644</mode>
-                                    </attributes>
-                                </copyFile>
-                                <copyFile>
-                                    <path>target/crossdata-dist-${project.version}/LICENSE</path>
-                                    <toFile>/opt/sds/crossdata/LICENSE</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>target/crossdata-dist-${project.version}/NOTICE</path>
-                                    <toFile>/opt/sds/crossdata/NOTICE</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>src/main/unix/files_and_dirs/etc/init.d/crossdata</path>
-                                    <toFile>/etc/init.d/crossdata</toFile>
-                                    <attributes>
-                                        <user>root</user>
-                                        <group>root</group>
-                                        <mode>755</mode>
-                                    </attributes>
-                                </copyFile>
-                                <copyFile>
-                                    <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
-                                    <toFile>/etc/default/crossdata-variables</toFile>
-                                    <attributes>
-                                        <user>root</user>
-                                        <group>root</group>
-                                        <mode>755</mode>
-                                    </attributes>
-                                </copyFile>
-
                             </assembly>
                         </configuration>
                         <executions>
@@ -312,6 +241,55 @@
                                 </goals>
                                 <configuration>
                                     <architecture>noarch</architecture>
+                                    <assembly>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/init.d/rpm/crossdata</path>
+                                            <toFile>/etc/init.d/crossdata</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
+                                                <mode>755</mode>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/server-application.conf</path>
+                                            <toFile>/etc/default/crossdata/server-application.conf</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
+                                            <toFile>/etc/default/crossdata/crossdata-env.sh</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/server-log.properties</path>
+                                            <toFile>/etc/default/crossdata/server-log.properties</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/include/README.rst</path>
+                                            <toFile>/opt/sds/crossdata/README.rst</toFile>
+                                            <attributes>
+                                                <user>stratio</user>
+                                                <group>stratio</group>
+                                                <mode>644</mode>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/LICENSE</path>
+                                            <toFile>/opt/sds/crossdata/LICENSE</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/NOTICE</path>
+                                            <toFile>/opt/sds/crossdata/NOTICE</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
+                                            <toFile>/etc/default/crossdata-variables</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
+                                                <mode>755</mode>
+                                            </attributes>
+                                        </copyFile>
+                                    </assembly>
                                 </configuration>
                             </execution>
                             <execution>
@@ -322,6 +300,55 @@
                                 </goals>
                                 <configuration>
                                     <architecture>all</architecture>
+                                    <assembly>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/init.d/deb/crossdata</path>
+                                            <toFile>/etc/init.d/crossdata</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
+                                                <mode>755</mode>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/server-application.conf</path>
+                                            <toFile>/etc/default/crossdata/server-application.conf</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
+                                            <toFile>/etc/default/crossdata/crossdata-env.sh</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/server-log.properties</path>
+                                            <toFile>/etc/default/crossdata/server-log.properties</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/include/README.rst</path>
+                                            <toFile>/opt/sds/crossdata/README.rst</toFile>
+                                            <attributes>
+                                                <user>stratio</user>
+                                                <group>stratio</group>
+                                                <mode>644</mode>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/LICENSE</path>
+                                            <toFile>/opt/sds/crossdata/LICENSE</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/NOTICE</path>
+                                            <toFile>/opt/sds/crossdata/NOTICE</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
+                                            <toFile>/etc/default/crossdata-variables</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
+                                                <mode>755</mode>
+                                            </attributes>
+                                        </copyFile>
+                                    </assembly>
                                 </configuration>
                             </execution>
                         </executions>
