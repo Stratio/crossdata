@@ -83,6 +83,12 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
       system.logConfiguration()
     }
 
+    val contactPoints: List[String] = {
+      val hosts = finalConfig.getStringList("config.cluster.hosts").toList
+      val clusterName = Driver.config.getString("config.cluster.name")
+      hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
+    }
+
     val initialContacts: Set[ActorSelection] = contactPoints.map(system.actorSelection).toSet
 
     logger.debug("Initial contacts: " + initialContacts)
@@ -90,11 +96,7 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
     system.actorOf(ProxyActor.props(clusterClientActor, this), "proxy-actor")
   }
 
-  private lazy val contactPoints: List[String] = {
-    val hosts = Driver.config.getStringList("config.cluster.hosts").toList
-    val clusterName = Driver.config.getString("config.cluster.name")
-    hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
-  }
+
 
   /**
     * Executes a SQL sentence in a synchronous way.

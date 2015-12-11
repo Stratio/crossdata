@@ -20,8 +20,6 @@ import java.io.File
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 
-import scala.collection.JavaConversions._
-
 object ServerConfig {
   val SERVER_BASIC_CONFIG = "server-reference.conf"
   val PARENT_CONFIG_NAME = "crossdata-server"
@@ -35,17 +33,6 @@ object ServerConfig {
 }
 
 trait ServerConfig extends NumberActorConfig {
-
-  def getLocalIPs(): List[String] = {
-    val addresses = for {
-      networkInterface <- java.net.NetworkInterface.getNetworkInterfaces()
-      address <- networkInterface.getInetAddresses
-    } yield address.toString
-    val filterthese = List(".*127.0.0.1", ".*localhost.*", ".*::1", ".*0:0:0:0:0:0:0:1")
-    for {r <- addresses.toList; if (filterthese.find(e => r.matches(e)).isEmpty)} yield r
-  }
-
-  val ips = getLocalIPs()
 
   val logger: Logger
 
@@ -63,14 +50,16 @@ trait ServerConfig extends NumberActorConfig {
       if (resource != null) {
         val userConfig = ConfigFactory.parseResources(configResource).getConfig(ServerConfig.PARENT_CONFIG_NAME)
         defaultConfig = userConfig.withFallback(defaultConfig)
+        logger.info("User resource (" + configResource + ") found in resources")
       } else {
-        logger.warn("User resource (" + configResource + ") haven't been found")
+        logger.warn("User resource (" + configResource + ") hasn't been found")
         val file = new File(configResource)
         if (file.exists()) {
           val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
           defaultConfig = userConfig.withFallback(defaultConfig)
+          logger.info("User resource (" + configResource + ") found in classpath")
         } else {
-          logger.warn("User file (" + configResource + ") haven't been found in classpath")
+          logger.warn("User file (" + configResource + ") hasn't been found in classpath")
         }
       }
     }
@@ -80,8 +69,9 @@ trait ServerConfig extends NumberActorConfig {
       if (file.exists()) {
         val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
         defaultConfig = userConfig.withFallback(defaultConfig)
+        logger.info("External file (" + configFile + ") found")
       } else {
-        logger.warn("User file (" + configFile + ") haven't been found")
+        logger.warn("External file (" + configFile + ") hasn't been found")
       }
     }
 
