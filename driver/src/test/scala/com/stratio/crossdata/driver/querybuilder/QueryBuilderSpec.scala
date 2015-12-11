@@ -318,7 +318,7 @@ class QueryBuilderSpec extends BaseXDTest {
 
     val expectedExpressions = "a + b"::"c - d"::"e * f"::"g / h"::"i % j"::Nil
     val expected = s"""
-                   |SELECT ${arithmeticExpressions.map(_.toXDQL) mkString ", "}
+                   |SELECT ${expectedExpressions mkString ", "}
                    |FROM test
                    |WHERE ${expectedExpressions.map(exp => s"($exp = ref)") mkString " AND "}
                    |""".stripMargin
