@@ -76,6 +76,8 @@ trait ExpressionOperators {
   def max(e: Expression): Expression = Max(e)
 
   def abs(e: Expression): Expression = Abs(e)
+
+  def all: Expression = AsteriskExpression()
 }
 
 package object querybuilder extends InitialPhrases

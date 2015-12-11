@@ -17,6 +17,7 @@ package com.stratio.crossdata.driver.querybuilder
 
 import java.sql.Date
 
+import com.stratio.crossdata.driver.querybuilder
 import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -246,7 +247,7 @@ class QueryBuilderSpec extends BaseXDTest {
 
   it should "be able to build a query with a full outer join clause" in {
 
-    val query = selectAll from ('t1 fullOuterJoin  't2)
+    val query = selectAll from ('t1 fullOuterJoin 't2)
 
     val expected = """
                      | SELECT * FROM t1
@@ -282,7 +283,81 @@ class QueryBuilderSpec extends BaseXDTest {
     compareAfterFormatting(query.build, expected)
   }
 
+  it should "be able to support common functions in the select expression" in {
 
+    val query = select(
+      distinct('col), countDistinct('col), sumDistinct('col),
+      count(querybuilder.all), approxCountDistinct('col, 0.95),
+      avg('col), min('col), max('col), sum('col), abs('col)
+    ) from 'table
+
+    val expected = """
+                     | SELECT DISTINCT col, count( DISTINCT col), sum( DISTINCT col),
+                     | count(*), APPROXIMATE (0.95) count ( DISTINCT col),
+                     | avg(col), min(col), max(col), sum(col), abs(col)
+                     | FROM table
+                   """
+
+    compareAfterFormatting(query.build, expected)
+  }
+
+
+  it should "be able to support minus...jsdofj" in {
+
+    val query = select(
+      distinct('col), countDistinct('col), sumDistinct('col),
+      count(querybuilder.all), approxCountDistinct('col, 0.95),
+      avg('col), min('col), max('col), sum('col), abs('col)
+    ) from 'table
+
+    val expected = """
+                     | SELECT DISTINCT col, count( DISTINCT col), sum( DISTINCT col),
+                     | count(*), APPROXIMATE (0.95) count ( DISTINCT col),
+                     | avg(col), min(col), max(col), sum(col), abs(col)
+                     | FROM table
+                   """
+    println(formatOutput(expected))
+    println (formatOutput(query.build))
+
+    /*
+
+   def unary_! : Predicate = Not(this)
+
+   def &&(other: Expression): Predicate = And(this, other)
+   def and(other: Expression): Predicate = And(this, other)
+
+   def ||(other: Expression): Predicate = Or(this, other)
+   def or(other: Expression): Predicate = Or(this, other)
+
+   def <(other: Expression): Predicate = LessThan(this, other)
+
+   def <=(other: Expression): Predicate = LessThanOrEqual(this, other)
+
+   def >(other: Expression): Predicate = GreaterThan(this, other)
+
+   def >=(other: Expression): Predicate = GreaterThanOrEqual(this, other)
+
+   def ===(other: Expression): Predicate = Equal(this, other)
+
+   def <>(other: Expression): Predicate = Equal(this, other)
+
+   def asc: SortOrder = SortOrder(this, Ascending)
+
+   def desc: SortOrder = SortOrder(this, Descending)
+
+
+   def in(list: Expression*): Expression = In(this, list: _*)
+
+   def like(other: Expression): Expression = Like(this, other)
+
+
+   def isNull: Predicate = IsNull(this)
+
+   def isNotNull: Predicate = IsNotNull(this)*/
+
+
+    compareAfterFormatting(query.build, expected)
+  }
 
   def compareAfterFormatting(query: String, expected: String) = {
     formatOutput(query) should be(formatOutput(expected))
@@ -293,86 +368,20 @@ class QueryBuilderSpec extends BaseXDTest {
     query.stripMargin.replaceAll(System.lineSeparator(), " ").trim.replaceAll(" +", " ")
 
 
-/*
-  def unary_- : Expression = Minus(this)
-  def unary_! : Predicate = Not(this)
-
-  def +(other: Expression): Expression = Add(this, other)
-  def add(other: Expression): Expression = Add(this, other)
-
-  def -(other: Expression): Expression = Subtract(this, other)
-  def substract(other: Expression): Expression = Subtract(this, other)
-
-  def *(other: Expression): Expression = Multiply(this, other)
-
-  def /(other: Expression): Expression = Divide(this, other)
-
-  def %(other: Expression): Expression = Remainder(this, other)
-
-  def &&(other: Expression): Predicate = And(this, other)
-  def and(other: Expression): Predicate = And(this, other)
-
-  def ||(other: Expression): Predicate = Or(this, other)
-  def or(other: Expression): Predicate = Or(this, other)
-
-  def <(other: Expression): Predicate = LessThan(this, other)
-
-  def <=(other: Expression): Predicate = LessThanOrEqual(this, other)
-
-  def >(other: Expression): Predicate = GreaterThan(this, other)
-
-  def >=(other: Expression): Predicate = GreaterThanOrEqual(this, other)
-
-  def ===(other: Expression): Predicate = Equal(this, other)
-
-  def asc: SortOrder = SortOrder(this, Ascending)
-
-  def desc: SortOrder = SortOrder(this, Descending)
 
 
-  def in(list: Expression*): Expression = In(this, list: _*)
-
-  def like(other: Expression): Expression = Like(this, other)
-
-
-  def isNull: Predicate = IsNull(this)
-
-  def isNotNull: Predicate = IsNotNull(this)*/
-
-
-/*  def distinct(e: Expression*): Expression = Distinct(e: _*)
-
-  def sum(e: Expression): Expression = Sum(e)
-
-  def sumDistinct(e: Expression): Expression = SumDistinct(e)
-
-  def count(e: Expression): Expression = Count(e)
-
-  def countDistinct(e: Expression*): Expression = CountDistinct(e: _*)
-
-  def approxCountDistinct(e: Expression, rsd: Double): Expression = ApproxCountDistinct(e, rsd)
-
-  def avg(e: Expression): Expression = Avg(e)
-
-  def min(e: Expression): Expression = Min(e)
-
-  def max(e: Expression): Expression = Max(e)
-
-  def abs(e: Expression): Expression = Abs(e)*/
-
-
-/*  implicit def boolean2Literal(b: Boolean): Literal = Literal(b)
-  implicit def byte2Literal(b: Byte): Literal = Literal(b)
-  implicit def short2Literal(s: Short): Literal = Literal(s)
-  implicit def int2Literal(i: Int): Literal = Literal(i)
-  implicit def long2Literal(l: Long): Literal = Literal(l)
-  implicit def float2Literal(f: Float): Literal = Literal(f)
-  implicit def double2Literal(d: Double): Literal = Literal(d)
-  implicit def string2Literal(s: String): Literal = Literal(s)
-  implicit def date2Literal(d: Date): Literal = Literal(d)
-  implicit def bigDecimal2Literal(d: BigDecimal): Literal = Literal(d.underlying())
-  implicit def bigDecimal2Literal(d: java.math.BigDecimal): Literal = Literal(d)
-  implicit def timestamp2Literal(t: Timestamp): Literal = Literal(t)
-  implicit def binary2Literal(a: Array[Byte]): Literal = Literal(a)*/
+  /*  implicit def boolean2Literal(b: Boolean): Literal = Literal(b)
+    implicit def byte2Literal(b: Byte): Literal = Literal(b)
+    implicit def short2Literal(s: Short): Literal = Literal(s)
+    implicit def int2Literal(i: Int): Literal = Literal(i)
+    implicit def long2Literal(l: Long): Literal = Literal(l)
+    implicit def float2Literal(f: Float): Literal = Literal(f)
+    implicit def double2Literal(d: Double): Literal = Literal(d)
+    implicit def string2Literal(s: String): Literal = Literal(s)
+    implicit def date2Literal(d: Date): Literal = Literal(d)
+    implicit def bigDecimal2Literal(d: BigDecimal): Literal = Literal(d.underlying())
+    implicit def bigDecimal2Literal(d: java.math.BigDecimal): Literal = Literal(d)
+    implicit def timestamp2Literal(t: Timestamp): Literal = Literal(t)
+    implicit def binary2Literal(a: Array[Byte]): Literal = Literal(a)*/
 
 }
