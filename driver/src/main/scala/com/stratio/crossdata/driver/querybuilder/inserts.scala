@@ -31,11 +31,8 @@ class Insert {
 
   private[Insert] class ConfiguredInsert(val target: Relation, mode: InsertMode.InsertMode) extends InitialSelectPhrases
   {
-    val context: String => String = qStr => s"INSERT $mode ${target.toXDQL} $qStr"
-
-    override def select(projections: Expression*): ProjectedSelect = select(projections, context)
-    override def select(projections: String): ProjectedSelect = select(XDQLStatement(projections)::Nil, context)
-    override def selectAll: ProjectedSelect = select(AsteriskExpression()::Nil, context)
+    override protected def selectImp(projections: Seq[Expression]): ProjectedSelect =
+      new ProjectedSelect(projections:_*)(qStr => s"INSERT $mode ${target.toXDQL} $qStr")
   }
 
   private[Insert] class RunnableInsert

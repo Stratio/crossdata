@@ -43,14 +43,14 @@ trait Identifiers {
 }
 
 trait InitialSelectPhrases {
-  def select(projections: Expression*): ProjectedSelect = select(projections)
+  def select(projections: Expression*): ProjectedSelect = selectImp(projections)
 
-  def select(projections: String): ProjectedSelect = select(XDQLStatement(projections)::Nil)
+  def select(projections: String): ProjectedSelect = selectImp(XDQLStatement(projections)::Nil)
 
-  def selectAll: ProjectedSelect = select(AsteriskExpression()::Nil)
+  def selectAll: ProjectedSelect = selectImp(AsteriskExpression()::Nil)
 
-  protected def select(projections: Seq[Expression], context: String => String = x => x): ProjectedSelect =
-    new ProjectedSelect(projections:_*)(context)
+  protected def selectImp(projections: Seq[Expression]): ProjectedSelect = new ProjectedSelect(projections:_*)(x => x)
+
 }
 
 trait InitialInsertPhrases {

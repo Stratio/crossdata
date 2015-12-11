@@ -325,7 +325,7 @@ class QueryBuilderSpec extends BaseXDTest {
                    |WHERE ${expectedExpressions.map(exp => s"($exp = ref)") mkString " AND "}
                    |""".stripMargin
 
-    compareAfterFormatting(query.build, expected)
+    compareAfterFormatting(query, expected)
 
   }
 
@@ -337,7 +337,7 @@ class QueryBuilderSpec extends BaseXDTest {
       (insert into 'test select 'a from 'sourceTable, s"INSERT INTO test $selQueryStr"),
       (insert overwrite 'test select 'a from 'sourceTable, s"INSERT OVERWRITE test $selQueryStr")
     ) foreach { case (query, expected) =>
-      compareAfterFormatting(query.build, expected)
+      compareAfterFormatting(query, expected)
     }
 
   }
