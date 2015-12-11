@@ -15,7 +15,8 @@
  */
 package com.stratio.crossdata.driver.querybuilder
 
-import java.sql.Date
+import java.sql.{Date, Timestamp}
+import java.util.GregorianCalendar
 
 import com.stratio.crossdata.driver.querybuilder
 import com.stratio.crossdata.test.BaseXDTest
@@ -378,9 +379,6 @@ class QueryBuilderSpec extends BaseXDTest {
         | WHERE ( a IN (2,3,4)) AND (b LIKE '%R') AND ( b IS NULL) AND ( b IS NOT NULL)
       """
 
-    println(formatOutput(query.build))
-    println(formatOutput(expected))
-
     compareAfterFormatting(query, expected)
 
   }
@@ -388,31 +386,16 @@ class QueryBuilderSpec extends BaseXDTest {
 
   it should "be able to support SparkSQL types" in {
 
-    val query = selectAll from 'table where ( ('a in (2,3,4)) && ('b like "%R") && ('b isNull) && ('b isNotNull))
+    val timestampVal = new Timestamp(new GregorianCalendar(1970,0,1,0,0,0).getTimeInMillis)
+
+    val query = selectAll from 'table where ( ('a <> "string") &&  ('a <> 5f) && ('a <> true) && ('a <> timestampVal) && ('a <> new java.math.BigDecimal(1)))
 
     val expected =
       """
-        | SELECT *
-        | FROM table
-        | WHERE ( a IN (2,3,4)) AND (b LIKE '%R') AND ( b IS NULL) AND ( b IS NOT NULL)
+        | SELECT * FROM table
+        | WHERE (a <> 'string') AND (a <> 5.0) AND (a <> true) AND (a <> '1970-01-01 00:00:00.0') AND (a <> 1)
+        |
       """
-
-    println(formatOutput(query.build))
-    println(formatOutput(expected))
-
-    /* TODO implicit def boolean2Literal(b: Boolean): Literal = Literal(b)
-  implicit def byte2Literal(b: Byte): Literal = Literal(b)
-  implicit def short2Literal(s: Short): Literal = Literal(s)
-  implicit def int2Literal(i: Int): Literal = Literal(i)
-  implicit def long2Literal(l: Long): Literal = Literal(l)
-  implicit def float2Literal(f: Float): Literal = Literal(f)
-  implicit def double2Literal(d: Double): Literal = Literal(d)
-  implicit def string2Literal(s: String): Literal = Literal(s)
-  implicit def date2Literal(d: Date): Literal = Literal(d)
-  implicit def bigDecimal2Literal(d: BigDecimal): Literal = Literal(d.underlying())
-  implicit def bigDecimal2Literal(d: java.math.BigDecimal): Literal = Literal(d)
-  implicit def timestamp2Literal(t: Timestamp): Literal = Literal(t)
-  implicit def binary2Literal(a: Array[Byte]): Literal = Literal(a)*/
 
     compareAfterFormatting(query, expected)
 
