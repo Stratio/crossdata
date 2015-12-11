@@ -256,6 +256,10 @@
                                             <toFile>/etc/default/crossdata/server-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/catalog-application.conf</path>
+                                            <toFile>/etc/default/crossdata/catalog-application.conf</toFile>
+                                        </copyFile>
+                                        <copyFile>
                                             <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
                                             <toFile>/etc/default/crossdata/crossdata-env.sh</toFile>
                                         </copyFile>
@@ -313,6 +317,10 @@
                                         <copyFile>
                                             <path>target/crossdata-dist-${project.version}/conf/server-application.conf</path>
                                             <toFile>/etc/default/crossdata/server-application.conf</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/catalog-application.conf</path>
+                                            <toFile>/etc/default/crossdata/catalog-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
