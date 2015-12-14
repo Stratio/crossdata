@@ -18,46 +18,46 @@ package com.stratio.crossdata.driver.querybuilder
 import com.stratio.crossdata.driver.querybuilder.dslentities.{CombinationInfo, SortCriteria, XDQLStatement}
 
 
-class SimpleRunnableQuery private(projections: Seq[Expression],
+class SimpleRunnableQuery private(context: String => String,
+                                  projections: Seq[Expression],
                                   relation: Relation,
-                                  context: String => String,
                                   filters: Option[Predicate] = None)
-  extends RunnableQuery(projections, relation, context, filters)
+  extends RunnableQuery(context, projections, relation, filters)
   with Sortable
   with Limitable
   with Groupable {
 
   def this(projections: Seq[Expression], relation: Relation, context: String => String) =
-    this(projections, relation, context, None)
+    this(context, projections, relation, None)
 
   // It has to be abstract (simple runnable query has transitions) and concrete
   override def where(condition: Predicate): this.type =
     //Not knew alternatives to `asInstanceOf`: http://stackoverflow.com/a/791157/1893995
-    new SimpleRunnableQuery(projections, relation, context, Some(combinePredicates(condition))).asInstanceOf[this.type]
+    new SimpleRunnableQuery(context, projections, relation, Some(combinePredicates(condition))).asInstanceOf[this.type]
 
 }
 
-class GroupedQuery(projections: Seq[Expression],
+class GroupedQuery(context: String => String,
+                   projections: Seq[Expression],
                    relation: Relation,
-                   context: String => String,
                    filters: Option[Predicate] = None,
                    groupingExpressions: Seq[Expression])
-  extends RunnableQuery(projections, relation, context, filters, groupingExpressions)
+  extends RunnableQuery(context, projections, relation, filters, groupingExpressions)
   with Sortable
   with Limitable {
 
   def having(expression: String): HavingQuery = having(XDQLStatement(expression))
 
   def having(expression: Predicate): HavingQuery =
-    new HavingQuery(projections, relation, context, filters, groupingExpressions, expression)
+    new HavingQuery(context, projections, relation, filters, groupingExpressions, expression)
 
 
   override def where(condition: Predicate): this.type =
     //Not knew alternatices to `asInstanceOf`: http://stackoverflow.com/a/791157/1893995
     new GroupedQuery(
+      context,
       projections,
       relation,
-      context,
       Some(combinePredicates(condition)),
       groupingExpressions
     ).asInstanceOf[this.type]
@@ -65,23 +65,23 @@ class GroupedQuery(projections: Seq[Expression],
 
 }
 
-class HavingQuery(projections: Seq[Expression],
+class HavingQuery(context: String => String,
+                  projections: Seq[Expression],
                   relation: Relation,
-                  context: String => String,
                   filters: Option[Predicate] = None,
                   groupingExpressions: Seq[Expression],
                   havingExpressions: Predicate)
   extends RunnableQuery(
-    projections, relation, context,
+    context, projections, relation,
     filters, groupingExpressions, Some(havingExpressions))
   with Sortable
   with Limitable {
 
   override def where(condition: Predicate): this.type =
     new HavingQuery(
+      context,
       projections,
       relation,
-      context,
       Some(combinePredicates(condition)),
       groupingExpressions,
       havingExpressions
@@ -89,23 +89,23 @@ class HavingQuery(projections: Seq[Expression],
 
 }
 
-class SortedQuery(projections: Seq[Expression],
+class SortedQuery(context: String => String,
+                  projections: Seq[Expression],
                   relation: Relation,
-                  context: String => String,
                   filters: Option[Predicate] = None,
                   groupingExpressions: Seq[Expression] = Seq.empty,
                   havingExpressions: Option[Predicate] = None,
                   ordering: SortCriteria)
   extends RunnableQuery(
-    projections, relation, context,
+    context, projections, relation,
     filters, groupingExpressions, havingExpressions, Some(ordering)
   ) with Limitable {
 
   override def where(condition: Predicate): this.type =
     new SortedQuery(
+      context,
       projections,
       relation,
-      context,
       Some(combinePredicates(condition)),
       groupingExpressions,
       havingExpressions,
@@ -114,23 +114,23 @@ class SortedQuery(projections: Seq[Expression],
 
 }
 
-class LimitedQuery(projections: Seq[Expression],
+class LimitedQuery(context: String => String,
+                   projections: Seq[Expression],
                    relation: Relation,
-                   context: String => String,
                    filters: Option[Predicate] = None,
                    groupingExpressions: Seq[Expression] = Seq.empty,
                    havingExpressions: Option[Predicate] = None,
                    ordering: Option[SortCriteria],
                    limit: Int)
   extends RunnableQuery(
-    projections, relation, context,
+    context, projections, relation,
     filters, groupingExpressions, havingExpressions, ordering, Some(limit)) {
 
   override def where(condition: Predicate): this.type =
     new LimitedQuery(
+      context,
       projections,
       relation,
-      context,
       Some(combinePredicates(condition)),
       groupingExpressions,
       havingExpressions,
@@ -140,9 +140,9 @@ class LimitedQuery(projections: Seq[Expression],
 
 }
 
-class CombinedQuery(projections: Seq[Expression],
+class CombinedQuery(context: String => String,
+                    projections: Seq[Expression],
                     relation: Relation,
-                    context: String => String,
                     filters: Option[Predicate] = None,
                     groupingExpressions: Seq[Expression] = Seq.empty,
                     havingExpressions: Option[Predicate] = None,
@@ -150,7 +150,7 @@ class CombinedQuery(projections: Seq[Expression],
                     limit: Option[Int],
                     combinationInfo: CombinationInfo)
   extends RunnableQuery(
-    projections, relation, context,
+    context, projections, relation,
     filters, groupingExpressions, havingExpressions, ordering, limit, Some(combinationInfo)
   ) with Combinable {
 

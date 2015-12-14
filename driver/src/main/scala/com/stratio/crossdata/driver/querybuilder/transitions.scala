@@ -24,7 +24,7 @@ trait Groupable {
   def groupBy(groupingExpressions: String): GroupedQuery = groupBy(XDQLStatement(groupingExpressions))
 
   def groupBy(groupingExpressions: Expression*): GroupedQuery =
-    new GroupedQuery(projections, relation, context, filters, groupingExpressions)
+    new GroupedQuery(context, projections, relation, filters, groupingExpressions)
 
 }
 
@@ -44,9 +44,10 @@ trait Sortable {
   def orderBy(ordering: SortOrder*): SortedQuery = orderOrSortBy(global = true, ordering)
 
   private def orderOrSortBy(global: Boolean, ordering: Seq[SortOrder]): SortedQuery =
-    new SortedQuery(projections,
-      relation,
+    new SortedQuery(
       context,
+      projections,
+      relation,
       filters,
       groupingExpressions,
       havingExpressions,
@@ -59,9 +60,9 @@ trait Limitable {
   this: RunnableQuery =>
 
   def limit(value: Int): LimitedQuery = new LimitedQuery(
+    context,
     projections,
     relation,
-    context,
     filters,
     groupingExpressions,
     havingExpressions,
@@ -116,7 +117,7 @@ trait Combinable extends CrossdataSQLStatement {
                                       newQuery: RunnableQuery,
                                       newCombineType: CombineType,
                                       childCombination: RunnableQuery => CombinedQuery): CombinationInfo =
-    this.composition map {
+    composition map {
       case CombinationInfo(combType, previous) => CombinationInfo(combType, childCombination(previous))
     } getOrElse {
       CombinationInfo(newCombineType, newQuery)
@@ -124,13 +125,13 @@ trait Combinable extends CrossdataSQLStatement {
 
   private def generateCombinedQuery(combinationInfo: CombinationInfo): CombinedQuery =
     new CombinedQuery(
-      this.projections,
-      this.relation,
-      this.context,
-      this.filters,
-      this.groupingExpressions,
-      this.havingExpressions,
-      this.ordering,
-      this.limit,
+      context,
+      projections,
+      relation,
+      filters,
+      groupingExpressions,
+      havingExpressions,
+      ordering,
+      limit,
       combinationInfo)
 }

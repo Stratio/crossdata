@@ -29,9 +29,9 @@ object RunnableQuery {
 
 }
 
-abstract class RunnableQuery protected(protected val projections: Seq[Expression],
+abstract class RunnableQuery protected(protected val context: String => String,
+                                       protected val projections: Seq[Expression],
                                        protected val relation: Relation,
-                                       protected val context: String => String,
                                        protected val filters: Option[Predicate] = None,
                                        protected val groupingExpressions: Seq[Expression] = Seq.empty,
                                        protected val havingExpressions: Option[Predicate] = None,
