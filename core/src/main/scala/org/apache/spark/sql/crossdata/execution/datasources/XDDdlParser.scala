@@ -45,11 +45,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
     // TODO: Support database.table.
     (CREATE ~> TEMPORARY.? <~ VIEW) ~ tableIdentifier ~ (AS ~> restInput) ^^ {
       case temp  ~ viewIdentifier ~ query =>
-        if (temp.isDefined) {
+        if (temp.isDefined)
           CreateTempView(viewIdentifier, parseQuery(query))
-        } else {
+        else
           CreateView(viewIdentifier, query)
-        }
 
     }
   }
