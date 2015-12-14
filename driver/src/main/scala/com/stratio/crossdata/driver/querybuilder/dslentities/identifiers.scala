@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.querybuilder
+package com.stratio.crossdata.driver.querybuilder.dslentities
 
-object QueryBuilder {
+import com.stratio.crossdata.driver.querybuilder.{CrossdataSQLStatement, Expression, Relation}
 
-  def select(bracketed: Boolean = false): InitialSelect = {
-    new InitialSelect(bracketed)
-  }
+sealed trait Identifier extends Expression with Relation
 
-  def insert(): InsertStatement = {
-    new InsertStatement()
-  }
+/**
+ * Identifier for tables and columns
+ */
+case class EntityIdentifier(id: String) extends Identifier {
+  override private[querybuilder] def toXDQL: String = id
+}
 
-  def commonTableExpression: CTEStatement = {
-    new CTEStatement()
-  }
-
+case class AliasIdentifier(underlyingEntity: CrossdataSQLStatement, alias: String) extends Identifier {
+  override private[querybuilder] def toXDQL: String = s" ${underlyingEntity.toXDQL} AS $alias"
 }

@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.querybuilder
+package com.stratio.crossdata.driver.querybuilder.dslentities
 
-class InitialSelect(private[querybuilder] val bracketed: Boolean){
+import java.sql.{Date, Timestamp}
 
-  def distinct(projections: List[String]): ProjectedSelect = new ProjectedSelect(this, projections, true)
+import com.stratio.crossdata.driver.querybuilder.Expression
 
-  def projections(projections: List[String]): ProjectedSelect = new ProjectedSelect(this, projections)
-
-  override def toString: String = s"SELECT "
+case class Literal(value: Any) extends Expression {
+  override private[querybuilder] def toXDQL: String = value match {
+    // TODO http://spark.apache.org/docs/latest/sql-programming-guide.html
+    case _: String => s"'$value'"
+    case _: Date => s"'$value'"
+    case _: Timestamp => s"'$value'"
+    case _ => value.toString
+  }
 }
