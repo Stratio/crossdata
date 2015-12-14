@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.driver
 
+import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.common.metadata.FieldMetadata
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
@@ -51,6 +52,31 @@ class FlattenedTablesIT extends MongoWithSharedContext {
 
     result should contain (new FieldMetadata("address", addressType))
     result should contain (new FieldMetadata("account", accountType))
+  }
+
+
+  it should " Query with Flattened Fields" in {
+    assumeCrossdataUpAndRunning
+
+    val flattenedDriver = Driver(true)
+
+    //Experimentation
+    val result= flattenedDriver.syncQuery(SQLCommand(s"SELECT address.street from $Database.$Collection")).resultSet
+
+    //Expectations
+    result.head.toSeq(0).toString should fullyMatch regex "[0-9]+th Avenue"
+  }
+
+  it should " Query with Flattened Fields On Filters" in {
+    assumeCrossdataUpAndRunning
+
+    val flattenedDriver = Driver(true)
+
+    //Experimentation
+    val result= flattenedDriver.syncQuery(SQLCommand(s"SELECT description FROM $Database.$Collection WHERE address.street = '5th Avenue'")).resultSet
+
+    //Expectations
+    result.head.toSeq(0).toString should be equals "description5"
   }
 }
 
