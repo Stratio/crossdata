@@ -15,6 +15,13 @@
  */
 package com.stratio.tests;
 
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -24,6 +31,14 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
@@ -37,8 +52,8 @@ import com.stratio.tests.utils.ThreadProperty;
 import java.text.ParseException;
 import cucumber.api.CucumberOptions;
 
-@CucumberOptions(features = {// "src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
-		//"src/test/resources/features/Catalog/PersistentCatalogMySQLDropTable.feature",
+@CucumberOptions(features = { "src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
+		"src/test/resources/features/Catalog/PersistentCatalogMySQLDropTable.feature",
 		"src/test/resources/features/Catalog/PersistentCatalogMySQLImportTables.feature"
 	})
 public class ATPersistentCatalogXDTest extends BaseTest {
@@ -58,6 +73,12 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 	private String host = System.getProperty("CASSANDRA_HOST", "127.0.0.1");
 	private String sourceProvider = System.getProperty("SOURCE_PROVIDER",
 			"com.stratio.crossdata.sql.sources.cassandra");
+	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearch");
+	private String elasticSearchIP = System.getProperty("ELASTICSEARCH_HOST","172.17.0.3");
+	private Client client;
+	private Settings settings = ImmutableSettings.settingsBuilder()
+			.put("cluster.name", elasticSearchCluster).build();
+
 	public ATPersistentCatalogXDTest() {
 	}
 
@@ -103,6 +124,53 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 			tabletest.insert(documentBuilder.get());
 		}
 		mongoClient.close();
+		try {
+			client = new TransportClient(settings)
+					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
+			BulkRequestBuilder bulkRequest = client.prepareBulk();
+			try {
+				//Add tabletest
+				SimpleDateFormat format_es = new SimpleDateFormat("yyyy-MM-dd");
+				URL url = ATElasticSearchXDTest.class.getResource("/scripts/ElasticSearchData.data");
+				XContentBuilder builder = null;
+
+				try (BufferedReader br = new BufferedReader(new InputStreamReader(
+						url.openStream(), "UTF8"))) {
+					String line;
+					for (int i = 0; i < 10 && (line = br.readLine()) != null; i++) {
+						String [] lineArray = line.split(";");
+						int aux = i + 1;
+						int field_1 =  Integer.parseInt(lineArray[0]);
+						Date parsed = null;
+						try {
+							parsed = format_es.parse(lineArray[4]);
+
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
+						IndexRequestBuilder res = client
+								.prepareIndex("databasetest", "tabletest", String.valueOf(aux))
+								.setSource(jsonBuilder()
+												.startObject()
+												.field("ident", field_1)
+												.field("name", lineArray[1])
+												.field("money", Double.parseDouble(lineArray[2]))
+												.field("new", new Boolean(lineArray[3]))
+												.field("date", new java.sql.Date(parsed.getTime()))
+												.endObject()
+								);
+						bulkRequest.add(res);
+					}
+					bulkRequest.execute();
+
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		client.close();
 	}
 
 	@AfterClass
@@ -114,6 +182,17 @@ public class ATPersistentCatalogXDTest extends BaseTest {
             e.printStackTrace();
         }
         mongoClient.dropDatabase(dataBase);
+		try {
+			client = new TransportClient(settings)
+					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
+			//  DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest("databasetest"))
+			//          .actionGet();
+
+			// System.out.println(response.toString());
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		client.close();
 	}
 
 	@Test(enabled = true)

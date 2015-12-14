@@ -25,10 +25,6 @@ There are different ways to build Crossdata core and connectors depending of you
 
     > mvn clean package -Ppackage
 
-and it could be packaged with hive dependencies too::
-
-    > mvn clean package -Ppackage -Phive
-
 This generates rpm and deb packages as well as several fat/uber jar:
     - Crossdata core
     - Mongo connector

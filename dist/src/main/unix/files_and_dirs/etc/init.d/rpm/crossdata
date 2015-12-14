@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+#   /etc/rc.d/init.d/crossdata
+#
+#  crossdata server service
+#   
+### BEGIN INIT INFO
+# Provides:          crossdata
+# Required-Start:    $network $remote_fs $named
+# Required-Stop:     $network $remote_fs $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts crossdata-server
+# Description:       Starts crossdata using daemon function
+### END INIT INFO
+
+# Only configuration needed here
+NAME="crossdata"
+DESC="Crossdata Server"
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+VARIABLES="/etc/default/$NAME-variables"
+
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source default configuration
+if [ -r $VARIABLES ]; then
+    . $VARIABLES
+fi
+
+
+# Variables USER, GROUP, PID_FILE, DAEMON and DAEMON_OPTS are stored in $VARIABLES
+start() {
+    validateStart
+    echo -n "Starting $NAME: "
+    daemon --user $USER --pidfile $PID_FILE "$DAEMON $DAEMON_OPTS"
+    echo
+    touch /var/lock/subsys/$NAME
+}   
+
+# Variable PID_FILE is stored in $VARIABLES
+stop() {
+    validateStop
+    echo -n "Shutting down $NAME: "
+    killproc -p $PID_FILE $NAME
+    local exit_status=$?
+    echo
+    rm -f /var/lock/subsys/$NAME
+    return $exit_status
+}
+
+restart(){
+    validateRestart
+    stop
+    sleep 1
+    start
+}
+
+condrestart(){
+    if [ -f /var/lock/subsys/$NAME ]; then
+        restart || { echo "won't restart: $NAME is stopped" ; exit 1 ; }
+    fi
+}
+
+usage(){
+    echo "Usage: $NAME {start|stop|status|restart|reload|force-reload|condrestart}"
+    exit 1
+}
+
+case "$1" in
+    start)                          start ;;
+    stop)                           stop ;;
+    status)                         status -p $PID_FILE $NAME ;;
+    restart|reload|force-reload)    restart ;;
+    condrestart)                    condrestart ;;
+    *)                              usage ;;
+esac
+exit $?
