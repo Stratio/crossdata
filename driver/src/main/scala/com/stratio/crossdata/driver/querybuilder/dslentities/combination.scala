@@ -13,7 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.querybuilder
+package com.stratio.crossdata.driver.querybuilder.dslentities
 
-// TODO: Implement this class according to Crossdata grammar (take a look to the Spark SqlParser)
-class InsertStatement()
+import com.stratio.crossdata.driver.querybuilder.{CrossdataSQLStatement, RunnableQuery}
+
+
+object CombineType extends Enumeration {
+  type CombineType = Value
+  val UnionAll = Value("UNION ALL")
+  val Intersect = Value("INTERSECT")
+  val Except = Value("EXCEPT")
+  val UnionDistinct = Value("UNION DISTINCT")
+}
+
+
+import CombineType._
+
+case class CombinationInfo(combineType: CombineType, runnableQuery: RunnableQuery) extends CrossdataSQLStatement {
+  override private[querybuilder] def toXDQL: String = s" ${combineType.toString} ${runnableQuery.toXDQL}"
+}
