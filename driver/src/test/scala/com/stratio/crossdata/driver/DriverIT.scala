@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
@@ -33,6 +32,7 @@ import scala.language.postfixOps
 class DriverIT extends EndToEndTest {
 
   "Crossdata" should "return an ErrorResult when running an unparseable query" in {
+
     assumeCrossdataUpAndRunning()
     val driver = Driver()
     val sqlCommand = SQLCommand("select select")

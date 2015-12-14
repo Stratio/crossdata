@@ -228,15 +228,158 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
         return this;
     }
 
-    public DataFrameAssert equalsResultsIgnoringOrderNative(List<List<String>> table){
+    public DataFrameAssert equalsResultsSpark(List<List<String>> table){
+        Row[] actualRows = actual.collect(ExecutionType.Spark());
+        List<String> firstRow = table.get(0);
+        boolean isEquals = false;
+        for(int i = 0; i < actualRows.length; i++){
+            Row actualRow = actualRows[i];
+            for(int x = 0; x < actualRow.size(); x++){
+                String[] columnExpected = firstRow.get(x).split("-");
+                switch(columnExpected[1]){
+                case "boolean":
+                    if (!(actualRow.get(x) instanceof Boolean)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.Boolean\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(actualRow.getBoolean(x) != (Boolean.parseBoolean(table.get(i+1).get(x)))){
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], Boolean.parseBoolean(table.get(i + 1).get(x)),
+                                actualRow.getBoolean(x));
+                    }
+                    break;
+                case "byte":
+                    if (!(actualRow.get(x) instanceof Byte)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.Byte\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(actualRow.getByte(x) != Byte.parseByte(table.get(i+1).get(x))){
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], Byte.parseByte(table.get(i + 1).get(x)),
+                                actualRow.getByte(x));
+                    }
+                    break;
+                case "date":
+                    if (!(actualRow.get(x) instanceof  java.sql.Date)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.sql.Date\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(!actualRow.getDate(x).equals(Date.valueOf(table.get(i + 1).get(x)))){
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], Date.valueOf(table.get(i + 1).get(x)),
+                                actualRow.getDate(x));
+                    }
+                    break;
+                case "decimal":
+                    if (!(actualRow.get(x) instanceof java.math.BigDecimal)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.math.BigDecimal\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(!actualRow.getDecimal(x).equals(Decimal.apply(table.get(i + 1).get(x)))){
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], Decimal.apply(table.get(i + 1).get(x)),
+                                actualRow.getDecimal(x));
+                    }
+                    break;
+                case "double":
+                    if (!(actualRow.get(x) instanceof Double)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.Double\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(actualRow.getDouble(x) != (Double.parseDouble(table.get(i + 1).get(x)))) {
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], Double.parseDouble(table.get(i + 1).get(x)),
+                                actualRow.getDouble(x));
+                    }
+                    break;
+                case "float":
+                    if (!(actualRow.get(x) instanceof Float)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.Float\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(actualRow.getFloat(x) != (Float.parseFloat(table.get(i + 1).get(x)))) {
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], Float.parseFloat(table.get(i + 1).get(x)),
+                                actualRow.getFloat(x));
+                    }
+                    break;
+                case "integer":
+                    if (!(actualRow.get(x) instanceof Integer)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.Integer\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(actualRow.getInt(x) != Integer.parseInt(table.get(i+1).get(x))){
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], Integer.parseInt(table.get(i+1).get(x)), actualRow.getInt(x));
+                    }
+                    break;
+                case "long":
+                    if (!(actualRow.get(x) instanceof Long)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.Long\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(actualRow.getLong(x) != Long.parseLong(table.get(i + 1).get(x))){
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], Long.parseLong(table.get(i + 1).get(x)), actualRow.getLong(x));
+                    }
+                    break;
+                case "short":
+                    if (!(actualRow.get(x) instanceof Short)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.Short\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(actualRow.getShort(x) != Short.parseShort(table.get(i + 1).get(x))){
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], Short.parseShort(table.get(i + 1).get(x)), actualRow.getShort(x));
+                    }
+                    break;
+                case "string":
+                    if (!(actualRow.get(x) instanceof String)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.String\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(!actualRow.getString(x).equals(table.get(i+1).get(x))){
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], table.get(i+1).get(x), actualRow.getString(x));
+                    }
+                    break;
+                case "timestamp":
+                    if (!(actualRow.get(x) instanceof java.sql.Timestamp)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.sql.Timestamp\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(x).getClass().getName());
+                    }
+                    if(!actualRow.getTimestamp(x).equals(Timestamp.valueOf(table.get(i + 1).get(x)))){
+                        failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                columnExpected[0], Timestamp.valueOf(table.get(i + 1).get(x)),
+                                actualRow.getTimestamp(x));
+                    }
+                    break;
+                default:
+                    failWithMessage("The type <%s> is not implemented", columnExpected[1]);
+                }
+            }
+        }
+        return this;
+    }
+
+   public DataFrameAssert equalsResultsIgnoringOrderNative(List<List<String>> table){
         Row[] actualRows = actual.collect(ExecutionType.Native());
         for(int i = 0; i < actualRows.length; i++) {
             Row actualRow = actualRows[i];
             if(!rowIsContainedInDataTable(table, actualRow)){
                 failWithMessage("The row <%s> is not conained in the expected result result", i);
             }
-
-
         }
         return this;
     }

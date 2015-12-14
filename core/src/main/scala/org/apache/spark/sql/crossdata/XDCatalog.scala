@@ -157,6 +157,8 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     dropAllPersistedTables()
   }
 
+  def registerView(tableIdentifier: Seq[String], plan: LogicalPlan) = registerTable(tableIdentifier, plan)
+
   protected def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable]
 
   def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)]
@@ -174,26 +176,25 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
 object XDCatalog{
 
+  implicit def asXDCatalog(catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
+
+
   def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
     implicit val formats = DefaultFormats
 
     val jsonMap = JSON.parseFull(schemaJSON).get.asInstanceOf[Map[String, Any]]
     val fields = jsonMap.getOrElse("fields", throw new Error("Fields not found")).asInstanceOf[List[Map[String, Any]]]
-    val structFields = fields.map { x => {
+    val structFields = fields.map { x =>
 
+      val typeStr = convertToGrammar(x.getOrElse("type", throw new Error("Type not found")))
 
-      val typeStr: String = x.getOrElse("type", throw new Error("Type not found")) match {
-        case structType: Map[String, Any] => convertToGrammar(structType)
-        case simpleType: String => simpleType
-        case _ => throw new Error("Invalid type")
-      }
       StructField(
         x.getOrElse("name", throw new Error("Name not found")).asInstanceOf[String],
         DataTypeParser.parse(typeStr),
         x.getOrElse("nullable", throw new Error("Nullable definition not found")).asInstanceOf[Boolean],
         Metadata.fromJson(write(x.getOrElse("metadata", throw new Error("Metadata not found")).asInstanceOf[Map[String, Any]]))
       )
-    }
+
     }
     structFields.headOption.map(_ => StructType(structFields))
 
@@ -221,12 +222,36 @@ object XDCatalog{
     write(partitionColumn)
   }
 
-  private def convertToGrammar (m: Map[String, Any]) : String = {
-    if(m.contains("fields")) {
-      val fields = m.get("fields").get.asInstanceOf[List[Map[String, Any]]].map(x=>{x.getOrElse("name", throw new Error("Name not found"))+":"+convertToGrammar(x)}) mkString ","
-      "struct<"+fields+">"
+  private def convertToGrammar (m: Any) : String = {
+    def isStruct(map: Map[String, Any]) = map("type") == "struct"
+    def isArray(map: Map[String, Any]) = map("type") == "array"
+    def isMap(map: Map[String, Any]) = map("type") == "map"
+
+    m match {
+      case tpeMap: Map[String, Any] if isStruct(tpeMap) =>
+        val fields =  tpeMap.get("fields").fold(throw new Error("Struct type not found"))(_.asInstanceOf[List[Map[String, Any]]])
+        val fieldsStr = fields.map {
+          x => s"`${x.getOrElse("name", throw new Error("Name not found"))}`:" + convertToGrammar(x)
+        } mkString ","
+        s"struct<$fieldsStr>"
+
+      case tpeMap: Map[String, Any] if isArray(tpeMap) =>
+        val tpeArray = tpeMap.getOrElse("elementType", throw new Error("Array type not found"))
+        s"array<${convertToGrammar(tpeArray)}>"
+
+      case tpeMap: Map[String, Any] if isMap(tpeMap) =>
+        val tpeKey = tpeMap.getOrElse("keyType", throw new Error("Key type not found"))
+        val tpeValue = tpeMap.getOrElse("valueType", throw new Error("Value type not found"))
+        s"map<${convertToGrammar(tpeKey)},${convertToGrammar(tpeValue)}>"
+
+      case tpeMap: Map[String, Any] =>
+        convertToGrammar(tpeMap.get("type").getOrElse(throw new Error("Type not found")))
+
+      case basicType: String => basicType
+
+      case _ => throw new Error("Type is not correct")
     }
-    else m.getOrElse("type", throw new Error("Type not found")).asInstanceOf[String]
+
   }
 
 }

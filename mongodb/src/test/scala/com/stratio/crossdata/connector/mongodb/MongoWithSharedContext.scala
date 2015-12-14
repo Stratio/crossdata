@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.connector.mongodb
 
+import java.util.{Calendar, GregorianCalendar}
+
 import com.mongodb.{BasicDBObject, QueryBuilder}
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
@@ -47,9 +49,12 @@ trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefau
       }
       collection.update(QueryBuilder.start("id").greaterThan(4).get, MongoDBObject(("$set", MongoDBObject(("optionalField", true)))), multi = true)
     }
+    val baseDate = new GregorianCalendar(1970, 0, 1 ,0, 0, 0)
 
     val dataTypesCollection = client(Database)(DataTypesCollection)
     for (a <- 1 to 10) {
+      baseDate.set(Calendar.DAY_OF_MONTH, a)
+      baseDate.set(Calendar.MILLISECOND, a)
       dataTypesCollection.insert {
         MongoDBObject(
           "int" -> (2000 + a),
@@ -63,8 +68,8 @@ trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefau
           "decimalLong" -> decimalLong,
           "decimalDouble" -> decimalDouble,
           "decimalFloat" -> decimalFloat,
-          "date" -> new java.sql.Date(2015+100000000*a),
-          "timestamp" -> new java.sql.Timestamp(2015+100000000*a),
+          "date" -> new java.sql.Date(baseDate.getTimeInMillis),
+          "timestamp" -> new java.sql.Timestamp(baseDate.getTimeInMillis),
           "tinyint" -> tinyint,
           "smallint" -> smallint,
           "binary" -> binary,

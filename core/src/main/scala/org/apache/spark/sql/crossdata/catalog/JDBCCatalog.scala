@@ -32,12 +32,12 @@ import scala.annotation.tailrec
 
 object JDBCCatalog {
   // SQLConfig
-  val Driver = "crossdata.catalog.jdbc.driver"
-  val Url = "crossdata.catalog.jdbc.url"
-  val Database = "crossdata.catalog.jdbc.db.name"
-  val Table = "crossdata.catalog.jdbc.db.table"
-  val User = "crossdata.catalog.jdbc.db.user"
-  val Pass = "crossdata.catalog.jdbc.db.pass"
+  val Driver = "jdbc.driver"
+  val Url = "jdbc.url"
+  val Database = "jdbc.db.name"
+  val Table = "jdbc.db.table"
+  val User = "jdbc.db.user"
+  val Pass = "jdbc.db.pass"
   // CatalogFields
   val DatabaseField = "db"
   val TableNameField = "tableName"
@@ -61,7 +61,8 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
   import XDCatalog._
   import org.apache.spark.sql.crossdata._
 
-  private val config: Config = ConfigFactory.load
+  private val config = xdContext.config
+
   private val db = config.getString(Database)
   private val table = config.getString(Table)
 

@@ -68,9 +68,9 @@
                             <value>com.stratio.tests.utils.JaCoCoClient</value>
                         </property>
                     </properties>
-                    <argLine>-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError
+                    <argLine>-Xmx2048m -XX:MaxPermSize=128m -XX:+HeapDumpOnOutOfMemoryError
                         -javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/1.8.2/aspectjweaver-1.8.2.jar</argLine>
-                    <useSystemClassloader>true</useSystemClassloader>
+                    <!-- <useSystemClassloader>true</useSystemClassloader> -->
                 </configuration>
             </plugin>
         </plugins>
@@ -100,6 +100,10 @@
                     <groupId>com.datastax.cassandra</groupId>
                     <artifactId>cassandra-driver-core</artifactId>
                 </exclusion>
+                <exclusion>
+                	<artifactId>guava</artifactId>
+                	<groupId>com.google.guava</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -108,8 +112,23 @@
             <version>${crossdata.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-common</artifactId>
+            <version>${crossdata.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.stratio.crossdata.connector</groupId>
             <artifactId>crossdata-cassandra</artifactId>
+            <version>${crossdata.version}</version>
+        </dependency>
+            <dependency>
+            <groupId>com.stratio.crossdata.connector</groupId>
+            <artifactId>crossdata-elasticsearch</artifactId>
+            <version>${crossdata.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-driver</artifactId>
             <version>${crossdata.version}</version>
         </dependency>
         <dependency>
@@ -122,6 +141,21 @@
             <artifactId>mariadb-java-client</artifactId>
             <version>1.1.7</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>1.7.1</version>
+         </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.0.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.9.9</version>
+        </dependency>
     </dependencies>
 </project>

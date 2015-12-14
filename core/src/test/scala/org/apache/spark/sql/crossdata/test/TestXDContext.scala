@@ -30,7 +30,7 @@ private[sql] class TestXDContext(sc: SparkContext) extends XDContext(sc) { self 
 
   def this() {
     this(new SparkContext("local[2]", "test-xd-context",
-      new SparkConf().set("spark.sql.testkey", "true")))
+      new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io.LZ4CompressionCodec")))
   }
 
   // Use fewer partitions to speed up testing

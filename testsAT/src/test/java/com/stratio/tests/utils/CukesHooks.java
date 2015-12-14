@@ -158,6 +158,13 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             sqlMongo.append("',database 'databasetest',collection 'tabletest')");
             commonspec.getXdContext().executeQuery(sqlMongo.toString());
             break;
+        case "ElasticSearch":
+            commonspec.getLogger().info("ES TABLE");
+            commonspec.getXdContext().executeQuery("CREATE TEMPORARY TABLE tabletest (ident LONG, name STRING, money "
+                    + "DOUBLE, new BOOLEAN, date DATE) USING com.stratio.crossdata.connector.elasticsearch "
+                    + "OPTIONS (resource 'databasetest/tabletest', es.nodes '172.17.0.3', es.port '9200', es"
+                    + ".nativePort '9300', es.cluster 'elasticsearch')");
+            break;
         default:
             break;
         }

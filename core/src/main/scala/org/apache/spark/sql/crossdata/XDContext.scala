@@ -23,11 +23,14 @@ import java.lang.reflect.Constructor
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 import com.stratio.crossdata.connector.FunctionInventory
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{Config}
+import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
+import org.apache.spark.sql.crossdata.config.CatalogConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
+import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
@@ -39,12 +42,14 @@ import org.apache.spark.{Logging, SparkContext}
  * and adds some features of the Crossdata system.
  * @param sc A [[SparkContext]].
  */
-class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging {
+class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging with CatalogConfig {
+
   self =>
 
   override protected[sql] lazy val catalog: XDCatalog = {
     import XDContext._
-    val xdConfig: Config = ConfigFactory.load
+
+    val xdConfig: Config = config
 
     val catalogClass = if (xdConfig.hasPath(CatalogClass))
       xdConfig.getString(CatalogClass)
@@ -60,6 +65,8 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
     constr.newInstance(
       new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
   }
+
+  override lazy val logger = Logger.getLogger(classOf[XDContext])
 
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
@@ -106,6 +113,9 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
          datasourceName = srv.shortName()
          udf <- srv.nativeBuiltinFunctions
     } functionRegistry.registerFunction(qualifyUDF(datasourceName, udf.name), e => NativeUDF(udf.name, udf.returnType, e))
+
+    val gc = new GroupConcat(", ")
+    udf.register("group_concat", gc)
 
   }
 
@@ -155,8 +165,8 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
  */
 object XDContext {
 
-  val CatalogClass = "crossdata.catalog.class"
-  val CaseSensitive = "crossdata.catalog.caseSensitive"
+  val CatalogClass = "class"
+  val CaseSensitive = "caseSensitive"
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
 
   private val INSTANTIATION_LOCK = new Object()

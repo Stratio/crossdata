@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.stratio.crossdata.connector.mongodb
 
+import org.apache.log4j.Logger
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.ExecutionType
 import org.junit.runner.RunWith
@@ -80,7 +82,7 @@ class MongoFilterIT extends MongoWithSharedContext {
   it should "supports filter DATE NOT BETWEEN two dates" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date NOT BETWEEN '1970-01-03' AND '1971'").collect(ExecutionType.Spark)
+    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date NOT BETWEEN '1970-01-02' AND '1971'").collect(ExecutionType.Spark)
     sparkRow.length should be (1)
 
   }
@@ -96,8 +98,12 @@ class MongoFilterIT extends MongoWithSharedContext {
   it should "supports filter TIMESTAMP equals to" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp = '1970-01-02 04:46:42.015'").collect(ExecutionType.Native)
-    sparkRow.head(0) should be (java.sql.Timestamp.valueOf("1970-01-02 04:46:42.015"))
+    lazy val logger = Logger.getLogger(classOf[MongoFilterIT])
+    val timestamp = sql(s"SELECT timestamp FROM $DataTypesCollection").collect(ExecutionType.Native)
+    timestamp.foreach(logger.error(_))
+
+    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp = '1970-01-02 00:0:0.002'").collect(ExecutionType.Native)
+    sparkRow.head(0) should be (java.sql.Timestamp.valueOf("1970-01-02 00:00:00.002"))
 
   }
 
@@ -109,12 +115,13 @@ class MongoFilterIT extends MongoWithSharedContext {
 
   }
 
-  it should "supports filter TIMESTAMP NOT BETWEEN two times" in {
+  ignore should "supports Projection with DOT notation" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp NOT BETWEEN '1970-01-03' AND '1971'").collect(ExecutionType.Spark)
+    val sparkRow = sql(s"SELECT mapstruct.structField2 FROM $DataTypesCollection").collect(ExecutionType.Native)
     sparkRow.length should be (1)
-
   }
+
+
 
 }
