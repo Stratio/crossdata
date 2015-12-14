@@ -157,6 +157,8 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     dropAllPersistedTables()
   }
 
+  def registerView(tableIdentifier: Seq[String], plan: LogicalPlan) = registerTable(tableIdentifier, plan)
+
   protected def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable]
 
   def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)]
@@ -173,6 +175,9 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 }
 
 object XDCatalog{
+
+  implicit def asXDCatalog(catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
+
 
   def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
     implicit val formats = DefaultFormats
