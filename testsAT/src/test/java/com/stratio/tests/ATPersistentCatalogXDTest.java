@@ -185,10 +185,6 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 		try {
 			client = new TransportClient(settings)
 					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
-			//  DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest("databasetest"))
-			//          .actionGet();
-
-			// System.out.println(response.toString());
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}

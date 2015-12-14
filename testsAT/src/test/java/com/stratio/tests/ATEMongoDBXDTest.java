@@ -42,7 +42,8 @@ import com.stratio.tests.utils.ThreadProperty;
         "src/test/resources/features/Mongo/MongoSelectGreaterEqualsFilter.feature",
         "src/test/resources/features/Mongo/MongoSelectINFilter.feature",
         "src/test/resources/features/Mongo/MongoSelectAnd.feature",
-        "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature"
+        "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature",
+          "src/test/resources/features/Udaf/Group_concat.feature"
 })
 
 public class ATEMongoDBXDTest extends BaseTest{

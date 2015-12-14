@@ -32,6 +32,7 @@ import scala.language.postfixOps
 class DriverIT extends EndToEndTest {
 
   "Crossdata" should "return an ErrorResult when running an unparseable query" in {
+
     assumeCrossdataUpAndRunning()
     val driver = Driver()
     val sqlCommand = SQLCommand("select select")

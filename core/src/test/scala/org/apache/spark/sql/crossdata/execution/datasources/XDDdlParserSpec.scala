@@ -103,4 +103,24 @@ class XDDdlParserSpec extends BaseXDTest {
     parser.parse(sentence) shouldBe DropTable( TableIdentifier("tableId", Some("dbId")))
 
   }
+
+  it should "successfully parse a CREATE VIEW into a CreateView RunnableCommand" in {
+
+    val sentence = "CREATE VIEW vn AS SELECT * FROM tn"
+    parser.parse(sentence) shouldBe CreateView( TableIdentifier("vn"), " SELECT * FROM tn")
+
+  }
+
+  it should "successfully parse a CREATE TEMPORARY VIEW into a CreateTempView RunnableCommand" in {
+
+    val sentence = "CREATE TEMPORARY VIEW vn AS SELECT * FROM tn"
+    val logicalPlan = parser.parse(sentence)
+    logicalPlan shouldBe a [CreateTempView]
+    logicalPlan match {
+      case CreateTempView(tableIdent, lPlan) =>
+        tableIdent shouldBe TableIdentifier("vn")
+    }
+
+  }
+
 }
