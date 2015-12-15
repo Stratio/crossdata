@@ -111,13 +111,13 @@ echo "################################################"
 echo "Compiling Crossdata"
 echo "################################################"
 echo "$(pwd)"
-mvn clean package -DskipTests -P"$PROFILE" || { echo "Cannot build Crossdata project, aborting"; exit 1; }
+mvn clean package -DskipUTs -DskipITs -DskipTests -P"$PROFILE" || { echo "Cannot build Crossdata project, aborting"; exit 1; }
 
 mkdir -p ${TMPDIR}/lib || { echo "Cannot create output lib directory"; exit 1; }
 
-//TODO: For os x, we might to change from "cp -u ..." to "cp -nt ..." or "rsync -u ..." or just "cp ..."
-cp -u ./*/target/*-jar-with-dependencies.jar ${TMPDIR}/lib || { echo "Cannot copy target jars to output lib directory, aborting"; exit 1; }
 ###cp -u ./*/target/alternateLocation/*.jar ${TMPDIR}/lib || { echo "Cannot copy alternate jars to output lib directory, aborting"; exit 1; }
+### NOTE: -u option was removed because it's not valid on OSX
+cp ./*/target/*-jar-with-dependencies.jar ${TMPDIR}/lib || { echo "Cannot copy target jars to output lib directory, aborting"; exit 1; }
 
 git fetch --tags
 latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
@@ -176,6 +176,10 @@ do
 done
 
 cp ${TMPDIR}/ChangeLog.txt ${DISTDIR}/
+
+chmod 775 ${LOCAL_DIR}
+
+cp ${LOCAL_DIR}/stratio-xd-* ${DISTDIR}
 
 echo "DISTFILENAME: ${DISTFILENAME}"
 
