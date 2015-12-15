@@ -66,6 +66,11 @@ trait CatalogConfig  {
         logger.warn("External file (" + configFile + ") hasn't been found")
       }
     }
+
+    // TODO Improve implementation
+    // System properties
+    defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
+
     ConfigFactory.load(defaultConfig)
   }
 
