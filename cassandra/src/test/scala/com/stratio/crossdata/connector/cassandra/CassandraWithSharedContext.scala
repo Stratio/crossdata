@@ -18,17 +18,29 @@ package com.stratio.crossdata.connector.cassandra
 import com.datastax.driver.core.{Cluster, Session}
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
+import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.scalatest.Suite
 
 import scala.util.Try
 
-trait CassandraWithSharedContext extends SharedXDContextWithDataTest with CassandraDefaultTestConstants with Logging {
+trait CassandraWithSharedContext extends SharedXDContextWithDataTest
+  with CassandraDefaultTestConstants
+  with Logging {
+
   this: Suite =>
 
   override type ClientParams = (Cluster, Session)
+  override val provider: String = SourceProvider
+  override val defaultOptions = Map(
+    "table"    -> Table,
+    "keyspace" -> Catalog,
+    "cluster"  -> ClusterName,
+    "pushdown" -> "true",
+    "spark_cassandra_connection_host" -> CassandraHost
+  )
 
-  override protected def saveTestData: Unit = {
+  abstract override def saveTestData: Unit = {
     val session = client.get._2
 
     session.execute(s"CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
@@ -49,6 +61,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest with Cassan
 
     //This crates a new table in the keyspace which will not be initially registered at the Spark
     session.execute(s"CREATE TABLE $Catalog.$UnregisteredTable (id int, age int, comment text, name text, PRIMARY KEY ((id), age, comment))")
+    super.saveTestData
   }
 
   override protected def terminateClient: Unit = {
@@ -65,16 +78,8 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest with Cassan
     (cluster, cluster.connect())
   } toOption
 
-  override val sparkRegisterTableSQL: Seq[String] = s"""|CREATE TEMPORARY TABLE $Table
-                                                    |USING $SourceProvider
-                                                    |OPTIONS (
-                                                    | table '$Table',
-                                                    | keyspace '$Catalog',
-                                                    | cluster '$ClusterName',
-                                                    | pushdown "true",
-                                                    | spark_cassandra_connection_host '$CassandraHost'
-                                                    |)
-                                                    """.stripMargin.replaceAll("\n", " ")::Nil
+  abstract override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
+    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Table")
 
   override val runningError: String = "Cassandra and Spark must be up and running"
 
@@ -84,6 +89,7 @@ sealed trait CassandraDefaultTestConstants {
   val ClusterName = "Test Cluster"
   val Catalog = "highschool"
   val Table = "students"
+  val TypesTable = "datatypestablename"
   val UnregisteredTable = "teachers"
   val CassandraHost: String = {
     Try(ConfigFactory.load().getStringList("cassandra.hosts")).map(_.get(0)).getOrElse("127.0.0.1")

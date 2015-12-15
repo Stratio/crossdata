@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.connector.cassandra
 
-import com.datastax.driver.core.{Cluster, Session}
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.junit.runner.RunWith
