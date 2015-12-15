@@ -40,7 +40,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
     val importedTables = ctx.sql(importQuery)
 
-    importedTables.schema.fieldNames shouldBe Array("tableIdentifier")
+    importedTables.schema.fieldNames shouldBe Array("tableIdentifier", "ignored")
     importedTables.collect.length should be > 0
 
     // TODO We need to create an unregister the table
@@ -92,7 +92,11 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
     try {
       ctx.dropAllTables()
-      sql(importQuery)
+      val importedTables = sql(importQuery)
+      // imported tables shouldn't be ignored (schema is (tableName, ignored)
+      importedTables.collect().forall( row => row.getBoolean(1)) shouldBe false
+      // imported tables should be ignored after importing twice
+      sql(importQuery).collect().forall( row => row.getBoolean(1)) shouldBe true
       ctx.tableNames()  should  contain (s"$Catalog.$Table")
       ctx.tableNames()  should  not contain "NewKeyspace.NewTable"
     } finally {
@@ -106,8 +110,8 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
     val importQuery =
       s"""
-         |IMPORT TABLES
-         |USING $SourceProvider
+          |IMPORT TABLES
+          |USING $SourceProvider
           |OPTIONS (
           | cluster "$ClusterName",
           | keyspace "$Catalog",
@@ -130,8 +134,8 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
     val importQuery =
       s"""
-         |IMPORT TABLES
-         |USING $SourceProvider
+          |IMPORT TABLES
+          |USING $SourceProvider
           |OPTIONS (
           | cluster "$ClusterName",
           | table "$Table",
