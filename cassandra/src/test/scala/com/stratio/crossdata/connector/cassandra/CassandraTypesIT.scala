@@ -17,9 +17,12 @@ package com.stratio.crossdata.connector.cassandra
 
 import org.apache.spark.sql.crossdata.test.SharedXDContextTypesTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextTypesTest.SparkSQLColdDef
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 import scala.util.Try
 
+@RunWith(classOf[JUnitRunner])
 class CassandraTypesIT extends CassandraWithSharedContext with SharedXDContextTypesTest {
 
   //Prepare test
@@ -95,7 +98,7 @@ class CassandraTypesIT extends CassandraWithSharedContext with SharedXDContextTy
     case SparkSQLColdDef(_, "TINYINT", _) | SparkSQLColdDef(_, "SMALLINT", _) => Nil
     case SparkSQLColdDef(name, "DATE", typeChecker) =>
       SparkSQLColdDef(name, "TIMESTAMP", _.isInstanceOf[java.sql.Timestamp])::Nil
-    case SparkSQLColdDef(name, sqlClause, typeChecker) if name contains "struct" => Nil
+    case SparkSQLColdDef(name, sqlClause, typeChecker) if name contains "struct" =>
       SparkSQLColdDef(name, sqlClause.replace("DATE", "TIMESTAMP"), typeChecker)::Nil
     case other =>
       other::Nil
