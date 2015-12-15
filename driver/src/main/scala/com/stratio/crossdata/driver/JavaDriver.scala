@@ -16,20 +16,14 @@
 package com.stratio.crossdata.driver
 
 import akka.util.Timeout
-import com.stratio.crossdata.common.metadata.{TableName, FieldMetadata}
 import com.stratio.crossdata.common.{SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.config.DriverConfig._
+import com.stratio.crossdata.driver.metadata.{JavaTableName, FieldMetadata}
 import com.typesafe.config.{ConfigValue, ConfigValueFactory}
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
 
-object JavaDriver {
-  /**
-   * database can be empty ("")
-   */
-
-}
 
 class JavaDriver(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean) {
 
@@ -59,12 +53,12 @@ class JavaDriver(properties: java.util.Map[String, ConfigValue], flattenTables: 
     scalaDriver.listDatabases()
   }
 
-  def listTables(): java.util.List[TableName] = {
-    scalaDriver.listTables(None).map { case (table, database) => new TableName(table, database.getOrElse("")) }
+  def listTables(): java.util.List[JavaTableName] = {
+    scalaDriver.listTables(None).map { case (table, database) => new JavaTableName(table, database.getOrElse("")) }
   }
 
-  def listTables(database: String): java.util.List[TableName] = {
-    scalaDriver.listTables(Some(database)).map { case (table, database) => new TableName(table, database.getOrElse("")) }
+  def listTables(database: String): java.util.List[JavaTableName] = {
+    scalaDriver.listTables(Some(database)).map { case (table, database) => new JavaTableName(table, database.getOrElse("")) }
   }
 
   def describeTable(database: String, tableName: String): java.util.List[FieldMetadata] = {
