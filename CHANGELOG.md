@@ -6,7 +6,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 * Architecture migrated to Spark Catalyst.
 * Upgraded Spark 1.5.2
-* Mix data from different data stores. Cassandra, MongoDB and Elastic Search.
+* Mix data from different data stores. Cassandra, MongoDB and Elasticsearch.
 * Native access to data stores.
 * Java/Scala Driver API for external projects like ODBC/JDBC.
 * Improved and extended SparkContext: XDContext.
