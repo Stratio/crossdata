@@ -13,16 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql
+package com.stratio.crossdata.driver.metadata
 
-import org.apache.spark.sql.types.StructType
+/**
+ * database can be empty ("")
+ */
+class JavaTableName(val tableName: java.lang.String, val database: java.lang.String) {
 
-package object crossdata {
+  override def equals(other: Any): Boolean = other match {
+    case that: JavaTableName =>
+      tableName.equals(that.tableName) && database.equals(that.database)
+    case _ => false
+  }
 
-  val CrossdataVersion = "1.1.0"
-
-  case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType], datasource: String, partitionColumn: Array[String] = Array.empty, opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)
-
-  val StringSeparator: String = "."
+  override def hashCode(): Int = {
+    val state = Seq(tableName, database)
+    state.collect {
+      case x if x != null => x.hashCode
+    }.foldLeft(0)((a, b) => 31 * a + b)
+  }
 
 }

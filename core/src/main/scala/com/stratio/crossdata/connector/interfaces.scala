@@ -30,7 +30,7 @@ import org.apache.spark.sql.{Row, SQLContext}
  * a None should be returned and the process will be executed on Spark.
  */
 @DeveloperApi
-trait NativeScan extends PushDownable{
+trait NativeScan extends PushDownable {
   def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]]
 }
 
