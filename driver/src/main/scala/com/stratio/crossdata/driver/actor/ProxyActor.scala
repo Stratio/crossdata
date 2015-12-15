@@ -23,6 +23,8 @@ import org.apache.log4j.Logger
 
 object ProxyActor {
   val ServerPath = "/user/crossdata-server"
+  val DefaultName = "proxy-actor"
+  val RemoteClientName = "remote-client"
 
   def props(clusterClientActor: ActorRef, driver: Driver): Props =
     Props(new ProxyActor(clusterClientActor, driver))

@@ -115,13 +115,4 @@ class MongoFilterIT extends MongoWithSharedContext {
 
   }
 
-  ignore should "supports Projection with DOT notation" in {
-    assumeEnvironmentIsUpAndRunning
-
-    val sparkRow = sql(s"SELECT mapstruct.structField2 FROM $DataTypesCollection").collect(ExecutionType.Native)
-    sparkRow.length should be (1)
-  }
-
-
-
 }

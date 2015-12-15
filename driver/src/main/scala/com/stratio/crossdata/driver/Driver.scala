@@ -69,33 +69,37 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
 
   private lazy val logger = Driver.logger
 
+  private val clientConfig =
+    properties.foldLeft(Driver.config) { case (previousConfig, keyValue@(path, configValue)) =>
+    previousConfig.withValue(path, configValue)
+  }
+
+  private val system = ActorSystem("CrossdataServerCluster", clientConfig)
+
   private val proxyActor = {
-
-    val finalConfig = properties.foldLeft(Driver.config) { case (previousConfig, keyValue) =>
-      previousConfig.withValue(keyValue._1, keyValue._2)
-    }
-
-    val system = ActorSystem("CrossdataServerCluster", finalConfig)
-
-    def close() = system.shutdown()
 
     if (logger.isDebugEnabled) {
       system.logConfiguration()
     }
 
-    val contactPoints: List[String] = {
-      val hosts = finalConfig.getStringList("config.cluster.hosts").toList
+    val contactPoints = {
+      val hosts = clientConfig.getStringList("config.cluster.hosts").toList
       val clusterName = Driver.config.getString("config.cluster.name")
       hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
     }
-
-    val initialContacts: Set[ActorSelection] = contactPoints.map(system.actorSelection).toSet
-
+    val initialContacts = contactPoints.map(system.actorSelection).toSet
     logger.debug("Initial contacts: " + initialContacts)
-    val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
-    system.actorOf(ProxyActor.props(clusterClientActor, this), "proxy-actor")
+
+    val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), ProxyActor.RemoteClientName)
+    logger.debug("Cluster client actor created with name: " + ProxyActor.RemoteClientName)
+
+    system.actorOf(ProxyActor.props(clusterClientActor, this), ProxyActor.DefaultName)
   }
 
+  /**
+   * Execute an ordered shutdown
+   */
+  def close() = if(!system.isTerminated) system.shutdown()
 
 
   /**

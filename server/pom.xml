@@ -125,6 +125,12 @@
                                                 implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                             <resource>reference.conf</resource>
                                         </transformer>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                            <resource>META-INF/services/com.stratio.crossdata.connector.FunctionInventory</resource>
+                                        </transformer>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                            <resource>META-INF/services/org.apache.spark.sql.sources.DataSourceRegister</resource>
+                                        </transformer>
                                     </transformers>
 
                                     <filters>
