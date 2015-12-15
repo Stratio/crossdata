@@ -2,11 +2,15 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
-## 1.0.0 (upcoming)  
+## 1.0.0
 
-* Upgraded Spark 1.5.1
-* Mix data from different data stores. Cassandra, MongoDB and Elastic Search.
-* Native access to data stores.
-* Driver API for external projects like ODBC/JDBC.
+* Architecture migrated to Spark Catalyst.
+* Upgraded Spark 1.5.2
+* Mix data from different datastores: Cassandra, MongoDB and Elasticsearch.
+* Native access to datastores: Cassandra, MongoDB and Elasticsearch.
+* Java/Scala Driver API for external projects like ODBC/JDBC.
 * Improved and extended SparkContext: XDContext.
+* Pluggable and persistent catalog.
+* Metadata discovery.
 * P2P architecture: High availability and scalability.
+* Query builder.

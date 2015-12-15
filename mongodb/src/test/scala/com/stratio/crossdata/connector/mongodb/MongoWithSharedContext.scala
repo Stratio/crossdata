@@ -23,6 +23,7 @@ import com.mongodb.casbah.commons.MongoDBObject
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
+import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.scalatest.Suite
 
 import scala.util.Try
@@ -31,6 +32,7 @@ trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefau
   this: Suite =>
 
   override type ClientParams = MongoClient
+  override val provider: String = SourceProvider
 
   override protected def saveTestData: Unit = {
     val client = this.client.get
@@ -103,7 +105,7 @@ trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefau
     MongoClient(MongoHost, MongoPort)
   } toOption
 
-  override val sparkRegisterTableSQL: Seq[String] =
+  override val sparkRegisterTableSQL: Seq[SparkTable] = {
     s"""|CREATE TEMPORARY TABLE $Collection
         |(id BIGINT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)
         |USING $SourceProvider
@@ -148,7 +150,7 @@ trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefau
         |  host '$MongoHost:$MongoPort',
         |  database '$Database',
         |  collection '$DataTypesCollection'
-        |)""".stripMargin.replaceAll("\n", " ")::Nil
+        |)""".stripMargin.replaceAll("\n", " ")::Nil} map str2sparkTableDesc
 
   override val runningError: String = "MongoDB and Spark must be up and running"
 

@@ -113,4 +113,5 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
       cleanTestData(client, "empty_index")
     }
   }
+
 }

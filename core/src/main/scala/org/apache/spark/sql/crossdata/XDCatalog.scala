@@ -140,8 +140,16 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   // Defined by Crossdata
 
   final def persistTable(crossdataTable: CrossdataTable, table: Option[LogicalPlan] = None): Unit = {
-    logInfo(s"XDCatalog: Persisting table ${crossdataTable.tableName}")
-    persistTableMetadata(crossdataTable, table)
+    val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName).toSeq
+
+    if (tableExists(tableIdentifier)){
+      logWarning(s"The table $tableIdentifier already exists")
+      throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
+    } else {
+      logInfo(s"XDCatalog: Persisting table ${crossdataTable.tableName}")
+      persistTableMetadata(crossdataTable, table)
+    }
+
   }
 
   final def dropTable(tableIdentifier: Seq[String]): Unit = {

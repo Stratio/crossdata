@@ -35,7 +35,7 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
   // The result of IMPORT TABLE has only tableIdentifier so far.
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      StructField("tableIdentifier", ArrayType(StringType), false) :: Nil
+      Seq(StructField("tableIdentifier", ArrayType(StringType), false), StructField("ignored", BooleanType, false))
     )
     schema.toAttributes
   }
@@ -44,7 +44,7 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
 
     def tableExists(tableId: Seq[String]): Boolean = {
       val doExist = sqlContext.catalog.tableExists(tableId)
-      if (doExist) log.info(s"IMPORT TABLE omitted already registered table: ${tableId mkString "."}")
+      if (doExist) log.warn(s"IMPORT TABLE omitted already registered table: ${tableId mkString "."}")
       doExist
     }
 
@@ -70,11 +70,14 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
     for {
       table: TableInventory.Table <- tables
       tableId = TableIdentifier(table.tableName, table.database).toSeq
-      if inventoryRelation.exclusionFilter(table) && !tableExists(tableId)
+      if inventoryRelation.exclusionFilter(table)
     } yield {
-      logInfo(s"Importing table ${tableId mkString "."}")
-      persistTable(table, inventoryRelation, relationProvider)
-      Row(tableId)
+      val ignoreTable = tableExists(tableId)
+      if (!ignoreTable) {
+        logInfo(s"Importing table ${tableId mkString "."}")
+        persistTable(table, inventoryRelation, relationProvider)
+      }
+      Row(tableId, ignoreTable)
     }
 
   }
