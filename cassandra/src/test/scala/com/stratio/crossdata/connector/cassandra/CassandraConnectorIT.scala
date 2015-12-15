@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.connector.cassandra
 
-import com.datastax.driver.core.{Cluster, Session}
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.junit.runner.RunWith
@@ -138,9 +137,6 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
       sql(s"SELECT * FROM $Table ORDER BY age").collect(Native)
     } should have message "The operation cannot be executed without Spark"
   }
-
-  //Test types
-  doTypesTest("The Cassandra connector")
 
   // TODO test filter on PKs (=) and CKs(any) (right -> left)
 
