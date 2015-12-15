@@ -37,14 +37,12 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
 
     for(executionType <- ExecutionType.Spark::ExecutionType.Native::Nil)
       datasourceName should s"provide the right types for $executionType execution" in {
-        val q = "SELECT " + typesSet.map(_.colname).mkString(", ") + s" FROM $dataTypesTableName"
         val dframe = sql("SELECT " + typesSet.map(_.colname).mkString(", ") + s" FROM $dataTypesTableName")
-        for((tpe, i) <- typesSet zipWithIndex; typeCheck <- tpe.typeCheck) {
-          println(s">> ${tpe.colname}")
-          typeCheck(dframe.collect(executionType).head(i))
-        }
+        for(
+          (tpe, i) <- typesSet zipWithIndex;
+          typeCheck <- tpe.typeCheck
+        ) typeCheck(dframe.collect(executionType).head(i))
       }
-
 
   }
 
@@ -54,12 +52,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
   }
 
   protected def typesSet: Seq[SparkSQLColdDef] = Seq(
-    SparkSQLColdDef("int", "INT", { o =>
-      println("INT TRANSFORMER IN ACTION")
-      o.asInstanceOf[java.lang.Integer];
-      println("And finishing")
-    }
-    ),
+    SparkSQLColdDef("int", "INT", _.asInstanceOf[java.lang.Integer]),
     SparkSQLColdDef("bigint", "BIGINT", _.asInstanceOf[java.lang.Long]),
     SparkSQLColdDef("long", "LONG", _.asInstanceOf[java.lang.Long]),
     SparkSQLColdDef("string", "STRING", _.asInstanceOf[java.lang.String]),
@@ -80,7 +73,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
     SparkSQLColdDef("mapintint", "MAP<INT, INT>", _.asInstanceOf[Map[_, _]]),
     SparkSQLColdDef("mapstringint", "MAP<STRING, INT>", _.asInstanceOf[Map[_, _]]),
     SparkSQLColdDef("mapstringstring", "MAP<STRING, STRING>", _.asInstanceOf[Map[_, _]]),
-    SparkSQLColdDef("struct", "STRUCT<field1: DATE, field2: INT>", _.asInstanceOf[Row]),
+    SparkSQLColdDef("struct", "STRUCT<field1: INT, field2: INT>", _.asInstanceOf[Row]),
     SparkSQLColdDef("arraystruct", "ARRAY<STRUCT<field1: INT, field2: INT>>", _.asInstanceOf[Seq[_]]),
     SparkSQLColdDef("arraystructwithdate", "ARRAY<STRUCT<field1: DATE, field2: INT>>", _.asInstanceOf[Seq[_]]),
     SparkSQLColdDef("structofstruct", "STRUCT<field1: DATE, field2: INT, struct1: STRUCT<structField1: STRING, structField2: INT>>", _.asInstanceOf[Row]),
