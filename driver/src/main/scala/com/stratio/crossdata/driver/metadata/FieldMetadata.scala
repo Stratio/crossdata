@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.metadata
+package com.stratio.crossdata.driver.metadata
 
 import org.apache.spark.sql.types.DataType
 

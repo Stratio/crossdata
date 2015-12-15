@@ -16,7 +16,7 @@
 package com.stratio.crossdata.driver
 
 import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.metadata.FieldMetadata
+import com.stratio.crossdata.driver.metadata.FieldMetadata
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
