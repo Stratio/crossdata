@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.stratio.crossdata.driver.querybuilder.dslentities
 
-package com.stratio.crossdata.driver.querybuilder
+import com.stratio.crossdata.driver.querybuilder.{Relation, Predicate}
 
-// TODO: Implement this class according to Crossdata grammar (take a look to the Spark SqlParser)
-class CTEStatement()
+case class XDQLStatement(queryStr: String) extends Predicate with Relation{
+  override private[querybuilder] def toXDQL: String = queryStr
+}

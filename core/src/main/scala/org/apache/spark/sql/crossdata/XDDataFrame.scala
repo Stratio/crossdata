@@ -49,6 +49,7 @@ private[sql] object XDDataFrame {
     }
 
     val leafs = optimizedLogicalPlan.collect { case leafNode: LeafNode => leafNode }
+
     if (!allLeafsAreNative(leafs)) {
       None
     } else {
@@ -148,9 +149,19 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
    */
   private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
 
-    val planSupported = queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
+    val containsSubfields = notSupportedProject(queryExecution.optimizedPlan)
+    val planSupported = !containsSubfields && queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
     if(planSupported) provider.buildScan(queryExecution.optimizedPlan) else None
 
   }
 
+  private[this] def notSupportedProject(optimizedLogicalPlan: LogicalPlan): Boolean = {
+
+    optimizedLogicalPlan collectFirst {
+      case a@Project(seq, _) if seq.collectFirst { case b: GetMapValue => b }.isDefined => a
+      case a@Project(seq, _) if seq.collectFirst { case b: GetStructField => b }.isDefined => a
+      case a@Project(seq, _) if seq.collectFirst { case Alias(b: GetMapValue, _) => a }.isDefined => a
+      case a@Project(seq, _) if seq.collectFirst { case Alias(b: GetStructField, _) => a }.isDefined => a
+    } isDefined
+  }
 }

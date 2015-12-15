@@ -1,5 +1,5 @@
 Feature: MongoSelectAnd
-  Scenario: [CROSSDATA-162 : MONGO NATIVE] SELECT * FROM tabletest WHERE ident NOT BETWEEN 10 AND 15;
+  Scenario: [CROSSDATA-162] SELECT * FROM tabletest WHERE ident NOT BETWEEN 10 AND 15;
     When I execute 'SELECT * FROM tabletest WHERE ident NOT BETWEEN 10 AND 15'
     Then The spark result has to have '10' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
@@ -14,13 +14,13 @@ Feature: MongoSelectAnd
       |    8          | name_8        | 18.2          |  true         | 2008-08-08 |
       |    9          | name_9        | 19.2          |  true         | 2009-09-09 |
 
-  Scenario: [CROSSDATA-162 : MONGO NATIVE] SELECT * FROM tabletest WHERE ident NOT BETWEEN 0 AND 10;
+  Scenario: [CROSSDATA-162] SELECT * FROM tabletest WHERE ident NOT BETWEEN 0 AND 10;
     When I execute 'SELECT * FROM tabletest WHERE ident NOT BETWEEN 0 AND 10'
     Then The spark result has to have '0' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
 
 
-  Scenario: [CROSSDATA-162 : MONGO NATIVE] SELECT * FROM tabletest WHERE ident NOT BETWEEN 5 AND 6;
+  Scenario: [CROSSDATA-162] SELECT * FROM tabletest WHERE ident NOT BETWEEN 5 AND 6;
     When I execute 'SELECT * FROM tabletest WHERE ident NOT BETWEEN 5 AND 6'
     Then The spark result has to have '8' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
@@ -34,7 +34,7 @@ Feature: MongoSelectAnd
       |    9          | name_9        | 19.2          |  true         | 2009-09-09 |
 
 
-  Scenario: [CROSSDATA-162 : MONGO NATIVE] SELECT * FROM tabletest WHERE ident NOT BETWEEN 5 AND 5;
+  Scenario: [CROSSDATA-162] SELECT * FROM tabletest WHERE ident NOT BETWEEN 5 AND 5;
     When I execute 'SELECT * FROM tabletest WHERE ident NOT BETWEEN 5 AND 5'
     Then The spark result has to have '9' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
