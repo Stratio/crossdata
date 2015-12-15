@@ -19,8 +19,8 @@ import java.nio.file.Paths
 
 import akka.util.Timeout
 import com.stratio.crossdata.common.SQLCommand
+import com.stratio.crossdata.common.metadata.TableName
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.driver.JavaDriver.TableName
 import org.apache.spark.sql.AnalysisException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -89,7 +89,7 @@ class DriverIT extends EndToEndTest {
       SQLCommand(s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
     )
 
-    javadriver.listTables() should contain allOf(TableName("jsonTable3", "db"), TableName("jsonTable3", ""))
+    javadriver.listTables() should contain allOf(new TableName("jsonTable3", "db"), new TableName("jsonTable3", ""))
 
   }
 

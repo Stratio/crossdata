@@ -16,7 +16,7 @@
 package com.stratio.crossdata.driver
 
 import akka.util.Timeout
-import com.stratio.crossdata.common.metadata.FieldMetadata
+import com.stratio.crossdata.common.metadata.{TableName, FieldMetadata}
 import com.stratio.crossdata.common.{SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.config.DriverConfig._
 import com.typesafe.config.{ConfigValue, ConfigValueFactory}
@@ -28,21 +28,21 @@ object JavaDriver {
   /**
    * database can be empty ("")
    */
-  case class TableName(tableName: String, database: String)
+
 }
 
-class JavaDriver(properties: java.util.Map[String, ConfigValue]) {
+class JavaDriver(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean) {
 
-  def this(serverHosts: java.util.List[String]) =
-    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)))
+  def this(serverHosts: java.util.List[String], flattenTables: Boolean) =
+    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),flattenTables)
 
-  def this() = this(Map.empty[String, ConfigValue])
+  def this(flattenTables: Boolean) = this(Map.empty[String, ConfigValue],flattenTables)
 
-  import JavaDriver._
+  def this() = this (Map.empty[String, ConfigValue],false)
   
   private lazy val logger = Logger.getLogger(getClass)
 
-  private val scalaDriver = new Driver(properties)
+  private val scalaDriver = new Driver(properties, flattenTables)
 
   /**
    * Sync execution with defaults: timeout 10 sec, nr-retries 2
@@ -60,11 +60,11 @@ class JavaDriver(properties: java.util.Map[String, ConfigValue]) {
   }
 
   def listTables(): java.util.List[TableName] = {
-    scalaDriver.listTables(None).map{ case (table, database) => TableName(table, database.getOrElse(""))}
+    scalaDriver.listTables(None).map { case (table, database) => new TableName(table, database.getOrElse("")) }
   }
 
   def listTables(database: String): java.util.List[TableName] = {
-    scalaDriver.listTables(Some(database)).map{ case (table, database) => TableName(table, database.getOrElse(""))}
+    scalaDriver.listTables(Some(database)).map { case (table, database) => new TableName(table, database.getOrElse("")) }
   }
 
   def describeTable(database: String, tableName: String): java.util.List[FieldMetadata] = {
