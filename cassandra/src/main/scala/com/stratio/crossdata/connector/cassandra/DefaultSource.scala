@@ -192,9 +192,11 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
   private def tableMeta2Table(tMeta: TableMetadata): Table =
     Table(tMeta.getName, Some(tMeta.getKeyspace.getName))
 
+  private lazy val systemTableRegex = "^system(_.+)?".r
+
   //Avoids importing system tables
   override def exclusionFilter(t: TableInventory.Table): Boolean =
-    t.database.map( dbName => "^system(_.+)?".r.findFirstIn(dbName).isDefined).getOrElse(true)
+    t.database.exists( dbName => systemTableRegex.findFirstIn(dbName).isEmpty)
 
 
   override def generateConnectorOpts(item: Table, opts: Map[String, String] = Map.empty): Map[String, String] = Map(
