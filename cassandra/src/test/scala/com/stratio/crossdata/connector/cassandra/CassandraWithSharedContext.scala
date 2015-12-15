@@ -151,6 +151,15 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
 
   }
 
+  override protected def typesSet: Seq[SparkSQLColdDef] = super.typesSet map {
+    case SparkSQLColdDef(name, "DATE", typeChecker) =>
+      SparkSQLColdDef(name, "TIMESTAMP", _.isInstanceOf[java.sql.Timestamp])
+    case SparkSQLColdDef(name, sqlClause, typeChecker) if name contains "struct" =>
+      SparkSQLColdDef(name, sqlClause.replace("DATE", "TIMESTAMP"), typeChecker)
+    case other =>
+      other
+  }
+
   override def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef] = Seq(SparkSQLColdDef("id", "INT"))
   override def dataTypesSparkOptions: Map[String, String] = Map(
     "table"    -> TypesTable,
