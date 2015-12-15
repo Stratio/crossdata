@@ -35,6 +35,6 @@ println("""Welcome to Stratio
     _\ \/ _ \/ _ `/ __/  '_/
    /___/ .__/\_,_/_/ /_/\_\   version %s
       /_/
-        """.format("1.0.0", SPARK_VERSION))
+        """.format("1.1.0", SPARK_VERSION))
 
 val xdContext = new XDContext(sc)
