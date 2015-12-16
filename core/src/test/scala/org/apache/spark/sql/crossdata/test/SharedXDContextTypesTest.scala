@@ -58,6 +58,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
 
     for(executionType <- ExecutionType.Spark::ExecutionType.Native::Nil)
       datasourceName should s"provide the right types for $executionType execution" in {
+        assumeEnvironmentIsUpAndRunning
         val dframe = sql("SELECT " + typesSet.map(_.colname).mkString(", ") + s" FROM $dataTypesTableName")
         for(
           (tpe, i) <- typesSet zipWithIndex;
