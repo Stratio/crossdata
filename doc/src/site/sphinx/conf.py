@@ -123,7 +123,7 @@ html_theme = 'stratio'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'versions' : ['1.0.0-SNAPSHOT'],
+    'versions' : ['1.1.0-SNAPSHOT'],
     'github' : 'https://github.com/Stratio/crossdata',
     'jira': 'https://stratio.atlassian.net/secure/Dashboard.jspa',
     'module_name' : 'crossdata'

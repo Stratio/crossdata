@@ -1,7 +1,7 @@
 Crossdata Sandbox
 *****************
 
-Crossdata provides a sandbox that allows to test its functionality. This sandbox includes Crossdata 1.0.0.
+Crossdata provides a sandbox that allows to test its functionality. This sandbox includes Crossdata 1.1.0.
 
 Requisites
 ============
