@@ -12,5 +12,6 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Improved and extended SparkContext: XDContext.
 * Pluggable and persistent catalog.
 * Metadata discovery.
+* Temporary views.
 * P2P architecture: High availability and scalability.
 * Query builder.
