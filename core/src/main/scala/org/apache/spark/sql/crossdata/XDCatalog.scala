@@ -236,23 +236,23 @@ object XDCatalog{
     def isMap(map: Map[String, Any]) = map("type") == "map"
 
     m match {
-      case tpeMap: Map[String, Any] if isStruct(tpeMap) =>
+      case tpeMap: Map[String @unchecked, _] if isStruct(tpeMap) =>
         val fields =  tpeMap.get("fields").fold(throw new Error("Struct type not found"))(_.asInstanceOf[List[Map[String, Any]]])
         val fieldsStr = fields.map {
           x => s"`${x.getOrElse("name", throw new Error("Name not found"))}`:" + convertToGrammar(x)
         } mkString ","
         s"struct<$fieldsStr>"
 
-      case tpeMap: Map[String, Any] if isArray(tpeMap) =>
+      case tpeMap: Map[String @unchecked, _] if isArray(tpeMap) =>
         val tpeArray = tpeMap.getOrElse("elementType", throw new Error("Array type not found"))
         s"array<${convertToGrammar(tpeArray)}>"
 
-      case tpeMap: Map[String, Any] if isMap(tpeMap) =>
+      case tpeMap: Map[String @unchecked, _] if isMap(tpeMap) =>
         val tpeKey = tpeMap.getOrElse("keyType", throw new Error("Key type not found"))
         val tpeValue = tpeMap.getOrElse("valueType", throw new Error("Value type not found"))
         s"map<${convertToGrammar(tpeKey)},${convertToGrammar(tpeValue)}>"
 
-      case tpeMap: Map[String, Any] =>
+      case tpeMap: Map[String @unchecked, _] =>
         convertToGrammar(tpeMap.get("type").getOrElse(throw new Error("Type not found")))
 
       case basicType: String => basicType
