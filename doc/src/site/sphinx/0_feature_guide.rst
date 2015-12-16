@@ -11,8 +11,7 @@ More accesses to different datastores will be available soon.
 Crossdata will detect it and the query will be directly redirected to the datastore API in order to skip the unnecessary use of the Spark Cluster.
  This feature gives two advantages:
 
-    - *Faster queries*: for queries that can be resolved natively, avoiding the usage of the Spark Cluster usually save a great amount of network traffic as data
-    doesn't have to be spread and collected through the workers without performing any operation in the middle.
+    - *Faster queries*: for queries that can be resolved natively, avoiding the usage of the Spark Cluster usually save a great amount of network traffic as data doesn't have to be spread and collected through the workers without performing any operation in the middle.
     - *Spark Cluster saturation relief*: avoiding the usage of the Spark Cluster let some queries not to be stopped waiting for having enough resources as they
     can go directly to the datastore and, also, that makes that the number of jobs struggling for the resources of the Spark Cluster is reduced.
 
