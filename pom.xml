@@ -28,7 +28,7 @@
 
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0.0-RC1</version>
+    <version>1.0.0-RC2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Stratio Crossdata Parent</name>
     <description>Stratio Crossdata reactor</description>
