@@ -18,9 +18,12 @@
 
 package org.apache.spark.sql.crossdata.test
 
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLConf, SQLContext}
+import org.apache.spark.{SparkConf, SparkContext}
+
+import scala.util.Try
 
 
 /**
@@ -28,10 +31,13 @@ import org.apache.spark.sql.{SQLConf, SQLContext}
  */
 private[sql] class TestXDContext(sc: SparkContext) extends XDContext(sc) { self =>
 
-  def this() {
-    this(new SparkContext("local[2]", "test-xd-context",
-      new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io.LZ4CompressionCodec")))
-  }
+
+  def this() = this(new SparkContext(
+    master = Try(ConfigFactory.load().getString("spark.master")).getOrElse("local[2]"),
+    appName = "test-xdcontext",
+    conf = new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io.LZ4CompressionCodec")
+  ))
+
 
   // Use fewer partitions to speed up testing
   protected[sql] override def createSession(): SQLSession = new this.SQLSession()
