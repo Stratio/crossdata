@@ -256,8 +256,12 @@
                                             <toFile>/etc/default/crossdata/server-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/catalog-application.conf</path>
-                                            <toFile>/etc/default/crossdata/catalog-application.conf</toFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/core-application.conf</path>
+                                            <toFile>/etc/default/crossdata/core-application.conf</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/xdmetrics.properties</path>
+                                            <toFile>/etc/default/crossdata/xdmetrics.properties</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
@@ -319,8 +323,12 @@
                                             <toFile>/etc/default/crossdata/server-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/catalog-application.conf</path>
-                                            <toFile>/etc/default/crossdata/catalog-application.conf</toFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/core-application.conf</path>
+                                            <toFile>/etc/default/crossdata/core-application.conf</toFile>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>target/crossdata-dist-${project.version}/conf/xdmetrics.properties</path>
+                                            <toFile>/etc/default/crossdata/xdmetrics.properties</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>

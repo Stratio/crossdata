@@ -55,7 +55,7 @@ class XDContextIT extends SharedXDContextTest {
 
 
   it must "plan a PersistDataSource when creating a table " in {
-    val dataframe = ctx.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/catalog-reference.conf").toURI()).toString}')")
+    val dataframe = ctx.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/core-reference.conf").toURI()).toString}')")
     val sparkPlan = dataframe.queryExecution.sparkPlan
     ctx.catalog.dropTable(Seq("","jsonTable"))
     sparkPlan should matchPattern { case ExecutedCommand(_: PersistDataSourceTable) => }
