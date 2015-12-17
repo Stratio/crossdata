@@ -18,13 +18,26 @@
 
 package org.apache.spark.sql.crossdata.test
 
-import com.typesafe.config.ConfigFactory
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.{SQLConf, SQLContext}
-import org.apache.spark.{SparkConf, SparkContext}
 
-import scala.util.Try
+/*
+object TestXDContext{
+  def defaultSparkContext: SparkContext = {
+    val defaultSparkConf = new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io.LZ4CompressionCodec")
+    val externalMaster = Try(ConfigFactory.load().getString("spark.master"))
+    val (sparkMaster, sparkConf) = externalMaster.map{ master =>
+      (master, defaultSparkConf.setJars(Seq(s"${new java.io.File(".").getCanonicalPath}/../server/target/crossdata-server-1.1.0-SNAPSHOT-jar-with-dependencies.jar")))
+    } getOrElse (("local[2]", defaultSparkConf))
 
+    new SparkContext(sparkMaster, "test-xdcontext", sparkConf)
+  }
+
+}
+*/
+
+//import org.apache.spark.sql.crossdata.test.TestXDContext._
 
 /**
  * A special [[SQLContext]] prepared for testing.
