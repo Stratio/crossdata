@@ -19,10 +19,10 @@ function usage {
 
 export SPARK_HOME="$(pwd)"
 
-xdjars="$SPARK_HOME/lib/crossdata-core-1.1.0-SNAPSHOT-jar-with-dependencies.jar"
-MONGODB_LIB="$SPARK_HOME/lib/crossdata-mongodb-1.1.0-SNAPSHOT-jar-with-dependencies.jar"
-CASSANDRA_LIB="$SPARK_HOME/lib/crossdata-cassandra-1.1.0-SNAPSHOT-jar-with-dependencies.jar"
-ELASTICSEARCH_LIB="$SPARK_HOME/lib/crossdata-elasticsearch-1.1.0-SNAPSHOT-jar-with-dependencies.jar"
+xdjars="$SPARK_HOME/lib/crossdata-core-1.0.0-RC2-SNAPSHOT-jar-with-dependencies.jar"
+MONGODB_LIB="$SPARK_HOME/lib/crossdata-mongodb-1.0.0-RC2-SNAPSHOT-jar-with-dependencies.jar"
+CASSANDRA_LIB="$SPARK_HOME/lib/crossdata-cassandra-1.0.0-RC2-SNAPSHOT-jar-with-dependencies.jar"
+ELASTICSEARCH_LIB="$SPARK_HOME/lib/crossdata-elasticsearch-1.0.0-RC2-SNAPSHOT-jar-with-dependencies.jar"
 
 
 # Keep all the arguments, then remove the XD specific ones and only keep the Spark arguments.

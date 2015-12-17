@@ -19,7 +19,7 @@ import org.apache.spark.sql.types.StructType
 
 package object crossdata {
 
-  val CrossdataVersion = "1.1.0"
+  val CrossdataVersion = "1.0.0"
 
   case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType], datasource: String, partitionColumn: Array[String] = Array.empty, opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)
 
