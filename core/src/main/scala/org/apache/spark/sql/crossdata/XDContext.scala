@@ -27,7 +27,7 @@ import com.typesafe.config.{Config}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
-import org.apache.spark.sql.crossdata.config.CatalogConfig
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
@@ -42,7 +42,7 @@ import org.apache.spark.{Logging, SparkContext}
  * and adds some features of the Crossdata system.
  * @param sc A [[SparkContext]].
  */
-class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging with CatalogConfig {
+class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging with CoreConfig {
 
   self =>
 
