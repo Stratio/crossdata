@@ -29,7 +29,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
   //Template steps: Override them
   val emptyTypesSetError: String
   def saveTypesData: Int
-  def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef]
+  def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef] = Seq()
   def dataTypesSparkOptions: Map[String, String]
 
   //Template
