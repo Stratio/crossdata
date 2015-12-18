@@ -104,6 +104,15 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     }
   }
 
+  def annotatedCollect(): (Array[Row], Seq[String]) = {
+    val rows = collect()
+    val columnNames = {
+      val plan = queryExecution.optimizedPlan
+      Seq[String]() //TODO use `plan` to extract the flattened, dotted, columns names
+    }
+    (rows, columnNames)
+  }
+
   /**
    * Collect using an specific [[ExecutionType]]. Only for testing purpose so far.
    *
