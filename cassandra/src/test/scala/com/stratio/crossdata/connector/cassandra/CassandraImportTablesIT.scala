@@ -25,7 +25,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
   it should "import all tables from datasource" in {
     assumeEnvironmentIsUpAndRunning
 
-    def tableCountInHighschool: Long = ctx.sql("SHOW TABLES").count
+    def tableCountInHighschool: Long = xdContext.sql("SHOW TABLES").count
     val initialLength = tableCountInHighschool
 
     val importQuery =
@@ -38,7 +38,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
           |)
       """.stripMargin
 
-    val importedTables = ctx.sql(importQuery)
+    val importedTables = xdContext.sql(importQuery)
 
     importedTables.schema.fieldNames shouldBe Array("tableIdentifier", "ignored")
     importedTables.collect.length should be > 0
@@ -65,10 +65,10 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     try {
       sql(importQuery)
 
-      ctx.dropTempTable(s"$Catalog.$Table")
+      xdContext.dropTempTable(s"$Catalog.$Table")
 
-      ctx.tableNames().size should be > 1
-      ctx.table(s"$Catalog.$Table").schema should have length 5
+      xdContext.tableNames().size should be > 1
+      xdContext.table(s"$Catalog.$Table").schema should have length 5
     } finally {
       cleanOtherTables(cluster, session)
     }
@@ -91,14 +91,14 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     """.stripMargin
 
     try {
-      ctx.dropAllTables()
+      xdContext.dropAllTables()
       val importedTables = sql(importQuery)
       // imported tables shouldn't be ignored (schema is (tableName, ignored)
       importedTables.collect().forall( row => row.getBoolean(1)) shouldBe false
       // imported tables should be ignored after importing twice
       sql(importQuery).collect().forall( row => row.getBoolean(1)) shouldBe true
-      ctx.tableNames()  should  contain (s"$Catalog.$Table")
-      ctx.tableNames()  should  not contain "NewKeyspace.NewTable"
+      xdContext.tableNames()  should  contain (s"$Catalog.$Table")
+      xdContext.tableNames()  should  not contain "NewKeyspace.NewTable"
     } finally {
       cleanOtherTables(cluster, session)
     }
@@ -106,7 +106,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
   it should "infer schema after import One table from a keyspace" in {
     assumeEnvironmentIsUpAndRunning
-    ctx.dropAllTables()
+    xdContext.dropAllTables()
 
     val importQuery =
       s"""
@@ -124,13 +124,13 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     sql(importQuery)
 
     //Expectations
-    ctx.tableNames() should contain(s"$Catalog.$Table")
-    ctx.tableNames() should not contain "highschool.teachers"
+    xdContext.tableNames() should contain(s"$Catalog.$Table")
+    xdContext.tableNames() should not contain "highschool.teachers"
   }
 
   it should "fail when infer schema using table without keyspace" in {
     assumeEnvironmentIsUpAndRunning
-    ctx.dropAllTables()
+    xdContext.dropAllTables()
 
     val importQuery =
       s"""
@@ -167,7 +167,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
   wrongImportTablesSentences.take(1) foreach { sentence =>
     it should s"not import tables for sentences lacking mandatory options: $sentence" in {
       assumeEnvironmentIsUpAndRunning
-      an[Exception] shouldBe thrownBy(ctx.sql(sentence))
+      an[Exception] shouldBe thrownBy(sql(sentence))
     }
   }
 
@@ -191,7 +191,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
   it should "infer schema after import One table from a keyspace using API" in {
     assumeEnvironmentIsUpAndRunning
-    ctx.dropAllTables()
+    xdContext.dropAllTables()
 
     val options = Map(
       "cluster" -> ClusterName,
@@ -200,11 +200,11 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
       "spark_cassandra_connection_host" -> CassandraHost)
 
     //Experimentation
-    ctx.importTables(SourceProvider, options)
+    xdContext.importTables(SourceProvider, options)
 
     //Expectations
-    ctx.tableNames() should contain(s"$Catalog.$Table")
-    ctx.tableNames() should not contain "highschool.teachers"
+    xdContext.tableNames() should contain(s"$Catalog.$Table")
+    xdContext.tableNames() should not contain "highschool.teachers"
   }
 }
 

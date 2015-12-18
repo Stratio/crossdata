@@ -17,25 +17,25 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.crossdata.XDDataFrame
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ViewsIT extends SharedXDContextTest {
+class ViewsIT extends CoreWithSharedContext {
 
   "Create temp view" should "return a XDDataFrame when executing a SQL query" in {
 
     val sqlContext = _xdContext
     import sqlContext.implicits._
 
-    val df  = ctx.sparkContext.parallelize(1 to 5).toDF
+    val df  = xdContext.sparkContext.parallelize(1 to 5).toDF
 
     df.registerTempTable("person")
 
     sql("CREATE TEMPORARY VIEW vn AS SELECT * FROM person WHERE _1 < 3")
 
-    val dataframe = ctx.sql("SELECT * FROM vn")
+    val dataframe = sql("SELECT * FROM vn")
     dataframe shouldBe a[XDDataFrame]
     dataframe.collect() should have length 2
   }
@@ -45,7 +45,7 @@ class ViewsIT extends SharedXDContextTest {
     val sqlContext = _xdContext
     import sqlContext.implicits._
 
-    val df  = ctx.sparkContext.parallelize(1 to 5).toDF
+    val df  = xdContext.sparkContext.parallelize(1 to 5).toDF
 
     df.registerTempTable("person")
 

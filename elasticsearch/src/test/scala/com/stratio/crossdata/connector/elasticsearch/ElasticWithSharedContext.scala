@@ -16,13 +16,13 @@
 package com.stratio.crossdata.connector.elasticsearch
 
 
-
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.mappings.MappingDefinition
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
+import org.apache.spark.sql.crossdata.CrossdataVersion
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.elasticsearch.common.joda.time.DateTime
@@ -34,6 +34,9 @@ import scala.util.Try
 
 trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticSearchDefaultConstants with Logging {
   this: Suite =>
+
+  override def jarPathList: Seq[String] =
+    Seq(s"core/target/core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"elasticsearch/target/elasticsearch-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
 
   override type ClientParams = ElasticClient
   override val provider: String = SourceProvider

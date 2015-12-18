@@ -20,17 +20,17 @@ import java.nio.file.Paths
 
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDFunctionRegistryIT extends SharedXDContextTest {
+class XDFunctionRegistryIT extends CoreWithSharedContext {
 
   "XD Function registry" should "throw an analysis exception when a native udf cannot be resolved" in {
 
     try {
-      ctx.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/catalog-reference.conf").toURI()).toString}')")
+      sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/catalog-reference.conf").toURI()).toString}')")
 
       val missingUDFName = "missingFunction"
       val thrown = the[AnalysisException] thrownBy sql(s"SELECT $missingUDFName() FROM jsonTable")

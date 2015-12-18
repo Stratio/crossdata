@@ -22,6 +22,7 @@ import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
+import org.apache.spark.sql.crossdata.CrossdataVersion
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.scalatest.Suite
@@ -30,6 +31,9 @@ import scala.util.Try
 
 trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefaultConstants with Logging {
   this: Suite =>
+
+  override def jarPathList: Seq[String] =
+    Seq(s"core/target/core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"mongodb/target/mongodb-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
 
   override type ClientParams = MongoClient
   override val provider: String = SourceProvider

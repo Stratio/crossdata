@@ -17,13 +17,13 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.CrossdataTable
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DropTableIT extends SharedXDContextTest {
+class DropTableIT extends CoreWithSharedContext {
 
   private val TableName = "tableId"
   private val DatabaseName = "dbId"

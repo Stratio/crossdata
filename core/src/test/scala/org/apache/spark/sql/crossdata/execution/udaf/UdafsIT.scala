@@ -15,7 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.execution.udaf
 
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 case class Student(name: String, age: Int)
 
 @RunWith(classOf[JUnitRunner])
-class UdafsIT extends SharedXDContextTest {
+class UdafsIT extends CoreWithSharedContext {
 
   private val TableName = "tableId"
   private val DatabaseName = "dbId"

@@ -16,7 +16,7 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.crossdata._
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
-class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
+class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
 
   "JdbcCatalogSpec" must "return a dataframe from a persist table without catalog using json datasource" in {
     val fields = Seq[StructField](Field1, Field2)

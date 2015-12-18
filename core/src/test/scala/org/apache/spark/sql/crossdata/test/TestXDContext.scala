@@ -27,25 +27,36 @@ import scala.util.Try
 
 object TestXDContext {
 
-  val defaultSparkContext: SparkContext = {
+  def buildSparkContext(externalJars: Option[Seq[String]] = None): TestXDContext = {
     val defaultSparkConf = new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io.LZ4CompressionCodec")
     val externalMaster = Try(ConfigFactory.load().getString("spark.master"))
+
+    def buildPath( relativePath: String) = s"${new java.io.File(".").getCanonicalPath}/../$relativePath"
+
     val (sparkMaster, sparkConf) = externalMaster.map { master =>
-      (master, defaultSparkConf.setJars(Seq(s"${new java.io.File(".").getCanonicalPath}/../server/target/crossdata-server-1.1.0-SNAPSHOT-jar-with-dependencies.jar")))
+      (master, externalJars.map( jarList => defaultSparkConf.setJars( jarList.map(buildPath))).getOrElse(defaultSparkConf) )
     } getOrElse (("local[2]", defaultSparkConf))
 
-    new SparkContext(sparkMaster, "test-xdcontext", sparkConf)
+    new TestXDContext(new SparkContext(sparkMaster, "test-xdcontext", sparkConf))
   }
+
+  def apply (jarPath: String) :TestXDContext =
+    buildSparkContext(Some(Seq(jarPath)) )
+
+
+  def apply (jarPathList: Seq[String]) :TestXDContext =
+    buildSparkContext(Some(jarPathList) )
+
+
+  def apply () = buildSparkContext()
+
+
 }
 
-import TestXDContext._
 /**
  * A special [[SQLContext]] prepared for testing.
  */
-private[sql] class TestXDContext(sc: SparkContext) extends XDContext(sc) { self =>
-
-  def this() = this(defaultSparkContext)
-
+private[sql] class TestXDContext private(sc: SparkContext) extends XDContext(sc) { self =>
 
   // Use fewer partitions to speed up testing
   protected[sql] override def createSession(): SQLSession = new this.SQLSession()

@@ -18,9 +18,11 @@ package com.stratio.crossdata.connector.cassandra
 import com.datastax.driver.core.{Cluster, Session}
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
+import org.apache.spark.sql.crossdata.CrossdataVersion
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.scalatest.Suite
+
 
 import scala.util.Try
 
@@ -29,6 +31,9 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
   with Logging {
 
   this: Suite =>
+
+  override def jarPathList: Seq[String] =
+    Seq(s"cassandra/target/cassandra-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"core/target/core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
 
   override type ClientParams = (Cluster, Session)
   override val provider: String = SourceProvider
