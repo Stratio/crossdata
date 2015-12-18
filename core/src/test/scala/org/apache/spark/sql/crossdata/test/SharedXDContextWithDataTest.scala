@@ -32,9 +32,11 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest  with Logging {
   val defaultOptions: Map[String, String] = Map.empty
   def sparkRegisterTableSQL: Seq[SparkTable] = Nil
 
-  lazy val assumeEnvironmentIsUpAndRunning = {
-    assume(isEnvironmentReady, runningError)
-  }
+  lazy val assumeEnvironmentIsUpAndRunning =
+    if (!isEnvironmentReady) {
+      fail(runningError)
+    }
+
 
   //Template steps: Override them
   protected def prepareClient: Option[ClientParams]
