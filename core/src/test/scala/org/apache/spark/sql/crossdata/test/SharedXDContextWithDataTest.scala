@@ -19,35 +19,49 @@ import org.apache.spark.Logging
 
 import scala.util.Try
 
-trait SharedXDContextWithDataTest extends SharedXDContextTest  with Logging {
+trait SharedXDContextWithDataTest extends SharedXDContextTest with Logging {
 
   import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest._
 
   //Template settings: Override them
 
-  type ClientParams
+  type ClientParams  /* Abstract type which should be overridden in order to specify the type of
+                      * the native client used in the test to insert test data.
+                      */
 
-  val runningError: String
-  val provider: String
-  val defaultOptions: Map[String, String] = Map.empty
-  def sparkRegisterTableSQL: Seq[SparkTable] = Nil
+
+  val runningError: String                             /* Error message shown when a test is running without a propper
+                                                        * environment being set
+                                                        */
+
+  val provider: String                                 // Datasource class name (fully specified)
+  val defaultOptions: Map[String, String] = Map.empty  // Spark options used to register the test table in the catalog
+
+  def sparkRegisterTableSQL: Seq[SparkTable] = Nil     /* Spark CREATE sentence. Without OPTIONS or USING parts since
+                                                        * they'll be generated from `provider` and `defaultOptions`
+                                                        * attributes.
+                                                        * e.g: override def sparkRegisterTableSQL: Seq[SparkTable] =
+                                                        *          Seq("CREATE TABLE T", "CREATE TEMPORARY TABLE S")
+                                                        */
 
   lazy val assumeEnvironmentIsUpAndRunning = {
     assume(isEnvironmentReady, runningError)
   }
 
-  //Template steps: Override them
-  protected def prepareClient: Option[ClientParams]
-  protected def terminateClient: Unit
+  protected def prepareClient: Option[ClientParams]    // Native client initialization
+  protected def terminateClient: Unit                  // Native client finalization
+  protected def saveTestData: Unit = ()                // Creation and insertion of test data examples
+  protected def cleanTestData: Unit                    /* Erases test data from the data source after the test has
+                                                        * finished
+                                                        */
 
-  protected def saveTestData: Unit = ()
-  protected def cleanTestData: Unit
+  //Template: This is the template implementation and shouldn't be modified in any specific test
 
-  //Template
   implicit def str2sparkTableDesc(query: String): SparkTable = SparkTable(query, defaultOptions)
 
   var client: Option[ClientParams] = None
   var isEnvironmentReady = false
+
   protected override def beforeAll(): Unit = {
     super.beforeAll()
 
@@ -65,7 +79,7 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest  with Logging {
   protected override def afterAll() = {
     _xdContext.dropAllTables()
     super.afterAll()
-    for(_ <- client) cleanEnvironment
+    for (_ <- client) cleanEnvironment
   }
 
   private def cleanEnvironment: Unit = {
@@ -76,11 +90,14 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest  with Logging {
 }
 
 object SharedXDContextWithDataTest {
+
   case class Sentence(query: String, provider: String, options: Map[String, String]) {
     override def toString: String = {
-      val opt = options.map { case (k,v) => s"$k " + s"'$v'" } mkString ","
+      val opt = options.map { case (k, v) => s"$k " + s"'$v'" } mkString ","
       s"$query USING $provider" + options.headOption.fold("")(_ => s" OPTIONS ( $opt ) ")
     }
   }
+
   case class SparkTable(sql: String, options: Map[String, String])
+
 }
