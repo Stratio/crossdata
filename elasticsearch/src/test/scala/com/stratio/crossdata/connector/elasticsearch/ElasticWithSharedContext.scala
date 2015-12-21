@@ -36,7 +36,7 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
   this: Suite =>
 
   override def jarPathList: Seq[String] =
-    Seq(s"core/target/core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"elasticsearch/target/elasticsearch-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
+    Seq(s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"elasticsearch/target/crossdata-elasticsearch-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
 
   override type ClientParams = ElasticClient
   override val provider: String = SourceProvider

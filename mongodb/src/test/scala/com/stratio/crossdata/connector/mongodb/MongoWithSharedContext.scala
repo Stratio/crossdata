@@ -33,7 +33,7 @@ trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefau
   this: Suite =>
 
   override def jarPathList: Seq[String] =
-    Seq(s"core/target/core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"mongodb/target/mongodb-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
+    Seq(s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"mongodb/target/crossdata-mongodb-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
 
   override type ClientParams = MongoClient
   override val provider: String = SourceProvider

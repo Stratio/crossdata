@@ -33,7 +33,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
   this: Suite =>
 
   override def jarPathList: Seq[String] =
-    Seq(s"cassandra/target/cassandra-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"core/target/core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
+    Seq(s"cassandra/target/crossdata-cassandra-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
 
   override type ClientParams = (Cluster, Session)
   override val provider: String = SourceProvider
