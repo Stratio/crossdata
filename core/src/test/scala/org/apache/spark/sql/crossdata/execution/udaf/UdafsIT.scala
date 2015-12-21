@@ -15,13 +15,12 @@
  */
 package org.apache.spark.sql.crossdata.execution.udaf
 
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-
-case class Student(name: String, age: Int)
 
 @RunWith(classOf[JUnitRunner])
 class UdafsIT extends CoreWithSharedContext {
@@ -32,15 +31,13 @@ class UdafsIT extends CoreWithSharedContext {
   private val Schema = StructType(Seq(StructField("col", StringType)))
 
   "XDContext" should "resolve a query with the UDAF group_concat" in {
-    val tempContext = _xdContext
-    import tempContext.implicits._
 
-    val df = _xdContext.sc.parallelize(
-      List(Student("Torcuato", 27), Student("Rosalinda", 34), Student("Arthur", 41))).toDF
+    val schema = StructType(Seq(StructField("name", StringType), StructField("age", IntegerType)))
+    val df = _xdContext.createDataFrame(_xdContext.sc.parallelize(Seq(Row("Torcuato", 27), Row("Rosalinda", 34), Row("Arthur", 41))), schema)
 
-    df.registerTempTable("Udafs_test_gc")
+    df.registerTempTable("udafs_test_gc")
 
-    val result = sql(s"SELECT group_concat(name) FROM Udafs_test_gc")
+    val result = sql(s"SELECT group_concat(name) FROM udafs_test_gc")
 
     result.first().getAs[String](0) shouldBe "Torcuato, Rosalinda, Arthur"
 
