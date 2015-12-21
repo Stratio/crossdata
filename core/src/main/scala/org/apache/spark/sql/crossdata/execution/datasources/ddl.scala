@@ -20,7 +20,8 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.{CrossdataTable, XDCatalog}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import org.apache.spark.sql.crossdata.CrossdataTable
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.RelationProvider
@@ -53,7 +54,7 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
       import XDCatalog._
       sqlContext.catalog.persistTable(
         CrossdataTable(t.tableName, t.database, t.schema, datasource, Array.empty[String], connectorOpts),
-        Option(LogicalRelation(relationProvider.createRelation(sqlContext, connectorOpts)))
+        LogicalRelation(relationProvider.createRelation(sqlContext, connectorOpts))
       )
     }
 

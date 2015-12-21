@@ -18,9 +18,8 @@ package org.apache.spark.sql.crossdata.catalog
 import java.sql.{Connection, DriverManager, ResultSet}
 
 import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.crossdata.{catalog, XDContext}
 import org.apache.spark.sql.types._
 
 import scala.annotation.tailrec
@@ -38,7 +37,7 @@ object DerbyCatalog {
 }
 
 /**
- * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
+ * Default implementation of the [[catalog.XDCatalog]] with persistence using
  * Derby.
  * @param conf An implementation of the [[CatalystConf]].
  */
@@ -127,7 +126,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
   }
 
-  override def persistTableMetadata(crossdataTable: CrossdataTable, logicalRelation: Option[LogicalPlan]): Unit = {
+  override def persistTableMetadata(crossdataTable: CrossdataTable): Unit = {
 
     val tableSchema = serializeSchema(crossdataTable.userSpecifiedSchema.getOrElse(new StructType()))
 
@@ -171,10 +170,6 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     connection.commit()
     connection.setAutoCommit(true)
 
-    val tableIdentifier = TableIdentifier(crossdataTable.tableName,crossdataTable.dbName).toSeq
-    //Try to register the table.
-    registerTable(tableIdentifier, logicalRelation.getOrElse(lookupRelation(tableIdentifier))
-    )
   }
 
   override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {

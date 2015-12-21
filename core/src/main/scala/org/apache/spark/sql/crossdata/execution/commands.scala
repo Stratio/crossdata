@@ -38,7 +38,7 @@ private[crossdata] case class PersistDataSourceTable(
     val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, userSpecifiedSchema, provider, Array.empty[String], options)
     val tableExist = crossdataContext.catalog.tableExists(tableIdent.toSeq)
 
-    if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable)
+    if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable, crossdataContext.catalog.createLogicalRelation(crossdataTable))
 
     if (tableExist && !allowExisting)
       throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
@@ -126,7 +126,7 @@ case class PersistSelectAsTable(
     if (createMetastoreTable) {
       val resolved = ResolvedDataSource(sqlContext, provider, partitionColumns, mode, options, df)
       val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Some(resolved.relation.schema), provider, Array.empty[String], options)
-      crossdataContext.catalog.persistTable(crossdataTable)
+      crossdataContext.catalog.persistTable(crossdataTable, LogicalRelation(resolved.relation))
     }
 
 

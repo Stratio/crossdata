@@ -27,6 +27,7 @@ import com.typesafe.config.{Config}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.config.CatalogConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}

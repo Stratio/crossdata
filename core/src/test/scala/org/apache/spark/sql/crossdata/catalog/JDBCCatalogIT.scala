@@ -32,7 +32,7 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
     val opts = Map("path" -> "/fake_path")
     val tableIdentifier = Seq(TableName)
     val crossdataTable = CrossdataTable(TableName, None, Some(Columns), SourceDatasource, Array[String](), opts)
-    xdContext.catalog.persistTable(crossdataTable)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
     val dataframe = xdContext.sql(s"SELECT * FROM $TableName")
 
     dataframe shouldBe a[XDDataFrame]
@@ -42,7 +42,7 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
 
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
-    xdContext.catalog.persistTable(crossdataTable)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.tableExists(tableIdentifier) shouldBe true
 
     val df = xdContext.sql(s"SELECT * FROM $Database.$TableName")
@@ -54,7 +54,7 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithSubColumns), SourceDatasource, Array.empty[String], OptsJSON)
-    xdContext.catalog.persistTable(crossdataTable)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
 
     xdContext.catalog.unregisterTable(tableIdentifier)
     xdContext.catalog.tableExists(tableIdentifier) shouldBe true
@@ -68,7 +68,7 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithArrayString), SourceDatasource, Array.empty[String], OptsJSON)
-    xdContext.catalog.persistTable(crossdataTable)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
 
     xdContext.catalog.unregisterTable(tableIdentifier)
     val df = xdContext.sql(s"SELECT $SubField2Name FROM $Database.$TableName")
@@ -80,7 +80,7 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithArrayInteger), SourceDatasource, Array.empty[String], OptsJSON)
-    xdContext.catalog.persistTable(crossdataTable)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
 
     xdContext.catalog.unregisterTable(tableIdentifier)
     xdContext.sql(s"DESCRIBE $Database.$TableName")
@@ -93,11 +93,10 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithArrayWithSubdocuments), SourceDatasource, Array.empty[String], OptsJSON)
-    xdContext.catalog.persistTable(crossdataTable)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
 
     xdContext.catalog.unregisterTable(tableIdentifier)
     val schemaDF = xdContext.sql(s"DESCRIBE $Database.$TableName")
-    schemaDF.show
     schemaDF.count() should be (3)
     val df = xdContext.sql(s"SELECT `$FieldWitStrangeChars` FROM $Database.$TableName")
     df shouldBe a[XDDataFrame]
@@ -108,10 +107,9 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithMapWithArrayWithSubdocuments), SourceDatasource, Array.empty[String], OptsJSON)
-    xdContext.catalog.persistTable(crossdataTable)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.unregisterTable(tableIdentifier)
     val schemaDF = xdContext.sql(s"DESCRIBE $Database.$TableName")
-    schemaDF.show
     schemaDF.count() should be (1)
     val df = xdContext.sql(s"SELECT `$Field1Name` FROM $Database.$TableName")
     df shouldBe a[XDDataFrame]
@@ -123,8 +121,8 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
     val crossdataTable1 = CrossdataTable(TableName, Some(Database), Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     val crossdataTable2 = CrossdataTable(TableName, None, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
 
-    xdContext.catalog.persistTable(crossdataTable1)
-    xdContext.catalog.persistTable(crossdataTable2)
+    xdContext.catalog.persistTableMetadata(crossdataTable1)
+    xdContext.catalog.persistTableMetadata(crossdataTable2)
 
     val tables = xdContext.catalog.getTables(Some(Database))
     tables.size shouldBe (1)
@@ -139,8 +137,8 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
     val crossdataTable2 = CrossdataTable(TableName, None, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     val tableIdentifier1 = Seq(Database, TableName)
     val tableIdentifier2 = Seq(TableName)
-    xdContext.catalog.persistTable(crossdataTable1)
-    xdContext.catalog.persistTable(crossdataTable2)
+    xdContext.catalog.persistTableMetadata(crossdataTable1)
+    xdContext.catalog.persistTableMetadata(crossdataTable2)
 
     val tables = xdContext.catalog.getTables(None)
     tables.size shouldBe 2
@@ -157,7 +155,7 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
     val crossdataTable1 = CrossdataTable(TableName, Some(Database), Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     val tableIdentifier2 = Seq(TableName)
 
-    xdContext.catalog.persistTable(crossdataTable1)
+    xdContext.catalog.persistTableMetadata(crossdataTable1)
 
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     xdContext.catalog.unregisterAllTables()
@@ -171,7 +169,7 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
     xdContext.catalog.dropAllTables()
     val crossdataTable1 = CrossdataTable(TableName, Some(Database), Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     val tableIdentifier2 = Seq(TableName)
-    xdContext.catalog.persistTable(crossdataTable1)
+    xdContext.catalog.persistTableMetadata(crossdataTable1)
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     val tables = xdContext.catalog.getTables(None).toMap
     tables(s"$Database.$TableName") shouldBe false
@@ -181,7 +179,7 @@ class JDBCCatalogIT extends CoreWithSharedContext with JDBCCatalogConstants {
   it should "describe a table persisted and non persisted with subcolumns" in {
     xdContext.catalog.dropAllTables()
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithSubColumns), SourceDatasource, Array.empty[String], OptsJSON)
-    xdContext.catalog.persistTable(crossdataTable)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.sql(s"DESCRIBE $Database.$TableName").count() should not be 0
   }
 
