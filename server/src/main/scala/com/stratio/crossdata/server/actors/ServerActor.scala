@@ -18,10 +18,10 @@ package com.stratio.crossdata.server.actors
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
 import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+import com.stratio.crossdata.common.result.{SuccessfulQueryAnnotatedResult, ErrorResult, SuccessfulQueryResult}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.{XDDataFrame, XDContext}
 
 
 object ServerActor {
@@ -34,12 +34,15 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   def receive: Receive = {
 
-    case sqlCommand @ SQLCommand(query,_) =>
+    case sqlCommand @ SQLCommand(query, _, withColnames) =>
       logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
       try {
         val df = xdContext.sql(query)
-        val rows = df.collect()
-        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, df.schema)
+        val response = if(withColnames) {
+          val (rows, cols) = df.asInstanceOf[XDDataFrame].annotatedCollect()
+          SuccessfulQueryAnnotatedResult(sqlCommand.queryId, rows, df.schema, cols)
+        } else SuccessfulQueryResult(sqlCommand.queryId, df.collect(), df.schema)
+        sender ! response
       } catch {
         case e: Throwable => {
           logger.error(e.getMessage)
