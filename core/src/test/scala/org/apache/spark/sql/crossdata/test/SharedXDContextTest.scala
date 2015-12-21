@@ -43,14 +43,19 @@ trait SharedXDContextTest extends XDTestUtils {
 
   protected override def _xdContext: XDContext = _ctx
 
-  def jarPathList: Seq[String]
+  protected def jarPathList: Seq[String]
+
+  /**
+   * List of files required to execute ITs
+   */
+  protected def filePathList: Seq[String] = Seq()
 
   /**
    * Initialize the [[TestXDContext]].
    */
   protected override def beforeAll(): Unit = {
     if (_ctx == null) {
-      _ctx = TestXDContext(jarPathList)
+      _ctx = TestXDContext(jarPathList, filePathList)
     }
     // Ensure we have initialized the context before calling parent code
     super.beforeAll()

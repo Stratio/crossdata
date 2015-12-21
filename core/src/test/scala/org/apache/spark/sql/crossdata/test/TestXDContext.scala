@@ -27,7 +27,7 @@ import scala.util.Try
 
 object TestXDContext {
 
-  def buildSparkContext(externalJars: Option[Seq[String]] = None): TestXDContext = {
+  def buildSparkContext(externalJars: Option[Seq[String]], externalFiles: Seq[String]): TestXDContext = {
     val defaultSparkConf = new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io.LZ4CompressionCodec")
     val externalMaster = Try(ConfigFactory.load().getString("spark.master"))
 
@@ -37,18 +37,23 @@ object TestXDContext {
       (master, externalJars.map( jarList => defaultSparkConf.setJars( jarList.map(buildPath))).getOrElse(defaultSparkConf) )
     } getOrElse (("local[2]", defaultSparkConf))
 
-    new TestXDContext(new SparkContext(sparkMaster, "test-xdcontext", sparkConf))
+    val sparkContext = new SparkContext(sparkMaster, "test-xdcontext", sparkConf)
+    externalFiles.foreach(sparkContext.addFile)
+    new TestXDContext(sparkContext)
   }
 
   def apply (jarPath: String) :TestXDContext =
-    buildSparkContext(Some(Seq(jarPath)) )
+    buildSparkContext(Some(Seq(jarPath)), Seq.empty )
 
+
+  def apply (jarPathList: Seq[String], filePathList: Seq[String]) :TestXDContext =
+    buildSparkContext(Some(jarPathList), filePathList)
 
   def apply (jarPathList: Seq[String]) :TestXDContext =
-    buildSparkContext(Some(jarPathList) )
+    buildSparkContext(Some(jarPathList), Seq.empty)
 
 
-  def apply () = buildSparkContext()
+  def apply () = buildSparkContext( None, Seq.empty)
 
 
 }

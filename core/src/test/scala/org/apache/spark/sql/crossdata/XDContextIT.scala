@@ -15,8 +15,7 @@
  */
 package org.apache.spark.sql.crossdata
 
-import java.nio.file.Paths
-
+import org.apache.spark.SparkFiles
 import org.apache.spark.sql.crossdata.execution.PersistDataSourceTable
 import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.apache.spark.sql.execution.ExecutedCommand
@@ -55,7 +54,8 @@ class XDContextIT extends CoreWithSharedContext {
 
 
   it must "plan a PersistDataSource when creating a table " in {
-    val dataframe = sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/catalog-reference.conf").toURI()).toString}')")
+
+    val dataframe = sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${SparkFiles.get("catalog-reference.conf")}')")
     val sparkPlan = dataframe.queryExecution.sparkPlan
     xdContext.catalog.dropTable(Seq("","jsonTable"))
     sparkPlan should matchPattern { case ExecutedCommand(_: PersistDataSourceTable) => }

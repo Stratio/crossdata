@@ -15,9 +15,16 @@
  */
 package org.apache.spark.sql.crossdata.test
 
+import java.nio.file.Paths
+
 import org.apache.spark.sql.crossdata.CrossdataVersion
 
 trait CoreWithSharedContext extends SharedXDContextTest{
   override def jarPathList: Seq[String] =
     Seq(s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
+
+  /**
+   * List of files required to execute ITs
+   */
+  override protected def filePathList: Seq[String] = Seq(Paths.get(getClass.getResource("/catalog-reference.conf").toURI()).toString)
 }
