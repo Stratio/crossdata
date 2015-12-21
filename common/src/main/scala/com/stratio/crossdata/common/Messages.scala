@@ -20,9 +20,10 @@ import java.util.UUID
 
 import org.apache.spark.sql.Row
 
-case class SQLCommand(query: String, queryId: UUID = UUID.randomUUID())
+//TODO: Remove `retrieveColumnNames` when a better alternative to PR#257 has been found
+case class SQLCommand(query: String, queryId: UUID = UUID.randomUUID(), retrieveColumnNames: Boolean = false)
 
-trait SQLResult extends Serializable{
+trait SQLResult extends Serializable {
   val queryId: UUID
   def resultSet: Array[Row]
   def hasError: Boolean

@@ -29,6 +29,17 @@ case class SuccessfulQueryResult(queryId: UUID, result: Array[Row], schema: Stru
 
 }
 
+//TODO: Remove `SuccessfulQueryAnnotatedResult` case class when a better alternative to PR#257 has been found
+case class SuccessfulQueryAnnotatedResult(queryId: UUID, result: Array[Row], schema: StructType, colNames: Seq[String]
+                                         ) extends SQLResult {
+  require(result.length == colNames.length)
+
+  override val resultSet = result
+
+  def hasError = false
+
+}
+
 case class ErrorResult(queryId: UUID, message: String, cause: Option[Throwable] = None) extends SQLResult {
   override lazy val resultSet = cause.fold(throw new RuntimeException(message)) {
     throwable => throw new RuntimeException(message,throwable)

@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.test
 import com.stratio.crossdata.test.BaseXDTest
 
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.crossdata.ExecutionType
+import org.apache.spark.sql.crossdata.{XDDataFrame, ExecutionType}
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 
 /* Mix this trait in a type test class to get most of the type test done.
@@ -55,7 +55,6 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
   //Template: This is the template implementation and shouldn't be modified in any specific test
 
   def doTypesTest(datasourceName: String): Unit = {
-
     for(executionType <- ExecutionType.Spark::ExecutionType.Native::Nil)
       datasourceName should s"provide the right types for $executionType execution" in {
         val dframe = sql("SELECT " + typesSet.map(_.colname).mkString(", ") + s" FROM $dataTypesTableName")
@@ -65,6 +64,14 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
         ) typeCheck(dframe.collect(executionType).head(i))
       }
 
+    //TODO: Remove Multi-level column flat test when a better alternative to PR#257 has been found
+    //Multi-level column flat test
+    if(typesSet.map(_.colname) contains "structofstruct")
+      it should "provide flattened column names through the `annotatedCollect` method" in {
+        val dataFrame = sql("SELECT structofstruct.struct1.structField1 FROM typesCheckTable")
+        val (_, colNames) = dataFrame.asInstanceOf[XDDataFrame].annotatedCollect()
+        colNames.head shouldBe "structofstruct.struct1.structField1"
+      }
   }
 
   abstract override def saveTestData: Unit = {
