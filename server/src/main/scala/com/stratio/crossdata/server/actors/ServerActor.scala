@@ -55,6 +55,4 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   }
 
-  protected def queryCommand
-
 }
