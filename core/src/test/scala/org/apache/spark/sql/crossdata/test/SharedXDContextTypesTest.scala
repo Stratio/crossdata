@@ -64,6 +64,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
         ) typeCheck(dframe.collect(executionType).head(i))
       }
 
+    //TODO: Remove Multi-level column flat test when a better alternative to PR#257 has been found
     //Multi-level column flat test
     if(typesSet.map(_.colname) contains "structofstruct")
       it should "provide flattened column names through the `annotatedCollect` method" in {

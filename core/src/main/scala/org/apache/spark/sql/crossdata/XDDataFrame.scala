@@ -104,6 +104,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     }
   }
 
+  //TODO: Remove `annotatedCollect` wrapper method when a better alternative to PR#257 has been found
   def annotatedCollect(): (Array[Row], Seq[String]) = {
     def flatSubFields(exp: Expression, prev: List[String] = Nil): List[String] = exp match {
       case Alias(child, _) => flatSubFields(child)

@@ -39,6 +39,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       try {
         val df = xdContext.sql(query)
         val response = if(withColnames) {
+          //TODO: Remove response differentiation when a better solution than PR#257 has been found
           val (rows, cols) = df.asInstanceOf[XDDataFrame].annotatedCollect()
           SuccessfulQueryAnnotatedResult(sqlCommand.queryId, rows, df.schema, cols)
         } else SuccessfulQueryResult(sqlCommand.queryId, df.collect(), df.schema)
