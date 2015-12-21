@@ -55,6 +55,12 @@ class XDContextIT extends CoreWithSharedContext {
 
   it must "plan a PersistDataSource when creating a table " in {
 
+    val test = _xdContext.sc.parallelize(Seq(1,2,3,4)).map { x =>
+      SparkFiles.get("catalog-reference.conf")
+    }
+
+    val v = test.foreach(x => println("====================>" + x))
+
     val dataframe = sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${SparkFiles.get("catalog-reference.conf")}')")
     val sparkPlan = dataframe.queryExecution.sparkPlan
     xdContext.catalog.dropTable(Seq("","jsonTable"))
