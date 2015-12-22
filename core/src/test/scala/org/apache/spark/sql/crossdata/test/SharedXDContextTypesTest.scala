@@ -32,24 +32,24 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
 
   //Template steps: Override them
 
-  val emptyTypesSetError: String                       /* Error message to be shown when the types test data have not
-                                                        * been properly inserted in the data source */
-  def saveTypesData: Int                               // Entry point for saving types examples into the data source
-  def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef]  /* There are data sources which require their tables to have a
-                                                        * primary key. This entry point allows specifying primary keys
-                                                        * columns.
-                                                        * NOTE that these `SparkSQLColdDef`s shouldn't have type checker
-                                                        * since the column type does not form part of the test.
-                                                        * e.g:
-                                                        *   override def sparkAdditionalKeyColumns(
-                                                        *                                           "k",
-                                                        *                                           "INT PRIMARY KEY"
-                                                        *                                         )
-                                                        */
-  def dataTypesSparkOptions: Map[String, String]       /* Especial SparkSQL options for type tables, it is equivalent to
-                                                        * `defaultOptions` but will only apply in the registration of
-                                                        * the types test table.
-                                                        */
+  val emptyTypesSetError: String                                /* Error message to be shown when the types test data have not
+                                                                 * been properly inserted in the data source */
+  def saveTypesData: Int                                        // Entry point for saving types examples into the data source
+  def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef] = Seq()   /* There are data sources which require their tables to have a
+                                                                 * primary key. This entry point allows specifying primary keys
+                                                                 * columns.
+                                                                 * NOTE that these `SparkSQLColdDef`s shouldn't have type checker
+                                                                 * since the column type does not form part of the test.
+                                                                 * e.g:
+                                                                 *   override def sparkAdditionalKeyColumns(
+                                                                 *                                           "k",
+                                                                 *                                           "INT PRIMARY KEY"
+                                                                 *                                         )
+                                                                 */
+  def dataTypesSparkOptions: Map[String, String]                /* Especial SparkSQL options for type tables, it is equivalent to
+                                                                 * `defaultOptions` but will only apply in the registration of
+                                                                 * the types test table.
+                                                                 */
 
 
   //Template: This is the template implementation and shouldn't be modified in any specific test
