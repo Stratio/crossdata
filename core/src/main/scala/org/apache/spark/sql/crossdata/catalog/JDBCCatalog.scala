@@ -20,12 +20,10 @@ import java.sql.{Connection, DriverManager, ResultSet}
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.crossdata.{CrossdataTable, CrossdataVersion, XDCatalog, XDContext}
+import org.apache.spark.sql.types.StructType
 
 import scala.annotation.tailrec
-
-
 
 object JDBCCatalog {
   // SQLConfig
@@ -56,7 +54,6 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
   import JDBCCatalog._
   import XDCatalog._
-  import org.apache.spark.sql.crossdata._
 
   private val config = xdContext.catalogConfig
 
@@ -113,7 +110,8 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
       val version = resultSet.getString(CrossdataVersionField)
 
       Some(
-        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource, getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
+        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource,
+          getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
       )
     }
   }

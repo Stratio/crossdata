@@ -19,18 +19,25 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.stratio.crossdata.connector.elasticsearch.ElasticSearchConnectionUtils._
 import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
+import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.expressions.Literal
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
-import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, SimpleLogicalPlan}
-import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
+import org.apache.spark.sql.catalyst.plans.logical.Limit
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.BaseLogicalPlan
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.FilterReport
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
+import org.apache.spark.sql.sources.{Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{Row, sources}
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.sources
 import org.elasticsearch.action.search.SearchResponse
 
 object ElasticSearchQueryProcessor {
 
-  def apply(logicalPlan: LogicalPlan, parameters: Map[String, String], schemaProvided: Option[StructType] = None) = new ElasticSearchQueryProcessor(logicalPlan, parameters, schemaProvided)
+  def apply(logicalPlan: LogicalPlan, parameters: Map[String, String], schemaProvided: Option[StructType] = None) =
+    new ElasticSearchQueryProcessor(logicalPlan, parameters, schemaProvided)
 }
 
 /**
@@ -40,7 +47,8 @@ object ElasticSearchQueryProcessor {
  * @param parameters ElasticSearch Configuration Parameters
  * @param schemaProvided Spark used defined schema
  */
-class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String], val schemaProvided: Option[StructType] = None) extends Logging {
+class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String],
+                                  val schemaProvided: Option[StructType] = None) extends Logging {
 
   type Limit = Option[Int]
 
@@ -67,7 +75,8 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
   }
 
 
-  def buildNativeQuery(requiredColumns: Seq[Attribute], filters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
+  def buildNativeQuery(requiredColumns: Seq[Attribute], filters: Array[SourceFilter], query: SearchDefinition):
+                                                                                                SearchDefinition = {
     val queryWithFilters = buildFilters(filters, query)
     selectFields(requiredColumns, queryWithFilters)
   }

@@ -20,7 +20,8 @@ package com.stratio.crossdata.connector.cassandra
 
 import java.util.Collection
 
-import com.datastax.driver.core.{KeyspaceMetadata, TableMetadata}
+import com.datastax.driver.core.KeyspaceMetadata
+import com.datastax.driver.core.TableMetadata
 import com.datastax.spark.connector.cql._
 import com.datastax.spark.connector.rdd.ReadConf
 import com.datastax.spark.connector.util.ConfigParameter
@@ -28,13 +29,18 @@ import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.FunctionInventory.UDF
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.cassandra.DefaultSource._
-import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
+import com.stratio.crossdata.connector.FunctionInventory
+import com.stratio.crossdata.connector.TableInventory
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
-import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
+import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS}
+import org.apache.spark.sql.cassandra._
+import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.sources.DataSourceRegister
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SaveMode
 
 import scala.collection.mutable
 
@@ -130,7 +136,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
 
   override def nativeBuiltinFunctions: Seq[UDF] = {
-    //TODO: Complete the built-in function inventory
+    // TODO: Complete the built-in function inventory
     Seq(
       UDF("now", None, StructType(Nil), StringType),
       UDF("dateOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.TimestampType),
@@ -140,7 +146,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
   }
 
 
-  //-----------MetadataInventory-----------------
+  // -----------MetadataInventory-----------------
 
 
   import collection.JavaConversions._
@@ -148,16 +154,17 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
     if (options.contains(CassandraDataSourceTableNameProperty))
-      require(options.contains(CassandraDataSourceKeyspaceNameProperty), s"$CassandraDataSourceKeyspaceNameProperty required when use $CassandraDataSourceTableNameProperty")
+      require(options.contains(CassandraDataSourceKeyspaceNameProperty),
+        s"$CassandraDataSourceKeyspaceNameProperty required when use $CassandraDataSourceTableNameProperty")
 
     buildCassandraConnector(context, options).withSessionDo { s =>
       val keyspaces = options.get(CassandraDataSourceKeyspaceNameProperty).fold(s.getCluster.getMetadata.getKeyspaces){
         keySpaceName => s.getCluster.getMetadata.getKeyspace(keySpaceName) :: Nil
       }
 
-      val tablesIt: Iterable[Table] = for(
-        ksMeta: KeyspaceMetadata <- keyspaces;
-        tMeta: TableMetadata <- pickTables(ksMeta, options)) yield tableMeta2Table(tMeta)
+      val tablesIt: Iterable[Table] = for{
+        ksMeta: KeyspaceMetadata <- keyspaces
+        tMeta: TableMetadata <- pickTables(ksMeta, options)} yield tableMeta2Table(tMeta)
       tablesIt.toSeq
     }
   }
@@ -172,8 +179,8 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     val (clusterName, host) = (conParams zip conParams.tail) head
 
     val cfg: SparkConf = context.sparkContext.getConf.clone()
-    for (ConfigParameter(prop, _, _, _) <- DefaultSource.confProperties;
-         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop")) cfg.set(prop, clusterLevelValue)
+    for {ConfigParameter(prop, _, _, _) <- DefaultSource.confProperties
+         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop")} cfg.set(prop, clusterLevelValue)
     cfg.set("spark.cassandra.connection.host", host)
 
     CassandraConnector(cfg)
@@ -194,7 +201,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   private lazy val systemTableRegex = "^system(_.+)?".r
 
-  //Avoids importing system tables
+  // Avoids importing system tables
   override def exclusionFilter(t: TableInventory.Table): Boolean =
     t.database.exists( dbName => systemTableRegex.findFirstIn(dbName).isEmpty)
 
@@ -204,7 +211,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     CassandraDataSourceKeyspaceNameProperty -> item.database.get
   ) ++ opts.filterKeys(Set(CassandraConnectionHostProperty, CassandraDataSourceClusterNameProperty).contains(_))
 
-  //------------MetadataInventory-----------------
+  // ------------MetadataInventory-----------------
 
 }
 
