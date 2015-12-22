@@ -32,26 +32,25 @@ import com.stratio.tests.utils.ThreadProperty;
 import cucumber.api.CucumberOptions;
 
 //Indicar feature
-@CucumberOptions(features = { "src/test/resources/features/Cassandra/CassandraSelectSimple.feature",
+@CucumberOptions(features = {
+		"src/test/resources/features/Cassandra/CassandraSelectSimple.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectLimit.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectEqualsFilter.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature",
 		"src/test/resources/features/Cassandra/CassandraPureNativeAggregation.feature",
 		"src/test/resources/features/Udaf/Group_concat.feature"
 })
-public class ATCassandraXDTest extends BaseTest {
+public class ATCassandraXDJavaDriverTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()
 			.getCanonicalName());
 	CassandraUtils cassandra = new CassandraUtils();
 	private String catalog = "databasetest";
 	// Global for C*
-	private String cluster = System.getProperty("CASSANDRA_CLUSTER",
-			"Test Cluster");
 	private String host = System.getProperty("CASSANDRA_HOST", "127.0.0.1");
 	private String sourceProvider = System.getProperty("SOURCE_PROVIDER",
 			"com.stratio.crossdata.sql.sources.cassandra");
 
-	public ATCassandraXDTest() {
+	public ATCassandraXDJavaDriverTest() {
 	}
 
 	@BeforeClass
@@ -68,13 +67,8 @@ public class ATCassandraXDTest extends BaseTest {
 		cassandra.loadTestData(catalog, "/scripts/CassandraScript.cql");
 		List<String> tables = cassandra.getTables(catalog);
 		String connector = "Cassandra";
-		ThreadProperty.set("Cluster", cluster);
-		ThreadProperty.set("Catalog", catalog);
-		ThreadProperty.set("Tables", tables.toString());
-		ThreadProperty.set("Host", host);
-		ThreadProperty.set("SourceProvider", sourceProvider);
 		ThreadProperty.set("Connector", connector);
-		ThreadProperty.set("Driver", "context");
+		ThreadProperty.set("Driver", "javaDriver");
 
 	}
 
@@ -91,7 +85,7 @@ public class ATCassandraXDTest extends BaseTest {
 	}
 
 	@Test(enabled = true)
-	public void ATCassandraXD() throws Exception {
+	public void ATCassandraXDJavaDriverTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
 
