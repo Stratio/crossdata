@@ -23,6 +23,8 @@ import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.execution.{Project => PhysicalProject}
+import org.apache.spark.sql.types.{StructField, StructType}
 
 private[sql] object XDDataFrame {
 
@@ -102,6 +104,38 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
       nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
+  }
+
+  //TODO: Remove `annotatedCollect` wrapper method when a better alternative to PR#257 has been found
+  def annotatedCollect(): (Array[Row], Seq[String]) = {
+    def flatSubFields(exp: Expression, prev: List[String] = Nil): List[String] = exp match {
+      case Alias(child, _) => flatSubFields(child)
+      case GetStructField(child, field, _) => flatSubFields(child, field.name :: prev)
+      case AttributeReference(name, _, _, _) => name :: prev
+      case _ => prev
+    }
+    def flatRow(row: GenericRowWithSchema, parentName: String = ""): Array[(StructField, Any)] = {
+      val baseName = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
+      (row.schema.fields zip row.values) flatMap {
+        case (StructField(name, StructType(_), _, _), col : GenericRowWithSchema) =>
+          flatRow(col, s"$baseName$name")
+        case (StructField(name, dtype, nullable, meta), vobject) =>
+          Seq((StructField(s"$baseName$name", dtype, nullable, meta), vobject))
+      }
+    }
+    val rows = collect() map { case row: GenericRowWithSchema =>
+        val newFieldsArray = flatRow(row)
+        new GenericRowWithSchema(newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1))) : Row
+    }
+    val colNames = queryExecution.optimizedPlan flatMap {
+      case Project(plist, child) =>
+        plist map (flatSubFields(_) mkString ".")
+      case _ => rows.take(1) flatMap { case first: GenericRowWithSchema =>
+        first.schema.fieldNames
+      }
+    }
+
+    (rows, colNames)
   }
 
   /**

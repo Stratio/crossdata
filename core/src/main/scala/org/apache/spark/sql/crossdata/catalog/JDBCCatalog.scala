@@ -17,14 +17,11 @@ package org.apache.spark.sql.crossdata.catalog
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
-import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
 import org.apache.spark.sql.types._
-
-
 
 import scala.annotation.tailrec
 
@@ -61,7 +58,7 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
   import XDCatalog._
   import org.apache.spark.sql.crossdata._
 
-  private val config = xdContext.config
+  private val config = xdContext.catalogConfig
 
   private val db = config.getString(Database)
   private val table = config.getString(Table)

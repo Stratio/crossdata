@@ -22,7 +22,7 @@ import org.apache.log4j.Logger
 
 object CoreConfig {
   val CoreBasicConfig = "core-reference.conf"
-  val ParentConfigName = "crossdata-core.catalog"
+  val ParentConfigName = "crossdata-core"
   val CoreUserConfigFile = "external.config.filename"
   val CoreUserConfigResource = "external.config.resource"
 }
@@ -75,6 +75,7 @@ trait CoreConfig  {
     ConfigFactory.load(defaultConfig)
   }
 
+  val catalogConfig = config.getConfig("catalog")
 
 }
 

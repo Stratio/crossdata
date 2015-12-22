@@ -10,7 +10,7 @@
     </properties>
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>tests</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.0-</version>
 
     <build>
         <plugins>
@@ -95,6 +95,7 @@
             <groupId>com.stratio.qa</groupId>
             <artifactId>bdt-lib</artifactId>
             <version>${stratio-test-bdd.version}</version>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>com.datastax.cassandra</groupId>

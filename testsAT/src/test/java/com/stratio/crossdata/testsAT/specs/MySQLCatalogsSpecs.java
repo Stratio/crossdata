@@ -44,6 +44,11 @@ public class MySQLCatalogsSpecs extends BaseSpec  {
         this.commonspec = spec;
     }
 
+    @When(value = "^javi delgado$")
+    public void execute(){
+        commonspec.setter("JAVI DELGADO");
+    }
+
     @When(value = "I execute a jdbc select '(.*?)'$")
     public void executeJDBCMYSQL(String sqlJDBC) {
         commonspec.getExceptions().clear();

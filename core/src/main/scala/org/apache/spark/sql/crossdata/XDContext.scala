@@ -23,7 +23,7 @@ import java.lang.reflect.Constructor
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 import com.stratio.crossdata.connector.FunctionInventory
-import com.typesafe.config.{Config}
+import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
@@ -49,7 +49,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
   override protected[sql] lazy val catalog: XDCatalog = {
     import XDContext._
 
-    val xdConfig: Config = config
+    val xdConfig: Config = catalogConfig
 
     val catalogClass = if (xdConfig.hasPath(CatalogClass))
       xdConfig.getString(CatalogClass)
