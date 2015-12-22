@@ -27,8 +27,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
@@ -58,13 +56,13 @@ import cucumber.api.CucumberOptions;
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
         "src/test/resources/features/Udaf/Group_concat.feature"
 })
-public class ATElasticSearchXDTest extends BaseTest {
+public class ATElasticSearchXDJavaDriverTest extends BaseTest {
 	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearch");
     private String elasticSearchIP = System.getProperty("ELASTICSEARCH_HOST","172.17.0.3");
     Client client;
     private Settings settings = ImmutableSettings.settingsBuilder()
             .put("cluster.name", elasticSearchCluster).build();
-    public ATElasticSearchXDTest() {
+    public ATElasticSearchXDJavaDriverTest() {
 	}
 
 	@BeforeClass
@@ -78,7 +76,7 @@ public class ATElasticSearchXDTest extends BaseTest {
             try {
                 //Add tabletest
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                URL url = ATElasticSearchXDTest.class.getResource("/scripts/ElasticSearchData.data");
+                URL url = ATElasticSearchXDJavaDriverTest.class.getResource("/scripts/ElasticSearchData.data");
                 XContentBuilder builder = null;
 
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -118,7 +116,7 @@ public class ATElasticSearchXDTest extends BaseTest {
             e.printStackTrace();
         }
         client.close();
-        ThreadProperty.set("Driver", "context");
+        ThreadProperty.set("Driver", "javaDriver");
     }
 
 	@AfterClass
