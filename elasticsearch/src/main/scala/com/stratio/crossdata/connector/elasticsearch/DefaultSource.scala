@@ -22,25 +22,28 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
-import org.apache.spark.sql.{DataFrame, SaveMode, SQLContext}
-import org.apache.spark.sql.sources._
-import org.apache.spark.sql.types.StructType
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
-import org.elasticsearch.hadoop.{EsHadoopIllegalArgumentException, EsHadoopIllegalStateException}
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions
-import org.elasticsearch.spark.sql.ElasticSearchXDRelation
 import org.apache.spark.sql.SaveMode.Append
 import org.apache.spark.sql.SaveMode.ErrorIfExists
 import org.apache.spark.sql.SaveMode.Ignore
 import org.apache.spark.sql.SaveMode.Overwrite
-
+import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.sources._
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SQLContext
+import org.elasticsearch.hadoop.EsHadoopIllegalStateException
+import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
+import org.elasticsearch.spark.sql.ElasticSearchXDRelation
+import DefaultSource._
 
 object DefaultSource{
+  val ElasticSearchPrefix = "es."
   val DATA_SOURCE_PUSH_DOWN: String = "es.internal.spark.sql.pushdown"
   val DATA_SOURCE_PUSH_DOWN_STRICT: String = "es.internal.spark.sql.pushdown.strict"
   val ElasticNativePort = "es.nativePort"
   val ElasticCluster = "es.cluster"
   val ElasticIndex = "es.index"
+
 }
 
 /**
@@ -48,7 +51,6 @@ object DefaultSource{
  */
 class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider with TableInventory with DataSourceRegister {
 
-  import DefaultSource._
 
   override def shortName(): String = "elasticsearch"
 
@@ -84,13 +86,13 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
   private def params(parameters: Map[String, String]) = {
     // . seems to be problematic when specifying the options
     val params = parameters.map { case (k, v) => (k.replace('_', '.'), v) }.map { case (k, v) =>
-      if (k.startsWith("es.")) (k, v)
+      if (k.startsWith(ElasticSearchPrefix)) (k, v)
       else if (k == "path") ("es.resource", v)
       else if (k == "pushdown") (DATA_SOURCE_PUSH_DOWN, v)
       else if (k == "strict") (DATA_SOURCE_PUSH_DOWN_STRICT, v)
-      else ("es." + k, v)
+      else (ElasticSearchPrefix + k, v)
     }
-    //TODO Validate required parameters
+    // TODO Validate required parameters
 
 
     params

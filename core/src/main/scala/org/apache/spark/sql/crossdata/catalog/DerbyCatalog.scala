@@ -15,16 +15,21 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import java.sql.{Connection, DriverManager, ResultSet}
+import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.ResultSet
 
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
-import org.apache.spark.sql.types._
-
+import org.apache.spark.sql.catalyst.CatalystConf
+import org.apache.spark.sql.catalyst.SimpleCatalystConf
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.crossdata.XDCatalog
+import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.types.StructType
 import scala.annotation.tailrec
-
+import org.apache.spark.sql.crossdata.CrossdataTable
+import org.apache.spark.sql.crossdata.CrossdataVersion
 
 object DerbyCatalog {
   // CatalogFields
@@ -47,7 +52,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   import DerbyCatalog._
   import XDCatalog._
-  import org.apache.spark.sql.crossdata._
+
 
 
   private val db = "CROSSDATA"
@@ -102,7 +107,8 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       val version = resultSet.getString(CrossdataVersionField)
 
       Some(
-        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource, getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
+        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource,
+          getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
       )
     }
   }
@@ -158,7 +164,8 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       prepped.execute()
     }
     else {
-     val prepped = connection.prepareStatement(s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+     val prepped = connection.prepareStatement(
+       s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
           |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}'
        """.stripMargin)
       prepped.setString(1, tableSchema)
@@ -178,7 +185,8 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   }
 
   override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $db.$table WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
   }
 
   override def dropAllPersistedTables(): Unit = {

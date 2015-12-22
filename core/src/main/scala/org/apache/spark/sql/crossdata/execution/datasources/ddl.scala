@@ -20,16 +20,24 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.{CrossdataTable, XDCatalog}
+import org.apache.spark.sql.crossdata.CrossdataTable
+import org.apache.spark.sql.crossdata.XDCatalog
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
+import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.sources.RelationProvider
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
+import org.apache.spark.sql.types.ArrayType
+import org.apache.spark.sql.types.BooleanType
+import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.AnalysisException
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.SQLContext
+import XDCatalog._
 
 
-
-private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
+private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with Logging {
 
   // The result of IMPORT TABLE has only tableIdentifier so far.
@@ -50,20 +58,20 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
 
     def persistTable(t: TableInventory.Table, tableInventory: TableInventory, relationProvider: RelationProvider) = {
       val connectorOpts = tableInventory.generateConnectorOpts(t, opts)
-      import XDCatalog._
+
       sqlContext.catalog.persistTable(
         CrossdataTable(t.tableName, t.database, t.schema, datasource, Array.empty[String], connectorOpts),
         Option(LogicalRelation(relationProvider.createRelation(sqlContext, connectorOpts)))
       )
     }
 
-    //Get a reference to the inventory relation.
+    // Get a reference to the inventory relation.
     val resolved = ResolvedDataSource.lookupDataSource(datasource).newInstance()
 
     val inventoryRelation = resolved.asInstanceOf[TableInventory]
     val relationProvider = resolved.asInstanceOf[RelationProvider]
 
-    //Obtains the list of tables and persist it (if persistence implemented)
+    // Obtains the list of tables and persist it (if persistence implemented)
     val tables = inventoryRelation.listTables(sqlContext, opts)
 
 
@@ -83,31 +91,28 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
   }
 }
 
-private [crossdata] case class DropTable(tableIdentifier: TableIdentifier)
+private[crossdata] case class DropTable(tableIdentifier: TableIdentifier)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    import XDCatalog._
+
     sqlContext.catalog.dropTable(tableIdentifier.toSeq)
     Seq.empty
   }
 
 }
 
-
-private [crossdata] case class CreateTempView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan)
+private[crossdata] case class CreateTempView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    import XDCatalog._
     sqlContext.catalog.registerView(viewIdentifier.toSeq, queryPlan)
     Seq.empty
   }
 
 }
 
-
-private [crossdata] case class CreateView(viewIdentifier: TableIdentifier, query: String)
+private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, query: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {

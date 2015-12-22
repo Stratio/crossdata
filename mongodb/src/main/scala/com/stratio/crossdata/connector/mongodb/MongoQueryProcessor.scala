@@ -17,18 +17,22 @@ package com.stratio.crossdata.connector.mongodb
 
 import java.util.regex.Pattern
 
-import com.mongodb.casbah.Imports._
-import com.mongodb.{DBObject, QueryBuilder}
+import com.mongodb.casbah.Imports.ObjectId
+import com.mongodb.casbah.Imports.MongoDBObject
+import com.mongodb.DBObject
+import com.mongodb.QueryBuilder
 import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.MongodbConfig
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter
 import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.expressions.Literal
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.{Row, sources}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
-import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.FilterReport
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
+import org.apache.spark.sql.sources.{Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
 
 object MongoQueryProcessor {
@@ -161,7 +165,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
       case PhysicalOperation(projectList, filterList, _) =>
         CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
           case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
-          case (SimpleLogicalPlan(projects, filters, _), _) => Some(projects.map(_.name), filters) //TODOOOO
+          case (SimpleLogicalPlan(projects, filters, _), _) => Some(projects.map(_.name), filters) // TODO
           case _ => ??? // TODO
         }
 
@@ -192,7 +196,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
   }
 
   private[this] def sparkResultFromMongodb(requiredColumns: Seq[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
-    import com.stratio.datasource.mongodb.MongodbRelation._
+    import com.stratio.datasource.mongodb.MongodbRelation.pruneSchema
     MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns.toArray), resultSet)
   }
 
