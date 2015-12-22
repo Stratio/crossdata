@@ -73,8 +73,8 @@ class CrossdataServer extends Daemon with ServerConfig {
     logger.info("Crossdata Server started --- v1.0.0")
   }
 
-  def checkMetricsFile(params: Map[String, String], key: String): Map[String, String] = {
-    val metricsFile = new File(key)
+  def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
+    val metricsFile = new File(metricsPath)
     if(!metricsFile.exists){
       logger.warn(s"Metrics configuration file not found: ${metricsFile.getPath}")
       params - "spark.metrics.conf"
