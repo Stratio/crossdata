@@ -58,8 +58,10 @@ class CrossdataServer extends Daemon with ServerConfig {
       // TODO resizer
       val serverActor = actorSystem.actorOf(
         RoundRobinPool(serverActorInstances).props(
-          Props(classOf[ServerActor], Cluster(actorSystem), xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")))),
-        actorName)
+          Props(classOf[ServerActor],
+                Cluster(actorSystem),
+                xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")))),
+                actorName)
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
     }
     logger.info("Crossdata Server started --- v1.0.0")
