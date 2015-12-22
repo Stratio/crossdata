@@ -23,6 +23,7 @@ import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.execution.{Project => PhysicalProject}
 
 private[sql] object XDDataFrame {
 
@@ -113,8 +114,9 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       case _ => prev
     }
     val rows = collect()
-    val columnNames = queryExecution.optimizedPlan flatMap {
-      case Project(plist, child) => plist map (flatSubFields(_) mkString ".")
+    val columnNames = queryExecution.executedPlan flatMap {
+      case PhysicalProject(plist, child) =>
+        plist map (flatSubFields(_) mkString ".")
       case _ => Nil
     }
     (rows, columnNames)
