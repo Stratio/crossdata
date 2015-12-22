@@ -242,23 +242,23 @@
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/server-application.conf</path>
+                                            <path>src/main/config/server-application.conf</path>
                                             <toFile>/etc/default/crossdata/server-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/core-application.conf</path>
+                                            <path>src/main/config/core-application.conf</path>
                                             <toFile>/etc/default/crossdata/core-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/xdmetrics.properties</path>
+                                            <path>src/main/config/xdmetrics.properties</path>
                                             <toFile>/etc/default/crossdata/xdmetrics.properties</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
+                                            <path>src/main/config/crossdata-env.sh</path>
                                             <toFile>/etc/default/crossdata/crossdata-env.sh</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/server-log.properties</path>
+                                            <path>src/main/config/server-log.properties</path>
                                             <toFile>/etc/default/crossdata/server-log.properties</toFile>
                                         </copyFile>
                                         <copyFile>
