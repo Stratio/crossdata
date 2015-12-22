@@ -17,7 +17,8 @@ package com.stratio.crossdata.connector.mongodb
 
 import java.util.{Calendar, GregorianCalendar}
 
-import com.mongodb.{BasicDBObject, QueryBuilder}
+import com.mongodb.BasicDBObject
+import com.mongodb.QueryBuilder
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
 import com.typesafe.config.ConfigFactory

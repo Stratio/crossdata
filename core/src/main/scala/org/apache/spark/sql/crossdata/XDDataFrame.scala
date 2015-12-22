@@ -17,10 +17,23 @@ package org.apache.spark.sql.crossdata
 
 import com.stratio.crossdata.connector.NativeScan
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.sql._
-import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.crossdata.ExecutionType._
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.catalyst.expressions.Alias
+import org.apache.spark.sql.catalyst.expressions.Count
+import org.apache.spark.sql.catalyst.expressions.GetMapValue
+import org.apache.spark.sql.catalyst.expressions.GetStructField
+import org.apache.spark.sql.catalyst.expressions.Literal
+import org.apache.spark.sql.catalyst.plans.logical.Aggregate
+import org.apache.spark.sql.catalyst.plans.logical.LeafNode
+import org.apache.spark.sql.catalyst.plans.logical.Limit
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.Project
+import org.apache.spark.sql.crossdata.ExecutionType.Default
+import org.apache.spark.sql.crossdata.ExecutionType.ExecutionType
+import org.apache.spark.sql.crossdata.ExecutionType.Native
+import org.apache.spark.sql.crossdata.ExecutionType.Spark
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 
