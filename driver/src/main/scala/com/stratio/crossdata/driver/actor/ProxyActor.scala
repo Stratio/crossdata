@@ -36,7 +36,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
   lazy val logger = Logger.getLogger(classOf[ProxyActor])
 
   override def receive: Receive = {
-    case sqlCommand@SQLCommand(query, _) =>
+    case sqlCommand@SQLCommand(query, _, _) =>
       clusterClientActor forward ClusterClient.Send(ProxyActor.ServerPath, sqlCommand, localAffinity = false)
       logger.debug(s"Send query $query")
 

@@ -17,11 +17,12 @@ package com.stratio.crossdata.connector.mongodb
 
 import com.stratio.datasource.mongodb.MongodbConfig
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.crossdata.test.SharedXDContextTypesTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class MongoImportTablesIT extends MongoWithSharedContext {
+class MongoImportTablesIT extends MongoDataTypesCollection {
 
   /**All tables imported after dropAllTables won't be temporary**/
 

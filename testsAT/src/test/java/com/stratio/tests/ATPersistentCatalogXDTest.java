@@ -170,6 +170,7 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
+		ThreadProperty.set("Driver", "context");
 		client.close();
 	}
 

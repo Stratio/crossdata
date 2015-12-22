@@ -25,6 +25,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
+import com.stratio.crossdata.testsAT.specs.Common;
+
 abstract public class BaseTest extends BaseGTest {
 
     protected String browser = "";

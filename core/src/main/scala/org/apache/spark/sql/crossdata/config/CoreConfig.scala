@@ -76,6 +76,7 @@ trait CoreConfig  {
     ConfigFactory.load(defaultConfig)
   }
 
+  val catalogConfig = config.getConfig("catalog")
 
 }
 
