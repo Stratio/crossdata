@@ -91,7 +91,7 @@ public class XDJavaDriver {
            //xdDriver = new JavaDriver(hosts, false);
            xdDriver = new JavaDriver();
         }
-        result = xdDriver.syncQuery(new SQLCommand(sql, UUID.randomUUID()));
+        result = xdDriver.syncQuery(new SQLCommand(sql, UUID.randomUUID(),false));
     }
 
 
