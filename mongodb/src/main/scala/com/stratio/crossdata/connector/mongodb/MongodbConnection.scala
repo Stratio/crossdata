@@ -15,11 +15,16 @@
  */
 package com.stratio.crossdata.connector.mongodb
 
-import com.mongodb.{ServerAddress, MongoCredential}
-import com.mongodb.casbah.Imports._
+import com.mongodb.ServerAddress
+import com.mongodb.MongoCredential
+import com.mongodb.casbah.MongoCollection
+import com.mongodb.casbah.MongoClient
 import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.reader.MongodbReadException
-import com.stratio.datasource.mongodb.{MongodbClientFactory, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
+import com.stratio.datasource.mongodb.MongodbClientFactory
+import com.stratio.datasource.mongodb.MongodbConfig
+import com.stratio.datasource.mongodb.MongodbCredentials
+import com.stratio.datasource.mongodb.MongodbSSLOptions
 
 import scala.language.reflectiveCalls
 import scala.util.Try

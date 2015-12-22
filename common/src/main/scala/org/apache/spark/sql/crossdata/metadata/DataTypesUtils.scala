@@ -15,7 +15,8 @@
  */
 package org.apache.spark.sql.crossdata.metadata
 
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.types.DataType
+import org.apache.spark.sql.types.DataTypeParser
 
 object DataTypesUtils {
   def toDataType(stringType: String): DataType = DataTypeParser.parse(stringType)

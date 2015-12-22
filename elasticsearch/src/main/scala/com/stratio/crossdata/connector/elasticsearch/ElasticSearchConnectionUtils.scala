@@ -29,7 +29,7 @@ object ElasticSearchConnectionUtils {
 
 
   def buildClient(parameters: Map[String, String]): ElasticClient = {
-    val host: String = parameters.getOrElse(ES_NODES, ES_NODES_DEFAULT) //TODO support for multiple host, no documentation found with expected format.
+    val host: String = parameters.getOrElse(ES_NODES, ES_NODES_DEFAULT) // TODO support for multiple host, no documentation found with expected format.
     val port: Int = parameters.getOrElse(ElasticNativePort, "9300").toInt
     val clusterName = parameters(ElasticCluster)
 
