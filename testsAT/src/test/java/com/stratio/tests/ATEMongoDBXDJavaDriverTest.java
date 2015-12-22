@@ -16,37 +16,39 @@
 package com.stratio.tests;
 
 import java.net.UnknownHostException;
-import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.TimeZone;
-import org.testng.annotations.Test;
-import cucumber.api.CucumberOptions;
-import com.mongodb.BasicDBObjectBuilder;
-import com.stratio.tests.utils.BaseTest;
-import com.stratio.cucumber.testng.CucumberRunner;
+
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
+import com.stratio.cucumber.testng.CucumberRunner;
+import com.stratio.tests.utils.BaseTest;
 import com.stratio.tests.utils.ThreadProperty;
 
+import cucumber.api.CucumberOptions;
 
 @CucumberOptions(features = { "src/test/resources/features/Mongo/MongoSelectSimple.feature",
-        "src/test/resources/features/Mongo/MongoSelectLimit.feature",
-        "src/test/resources/features/Mongo/MongoSelectEqualsFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectLessFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectLessEqualsFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectGreaterFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectGreaterEqualsFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectINFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectAnd.feature",
-        "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature",
-          "src/test/resources/features/Udaf/Group_concat.feature"
+//        "src/test/resources/features/Mongo/MongoSelectLimit.feature",
+//        "src/test/resources/features/Mongo/MongoSelectEqualsFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectLessFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectLessEqualsFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectGreaterFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectGreaterEqualsFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectINFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectAnd.feature",
+//        "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature",
+//          "src/test/resources/features/Udaf/Group_concat.feature"
 })
 
-public class ATEMongoDBXDTest extends BaseTest{
+public class ATEMongoDBXDJavaDriverTest extends BaseTest{
 
     //Defaul mongoHost property
     private String mongoHost = System.getProperty("MONGO_HOST", "127.0.0.1");
@@ -83,7 +85,8 @@ public class ATEMongoDBXDTest extends BaseTest{
         String connector = "Mongo";
         ThreadProperty.set("Host", "127.0.0.1");
         ThreadProperty.set("Connector", connector);
-        ThreadProperty.set("Driver", "context");
+        ThreadProperty.set("Driver", "javaDriver");
+
     }
     @AfterClass
     public void cleanUp() throws UnknownHostException{

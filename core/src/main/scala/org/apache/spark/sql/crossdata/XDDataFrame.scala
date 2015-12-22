@@ -104,6 +104,22 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     }
   }
 
+  //TODO: Remove `annotatedCollect` wrapper method when a better alternative to PR#257 has been found
+  def annotatedCollect(): (Array[Row], Seq[String]) = {
+    def flatSubFields(exp: Expression, prev: List[String] = Nil): List[String] = exp match {
+      case Alias(child, _) => flatSubFields(child)
+      case GetStructField(child, field, _) => flatSubFields(child, field.name :: prev)
+      case AttributeReference(name, _, _, _) => name :: prev
+      case _ => prev
+    }
+    val rows = collect()
+    val columnNames = queryExecution.optimizedPlan flatMap {
+      case Project(plist, child) => plist map (flatSubFields(_) mkString ".")
+      case _ => Nil
+    }
+    (rows, columnNames)
+  }
+
   /**
    * Collect using an specific [[ExecutionType]]. Only for testing purpose so far.
    *

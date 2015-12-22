@@ -21,8 +21,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 
 object CatalogConfig {
-  val CatalogBasicConfig = "catalog-reference.conf"
-  val ParentConfigName = "crossdata.catalog"
+  val CatalogBasicConfig = "core-reference.conf"
+  val ParentConfigName = "crossdata-core"
   val CatalogUserConfigFile = "external.config.filename"
   val CatalogUserConfigResource = "external.config.resource"
 }
@@ -74,6 +74,7 @@ trait CatalogConfig  {
     ConfigFactory.load(defaultConfig)
   }
 
+  val catalogConfig = config.getConfig("catalog")
 
 }
 
