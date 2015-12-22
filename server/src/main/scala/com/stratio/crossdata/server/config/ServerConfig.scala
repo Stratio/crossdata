@@ -21,14 +21,14 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 
 object ServerConfig {
-  val SERVER_BASIC_CONFIG = "server-reference.conf"
-  val PARENT_CONFIG_NAME = "crossdata-server"
+  val ServerBasicConfig = "server-reference.conf"
+  val ParentConfigName = "crossdata-server"
 
   //  akka cluster values
-  val SERVER_CLUSTER_NAME_KEY = "config.cluster.name"
-  val SERVER_ACTOR_NAME_KEY = "config.cluster.actor"
-  val SERVER_USER_CONFIG_FILE = "external.config.filename"
-  val SERVER_USER_CONFIG_RESOURCE = "external.config.resource"
+  val ServerClusterNameKey = "config.cluster.name"
+  val ServerActorNameKey = "config.cluster.actor"
+  val ServerUserConfigFile = "external.config.filename"
+  val ServerUserConfigResource = "external.config.resource"
 
 }
 
@@ -36,26 +36,26 @@ trait ServerConfig extends NumberActorConfig {
 
   val logger: Logger
 
-  lazy val clusterName = config.getString(ServerConfig.SERVER_CLUSTER_NAME_KEY)
-  lazy val actorName = config.getString(ServerConfig.SERVER_ACTOR_NAME_KEY)
+  lazy val clusterName = config.getString(ServerConfig.ServerClusterNameKey)
+  lazy val actorName = config.getString(ServerConfig.ServerActorNameKey)
 
   override val config: Config = {
 
-    var defaultConfig = ConfigFactory.load(ServerConfig.SERVER_BASIC_CONFIG).getConfig(ServerConfig.PARENT_CONFIG_NAME)
-    val configFile = defaultConfig.getString(ServerConfig.SERVER_USER_CONFIG_FILE)
-    val configResource = defaultConfig.getString(ServerConfig.SERVER_USER_CONFIG_RESOURCE)
+    var defaultConfig = ConfigFactory.load(ServerConfig.ServerBasicConfig).getConfig(ServerConfig.ParentConfigName)
+    val configFile = defaultConfig.getString(ServerConfig.ServerUserConfigFile)
+    val configResource = defaultConfig.getString(ServerConfig.ServerUserConfigResource)
 
     if (configResource != "") {
       val resource = ServerConfig.getClass.getClassLoader.getResource(configResource)
       if (resource != null) {
-        val userConfig = ConfigFactory.parseResources(configResource).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+        val userConfig = ConfigFactory.parseResources(configResource).getConfig(ServerConfig.ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
         logger.info("User resource (" + configResource + ") found in resources")
       } else {
         logger.warn("User resource (" + configResource + ") hasn't been found")
         val file = new File(configResource)
         if (file.exists()) {
-          val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.ParentConfigName)
           defaultConfig = userConfig.withFallback(defaultConfig)
           logger.info("User resource (" + configResource + ") found in classpath")
         } else {
@@ -67,13 +67,17 @@ trait ServerConfig extends NumberActorConfig {
     if (configFile != "") {
       val file = new File(configFile)
       if (file.exists()) {
-        val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.PARENT_CONFIG_NAME)
+        val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
         logger.info("External file (" + configFile + ") found")
       } else {
         logger.warn("External file (" + configFile + ") hasn't been found")
       }
     }
+
+    // TODO Improve implementation
+    // System properties
+    defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
 
     ConfigFactory.load(defaultConfig)
   }
