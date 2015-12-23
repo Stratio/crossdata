@@ -22,17 +22,22 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
-import org.apache.spark.sql.{DataFrame, SaveMode, SQLContext}
-import org.apache.spark.sql.sources._
-import org.apache.spark.sql.types.StructType
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
-import org.elasticsearch.hadoop.{EsHadoopIllegalArgumentException, EsHadoopIllegalStateException}
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions
-import org.elasticsearch.spark.sql.ElasticSearchXDRelation
 import org.apache.spark.sql.SaveMode.Append
 import org.apache.spark.sql.SaveMode.ErrorIfExists
 import org.apache.spark.sql.SaveMode.Ignore
 import org.apache.spark.sql.SaveMode.Overwrite
+import org.apache.spark.sql.sources.RelationProvider
+import org.apache.spark.sql.sources.SchemaRelationProvider
+import org.apache.spark.sql.sources.CreatableRelationProvider
+import org.apache.spark.sql.sources.DataSourceRegister
+import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SaveMode
+import org.elasticsearch.hadoop.EsHadoopIllegalStateException
+import org.elasticsearch.hadoop.cfg.ConfigurationOptions.ES_RESOURCE
+import org.elasticsearch.spark.sql.ElasticSearchXDRelation
 
 
 object DefaultSource{
@@ -46,7 +51,8 @@ object DefaultSource{
 /**
  * This class is used by Spark to create a new  [[ElasticSearchXDRelation]]
  */
-class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider with TableInventory with DataSourceRegister {
+class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider
+                                                                        with TableInventory with DataSourceRegister {
 
   import DefaultSource._
 
@@ -60,7 +66,9 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     new ElasticSearchXDRelation(params(parameters), sqlContext, Some(schema))
   }
 
-  override def createRelation(@transient sqlContext: SQLContext, mode: SaveMode, parameters: Map[String, String], data: DataFrame): BaseRelation = {
+  override def createRelation(@transient sqlContext: SQLContext, mode: SaveMode, parameters: Map[String, String],
+                              data: DataFrame): BaseRelation = {
+
     val relation = new ElasticSearchXDRelation(params(parameters), sqlContext, Some(data.schema))
     mode match {
       case Append => relation.insert(data, false)

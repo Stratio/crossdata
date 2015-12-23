@@ -15,7 +15,8 @@
  */
 package com.stratio.crossdata.driver.querybuilder.dslentities
 
-import com.stratio.crossdata.driver.querybuilder.{CrossdataSQLStatement, Expression}
+import com.stratio.crossdata.driver.querybuilder.CrossdataSQLStatement
+import com.stratio.crossdata.driver.querybuilder.Expression
 
 object SortDirection extends Enumeration {
   type SortDirection = Value
@@ -24,7 +25,7 @@ object SortDirection extends Enumeration {
   val Default = Value("")
 }
 
-import SortDirection._
+import com.stratio.crossdata.driver.querybuilder.dslentities.SortDirection._
 
 object SortOrder {
   def apply(expression: Expression, direction: SortDirection = Default): SortOrder =

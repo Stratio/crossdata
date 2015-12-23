@@ -15,14 +15,21 @@
  */
 package org.apache.spark.sql.crossdata.execution
 
-import org.apache.spark.sql._
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.AnalysisException
+import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.EliminateSubQueries
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.{CrossdataTable, XDContext}
+import org.apache.spark.sql.crossdata.CrossdataTable
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
-import org.apache.spark.sql.sources.{HadoopFsRelation, InsertableRelation}
+import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.execution.datasources.ResolvedDataSource
+import org.apache.spark.sql.sources.HadoopFsRelation
+import org.apache.spark.sql.sources.InsertableRelation
 import org.apache.spark.sql.types.StructType
 
 private[crossdata] case class PersistDataSourceTable(

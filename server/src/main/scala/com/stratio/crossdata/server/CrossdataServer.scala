@@ -17,16 +17,20 @@ package com.stratio.crossdata.server
 
 import java.io.File
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.ActorSystem
+import akka.actor.Props
 import akka.cluster.Cluster
 import akka.contrib.pattern.ClusterReceptionistExtension
 import akka.routing.RoundRobinPool
 import com.stratio.crossdata.server.actors.ServerActor
 import com.stratio.crossdata.server.config.ServerConfig
-import org.apache.commons.daemon.{Daemon, DaemonContext}
+import org.apache.commons.daemon.Daemon
+import org.apache.commons.daemon.DaemonContext
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+
 import scala.collection.JavaConversions._
 
 

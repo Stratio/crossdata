@@ -15,7 +15,8 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
-import com.sksamuel.elastic4s.{ElasticsearchClientUri, ElasticClient}
+import com.sksamuel.elastic4s.ElasticClient
+import com.sksamuel.elastic4s.ElasticsearchClientUri
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.elasticsearch.DefaultSource._
 import org.apache.spark.sql.types._
@@ -23,13 +24,16 @@ import org.elasticsearch.client.IndicesAdminClient
 import org.elasticsearch.cluster.metadata.MappingMetaData
 import org.elasticsearch.common.collect.ImmutableOpenMap
 import org.elasticsearch.common.settings.ImmutableSettings
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
+import org.elasticsearch.hadoop.cfg.ConfigurationOptions.ES_NODES
+import org.elasticsearch.hadoop.cfg.ConfigurationOptions.ES_NODES_DEFAULT
+import org.elasticsearch.hadoop.cfg.ConfigurationOptions.ES_RESOURCE
 
 object ElasticSearchConnectionUtils {
 
 
   def buildClient(parameters: Map[String, String]): ElasticClient = {
-    val host: String = parameters.getOrElse(ES_NODES, ES_NODES_DEFAULT) //TODO support for multiple host, no documentation found with expected format.
+    val host: String = parameters.getOrElse(ES_NODES, ES_NODES_DEFAULT)
+    // TODO support for multiple host, no documentation found with expected format.
     val port: Int = parameters.getOrElse(ElasticNativePort, "9300").toInt
     val clusterName = parameters(ElasticCluster)
 

@@ -20,21 +20,37 @@ package com.stratio.crossdata.connector.cassandra
 
 import java.util.Collection
 
-import com.datastax.driver.core.{KeyspaceMetadata, TableMetadata}
-import com.datastax.spark.connector.cql._
+import com.datastax.driver.core.KeyspaceMetadata
+import com.datastax.driver.core.TableMetadata
+import com.datastax.spark.connector.cql.CassandraConnector
+import com.datastax.spark.connector.cql.CassandraConnectorConf
 import com.datastax.spark.connector.rdd.ReadConf
 import com.datastax.spark.connector.util.ConfigParameter
 import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.FunctionInventory.UDF
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.cassandra.DefaultSource._
-import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
+import com.stratio.crossdata.connector.FunctionInventory
+import com.stratio.crossdata.connector.TableInventory
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
-import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import org.apache.spark.sql.SaveMode.Append
+import org.apache.spark.sql.SaveMode.Overwrite
+import org.apache.spark.sql.SaveMode.Ignore
+import org.apache.spark.sql.SaveMode.ErrorIfExists
+import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS}
+import org.apache.spark.sql.cassandra.CassandraXDSourceRelation
+import org.apache.spark.sql.cassandra.TableRef
+import org.apache.spark.sql.cassandra.CassandraSourceRelation
+import org.apache.spark.sql.cassandra.CassandraSourceOptions
+import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.sources.DataSourceRegister
+import org.apache.spark.sql.types.DataTypes
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SaveMode
 
 import scala.collection.mutable
 
