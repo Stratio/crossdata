@@ -22,7 +22,6 @@ package org.apache.spark.sql.crossdata
 import java.lang.reflect.Constructor
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
-
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
@@ -31,7 +30,7 @@ import org.apache.spark.sql.catalyst.SimpleCatalystConf
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.Analyzer
 import org.apache.spark.sql.catalyst.analysis.FunctionRegistry
-import org.apache.spark.sql.crossdata.config.CatalogConfig
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.ExtendedDataSourceStrategy
 import org.apache.spark.sql.crossdata.execution.datasources.ImportTablesUsingWithOptions
 import org.apache.spark.sql.crossdata.execution.datasources.XDDdlParser
@@ -54,7 +53,7 @@ import org.apache.spark.SparkContext
  * and adds some features of the Crossdata system.
  * @param sc A [[SparkContext]].
  */
-class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging with CatalogConfig {
+class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging with CoreConfig {
 
   self =>
 

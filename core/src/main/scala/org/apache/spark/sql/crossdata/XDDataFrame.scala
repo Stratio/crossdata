@@ -20,13 +20,7 @@ import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.Expression
-import org.apache.spark.sql.catalyst.expressions.Alias
-import org.apache.spark.sql.catalyst.expressions.GetStructField
-import org.apache.spark.sql.catalyst.expressions.AttributeReference
-import org.apache.spark.sql.catalyst.expressions.Literal
-import org.apache.spark.sql.catalyst.expressions.Count
-import org.apache.spark.sql.catalyst.expressions.GetMapValue
+import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.plans.logical.LeafNode
 import org.apache.spark.sql.catalyst.plans.logical.Project
@@ -39,6 +33,9 @@ import org.apache.spark.sql.crossdata.ExecutionType.Spark
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import XDDataFrame.findNativeQueryExecutor
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
+
 
 private[sql] object XDDataFrame {
 
@@ -126,12 +123,28 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       case AttributeReference(name, _, _, _) => name :: prev
       case _ => prev
     }
-    val rows = collect()
-    val columnNames = queryExecution.optimizedPlan flatMap {
-      case Project(plist, child) => plist map (flatSubFields(_) mkString ".")
-      case _ => Nil
+    def flatRow(row: GenericRowWithSchema, parentName: String = ""): Array[(StructField, Any)] = {
+      val baseName = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
+      (row.schema.fields zip row.values) flatMap {
+        case (StructField(name, StructType(_), _, _), col : GenericRowWithSchema) =>
+          flatRow(col, s"$baseName$name")
+        case (StructField(name, dtype, nullable, meta), vobject) =>
+          Seq((StructField(s"$baseName$name", dtype, nullable, meta), vobject))
+      }
     }
-    (rows, columnNames)
+    val rows = collect() map { case row: GenericRowWithSchema =>
+        val newFieldsArray = flatRow(row)
+        new GenericRowWithSchema(newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1))) : Row
+    }
+    val colNames = queryExecution.optimizedPlan flatMap {
+      case Project(plist, child) =>
+        plist map (flatSubFields(_) mkString ".")
+      case _ => rows.take(1) flatMap { case first: GenericRowWithSchema =>
+        first.schema.fieldNames
+      }
+    }
+
+    (rows, colNames)
   }
 
   /**
