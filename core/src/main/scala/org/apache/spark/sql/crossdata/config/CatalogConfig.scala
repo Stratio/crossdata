@@ -17,7 +17,8 @@ package org.apache.spark.sql.crossdata.config
 
 import java.io.File
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import org.apache.log4j.Logger
 
 object CatalogConfig {
@@ -66,6 +67,11 @@ trait CatalogConfig  {
         logger.warn("External file (" + configFile + ") hasn't been found")
       }
     }
+
+    // TODO Improve implementation
+    // System properties
+    defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
+
     ConfigFactory.load(defaultConfig)
   }
 

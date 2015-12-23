@@ -21,18 +21,39 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.ExecutionType
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 
+/* Mix this trait in a type test class to get most of the type test done.
+ * Its based on SharedXDContextWithDataTest thus filling most of that template slots and generating new entry points
+ * focused on type testing.
+ */
 trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
   this: BaseXDTest =>
 
   import SharedXDContextTypesTest._
 
   //Template steps: Override them
-  val emptyTypesSetError: String
-  def saveTypesData: Int
-  def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef]
-  def dataTypesSparkOptions: Map[String, String]
 
-  //Template
+  val emptyTypesSetError: String                       /* Error message to be shown when the types test data have not
+                                                        * been properly inserted in the data source */
+  def saveTypesData: Int                               // Entry point for saving types examples into the data source
+  def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef]  /* There are data sources which require their tables to have a
+                                                        * primary key. This entry point allows specifying primary keys
+                                                        * columns.
+                                                        * NOTE that these `SparkSQLColdDef`s shouldn't have type checker
+                                                        * since the column type does not form part of the test.
+                                                        * e.g:
+                                                        *   override def sparkAdditionalKeyColumns(
+                                                        *                                           "k",
+                                                        *                                           "INT PRIMARY KEY"
+                                                        *                                         )
+                                                        */
+  def dataTypesSparkOptions: Map[String, String]       /* Especial SparkSQL options for type tables, it is equivalent to
+                                                        * `defaultOptions` but will only apply in the registration of
+                                                        * the types test table.
+                                                        */
+
+
+  //Template: This is the template implementation and shouldn't be modified in any specific test
+
   def doTypesTest(datasourceName: String): Unit = {
 
     for(executionType <- ExecutionType.Spark::ExecutionType.Native::Nil)
@@ -67,7 +88,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
     SparkSQLColdDef("timestamp", "TIMESTAMP", _ shouldBe a[java.sql.Timestamp]),
     SparkSQLColdDef("tinyint", "TINYINT", _ shouldBe a[java.lang.Byte]),
     SparkSQLColdDef("smallint", "SMALLINT", _ shouldBe a[java.lang.Short]),
-    SparkSQLColdDef("binary", "BINARY", _ shouldBe a[Array[Byte]]),
+    SparkSQLColdDef("binary", "BINARY", _.asInstanceOf[Array[Byte]]),
     SparkSQLColdDef("arrayint", "ARRAY<INT>", _ shouldBe a[Seq[_]]),
     SparkSQLColdDef("arraystring", "ARRAY<STRING>", _ shouldBe a[Seq[_]]),
     SparkSQLColdDef("mapintint", "MAP<INT, INT>", _ shouldBe a[Map[_, _]]),

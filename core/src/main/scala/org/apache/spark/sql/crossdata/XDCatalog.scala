@@ -16,14 +16,20 @@
 package org.apache.spark.sql.crossdata
 
 import org.apache.spark.Logging
+import org.apache.spark.sql.catalyst.CatalystConf
+import org.apache.spark.sql.catalyst.SimpleCatalystConf
+import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.Catalog
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.Subquery
+import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.execution.datasources.ResolvedDataSource
+import org.apache.spark.sql.types.DataTypeParser
+import org.apache.spark.sql.types.Metadata
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
 import org.json4s.DefaultFormats
-import org.json4s.jackson.Serialization._
-
+import org.json4s.jackson.Serialization.write
 import scala.collection.mutable
 import scala.util.parsing.json.JSON
 
@@ -128,7 +134,9 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   private def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
-    val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
+    val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn,
+      crossdataTable.datasource, crossdataTable.opts)
+
     LogicalRelation(resolved.relation)
   }
 
@@ -236,23 +244,23 @@ object XDCatalog{
     def isMap(map: Map[String, Any]) = map("type") == "map"
 
     m match {
-      case tpeMap: Map[String, Any] if isStruct(tpeMap) =>
+      case tpeMap: Map[String @unchecked, _] if isStruct(tpeMap) =>
         val fields =  tpeMap.get("fields").fold(throw new Error("Struct type not found"))(_.asInstanceOf[List[Map[String, Any]]])
         val fieldsStr = fields.map {
           x => s"`${x.getOrElse("name", throw new Error("Name not found"))}`:" + convertToGrammar(x)
         } mkString ","
         s"struct<$fieldsStr>"
 
-      case tpeMap: Map[String, Any] if isArray(tpeMap) =>
+      case tpeMap: Map[String @unchecked, _] if isArray(tpeMap) =>
         val tpeArray = tpeMap.getOrElse("elementType", throw new Error("Array type not found"))
         s"array<${convertToGrammar(tpeArray)}>"
 
-      case tpeMap: Map[String, Any] if isMap(tpeMap) =>
+      case tpeMap: Map[String @unchecked, _] if isMap(tpeMap) =>
         val tpeKey = tpeMap.getOrElse("keyType", throw new Error("Key type not found"))
         val tpeValue = tpeMap.getOrElse("valueType", throw new Error("Value type not found"))
         s"map<${convertToGrammar(tpeKey)},${convertToGrammar(tpeValue)}>"
 
-      case tpeMap: Map[String, Any] =>
+      case tpeMap: Map[String @unchecked, _] =>
         convertToGrammar(tpeMap.get("type").getOrElse(throw new Error("Type not found")))
 
       case basicType: String => basicType

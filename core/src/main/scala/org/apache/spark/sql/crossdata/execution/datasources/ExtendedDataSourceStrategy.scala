@@ -18,7 +18,11 @@ package org.apache.spark.sql.crossdata.execution.datasources
 import com.stratio.crossdata.connector.NativeFunctionExecutor
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.expressions.AttributeReference
+import org.apache.spark.sql.catalyst.expressions.AttributeSet
+import org.apache.spark.sql.catalyst.expressions.NamedExpression
+import org.apache.spark.sql.catalyst.expressions.Expression
+import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
 import org.apache.spark.sql.catalyst.{InternalRow, expressions}
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
@@ -26,7 +30,10 @@ import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.Filter
-import org.apache.spark.sql.{Strategy, execution, _}
+import org.apache.spark.sql.Strategy
+import org.apache.spark.sql.execution
+import org.apache.spark.sql.AnalysisException
+import org.apache.spark.sql.{_}
 
 private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
 
@@ -88,7 +95,8 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
 
 
   private def cannotExecuteNativeUDF(udfsIgnored: Seq[AttributeReference]) =
-    throw new AnalysisException("Some filters containing native UDFS cannot be executed on the datasource. It may happen when a cast is automatically applied by Spark, so try using the same type")
+    throw new AnalysisException("Some filters containing native UDFS cannot be executed on the datasource." +
+      " It may happen when a cast is automatically applied by Spark, so try using the same type")
 
 
   /**

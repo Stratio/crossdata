@@ -15,7 +15,8 @@
  */
 package com.stratio.crossdata.connector.cassandra
 
-import com.datastax.driver.core.{Cluster, Session}
+import com.datastax.driver.core.Session
+import com.datastax.driver.core.Cluster
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable

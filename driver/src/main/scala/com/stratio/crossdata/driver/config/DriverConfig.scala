@@ -76,7 +76,11 @@ trait DriverConfig {
       }
     }
 
-    ConfigFactory.load(finalConfig)
+    // TODO Improve implementation
+    // System properties
+    val finalConfigWithSystemProperties = ConfigFactory.parseProperties(System.getProperties).withFallback(finalConfig)
+
+    ConfigFactory.load(finalConfigWithSystemProperties)
   }
 
 }
