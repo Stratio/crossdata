@@ -187,7 +187,6 @@
                                 <mkdirs>
                                     <paths>
                                         <path>etc/sds/crossdata</path>
-                                        <path>etc/default/crossdata</path>
                                         <path>var/run/sds</path>
                                         <path>var/log/sds/crossdata</path>
                                         <path>var/sds/crossdata</path>
@@ -243,23 +242,23 @@
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/config/server-application.conf</path>
-                                            <toFile>/etc/default/crossdata/server-application.conf</toFile>
+                                            <toFile>/etc/sds/crossdata/server-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/config/core-application.conf</path>
-                                            <toFile>/etc/default/crossdata/core-application.conf</toFile>
+                                            <toFile>/etc/sds/crossdata/core-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/config/xdmetrics.properties</path>
-                                            <toFile>/etc/default/crossdata/xdmetrics.properties</toFile>
+                                            <toFile>/etc/sds/crossdata/xdmetrics.properties</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/config/crossdata-env.sh</path>
-                                            <toFile>/etc/default/crossdata/crossdata-env.sh</toFile>
+                                            <toFile>/etc/sds/crossdata/crossdata-env.sh</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/config/server-log.properties</path>
-                                            <toFile>/etc/default/crossdata/server-log.properties</toFile>
+                                            <toFile>/etc/sds/crossdata/server-log.properties</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/include/README.rst</path>
@@ -309,24 +308,24 @@
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/server-application.conf</path>
-                                            <toFile>/etc/default/crossdata/server-application.conf</toFile>
+                                            <path>src/main/config/server-application.conf</path>
+                                            <toFile>/etc/sds/crossdata/server-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/core-application.conf</path>
-                                            <toFile>/etc/default/crossdata/core-application.conf</toFile>
+                                            <path>src/main/config/core-application.conf</path>
+                                            <toFile>/etc/sds/crossdata/core-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/xdmetrics.properties</path>
-                                            <toFile>/etc/default/crossdata/xdmetrics.properties</toFile>
+                                            <path>src/main/config/xdmetrics.properties</path>
+                                            <toFile>/etc/sds/crossdata/xdmetrics.properties</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/crossdata-env.sh</path>
-                                            <toFile>/etc/default/crossdata/crossdata-env.sh</toFile>
+                                            <path>src/main/config/crossdata-env.sh</path>
+                                            <toFile>/etc/sds/crossdata/crossdata-env.sh</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/conf/server-log.properties</path>
-                                            <toFile>/etc/default/crossdata/server-log.properties</toFile>
+                                            <path>src/main/config/server-log.properties</path>
+                                            <toFile>/etc/sds/crossdata/server-log.properties</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/include/README.rst</path>
