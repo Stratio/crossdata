@@ -17,12 +17,19 @@ package org.apache.spark.sql.crossdata
 
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.analysis.Catalog
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.Subquery
+import org.apache.spark.sql.catalyst.CatalystConf
+import org.apache.spark.sql.catalyst.SimpleCatalystConf
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.execution.datasources.ResolvedDataSource
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.DataTypeParser
+import org.apache.spark.sql.types.Metadata
 import org.json4s.DefaultFormats
-import org.json4s.jackson.Serialization._
+import org.json4s.jackson.Serialization.write
 
 import scala.collection.mutable
 import scala.util.parsing.json.JSON

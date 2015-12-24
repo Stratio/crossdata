@@ -17,19 +17,25 @@ package com.stratio.crossdata.connector.mongodb
 
 import java.util.regex.Pattern
 
-import com.mongodb.casbah.Imports._
-import com.mongodb.{DBObject, QueryBuilder}
+import com.mongodb.casbah.Imports.ObjectId
+import com.mongodb.casbah.Imports.MongoDBObject
+import com.mongodb.DBObject
+import com.mongodb.QueryBuilder
 import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.MongodbConfig
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter
 import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.expressions.Literal
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
-import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.{Row, sources}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
-import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.{Limit => LogicalLimit}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.FilterReport
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
+import org.apache.spark.sql.sources.{Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.sources
 
 object MongoQueryProcessor {
 
@@ -151,11 +157,11 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
 
 
   def validatedNativePlan: Option[(Seq[ColumnName], Array[SourceFilter], Limit)] = {
-    lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
+    lazy val limit: Option[Int] = logicalPlan.collectFirst { case LogicalLimit(Literal(num: Int, _), _) => num }
 
     def findProjectsFilters(lplan: LogicalPlan): Option[(Seq[ColumnName], Array[SourceFilter])] = lplan match {
 
-      case Limit(_, child) =>
+      case LogicalLimit(_, child) =>
         findProjectsFilters(child)
 
       case PhysicalOperation(projectList, filterList, _) =>
@@ -191,8 +197,9 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
 
   }
 
-  private[this] def sparkResultFromMongodb(requiredColumns: Seq[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
-    import com.stratio.datasource.mongodb.MongodbRelation._
+  private[this] def sparkResultFromMongodb(requiredColumns: Seq[ColumnName], schema: StructType, resultSet:
+  Array[DBObject]): Array[Row] = {
+    import com.stratio.datasource.mongodb.MongodbRelation.pruneSchema
     MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns.toArray), resultSet)
   }
 

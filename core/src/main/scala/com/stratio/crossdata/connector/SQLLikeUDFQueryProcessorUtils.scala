@@ -15,7 +15,9 @@
  */
 package com.stratio.crossdata.connector
 
-import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal, AttributeReference}
+import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.expressions.AttributeReference
+import org.apache.spark.sql.catalyst.expressions.Literal
 import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.types.DataTypes
 
@@ -29,7 +31,7 @@ trait SQLLikeUDFQueryProcessorUtils {
   self: SQLLikeQueryProcessorUtils =>
 
 
-  import SQLLikeUDFQueryProcessorUtils._
+  import SQLLikeUDFQueryProcessorUtils.ContextWithUDFs
 
   override type ProcessingContext <: ContextWithUDFs
 
