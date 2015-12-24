@@ -123,25 +123,33 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       case AttributeReference(name, _, _, _) => name :: prev
       case _ => prev
     }
-    def flatRow(row: GenericRowWithSchema, parentName: String = ""): Array[(StructField, Any)] = {
-      val baseName = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
-      (row.schema.fields zip row.values) flatMap {
-        case (StructField(name, StructType(_), _, _), col : GenericRowWithSchema) =>
-          flatRow(col, s"$baseName$name")
-        case (StructField(name, dtype, nullable, meta), vobject) =>
-          Seq((StructField(s"$baseName$name", dtype, nullable, meta), vobject))
+    def flatRows(rows: Array[Row]): Array[Row] = {
+      def flatRow(row: GenericRowWithSchema, parentName: String = ""): Array[(StructField, Any)] = {
+        val baseName = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
+        (row.schema.fields zip row.values) flatMap {
+          case (StructField(name, StructType(_), _, _), col : GenericRowWithSchema) =>
+            flatRow(col, s"$baseName$name")
+          case (StructField(name, dtype, nullable, meta), vobject) =>
+            Seq((StructField(s"$baseName$name", dtype, nullable, meta), vobject))
+        }
+      }
+      rows map {
+        case row: GenericRowWithSchema =>
+          val newFieldsArray = flatRow(row)
+          new GenericRowWithSchema(newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1))) : Row
+        case row: Row =>
+          row
       }
     }
-    val rows = collect() map { case row: GenericRowWithSchema =>
-        val newFieldsArray = flatRow(row)
-        new GenericRowWithSchema(newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1))) : Row
-    }
-    val colNames = queryExecution.optimizedPlan flatMap {
+    val (rows, colNames) = queryExecution.optimizedPlan match {
       case Project(plist, child) =>
-        plist map (flatSubFields(_) mkString ".")
-      case _ => rows.take(1) flatMap { case first: GenericRowWithSchema =>
-        first.schema.fieldNames
-      }
+        (flatRows(collect()), plist map (flatSubFields(_) mkString "."))
+      case _ =>
+        val rows = flatRows(super.collect())
+        val cols: Seq[String] = rows.take(1) flatMap { case first: GenericRowWithSchema =>
+          first.schema.fieldNames
+        }
+        (rows, cols)
     }
 
     (rows, colNames)
