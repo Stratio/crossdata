@@ -17,25 +17,14 @@ package org.apache.spark.sql.crossdata
 
 import com.stratio.crossdata.connector.NativeScan
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.catalyst.expressions.Alias
-import org.apache.spark.sql.catalyst.expressions.Count
-import org.apache.spark.sql.catalyst.expressions.GetMapValue
-import org.apache.spark.sql.catalyst.expressions.GetStructField
-import org.apache.spark.sql.catalyst.expressions.Literal
-import org.apache.spark.sql.catalyst.plans.logical.Aggregate
-import org.apache.spark.sql.catalyst.plans.logical.LeafNode
-import org.apache.spark.sql.catalyst.plans.logical.Limit
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.plans.logical.Project
-import org.apache.spark.sql.crossdata.ExecutionType.Default
-import org.apache.spark.sql.crossdata.ExecutionType.ExecutionType
-import org.apache.spark.sql.crossdata.ExecutionType.Native
-import org.apache.spark.sql.crossdata.ExecutionType.Spark
+import org.apache.spark.sql.{SQLContext, DataFrame, Row}
+import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, LeafNode, Project, Limit, Aggregate}
+import org.apache.spark.sql.crossdata.ExecutionType.{ExecutionType, Default, Native, Spark}
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.execution.datasources.LogicalRelation
+import XDDataFrame.findNativeQueryExecutor
+import org.apache.spark.sql.types.{StructField, StructType}
 
 private[sql] object XDDataFrame {
 
@@ -102,7 +91,6 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     )
   }
 
-  import XDDataFrame._
 
   /**
    * @inheritdoc
@@ -115,6 +103,46 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
       nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
+  }
+
+  //TODO: Remove `annotatedCollect` wrapper method when a better alternative to PR#257 has been found
+  def annotatedCollect(): (Array[Row], Seq[String]) = {
+    def flatSubFields(exp: Expression, prev: List[String] = Nil): List[String] = exp match {
+      case Alias(child, _) => flatSubFields(child)
+      case GetStructField(child, field, _) => flatSubFields(child, field.name :: prev)
+      case AttributeReference(name, _, _, _) => name :: prev
+      case _ => prev
+    }
+    def flatRows(rows: Array[Row]): Array[Row] = {
+      def flatRow(row: GenericRowWithSchema, parentName: String = ""): Array[(StructField, Any)] = {
+        val baseName = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
+        (row.schema.fields zip row.values) flatMap {
+          case (StructField(name, StructType(_), _, _), col : GenericRowWithSchema) =>
+            flatRow(col, s"$baseName$name")
+          case (StructField(name, dtype, nullable, meta), vobject) =>
+            Seq((StructField(s"$baseName$name", dtype, nullable, meta), vobject))
+        }
+      }
+      rows map {
+        case row: GenericRowWithSchema =>
+          val newFieldsArray = flatRow(row)
+          new GenericRowWithSchema(newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1))) : Row
+        case row: Row =>
+          row
+      }
+    }
+    val (rows, colNames) = queryExecution.optimizedPlan match {
+      case Project(plist, child) =>
+        (flatRows(collect()), plist map (flatSubFields(_) mkString "."))
+      case _ =>
+        val rows = flatRows(super.collect())
+        val cols: Seq[String] = rows.take(1) flatMap { case first: GenericRowWithSchema =>
+          first.schema.fieldNames
+        }
+        (rows, cols)
+    }
+
+    (rows, colNames)
   }
 
   /**

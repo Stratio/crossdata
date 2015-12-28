@@ -17,7 +17,8 @@ package com.stratio.crossdata.server.config
 
 import java.io.File
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import org.apache.log4j.Logger
 
 object ServerConfig {
@@ -42,7 +43,8 @@ trait ServerConfig extends NumberActorConfig {
   override val config: Config = {
 
     var defaultConfig = ConfigFactory.load(ServerConfig.ServerBasicConfig).getConfig(ServerConfig.ParentConfigName)
-    val configFile = defaultConfig.getString(ServerConfig.ServerUserConfigFile)
+    val envConfigFile = Option(System.getProperties.getProperty(ServerConfig.ServerUserConfigFile))
+    val configFile = envConfigFile.getOrElse(defaultConfig.getString(ServerConfig.ServerUserConfigFile))
     val configResource = defaultConfig.getString(ServerConfig.ServerUserConfigResource)
 
     if (configResource != "") {

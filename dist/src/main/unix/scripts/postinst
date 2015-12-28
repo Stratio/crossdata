@@ -13,7 +13,6 @@ DIR_LOG='/var/log/sds/crossdata'
 chmod 755 /etc/init.d/crossdata
 chmod 755 /opt/sds/crossdata/bin
 chmod +x /opt/sds/crossdata/bin/*
-chmod +x /etc/default/crossdata
 
 case "$1" in
   configure)

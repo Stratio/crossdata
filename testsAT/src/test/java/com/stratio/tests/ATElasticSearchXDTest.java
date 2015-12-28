@@ -55,7 +55,8 @@ import cucumber.api.CucumberOptions;
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature"
+          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
+        "src/test/resources/features/Udaf/Group_concat.feature"
 })
 public class ATElasticSearchXDTest extends BaseTest {
 	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearch");
@@ -117,6 +118,7 @@ public class ATElasticSearchXDTest extends BaseTest {
             e.printStackTrace();
         }
         client.close();
+        ThreadProperty.set("Driver", "context");
     }
 
 	@AfterClass

@@ -17,7 +17,8 @@ package com.stratio.crossdata.driver.config
 
 import java.io.File
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import org.apache.log4j.Logger
 
 object DriverConfig {
@@ -33,12 +34,13 @@ trait DriverConfig {
 
   import DriverConfig._
 
-  lazy val logger: Logger = ???
+  val logger: Logger
 
   val config: Config = {
 
     val defaultConfig = ConfigFactory.load(DriverConfigDefault).getConfig(ParentConfigName)
-    val configFile = defaultConfig.getString(DriverConfigFile)
+    val envConfigFile = Option(System.getProperties.getProperty(DriverConfig.DriverConfigFile))
+    val configFile = envConfigFile.getOrElse(defaultConfig.getString(DriverConfig.DriverConfigFile))
     val configResource = defaultConfig.getString(DriverConfigResource)
 
     //Get the driver-application.conf properties if exists in resources

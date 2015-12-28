@@ -19,10 +19,9 @@ import com.stratio.crossdata.connector.NativeScan
 import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.MongodbRelation
 import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, LeafNode, UnaryNode, Limit, Filter, Project}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{Row, SQLContext}
 
 /**
  * A MongoDB baseRelation that can eliminate unneeded columns

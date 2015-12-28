@@ -15,21 +15,24 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import java.sql.Connection
-import java.sql.DriverManager
-import java.sql.ResultSet
+import java.sql.{Connection, DriverManager, ResultSet}
 
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.XDCatalog
-import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
+import org.apache.spark.sql.types._
+
+
+
 import scala.annotation.tailrec
-import org.apache.spark.sql.crossdata.CrossdataTable
-import org.apache.spark.sql.crossdata.CrossdataVersion
+import XDCatalog.serializeSchema
+import XDCatalog.getUserSpecifiedSchema
+import XDCatalog.getPartitionColumn
+import XDCatalog.serializeOptions
+import XDCatalog.serializePartitionColumn
+import XDCatalog.getOptions
 
 object JDBCCatalog {
   // SQLConfig
@@ -59,9 +62,10 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
   extends XDCatalog(conf, xdContext) with Logging {
 
   import JDBCCatalog._
-  import XDCatalog._
 
-  private val config = xdContext.config
+  import org.apache.spark.sql.crossdata._
+
+  private val config = xdContext.catalogConfig
 
   private val db = config.getString(Database)
   private val table = config.getString(Table)
@@ -116,8 +120,7 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
       val version = resultSet.getString(CrossdataVersionField)
 
       Some(
-        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource,
-          getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
+        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource, getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
       )
     }
   }

@@ -15,31 +15,37 @@
  */
 package com.stratio.crossdata.testsAT.specs;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.stratio.specs.CommonG;
-import com.stratio.tests.utils.ThreadProperty;
 import com.stratio.tests.utils.XDContextUtil;
 import com.stratio.tests.utils.XDContextUtils;
+import com.stratio.tests.utils.XDJavaDriver;
 
 /**
  * Created by hdominguez on 13/10/15.
  */
 public class Common extends CommonG {
 
-    private final Logger logger = LoggerFactory.getLogger(ThreadProperty.get("class"));
+    private CommonG commongspec;
+
+    public Common() {
+        
+    }
+    public Common(CommonG spec) {
+        this.commongspec = spec;
+    }
+
+    public CommonG getCommonGspec() {
+        return this.commongspec;
+    }
 
     private final XDContextUtil XDCONTEXT = XDContextUtil.getInstance();
-
-    public Logger getLogger() {
-        return this.logger;
-    }
 
     public XDContextUtils getXdContext(){
         return XDCONTEXT.getXdContext();
     }
 
-
-
+    public XDJavaDriver getXdDriver(){
+        return XDCONTEXT.getXdDriver();
+    }
 
 }
