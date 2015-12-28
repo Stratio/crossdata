@@ -16,24 +16,21 @@
 package org.apache.spark.sql.sources
 
 
+import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.CatalystTypeConverters.convertToScala
-
-import org.apache.spark.sql.catalyst.expressions.NamedExpression
-import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.expressions.Expression
-import org.apache.spark.sql.catalyst.expressions.AttributeReference
-import org.apache.spark.sql.catalyst.expressions.Literal
+import org.apache.spark.sql.catalyst.expressions.{Expression, AttributeReference, NamedExpression, Attribute, Literal}
 import org.apache.spark.sql.catalyst.expressions.EmptyRow
-import org.apache.spark.sql.catalyst.plans.logical.Aggregate
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.{CatalystTypeConverters, expressions}
-import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
-import org.apache.spark.sql.crossdata.execution.NativeUDF
+import org.apache.spark.sql.catalyst.expressions
+
+import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
+
+import org.apache.spark.sql.crossdata.execution.{EvaluateNativeUDF, NativeUDF}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.unsafe.types.UTF8String
+
 import scala.collection.mutable.ListBuffer
 
 object CatalystToCrossdataAdapter {

@@ -18,12 +18,13 @@ package com.stratio.crossdata.driver
 import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
-import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.SQLResult
+
+import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+
+import com.stratio.crossdata.common.{SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
-import com.stratio.crossdata.driver.config.DriverConfig._
+import com.stratio.crossdata.driver.config.DriverConfig.DriverConfigHosts
 import com.stratio.crossdata.driver.metadata.FieldMetadata
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import com.typesafe.config.ConfigValue
@@ -31,11 +32,12 @@ import com.typesafe.config.ConfigValueFactory
 import org.apache.log4j.Logger
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
-import org.apache.spark.sql.types.DataType
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{DataType, StructType}
+
 
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
+
 import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.language.postfixOps

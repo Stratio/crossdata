@@ -1,4 +1,5 @@
 Feature: CassandraSelectSimple
+
   Scenario: [CASSANDRA NATIVE] SELECT * FROM tabletest;
     When I execute 'SELECT * FROM tabletest'
     Then The result has to have '10' rows ignoring the order:

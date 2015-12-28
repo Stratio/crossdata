@@ -60,7 +60,7 @@ sealed trait PushDownable {
 @DeveloperApi
 trait TableInventory {
 
-  import TableInventory._
+  import TableInventory.Table
 
   /**
    *
@@ -98,7 +98,7 @@ object TableInventory {
 
 /* Interface for providing lists and UDF discovery services */
 trait FunctionInventory extends DataSourceRegister{
-  import FunctionInventory._
+  import FunctionInventory.UDF
 
   //Get builtin functions manifest
   def nativeBuiltinFunctions: Seq[UDF]

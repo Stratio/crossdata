@@ -17,32 +17,27 @@ package com.stratio.crossdata.connector.cassandra
 
 
 import com.datastax.driver.core.ResultSet
-import com.stratio.crossdata.connector.SQLLikeUDFQueryProcessorUtils
-import com.stratio.crossdata.connector.SQLLikeQueryProcessorUtils
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.{Unknown, ClusteringKey, Indexed}
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.{PartitionKey, NonIndexed, Function}
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.CassandraAttributeRole
+import com.stratio.crossdata.connector.{SQLLikeQueryProcessorUtils, SQLLikeUDFQueryProcessorUtils}
 import org.apache.spark.Logging
-import org.apache.spark.sql.cassandra.CassandraSQLRow
-import org.apache.spark.sql.cassandra.CassandraXDSourceRelation
+import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
+import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Count, Expression, Literal, NamedExpression}
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Limit, Aggregate}
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.FilterReport
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.AggregationLogicalPlan
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.BaseLogicalPlan
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
 import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.sources
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
-import org.apache.spark.sql.sources.{Filter => SourceFilter}
-
-import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.plans.logical._
-import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole._
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{AggregationLogicalPlan, BaseLogicalPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.{Filter => SourceFilter, CatalystToCrossdataAdapter}
+import org.apache.spark.sql.{Row, sources}
 
 object CassandraQueryProcessor extends SQLLikeQueryProcessorUtils with SQLLikeUDFQueryProcessorUtils {
 
   val DefaultLimit = 10000
   type ColumnName = String
 
-  case class CassandraQueryProcessorContext(udfs: Map[String, NativeUDF]) extends SQLLikeUDFQueryProcessorUtils.ContextWithUDFs
+  case class CassandraQueryProcessorContext(val udfs: Map[String, NativeUDF]) extends SQLLikeUDFQueryProcessorUtils.ContextWithUDFs
   override type ProcessingContext = CassandraQueryProcessorContext
 
   case class CassandraPlan(basePlan: BaseLogicalPlan, limit: Option[Int]){
@@ -185,7 +180,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
     def checksSecondaryIndexesFilters: Boolean =
       !groupedFilters.contains(Indexed) || {
-        // Secondary indexes => equals are allowed
+        //Secondary indexes => equals are allowed
         groupedFilters.get(Indexed).get.forall {
           case sources.EqualTo(_, _) => true
           case _ => false
