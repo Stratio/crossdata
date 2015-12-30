@@ -20,7 +20,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 
+import cucumber.api.DataTable;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,12 +46,26 @@ public class MySQLCatalogsSpecs extends BaseSpec  {
         this.commonspec = spec;
     }
 
-    @When(value = "^javi delgado$")
-    public void execute(){
-        commonspec.setter("JAVI DELGADO");
+
+    @When(value= "^I import tables using api for '(.*?)'")
+    public void importTablesUsingApi(String datasource, DataTable table){
+        commonspec.getExceptions().clear();
+        commonspec.getLogger().info("Import tables for " + datasource);
+        HashMap<String,String> options = new HashMap<String, String>();
+        for(int i = 0; i < table.raw().size(); i++){
+            options.put(table.raw().get(i).get(0), table.raw().get(i).get(1));
+        }
+        try {
+            commonspec.getXdContext().importTables(datasource, options);
+        }catch (Exception e) {
+            commonspec.getLogger().info(e.toString());
+            commonspec.getExceptions().add(e);
+        }
+        commonspec.getLogger().info("Tables imported succesfully for " + datasource);
     }
 
-    @When(value = "I execute a jdbc select '(.*?)'$")
+
+    @When(value = "^I execute a jdbc select '(.*?)'$")
     public void executeJDBCMYSQL(String sqlJDBC) {
         commonspec.getExceptions().clear();
         commonspec.getLogger().info("Execute over mysql this query: " + sqlJDBC);
