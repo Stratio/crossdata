@@ -23,44 +23,33 @@ import java.lang.reflect.Constructor
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 import com.stratio.crossdata.connector.FunctionInventory
-import com.typesafe.config.Config
+import com.typesafe.config.{Config}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.catalyst.analysis.Analyzer
-import org.apache.spark.sql.catalyst.analysis.FunctionRegistry
-import org.apache.spark.sql.crossdata.config.CatalogConfig
-import org.apache.spark.sql.crossdata.execution.datasources.ExtendedDataSourceStrategy
-import org.apache.spark.sql.crossdata.execution.datasources.ImportTablesUsingWithOptions
-import org.apache.spark.sql.crossdata.execution.datasources.XDDdlParser
-import org.apache.spark.sql.crossdata.execution.ExtractNativeUDFs
-import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.crossdata.execution.XDStrategies
+import org.apache.spark.sql.catalyst._
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
+import org.apache.spark.sql.crossdata.config.CoreConfig
+import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
+import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
-import org.apache.spark.sql.execution.datasources.PreInsertCastAndRename
-import org.apache.spark.sql.execution.datasources.PreWriteCheck
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.Strategy
+import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
+import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
 import org.apache.spark.util.Utils
-import org.apache.spark.Logging
-import org.apache.spark.SparkContext
+import org.apache.spark.{Logging, SparkContext}
 
 /**
  * CrossdataContext leverages the features of [[SQLContext]]
  * and adds some features of the Crossdata system.
  * @param sc A [[SparkContext]].
  */
-class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging with CatalogConfig {
+class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging with CoreConfig {
 
   self =>
 
   override protected[sql] lazy val catalog: XDCatalog = {
-    import XDContext._
+    import XDContext.{CatalogClass, DerbyClass, CaseSensitive}
 
-    val xdConfig: Config = config
+    val xdConfig: Config = catalogConfig
 
     val catalogClass = if (xdConfig.hasPath(CatalogClass))
       xdConfig.getString(CatalogClass)
@@ -118,7 +107,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
     functionInventoryLoader.iterator().toSeq
   }
 
-  { // Register built-in UDFs for each provider available.
+  { //Register built-in UDFs for each provider available.
     import FunctionInventory.qualifyUDF
     for {srv <- functionInventoryServices
          datasourceName = srv.shortName()

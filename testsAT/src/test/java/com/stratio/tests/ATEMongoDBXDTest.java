@@ -83,7 +83,7 @@ public class ATEMongoDBXDTest extends BaseTest{
         String connector = "Mongo";
         ThreadProperty.set("Host", "127.0.0.1");
         ThreadProperty.set("Connector", connector);
-
+        ThreadProperty.set("Driver", "context");
     }
     @AfterClass
     public void cleanUp() throws UnknownHostException{

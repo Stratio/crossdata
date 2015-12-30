@@ -189,7 +189,7 @@ class CassandraXDSourceRelation(
     val prunedFilteredRdd = {
       if (filterPushdown) {
         val filterPushdown = new PredicatePushDown(filters.toSet, tableDef)
-        val pushdownFilters = filterPushdown.predicatesToPushDown.toSeq
+        val pushdownFilters:Seq[Filter] = filterPushdown.predicatesToPushDown.toSeq
         logInfo(s"pushdown filters: ${pushdownFilters.toString()}")
         val filteredRdd = maybePushdownFilters(prunedRdd, pushdownFilters, udfs)
         filteredRdd.asInstanceOf[RDD[Row]]

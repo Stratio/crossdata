@@ -15,10 +15,12 @@
  */
 package com.stratio.crossdata.testsAT.specs;
 
+import com.stratio.specs.BaseGSpec;
+
 /**
  * Created by hdominguez on 13/10/15.
  */
-public class BaseSpec {
+public class BaseSpec{
 
     protected Common commonspec;
 

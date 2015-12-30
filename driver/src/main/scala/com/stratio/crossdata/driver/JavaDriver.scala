@@ -16,10 +16,13 @@
 package com.stratio.crossdata.driver
 
 import akka.util.Timeout
-import com.stratio.crossdata.common.{SQLCommand, SQLResult}
-import com.stratio.crossdata.driver.config.DriverConfig._
-import com.stratio.crossdata.driver.metadata.{JavaTableName, FieldMetadata}
-import com.typesafe.config.{ConfigValue, ConfigValueFactory}
+import com.stratio.crossdata.common.SQLCommand
+import com.stratio.crossdata.common.SQLResult
+import com.stratio.crossdata.driver.config.DriverConfig.DriverConfigHosts
+import com.stratio.crossdata.driver.metadata.FieldMetadata
+import com.stratio.crossdata.driver.metadata.JavaTableName
+import com.typesafe.config.ConfigValue
+import com.typesafe.config.ConfigValueFactory
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._

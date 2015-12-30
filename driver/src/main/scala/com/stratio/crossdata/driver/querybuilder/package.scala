@@ -15,10 +15,27 @@
  */
 package com.stratio.crossdata.driver
 
-import java.sql.{Date, Timestamp}
+import java.sql.Date
+import java.sql.Timestamp
 
-import com.stratio.crossdata.driver.querybuilder.{Insert, ProjectedSelect, Expression}
-import com.stratio.crossdata.driver.querybuilder.dslentities._
+import com.stratio.crossdata.driver.querybuilder.dslentities.Literal
+import com.stratio.crossdata.driver.querybuilder.dslentities.Identifier
+import com.stratio.crossdata.driver.querybuilder.dslentities.XDQLStatement
+import com.stratio.crossdata.driver.querybuilder.dslentities.AsteriskExpression
+import com.stratio.crossdata.driver.querybuilder.dslentities.EntityIdentifier
+import com.stratio.crossdata.driver.querybuilder.dslentities.Distinct
+import com.stratio.crossdata.driver.querybuilder.dslentities.Sum
+import com.stratio.crossdata.driver.querybuilder.dslentities.Avg
+import com.stratio.crossdata.driver.querybuilder.dslentities.Min
+import com.stratio.crossdata.driver.querybuilder.dslentities.Count
+import com.stratio.crossdata.driver.querybuilder.dslentities.SumDistinct
+import com.stratio.crossdata.driver.querybuilder.dslentities.CountDistinct
+import com.stratio.crossdata.driver.querybuilder.dslentities.Max
+import com.stratio.crossdata.driver.querybuilder.dslentities.ApproxCountDistinct
+import com.stratio.crossdata.driver.querybuilder.dslentities.Abs
+import com.stratio.crossdata.driver.querybuilder.Expression
+import com.stratio.crossdata.driver.querybuilder.Insert
+import com.stratio.crossdata.driver.querybuilder.ProjectedSelect
 
 import scala.language.implicitConversions
 

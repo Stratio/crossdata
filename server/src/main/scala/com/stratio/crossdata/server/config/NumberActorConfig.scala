@@ -25,7 +25,8 @@ object NumberActorConfig {
 
 trait NumberActorConfig {
 
-  import NumberActorConfig._
+  import NumberActorConfig.ServerActorInstancesProp
+  import NumberActorConfig.ServerExecutorInstances
   lazy val serverActorInstances: Int = Option(config.getString(ServerActorInstancesProp)).map(_.toInt).getOrElse(ServerExecutorInstances)
   def config: Config
 

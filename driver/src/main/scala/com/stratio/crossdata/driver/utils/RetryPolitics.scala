@@ -22,8 +22,9 @@ import com.stratio.crossdata.common.SQLResult
 import org.apache.log4j.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{Future, TimeoutException}
+import scala.concurrent.Future
+import scala.concurrent.TimeoutException
+import scala.concurrent.duration.{_}
 import scala.language.postfixOps
 
 object RetryPolitics {

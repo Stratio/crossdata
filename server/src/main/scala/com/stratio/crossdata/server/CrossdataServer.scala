@@ -15,16 +15,22 @@
  */
 package com.stratio.crossdata.server
 
-import akka.actor.{ActorSystem, Props}
+import java.io.File
+
+import akka.actor.ActorSystem
+import akka.actor.Props
 import akka.cluster.Cluster
 import akka.contrib.pattern.ClusterReceptionistExtension
 import akka.routing.RoundRobinPool
 import com.stratio.crossdata.server.actors.ServerActor
 import com.stratio.crossdata.server.config.ServerConfig
-import org.apache.commons.daemon.{Daemon, DaemonContext}
+import org.apache.commons.daemon.Daemon
+import org.apache.commons.daemon.DaemonContext
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+
 import scala.collection.JavaConversions._
 
 
@@ -45,8 +51,12 @@ class CrossdataServer extends Daemon with ServerConfig {
       .filterKeys(_.startsWith("config.spark"))
       .map(e => (e._1.replace("config.", ""), e._2))
 
+    val metricsPath = Option(sparkParams.get("spark.metrics.conf"))
+
+    val filteredSparkParams = metricsPath.fold(sparkParams)(m => checkMetricsFile(sparkParams, m.get))
+
     xdContext = {
-      val sparkContext = new SparkContext(new SparkConf().setAll(sparkParams))
+      val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
       Some(new XDContext(sparkContext))
     }
 
@@ -58,11 +68,23 @@ class CrossdataServer extends Daemon with ServerConfig {
       // TODO resizer
       val serverActor = actorSystem.actorOf(
         RoundRobinPool(serverActorInstances).props(
-          Props(classOf[ServerActor], Cluster(actorSystem), xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")))),
-        actorName)
+          Props(classOf[ServerActor],
+                Cluster(actorSystem),
+                xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")))),
+                actorName)
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
     }
-    logger.info("Crossdata Server started --- v1.1.0")
+    logger.info("Crossdata Server started --- v1.0.0")
+  }
+
+  def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
+    val metricsFile = new File(metricsPath)
+    if(!metricsFile.exists){
+      logger.warn(s"Metrics configuration file not found: ${metricsFile.getPath}")
+      params - "spark.metrics.conf"
+    } else {
+      params
+    }
   }
 
   override def stop(): Unit = {
