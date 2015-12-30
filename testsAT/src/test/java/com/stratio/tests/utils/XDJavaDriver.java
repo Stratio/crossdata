@@ -94,10 +94,4 @@ public class XDJavaDriver {
         result = xdDriver.syncQuery(new SQLCommand(sql, UUID.randomUUID(),false));
     }
 
-
-//    crossdata-driver.akka.remote.netty.tcp.hostname = "10.90.0.100"
-//    crossdata-driver.config.cluster.hosts = ["10.90.0.101:13420","10.90.0.102:13420","10.90.0.103:13420"]
-//    crossdata-driver.config.retry.times = 2
-//    crossdata-driver.config.retry.duration = 40s
-
 }

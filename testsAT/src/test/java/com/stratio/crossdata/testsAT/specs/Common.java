@@ -25,18 +25,18 @@ import com.stratio.tests.utils.XDJavaDriver;
  */
 public class Common extends CommonG {
 
-    private CommonG commongspec;
+    //private CommonG commongspec;
 
     public Common() {
         
     }
-    public Common(CommonG spec) {
-        this.commongspec = spec;
-    }
-
-    public CommonG getCommonGspec() {
-        return this.commongspec;
-    }
+//    public Common(CommonG spec) {
+//        this.commongspec = spec;
+//    }
+//
+//    public CommonG getCommonGspec() {
+//        return this.commongspec;
+//    }
 
     private final XDContextUtil XDCONTEXT = XDContextUtil.getInstance();
 
