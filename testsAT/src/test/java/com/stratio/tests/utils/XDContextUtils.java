@@ -15,6 +15,12 @@
  */
 package com.stratio.tests.utils;
 
+import java.util.HashMap;
+
+import scala.Predef;
+import scala.Tuple2;
+import scala.collection.JavaConverters;
+import scala.collection.immutable.Map;
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.crossdata.ExecutionType;
@@ -69,6 +75,12 @@ public class XDContextUtils {
 
         public void executeQuery(String query){
             df = (XDDataFrame)xdContext.sql(query);
+        }
+
+        public void importTables(String datasource, HashMap<String,String> options){
+          xdContext.importTables(datasource, JavaConverters.mapAsScalaMapConverter(options).asScala().toMap(Predef
+                           .<Tuple2<String, String>>conforms()
+           ));
         }
 
         public void dropTables(){
