@@ -30,9 +30,11 @@ import org.apache.spark.sql.catalyst.plans.logical.{Limit => LogicalLimit, Logic
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{MetadataBuilder, ArrayType, StructField, StructType}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.sources
+
+import scala.collection.mutable.ArrayBuffer
 
 object MongoQueryProcessor {
 
@@ -168,7 +170,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
               cursor.close()
               result
             }
-            sparkResultFromMongodb(bs.projects, schemaProvided.get, resultSet)
+            sparkResultFromMongodb(bs.projects, bs.collectionRandomAccesses, schemaProvided.get, resultSet)
           }
         }
       } catch {
@@ -222,10 +224,69 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
 
   }
 
-  private[this] def sparkResultFromMongodb(requiredColumns: Seq[Attribute], schema: StructType, resultSet:
-  Array[DBObject]): Array[Row] = {
-    import com.stratio.datasource.mongodb.MongodbRelation.pruneSchema
-    MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns.map(_.toString).toArray), resultSet) //TODO
+  private[this] def sparkResultFromMongodb(
+                                            requiredColumns: Seq[Attribute],
+                                            indexAccesses: Map[Attribute, GetArrayItem],
+                                            schema: StructType,
+                                            resultSet: Array[DBObject]
+                                          ): Array[Row] = {
+    //import com.stratio.datasource.mongodb.MongodbRelation.pruneSchema
+    withIndexAsRow(
+      withIndexPruneSchema(
+        schema,
+        requiredColumns.map(r => r.name -> indexAccesses.get(r).map(_.right.toString().toInt)).toArray
+      ),
+      resultSet
+    )
+  }
+
+  //TODO: Add something like this at connector side
+  private[this] def withIndexPruneSchema(
+                                            schema: StructType,
+                                            requiredColumns: Array[(String, Option[Int])]): StructType = {
+    StructType(
+      requiredColumns.flatMap { case (colname, index) =>
+        schema.fields.find(_.name == colname) map {
+          case field @ StructField(name, t/*ArrayType(et,_)*/, nullable, _) =>
+            index map { idx =>
+              val mdataBuilder = new MetadataBuilder
+              //Non-functional area
+              mdataBuilder.putLong("idx", idx.toLong)
+              mdataBuilder.putString("colname", name)
+              //End of non-functional area
+              StructField(s"$name[$idx]", t/*et*/, true, mdataBuilder.build())
+            } getOrElse(field)
+          case field: StructField => field
+        }
+      }
+    )
+  }
+
+  //TODO: Add something like this at connector side
+  private[this] def withIndexAsRow(schema: StructType, array: Array[DBObject]): Array[Row] = {
+    import MongodbRowConverter._
+    array.map { record =>
+      withIndexRecordAsRow(dbObjectToMap(record), schema)
+    }
+  }
+
+  //TODO: Add something like this at connector side
+  private[this] def withIndexRecordAsRow(
+                   json: Map[String, AnyRef],
+                   schema: StructType): Row = {
+    import MongodbRowConverter._
+    val values: Seq[Any] = schema.fields.map {
+      case StructField(name, dataType: ArrayType, _, mdata) if(mdata.contains("idx") && mdata.contains("colname")) =>
+        val colName = mdata.getString("colname")
+        val idx = mdata.getLong("idx").toInt
+        json.get(colName).flatMap(v => Option(v)).map(toSQL(_, dataType)).collect {
+          case elemsList: ArrayBuffer[_] if(idx < elemsList.size) => elemsList(idx)
+        } orNull
+      case StructField(name, dataType, _, _) =>
+        json.get(name).flatMap(v => Option(v)).map(
+          toSQL(_, dataType)).orNull
+    }
+    Row.fromSeq(values)
   }
 
 }
