@@ -17,8 +17,7 @@ package com.stratio.crossdata.connector.mongodb
 
 import java.util.regex.Pattern
 
-import com.mongodb.casbah.Imports.ObjectId
-import com.mongodb.casbah.Imports.MongoDBObject
+import com.mongodb.casbah.Imports.{ObjectId, MongoDBObject}
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
 import com.stratio.datasource.Config

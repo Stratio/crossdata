@@ -15,8 +15,7 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
-import com.sksamuel.elastic4s.ElasticClient
-import com.sksamuel.elastic4s.ElasticsearchClientUri
+import com.sksamuel.elastic4s.{ElasticsearchClientUri, ElasticClient}
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.elasticsearch.DefaultSource._
 import org.apache.spark.sql.types._
@@ -24,9 +23,7 @@ import org.elasticsearch.client.IndicesAdminClient
 import org.elasticsearch.cluster.metadata.MappingMetaData
 import org.elasticsearch.common.collect.ImmutableOpenMap
 import org.elasticsearch.common.settings.ImmutableSettings
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions.ES_NODES
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions.ES_NODES_DEFAULT
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions.ES_RESOURCE
+import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 
 object ElasticSearchConnectionUtils {
 
