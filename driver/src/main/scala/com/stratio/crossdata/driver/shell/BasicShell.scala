@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 
-object Shell extends App {
+object BasicShell extends App {
 
   /**
     * NOTE: This method is based on the method org.apache.spark.sql.DataFrame#showString from Apache Spark.
