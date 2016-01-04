@@ -7,9 +7,9 @@ dist=0
 if [ -n "`echo $scriptdir | grep 'bin' | grep 'crossdata-dist' `" ]; then dist=1;fi
 
 # Read configuration variable file if it is present
-if [ -r /etc/default/crossdata ]; then
+if [ -r /etc/sds/crossdata ]; then
  if [ $dist -lt 1 ]; then
-    . /etc/default/crossdata/crossdata-env.sh
+    . /etc/sds/crossdata/crossdata-env.sh
  fi
 fi
 
