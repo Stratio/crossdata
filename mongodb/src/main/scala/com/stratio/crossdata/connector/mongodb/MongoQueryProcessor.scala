@@ -230,7 +230,6 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
                                             schema: StructType,
                                             resultSet: Array[DBObject]
                                           ): Array[Row] = {
-    //import com.stratio.datasource.mongodb.MongodbRelation.pruneSchema
     withIndexAsRow(
       withIndexPruneSchema(
         schema,
@@ -247,14 +246,14 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     StructType(
       requiredColumns.flatMap { case (colname, index) =>
         schema.fields.find(_.name == colname) map {
-          case field @ StructField(name, t/*ArrayType(et,_)*/, nullable, _) =>
+          case field @ StructField(name, t, nullable, _) =>
             index map { idx =>
               val mdataBuilder = new MetadataBuilder
               //Non-functional area
               mdataBuilder.putLong("idx", idx.toLong)
               mdataBuilder.putString("colname", name)
               //End of non-functional area
-              StructField(s"$name[$idx]", t/*et*/, true, mdataBuilder.build())
+              StructField(s"$name[$idx]", t, true, mdataBuilder.build())
             } getOrElse(field)
           case field: StructField => field
         }
@@ -280,7 +279,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
         val colName = mdata.getString("colname")
         val idx = mdata.getLong("idx").toInt
         json.get(colName).flatMap(v => Option(v)).map(toSQL(_, dataType)).collect {
-          case elemsList: ArrayBuffer[_] if(idx < elemsList.size) => elemsList(idx)
+          case elemsList: ArrayBuffer[_] if((0 until elemsList.size) contains idx) => elemsList(idx)
         } orNull
       case StructField(name, dataType, _, _) =>
         json.get(name).flatMap(v => Option(v)).map(
