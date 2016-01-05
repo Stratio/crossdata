@@ -234,20 +234,18 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
   private[this] def withIndexPruneSchema(
                                             schema: StructType,
                                             requiredColumns: Array[(String, Option[Int])]): StructType = {
+    val name2sfield: Map[String, StructField] = schema.fields.map(f => f.name -> f).toMap
     StructType(
-      requiredColumns.flatMap { case (colname, index) =>
-        schema.fields.find(_.name == colname) map {
-          case field @ StructField(name, ArrayType(et,_), nullable, _) if(index.isDefined) => //TODO Refactor
-            index map { idx =>
-              val mdataBuilder = new MetadataBuilder
-              //Non-functional area
-              mdataBuilder.putLong("idx", idx.toLong)
-              mdataBuilder.putString("colname", name)
-              //End of non-functional area
-              StructField(s"$name[$idx]", et, true, mdataBuilder.build())
-            } getOrElse(field)
-          case field: StructField =>
-            field
+      requiredColumns.flatMap {
+        case (colname, None) => name2sfield.get(colname)
+        case (colname, Some(idx)) => name2sfield.get(colname) collect {
+          case field @ StructField(name, ArrayType(et,_), nullable, _) =>
+            val mdataBuilder = new MetadataBuilder
+            //Non-functional area
+            mdataBuilder.putLong("idx", idx.toLong)
+            mdataBuilder.putString("colname", name)
+            //End of non-functional area
+            StructField(s"$name[$idx]", et, true, mdataBuilder.build())
         }
       }
     )
