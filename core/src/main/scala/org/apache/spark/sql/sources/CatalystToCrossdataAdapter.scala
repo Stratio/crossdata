@@ -66,37 +66,26 @@ object CatalystToCrossdataAdapter {
                               projects: Seq[NamedExpression],
                               filterPredicates: Seq[Expression]): (BaseLogicalPlan, FilterReport) = {
 
-    def qualifyAccess(name: String, id: Any): String = s"$name[$id]"
-
     val relation = logicalPlan.collectFirst { case lr: LogicalRelation => lr }.get
     implicit val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
-    implicit val att2itemaccess: Map[Attribute, GetArrayItem] = projects.flatMap { c =>
+    implicit val att2itemAccess: Map[Attribute, GetArrayItem] = projects.flatMap { c =>
       c.collect {
         case gi @ GetArrayItem(a@AttributeReference(name, ArrayType(etype, _), nullable, md), _) =>
           AttributeReference(name, etype, true)() -> gi
       }
     } toMap
 
-    val itemaccess2att: Map[GetArrayItem, Attribute] = att2itemaccess.map(_.swap)
+    val itemAccess2att: Map[GetArrayItem, Attribute] = att2itemAccess.map(_.swap)
 
     val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap {
-      case exp @ Alias(c: GetArrayItem, name) if(itemaccess2att contains c) =>
-        exp.references.map(false -> relation.attributeMap(_)).toSeq :+ (true -> itemaccess2att(c))
+      case exp @ Alias(c: GetArrayItem, name) if(itemAccess2att contains c) =>
+        exp.references.map(false -> relation.attributeMap(_)).toSeq :+ (true -> itemAccess2att(c))
       case exp: Expression => exp.references flatMap {
         case nat: AttributeReference if (att2udf contains nat) =>
           udfFlattenedActualParameters(nat, at => false -> relation.attributeMap(at)) :+ (true -> nat)
-        /*case get @ AttributeReference(name, dt, _, _) if (att2itemaccess contains get) =>
-          att2itemaccess(get) match {
-            case GetArrayItem(att: AttributeReference, idx: Expression) =>
-              Seq(false -> att, true -> AttributeReference(s"${att.name}[${idx.toString}]", dt, true)())
-            case _ => Seq(true -> relation.attributeMap(get))
-          }
-        */
         case x => Seq(true -> relation.attributeMap(x))
       }
     } groupBy (_._1) mapValues (_.map(_._2))
-
-
 
     val pushedFilters = filterPredicates.map {
       _ transform {
@@ -112,10 +101,11 @@ object CatalystToCrossdataAdapter {
     }
 
     val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
-      SimpleLogicalPlan(requestedCols(true), filters.toArray, att2udf, att2itemaccess)
+      SimpleLogicalPlan(requestedCols(true), filters.toArray, att2udf, att2itemAccess)
     } { case (groupingExpression, selectExpression) =>
-      AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemaccess)
+      AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)
     }
+
     (baseLogicalPlan, filterReport)
   }
 

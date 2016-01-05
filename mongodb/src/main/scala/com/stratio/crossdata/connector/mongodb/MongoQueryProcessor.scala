@@ -50,12 +50,11 @@ object MongoQueryProcessor {
   def apply(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) = new MongoQueryProcessor(logicalPlan, config, schemaProvided)
 
   def buildNativeQuery(
-                        requiredColums: Seq[ColumnName], //Seq[Attribute],
+                        requiredColums: Seq[ColumnName],
                         filters: Array[SourceFilter],
-                        config: Config//,
-                        //att2getarrayitem: Map[Attribute, GetArrayItem] = Map.empty
+                        config: Config
                       ): (DBObject, DBObject) = {
-    (filtersToDBObject(filters)(config), selectFields(requiredColums/*, att2getarrayitem*/))
+    (filtersToDBObject(filters)(config), selectFields(requiredColums))
   }
 
   def filtersToDBObject(sFilters: Array[SourceFilter], parentFilterIsNot: Boolean = false)(implicit config: Config): DBObject = {
@@ -119,28 +118,20 @@ object MongoQueryProcessor {
    * @param fields Required fields
    * @return A mongodb object that represents required fields.
    */
-  private def selectFields(
-                            fields: Seq[ColumnName]): DBObject =
-                            //att2getarrayitem: Map[Attribute, GetArrayItem] = Map.empty
+  private def selectFields(fields: Seq[ColumnName]): DBObject =
     {
       MongoDBObject(
         fields.toList.filterNot(_ == "_id").map(_ -> 1) ::: {
           List("_id" -> fields.find(_ == "_id").fold(0)(_ => 1))
         })
-      //TODO: Explain why this is useless
-      /*val accessFields = fields collect {
-        case gia: AttributeReference if(att2getarrayitem contains gia) =>
-          val gi: GetArrayItem = att2getarrayitem(gia)
-          gia.name $slice(gi.ordinal.toString().toInt, 1) //TODO: Check whether is possible to just give target value
-        //case att: Attribute => att.name -> 1
-      } toList
-
-      MongoDBObject(
-        mfields ::: {
-          mfields.find { case (fname: String, _) => fname == "_id" } map(_ => Nil) getOrElse(("_id",0)::Nil)
-        }
-      )
-      MongoDBObject(List("_id" -> 1)) ++ accessFields.head */
+      /*
+        For random accesses to array columns elements, a performance improvement is doable
+        by querying MongoDB in a way that would only select a size-1 slice of the accessed array thanks to
+        the "$slice" operator. However this operator can only be used once for each column in a projection
+        which implies that several accesses (e.g: SELECT arraystring[0] as first, arraystring[3] as fourth FROM MONGO_T)
+        would require to implement an smart "$slice" use selecting the minimum slice containing all requested elements.
+        That requires way too much effort when the performance boost is taken into consideration.
+       */
     }
 
 }
@@ -246,16 +237,17 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     StructType(
       requiredColumns.flatMap { case (colname, index) =>
         schema.fields.find(_.name == colname) map {
-          case field @ StructField(name, t, nullable, _) =>
+          case field @ StructField(name, ArrayType(et,_), nullable, _) if(index.isDefined) => //TODO Refactor
             index map { idx =>
               val mdataBuilder = new MetadataBuilder
               //Non-functional area
               mdataBuilder.putLong("idx", idx.toLong)
               mdataBuilder.putString("colname", name)
               //End of non-functional area
-              StructField(s"$name[$idx]", t, true, mdataBuilder.build())
+              StructField(s"$name[$idx]", et, true, mdataBuilder.build())
             } getOrElse(field)
-          case field: StructField => field
+          case field: StructField =>
+            field
         }
       }
     )
@@ -275,17 +267,18 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
                    schema: StructType): Row = {
     import MongodbRowConverter._
     val values: Seq[Any] = schema.fields.map {
-      case StructField(name, dataType: ArrayType, _, mdata) if(mdata.contains("idx") && mdata.contains("colname")) =>
+      case StructField(name, et, _, mdata)
+        if(mdata.contains("idx") && mdata.contains("colname")) =>
         val colName = mdata.getString("colname")
         val idx = mdata.getLong("idx").toInt
-        json.get(colName).flatMap(v => Option(v)).map(toSQL(_, dataType)).collect {
+        json.get(colName).flatMap(v => Option(v)).map(toSQL(_, ArrayType(et, true))).collect {
           case elemsList: ArrayBuffer[_] if((0 until elemsList.size) contains idx) => elemsList(idx)
         } orNull
       case StructField(name, dataType, _, _) =>
         json.get(name).flatMap(v => Option(v)).map(
           toSQL(_, dataType)).orNull
     }
-    Row.fromSeq(values)
+    new GenericRowWithSchema(values.toArray, schema)
   }
 
 }
