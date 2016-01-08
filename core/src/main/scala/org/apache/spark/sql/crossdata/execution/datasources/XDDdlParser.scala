@@ -62,4 +62,13 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
     }
   }
 
+  protected lazy val createEphemeralTable: Parser[LogicalPlan] = {
+    (CREATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ tableCols ~ (OPTIONS ~> options) ^^ {
+      case tableIdent ~ columns ~ opts => {
+        val userSpecifiedSchema = StructType(columns)
+        CreateEphemeralTable(tableIdent, userSpecifiedSchema, opts)
+      }
+    }
+  }
+
 }
