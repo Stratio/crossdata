@@ -100,6 +100,17 @@ class MongoFilterIT extends MongoDataTypesCollection {
 
   }
 
+  /** See PromoteStrings*/
+  it should "supports filter TIMESTAMP less or equals to" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT timestamp FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp <= '1970-01-01 00:00:00.001'").collect(ExecutionType.Native)
+    sparkRow.size should be > 0
+    sparkRow.head(0) should be (java.sql.Timestamp.valueOf("1970-01-01 00:00:00.001"))
+
+  }
+
+
   it should "supports filter TIMESTAMP BETWEEN two times" in {
     assumeEnvironmentIsUpAndRunning
 
@@ -108,4 +119,33 @@ class MongoFilterIT extends MongoDataTypesCollection {
 
   }
 
+
+  it should "supports Native filter DATE LESS OR EQUALS THAN " in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp <= '1970-01-02 00:0:0.002'").collect(ExecutionType.Native)
+    sparkRow.length should be (2)
+  }
+
+  it should "supports Native filter DATE GREATER OR EQUALS THAN " in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE date >= '1970-01-02'").collect(ExecutionType.Native)
+    sparkRow.length should be (9)
+  }
+
+  it should "supports Native filter DATE LESS THAN " in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE date < '1970-01-02'").collect(ExecutionType.Native)
+    sparkRow.length should be (1)
+  }
+
+  it should "supports Native filter DATE GREATER THAN " in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT timestamp FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp > '1970-01-02'").collect(ExecutionType.Native)
+    sparkRow.foreach(print(_))
+    sparkRow.length should be (9)
+  }
 }

@@ -18,8 +18,7 @@ package org.apache.spark.sql.sources
 
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.CatalystTypeConverters.convertToScala
-import org.apache.spark.sql.catalyst.expressions.{Expression, AttributeReference, NamedExpression, Attribute, Literal}
-import org.apache.spark.sql.catalyst.expressions.EmptyRow
+import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.expressions
 
 import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
@@ -124,6 +123,8 @@ object CatalystToCrossdataAdapter {
         Some(sources.EqualTo(b.name, a))
       case expressions.EqualTo(b: Attribute, a: AttributeReference) if udfs contains a =>
         Some(sources.EqualTo(b.name, a))
+      case expressions.EqualTo(Cast(a:Attribute, StringType), Literal(v, t)) =>
+        Some(sources.EqualTo(a.name, convertToScala(Cast(Literal(v.toString), a.dataType).eval(EmptyRow), a.dataType)))
 
       /* TODO
       case expressions.EqualNullSafe(a: Attribute, Literal(v, t)) =>
@@ -140,7 +141,8 @@ object CatalystToCrossdataAdapter {
         Some(sources.GreaterThan(b.name, a))
       case expressions.GreaterThan(a: AttributeReference, b: Attribute) if udfs contains a =>
         Some(sources.LessThan(b.name, a))
-
+      case expressions.GreaterThan(Cast(a:Attribute, StringType), Literal(v, t)) =>
+        Some(sources.GreaterThan(a.name, convertToScala(Cast(Literal(v.toString), a.dataType).eval(EmptyRow), a.dataType)))
 
       case expressions.LessThan(a: Attribute, Literal(v, t)) =>
         Some(sources.LessThan(a.name, convertToScala(v, t)))
@@ -150,6 +152,8 @@ object CatalystToCrossdataAdapter {
         Some(sources.LessThan(b.name, a))
       case expressions.LessThan(a: AttributeReference, b: Attribute) if udfs contains a =>
         Some(sources.GreaterThan(b.name, a))
+      case expressions.LessThan(Cast(a:Attribute, StringType), Literal(v, t)) =>
+        Some(sources.LessThan(a.name, convertToScala(Cast(Literal(v.toString), a.dataType).eval(EmptyRow), a.dataType)))
 
       case expressions.GreaterThanOrEqual(a: Attribute, Literal(v, t)) =>
         Some(sources.GreaterThanOrEqual(a.name, convertToScala(v, t)))
@@ -159,6 +163,8 @@ object CatalystToCrossdataAdapter {
         Some(sources.GreaterThanOrEqual(b.name, a))
       case expressions.GreaterThanOrEqual(a: AttributeReference, b: Attribute) if udfs contains a =>
         Some(sources.LessThanOrEqual(b.name, a))
+      case expressions.GreaterThanOrEqual(Cast(a:Attribute,StringType), Literal(v, t)) =>
+        Some(sources.GreaterThanOrEqual(a.name, convertToScala(Cast(Literal(v.toString), a.dataType).eval(EmptyRow), a.dataType)))
 
       case expressions.LessThanOrEqual(a: Attribute, Literal(v, t)) =>
         Some(sources.LessThanOrEqual(a.name, convertToScala(v, t)))
@@ -168,6 +174,10 @@ object CatalystToCrossdataAdapter {
         Some(sources.LessThanOrEqual(b.name, a))
       case expressions.LessThanOrEqual(a: AttributeReference, b: Attribute) if udfs contains a =>
         Some(sources.GreaterThanOrEqual(b.name, a))
+      case expressions.LessThanOrEqual(Cast(a:Attribute,StringType), Literal(v, t)) =>
+        Some(sources.LessThanOrEqual(a.name, convertToScala(Cast(Literal(v.toString), a.dataType).eval(EmptyRow), a.dataType)))
+
+
 
       case expressions.InSet(a: Attribute, set) =>
         val toScala = CatalystTypeConverters.createToScalaConverter(a.dataType)
