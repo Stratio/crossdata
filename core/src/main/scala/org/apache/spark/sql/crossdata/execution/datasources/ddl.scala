@@ -119,6 +119,23 @@ private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryP
   }
 }
 
+private[crossdata] case class CreateEphemeralTable(
+    tableIdent: TableIdentifier,
+    columns: StructType,
+    opts: Map[String, String])
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    throw new AnalysisException("Ephemeral tables are not supported yet")
+    // * This query will trigger 3 actions in the catalog persistence:
+    //   1.- Associate the table with the schema.
+    //   2.- Associate the table with the configuration.
+    //   3.- Associate the QueryID with the involved query.
+    // * SparkLauncher of StreamingProcess
+    Seq.empty
+  }
+}
+
 
 
 

@@ -17,6 +17,7 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.datasources.DDLParser
+import org.apache.spark.sql.types.StructType
 
 class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
 
@@ -24,9 +25,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val TABLES = Keyword("TABLES")
   protected val DROP = Keyword("DROP")
   protected val VIEW = Keyword("VIEW")
+  protected val EPHEMERAL = Keyword("EPHEMERAL")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
-    createTable | describeTable | refreshTable | importStart | dropTable | createView
+    createTable | describeTable | refreshTable | importStart | dropTable | createView | createEphemeralTable
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -40,7 +42,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
         DropTable(tableId)
     }
 
-
   protected lazy val createView: Parser[LogicalPlan] = {
 
     (CREATE ~> TEMPORARY.? <~ VIEW) ~ tableIdentifier ~ (AS ~> restInput) ^^ {
@@ -49,6 +50,15 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
           CreateTempView(viewIdentifier, parseQuery(query))
         else
           CreateView(viewIdentifier, parseQuery(query), query)
+    }
+  }
+
+  protected lazy val createEphemeralTable: Parser[LogicalPlan] = {
+    (CREATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ tableCols ~ (OPTIONS ~> options) ^^ {
+      case tableIdent ~ columns ~ opts => {
+        val userSpecifiedSchema = StructType(columns)
+        CreateEphemeralTable(tableIdent, userSpecifiedSchema, opts)
+      }
     }
   }
 
