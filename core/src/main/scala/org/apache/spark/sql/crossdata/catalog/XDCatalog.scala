@@ -17,18 +17,13 @@ package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.analysis.Catalog
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.plans.logical.Subquery
-import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.crossdata.CrossdataVersion
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
-import org.apache.spark.sql.execution.datasources.LogicalRelation
-import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.types._
-import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization.write
 
 import scala.collection.mutable
@@ -193,7 +188,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
 }
 
-object XDCatalog{
+object XDCatalog extends CrossdataSerializer {
 
   implicit def asXDCatalog(catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
 
@@ -203,7 +198,6 @@ object XDCatalog{
                             opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)
 
   def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
-    implicit val formats = DefaultFormats
 
     val jsonMap = JSON.parseFull(schemaJSON).get.asInstanceOf[Map[String, Any]]
     val fields = jsonMap.getOrElse("fields", throw new Error("Fields not found")).asInstanceOf[List[Map[String, Any]]]
@@ -231,17 +225,14 @@ object XDCatalog{
     JSON.parseFull(optsJSON).get.asInstanceOf[Map[String, String]]
 
   def serializeSchema(schema: StructType): String = {
-    implicit val formats = DefaultFormats
     write(schema.jsonValue.values)
   }
 
   def serializeOptions(options: Map[String, Any]): String = {
-    implicit val formats = DefaultFormats
     write(options)
   }
 
   def serializePartitionColumn(partitionColumn: Array[String]): String = {
-    implicit val formats = DefaultFormats
     write(partitionColumn)
   }
 
@@ -268,7 +259,7 @@ object XDCatalog{
         s"map<${convertToGrammar(tpeKey)},${convertToGrammar(tpeValue)}>"
 
       case tpeMap: Map[String @unchecked, _] =>
-        convertToGrammar(tpeMap.get("type").getOrElse(throw new Error("Type not found")))
+        convertToGrammar(tpeMap.getOrElse("type", throw new Error("Type not found")))
 
       case basicType: String => basicType
 
