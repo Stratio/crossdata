@@ -2,7 +2,11 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
-## 1.0.0
+## 1.0.1 (January 2016)
+
+* Fix server start script
+
+## 1.0.0 (December 2015)
 
 * Architecture migrated to Spark Catalyst.
 * Upgraded Spark 1.5.2
