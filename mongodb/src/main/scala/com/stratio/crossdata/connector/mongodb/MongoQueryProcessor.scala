@@ -22,7 +22,9 @@ import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
 import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.MongodbConfig
-import com.stratio.datasource.mongodb.schema.MongodbRowConverter
+import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
+import com.stratio.datasource.mongodb.MongodbRelation._
+
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
@@ -30,11 +32,9 @@ import org.apache.spark.sql.catalyst.plans.logical.{Limit => LogicalLimit, Logic
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
-import org.apache.spark.sql.types.{MetadataBuilder, ArrayType, StructField, StructType}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.sources
-
-import scala.collection.mutable.ArrayBuffer
 
 object MongoQueryProcessor {
 
@@ -221,8 +221,8 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
                                             schema: StructType,
                                             resultSet: Array[DBObject]
                                           ): Array[Row] = {
-    withIndexAsRow(
-      withIndexPruneSchema(
+    asRow(
+      pruneSchema(
         schema,
         requiredColumns.map(r => r.name -> indexAccesses.get(r).map(_.right.toString().toInt)).toArray
       ),
@@ -230,54 +230,6 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
     )
   }
 
-  //TODO: Add something like this at connector side
-  private[this] def withIndexPruneSchema(
-                                            schema: StructType,
-                                            requiredColumns: Array[(String, Option[Int])]): StructType = {
-    val name2sfield: Map[String, StructField] = schema.fields.map(f => f.name -> f).toMap
-    StructType(
-      requiredColumns.flatMap {
-        case (colname, None) => name2sfield.get(colname)
-        case (colname, Some(idx)) => name2sfield.get(colname) collect {
-          case field @ StructField(name, ArrayType(et,_), nullable, _) =>
-            val mdataBuilder = new MetadataBuilder
-            //Non-functional area
-            mdataBuilder.putLong("idx", idx.toLong)
-            mdataBuilder.putString("colname", name)
-            //End of non-functional area
-            StructField(s"$name[$idx]", et, true, mdataBuilder.build())
-        }
-      }
-    )
-  }
-
-  //TODO: Add something like this at connector side
-  private[this] def withIndexAsRow(schema: StructType, array: Array[DBObject]): Array[Row] = {
-    import MongodbRowConverter._
-    array.map { record =>
-      withIndexRecordAsRow(dbObjectToMap(record), schema)
-    }
-  }
-
-  //TODO: Add something like this at connector side
-  private[this] def withIndexRecordAsRow(
-                   json: Map[String, AnyRef],
-                   schema: StructType): Row = {
-    import MongodbRowConverter._
-    val values: Seq[Any] = schema.fields.map {
-      case StructField(name, et, _, mdata)
-        if(mdata.contains("idx") && mdata.contains("colname")) =>
-        val colName = mdata.getString("colname")
-        val idx = mdata.getLong("idx").toInt
-        json.get(colName).flatMap(v => Option(v)).map(toSQL(_, ArrayType(et, true))).collect {
-          case elemsList: ArrayBuffer[_] if((0 until elemsList.size) contains idx) => elemsList(idx)
-        } orNull
-      case StructField(name, dataType, _, _) =>
-        json.get(name).flatMap(v => Option(v)).map(
-          toSQL(_, dataType)).orNull
-    }
-    new GenericRowWithSchema(values.toArray, schema)
-  }
 
 }
 
