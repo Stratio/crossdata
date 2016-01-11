@@ -20,25 +20,45 @@ package org.apache.spark.sql.cassandra
 import java.io.IOException
 
 import com.datastax.driver.core.Metadata
-import com.datastax.spark.connector.cql.{CassandraConnector, CassandraConnectorConf, Schema}
-import com.datastax.spark.connector.rdd.{CassandraRDD, ReadConf}
+import com.datastax.spark.connector.SomeColumns
+import com.datastax.spark.connector.FunctionCallRef
+import com.datastax.spark.connector.ColumnRef
+import com.datastax.spark.connector.ColumnName
+import com.datastax.spark.connector.{_}
+import com.datastax.spark.connector.cql.CassandraConnector
+import com.datastax.spark.connector.cql.CassandraConnectorConf
+import com.datastax.spark.connector.cql.Schema
+import com.datastax.spark.connector.rdd.CassandraRDD
+import com.datastax.spark.connector.rdd.ReadConf
 import com.datastax.spark.connector.util.NameTools
-import com.datastax.spark.connector.util.Quote._
-import com.datastax.spark.connector.writer.{SqlRowWriter, WriteConf}
-import com.datastax.spark.connector._
+import com.datastax.spark.connector.util.Quote.quote
+import com.datastax.spark.connector.writer.SqlRowWriter
+import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.cassandra.CassandraQueryProcessor
-import com.stratio.crossdata.connector.{NativeFunctionExecutor, NativeScan}
+import com.stratio.crossdata.connector.NativeFunctionExecutor
+import com.stratio.crossdata.connector.NativeScan
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.cassandra.DataTypeConverter._
+import org.apache.spark.sql.cassandra.DataTypeConverter.toStructField
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
-import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.expressions.AttributeReference
+import org.apache.spark.sql.catalyst.expressions.Alias
+import org.apache.spark.sql.catalyst.expressions.Count
+import org.apache.spark.sql.catalyst.expressions.Literal
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.crossdata.execution.{NativeUDF, EvaluateNativeUDF}
+import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
+import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.sources.Filter
-import org.apache.spark.sql.sources._
+import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.sources.InsertableRelation
+import org.apache.spark.sql.sources.PrunedFilteredScan
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
-import org.apache.spark.{Logging, SparkConf}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.sources
+import org.apache.spark.Logging
+import org.apache.spark.SparkConf
 
 
 /**

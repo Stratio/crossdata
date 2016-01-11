@@ -30,8 +30,7 @@ import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.FunctionInventory.UDF
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.cassandra.DefaultSource._
-import com.stratio.crossdata.connector.FunctionInventory
-import com.stratio.crossdata.connector.TableInventory
+import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode.Append
 import org.apache.spark.sql.SaveMode.Overwrite

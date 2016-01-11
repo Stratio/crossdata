@@ -18,24 +18,15 @@ package org.apache.spark.sql.crossdata.execution.datasources
 import com.stratio.crossdata.connector.NativeFunctionExecutor
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.expressions.AttributeReference
-import org.apache.spark.sql.catalyst.expressions.NamedExpression
-import org.apache.spark.sql.catalyst.expressions.Expression
-import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.expressions.AttributeSet
-import org.apache.spark.sql.catalyst.plans.logical.Aggregate
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.expressions
+import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
+import org.apache.spark.sql.catalyst.{InternalRow, expressions}
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
 import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.execution.datasources.LogicalRelation
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.FilterReport
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.Filter
-import org.apache.spark.sql.Strategy
-import org.apache.spark.sql.execution
-import org.apache.spark.sql.{_}
+import org.apache.spark.sql.{Strategy, execution, _}
 
 private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
 
@@ -72,7 +63,7 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
     val (pro, fil, att2udf) =
       (CatalystToCrossdataAdapter.getConnectorLogicalPlan(plan, projects, filterPredicates): @unchecked) match {
         case (_, FilterReport(_, udfsIgnored)) if udfsIgnored.nonEmpty => cannotExecuteNativeUDF(udfsIgnored)
-        case (SimpleLogicalPlan(pro, fil, udfs), _) => (pro, fil, udfs)
+        case (SimpleLogicalPlan(pro, fil, udfs, _), _) => (pro, fil, udfs)
       }
 
     val projectSet = AttributeSet(pro)

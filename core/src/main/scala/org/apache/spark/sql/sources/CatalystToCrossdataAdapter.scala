@@ -15,23 +15,19 @@
  */
 package org.apache.spark.sql.sources
 
-import org.apache.spark.sql.catalyst.CatalystTypeConverters.convertToScala
-import org.apache.spark.sql.catalyst.expressions.Expression
-import org.apache.spark.sql.catalyst.expressions.AttributeReference
-import org.apache.spark.sql.catalyst.expressions.NamedExpression
-import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.expressions.Literal
-import org.apache.spark.sql.catalyst.expressions.EmptyRow
-import org.apache.spark.sql.catalyst.plans.logical.Aggregate
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
+import org.apache.spark.sql.catalyst.CatalystTypeConverters.convertToScala
+import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.expressions
-import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
-import org.apache.spark.sql.crossdata.execution.NativeUDF
+
+import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
+
+import org.apache.spark.sql.crossdata.execution.{EvaluateNativeUDF, NativeUDF}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
-import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.{ArrayType, StringType}
 import org.apache.spark.unsafe.types.UTF8String
 
 import scala.collection.mutable.ListBuffer
@@ -40,18 +36,25 @@ object CatalystToCrossdataAdapter {
 
   case class FilterReport(filtersIgnored: Seq[Expression], ignoredNativeUDFReferences: Seq[AttributeReference])
 
-  abstract class BaseLogicalPlan(val projects: Seq[NamedExpression], val filters: Array[SourceFilter], val udfsMap: Map[Attribute, NativeUDF])
+  abstract class BaseLogicalPlan(
+                                  val projects: Seq[NamedExpression],
+                                  val filters: Array[SourceFilter],
+                                  val udfsMap: Map[Attribute, NativeUDF],
+                                  val collectionRandomAccesses: Map[Attribute, GetArrayItem]
+                                )
 
   case class SimpleLogicalPlan(override val projects: Seq[Attribute],
                                override val filters: Array[SourceFilter],
-                               override val udfsMap: Map[Attribute, NativeUDF]
-                                ) extends BaseLogicalPlan(projects, filters, udfsMap)
+                               override val udfsMap: Map[Attribute, NativeUDF],
+                               override val collectionRandomAccesses: Map[Attribute, GetArrayItem]
+                                ) extends BaseLogicalPlan(projects, filters, udfsMap, collectionRandomAccesses)
 
   case class AggregationLogicalPlan(override val projects: Seq[NamedExpression],
                                     groupingExpresion: Seq[Expression],
                                     override val filters: Array[SourceFilter],
-                                    override val udfsMap: Map[Attribute, NativeUDF]
-                                     ) extends BaseLogicalPlan(projects, filters, udfsMap)
+                                    override val udfsMap: Map[Attribute, NativeUDF],
+                                    override val collectionRandomAccesses: Map[Attribute, GetArrayItem]
+                                     ) extends BaseLogicalPlan(projects, filters, udfsMap, collectionRandomAccesses)
 
 
   /**
@@ -63,19 +66,26 @@ object CatalystToCrossdataAdapter {
                               projects: Seq[NamedExpression],
                               filterPredicates: Seq[Expression]): (BaseLogicalPlan, FilterReport) = {
 
-
     val relation = logicalPlan.collectFirst { case lr: LogicalRelation => lr }.get
     implicit val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
+    implicit val att2itemAccess: Map[Attribute, GetArrayItem] = projects.flatMap { c =>
+      c.collect {
+        case gi @ GetArrayItem(a@AttributeReference(name, ArrayType(etype, _), nullable, md), _) =>
+          AttributeReference(name, etype, true)() -> gi
+      }
+    } toMap
 
-    val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap(
-      _.references flatMap {
+    val itemAccess2att: Map[GetArrayItem, Attribute] = att2itemAccess.map(_.swap)
+
+    val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap {
+      case exp @ Alias(c: GetArrayItem, name) if(itemAccess2att contains c) =>
+        exp.references.map(false -> relation.attributeMap(_)).toSeq :+ (true -> itemAccess2att(c))
+      case exp: Expression => exp.references flatMap {
         case nat: AttributeReference if (att2udf contains nat) =>
           udfFlattenedActualParameters(nat, at => false -> relation.attributeMap(at)) :+ (true -> nat)
         case x => Seq(true -> relation.attributeMap(x))
       }
-    ) groupBy (_._1) mapValues (_.map(_._2))
-
-
+    } groupBy (_._1) mapValues (_.map(_._2))
 
     val pushedFilters = filterPredicates.map {
       _ transform {
@@ -91,10 +101,11 @@ object CatalystToCrossdataAdapter {
     }
 
     val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
-      SimpleLogicalPlan(requestedCols(true), filters.toArray, att2udf)
+      SimpleLogicalPlan(requestedCols(true), filters.toArray, att2udf, att2itemAccess)
     } { case (groupingExpression, selectExpression) =>
-      AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf)
+      AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)
     }
+
     (baseLogicalPlan, filterReport)
   }
 
