@@ -57,6 +57,9 @@ object Driver extends DriverConfig {
   def apply() = new Driver()
 
   def apply(flattenTables: Boolean) = new Driver(flattenTables: Boolean)
+
+  lazy val defaultTimeout = Timeout(config .getDuration(DriverRetryDuration, MILLISECONDS), MILLISECONDS)
+  lazy val defaultRetries = config.getInt(DriverRetryTimes)
 }
 
 class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean) {
@@ -78,6 +81,9 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
   type TableIdentifier = (String, Option[String])
 
   private lazy val logger = Driver.logger
+
+
+
 
   private val clientConfig =
     properties.foldLeft(Driver.config) { case (previousConfig, keyValue@(path, configValue)) =>
@@ -121,8 +127,8 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
     */
   // TODO syncQuery and asynQuery should be private when the driver get improved
   def syncQuery(sqlCommand: SQLCommand,
-                timeout: Timeout = Timeout(Driver.config.getDuration(DriverRetryDuration, MILLISECONDS), MILLISECONDS),
-                retries: Int = Driver.config.getInt(DriverRetryTimes)): SQLResult = {
+                timeout: Timeout = defaultTimeout,
+                retries: Int = defaultRetries): SQLResult = {
     Try {
       Await.result(asyncQuery(sqlCommand, timeout, retries), timeout.duration * retries)
     } getOrElse ErrorResult(sqlCommand.queryId, s"Not found answer to query ${sqlCommand.query}. Timeout was exceed.")
@@ -136,8 +142,8 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
     * @return A list of rows with the result of the query
     */
   def asyncQuery(sqlCommand: SQLCommand,
-                 timeout: Timeout = Timeout(Driver.config.getDuration(DriverRetryDuration, MILLISECONDS), MILLISECONDS),
-                 retries: Int = Driver.config.getInt(DriverRetryTimes)): Future[SQLResult] = {
+                 timeout: Timeout = defaultTimeout,
+                 retries: Int = defaultRetries): Future[SQLResult] = {
     RetryPolitics.askRetry(proxyActor, sqlCommand, timeout, retries)
   }
 
