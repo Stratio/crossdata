@@ -37,6 +37,8 @@ import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 
+import scala.util.parsing.json.{JSONObject, JSON}
+
 
 private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with Logging {
@@ -133,11 +135,14 @@ private[crossdata] case class CreateEphemeralTable(
 
     val uuid = UUID.randomUUID().toString
 
-    // TODO: Blocked by CROSSDATA-148 y CROSSDATA-205
+    // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
     // * This query will trigger 3 actions in the catalog persistence:
     //   1.- Associate the table with the schema.
+    val schema = columns.json
     //   2.- Associate the table with the configuration.
-    //   3.- Associate the QueryID with the involved query.
+    val options = JSONObject(opts).toString
+    //   3.- Associate the QueryID with the involved table.
+
 
     // * SparkLauncher of StreamingProcess
     val params = (uuid :: opts.values :: Nil).toArray[String]
