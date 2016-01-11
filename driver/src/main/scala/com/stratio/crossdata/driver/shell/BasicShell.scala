@@ -19,9 +19,14 @@ import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.common.result.{SuccessfulQueryResult, ErrorResult}
 import com.stratio.crossdata.driver.Driver
 import jline.console.ConsoleReader
+import jline.console.history.{MemoryHistory, FileHistory}
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
+
+import java.io._
+
+import scala.collection.JavaConversions._
 
 object BasicShell extends App {
 
@@ -80,77 +85,98 @@ object BasicShell extends App {
     sb.append(sep).toString.split("\n")
   }
 
-  val consoleProcess = new Thread(new Runnable {
-    override def run(): Unit = {
-      val console = new ConsoleReader
+  private def getLine(reader: ConsoleReader): Option[String] = {
+    Option(reader.readLine)
+  }
 
-      val driver = Driver()
-
-      def getLine(reader: ConsoleReader): Option[String] = {
-        Option(reader.readLine)
-      }
-
-      def checkEnd(line: Option[String]): Boolean = {
-        if(line.isEmpty){
-          true
-        } else {
-          val trimmedLine = line.get
-          if(trimmedLine.equalsIgnoreCase("exit") || trimmedLine.equalsIgnoreCase("quit")){
-            true
-          } else {
-            false
-          }
-        }
-      }
-
-      val reader = new ConsoleReader()
-
-      console.setPrompt("CROSSDATA> ")
-      console.setExpandEvents(false)
-      console.setHistoryEnabled(true)
-
-      console.println()
-      console.println("+-----------------+-------------------------+---------------------------+")
-      console.println("| CROSSDATA 1.0.0 | Powered by Apache Spark | Easy access to big things |")
-      console.println("+-----------------+-------------------------+---------------------------+")
-      console.println()
-      console.flush
-
-      while(true){
-        console.println
-        console.flush
-        val line = getLine(console)
-
-        if(checkEnd(line)){
-          console.println("Closing shell...")
-          console.flush
-          System.exit(0)
-        }
-
-        if(line.get.trim.nonEmpty){
-          val result = driver.syncQuery(SQLCommand(line.get))
-
-          console.println(s"Result for query ID: ${result.queryId}")
-          if(result.hasError){
-            console.println("ERROR")
-            console.println(result.asInstanceOf[ErrorResult].message)
-          } else {
-            console.println("SUCCESS")
-            stringifyResult(
-              result.resultSet,
-              result.asInstanceOf[SuccessfulQueryResult].schema).foreach(l => console.println(l))
-          }
-        }
-        console.flush
+  private def checkEnd(line: Option[String]): Boolean = {
+    if (line.isEmpty) {
+      true
+    } else {
+      val trimmedLine = line.get
+      if (trimmedLine.equalsIgnoreCase("exit") || trimmedLine.equalsIgnoreCase("quit")) {
+        true
+      } else {
+        false
       }
     }
-  })
+  }
 
-  sys.addShutdownHook({
-    println("ShutdownHook called")
-    consoleProcess.interrupt
-  })
+  private def close(console: ConsoleReader): Unit = {
+    println("Saving history...")
+    val pw = new PrintWriter(new File("xdhistory.txt"))
+    console.getHistory.foreach(l => pw.println(l.value))
+    println("Closing shell...")
+    pw.close
+    console.flush
+  }
 
-  consoleProcess.start
+  def loadHistory(console: ConsoleReader): Unit = {
+    val historyFile = new File("xdhistory.txt")
+
+    if(historyFile.exists()){
+      println("Loading history...")
+      console.setHistory(new FileHistory(historyFile))
+    } else {
+      println("No previous history found")
+    }
+  }
+
+  val console = new ConsoleReader()
+
+  private def runConsole(console: ConsoleReader): Unit = {
+    loadHistory(console)
+
+    val driver = Driver()
+
+    Thread.sleep(1000)
+
+    console.setPrompt("CROSSDATA> ")
+    console.setExpandEvents(false)
+
+    console.println()
+    console.println("+-----------------+-------------------------+---------------------------+")
+    console.println("| CROSSDATA 1.0.0 | Powered by Apache Spark | Easy access to big things |")
+    console.println("+-----------------+-------------------------+---------------------------+")
+    console.println()
+    console.flush
+
+    while (true) {
+      val line = getLine(console)
+
+      if (checkEnd(line)) {
+        close(console)
+        System.exit(0)
+      }
+
+      if (line.get.trim.nonEmpty) {
+        val result = driver.syncQuery(SQLCommand(line.get))
+
+        console.println(s"Result for query ID: ${result.queryId}")
+        if (result.hasError) {
+          console.println("ERROR")
+          console.println(result.asInstanceOf[ErrorResult].message)
+        } else {
+          console.println("SUCCESS")
+          stringifyResult(
+            result.resultSet,
+            result.asInstanceOf[SuccessfulQueryResult].schema).foreach(l => console.println(l))
+        }
+      }
+      console.flush
+    }
+  }
+
+  runConsole(console)
+
+  Runtime.getRuntime.addShutdownHook(
+    new Thread(
+      new Runnable {
+        override def run(): Unit = {
+          close(console)
+        }
+      }
+    )
+  )
 
 }
