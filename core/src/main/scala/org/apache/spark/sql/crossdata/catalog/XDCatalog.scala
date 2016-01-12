@@ -133,7 +133,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     throw new UnsupportedOperationException
   }
 
-  private def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
+  protected[crossdata] def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
     val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
     LogicalRelation(resolved.relation)
   }
@@ -145,7 +145,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   // Defined by Crossdata
 
-  final def persistTable(crossdataTable: CrossdataTable, table: Option[LogicalPlan] = None): Unit = {
+  final def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit = {
     val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName).toSeq
 
     if (tableExists(tableIdentifier)){
@@ -153,7 +153,9 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
       throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
     } else {
       logInfo(s"XDCatalog: Persisting table ${crossdataTable.tableName}")
-      persistTableMetadata(crossdataTable, table)
+      persistTableMetadata(crossdataTable)
+      val tableIdentifier = TableIdentifier(crossdataTable.tableName,crossdataTable.dbName).toSeq
+      registerTable(tableIdentifier, table)
     }
 
   }
@@ -177,7 +179,9 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)]
 
-  protected def persistTableMetadata(crossdataTable: CrossdataTable, table: Option[LogicalPlan] = None): Unit
+  // TODO protected catalog
+
+  protected[crossdata] def persistTableMetadata(crossdataTable: CrossdataTable): Unit
 
   /**
    * Drop table if exists.

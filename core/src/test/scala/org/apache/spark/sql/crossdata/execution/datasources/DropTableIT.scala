@@ -18,7 +18,9 @@ package org.apache.spark.sql.crossdata.execution.datasources
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.CrossdataTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -32,14 +34,14 @@ class DropTableIT extends SharedXDContextTest {
 
   "DropTable command" should "remove a table from Crossdata catalog" in {
 
-    _xdContext.catalog.persistTable(CrossdataTable(TableName, None, Some(Schema), DatasourceName, opts = Map("path" -> "fakepath")))
+    _xdContext.catalog.persistTableMetadata(CrossdataTable(TableName, None, Some(Schema), DatasourceName, opts = Map("path" -> "fakepath")))
     _xdContext.catalog.tableExists(TableIdentifier(TableName).toSeq) shouldBe true
     sql(s"DROP TABLE $TableName")
     _xdContext.catalog.tableExists(TableIdentifier(TableName).toSeq) shouldBe false
   }
 
   it should "remove a qualified table from Crossdata catalog" in {
-    _xdContext.catalog.persistTable(CrossdataTable(TableName, Some(DatabaseName), Some(Schema), DatasourceName, opts = Map("path" -> "fakepath")))
+    _xdContext.catalog.persistTableMetadata(CrossdataTable(TableName, Some(DatabaseName), Some(Schema), DatasourceName, opts = Map("path" -> "fakepath")))
     _xdContext.catalog.tableExists(TableIdentifier(TableName, Some(DatabaseName)).toSeq) shouldBe true
     sql(s"DROP TABLE $DatabaseName.$TableName")
     _xdContext.catalog.tableExists(TableIdentifier(TableName, Some(DatabaseName)).toSeq) shouldBe false

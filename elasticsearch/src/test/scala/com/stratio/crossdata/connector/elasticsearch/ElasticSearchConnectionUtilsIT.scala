@@ -17,13 +17,11 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.sksamuel.elastic4s.ElasticDsl._
 
 @RunWith(classOf[JUnitRunner])
 class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with ElasticSearchDefaultConstants {
 
-  "ElasticSearchConnectionUtils "
-  it should "Build a native ES Connection" in {
+  "ElasticSearchConnectionUtils" should "build a native ES Connection" in {
 
     val options: Map[String, String] = Map(
       "es.nodes" -> s"$ElasticHost",
