@@ -103,10 +103,10 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
           Array.empty[Row]
         } else {
           val projectsString: Seq[String] = cassandraPlan.basePlan match {
-            case SimpleLogicalPlan(projects, _, _) =>
+            case SimpleLogicalPlan(projects, _, _, _) =>
               projects.map(_.toString())
 
-            case AggregationLogicalPlan(projects, groupingExpression, _, _) =>
+            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) =>
               require(groupingExpression.isEmpty)
               projects.map(buildAggregationExpression)
           }
