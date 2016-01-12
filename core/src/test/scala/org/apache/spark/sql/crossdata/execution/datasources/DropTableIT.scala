@@ -16,7 +16,7 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.CrossdataTable
+import org.apache.spark.sql.crossdata.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.junit.runner.RunWith

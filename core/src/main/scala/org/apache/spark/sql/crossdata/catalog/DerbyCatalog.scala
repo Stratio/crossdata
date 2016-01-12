@@ -24,7 +24,7 @@ import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
 import org.apache.spark.sql.types.StructType
 
 import scala.annotation.tailrec
-import org.apache.spark.sql.crossdata.{CrossdataTable, CrossdataVersion}
+import org.apache.spark.sql.crossdata.CrossdataVersion
 
 object DerbyCatalog {
   // CatalogFields

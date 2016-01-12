@@ -19,6 +19,7 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.XDCatalog.CrossdataTable
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.types._
 import org.json4s.DefaultFormats
@@ -186,6 +187,10 @@ object XDCatalog{
 
   implicit def asXDCatalog(catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
 
+
+  case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType],
+                            datasource: String, partitionColumn: Array[String] = Array.empty,
+                            opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)
 
   def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
     implicit val formats = DefaultFormats

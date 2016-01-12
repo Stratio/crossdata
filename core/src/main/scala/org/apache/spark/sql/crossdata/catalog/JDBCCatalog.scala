@@ -17,22 +17,14 @@ package org.apache.spark.sql.crossdata.catalog
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
-import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.XDCatalog.{getOptions, getPartitionColumn, getUserSpecifiedSchema, serializeOptions, serializePartitionColumn, serializeSchema, CrossdataTable}
 import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
 import org.apache.spark.sql.types._
 
-
-
 import scala.annotation.tailrec
-import XDCatalog.serializeSchema
-import XDCatalog.getUserSpecifiedSchema
-import XDCatalog.getPartitionColumn
-import XDCatalog.serializeOptions
-import XDCatalog.serializePartitionColumn
-import XDCatalog.getOptions
 
 object JDBCCatalog {
   // SQLConfig
@@ -62,7 +54,6 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
   extends XDCatalog(conf, xdContext) with Logging {
 
   import JDBCCatalog._
-
   import org.apache.spark.sql.crossdata._
 
   private val config = xdContext.catalogConfig
