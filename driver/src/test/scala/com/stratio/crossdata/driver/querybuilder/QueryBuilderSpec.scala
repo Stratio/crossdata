@@ -149,6 +149,30 @@ class QueryBuilderSpec extends BaseXDTest {
     compareAfterFormatting(query, expected)
   }
 
+  it should "be able to build a query containing a subquery as a relation" in {
+
+    val query_1 = select('c).from('table)
+    val query = selectAll from query_1
+
+
+    val expected = """
+                     | SELECT * FROM
+                     | ( SELECT c FROM table )
+                   """
+    compareAfterFormatting(query, expected)
+
+  }
+
+  it should "be able to build a query and add filters on the fly" in {
+
+    val query = select('amount).from('table)
+    val expected = """
+                    | SELECT amount FROM table WHERE amount > 5
+                   """
+    compareAfterFormatting(query.where('amount > 5), expected)
+
+  }
+
   it should "be able to build a query containing a subquery as a predicate" in {
 
     val query = select('c + 4).from('table).where('col === (select('c) from 't))

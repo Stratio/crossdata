@@ -63,7 +63,7 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
     val (pro, fil, att2udf) =
       (CatalystToCrossdataAdapter.getConnectorLogicalPlan(plan, projects, filterPredicates): @unchecked) match {
         case (_, FilterReport(_, udfsIgnored)) if udfsIgnored.nonEmpty => cannotExecuteNativeUDF(udfsIgnored)
-        case (SimpleLogicalPlan(pro, fil, udfs), _) => (pro, fil, udfs)
+        case (SimpleLogicalPlan(pro, fil, udfs, _), _) => (pro, fil, udfs)
       }
 
     val projectSet = AttributeSet(pro)

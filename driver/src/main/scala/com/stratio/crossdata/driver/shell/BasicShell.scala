@@ -111,7 +111,7 @@ object BasicShell extends App {
 
       console.println()
       console.println("+-----------------+-------------------------+---------------------------+")
-      console.println("| CROSSDATA 1.0.0 | Powered by Apache Spark | Easy access to big things |")
+      console.println("| CROSSDATA 1.0.1 | Powered by Apache Spark | Easy access to big things |")
       console.println("+-----------------+-------------------------+---------------------------+")
       console.println()
       console.flush
