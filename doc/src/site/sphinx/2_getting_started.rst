@@ -85,7 +85,7 @@ uses the Crossdata Driver.
 
 Run Crossdata Server using maven::
 
-    > mvn exec:java -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.CrossdataApplication"
+    > mvn exec:java -pl server -Dexec.mainClass="com.stratio.crossdata.server.CrossdataApplication"
 
 Or it is possible to start using the server jar generated previously and server configuration file::
 
