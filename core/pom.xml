@@ -61,6 +61,10 @@
             <groupId>org.json4s</groupId>
             <artifactId>json4s-ext_${scala.binary.version}</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.stratio.common</groupId>
+            <artifactId>common-utils</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

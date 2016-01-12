@@ -104,6 +104,7 @@
         <postgresql.version>9.3-1104-jdbc4</postgresql.version>
         <derby.version>10.12.1.1</derby.version>
         <jackson4s.version>3.2.11</jackson4s.version>
+        <common.utils.version>0.2.0-SNAPSHOT</common.utils.version>
 
     </properties>
 
@@ -149,6 +150,11 @@
                 <groupId>org.json4s</groupId>
                 <artifactId>json4s-ext_${scala.binary.version}</artifactId>
                 <version>${jackson4s.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.stratio.common</groupId>
+                <artifactId>common-utils</artifactId>
+                <version>${common.utils.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
