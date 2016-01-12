@@ -15,20 +15,23 @@
  */
 package com.stratio.crossdata.driver.shell
 
+import java.io._
+
 import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.{SuccessfulQueryResult, ErrorResult}
+import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
 import com.stratio.crossdata.driver.Driver
-import jline.console.ConsoleReader
-import jline.console.history.{MemoryHistory, FileHistory}
+import jline.console.{UserInterruptException, ConsoleReader}
+import jline.console.history.FileHistory
 import org.apache.commons.lang3.StringUtils
+import org.apache.log4j.Logger
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
-
-import java.io._
 
 import scala.collection.JavaConversions._
 
 object BasicShell extends App {
+
+  val logger = Logger.getLogger(getClass)
 
   /**
     * NOTE: This method is based on the method org.apache.spark.sql.DataFrame#showString from Apache Spark.
@@ -86,7 +89,14 @@ object BasicShell extends App {
   }
 
   private def getLine(reader: ConsoleReader): Option[String] = {
-    Option(reader.readLine)
+    try {
+      Option(reader.readLine)
+    } catch {
+      case  uie: UserInterruptException => {
+        close(reader)
+        Option(null)
+      }
+    }
   }
 
   private def checkEnd(line: Option[String]): Boolean = {
@@ -103,10 +113,10 @@ object BasicShell extends App {
   }
 
   private def close(console: ConsoleReader): Unit = {
-    println("Saving history...")
+    logger.info("Saving history...")
     val pw = new PrintWriter(new File("xdhistory.txt"))
     console.getHistory.foreach(l => pw.println(l.value))
-    println("Closing shell...")
+    logger.info("Closing shell...")
     pw.close
     console.flush
   }
@@ -115,28 +125,32 @@ object BasicShell extends App {
     val historyFile = new File("xdhistory.txt")
 
     if(historyFile.exists()){
-      println("Loading history...")
+      logger.info("Loading history...")
       console.setHistory(new FileHistory(historyFile))
     } else {
-      println("No previous history found")
+      logger.info("No previous history found")
     }
   }
 
   val console = new ConsoleReader()
 
-  private def runConsole(console: ConsoleReader): Unit = {
+  def initialize(console: ConsoleReader) = {
+    console.setHandleUserInterrupt(true)
+    console.setExpandEvents(false)
+    console.setPrompt("CROSSDATA> ")
     loadHistory(console)
+  }
 
+  initialize(console)
+
+  private def runConsole(console: ConsoleReader): Unit = {
     val driver = Driver()
 
     Thread.sleep(1000)
 
-    console.setPrompt("CROSSDATA> ")
-    console.setExpandEvents(false)
-
     console.println()
     console.println("+-----------------+-------------------------+---------------------------+")
-    console.println("| CROSSDATA 1.0.0 | Powered by Apache Spark | Easy access to big things |")
+    console.println("| CROSSDATA 1.1.0 | Powered by Apache Spark | Easy access to big things |")
     console.println("+-----------------+-------------------------+---------------------------+")
     console.println()
     console.flush
@@ -169,14 +183,8 @@ object BasicShell extends App {
 
   runConsole(console)
 
-  Runtime.getRuntime.addShutdownHook(
-    new Thread(
-      new Runnable {
-        override def run(): Unit = {
-          close(console)
-        }
-      }
-    )
-  )
+  sys addShutdownHook{
+    close(console)
+  }
 
 }
