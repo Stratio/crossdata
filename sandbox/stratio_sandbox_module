@@ -123,8 +123,8 @@ fi
 EOF
 
 echo "Starting demo environment"
-cat >>/home/vagrant/.bash_profile <<EOF 
-echo "--- PLEASE READ /etc/sds/crossdata/README.txt ---" 
+cat >>/home/vagrant/.bash_profile <<EOF
+echo "--- PLEASE READ /etc/sds/crossdata/README.txt ---"
 EOF
 wget -P /etc/sds/crossdata https://raw.githubusercontent.com/jjlopezm/crossdata-client-example/patch-3/src/main/resources/README.txt --no-check-certificate
 

@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.driver
 
+import java.util.concurrent.TimeUnit.SECONDS
+
 import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
@@ -25,6 +27,8 @@ import com.stratio.crossdata.common.{SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.config.DriverConfig.DriverConfigHosts
+import com.stratio.crossdata.driver.config.DriverConfig.DriverRetryTimes
+import com.stratio.crossdata.driver.config.DriverConfig.DriverRetryDuration
 import com.stratio.crossdata.driver.metadata.FieldMetadata
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import com.typesafe.config.ConfigValue
@@ -53,6 +57,9 @@ object Driver extends DriverConfig {
   def apply() = new Driver()
 
   def apply(flattenTables: Boolean) = new Driver(flattenTables: Boolean)
+
+  lazy val defaultTimeout = Timeout(config .getDuration(DriverRetryDuration, MILLISECONDS), MILLISECONDS)
+  lazy val defaultRetries = config.getInt(DriverRetryTimes)
 }
 
 class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean) {
@@ -74,6 +81,9 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
   type TableIdentifier = (String, Option[String])
 
   private lazy val logger = Driver.logger
+
+
+
 
   private val clientConfig =
     properties.foldLeft(Driver.config) { case (previousConfig, keyValue@(path, configValue)) =>
@@ -116,7 +126,9 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
     * @return A list of rows with the result of the query
     */
   // TODO syncQuery and asynQuery should be private when the driver get improved
-  def syncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(180 seconds), retries: Int = 3): SQLResult = {
+  def syncQuery(sqlCommand: SQLCommand,
+                timeout: Timeout = defaultTimeout,
+                retries: Int = defaultRetries): SQLResult = {
     Try {
       Await.result(asyncQuery(sqlCommand, timeout, retries), timeout.duration * retries)
     } getOrElse ErrorResult(sqlCommand.queryId, s"Not found answer to query ${sqlCommand.query}. Timeout was exceed.")
@@ -129,7 +141,9 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
     * @param retries Number of retries if the timeout was exceeded
     * @return A list of rows with the result of the query
     */
-  def asyncQuery(sqlCommand: SQLCommand, timeout: Timeout = Timeout(10 seconds), retries: Int = 2): Future[SQLResult] = {
+  def asyncQuery(sqlCommand: SQLCommand,
+                 timeout: Timeout = defaultTimeout,
+                 retries: Int = defaultRetries): Future[SQLResult] = {
     RetryPolitics.askRetry(proxyActor, sqlCommand, timeout, retries)
   }
 
