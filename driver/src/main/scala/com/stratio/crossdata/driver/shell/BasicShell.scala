@@ -94,7 +94,7 @@ object BasicShell extends App {
     } catch {
       case  uie: UserInterruptException => {
         close(reader)
-        Option(null)
+        None
       }
     }
   }
