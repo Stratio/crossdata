@@ -109,9 +109,14 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
   def flattenedCollect(): Array[Row] = {
 
     def flattenProjectedColumns(exp: Expression, prev: List[String] = Nil): (List[String], Boolean) = exp match {
-      case Alias(child, name) => List(name) -> true
-      case GetStructField(child, field, _) => flattenProjectedColumns(child, field.name :: prev)
-      case AttributeReference(name, _, _, _) => (name :: prev, false)
+      case GetStructField(child, field, _) =>
+        flattenProjectedColumns(child, field.name :: prev)
+      case AttributeReference(name, _, _, _) =>
+        (name :: prev, false)
+      case Alias(child @ GetStructField(_, StructField(fname, _, _, _), _), name) if(fname == name) =>
+        flattenProjectedColumns(child)
+      case Alias(child, name) =>
+        List(name) -> true
       case _ => prev -> false
     }
 
