@@ -38,8 +38,11 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
       try {
         val df = xdContext.sql(query)
-        val rows = if(withColnames) df.asInstanceOf[XDDataFrame].flattenedCollect() else df.collect()
-        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, df.schema)
+        val (rows, schema) = if(withColnames) {
+          val r = df.asInstanceOf[XDDataFrame].flattenedCollect()
+          (r, r.headOption.map(_.schema).getOrElse(df.schema))
+        } else (df.collect(), df.schema)
+        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, schema)
       } catch {
         case e: Throwable => {
           logger.error(e.getMessage)
