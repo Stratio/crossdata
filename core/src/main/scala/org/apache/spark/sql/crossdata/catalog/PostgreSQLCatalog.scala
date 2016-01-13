@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2015 Stratio (http://stratio.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2015 Stratio (http://stratio.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *         http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package org.apache.spark.sql.crossdata.catalog
 
 import java.sql.{Connection, DriverManager, ResultSet}
@@ -34,7 +34,7 @@ import XDCatalog.serializeOptions
 import XDCatalog.serializePartitionColumn
 import XDCatalog.getOptions
 
-object JDBCCatalog {
+object PostgreSQLCatalog {
   // SQLConfig
   val Driver = "jdbc.driver"
   val Url = "jdbc.url"
@@ -53,15 +53,15 @@ object JDBCCatalog {
 }
 
 /**
- * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
- * Jdbc.
- * Supported MySQL and PostgreSQL
- * @param conf An implementation of the [[CatalystConf]].
- */
-class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
+  * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
+  * Jdbc.
+  * Supported MySQL and PostgreSQL
+  * @param conf An implementation of the [[CatalystConf]].
+  */
+class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) with Logging {
 
-  import JDBCCatalog._
+  import MySQLCatalog._
 
   import org.apache.spark.sql.crossdata._
 
@@ -81,20 +81,19 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     val jdbcConnection = DriverManager.getConnection(url, user, pass)
 
     // CREATE PERSISTENT METADATA TABLE
-
-    jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA IF NOT EXISTS $db")
-
+    if(!schemaExists(db, jdbcConnection))
+      jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
 
     jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE IF NOT EXISTS $db.$table (
-           |$DatabaseField VARCHAR(50),
-           |$TableNameField VARCHAR(50),
-           |$SchemaField TEXT,
-           |$DatasourceField TEXT,
-           |$PartitionColumnField TEXT,
-           |$OptionsField TEXT,
-           |$CrossdataVersionField TEXT,
-           |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+      s"""|CREATE TABLE IF NOT EXISTS $db.$table (
+          |$DatabaseField VARCHAR(50),
+          |$TableNameField VARCHAR(50),
+          |$SchemaField TEXT,
+          |$DatasourceField TEXT,
+          |$PartitionColumnField TEXT,
+          |$OptionsField TEXT,
+          |$CrossdataVersionField TEXT,
+          |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
     jdbcConnection
   }
@@ -162,9 +161,9 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
     if (!resultSet.isBeforeFirst) {
       val prepped = connection.prepareStatement(
-       s"""|INSERT INTO $db.$table (
-           | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
-           |) VALUES (?,?,?,?,?,?,?)
+        s"""|INSERT INTO $db.$table (
+            | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
+            |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
       prepped.setString(1, crossdataTable.dbName.getOrElse(""))
       prepped.setString(2, crossdataTable.tableName)
@@ -176,9 +175,9 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
       prepped.execute()
     }
     else {
-     val prepped = connection.prepareStatement(
-      s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-          |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
+      val prepped = connection.prepareStatement(
+        s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+            |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
        """.stripMargin.replaceAll("\n", " "))
 
       prepped.setString(1, tableSchema)
@@ -201,8 +200,12 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
   }
 
-  override def dropAllPersistedTables(): Unit = 
+  override def dropAllPersistedTables(): Unit =
     connection.createStatement.executeUpdate(s"TRUNCATE $db.$table")
-  
 
+  def schemaExists(schema: String, connection: Connection): Boolean = {
+    val statement = connection.createStatement()
+    val result = statement.executeQuery(s"SELECT schema_name FROM information_schema.schemata WHERE schema_name = '$schema';")
+    result.isBeforeFirst
+  }
 }
