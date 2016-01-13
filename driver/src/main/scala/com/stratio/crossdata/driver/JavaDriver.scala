@@ -73,5 +73,9 @@ class JavaDriver(properties: java.util.Map[String, ConfigValue], flattenTables: 
     scalaDriver.describeTable(None, tableName)
   }
 
+  def close(): Unit = {
+    scalaDriver.close()
+  }
+
 }
 
