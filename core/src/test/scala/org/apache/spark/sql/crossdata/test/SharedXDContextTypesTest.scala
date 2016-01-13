@@ -70,8 +70,8 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
     if(typesSet.map(_.colname) contains "structofstruct")
       it should "provide flattened column names through the `annotatedCollect` method" in {
         val dataFrame = sql("SELECT structofstruct.struct1.structField1 FROM typesCheckTable")
-        val (_, colNames) = dataFrame.asInstanceOf[XDDataFrame].annotatedCollect()
-        colNames.head shouldBe "structofstruct.struct1.structField1"
+        val rows = dataFrame.asInstanceOf[XDDataFrame].flattenedCollect()
+        rows.head.schema.head.name shouldBe "structofstruct.struct1.structField1"
       }
   }
 

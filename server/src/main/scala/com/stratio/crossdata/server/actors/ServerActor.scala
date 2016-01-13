@@ -18,7 +18,7 @@ package com.stratio.crossdata.server.actors
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
 import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.{SuccessfulQueryAnnotatedResult, ErrorResult, SuccessfulQueryResult}
+import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.{XDDataFrame, XDContext}
@@ -38,12 +38,11 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
       try {
         val df = xdContext.sql(query)
-        val response = if(withColnames) {
-          //TODO: Remove response differentiation when a better solution than PR#257 has been found
-          val (rows, cols) = df.asInstanceOf[XDDataFrame].annotatedCollect()
-          SuccessfulQueryAnnotatedResult(sqlCommand.queryId, rows, df.schema, cols)
-        } else SuccessfulQueryResult(sqlCommand.queryId, df.collect(), df.schema)
-        sender ! response
+        val (rows, schema) = if(withColnames) {
+          val r = df.asInstanceOf[XDDataFrame].flattenedCollect()
+          (r, r.headOption.map(_.schema).getOrElse(df.schema))
+        } else (df.collect(), df.schema)
+        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, schema)
       } catch {
         case e: Throwable => {
           logger.error(e.getMessage)

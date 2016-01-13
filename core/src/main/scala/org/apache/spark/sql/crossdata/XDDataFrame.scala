@@ -106,43 +106,60 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
   }
 
   //TODO: Remove `annotatedCollect` wrapper method when a better alternative to PR#257 has been found
-  def annotatedCollect(): (Array[Row], Seq[String]) = {
-    def flatSubFields(exp: Expression, prev: List[String] = Nil): List[String] = exp match {
-      case Alias(child, _) => flatSubFields(child)
-      case GetStructField(child, field, _) => flatSubFields(child, field.name :: prev)
-      case AttributeReference(name, _, _, _) => name :: prev
-      case _ => prev
+  def flattenedCollect(): Array[Row] = {
+
+    def flattenProjectedColumns(exp: Expression, prev: List[String] = Nil): (List[String], Boolean) = exp match {
+      case GetStructField(child, field, _) =>
+        flattenProjectedColumns(child, field.name :: prev)
+      case AttributeReference(name, _, _, _) =>
+        (name :: prev, false)
+      case Alias(child @ GetStructField(_, StructField(fname, _, _, _), _), name) if(fname == name) =>
+        flattenProjectedColumns(child)
+      case Alias(child, name) =>
+        List(name) -> true
+      case _ => prev -> false
     }
-    def flatRows(rows: Array[Row]): Array[Row] = {
-      def flatRow(row: GenericRowWithSchema, parentName: String = ""): Array[(StructField, Any)] = {
-        val baseName = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
-        (row.schema.fields zip row.values) flatMap {
-          case (StructField(name, StructType(_), _, _), col : GenericRowWithSchema) =>
-            flatRow(col, s"$baseName$name")
-          case (StructField(name, dtype, nullable, meta), vobject) =>
-            Seq((StructField(s"$baseName$name", dtype, nullable, meta), vobject))
+
+    def flatRows(rows: Array[Row], firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty): Array[Row] = {
+
+      def baseName(parentName: String): String = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
+
+      def flatRow(
+                   row: GenericRowWithSchema,
+                   parentsNamesAndAlias: Seq[(String, Boolean)] = Seq.empty): Array[(StructField, Any)] = {
+        (row.schema.fields zip row.values zipAll(parentsNamesAndAlias, null, "" -> false)) flatMap {
+          case (null, _) => Seq.empty
+          case ((StructField(_, t, nable, mdata), vobject), (name, true)) =>
+            Seq((StructField(name, t, nable, mdata),vobject))
+          case ((StructField(name, StructType(_), _, _), col : GenericRowWithSchema), (parentName, false)) =>
+            flatRow(col, Seq.fill(col.schema.size)(s"${baseName(parentName)}$name" -> false))
+          case ((StructField(name, dtype, nullable, meta), vobject), (parentName, false)) =>
+            Seq((StructField(s"${baseName(parentName)}$name", dtype, nullable, meta), vobject))
         }
       }
+
+      require(firstLevelNames.isEmpty || firstLevelNames.size == rows.headOption.map(_.length).getOrElse(0))
+      val thisLevelNames = firstLevelNames.map {
+        case (nameseq, true) => (nameseq.headOption.getOrElse(""), true)
+        case (nameseq, false) => (nameseq.init mkString ".", false)
+      }
+
       rows map {
         case row: GenericRowWithSchema =>
-          val newFieldsArray = flatRow(row)
+          val newFieldsArray = flatRow(row, thisLevelNames)
           new GenericRowWithSchema(newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1))) : Row
         case row: Row =>
           row
       }
     }
-    val (rows, colNames) = queryExecution.optimizedPlan match {
+
+    queryExecution.optimizedPlan match {
       case Project(plist, child) =>
-        (flatRows(collect()), plist map (flatSubFields(_) mkString "."))
-      case _ =>
-        val rows = flatRows(super.collect())
-        val cols: Seq[String] = rows.take(1) flatMap { case first: GenericRowWithSchema =>
-          first.schema.fieldNames
-        }
-        (rows, cols)
+        val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
+        flatRows(collect(), fullyAnnotatedRequestedColumns)
+      case _ => flatRows(collect())
     }
 
-    (rows, colNames)
   }
 
   /**
