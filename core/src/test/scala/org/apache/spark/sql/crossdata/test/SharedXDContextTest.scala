@@ -39,7 +39,6 @@ trait SharedXDContextTest extends XDTestUtils {
   /**
    * The [[TestXDContext]] to use for all tests in this suite.
    */
-  protected def ctx: TestXDContext = _ctx
 
   protected def xdContext: TestXDContext = _ctx
 

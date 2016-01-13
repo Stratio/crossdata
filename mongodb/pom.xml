@@ -31,13 +31,6 @@
     <description>Crossdata MongoDB connector</description>
     <url>http://stratio.github.io/crossdata/</url>
 
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
-
     <properties>
         <mongodb.datasource.version>0.10.3</mongodb.datasource.version>
     </properties>
