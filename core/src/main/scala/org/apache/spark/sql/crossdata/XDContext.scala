@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-
 package org.apache.spark.sql.crossdata
 
 import java.lang.reflect.Constructor
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
+
 import com.stratio.crossdata.connector.FunctionInventory
-import com.typesafe.config.{Config}
+import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
@@ -43,23 +43,26 @@ import org.apache.spark.{Logging, SparkContext}
  * and adds some features of the Crossdata system.
  * @param sc A [[SparkContext]].
  */
-class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Logging with CoreConfig {
-
+class XDContext(@transient val sc: SparkContext,
+                userConfig: Option[Config] = None) extends SQLContext(sc) with Logging with CoreConfig {
   self =>
 
+  private val xdConfig: Config = userConfig.fold(config) { userConf =>
+    userConf.withFallback(config)
+  }
+
+  val catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
+
   override protected[sql] lazy val catalog: XDCatalog = {
-    import XDContext.{CatalogClass, DerbyClass, CaseSensitive}
+    import XDContext.{CaseSensitive, CatalogClass, DerbyClass}
 
-    val xdConfig: Config = catalogConfig
-
-    val catalogClass = if (xdConfig.hasPath(CatalogClass))
-      xdConfig.getString(CatalogClass)
-    else
-      DerbyClass
+    val catalogClass = if (catalogConfig.hasPath(CatalogClass))
+      catalogConfig.getString(CatalogClass)
+    else DerbyClass
 
     val xdCatalog = Class.forName(catalogClass)
 
-    val caseSensitive: Boolean = xdConfig.getBoolean(CaseSensitive)
+    val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
 
     val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf], classOf[XDContext])
 
@@ -74,7 +77,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
     new Analyzer(catalog, functionRegistry, conf) {
       override val extendedResolutionRules =
         ExtractPythonUDFs ::
-          ExtractNativeUDFs::
+          ExtractNativeUDFs ::
           PreInsertCastAndRename ::
           Nil
 
@@ -85,6 +88,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
   @transient
   class XDPlanner extends SparkPlanner with XDStrategies {
+
     override def strategies: Seq[Strategy] = Seq(XDDDLStrategy, ExtendedDataSourceStrategy) ++ super.strategies
   }
 
@@ -108,7 +112,8 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
     functionInventoryLoader.iterator().toSeq
   }
 
-  { //Register built-in UDFs for each provider available.
+  {
+    //Register built-in UDFs for each provider available.
     import FunctionInventory.qualifyUDF
     for {srv <- functionInventoryServices
          datasourceName = srv.shortName()
@@ -117,9 +122,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
 
     val gc = new GroupConcat(", ")
     udf.register("group_concat", gc)
-
   }
-
 
   override def sql(sqlText: String): DataFrame = {
     XDDataFrame(this, parseSql(sqlText))
@@ -153,7 +156,7 @@ class XDContext(@transient val sc: SparkContext) extends SQLContext(sc) with Log
    * @param datasource
    * @param opts
    */
-  def importTables(datasource:String, opts: Map[String,String]): Unit ={
+  def importTables(datasource: String, opts: Map[String, String]): Unit = {
     ImportTablesUsingWithOptions(datasource, opts).run(this)
   }
 
@@ -202,6 +205,5 @@ object XDContext {
       lastInstantiatedContext.set(xdContext)
     }
   }
-
 }
 

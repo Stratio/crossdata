@@ -66,7 +66,6 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
   import org.apache.spark.sql.crossdata._
 
   private val config = xdContext.catalogConfig
-
   private val db = config.getString(Database)
   private val table = config.getString(Table)
 

@@ -74,6 +74,11 @@
             <name>Cristian Caballero</name>
             <email>ccaballero at stratio dot com</email>
         </developer>
+        <developer>
+            <id>gserranojc</id>
+            <name>Jose Carlos García Serrano</name>
+            <email>jcgarcia at stratio dot com</email>
+        </developer>
     </developers>
 
     <modules>
@@ -104,8 +109,8 @@
         <postgresql.version>9.3-1104-jdbc4</postgresql.version>
         <derby.version>10.12.1.1</derby.version>
         <jackson4s.version>3.2.11</jackson4s.version>
-        <common.utils.version>0.2.0-SNAPSHOT</common.utils.version>
-
+        <common.utils.version>0.2.0</common.utils.version>
+        <guava.version>18.0</guava.version>
     </properties>
 
     <dependencyManagement>
@@ -140,7 +145,6 @@
                 <artifactId>crossdata-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.json4s</groupId>
                 <artifactId>json4s-native_${scala.binary.version}</artifactId>
@@ -155,6 +159,31 @@
                 <groupId>com.stratio.common</groupId>
                 <artifactId>common-utils</artifactId>
                 <version>${common.utils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mariadb.jdbc</groupId>
+                <artifactId>mariadb-java-client</artifactId>
+                <version>${mariadb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.derby</groupId>
+                <artifactId>derby</artifactId>
+                <version>${derby.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.derby</groupId>
+                <artifactId>derbyclient</artifactId>
+                <version>${derby.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

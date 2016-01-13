@@ -1,13 +1,11 @@
-/*
- * Modifications and adaptations - Copyright (C) 2015 Stratio (http://stratio.com)
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -70,7 +68,7 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
     if (repository.exists(TablesPath)) {
       val findTable = repository.getChildren(TablesPath).flatMap(id => getTableFromPath(this, s"$TablesPath/$id"))
         .find(tableModel =>
-          databaseName.forall(dbName => tableModel.database.exists(modelDbName => modelDbName == dbName)))
+          tableModel.name == tableName && tableModel.database == databaseName)
 
       findTable match {
         case Some(zkTable) =>
@@ -95,7 +93,14 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
     if (repository.exists(TablesPath)) {
       repository.getChildren(TablesPath).flatMap(id =>
         getTableFromPath(this, s"$TablesPath/$id")
-          .map(tableModel => (tableModel.getExtendedName, false)))
+          .flatMap(tableModel => {
+            databaseName.fold(Option((tableModel.getExtendedName, false))){ dbName =>
+              tableModel.database.flatMap(dbNameModel => {
+                if (dbName == dbNameModel) Some((tableModel.getExtendedName, false))
+                else None
+              })
+            }
+          }))
     } else {
       logger.warn("Tables path not exists")
       Seq.empty[(String, Boolean)]

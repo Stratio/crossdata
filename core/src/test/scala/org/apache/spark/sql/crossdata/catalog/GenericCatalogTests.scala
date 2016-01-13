@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
@@ -20,14 +21,12 @@ import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types._
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 
+trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
-@RunWith(classOf[JUnitRunner])
-class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
+  val catalogName: String
 
-  "JdbcCatalogSpec" must "return a dataframe from a persist table without catalog using json datasource" in {
+  s"${catalogName}CatalogSpec" must "return a dataframe from a persist table without catalog using json datasource" in {
     val fields = Seq[StructField](Field1, Field2)
     val columns = StructType(fields)
     val opts = Map("path" -> "/fake_path")
@@ -39,7 +38,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     dataframe shouldBe a[XDDataFrame]
   }
 
-  it should "persist a table with catalog and partitionColumns in Jdbc" in {
+  it should s"persist a table with catalog and partitionColumns in $catalogName" in {
 
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
@@ -48,10 +47,9 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
 
     val df = xdContext.sql(s"SELECT * FROM $Database.$TableName")
     df shouldBe a[XDDataFrame]
-
   }
 
-  it should "persist a table with catalog and partitionColumns with multiple subdocuments as schema in JDBC" in {
+  it should s"persist a table with catalog and partitionColumns with multiple subdocuments as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithSubColumns), SourceDatasource, Array.empty[String], OptsJSON)
@@ -65,7 +63,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     df.schema.apply(0).dataType.asInstanceOf[StructType].size shouldBe (2)
   }
 
-  it should "persist a table with catalog and partitionColumns with arrays as schema in JDBC" in {
+  it should s"persist a table with catalog and partitionColumns with arrays as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithArrayString), SourceDatasource, Array.empty[String], OptsJSON)
@@ -77,7 +75,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     df.schema.apply(0).dataType shouldBe (ArrayType(StringType))
   }
 
-  it should "persist a table with catalog and partitionColumns with array of integers as schema in JDBC" in {
+  it should s"persist a table with catalog and partitionColumns with array of integers as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithArrayInteger), SourceDatasource, Array.empty[String], OptsJSON)
@@ -90,7 +88,8 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     df.schema.apply(0).dataType shouldBe (ArrayType(IntegerType))
   }
 
-  it should "persist a table with catalog and partitionColumns with arrays with subdocuments and strange characters in Field names as schema in JDBC" in {
+  it should s"persist a table with catalog and partitionColumns with arrays with subdocuments and strange " +
+    s"characters in Field names as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithArrayWithSubdocuments), SourceDatasource, Array.empty[String], OptsJSON)
@@ -99,13 +98,14 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     xdContext.catalog.unregisterTable(tableIdentifier)
     val schemaDF = xdContext.sql(s"DESCRIBE $Database.$TableName")
     schemaDF.show
-    schemaDF.count() should be (3)
+    schemaDF.count() should be(3)
     val df = xdContext.sql(s"SELECT `$FieldWitStrangeChars` FROM $Database.$TableName")
     df shouldBe a[XDDataFrame]
     df.schema.apply(0).dataType shouldBe (ArrayType(StructType(Seq(Field1, Field2))))
   }
 
-  it should "persist a table with catalog and partitionColumns with map with arrays with subdocuments and strange characters in Field names as schema in JDBC" in {
+  it should s"persist a table with catalog and partitionColumns with map with arrays with subdocuments and strange " +
+    s"characters in Field names as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = Seq(Database, TableName)
     val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithMapWithArrayWithSubdocuments), SourceDatasource, Array.empty[String], OptsJSON)
@@ -113,7 +113,7 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     xdContext.catalog.unregisterTable(tableIdentifier)
     val schemaDF = xdContext.sql(s"DESCRIBE $Database.$TableName")
     schemaDF.show
-    schemaDF.count() should be (1)
+    schemaDF.count() should be(1)
     val df = xdContext.sql(s"SELECT `$Field1Name` FROM $Database.$TableName")
     df shouldBe a[XDDataFrame]
     df.schema.apply(0).dataType shouldBe (MapType(ColumnsWithSubColumns, ColumnsWithArrayWithSubdocuments))
@@ -163,9 +163,9 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     xdContext.catalog.unregisterAllTables()
     xdContext.catalog.tables.size shouldBe 0
-    val tables = xdContext.catalog.getTables(None)
+    //TODO val tables = xdContext.catalog.getTables(None)
+    val tables = xdContext.catalog.getTables(Some(Database))
     tables.size shouldBe 1
-
   }
 
   it should "check if persisted tables are marked as not temporary" in {
@@ -185,39 +185,4 @@ class JDBCCatalogIT extends SharedXDContextTest with JDBCCatalogConstants {
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.sql(s"DESCRIBE $Database.$TableName").count() should not be 0
   }
-
-  override protected def afterAll() {
-    xdContext.catalog.dropAllTables()
-    super.afterAll()
-  }
-
-}
-
-sealed trait JDBCCatalogConstants {
-  val Database = "database"
-  val TableName = "tableName"
-  val AnotherTable = "anotherTable"
-  val Field1Name = "column1"
-  val Field2Name = "column2"
-  val FieldWitStrangeChars = "1+x"
-  val SubField1Name = "subcolumn1"
-  val SubField2Name = "subcolumn2"
-  val FieldWithSubcolumnsName = "columnWithSubcolumns"
-  val Field1 = StructField(Field1Name, StringType, nullable = true)
-  val Field2 = StructField(Field2Name, StringType, nullable = true)
-  val SubField = StructField(SubField1Name, StringType, nullable = true)
-  val SubField2 = StructField(SubField2Name, StringType, nullable = true)
-  val arrayField = StructField(SubField2Name, ArrayType(StringType), nullable = true)
-  val arrayFieldIntegers = StructField(SubField2Name, ArrayType(IntegerType), nullable = true)
-  val arrayFieldWithSubDocs = StructField(FieldWitStrangeChars, ArrayType(StructType(Seq(Field1, Field2))))
-  val SourceDatasource = "org.apache.spark.sql.json"
-  val Fields = Seq[StructField](Field1, Field2)
-  val SubFields = Seq(SubField, SubField2)
-  val Columns = StructType(Fields)
-  val ColumnsWithSubColumns = StructType(Seq(StructField(Field1Name, StringType, nullable = true), StructField(FieldWithSubcolumnsName, StructType(SubFields), nullable = true)) )
-  val ColumnsWithArrayString = StructType(Seq(StructField(Field1Name, StringType, nullable = true), StructField(FieldWithSubcolumnsName, StructType(SubFields), nullable = true), arrayField) )
-  val ColumnsWithArrayInteger = StructType(Seq(StructField(Field1Name, StringType, nullable = true), StructField(FieldWithSubcolumnsName, StructType(SubFields), nullable = true), arrayFieldIntegers) )
-  val ColumnsWithArrayWithSubdocuments = StructType(Seq(StructField(Field1Name, StringType, nullable = true), StructField(FieldWithSubcolumnsName, StructType(SubFields), nullable = true), arrayFieldWithSubDocs) )
-  val ColumnsWithMapWithArrayWithSubdocuments = StructType(Seq(StructField(Field1Name, MapType(ColumnsWithSubColumns, ColumnsWithArrayWithSubdocuments))))
-  val OptsJSON = Map("path" -> "/fake_path")
 }

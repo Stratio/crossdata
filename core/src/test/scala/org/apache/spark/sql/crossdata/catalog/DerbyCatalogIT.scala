@@ -14,8 +14,21 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.models
+package org.apache.spark.sql.crossdata.catalog
 
-case class EphemeralStatusModel(ephemeralTableId: String,
-                                ephemeralTableName: String,
-                                status: EphemeralExecutionStatus.Value)
+import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+
+@RunWith(classOf[JUnitRunner])
+class DerbyCatalogIT extends SharedXDContextTest with CatalogConstants with GenericCatalogTests{
+
+  override protected def afterAll() {
+    xdContext.catalog.dropAllTables()
+    super.afterAll()
+  }
+
+  override val catalogName = "Derby"
+
+}
