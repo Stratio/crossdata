@@ -108,33 +108,40 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
   //TODO: Remove `annotatedCollect` wrapper method when a better alternative to PR#257 has been found
   def flattenedCollect(): Array[Row] = {
 
-    def flattenProjectedColumns(exp: Expression, prev: List[String] = Nil): List[String] = exp match {
-      case Alias(child, _) => flattenProjectedColumns(child)
+    def flattenProjectedColumns(exp: Expression, prev: List[String] = Nil): (List[String], Boolean) = exp match {
+      case Alias(child, name) => List(name) -> true
       case GetStructField(child, field, _) => flattenProjectedColumns(child, field.name :: prev)
-      case AttributeReference(name, _, _, _) => name :: prev
-      case _ => prev
+      case AttributeReference(name, _, _, _) => (name :: prev, false)
+      case _ => prev -> false
     }
 
-    def flatRows(rows: Array[Row], firstLevelNames: Seq[Seq[String]] = Seq.empty): Array[Row] = {
+    def flatRows(rows: Array[Row], firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty): Array[Row] = {
 
       def baseName(parentName: String): String = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
 
-      def flatRow(row: GenericRowWithSchema, parentsNames: Seq[String] = Seq.empty): Array[(StructField, Any)] = {
-        (row.schema.fields zip row.values zipAll(parentsNames, null, "")) flatMap {
+      def flatRow(
+                   row: GenericRowWithSchema,
+                   parentsNamesAndAlias: Seq[(String, Boolean)] = Seq.empty): Array[(StructField, Any)] = {
+        (row.schema.fields zip row.values zipAll(parentsNamesAndAlias, null, "" -> false)) flatMap {
           case (null, _) => Seq.empty
-          case ((StructField(name, StructType(_), _, _), col : GenericRowWithSchema), parentName) =>
-            flatRow(col, Seq.fill(col.schema.size)(s"${baseName(parentName)}$name"))
-          case ((StructField(name, dtype, nullable, meta), vobject), parentName) =>
+          case ((StructField(_, t, nable, mdata), vobject), (name, true)) =>
+            Seq((StructField(name, t, nable, mdata),vobject))
+          case ((StructField(name, StructType(_), _, _), col : GenericRowWithSchema), (parentName, false)) =>
+            flatRow(col, Seq.fill(col.schema.size)(s"${baseName(parentName)}$name" -> false))
+          case ((StructField(name, dtype, nullable, meta), vobject), (parentName, false)) =>
             Seq((StructField(s"${baseName(parentName)}$name", dtype, nullable, meta), vobject))
         }
       }
 
       require(firstLevelNames.isEmpty || firstLevelNames.size == rows.headOption.map(_.length).getOrElse(0))
-      val firstLevelNamesStr = firstLevelNames.map(_.init mkString ".")
+      val thisLevelNames = firstLevelNames.map {
+        case (nameseq, true) => (nameseq.headOption.getOrElse(""), true)
+        case (nameseq, false) => (nameseq.init mkString ".", false)
+      }
 
       rows map {
         case row: GenericRowWithSchema =>
-          val newFieldsArray = flatRow(row, firstLevelNamesStr)
+          val newFieldsArray = flatRow(row, thisLevelNames)
           new GenericRowWithSchema(newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1))) : Row
         case row: Row =>
           row
