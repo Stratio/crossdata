@@ -15,6 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.execution.datasources.LogicalRelation

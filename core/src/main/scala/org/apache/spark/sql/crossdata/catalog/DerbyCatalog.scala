@@ -22,10 +22,12 @@ import java.sql.ResultSet
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.SimpleCatalystConf
+import org.apache.spark.sql.crossdata.CrossdataVersion
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.types.StructType
 
 import scala.annotation.tailrec
+
 
 object DerbyCatalog {
   // CatalogFields

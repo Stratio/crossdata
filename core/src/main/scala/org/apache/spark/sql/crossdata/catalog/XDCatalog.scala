@@ -16,14 +16,15 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.plans.logical.Subquery
-import org.apache.spark.sql.crossdata.CrossdataTable
+import org.apache.spark.sql.catalyst.CatalystConf
+import org.apache.spark.sql.catalyst.SimpleCatalystConf
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.crossdata.CrossdataVersion
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.types._
@@ -196,6 +197,10 @@ object XDCatalog{
 
   implicit def asXDCatalog(catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
 
+
+  case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType],
+                            datasource: String, partitionColumn: Array[String] = Array.empty,
+                            opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)
 
   def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
     implicit val formats = DefaultFormats

@@ -22,9 +22,9 @@ import java.sql.ResultSet
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.getOptions
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.getPartitionColumn
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.getUserSpecifiedSchema
