@@ -15,15 +15,16 @@
  */
 package org.apache.spark.sql.crossdata.execution
 
-import org.apache.spark.sql.{SQLContext, Row, AnalysisException, SaveMode, DataFrame}
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.EliminateSubQueries
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.{CrossdataTable, XDContext}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.{HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{AnalysisException, DataFrame, Row, SQLContext, SaveMode}
 
 private[crossdata] case class PersistDataSourceTable(
                                    tableIdent: TableIdentifier,
@@ -38,7 +39,7 @@ private[crossdata] case class PersistDataSourceTable(
     val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, userSpecifiedSchema, provider, Array.empty[String], options)
     val tableExist = crossdataContext.catalog.tableExists(tableIdent.toSeq)
 
-    if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable)
+    if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable, crossdataContext.catalog.createLogicalRelation(crossdataTable))
 
     if (tableExist && !allowExisting)
       throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
@@ -126,7 +127,7 @@ case class PersistSelectAsTable(
     if (createMetastoreTable) {
       val resolved = ResolvedDataSource(sqlContext, provider, partitionColumns, mode, options, df)
       val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Some(resolved.relation.schema), provider, Array.empty[String], options)
-      crossdataContext.catalog.persistTable(crossdataTable)
+      crossdataContext.catalog.persistTable(crossdataTable, LogicalRelation(resolved.relation))
     }
 
 
