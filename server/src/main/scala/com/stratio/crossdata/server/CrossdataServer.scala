@@ -74,7 +74,7 @@ class CrossdataServer extends Daemon with ServerConfig {
                 actorName)
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
     }
-    logger.info("Crossdata Server started --- v1.0.0")
+    logger.info("Crossdata Server started --- v1.0.1")
   }
 
   def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {

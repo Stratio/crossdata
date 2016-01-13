@@ -55,19 +55,7 @@ Main Crossdata's advantages over other options:
 Documentation
 =============
 
-- `Feature guide <doc/src/site/sphinx/0_feature_guide.rst>`__
-- `Architecture guide <doc/src/site/sphinx/1_architecture_guide.rst>`__
-- `Getting started <doc/src/site/sphinx/2_getting_started.rst>`__
-- `Configuration <doc/src/site/sphinx/3_configuration.rst>`__
-- `Using Crossdata <doc/src/site/sphinx/4_using_crossdata.rst>`__
-- `Quick reference <doc/src/site/sphinx/5_quick_reference.rst>`__
-- `Reference guide <doc/src/site/sphinx/6_reference_guide.rst>`__
-- `Crossdata in production <doc/src/site/sphinx/7_crossdata_production.rst>`__
-- `Best practices and recommendations <doc/src/site/sphinx/8_best_practices.rst>`__
-- `Crossdata in the Stratio Platform <doc/src/site/sphinx/9_stratio_platform.rst>`__
-- `Benchmarks <doc/src/site/sphinx/10_crossdata_benchmarks.rst>`__
-- `FAQs <doc/src/site/sphinx/11_crossdata_faqs.rst>`__
-
+For a complete documentation, please, visit https://stratio.atlassian.net/wiki/display/CROSSDATA1x0/Home.
 
 ===========
 Get support

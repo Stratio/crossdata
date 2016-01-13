@@ -53,7 +53,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
   def execute(): Option[Array[Row]] = {
     validatedNativePlan.map { case (baseLogicalPlan, limit) =>
       val requiredColumns = baseLogicalPlan match {
-        case SimpleLogicalPlan(projects, _, _) =>
+        case SimpleLogicalPlan(projects, _, _, _) =>
           projects
       }
 
