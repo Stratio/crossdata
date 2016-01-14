@@ -22,18 +22,16 @@ import com.stratio.common.utils.config.TypesafeConfigComponent
 import com.stratio.common.utils.logger.SparkLoggerComponent
 import com.stratio.common.utils.repository.zookeeper.ZookeeperRepositoryComponent
 import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDCatalog._
+import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.models.TableModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
-import org.apache.spark.sql.crossdata.{XDCatalog, XDContext}
 import org.apache.spark.sql.types.StructType
 import org.json4s.jackson.Serialization._
 
 object ZookeeperCatalog {
 
-  val ZookeeperConfigKey = "zookeeper"
   val BaseZKPath = "/stratio/crossdata"
   val TablesPath = s"$BaseZKPath/tables"
   val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
@@ -51,7 +49,7 @@ object ZookeeperCatalog {
 }
 
 /**
- * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using Zookeeper.
+ * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.XDCatalog]] with persistence using Zookeeper.
  * Using the common Stratio components for access and manage Zookeeper connections with Apache Curator.
  * @param conf An implementation of the [[CatalystConf]].
  */
@@ -60,7 +58,6 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
   with ZookeeperRepositoryComponent with SparkLoggerComponent with TypesafeConfigComponent {
 
   import ZookeeperCatalog._
-  import org.apache.spark.sql.crossdata._
 
   override val config = new TypesafeConfig(Option(xdContext.catalogConfig))
 
@@ -107,7 +104,7 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
     }
   }
 
-  override def persistTableMetadata(crossdataTable: CrossdataTable, logicalRelation: Option[LogicalPlan]): Unit = {
+  override def persistTableMetadata(crossdataTable: CrossdataTable): Unit = {
     val tableId = createId
     val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName).toSeq
 
@@ -121,15 +118,12 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
         crossdataTable.partitionColumn,
         crossdataTable.opts),
       s"$TablesPath/$tableId")
-
-    registerTable(tableIdentifier, logicalRelation.getOrElse(lookupRelation(tableIdentifier)))
   }
 
   override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {
     val foundIdTables = repository.getChildren(TablesPath).filter(id =>
       getTableFromPath(this, s"$TablesPath/$id")
-        .exists(tableModel => tableName != tableModel.name ||
-          databaseName.forall(dbName => tableModel.database.exists(modelDbName => modelDbName == dbName))))
+        .exists(tableModel => tableName == tableModel.name && databaseName == tableModel.database))
     foundIdTables.foreach(id => repository.delete(s"$TablesPath/$id"))
   }
 

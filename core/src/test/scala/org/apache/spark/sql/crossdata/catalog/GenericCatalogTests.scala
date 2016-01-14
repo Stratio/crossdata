@@ -153,7 +153,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     tables3.size shouldBe 0
   }
 
-  it should "check if tables map is correct" in {
+  it should "check if tables map is correct with databaseName" in {
     xdContext.catalog.dropAllTables()
     val crossdataTable1 = CrossdataTable(TableName, Some(Database), Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     val tableIdentifier2 = Seq(TableName)
@@ -163,8 +163,21 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     xdContext.catalog.unregisterAllTables()
     xdContext.catalog.tables.size shouldBe 0
-    //TODO val tables = xdContext.catalog.getTables(None)
     val tables = xdContext.catalog.getTables(Some(Database))
+    tables.size shouldBe 1
+  }
+
+  it should "check if tables map is correct without databaseName " in {
+    xdContext.catalog.dropAllTables()
+    val crossdataTable1 = CrossdataTable(TableName, Some(Database), Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val tableIdentifier2 = Seq(TableName)
+
+    xdContext.catalog.persistTableMetadata(crossdataTable1)
+
+    xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
+    xdContext.catalog.unregisterAllTables()
+    xdContext.catalog.tables.size shouldBe 0
+    val tables = xdContext.catalog.getTables(None)
     tables.size shouldBe 1
   }
 
