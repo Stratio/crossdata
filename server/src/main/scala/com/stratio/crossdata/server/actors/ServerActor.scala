@@ -40,7 +40,8 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
         val df = xdContext.sql(query)
         val (rows, schema) = if(withColnames) {
           val r = df.asInstanceOf[XDDataFrame].flattenedCollect()
-          (r, r.headOption.map(_.schema).getOrElse(df.schema))
+          val longestRow = r.headOption.map(_ => r.maxBy(_.schema.length))
+          (r, longestRow.map(_.schema).getOrElse(df.schema))
         } else (df.collect(), df.schema)
         sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, schema)
       } catch {
