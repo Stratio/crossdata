@@ -89,12 +89,13 @@ object CatalystToCrossdataAdapter {
 
     val pushedFilters = filterPredicates.map {
       _ transform {
+        case getitem: GetArrayItem if(itemAccess2att contains getitem) => itemAccess2att(getitem)
         case a: AttributeReference if att2udf contains a => a
         case a: Attribute => relation.attributeMap(a) // Match original case of attributes.
       }
     }
 
-    val (filters, filterReport) = selectFilters(pushedFilters, att2udf.keySet)
+    val (filters, filterReport) = selectFilters(pushedFilters, att2udf.keySet, att2itemAccess)
 
     val aggregatePlan: Option[(Seq[Expression], Seq[NamedExpression])] = logicalPlan.collectFirst {
       case Aggregate(groupingExpression, aggregationExpression, child) => (groupingExpression, aggregationExpression)
@@ -125,9 +126,17 @@ object CatalystToCrossdataAdapter {
    * @param filters catalyst filters
    * @return filters which are convertible and a boolean indicating whether any filter has been ignored.
    */
-  private[this] def selectFilters(filters: Seq[Expression], udfs: Set[Attribute]): (Array[SourceFilter], FilterReport) = {
+  private[this] def selectFilters(
+                                   filters: Seq[Expression],
+                                   udfs: Set[Attribute],
+                                   att2arrayaccess: Map[Attribute, GetArrayItem]
+                                 ): (Array[SourceFilter], FilterReport) = {
     val ignoredExpressions: ListBuffer[Expression] = ListBuffer.empty
     val ignoredNativeUDFReferences: ListBuffer[AttributeReference] = ListBuffer.empty
+
+    def attAsOperand(att: Attribute): String = att2arrayaccess.get(att).map {
+      case GetArrayItem(child, ordinal) => s"${att.name}[${ordinal.toString()}]"
+    } getOrElse(att.name)
 
     def translate(predicate: Expression): Option[SourceFilter] = predicate match {
       case expressions.EqualTo(a: Attribute, Literal(v, t)) =>
