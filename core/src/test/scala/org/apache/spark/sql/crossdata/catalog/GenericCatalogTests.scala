@@ -198,4 +198,10 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.sql(s"DESCRIBE $Database.$TableName").count() should not be 0
   }
+
+  override protected def afterAll() {
+    xdContext.catalog.dropAllTables()
+    super.afterAll()
+  }
+
 }

@@ -22,12 +22,7 @@ import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
-class DerbyCatalogIT extends SharedXDContextTest with CatalogConstants with GenericCatalogTests{
-
-  override protected def afterAll() {
-    xdContext.catalog.dropAllTables()
-    super.afterAll()
-  }
+class DerbyCatalogIT extends SharedXDContextTest with CatalogConstants with GenericCatalogTests {
 
   override val catalogName = "Derby"
 

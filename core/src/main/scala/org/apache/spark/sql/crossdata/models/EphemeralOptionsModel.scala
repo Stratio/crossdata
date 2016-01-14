@@ -21,5 +21,9 @@ case class EphemeralOptionsModel(kafkaOptions: KafkaOptionsModel,
 
 object EphemeralOptionsModel {
 
+  /**
+   * Default minimum Time in Seconds for the Batch Interval in SparkStreaming.
+   * This parameter mark the the minimum time for the windowed queries
+   */
   val DefaultAtomicWindow = 5
 }

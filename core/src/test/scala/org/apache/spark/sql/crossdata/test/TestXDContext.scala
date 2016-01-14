@@ -18,7 +18,7 @@
 
 package org.apache.spark.sql.crossdata.test
 
-import com.typesafe.config.Config
+import com.typesafe.config.{ConfigFactory, Config}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{SQLConf, SQLContext}
@@ -27,16 +27,16 @@ import org.apache.spark.sql.{SQLConf, SQLContext}
 /**
  * A special [[SQLContext]] prepared for testing.
  */
-private[sql] class TestXDContext(sc: SparkContext, catalogConfig: Option[Config] = None)
+private[sql] class TestXDContext(sc: SparkContext, catalogConfig: Config)
   extends XDContext(sc, catalogConfig) { self =>
 
   def this() {
     this(new SparkContext("local[2]", "test-xd-context",
       new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io" +
-        ".LZ4CompressionCodec")))
+        ".LZ4CompressionCodec")), ConfigFactory.empty())
   }
 
-  def this(catalogClass: Option[Config]) {
+  def this(catalogClass: Config) {
     this(new SparkContext("local[2]", "test-xd-context",
       new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io" +
         ".LZ4CompressionCodec")), catalogClass)

@@ -40,15 +40,10 @@ with ZookeeperDefaultTestConstants{
     }
   }
 
-  override protected def afterAll() {
-    xdContext.catalog.dropAllTables()
-    super.afterAll()
-  }
-
 }
 
 sealed trait ZookeeperDefaultTestConstants {
   val ZookeeperConnectionKey = "catalog.zookeeper.connectionString"
   val ZookeeperConnection: Option[String] =
-    Try(ConfigFactory.load().getStringList(ZookeeperConnectionKey)).map(_.get(0)).toOption
+    Try(ConfigFactory.load().getString(ZookeeperConnectionKey)).toOption
 }

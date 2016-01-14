@@ -43,9 +43,15 @@ import org.apache.spark.{Logging, SparkContext}
  * and adds some features of the Crossdata system.
  * @param sc A [[SparkContext]].
  */
-class XDContext(@transient val sc: SparkContext,
+class XDContext private (@transient val sc: SparkContext,
                 userConfig: Option[Config] = None) extends SQLContext(sc) with Logging with CoreConfig {
   self =>
+
+  def this(sc: SparkContext) =
+    this(sc, None)
+
+  def this(sc: SparkContext, config: Config) =
+    this(sc, Some(config))
 
   private val xdConfig: Config = userConfig.fold(config) { userConf =>
     userConf.withFallback(config)

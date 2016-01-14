@@ -52,7 +52,9 @@ trait SharedXDContextTest extends XDTestUtils {
    */
   protected override def beforeAll(): Unit = {
     if (_ctx == null) {
-      _ctx = new TestXDContext(catalogConfig)
+      _ctx = catalogConfig.fold(new TestXDContext()) { cConfig =>
+        new TestXDContext(cConfig)
+      }
     }
     // Ensure we have initialized the context before calling parent code
     super.beforeAll()

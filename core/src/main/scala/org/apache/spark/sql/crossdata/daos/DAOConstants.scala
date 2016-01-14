@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.serializers
+package org.apache.spark.sql.crossdata.daos
 
-import org.apache.spark.sql.crossdata.models.EphemeralExecutionStatus
-import org.json4s.ext.EnumNameSerializer
-import org.json4s._
+import java.util.UUID
 
+object DAOConstants {
 
-trait CrossdataSerializer {
+  val BaseZKPath = "stratio/crossdata"
+  val TablesPath = s"$BaseZKPath/tables"
+  val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
+  val StreamingQueriesPath = s"$BaseZKPath/streamingqueries"
 
-  implicit val json4sJacksonFormats: Formats =
-    DefaultFormats +
-      new EnumNameSerializer(EphemeralExecutionStatus)
+  def createId: String = UUID.randomUUID.toString
 }

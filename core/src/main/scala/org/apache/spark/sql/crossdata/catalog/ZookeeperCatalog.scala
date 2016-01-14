@@ -16,37 +16,13 @@
 
 package org.apache.spark.sql.crossdata.catalog
 
-import java.util.UUID
-
-import com.stratio.common.utils.config.TypesafeConfigComponent
-import com.stratio.common.utils.logger.SparkLoggerComponent
-import com.stratio.common.utils.repository.zookeeper.ZookeeperRepositoryComponent
-import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
+import org.apache.spark.sql.crossdata.daos.TableDAOComponent
 import org.apache.spark.sql.crossdata.models.TableModel
-import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.apache.spark.sql.types.StructType
-import org.json4s.jackson.Serialization._
-
-object ZookeeperCatalog {
-
-  val BaseZKPath = "/stratio/crossdata"
-  val TablesPath = s"$BaseZKPath/tables"
-  val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
-  val StreamingQueriesPath = s"$BaseZKPath/streamingqueries"
-
-  def getTableFromPath(zkRepository: ZookeeperRepositoryComponent, path: String): Option[TableModel] =
-    zkRepository.repository.get(path).map(rawTable => read[TableModel](new Predef.String(rawTable)))
-
-  def insertTableIntoPath(zkRepository: ZookeeperRepositoryComponent,
-                          tableModel: TableModel,
-                          path: String): TableModel =
-    read[TableModel](new Predef.String(zkRepository.repository.create(path, write(tableModel).getBytes)))
-
-  def createId : String = UUID.randomUUID.toString
-}
+import org.apache.spark.sql.crossdata.daos.DAOConstants._
 
 /**
  * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.XDCatalog]] with persistence using Zookeeper.
@@ -54,16 +30,13 @@ object ZookeeperCatalog {
  * @param conf An implementation of the [[CatalystConf]].
  */
 class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends XDCatalog(conf, xdContext) with Logging with CrossdataSerializer
-  with ZookeeperRepositoryComponent with SparkLoggerComponent with TypesafeConfigComponent {
-
-  import ZookeeperCatalog._
+  extends XDCatalog(conf, xdContext) with TableDAOComponent {
 
   override val config = new TypesafeConfig(Option(xdContext.catalogConfig))
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
-    if (repository.exists(TablesPath)) {
-      val findTable = repository.getChildren(TablesPath).flatMap(id => getTableFromPath(this, s"$TablesPath/$id"))
+    if (dao.count > 0) {
+      val findTable = dao.getAll()
         .find(tableModel =>
           tableModel.name == tableName && tableModel.database == databaseName)
 
@@ -87,17 +60,16 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
   }
 
   override def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
-    if (repository.exists(TablesPath)) {
-      repository.getChildren(TablesPath).flatMap(id =>
-        getTableFromPath(this, s"$TablesPath/$id")
-          .flatMap(tableModel => {
-            databaseName.fold(Option((tableModel.getExtendedName, false))){ dbName =>
-              tableModel.database.flatMap(dbNameModel => {
-                if (dbName == dbNameModel) Some((tableModel.getExtendedName, false))
-                else None
-              })
-            }
-          }))
+    if (dao.count > 0) {
+      dao.getAll()
+        .flatMap(tableModel => {
+          databaseName.fold(Option((tableModel.getExtendedName, false))) { dbName =>
+            tableModel.database.flatMap(dbNameModel => {
+              if (dbName == dbNameModel) Option((tableModel.getExtendedName, false))
+              else None
+            })
+          }
+        })
     } else {
       logger.warn("Tables path not exists")
       Seq.empty[(String, Boolean)]
@@ -108,25 +80,20 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
     val tableId = createId
     val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName).toSeq
 
-    insertTableIntoPath(this,
-      TableModel(
-        tableId,
+    dao.create(tableId,
+      TableModel(tableId,
         crossdataTable.tableName,
         serializeSchema(crossdataTable.userSpecifiedSchema.getOrElse(new StructType())),
         crossdataTable.datasource,
         crossdataTable.dbName,
         crossdataTable.partitionColumn,
-        crossdataTable.opts),
-      s"$TablesPath/$tableId")
+        crossdataTable.opts))
   }
 
-  override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {
-    val foundIdTables = repository.getChildren(TablesPath).filter(id =>
-      getTableFromPath(this, s"$TablesPath/$id")
-        .exists(tableModel => tableName == tableModel.name && databaseName == tableModel.database))
-    foundIdTables.foreach(id => repository.delete(s"$TablesPath/$id"))
-  }
+  override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit =
+    dao.getAll().filter(tableModel => tableName == tableModel.name && databaseName == tableModel.database)
+      .foreach(tableModel => dao.delete(tableModel.id))
 
-  override def dropAllPersistedTables(): Unit =
-    repository.getChildren(TablesPath).foreach(id => repository.delete(s"$TablesPath/$id"))
+  override def dropAllPersistedTables(): Unit = dao.getAll().foreach(tableModel => dao.delete(tableModel.id))
+
 }
