@@ -34,7 +34,7 @@ import XDCatalog.serializeOptions
 import XDCatalog.serializePartitionColumn
 import XDCatalog.getOptions
 
-object JDBCCatalog {
+object MySQLCatalog {
   // SQLConfig
   val Driver = "jdbc.driver"
   val Url = "jdbc.url"
@@ -58,10 +58,10 @@ object JDBCCatalog {
  * Supported MySQL and PostgreSQL
  * @param conf An implementation of the [[CatalystConf]].
  */
-class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
+class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) with Logging {
 
-  import JDBCCatalog._
+  import MySQLCatalog._
 
   import org.apache.spark.sql.crossdata._
 
