@@ -63,30 +63,33 @@ object MongoQueryProcessor {
                          name2randomAccess: Map[String, GetArrayItem],
                          parentFilterIsNot: Boolean = false
                        )(implicit config: Config): DBObject = {
+
+    def attstr2left(att: String): String =
+      name2randomAccess.get(att).map {
+        case GetArrayItem(att: AttributeReference, ordinal) =>
+          s"${att.name}.${ordinal.toString}"
+      } getOrElse att
+
     val queryBuilder: QueryBuilder = QueryBuilder.start
 
     if (parentFilterIsNot) queryBuilder.not()
     sFilters.foreach {
       case sources.EqualTo(attribute, value) =>
-        val left = name2randomAccess.get(attribute).map { // TODO TODO TODO TODO
-          case GetArrayItem(att: AttributeReference, ordinal) =>
-            s"${att.name}.${ordinal.toString}"
-        } getOrElse attribute
-        queryBuilder.put(left).is(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).is(correctIdValue(attribute, value))
       case sources.GreaterThan(attribute, value) =>
-        queryBuilder.put(attribute).greaterThan(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).greaterThan(correctIdValue(attribute, value))
       case sources.GreaterThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).greaterThanEquals(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).greaterThanEquals(correctIdValue(attribute, value))
       case sources.In(attribute, values) =>
-        queryBuilder.put(attribute).in(values.map(value => correctIdValue(attribute, value)))
+        queryBuilder.put(attstr2left(attribute)).in(values.map(value => correctIdValue(attribute, value)))
       case sources.LessThan(attribute, value) =>
-        queryBuilder.put(attribute).lessThan(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).lessThan(correctIdValue(attribute, value))
       case sources.LessThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).lessThanEquals(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).lessThanEquals(correctIdValue(attribute, value))
       case sources.IsNull(attribute) =>
-        queryBuilder.put(attribute).is(null)
+        queryBuilder.put(attstr2left(attribute)).is(null)
       case sources.IsNotNull(attribute) =>
-        queryBuilder.put(attribute).notEquals(null)
+        queryBuilder.put(attstr2left(attribute)).notEquals(null)
       case sources.And(leftFilter, rightFilter) if !parentFilterIsNot =>
         queryBuilder.and(filtersToDBObject(Array(leftFilter), name2randomAccess),
           filtersToDBObject(Array(rightFilter),name2randomAccess))
@@ -94,11 +97,11 @@ object MongoQueryProcessor {
         queryBuilder.or(filtersToDBObject(Array(leftFilter),name2randomAccess),
           filtersToDBObject(Array(rightFilter), name2randomAccess))
       case sources.StringStartsWith(attribute, value) if !parentFilterIsNot =>
-        queryBuilder.put(attribute).regex(Pattern.compile("^" + value + ".*$"))
+        queryBuilder.put(attstr2left(attribute)).regex(Pattern.compile("^" + value + ".*$"))
       case sources.StringEndsWith(attribute, value) if !parentFilterIsNot =>
-        queryBuilder.put(attribute).regex(Pattern.compile("^.*" + value + "$"))
+        queryBuilder.put(attstr2left(attribute)).regex(Pattern.compile("^.*" + value + "$"))
       case sources.StringContains(attribute, value) if !parentFilterIsNot =>
-        queryBuilder.put(attribute).regex(Pattern.compile(".*" + value + ".*"))
+        queryBuilder.put(attstr2left(attribute)).regex(Pattern.compile(".*" + value + ".*"))
       case sources.Not(filter) =>
         filtersToDBObject(Array(filter), name2randomAccess, true)
     }

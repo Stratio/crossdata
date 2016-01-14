@@ -37,6 +37,21 @@ class MongodbDataTypesIT extends MongoDataTypesCollection{
     Option(firstRow(2)) shouldBe None // Access to an out-of-bounds index
     firstRow(3) shouldBe a[Integer]   // Access to a single element within an int array
 
+  }
+
+  it should "to natively filter by array column indexed elements" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val query =
+      """|SELECT arraystring, arraystring[2], arraystring[-1], arrayint[0]
+         | FROM typesCheckTable
+         | WHERE arrayint[0] = 1
+      """.stripMargin.replace("\n", "")
+
+    val df = sql(query)
+    val res = df.collect(ExecutionType.Native)
+
+    res.length should equal(10)
 
   }
 
