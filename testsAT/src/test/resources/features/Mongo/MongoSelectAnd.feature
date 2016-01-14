@@ -39,3 +39,15 @@ Feature: MongoSelectAnd
     Then The result has to have '1' rows:
      | date-date  |
      | 1999-11-30 |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT * FROM tablearray WHERE names[0] = 'names_00' AND names[1] = 'names_10';
+    When I execute 'SELECT * FROM tablearray WHERE names[0] = 'names_00' AND names[1] = 'names_10''
+    Then The result has to have '1' rows:
+      | ident-integer | names-array<string>   |
+      |    0          | names_00,names_10,names_20,names_30,names_40   |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT ident, names[0] as nombre FROM tablearray WHERE nombre = 'names_00' AND nombres = 'names_10';
+    When I execute 'SELECT ident, names[0] as nombre, names[1] as nombres FROM tablearray WHERE nombre = 'names_00' AND nombres = 'names_10''
+    Then The result has to have '1' rows:
+      | ident-integer | nombre-string   | nombres-string |
+      |    0          | names_00        | names_10       |

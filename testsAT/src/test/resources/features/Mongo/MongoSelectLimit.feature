@@ -25,3 +25,10 @@ Feature: MongoSelectLimit
     Then The result has to have '1' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
       |    0          | name_0        | 10.2          |  true         | 1999-11-30 |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT * FROM tablearray LIMIT 1;
+    When I execute 'SELECT * FROM tablearray LIMIT 1'
+    Then The result has to have '1' rows:
+      | ident-integer | names-array<string>                           |
+      |    0          | names_00,names_10,names_20,names_30,names_40  |
+
