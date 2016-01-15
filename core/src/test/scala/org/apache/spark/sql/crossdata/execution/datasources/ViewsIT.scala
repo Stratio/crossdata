@@ -15,7 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.crossdata.XDDataFrame
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.junit.runner.RunWith
@@ -49,7 +48,7 @@ class ViewsIT extends SharedXDContextTest {
 
     df.registerTempTable("person")
 
-    an [AnalysisException] should be thrownBy sql("CREATE VIEW vn AS SELECT * FROM person WHERE _1 < 3")
+    an [scala.NotImplementedError] should be thrownBy sql("CREATE VIEW vn AS SELECT * FROM person WHERE _1 < 3")
 
 
   }
