@@ -18,4 +18,5 @@ package org.apache.spark.sql.crossdata.models
 
 case class KafkaOptionsModel(connection: Seq[ConnectionHostModel],
                              topics: Seq[TopicModel],
+                             additionalOptions: Map[String, String],
                              storageLevel: String = "MEMORY_AND_DISK_SER")
