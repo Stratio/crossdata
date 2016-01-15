@@ -108,11 +108,11 @@ private[crossdata] case class CreateTempView(viewIdentifier: TableIdentifier, qu
 
 }
 
-private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, query: String)
+private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan, sql: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    throw new AnalysisException("Only temporary views are supported. Use CREATE TEMPORARY VIEW")
+    sqlContext.catalog.persistView(viewIdentifier, queryPlan, sql)
   }
 }
 
