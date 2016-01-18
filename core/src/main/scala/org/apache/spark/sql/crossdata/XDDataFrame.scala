@@ -153,10 +153,14 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       }
     }
 
+    def processProjection(plist: Seq[NamedExpression], child: LogicalPlan): Array[Row] = {
+      val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
+      flatRows(collect(), fullyAnnotatedRequestedColumns)
+    }
+
     queryExecution.optimizedPlan match {
-      case Project(plist, child) =>
-        val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
-        flatRows(collect(), fullyAnnotatedRequestedColumns)
+      case Limit(_, Project(plist, child)) => processProjection(plist, child)
+      case Project(plist, child) => processProjection(plist, child)
       case _ => flatRows(collect())
     }
 
