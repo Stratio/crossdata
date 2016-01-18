@@ -31,7 +31,7 @@ class CassandraPKFiltersIT extends CassandraWithSharedContext {
   override val Catalog = s"ks$uuid"
   override val Table = s"t$uuid"
   override val UnregisteredTable = ""
-  override val schema = ListMap("date" -> "text")
+  override val schema = ListMap("date" -> "timestamp")
   override val pk = "date" :: Nil
   override val indexedColumn = ""
   override val testData = List(List(FixedDate))
