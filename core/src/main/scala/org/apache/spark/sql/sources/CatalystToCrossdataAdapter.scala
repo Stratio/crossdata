@@ -140,7 +140,7 @@ object CatalystToCrossdataAdapter {
 
     def translate(predicate: Expression): Option[SourceFilter] = predicate match {
       case expressions.EqualTo(a: Attribute, Literal(v, t)) =>
-        Some(sources.EqualTo(attAsOperand(a), convertToScala(v, t))) //TODO Complete the remaining cases
+        Some(sources.EqualTo(attAsOperand(a), convertToScala(v, t)))
       case expressions.EqualTo(Literal(v, t), a: Attribute) =>
         Some(sources.EqualTo(attAsOperand(a), convertToScala(v, t)))
       case expressions.EqualTo(a: AttributeReference, b: Attribute) if udfs contains a =>
