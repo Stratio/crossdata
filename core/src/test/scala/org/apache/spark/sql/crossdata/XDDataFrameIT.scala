@@ -31,7 +31,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class XDDataFrameIT extends SharedXDContextTest with Inside {
 
-  lazy val sparkRows = xdContext.createDataFrame(ctx.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).collect()
+  lazy val sparkRows = xdContext.createDataFrame(xdContext.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).collect()
   lazy val nativeRows = Array(Row(2l))
 
   "A XDDataFrame (select * from nativeRelation)" should "be executed natively" in {
@@ -87,7 +87,7 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = Some(nativeRows)
 
     // Spark execution
-    override def buildScan(): RDD[Row] = xdContext.createDataFrame(ctx.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).rdd
+    override def buildScan(): RDD[Row] = xdContext.createDataFrame(xdContext.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).rdd
   }
 
 
@@ -98,7 +98,7 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = None
 
     // Spark execution
-    override def buildScan(): RDD[Row] = xdContext.createDataFrame(ctx.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).rdd
+    override def buildScan(): RDD[Row] = xdContext.createDataFrame(xdContext.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).rdd
   }
 
   val mockNativeRelationWith2Rows = new MockBaseRelation with NativeScan with TableScan {
@@ -108,7 +108,7 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = Some(Array(nativeRows(0), nativeRows(0)))
 
     // Spark execution
-    override def buildScan(): RDD[Row] = xdContext.createDataFrame(ctx.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).rdd
+    override def buildScan(): RDD[Row] = xdContext.createDataFrame(xdContext.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).rdd
   }
 
   val mockNativeRelationUnsupportedPlan = new MockBaseRelation with NativeScan with TableScan {
@@ -118,7 +118,7 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
     override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = Some(nativeRows)
 
     // Spark execution
-    override def buildScan(): RDD[Row] = xdContext.createDataFrame(ctx.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).rdd
+    override def buildScan(): RDD[Row] = xdContext.createDataFrame(xdContext.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).rdd
   }
 
 }

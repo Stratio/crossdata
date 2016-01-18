@@ -29,13 +29,13 @@ class ViewsIT extends SharedXDContextTest {
     val sqlContext = _xdContext
     import sqlContext.implicits._
 
-    val df  = ctx.sparkContext.parallelize(1 to 5).toDF
+    val df  = xdContext.sparkContext.parallelize(1 to 5).toDF
 
     df.registerTempTable("person")
 
     sql("CREATE TEMPORARY VIEW vn AS SELECT * FROM person WHERE _1 < 3")
 
-    val dataframe = ctx.sql("SELECT * FROM vn")
+    val dataframe = xdContext.sql("SELECT * FROM vn")
     dataframe shouldBe a[XDDataFrame]
     dataframe.collect() should have length 2
   }
@@ -45,7 +45,7 @@ class ViewsIT extends SharedXDContextTest {
     val sqlContext = _xdContext
     import sqlContext.implicits._
 
-    val df  = ctx.sparkContext.parallelize(1 to 5).toDF
+    val df  = xdContext.sparkContext.parallelize(1 to 5).toDF
 
     df.registerTempTable("person")
 

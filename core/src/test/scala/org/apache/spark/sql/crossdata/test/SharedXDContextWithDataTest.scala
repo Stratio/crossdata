@@ -44,9 +44,11 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest with Logging {
                                                         *          Seq("CREATE TABLE T", "CREATE TEMPORARY TABLE S")
                                                         */
 
-  lazy val assumeEnvironmentIsUpAndRunning = {
-    assume(isEnvironmentReady, runningError)
-  }
+  lazy val assumeEnvironmentIsUpAndRunning =
+    if (!isEnvironmentReady) {
+      fail(runningError)
+    }
+
 
   protected def prepareClient: Option[ClientParams]    // Native client initialization
   protected def terminateClient: Unit                  // Native client finalization

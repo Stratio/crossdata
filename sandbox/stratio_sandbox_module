@@ -1,4 +1,5 @@
 #!/bin/sh
+<<<<<<< HEAD
 echo "> Installing maven"
 wget apache.rediris.es/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
 cd /module
@@ -18,6 +19,20 @@ echo "http.cors.enabled: true" >> /etc/sds/elasticsearch/elasticsearch.yml
 /opt/sds/elasticsearch/bin/./plugin -install mobz/elasticsearch-head
 
 rm -f /etc/udev/rules.d/70-persistent-net.rules
+=======
+STRATIO_ENV=$1
+STRATIO_MODULE="crossdata ova"
+STRATIO_MODULE_VERSION="1.0.1"
+ipaddress=$(ip -4 addr show dev eth0 | grep inet | sed 's/^ *//g' | cut -d' ' -f 2 | cut -d'/' -f1)
+
+#######################################
+## SERVICES
+#######################################
+
+#######################################
+## Cassandra
+#######################################
+>>>>>>> upstream/master
 
 echo "Installing Cassandra..."
 rpm --quiet -q stratio-cassandra || yum -y -q --nogpgcheck install stratio-cassandra
