@@ -1,4 +1,5 @@
 Feature: MongoSelectSimple
+
   Scenario: [CROSSDATA-74 : MONGO NATIVE] SELECT * FROM tabletest;
     When I execute 'SELECT * FROM tabletest'
     Then The result has to have '10' rows:
@@ -178,3 +179,63 @@ Feature: MongoSelectSimple
       |    7          | name_7        | 17.2          |  true         | 2007-07-07 |
       |    8          | name_8        | 18.2          |  true         | 2008-08-08 |
       |    9          | name_9        | 19.2          |  true         | 2009-09-09 |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT * FROM tablearray;
+    When I execute 'SELECT * FROM tablearray'
+    Then The result has to have '10' rows:
+      | ident-integer | names-array<string>   |
+      |    0          | names_00,names_10,names_20,names_30,names_40   |
+      |    1          | names_01,names_11,names_21,names_31,names_41   |
+      |    2          | names_02,names_12,names_22,names_32,names_42   |
+      |    3          | names_03,names_13,names_23,names_33,names_43   |
+      |    4          | names_04,names_14,names_24,names_34,names_44   |
+      |    5          | names_05,names_15,names_25,names_35,names_45   |
+      |    6          | names_06,names_16,names_26,names_36,names_46   |
+      |    7          | names_07,names_17,names_27,names_37,names_47   |
+      |    8          | names_08,names_18,names_28,names_38,names_48   |
+      |    9          | names_09,names_19,names_29,names_39,names_49   |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT ident, names FROM tablearray;
+    When I execute 'SELECT ident, names FROM tablearray'
+    Then The result has to have '10' rows:
+      | ident-integer | names-array<string>   |
+      |    0          | names_00,names_10,names_20,names_30,names_40   |
+      |    1          | names_01,names_11,names_21,names_31,names_41   |
+      |    2          | names_02,names_12,names_22,names_32,names_42   |
+      |    3          | names_03,names_13,names_23,names_33,names_43   |
+      |    4          | names_04,names_14,names_24,names_34,names_44   |
+      |    5          | names_05,names_15,names_25,names_35,names_45   |
+      |    6          | names_06,names_16,names_26,names_36,names_46   |
+      |    7          | names_07,names_17,names_27,names_37,names_47   |
+      |    8          | names_08,names_18,names_28,names_38,names_48   |
+      |    9          | names_09,names_19,names_29,names_39,names_49   |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT names FROM tablearray;
+    When I execute 'SELECT  names FROM tablearray'
+    Then The result has to have '10' rows:
+      | names-array<string>   |
+      | names_00,names_10,names_20,names_30,names_40   |
+      | names_01,names_11,names_21,names_31,names_41   |
+      | names_02,names_12,names_22,names_32,names_42   |
+      | names_03,names_13,names_23,names_33,names_43   |
+      | names_04,names_14,names_24,names_34,names_44   |
+      | names_05,names_15,names_25,names_35,names_45   |
+      | names_06,names_16,names_26,names_36,names_46   |
+      | names_07,names_17,names_27,names_37,names_47   |
+      | names_08,names_18,names_28,names_38,names_48   |
+      | names_09,names_19,names_29,names_39,names_49   |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT names as array FROM tablearray;
+    When I execute 'SELECT  names as array FROM tablearray'
+    Then The result has to have '10' rows:
+      | array-array<string>   |
+      | names_00,names_10,names_20,names_30,names_40   |
+      | names_01,names_11,names_21,names_31,names_41   |
+      | names_02,names_12,names_22,names_32,names_42   |
+      | names_03,names_13,names_23,names_33,names_43   |
+      | names_04,names_14,names_24,names_34,names_44   |
+      | names_05,names_15,names_25,names_35,names_45   |
+      | names_06,names_16,names_26,names_36,names_46   |
+      | names_07,names_17,names_27,names_37,names_47   |
+      | names_08,names_18,names_28,names_38,names_48   |
+      | names_09,names_19,names_29,names_39,names_49   |
