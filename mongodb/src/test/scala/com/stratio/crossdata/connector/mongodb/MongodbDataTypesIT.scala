@@ -45,7 +45,7 @@ class MongodbDataTypesIT extends MongoDataTypesCollection{
     val query =
       """|SELECT arraystring, arraystring[2], arraystring[-1], arrayint[0]
          | FROM typesCheckTable
-         | WHERE arrayint[0] = 1
+         | WHERE (arrayint[0] = 1 OR arrayint[1] = 1) AND arrayint[2] = 3
       """.stripMargin.replace("\n", "")
 
     val df = sql(query)

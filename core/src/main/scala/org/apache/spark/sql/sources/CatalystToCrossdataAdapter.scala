@@ -68,7 +68,7 @@ object CatalystToCrossdataAdapter {
 
     val relation = logicalPlan.collectFirst { case lr: LogicalRelation => lr }.get
     implicit val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
-    implicit val att2itemAccess: Map[Attribute, GetArrayItem] = projects.flatMap { c =>
+    implicit val att2itemAccess: Map[Attribute, GetArrayItem] =(projects ++ filterPredicates).flatMap { c =>
       c.collect {
         case gi @ GetArrayItem(a@AttributeReference(name, ArrayType(etype, _), nullable, md), _) =>
           AttributeReference(name, etype, true)() -> gi
