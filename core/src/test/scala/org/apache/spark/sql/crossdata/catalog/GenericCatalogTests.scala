@@ -97,7 +97,6 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
     xdContext.catalog.unregisterTable(tableIdentifier)
     val schemaDF = xdContext.sql(s"DESCRIBE $Database.$TableName")
-    schemaDF.show
     schemaDF.count() should be(3)
     val df = xdContext.sql(s"SELECT `$FieldWitStrangeChars` FROM $Database.$TableName")
     df shouldBe a[XDDataFrame]
@@ -112,7 +111,6 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.unregisterTable(tableIdentifier)
     val schemaDF = xdContext.sql(s"DESCRIBE $Database.$TableName")
-    schemaDF.show
     schemaDF.count() should be(1)
     val df = xdContext.sql(s"SELECT `$Field1Name` FROM $Database.$TableName")
     df shouldBe a[XDDataFrame]
