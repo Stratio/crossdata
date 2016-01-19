@@ -39,7 +39,7 @@ class ViewsIT extends SharedXDContextTest {
     dataframe.collect() should have length 2
   }
 
-  "Create view" should "return an analysis exception" in {
+  "Create view" should "throw a not implemented error" in {
 
     val sqlContext = _xdContext
     import sqlContext.implicits._
@@ -48,8 +48,7 @@ class ViewsIT extends SharedXDContextTest {
 
     df.registerTempTable("person")
 
-    an [scala.NotImplementedError] should be thrownBy sql("CREATE VIEW vn AS SELECT * FROM person WHERE _1 < 3")
-
+    an [scala.NotImplementedError] should be thrownBy sql("CREATE VIEW persistedview AS SELECT * FROM person WHERE _1 < 3")
 
   }
 
