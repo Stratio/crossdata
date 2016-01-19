@@ -41,6 +41,7 @@ class ViewsIT extends SharedXDContextTest {
     dataframe.collect() should have length 2
   }
 
+  // TODO When we can add views to Zookeeper catalog, Views' test should be moved to GenericCatalogTests in order to test the specific implementations.
   "Create view" should "persist a view in the catalog" in {
 
     val sqlContext = _xdContext
@@ -56,8 +57,6 @@ class ViewsIT extends SharedXDContextTest {
     dataframe shouldBe a[DataFrame]
     dataframe.collect() should have length 2
 
-
   }
-
 
 }

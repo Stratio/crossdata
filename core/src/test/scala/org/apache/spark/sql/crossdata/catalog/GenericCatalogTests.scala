@@ -16,15 +16,15 @@
 
 package org.apache.spark.sql.crossdata.catalog
 
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types._
 
 trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
-  val catalogName: String
+  def catalogName: String
 
   s"${catalogName}CatalogSpec" must "return a dataframe from a persist table without catalog using json datasource" in {
     val fields = Seq[StructField](Field1, Field2)
