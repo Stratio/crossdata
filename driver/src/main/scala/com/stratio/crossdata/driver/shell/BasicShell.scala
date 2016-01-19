@@ -33,6 +33,21 @@ object BasicShell extends App {
 
   val logger = Logger.getLogger(getClass)
 
+  val HistoryPath = Some(System.getProperty("user.home")).getOrElse(".").concat("/.crossdata/")
+  val HistoryFile = "history.txt"
+  val PersistentHistory = new File(HistoryPath.concat(HistoryFile))
+
+  private def createHistoryDirectory(historyPath: String): Boolean = {
+    val historyPathFile = new File(historyPath)
+    if(!historyPathFile.exists){
+      historyPathFile.mkdirs()
+    } else {
+      false
+    }
+  }
+
+  createHistoryDirectory(HistoryPath)
+
   /**
     * NOTE: This method is based on the method org.apache.spark.sql.DataFrame#showString from Apache Spark.
     *       For more information, go to http://spark.apache.org.
@@ -114,7 +129,7 @@ object BasicShell extends App {
 
   private def close(console: ConsoleReader): Unit = {
     logger.info("Saving history...")
-    val pw = new PrintWriter(new File("xdhistory.txt"))
+    val pw = new PrintWriter(PersistentHistory)
     console.getHistory.foreach(l => pw.println(l.value))
     logger.info("Closing shell...")
     pw.close
@@ -122,11 +137,9 @@ object BasicShell extends App {
   }
 
   def loadHistory(console: ConsoleReader): Unit = {
-    val historyFile = new File("xdhistory.txt")
-
-    if(historyFile.exists()){
+    if(PersistentHistory.exists){
       logger.info("Loading history...")
-      console.setHistory(new FileHistory(historyFile))
+      console.setHistory(new FileHistory(PersistentHistory))
     } else {
       logger.info("No previous history found")
     }
