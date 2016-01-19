@@ -41,7 +41,8 @@ object JDBCCatalog {
   val Driver = "jdbc.driver"
   val Url = "jdbc.url"
   val Database = "jdbc.db.name"
-  val Table = "jdbc.db.table"
+  val TableWithTableMetadata = "jdbc.db.table"
+  val TableWithViewMetadata = "jdbc.db.view"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
   // CatalogFields
@@ -52,6 +53,9 @@ object JDBCCatalog {
   val PartitionColumnField = "partitionColumn"
   val OptionsField = "options"
   val CrossdataVersionField = "crossdataVersion"
+
+  // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
+  val SqlViewField = "sqlView"
 }
 
 /**
@@ -68,8 +72,8 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
   private val config = xdContext.catalogConfig
   private val db = config.getString(Database)
-  private val table = config.getString(Table)
-
+  private val tableWithTableMetadata = config.getString(TableWithTableMetadata)
+  private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
   lazy val connection: Connection = {
 
     val driver = config.getString(Driver)
@@ -86,7 +90,7 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
 
     jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE IF NOT EXISTS $db.$table (
+        s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithTableMetadata (
            |$DatabaseField VARCHAR(50),
            |$TableNameField VARCHAR(50),
            |$SchemaField TEXT,
@@ -96,16 +100,21 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
            |$CrossdataVersionField TEXT,
            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
+    jdbcConnection.createStatement().executeUpdate(
+      s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
+          |$DatabaseField VARCHAR(50),
+          |$TableNameField VARCHAR(50),
+          |$SqlViewField TEXT,
+          |$CrossdataVersionField VARCHAR(30),
+          |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+
     jdbcConnection
   }
 
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
 
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement.setString(1, databaseName.getOrElse(""))
-    preparedStatement.setString(2, tableName)
-    val resultSet = preparedStatement.executeQuery()
+    val resultSet = selectMetadata(tableWithTableMetadata,TableIdentifier(tableName, databaseName))
 
     if (!resultSet.isBeforeFirst) {
       None
@@ -140,7 +149,7 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
     val statement = connection.createStatement
     val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
-    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$table $dbFilter")
+    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
 
     getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
   }
@@ -155,14 +164,11 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     connection.setAutoCommit(false)
 
     // check if the database-table exist in the persisted catalog
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement.setString(1, crossdataTable.dbName.getOrElse(""))
-    preparedStatement.setString(2, crossdataTable.tableName)
-    val resultSet = preparedStatement.executeQuery()
+    val resultSet = selectMetadata(tableWithTableMetadata, TableIdentifier(crossdataTable.tableName, crossdataTable.dbName))
 
     if (!resultSet.isBeforeFirst) {
       val prepped = connection.prepareStatement(
-       s"""|INSERT INTO $db.$table (
+       s"""|INSERT INTO $db.$tableWithTableMetadata (
            | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
            |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
@@ -177,7 +183,7 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
     }
     else {
      val prepped = connection.prepareStatement(
-      s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+      s"""|UPDATE $db.$tableWithTableMetadata SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
           |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
        """.stripMargin.replaceAll("\n", " "))
 
@@ -194,14 +200,23 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
   }
 
   override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
   }
 
   override def dropAllPersistedTables(): Unit = 
-    connection.createStatement.executeUpdate(s"TRUNCATE $db.$table")
+    connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithTableMetadata")
 
   override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = ???
 
   override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = ???
+
+  private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
+
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
+    preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
+    preparedStatement.setString(2, tableIdentifier.table)
+    preparedStatement.executeQuery()
+
+  }
 
 }
