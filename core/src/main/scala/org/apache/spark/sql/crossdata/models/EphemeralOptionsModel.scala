@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,13 @@
 
 package org.apache.spark.sql.crossdata.models
 
+import org.apache.spark.sql.crossdata.models.EphemeralOptionsModel._
+
 case class EphemeralOptionsModel(kafkaOptions: KafkaOptionsModel,
-                                 atomicWindow: Int = EphemeralOptionsModel.DefaultAtomicWindow)
+                                 atomicWindow: Int = DefaultAtomicWindow,
+                                 maxWindow: Int = DefaultMaxWindow,
+                                 checkpointDirectory: String = DefaultCheckpointDirectory,
+                                 sparkOptions: Map[String, String] = Map.empty[String, String])
 
 object EphemeralOptionsModel {
 
@@ -26,4 +31,6 @@ object EphemeralOptionsModel {
    * This parameter mark the the minimum time for the windowed queries
    */
   val DefaultAtomicWindow = 5
+  val DefaultMaxWindow = 60
+  val DefaultCheckpointDirectory = "checkpoint/crossdata"
 }

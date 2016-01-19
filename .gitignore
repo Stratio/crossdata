@@ -20,6 +20,7 @@ atlassian-ide-plugin.xml
 target/
 .DS_Store
 **/xdhistory.txt
+checkpoint/
 
 #hive ignores
 metastore_db/

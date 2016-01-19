@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.models
+package com.stration.crossdata.streaming.helpers
 
-case class ConnectionHostModel(host: String, consumerPort: String, producerPort: String)
+import org.apache.spark.sql.crossdata.daos.StreamingQueriesMapDAOComponent
+import org.apache.spark.sql.crossdata.models.StreamingQueryModel
+
+class StreamingQueriesHelper(zookeeperConfiguration: Map[String, String]) extends StreamingQueriesMapDAOComponent {
+
+  val memoryMap = zookeeperConfiguration
+
+  def findQueriesFromEphemeralTable(ephemeralTableId : String): Seq[StreamingQueryModel] = {
+    dao.getAll().filter(streamingQueryModel => streamingQueryModel.id == ephemeralTableId)
+  }
+
+
+}

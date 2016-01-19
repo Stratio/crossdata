@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,5 +18,7 @@ package org.apache.spark.sql.crossdata.models
 
 case class KafkaOptionsModel(connection: Seq[ConnectionHostModel],
                              topics: Seq[TopicModel],
-                             additionalOptions: Map[String, String],
+                             groupId: String,
+                             partition: Option[String] = None,
+                             additionalOptions: Map[String, String] = Map.empty[String, String],
                              storageLevel: String = "MEMORY_AND_DISK_SER")

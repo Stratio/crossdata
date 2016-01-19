@@ -32,9 +32,11 @@ with ZookeeperRepositoryComponent with TypesafeConfigComponent with SparkLoggerC
 
   trait TableDAO extends DAO {
 
-    def fromVtoM(v: Array[Byte]): TableModel = read[TableModel](new String(v))
+    def fromVtoM(v: Array[Byte])(implicit manifest: Manifest[TableModel]): TableModel =
+      read[TableModel](new String(v))
 
-    def fromMtoV(m: TableModel): Array[Byte] = write(m).getBytes
+    def fromMtoV(m: TableModel)(implicit manifest: Manifest[TableModel]): Array[Byte] =
+      write(m).getBytes
 
     def entity = TablesPath
   }

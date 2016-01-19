@@ -1,46 +1,47 @@
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.stration.crossdata.streaming
 
 import com.google.common.io.BaseEncoding
-import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import com.typesafe.config.ConfigFactory
-import org.apache.spark.SparkConf
 
 import scala.util.{Failure, Success, Try}
 
-object CrossdataStreamingApplication extends SparkLoggerComponent with TypesafeConfigComponent {
+object CrossdataStreamingApplication extends SparkLoggerComponent {
 
   val EphemeralTableIdIndex = 0
   val ZookeeperConfigurationIndex = 1
 
-  val StreamingBasicConfig = "streaming-reference.conf"
-  val ParentConfigName = "crossdata-streaming"
-  val ConfigPathName = "config"
-
-  /**
-   * SPARK CONFIGURATION
-   */
-  override val config = new TypesafeConfig(None, None, Option(StreamingBasicConfig), Option(ParentConfigName))
-
-  private def configToSparkConf(generalConfig: Option[Config], specificConfig: Map[String, String]): SparkConf = {
-    val conf = new SparkConf()
-
-    if (generalConfig.isDefined) {
-      val properties = generalConfig.get.toMap
-      properties.foreach(e => if (e._1.startsWith(s"spark")) conf.set(e._1, e._2.toString))
-    }
-    specificConfig.foreach(e => conf.set(e._1, e._2))
-    conf
-  }
-
   def main(args: Array[String]): Unit = {
     assert(args.length == 2, s"Invalid number of params: ${args.length}, args: $args")
     Try {
-      val ephemeralTableId = new String(BaseEncoding.base64().decode(args(EphemeralTableIdIndex)))
+      //val ephemeralTableId = new String(BaseEncoding.base64().decode(args(EphemeralTableIdIndex)))
+      val ephemeralTableId = args(EphemeralTableIdIndex)
+
       val zookeeperConfString = new String(BaseEncoding.base64().decode(args(ZookeeperConfigurationIndex)))
-      val zookeeperConf = Option(ConfigFactory.parseString(zookeeperConfString))
-      val sparkConfig = configToSparkConf(config.getConfig(ConfigPathName), Map.empty)
-      val crossdataStreaming = new CrossdataStreaming(ephemeralTableId, zookeeperConf, sparkConfig)
+      //val zookeeperConf = Try(ConfigFactory.parseString(zookeeperConfString)).getOrElse(...)
+      //val zookeeperConf = Try(JSON.parseFull(zookeeperConfString).get.asInstanceOf[Map[String,Any]]).getOrElse(...)
+      val zookeeperConf = Map("connectionString" -> "localhost:2181",
+        "connectionTimeout" -> 1500, "sessionTimeout" -> 60000, "retryAttempts" -> 6, "retryInterval" -> 10000)
+      /*val zookeeperConf =
+        Try(ConfigFactory.load(CrossdataStreaming.StreamingResourceConfig)
+          .getConfig("zookeeper").atKey("zookeeper")).getOrElse(...)*/
+
+      val crossdataStreaming = new CrossdataStreaming(ephemeralTableId, zookeeperConf)
 
       crossdataStreaming.init()
     } match {

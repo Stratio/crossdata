@@ -17,7 +17,8 @@
 package org.apache.spark.sql.crossdata.models
 
 case class StreamingQueryModel(id: String,
-                               ephemeralTable: EphemeralTableModel,
+                               ephemeralTableId: String,
                                sql: String,
+                               alias : Option[String] = None,
                                window: Int = EphemeralOptionsModel.DefaultAtomicWindow,
                                batchTables: Option[Seq[TableModel]] = None)
