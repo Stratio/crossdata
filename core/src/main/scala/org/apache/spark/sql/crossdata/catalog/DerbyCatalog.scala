@@ -57,8 +57,8 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
 
   private val db = "CROSSDATA"
-  private val tableWithTableMetadata = "crossdatatables"
-  private val tableWithViewMetadata = "crossdataviews"
+  private val tableWithTableMetadata = "xdtables"
+  private val tableWithViewMetadata = "xdviews"
 
   lazy val connection: Connection = {
 
@@ -157,7 +157,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $db.$tableWithTableMetadata (
-                                                        | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
+              | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
         prepped.setString(1, crossdataTable.dbName.getOrElse(""))
@@ -172,7 +172,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       else {
         val prepped = connection.prepareStatement(
           s"""|UPDATE $db.$tableWithTableMetadata SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-                                                                                                                                                         |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}'
+              |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}'
        """.stripMargin)
         prepped.setString(1, tableSchema)
         prepped.setString(2, crossdataTable.datasource)
@@ -194,6 +194,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   override def dropAllPersistedTables(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata")
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
 
   private def schemaExists(schema: String, connection: Connection) : Boolean= {
@@ -215,7 +216,6 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   }
 
 
-  // TODO refactor
   override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
     try {
       connection.setAutoCommit(false)
@@ -235,7 +235,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         prepped.execute()
       } else {
         val prepped = connection.prepareStatement(
-          s"""|UPDATE $db.$tableWithTableMetadata SET $SqlViewField=?
+          s"""|UPDATE $db.$tableWithViewMetadata SET $SqlViewField=?
               |WHERE $DatabaseField='${tableIdentifier.database.getOrElse("")}' AND $TableNameField='${tableIdentifier.table}'
          """.stripMargin)
         prepped.setString(1, sqlText)

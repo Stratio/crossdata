@@ -99,7 +99,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
           lookupView(table, database) match {
             case Some(sqlView) =>
-              val viewPlan: LogicalPlan = xdContext.sql(s"CREATE TEMPORARY VIEW $tableIdent AS $sqlView").logicalPlan
+              val viewPlan: LogicalPlan = xdContext.sql(sqlView).logicalPlan
               registerView(tableIdent, viewPlan)
               processAlias(tableIdent, viewPlan, alias)
             case None =>
