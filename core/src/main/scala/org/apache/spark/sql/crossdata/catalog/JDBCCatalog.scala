@@ -202,16 +202,57 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
       connection.setAutoCommit(true)
     }
 
-  override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {
+  override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
+
+
+  override def dropAllPersistedTables(): Unit = {
+    connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithTableMetadata")
+    connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithViewMetadata")
   }
 
-  override def dropAllPersistedTables(): Unit = 
-    connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithTableMetadata")
 
-  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = ???
+  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = {
+    val resultSet = selectMetadata(tableWithViewMetadata, TableIdentifier(tableName, databaseName))
+    if (!resultSet.isBeforeFirst) {
+      None
+    } else {
+      resultSet.next()
+      Option(resultSet.getString(SqlViewField))
+    }
+  }
 
-  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = ???
+  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
+    try {
+      connection.setAutoCommit(false)
+      val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
+
+      if (!resultSet.isBeforeFirst) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $db.$tableWithViewMetadata (
+              | $DatabaseField, $TableNameField, $SqlViewField, $CrossdataVersionField
+              |) VALUES (?,?,?,?)
+       """.stripMargin)
+        prepped.setString(1, tableIdentifier.database.getOrElse(""))
+        prepped.setString(2, tableIdentifier.table)
+        prepped.setString(3, sqlText)
+        prepped.setString(4, CrossdataVersion)
+        prepped.execute()
+      } else {
+        val prepped =
+          connection.prepareStatement(
+            s"""|UPDATE $db.$tableWithViewMetadata SET $SqlViewField=?
+                |WHERE $DatabaseField='${tableIdentifier.database.getOrElse("")}' AND $TableNameField='${tableIdentifier.table}'
+             """.stripMargin.replaceAll("\n", " "))
+
+        prepped.setString(1, sqlText)
+        prepped.execute()
+      }
+      connection.commit()
+
+    } finally {
+      connection.setAutoCommit(true)
+    }
 
   private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
 
