@@ -22,6 +22,7 @@ import java.sql.ResultSet
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.SimpleCatalystConf
+import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
@@ -198,6 +199,9 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
   override def dropAllPersistedTables(): Unit = 
     connection.createStatement.executeUpdate(s"TRUNCATE $db.$table")
-  
+
+  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = ???
+
+  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = ???
 
 }
