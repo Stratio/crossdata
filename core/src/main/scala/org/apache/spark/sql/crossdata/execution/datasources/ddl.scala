@@ -20,6 +20,7 @@ import org.apache.spark.Logging
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.plans.logical.Command
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.{CrossdataTable, XDCatalog}
 import org.apache.spark.sql.execution.RunnableCommand
@@ -30,6 +31,7 @@ import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructFie
 import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
 
 import XDCatalog._
+
 
 
 private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
@@ -115,6 +117,16 @@ private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, query:
   }
 }
 
+case class CreateExternalTable(
+                             tableIdent: TableIdentifier,
+                             userSpecifiedSchema: Option[StructType],
+                             provider: String,
+                             options: Map[String, String]) extends LogicalPlan with Command {
 
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    sqlContext.catalog.createExternalTable(tableIdent.toSeq, userSpecifiedSchema, provider, options)
+    Seq.empty
+  }
 
+}
 
