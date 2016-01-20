@@ -134,44 +134,6 @@
             <id>package</id>
             <build>
                 <plugins>
-                    <!--<plugin>-->
-                        <!--<groupId>org.apache.maven.plugins</groupId>-->
-                        <!--<artifactId>maven-shade-plugin</artifactId>-->
-                        <!--<version>2.4.1</version>-->
-                        <!--<executions>-->
-                            <!--&lt;!&ndash; Run shade goal on package phase &ndash;&gt;-->
-                            <!--<execution>-->
-                                <!--<phase>package</phase>-->
-                                <!--<goals>-->
-                                    <!--<goal>shade</goal>-->
-                                <!--</goals>-->
-                                <!--<configuration>-->
-                                    <!--<transformers>-->
-                                        <!--<transformer-->
-                                                <!--implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
-                                            <!--<mainClass>com.stratio.crossdata.driver.shell.BasicShell</mainClass>-->
-                                        <!--</transformer>-->
-                                        <!--<transformer-->
-                                                <!--implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">-->
-                                            <!--<resource>reference.conf</resource>-->
-                                        <!--</transformer>-->
-                                    <!--</transformers>-->
-
-                                    <!--<filters>-->
-                                        <!--<filter>-->
-                                            <!--<artifact>*:*</artifact>-->
-                                            <!--<excludes>-->
-                                                <!--<exclude>META-INF/*.SF</exclude>-->
-                                                <!--<exclude>META-INF/*.DSA</exclude>-->
-                                                <!--<exclude>META-INF/*.RSA</exclude>-->
-                                            <!--</excludes>-->
-                                        <!--</filter>-->
-                                    <!--</filters>-->
-                                <!--</configuration>-->
-                            <!--</execution>-->
-                        <!--</executions>-->
-                    <!--</plugin>-->
-
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>appassembler-maven-plugin</artifactId>
@@ -349,14 +311,7 @@
                                             <path>src/main/dist/config/driver-application.conf</path>
                                             <toFile>/etc/sds/crossdata/driver/driver-application.conf</toFile>
                                         </copyFile>
-                                        <copyFile>
-                                            <path>src/main/dist/config/core-application.conf</path>
-                                            <toFile>/etc/sds/crossdata/driver/core-application.conf</toFile>
-                                        </copyFile>
-                                        <copyFile>
-                                            <path>src/main/dist/config/xdmetrics.properties</path>
-                                            <toFile>/etc/sds/crossdata/driver/xdmetrics.properties</toFile>
-                                        </copyFile>
+
                                         <copyFile>
                                             <path>src/main/dist/config/crossdata-env.sh</path>
                                             <toFile>/etc/sds/crossdata/driver/crossdata-env.sh</toFile>
@@ -406,14 +361,6 @@
                                         <copyFile>
                                             <path>src/main/dist/config/driver-application.conf</path>
                                             <toFile>/etc/sds/crossdata/driver/driver-application.conf</toFile>
-                                        </copyFile>
-                                        <copyFile>
-                                            <path>src/main/dist/config/core-application.conf</path>
-                                            <toFile>/etc/sds/crossdata/driver/core-application.conf</toFile>
-                                        </copyFile>
-                                        <copyFile>
-                                            <path>src/main/dist/config/xdmetrics.properties</path>
-                                            <toFile>/etc/sds/crossdata/driver/xdmetrics.properties</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/dist/config/crossdata-env.sh</path>
