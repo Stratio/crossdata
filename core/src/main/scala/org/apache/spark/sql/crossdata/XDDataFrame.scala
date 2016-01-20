@@ -24,7 +24,9 @@ import org.apache.spark.sql.crossdata.ExecutionType.{ExecutionType, Default, Nat
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import XDDataFrame.findNativeQueryExecutor
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
+
+import scala.collection.mutable.ArrayBuffer
 
 private[sql] object XDDataFrame {
 
@@ -133,9 +135,43 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
             Seq((StructField(name, t, nable, mdata),vobject))
           case ((StructField(name, StructType(_), _, _), col : GenericRowWithSchema), (parentName, false)) =>
             flatRow(col, Seq.fill(col.schema.size)(s"${baseName(parentName)}$name" -> false))
+            //TODO: Remove the following commented code
+          /*case ((StructField(name, ArrayType(etype, _), nullable, meta), arr: ArrayBuffer[_]), (parentName, false)) =>
+            Seq.empty*/
           case ((StructField(name, dtype, nullable, meta), vobject), (parentName, false)) =>
             Seq((StructField(s"${baseName(parentName)}$name", dtype, nullable, meta), vobject))
         }
+      }
+
+      def verticallyFlatRows(row: GenericRowWithSchema): Seq[GenericRowWithSchema] = {
+
+        def cartesian[T](ls: Seq[Seq[T]]): Seq[Seq[T]] = (ls :\ Seq(Seq.empty[T])) {
+          case (cur: Seq[T], prev) => for(x <- prev; y <- cur) yield y +: x
+        } filterNot(_.isEmpty)
+
+        val newSchema = StructType(
+          row.schema map {
+            case StructField(name, ArrayType(etype, _), nullable, meta) =>
+              StructField(name, etype, true)
+            case other => other
+          }
+        )
+
+        val elementsWithIndex = row.values zipWithIndex
+
+        val arrayColumnValues: Seq[Seq[(Int, _)]] = elementsWithIndex collect {
+          case (res: Seq[_], idx) => res map(idx -> _)
+        }
+
+        cartesian(arrayColumnValues) map { case replacements: Seq[(Int, _)] =>
+          val idx2newVal: Map[Int, Any] = replacements.toMap
+          val values = elementsWithIndex map { case (prevVal, idx: Int) =>
+            idx2newVal.get(idx).getOrElse(prevVal)
+          }
+          new GenericRowWithSchema(values, newSchema)
+        }
+
+
       }
 
       require(firstLevelNames.isEmpty || firstLevelNames.size == rows.headOption.map(_.length).getOrElse(0))
@@ -147,7 +183,9 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       rows map {
         case row: GenericRowWithSchema =>
           val newFieldsArray = flatRow(row, thisLevelNames)
-          new GenericRowWithSchema(newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1))) : Row
+          val horizontallyFlattened: Row = new GenericRowWithSchema(
+            newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1)))
+          horizontallyFlattened
         case row: Row =>
           row
       }
