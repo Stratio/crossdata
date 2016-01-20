@@ -1,0 +1,8 @@
+USER="root"
+PIDFILE="/var/run/sds/crossdata-shell.pid"
+LOGFILE="/var/log/sds/crossdata/server/crossdata-shell.log"
+LOCKFILE="/var/lock/subsys/$NAME.lock"
+DAEMON_OPTS="-l $LOGFILE"
+CROSSDATA_CONF="/etc/sds/crossdata/driver"
+CROSSDATA_HOME="/opt/sds/crossdata/driver"
+CROSSDATA_LOGS="/var/log/sds/crossdata/driver"

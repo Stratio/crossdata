@@ -1,4 +1,25 @@
 #!/bin/sh
+<<<<<<< HEAD
+echo "> Installing maven"
+wget apache.rediris.es/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
+cd /module
+tar -xzf apache-maven-3.3.3-bin.tar.gz -C /opt/sds
+echo "export M2_HOME=/opt/sds/apache-maven-3.3.3" >> /home/vagrant/.bashrc
+source ~/.bashrc
+echo "export PATH=/opt/sds/apache-maven-3.3.3/bin:/usr/local/sbin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" >> /home/vagrant/.bashrc
+
+echo "> Starting MongoDB"
+echo "smallfiles=true" >> /etc/mongod.conf
+/sbin/service mongod start
+
+echo "> Starting ElasticSearch"
+/sbin/service elasticsearch start
+echo "http.cors.enabled: true" >> /etc/sds/elasticsearch/elasticsearch.yml
+/opt/sds/elasticsearch/bin/./plugin -install royrusso/elasticsearch-HQ
+/opt/sds/elasticsearch/bin/./plugin -install mobz/elasticsearch-head
+
+rm -f /etc/udev/rules.d/70-persistent-net.rules
+=======
 STRATIO_ENV=$1
 STRATIO_MODULE="crossdata ova"
 STRATIO_MODULE_VERSION="1.0.1"
@@ -11,6 +32,7 @@ ipaddress=$(ip -4 addr show dev eth0 | grep inet | sed 's/^ *//g' | cut -d' ' -f
 #######################################
 ## Cassandra
 #######################################
+>>>>>>> upstream/master
 
 echo "Installing Cassandra..."
 rpm --quiet -q stratio-cassandra || yum -y -q --nogpgcheck install stratio-cassandra
@@ -29,103 +51,18 @@ sed -i "s/^\(rpc_address:\).*$/\1 0.0.0.0/" /etc/sds/cassandra/cassandra.yaml
 sed -i "s/^# \(broadcast_rpc_address:\).*$/\1 $ipaddress/" /etc/sds/cassandra/cassandra.yaml
 sed -i "s/\(\-Dcassandra.logdir=\)\$CASSANDRA_HOME\/logs/\1\/var\/log\/sds\/cassandra/" /opt/sds/cassandra/bin/cassandra
 
-#######################################
-## Crossdata
-#######################################
-echo "Installing Crossdata..."
-rpm --quiet -q jakarta-commons-daemon-jsvc || yum -y -q --nogpgcheck install http://$REPOSITORY/RHEL/6.5/x86_64/jakarta-commons-daemon-jsvc-1.0.1-8.9.el6.x86_64.rpm
-rpm --quiet -q stratio-crossdata || yum -y -q --nogpgcheck install stratio-crossdata
+echo "> Installing Crossdata"
+/usr/bin/yum -y install stratio-crossdata
+/sbin/chkconfig --add crossdata
+/sbin/chkconfig  crossdata on
+/sbin/chkconfig --list
+service crossdata start
 
+cd /opt/sds/crossdats/server/lib
+wget http://sodio.stratio.com/nexus/service/local/artifact/maven/redirect?r=releases&g=com.stratio.crossdata&a=crossdata-driver&v=
 
+/usr/bin/yum -y install stratio-crossdata-driver
 
-echo "Configuring Crossdata..."
-#Config Crossdata
-sed -i "s/^\(CROSSDATA_HOME=\).*$/\1\"\/opt\/sds\/crossdata\"/" /etc/sds/crossdata/crossdata-env.sh
-sed -i "s/^\(CROSSDATA_LOG_OUT=\).*$/\1\"\/var\/log\/sds\/crossdata\/crossdata-server.out\"/" /etc/sds/crossdata/crossdata-env.sh
-sed -i "s/^\(CROSSDATA_LOG_ERR=\).*$/\1\"\/var\/log\/sds\/crossdata\/crossdata-server.err\"/" /etc/sds/crossdata/crossdata-env.sh
-sed -i "s/^\(CROSSDATA_SERVER_PID=\).*$/\1\"\/var\/run\/sds\/crossdata-server.pid\"/" /etc/sds/crossdata/crossdata-env.sh
-sed -i "s/^\(crossdata-server.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/crossdata/server-application.conf
-sed -i "s/^\(crossdata-server.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/crossdata/server-application.conf
-sed -i "s/^\(crossdata-driver.config.cluster.hosts =\).*$/\1 \[\"$ipaddress\:13420\"\]/" /etc/sds/crossdata/driver-application.conf
-
-#######################################
-## Spark
-#######################################
-echo "Installing Spark..."
-rpm --quiet -q stratio-spark || yum -y -q --nogpgcheck install stratio-spark
-
-echo "Generating keys..."
-mkdir /opt/sds/spark/.ssh
-chmod 700 /opt/sds/spark/.ssh
-ssh-keygen -t rsa -b 2048 -f /opt/sds/spark/.ssh/id_rsa -N ""
-cp /opt/sds/spark/.ssh/id_rsa.pub /opt/sds/spark/.ssh/authorized_keys
-chown -R spark:spark /opt/sds/spark/.ssh/
-mkdir -p /user/hive/warehouse
-mkdir -p /user/warehouse
-chown -R stratio:stratio /user
-
-#Config Spark
-echo "Configuring Spark..."
-sed -i "s/^\(spark.master\).*$/\1 spark:\/\/$ipaddress:7077/" /etc/sds/spark/spark-defaults.conf
-sed -i "s/^export MESOS_NATIVE_LIBRARY=.*$//" /etc/sds/spark/spark-env.sh
-sed -i "s/^export MASTER=.*$//" /etc/sds/spark/spark-env.sh
-sed -i "s/^#export SPARK_EXECUTOR_URI=.*$//" /etc/sds/spark/spark-env.sh
-sed -i "s/\(SPARK_WORKER_MEMORY=\)\"4g\"/\1\"2g\"/" /etc/sds/spark/spark-env.sh
-sed -i "s/\(SPARK_WORKER_CORES\)=2/\1=1/" /etc/sds/spark/spark-env.sh
-sed -i "s/^#\(SPARK_MASTER_IP=\)/\1$ipaddress/" /etc/sds/spark/spark-env.sh
-sed -i "s/^#\(SPARK_EXECUTOR_MEMORY=\)/\1/" /etc/sds/spark/spark-env.sh
-sed -i "s/^#\(SPARK_DRIVER_MEMORY=\)/\1/" /etc/sds/spark/spark-env.sh
-
-#######################################
-## Connectors
-#######################################
-#Cassandra
-echo "Installing Cassandra connector..."
-rpm --quiet -q stratio-connector-cassandra || yum -y -q --nogpgcheck install stratio-connector-cassandra
-
-#config
-echo "Configuring Cassandra connector..."
-sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/cassandra/connector-application.conf
-sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/cassandra/connector-application.conf
-
-
-
-#SPARKSQL Connector
-echo "Installing SparkSQL connector..."
-rpm --quiet -q stratio-connector-sparksql || yum -y -q --nogpgcheck install stratio-connector-sparksql
-
-#config
-echo "Configuring SparkSQL connector..."
-sed -i "s/^\(spark.home             =\).*$/\1\"\/opt\/sds\/spark\"/" /etc/sds/connectors/sparksql/connector-application.conf
-sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/sparksql/connector-application.conf
-sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/sparksql/connector-application.conf
-
-
-
-chkconfig --add crossdata
-chkconfig --add cassandra
-chkconfig --add connector_cassandra
-chkconfig --add connector_sparksql
-chkconfig crossdata off
-chkconfig cassandra on
-chkconfig connector_cassandra off
-chkconfig connector_sparksql off
-echo "Starting services..."
-service cassandra start
-
-mv /etc/sds/connectors/sparksql/hive-site.xml /etc/sds/connectors/sparksql/hive-site.xml_bak
-
-cat >>/etc/rc.local <<EOF
-if [ ! -f $LOCK_FILE ]; then
-   curl -f -s -m 5 http://www.stratio.com/CheckUpdate/${STRATIO_MODULE}/${STRATIO_MODULE_VERSION}
-   echo "ok" > ${LOCK_FILE}
-fi
-EOF
-
-echo "Starting demo environment"
-cat >>/home/vagrant/.bash_profile <<EOF
-echo "--- PLEASE READ /etc/sds/crossdata/README.txt ---"
-EOF
-wget -P /etc/sds/crossdata https://raw.githubusercontent.com/jjlopezm/crossdata-client-example/patch-3/src/main/resources/README.txt --no-check-certificate
-
-echo "Follow instructions in /etc/sds/crossdata/README.txt"
+yum clean all
+dd if=/dev/zero of=/EMPTY bs=1M
+rm -f /EMPTY
