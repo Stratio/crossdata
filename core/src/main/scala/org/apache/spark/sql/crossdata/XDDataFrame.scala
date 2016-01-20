@@ -59,7 +59,6 @@ private[sql] object XDDataFrame {
 
       nativeExecutors match {
         case Seq(head) => {
-          head
           Some(head)
         }
         case _ =>
@@ -99,7 +98,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
    * @inheritdoc
    */
   override def collect(): Array[Row] = {
-    // if cache don't go through native
+    // If cache doesn't go through native
     if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
       super.collect()
     } else {

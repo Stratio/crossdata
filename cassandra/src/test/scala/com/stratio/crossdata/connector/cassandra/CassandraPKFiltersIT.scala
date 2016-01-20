@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.connector.cassandra
 
+import org.apache.log4j.Level
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.crossdata.ExecutionType._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -32,6 +34,7 @@ class CassandraPKFiltersIT extends CassandraWithSharedContext {
   override val Table = s"t$uuid"
   override val UnregisteredTable = ""
   override val schema = ListMap("date" -> "timestamp")
+  //override val schema = ListMap("date" -> "text")
   override val pk = "date" :: Nil
   override val indexedColumn = ""
   override val testData = List(List(FixedDate))
@@ -49,6 +52,7 @@ class CassandraPKFiltersIT extends CassandraWithSharedContext {
   "The Cassandra connector" should "execute natively a query with a filter by a PK of Timestamp type" in {
     assumeEnvironmentIsUpAndRunning
     val dataframe = sql(s"SELECT * FROM $Table WHERE ${pk(0)} = $FixedDate")
+    val optimizedPlan = dataframe.queryExecution.optimizedPlan
     val schema = dataframe.schema
     val result = dataframe.collect(Native)
     schema.fieldNames should equal (Seq(pk(0)))
