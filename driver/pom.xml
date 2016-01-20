@@ -312,14 +312,6 @@
                                             <toFile>/etc/sds/crossdata/driver/driver-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
-                                            <path>src/main/dist/config/core-application.conf</path>
-                                            <toFile>/etc/sds/crossdata/driver/core-application.conf</toFile>
-                                        </copyFile>
-                                        <copyFile>
-                                            <path>src/main/dist/config/xdmetrics.properties</path>
-                                            <toFile>/etc/sds/crossdata/driver/xdmetrics.properties</toFile>
-                                        </copyFile>
-                                        <copyFile>
                                             <path>src/main/dist/config/crossdata-env.sh</path>
                                             <toFile>/etc/sds/crossdata/driver/crossdata-env.sh</toFile>
                                         </copyFile>
@@ -368,14 +360,6 @@
                                         <copyFile>
                                             <path>src/main/dist/config/driver-application.conf</path>
                                             <toFile>/etc/sds/crossdata/driver/driver-application.conf</toFile>
-                                        </copyFile>
-                                        <copyFile>
-                                            <path>src/main/dist/config/core-application.conf</path>
-                                            <toFile>/etc/sds/crossdata/driver/core-application.conf</toFile>
-                                        </copyFile>
-                                        <copyFile>
-                                            <path>src/main/dist/config/xdmetrics.properties</path>
-                                            <toFile>/etc/sds/crossdata/driver/xdmetrics.properties</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/dist/config/crossdata-env.sh</path>
