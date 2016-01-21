@@ -122,7 +122,10 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       case _ => prev -> false
     }
 
-    def flatRows(rows: Array[Row], firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty): Array[Row] = {
+    def flatRows(
+                  rows: Array[Row],
+                  firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
+                ): Array[Row] = {
 
       def baseName(parentName: String): String = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
 
@@ -143,37 +146,6 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         }
       }
 
-      def verticallyFlatRows(row: GenericRowWithSchema): Seq[GenericRowWithSchema] = {
-
-        def cartesian[T](ls: Seq[Seq[T]]): Seq[Seq[T]] = (ls :\ Seq(Seq.empty[T])) {
-          case (cur: Seq[T], prev) => for(x <- prev; y <- cur) yield y +: x
-        } filterNot(_.isEmpty)
-
-        val newSchema = StructType(
-          row.schema map {
-            case StructField(name, ArrayType(etype, _), nullable, meta) =>
-              StructField(name, etype, true)
-            case other => other
-          }
-        )
-
-        val elementsWithIndex = row.values zipWithIndex
-
-        val arrayColumnValues: Seq[Seq[(Int, _)]] = elementsWithIndex collect {
-          case (res: Seq[_], idx) => res map(idx -> _)
-        }
-
-        cartesian(arrayColumnValues) map { case replacements: Seq[(Int, _)] =>
-          val idx2newVal: Map[Int, Any] = replacements.toMap
-          val values = elementsWithIndex map { case (prevVal, idx: Int) =>
-            idx2newVal.get(idx).getOrElse(prevVal)
-          }
-          new GenericRowWithSchema(values, newSchema)
-        }
-
-
-      }
-
       require(firstLevelNames.isEmpty || firstLevelNames.size == rows.headOption.map(_.length).getOrElse(0))
       val thisLevelNames = firstLevelNames.map {
         case (nameseq, true) => (nameseq.headOption.getOrElse(""), true)
@@ -191,9 +163,41 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       }
     }
 
+    def verticallyFlatRowArrays(row: GenericRowWithSchema): Seq[GenericRowWithSchema] = {
+
+      def cartesian[T](ls: Seq[Seq[T]]): Seq[Seq[T]] = (ls :\ Seq(Seq.empty[T])) {
+        case (cur: Seq[T], prev) => for(x <- prev; y <- cur) yield y +: x
+      } filterNot(_.isEmpty)
+
+      val newSchema = StructType(
+        row.schema map {
+          case StructField(name, ArrayType(etype, _), nullable, meta) =>
+            StructField(name, etype, true)
+          case other => other
+        }
+      )
+
+      val elementsWithIndex = row.values zipWithIndex
+
+      val arrayColumnValues: Seq[Seq[(Int, _)]] = elementsWithIndex collect {
+        case (res: Seq[_], idx) => res map(idx -> _)
+      }
+
+      cartesian(arrayColumnValues) map { case replacements: Seq[(Int, _)] =>
+        val idx2newVal: Map[Int, Any] = replacements.toMap
+        val values = elementsWithIndex map { case (prevVal, idx: Int) =>
+          idx2newVal.get(idx).getOrElse(prevVal)
+        }
+        new GenericRowWithSchema(values, newSchema)
+      }
+    }
+
     def processProjection(plist: Seq[NamedExpression], child: LogicalPlan): Array[Row] = {
       val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
-      flatRows(collect(), fullyAnnotatedRequestedColumns)
+      flatRows(collect(), fullyAnnotatedRequestedColumns) flatMap {
+        case row: GenericRowWithSchema => verticallyFlatRowArrays(row)
+        case row => Seq(row)
+      }
     }
 
     queryExecution.optimizedPlan match {
