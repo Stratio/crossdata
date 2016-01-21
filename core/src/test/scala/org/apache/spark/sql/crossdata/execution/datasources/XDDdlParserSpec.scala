@@ -17,7 +17,9 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.execution.datasources.{CreateTableUsing, DescribeCommand, RefreshTable}
+import org.apache.spark.sql.execution.datasources.CreateTableUsing
+import org.apache.spark.sql.execution.datasources.DescribeCommand
+import org.apache.spark.sql.execution.datasources.RefreshTable
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -107,7 +109,13 @@ class XDDdlParserSpec extends BaseXDTest {
   it should "successfully parse a CREATE VIEW into a CreateView RunnableCommand" in {
 
     val sentence = "CREATE VIEW vn AS SELECT * FROM tn"
-    parser.parse(sentence) shouldBe CreateView( TableIdentifier("vn"), " SELECT * FROM tn")
+    val logicalPlan = parser.parse(sentence)
+    logicalPlan shouldBe a [CreateView]
+    logicalPlan match {
+      case CreateView(tableIdent, lPlan, sqlView) =>
+        tableIdent shouldBe TableIdentifier("vn")
+        sqlView.trim shouldBe  "SELECT * FROM tn"
+    }
 
   }
 
