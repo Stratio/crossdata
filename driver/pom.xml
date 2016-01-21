@@ -230,7 +230,7 @@
                         <configuration>
                             <contact><![CDATA[Stratio <crossdata@stratio.com>]]></contact>
                             <contactEmail>crossdata@stratio.com</contactEmail>
-                            <outputFileName>stratio-crossdata-driver</outputFileName>
+                            <outputFileName>stratio-crossdata-shell</outputFileName>
                             <rpm>
                                 <group>stratio</group>
                                 <requires>bash</requires>
