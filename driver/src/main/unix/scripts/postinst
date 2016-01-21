@@ -6,12 +6,12 @@ set -xe
 
 GROUP='stratio'
 USER='stratio'
-DIR_INSTALL='/opt/sds/crossdata/driver'
-DIR_CONF='/etc/sds/crossdata/driver'
-DIR_LOG='/var/log/sds/crossdata/driver'
+DIR_INSTALL='/opt/sds/crossdata-shell'
+DIR_CONF='/etc/sds/crossdata-shell'
+DIR_LOG='/var/log/sds/crossdata-shell'
 
-chmod 755 /opt/sds/crossdata/driver/bin
-chmod +x /opt/sds/crossdata/driver/bin/*
+chmod 755 /opt/sds/crossdata-shell/bin
+chmod +x /opt/sds/crossdata-shell/bin/*
 
 case "$1" in
   configure)

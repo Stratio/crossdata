@@ -6,13 +6,13 @@ set -xe
 
 GROUP='stratio'
 USER='stratio'
-DIR_INSTALL='/opt/sds/crossdata/server'
-DIR_CONF='/etc/sds/crossdata/server'
-DIR_LOG='/var/log/sds/crossdata/server'
+DIR_INSTALL='/opt/sds/crossdata'
+DIR_CONF='/etc/sds/crossdata'
+DIR_LOG='/var/log/sds/crossdata'
 
 chmod 755 /etc/init.d/crossdata
-chmod 755 /opt/sds/crossdata/server/bin
-chmod +x /opt/sds/crossdata/server/bin/*
+chmod 755 /opt/sds/crossdata/bin
+chmod +x /opt/sds/crossdata/bin/*
 
 case "$1" in
   configure)

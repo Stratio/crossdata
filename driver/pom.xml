@@ -263,11 +263,11 @@
                             <assembly>
                                 <mkdirs>
                                     <paths>
-                                        <path>etc/sds/crossdata/driver</path>
+                                        <path>etc/sds/crossdata-shell</path>
                                         <path>var/run/sds</path>
-                                        <path>var/sds/crossdata/driver</path>
+                                        <path>var/sds/crossdata-shell</path>
                                         <path>/var/lock/subsys</path>
-                                        <path>/var/log/sds/crossdata/driver</path>
+                                        <path>/var/log/sds/crossdata-shell</path>
                                     </paths>
                                     <attributes>
                                         <user>stratio</user>
@@ -277,11 +277,11 @@
                                 </mkdirs>
                                 <copyDirectory>
                                     <from>target/crossdata-dist-${project.version}/conf/</from>
-                                    <to>/etc/sds/crossdata/driver</to>
+                                    <to>/etc/sds/crossdata-shell</to>
                                 </copyDirectory>
                                 <copyDirectory>
                                     <from>target/crossdata-dist-${project.version}/bin</from>
-                                    <to>/opt/sds/crossdata/driver/bin</to>
+                                    <to>/opt/sds/crossdata-shell/bin</to>
                                     <!-- afects all files on this directory -->
                                     <fileAttributes>
                                         <user>stratio</user>
@@ -292,7 +292,7 @@
 
                                 <copyDirectory>
                                     <from>target/crossdata-dist-${project.version}/lib</from>
-                                    <to>/opt/sds/crossdata/driver/lib</to>
+                                    <to>/opt/sds/crossdata-shell/lib</to>
                                 </copyDirectory>
 
                             </assembly>
@@ -309,19 +309,19 @@
                                     <assembly>
                                         <copyFile>
                                             <path>src/main/dist/config/driver-application.conf</path>
-                                            <toFile>/etc/sds/crossdata/driver/driver-application.conf</toFile>
+                                            <toFile>/etc/sds/crossdata-shell/driver-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/dist/config/crossdata-env.sh</path>
-                                            <toFile>/etc/sds/crossdata/driver/crossdata-env.sh</toFile>
+                                            <toFile>/etc/sds/crossdata-shell/crossdata-env.sh</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/dist/config/driver-log.properties</path>
-                                            <toFile>/etc/sds/crossdata/driver/driver-log.properties</toFile>
+                                            <toFile>/etc/sds/crossdata-shell/driver-log.properties</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/dist/include/README.rst</path>
-                                            <toFile>/opt/sds/crossdata/driver/README.rst</toFile>
+                                            <toFile>/opt/sds/crossdata-shell/README.rst</toFile>
                                             <attributes>
                                                 <user>stratio</user>
                                                 <group>stratio</group>
@@ -330,11 +330,11 @@
                                         </copyFile>
                                         <copyFile>
                                             <path>target/crossdata-dist-${project.version}/LICENSE</path>
-                                            <toFile>/opt/sds/crossdata/driver/LICENSE</toFile>
+                                            <toFile>/opt/sds/crossdata-shell/LICENSE</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>target/crossdata-dist-${project.version}/NOTICE</path>
-                                            <toFile>/opt/sds/crossdata/driver/NOTICE</toFile>
+                                            <toFile>/opt/sds/crossdata-shell/NOTICE</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/unix/files_and_dirs/etc/default/crossdata-driver-variables</path>
@@ -359,19 +359,19 @@
                                     <assembly>
                                         <copyFile>
                                             <path>src/main/dist/config/driver-application.conf</path>
-                                            <toFile>/etc/sds/crossdata/driver/driver-application.conf</toFile>
+                                            <toFile>/etc/sds/crossdata-shell/driver-application.conf</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/dist/config/crossdata-env.sh</path>
-                                            <toFile>/etc/sds/crossdata/driver/crossdata-env.sh</toFile>
+                                            <toFile>/etc/sds/crossdata-shell/crossdata-env.sh</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/dist/config/driver-log.properties</path>
-                                            <toFile>/etc/sds/crossdata/driver/driver-log.properties</toFile>
+                                            <toFile>/etc/sds/crossdata-shell/driver-log.properties</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/dist/include/README.rst</path>
-                                            <toFile>/opt/sds/crossdata/driver/README.rst</toFile>
+                                            <toFile>/opt/sds/crossdata-shell/README.rst</toFile>
                                             <attributes>
                                                 <user>stratio</user>
                                                 <group>stratio</group>
@@ -380,11 +380,11 @@
                                         </copyFile>
                                         <copyFile>
                                             <path>target/crossdata-dist-${project.version}/LICENSE</path>
-                                            <toFile>/opt/sds/crossdata/driver/LICENSE</toFile>
+                                            <toFile>/opt/sds/crossdata-shell/LICENSE</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>target/crossdata-dist-${project.version}/NOTICE</path>
-                                            <toFile>/opt/sds/crossdata/driver/NOTICE</toFile>
+                                            <toFile>/opt/sds/crossdata-shell/NOTICE</toFile>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/unix/files_and_dirs/etc/default/crossdata-driver-variables</path>
