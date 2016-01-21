@@ -26,8 +26,6 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 import XDDataFrame.findNativeQueryExecutor
 import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
 
-import scala.collection.mutable.ArrayBuffer
-
 private[sql] object XDDataFrame {
 
   def apply(sqlContext: SQLContext, logicalPlan: LogicalPlan): DataFrame = {
@@ -107,7 +105,6 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     }
   }
 
-  //TODO: Remove `annotatedCollect` wrapper method when a better alternative to PR#257 has been found
   def flattenedCollect(): Array[Row] = {
 
     def flattenProjectedColumns(exp: Expression, prev: List[String] = Nil): (List[String], Boolean) = exp match {

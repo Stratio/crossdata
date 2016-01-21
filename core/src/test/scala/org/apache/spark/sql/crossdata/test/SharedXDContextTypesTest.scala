@@ -20,6 +20,7 @@ import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.{XDDataFrame, ExecutionType}
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
+import org.apache.spark.sql.types.{StructType, ArrayType, StructField}
 
 /* Mix this trait in a type test class to get most of the type test done.
  * Its based on SharedXDContextWithDataTest thus filling most of that template slots and generating new entry points
@@ -65,22 +66,39 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
         ) typeCheck(dframe.collect(executionType).head(i))
       }
 
-    //TODO: Remove Multi-level column flat test when a better alternative to PR#257 has been found
     //Multi-level column flat test
-    if(typesSet.map(_.colname) contains "structofstruct") {
 
-      it should "provide flattened column names through the `annotatedCollect` method" in {
-        val dataFrame = sql("SELECT structofstruct.struct1.structField1 FROM typesCheckTable")
-        val rows = dataFrame.asInstanceOf[XDDataFrame].flattenedCollect()
-        rows.head.schema.head.name shouldBe "structofstruct.struct1.structField1"
+    it should "provide flattened column names through the `annotatedCollect` method" in {
+      val dataFrame = sql("SELECT structofstruct.struct1.structField1 FROM typesCheckTable")
+      val rows = dataFrame.flattenedCollect()
+      rows.head.schema.head.name shouldBe "structofstruct.struct1.structField1"
+    }
+
+    it should "be able to flatten results for LIMIT queries" in {
+      val dataFrame = sql("SELECT structofstruct FROM typesCheckTable LIMIT 1")
+      val rows = dataFrame.flattenedCollect()
+      rows.head.schema.head.name shouldBe "structofstruct.field1"
+    }
+
+    it should "be able to vertically flatten results for array columns" in {
+      val dataFrame = sql(s"SELECT arraystructarraystruct FROM typesCheckTable")
+      val res = dataFrame.flattenedCollect()
+
+      // No array columns should be found in the result schema
+      res.head.schema filter {
+        case StructField(_, _: ArrayType, _, _) =>
+          true
+        case _ =>
+          false
+      } shouldBe empty
+
+      // No struct columns should be dound in the result schema
+      res.head.schema filter {
+        case StructField(_, _: StructType, _, _) =>
+          true
+        case _ =>
+          false
       }
-
-      it should "be able to flatten results for LIMIT queries" in {
-        val dataFrame = sql("SELECT structofstruct FROM typesCheckTable LIMIT 1")
-        val rows = dataFrame.asInstanceOf[XDDataFrame].flattenedCollect()
-        rows.head.schema.head.name shouldBe "structofstruct.field1"
-      }
-
     }
 
   }
@@ -116,7 +134,17 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
     SparkSQLColdDef("arraystruct", "ARRAY<STRUCT<field1: INT, field2: INT>>", _ shouldBe a[Seq[_]]),
     SparkSQLColdDef("arraystructwithdate", "ARRAY<STRUCT<field1: DATE, field2: INT>>", _ shouldBe a[Seq[_]]),
     SparkSQLColdDef("structofstruct", "STRUCT<field1: DATE, field2: INT, struct1: STRUCT<structField1: STRING, structField2: INT>>", _ shouldBe a[Row]),
-    SparkSQLColdDef("mapstruct", "MAP<STRING, STRUCT<structField1: DATE, structField2: INT>>", _ shouldBe a[Map[_,_]])
+    SparkSQLColdDef("mapstruct", "MAP<STRING, STRUCT<structField1: DATE, structField2: INT>>", _ shouldBe a[Map[_,_]]),
+    SparkSQLColdDef(
+      "arraystructarraystruct",
+      "ARRAY<STRUCT<stringfield: STRING, arrayfield: ARRAY<STRUCT<field1: INT, field2: INT>>>>",
+      { res =>
+        res shouldBe a[Seq[_]]
+        res.asInstanceOf[Seq[_]].head shouldBe a[Row]
+        res.asInstanceOf[Seq[_]].head.asInstanceOf[Row].get(1) shouldBe a[Seq[_]]
+        res.asInstanceOf[Seq[_]].head.asInstanceOf[Row].get(1).asInstanceOf[Seq[_]].head shouldBe a[Row]
+      }
+    )
   )
 
   override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+ {
