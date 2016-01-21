@@ -123,9 +123,9 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     }
 
     def flatRows(
-                  rows: Array[Row],
+                  rows: Seq[Row],
                   firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
-                ): Array[Row] = {
+                ): Seq[Row] = {
 
       def baseName(parentName: String): String = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
 
@@ -138,9 +138,6 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
             Seq((StructField(name, t, nable, mdata),vobject))
           case ((StructField(name, StructType(_), _, _), col : GenericRowWithSchema), (parentName, false)) =>
             flatRow(col, Seq.fill(col.schema.size)(s"${baseName(parentName)}$name" -> false))
-            //TODO: Remove the following commented code
-          /*case ((StructField(name, ArrayType(etype, _), nullable, meta), arr: ArrayBuffer[_]), (parentName, false)) =>
-            Seq.empty*/
           case ((StructField(name, dtype, nullable, meta), vobject), (parentName, false)) =>
             Seq((StructField(s"${baseName(parentName)}$name", dtype, nullable, meta), vobject))
         }
@@ -192,18 +189,28 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       }
     }
 
-    def processProjection(plist: Seq[NamedExpression], child: LogicalPlan): Array[Row] = {
-      val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
-      flatRows(collect(), fullyAnnotatedRequestedColumns) flatMap {
-        case row: GenericRowWithSchema => verticallyFlatRowArrays(row)
+    def iterativeFlatten(
+                          rows: Seq[Row],
+                          firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
+                        ): Seq[Row] =
+      flatRows(rows, firstLevelNames) flatMap {
+        case row: GenericRowWithSchema =>
+          row.schema collectFirst {
+            case StructField(_, _: ArrayType, _, _) =>
+              iterativeFlatten(verticallyFlatRowArrays(row))
+          } getOrElse Seq(row)
         case row => Seq(row)
       }
+
+    def processProjection(plist: Seq[NamedExpression], child: LogicalPlan): Array[Row] = {
+      val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
+      iterativeFlatten(collect(), fullyAnnotatedRequestedColumns) toArray
     }
 
     queryExecution.optimizedPlan match {
       case Limit(_, Project(plist, child)) => processProjection(plist, child)
       case Project(plist, child) => processProjection(plist, child)
-      case _ => flatRows(collect())
+      case _ => iterativeFlatten(collect()) toArray
     }
 
   }
