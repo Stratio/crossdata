@@ -29,6 +29,7 @@ import com.datastax.spark.connector.util.ConfigParameter
 import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.FunctionInventory.UDF
 import com.stratio.crossdata.connector.TableInventory.Table
+import com.stratio.crossdata.connector.TableManipulation
 import com.stratio.crossdata.connector.cassandra.DefaultSource._
 import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
 import org.apache.spark.SparkConf
@@ -74,7 +75,7 @@ import scala.collection.mutable
  *       spark_cassandra_connection_timeout_ms "1000"
  *      )
  */
-class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory with DataSourceRegister {
+class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory with DataSourceRegister with TableManipulation {
 
   override def shortName(): String = "cassandra"
 
@@ -154,6 +155,10 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   }
 
+  override def createExternalTable(tableName: String, source: String, schema: StructType, options: Map[String, String]): Boolean = {
+    print("Hoooooooooooooooola")
+    false
+  }
 
   //-----------MetadataInventory-----------------
 
@@ -220,7 +225,6 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
   ) ++ opts.filterKeys(Set(CassandraConnectionHostProperty, CassandraDataSourceClusterNameProperty).contains(_))
 
   //------------MetadataInventory-----------------
-
 }
 
 object DefaultSource {
