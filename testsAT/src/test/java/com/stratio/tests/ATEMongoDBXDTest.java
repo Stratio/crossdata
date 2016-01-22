@@ -99,7 +99,7 @@ public class ATEMongoDBXDTest extends BaseTest{
         for(int i = 0; i < 10; i++){
             //Creamos el subdocumento
             BasicDBObject subDocumentBuilder = new BasicDBObject();
-            subDocumentBuilder.put("name", "name_+i");
+            subDocumentBuilder.put("name", "name_"+i);
             BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
                     .add("ident", i).append("person", subDocumentBuilder);
             tableSubField.insert(documentBuilder.get());
