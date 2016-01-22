@@ -38,6 +38,14 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
   override type ClientParams = ElasticClient
   override val provider: String = SourceProvider
 
+  override val defaultOptions = Map(
+    "resource" -> s"$Index/$Type",
+    "es.nodes" -> s"$ElasticHost",
+    "es.port" -> s"$ElasticRestPort",
+    "es.nativePort" -> s"$ElasticNativePort",
+    "es.cluster" -> s"$ElasticClusterName"
+  )
+
   override protected def saveTestData: Unit = for (a <- 1 to 10) {
     client.get.execute {
       index into Index / Type fields(
@@ -63,17 +71,8 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
     elasticClient
   } toOption
 
-  override val sparkRegisterTableSQL: Seq[SparkTable] = s"""|CREATE TEMPORARY TABLE $Type
-                                                            |(
-                                                            |  id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN, birthday DATE)
-                                                            |  USING $SourceProvider
-                                                            |  OPTIONS (
-                                                            |  resource '$Index/$Type',
-                                                            |  es.nodes '$ElasticHost',
-                                                            |  es.port '$ElasticRestPort',
-                                                            |  es.nativePort '$ElasticNativePort',
-                                                            |  es.cluster '$ElasticClusterName'
-                                                            |)""".stripMargin.replaceAll("\n", " ")::Nil
+  override val sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
+    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN, birthday DATE)")
 
   override val runningError: String = "ElasticSearch and Spark must be up and running"
 

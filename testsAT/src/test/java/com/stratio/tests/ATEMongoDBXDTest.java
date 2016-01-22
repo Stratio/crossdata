@@ -22,6 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 import org.testng.annotations.Test;
 import cucumber.api.CucumberOptions;
+
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObjectBuilder;
 import com.stratio.tests.utils.BaseTest;
 import com.stratio.cucumber.testng.CucumberRunner;
@@ -33,7 +35,8 @@ import com.mongodb.MongoClient;
 import com.stratio.tests.utils.ThreadProperty;
 
 
-@CucumberOptions(features = { "src/test/resources/features/Mongo/MongoSelectSimple.feature",
+@CucumberOptions(features = {
+        "src/test/resources/features/Mongo/MongoSelectSimple.feature",
         "src/test/resources/features/Mongo/MongoSelectLimit.feature",
         "src/test/resources/features/Mongo/MongoSelectEqualsFilter.feature",
         "src/test/resources/features/Mongo/MongoSelectLessFilter.feature",
@@ -43,7 +46,7 @@ import com.stratio.tests.utils.ThreadProperty;
         "src/test/resources/features/Mongo/MongoSelectINFilter.feature",
         "src/test/resources/features/Mongo/MongoSelectAnd.feature",
         "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature",
-          "src/test/resources/features/Udaf/Group_concat.feature",
+        "src/test/resources/features/Udaf/Group_concat.feature",
         "src/test/resources/features/Views/Views.feature"
         })
 
@@ -80,6 +83,19 @@ public class ATEMongoDBXDTest extends BaseTest{
                 .add("date", new java.sql.Date(parsedDate.getTime()));
             tabletest.insert(documentBuilder.get());
         }
+        //Table2
+        DBCollection tablearray  = db.getCollection("tablearray");
+        for(int i = 0; i < 10; i++){
+            BasicDBList names = new BasicDBList();
+            for(int x = 0; x < 5; x++){
+                names.add(x, "names_" + x + i);
+            }
+            BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
+                    .add("ident", i).append("names", names);
+            tablearray.insert(documentBuilder.get());
+        }
+
+        ////
         mongoClient.close();
         String connector = "Mongo";
         ThreadProperty.set("Host", "127.0.0.1");

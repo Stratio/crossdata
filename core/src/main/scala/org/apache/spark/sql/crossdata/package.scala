@@ -15,16 +15,10 @@
  */
 package org.apache.spark.sql
 
-import org.apache.spark.sql.types.StructType
+import scala.io.Source
 
 package object crossdata {
 
-  val CrossdataVersion = "1.0.0"
-
-  case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType],
-                            datasource: String, partitionColumn: Array[String] = Array.empty,
-                            opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)
-
-  val StringSeparator: String = "."
+  lazy val CrossdataVersion = Source.fromInputStream(getClass.getResourceAsStream("/crossdata.version")).mkString
 
 }

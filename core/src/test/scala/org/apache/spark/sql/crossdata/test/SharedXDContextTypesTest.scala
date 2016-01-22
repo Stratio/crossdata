@@ -57,6 +57,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
   def doTypesTest(datasourceName: String): Unit = {
     for(executionType <- ExecutionType.Spark::ExecutionType.Native::Nil)
       datasourceName should s"provide the right types for $executionType execution" in {
+        assumeEnvironmentIsUpAndRunning
         val dframe = sql("SELECT " + typesSet.map(_.colname).mkString(", ") + s" FROM $dataTypesTableName")
         for(
           (tpe, i) <- typesSet zipWithIndex;
@@ -66,12 +67,22 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
 
     //TODO: Remove Multi-level column flat test when a better alternative to PR#257 has been found
     //Multi-level column flat test
-    if(typesSet.map(_.colname) contains "structofstruct")
+    if(typesSet.map(_.colname) contains "structofstruct") {
+
       it should "provide flattened column names through the `annotatedCollect` method" in {
         val dataFrame = sql("SELECT structofstruct.struct1.structField1 FROM typesCheckTable")
-        val (_, colNames) = dataFrame.asInstanceOf[XDDataFrame].annotatedCollect()
-        colNames.head shouldBe "structofstruct.struct1.structField1"
+        val rows = dataFrame.asInstanceOf[XDDataFrame].flattenedCollect()
+        rows.head.schema.head.name shouldBe "structofstruct.struct1.structField1"
       }
+
+      it should "be able to flatten results for LIMIT queries" in {
+        val dataFrame = sql("SELECT structofstruct FROM typesCheckTable LIMIT 1")
+        val rows = dataFrame.asInstanceOf[XDDataFrame].flattenedCollect()
+        rows.head.schema.head.name shouldBe "structofstruct.field1"
+      }
+
+    }
+
   }
 
   abstract override def saveTestData: Unit = {

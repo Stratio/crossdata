@@ -108,8 +108,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}
-                            </outputDirectory>
+                            <outputDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}/src/main/include</directory>
@@ -125,8 +124,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}/conf
-                            </outputDirectory>
+                            <outputDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}/conf</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}/src/main/config</directory>

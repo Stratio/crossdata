@@ -13,43 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.spark.sql.crossdata.config
 
 import java.io.File
 
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 
 object CoreConfig {
+
   val CoreBasicConfig = "core-reference.conf"
   val ParentConfigName = "crossdata-core"
   val CoreUserConfigFile = "external.config.filename"
   val CoreUserConfigResource = "external.config.resource"
+  val CatalogConfigKey = "catalog"
 }
 
-trait CoreConfig  {
+trait CoreConfig {
+
+  import CoreConfig._
 
   val logger: Logger
 
- val config: Config = {
+  val config: Config = {
 
-    var defaultConfig = ConfigFactory.load(CoreConfig.CoreBasicConfig).getConfig(CoreConfig.ParentConfigName)
-    val envConfigFile = Option(System.getProperties.getProperty(CoreConfig.CoreUserConfigFile))
-    val configFile = envConfigFile.getOrElse(defaultConfig.getString(CoreConfig.CoreUserConfigFile))
-    val configResource = defaultConfig.getString(CoreConfig.CoreUserConfigResource)
+    var defaultConfig = ConfigFactory.load(CoreBasicConfig).getConfig(ParentConfigName)
+    val envConfigFile = Option(System.getProperties.getProperty(CoreUserConfigFile))
+    val configFile = envConfigFile.getOrElse(defaultConfig.getString(CoreUserConfigFile))
+    val configResource = defaultConfig.getString(CoreUserConfigResource)
 
     if (configResource != "") {
-      val resource = CoreConfig.getClass.getClassLoader.getResource(configResource)
+      val resource = getClass.getClassLoader.getResource(configResource)
       if (resource != null) {
-        val userConfig = ConfigFactory.parseResources(configResource).getConfig(CoreConfig.ParentConfigName)
+        val userConfig = ConfigFactory.parseResources(configResource).getConfig(ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
         logger.info("User resource (" + configResource + ") found in resources")
       } else {
         logger.warn("User resource (" + configResource + ") hasn't been found")
         val file = new File(configResource)
         if (file.exists()) {
-          val userConfig = ConfigFactory.parseFile(file).getConfig(CoreConfig.ParentConfigName)
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
           defaultConfig = userConfig.withFallback(defaultConfig)
           logger.info("User resource (" + configResource + ") found in classpath")
         } else {
@@ -61,7 +65,7 @@ trait CoreConfig  {
     if (configFile != "") {
       val file = new File(configFile)
       if (file.exists()) {
-        val userConfig = ConfigFactory.parseFile(file).getConfig(CoreConfig.ParentConfigName)
+        val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
         logger.info("External file (" + configFile + ") found")
       } else {
@@ -75,8 +79,5 @@ trait CoreConfig  {
 
     ConfigFactory.load(defaultConfig)
   }
-
-  val catalogConfig = config.getConfig("catalog")
-
 }
 

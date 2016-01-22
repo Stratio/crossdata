@@ -28,6 +28,8 @@ object DriverConfig {
   val DriverConfigResource = "external.config.resource"
   val DriverConfigFile = "external.config.filename"
   val DriverConfigHosts = "config.cluster.hosts"
+  val DriverRetryTimes = "config.retry.times"
+  val DriverRetryDuration = "config.retry.duration"
 }
 
 trait DriverConfig {

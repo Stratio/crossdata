@@ -187,6 +187,18 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             }else {
                 commonspec.getXdContext().executeQuery(sqlMongo.toString());
             }
+            sqlMongo = new StringBuilder();
+            sqlMongo.append("CREATE TEMPORARY TABLE tablearray(ident INT, names ARRAY<STRING>");
+            sqlMongo.append(") USING ");
+            sqlMongo.append("com.stratio.crossdata.connector.mongodb OPTIONS (host '");
+            sqlMongo.append(System.getProperty("MONGO_HOST", "127.0.0.1"));
+            sqlMongo.append(":").append(System.getProperty("MONGO_PORT", "27017"));
+            sqlMongo.append("',database 'databasetest',collection 'tablearray')");
+            if(ThreadProperty.get("Driver").equals("javaDriver")){
+                commonspec.getXdDriver().executeSyncQuery(sqlMongo.toString());
+            }else {
+                commonspec.getXdContext().executeQuery(sqlMongo.toString());
+            }
             break;
         case "ElasticSearch":
             StringBuilder sqlElasticSearch= new StringBuilder();

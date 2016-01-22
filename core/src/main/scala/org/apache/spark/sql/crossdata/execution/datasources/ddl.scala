@@ -18,13 +18,12 @@ package org.apache.spark.sql.crossdata.execution.datasources
 import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableManipulation
 import org.apache.spark.Logging
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.XDCatalog._
-import org.apache.spark.sql.crossdata.XDDataFrame
-import org.apache.spark.sql.crossdata.CrossdataTable
-import org.apache.spark.sql.crossdata.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.execution.datasources.ResolvedDataSource
@@ -34,10 +33,6 @@ import org.apache.spark.sql.types.BooleanType
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.AnalysisException
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SQLContext
-
 
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with Logging {
@@ -63,7 +58,8 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
 
       sqlContext.catalog.persistTable(
         CrossdataTable(t.tableName, t.database, t.schema, datasource, Array.empty[String], connectorOpts),
-        Option(LogicalRelation(relationProvider.createRelation(sqlContext, connectorOpts)))
+        LogicalRelation(relationProvider.createRelation(sqlContext, connectorOpts)
+        )
       )
     }
 
@@ -114,11 +110,12 @@ private[crossdata] case class CreateTempView(viewIdentifier: TableIdentifier, qu
 
 }
 
-private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, query: String)
+private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan, sql: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    throw new AnalysisException("Only temporary views are supported. Use CREATE TEMPORARY VIEW")
+    sqlContext.catalog.persistView(viewIdentifier, queryPlan, sql)
+    Seq.empty
   }
 }
 
