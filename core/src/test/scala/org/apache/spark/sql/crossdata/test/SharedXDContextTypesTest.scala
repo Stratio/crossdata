@@ -86,19 +86,16 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
 
       // No array columns should be found in the result schema
       res.head.schema filter {
-        case StructField(_, _: ArrayType, _, _) =>
-          true
-        case _ =>
-          false
+        case StructField(_, _: ArrayType, _, _) => true
+        case _ => false
       } shouldBe empty
 
       // No struct columns should be dound in the result schema
       res.head.schema filter {
-        case StructField(_, _: StructType, _, _) =>
-          true
-        case _ =>
-          false
-      }
+        case StructField(_, _: StructType, _, _) => true
+        case _ => false
+      } shouldBe empty
+
     }
 
   }
