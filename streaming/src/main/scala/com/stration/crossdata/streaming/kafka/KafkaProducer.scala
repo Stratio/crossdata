@@ -40,15 +40,15 @@ object KafkaProducer {
         new KeyedMessage[String, String](topic, key, message)
       }
     }
-    getProducer(topic, options).send(keyedMessage)
+    getProducer(options).send(keyedMessage)
   }
 
-  private def getProducer(topic: String, options: KafkaOptionsModel): Producer[String, String] = {
-    KafkaProducer.getInstance(getKey(topic, options.connection), options)
+  private def getProducer(options: KafkaOptionsModel): Producer[String, String] = {
+    KafkaProducer.getInstance(getKey(options.connection), options)
   }
 
-  private def getKey(topic: String, connection: Seq[ConnectionHostModel]): String =
-    s"$topic.${connection.map(_.toString).mkString(".")}"
+  private def getKey(connection: Seq[ConnectionHostModel]): String =
+    connection.map(_.toString).mkString(".")
 
   private def getInstance(key: String, options: KafkaOptionsModel): Producer[String, String] = {
     producers.getOrElse(key, {

@@ -25,20 +25,20 @@ import org.apache.spark.sql.crossdata.models.EphemeralTableModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.json4s.jackson.Serialization._
 
-trait EphemeralTableMapDAOComponent extends DAOComponent[String, Array[Byte], EphemeralTableModel]
+trait EphemeralTableMapDAO extends DAOComponent[String, Array[Byte], EphemeralTableModel]
 with ZookeeperRepositoryComponent with MapConfigComponent with SparkLoggerComponent with CrossdataSerializer {
 
   val dao: DAO = new EphemeralTableDAO {}
 
   trait EphemeralTableDAO extends DAO {
 
-    def fromVtoM(v: Array[Byte])(implicit manifest: Manifest[EphemeralTableModel]): EphemeralTableModel =
-      read[EphemeralTableModel](new String(v))
+    def fromVtoM[TM >: EphemeralTableModel <: EphemeralTableModel : Manifest](v: Array[Byte]): TM =
+      read[TM](new String(v))
 
-    def fromMtoV(m: EphemeralTableModel)(implicit manifest: Manifest[EphemeralTableModel]): Array[Byte] =
+    def fromMtoV[TM <: EphemeralTableModel : Manifest](m: TM): Array[Byte] =
       write(m).getBytes
 
-    def entity = EphemeralTablesPath
+    def entity : String = EphemeralTablesPath
   }
 
 }

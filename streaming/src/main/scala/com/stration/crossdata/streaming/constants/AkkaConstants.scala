@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package com.stration.crossdata.streaming.helpers
+package com.stration.crossdata.streaming.constants
 
-import org.apache.spark.sql.crossdata.daos.StreamingQueriesMapDAOComponent
-import org.apache.spark.sql.crossdata.models.StreamingQueryModel
+object AkkaConstants {
 
-class StreamingQueriesHelper(zookeeperConfiguration: Map[String, String]) extends StreamingQueriesMapDAOComponent {
-
-  val memoryMap = zookeeperConfiguration
-
-  def findQueriesFromEphemeralTable(ephemeralTableId : String): Seq[StreamingQueryModel] = {
-    dao.getAll().filter(streamingQueryModel => streamingQueryModel.id == ephemeralTableId)
-  }
-
+  val EphemeralQueryActorName = "ephemeralQueryActor"
+  val EphemeralStatusActorName = "ephemeralStatusActor"
 
 }
