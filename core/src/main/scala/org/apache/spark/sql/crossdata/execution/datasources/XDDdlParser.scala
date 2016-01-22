@@ -56,14 +56,15 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   }
 
   protected lazy val createExternalTable: Parser[LogicalPlan] = {
-    // TODO: Support database.table.
 
-    (CREATE ~> EXTERNAL ~> TABLE) ~ tableIdentifier ~ tableCols.? ~ (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
-      case _ ~ tableIdentifier ~ columns ~ provider ~ opts =>
-        val userSpecifiedSchema = columns.flatMap(fields => Some(StructType(fields)))
-        val options = opts.getOrElse(Map.empty[String, String])
-        CreateExternalTable(tableIdentifier, userSpecifiedSchema, provider, options)
+    CREATE ~> EXTERNAL ~> TABLE ~> tableIdentifier ~ tableCols ~ (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
+       case tableName ~ columns ~ provider ~ opts =>
+         val userSpecifiedSchema = StructType(columns)
+         val options = opts.getOrElse(Map.empty[String, String])
 
+         CreateExternalTable(tableName, userSpecifiedSchema, provider, options)
     }
+
+
   }
 }
