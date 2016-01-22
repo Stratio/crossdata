@@ -180,7 +180,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       cartesian(arrayColumnValues) map { case replacements: Seq[(Int, _)] =>
         val idx2newVal: Map[Int, Any] = replacements.toMap
         val values = elementsWithIndex map { case (prevVal, idx: Int) =>
-          idx2newVal.get(idx).getOrElse(prevVal)
+          idx2newVal.getOrElse(idx, prevVal)
         }
         new GenericRowWithSchema(values, newSchema)
       }
