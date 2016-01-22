@@ -47,7 +47,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       } catch {
         case e: Throwable => {
           logger.error(e.getMessage)
-          sender ! ErrorResult(sqlCommand.queryId, e.getMessage, Some(e))
+          sender ! ErrorResult(sqlCommand.queryId, e.getMessage, Some(new RuntimeException(e.getMessage)))
         }
       }
 
