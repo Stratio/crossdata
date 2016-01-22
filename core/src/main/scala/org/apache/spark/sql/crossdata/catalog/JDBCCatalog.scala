@@ -22,6 +22,7 @@ import java.sql.ResultSet
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.SimpleCatalystConf
+import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
@@ -40,7 +41,8 @@ object JDBCCatalog {
   val Driver = "jdbc.driver"
   val Url = "jdbc.url"
   val Database = "jdbc.db.name"
-  val Table = "jdbc.db.table"
+  val TableWithTableMetadata = "jdbc.db.table"
+  val TableWithViewMetadata = "jdbc.db.view"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
   // CatalogFields
@@ -51,6 +53,9 @@ object JDBCCatalog {
   val PartitionColumnField = "partitionColumn"
   val OptionsField = "options"
   val CrossdataVersionField = "crossdataVersion"
+
+  // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
+  val SqlViewField = "sqlView"
 }
 
 /**
@@ -67,7 +72,8 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
   private val config = xdContext.catalogConfig
   private val db = config.getString(Database)
-  private val table = config.getString(Table)
+  private val tableWithTableMetadata = config.getString(TableWithTableMetadata)
+  private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
 
   lazy val connection: Connection = {
 
@@ -85,7 +91,7 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
 
     jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE IF NOT EXISTS $db.$table (
+        s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithTableMetadata (
            |$DatabaseField VARCHAR(50),
            |$TableNameField VARCHAR(50),
            |$SchemaField TEXT,
@@ -95,16 +101,21 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
            |$CrossdataVersionField TEXT,
            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
+    jdbcConnection.createStatement().executeUpdate(
+      s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
+          |$DatabaseField VARCHAR(50),
+          |$TableNameField VARCHAR(50),
+          |$SqlViewField TEXT,
+          |$CrossdataVersionField VARCHAR(30),
+          |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+
     jdbcConnection
   }
 
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
 
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement.setString(1, databaseName.getOrElse(""))
-    preparedStatement.setString(2, tableName)
-    val resultSet = preparedStatement.executeQuery()
+    val resultSet = selectMetadata(tableWithTableMetadata,TableIdentifier(tableName, databaseName))
 
     if (!resultSet.isBeforeFirst) {
       None
@@ -139,65 +150,117 @@ class JDBCCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true)
 
     val statement = connection.createStatement
     val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
-    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$table $dbFilter")
+    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
 
     getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
   }
 
-  override def persistTableMetadata(crossdataTable: CrossdataTable): Unit = {
+  override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
+    try {
 
-    val tableSchema = serializeSchema(crossdataTable.userSpecifiedSchema.getOrElse(new StructType()))
+      val tableSchema = serializeSchema(crossdataTable.userSpecifiedSchema.getOrElse(new StructType()))
+      val tableOptions = serializeOptions(crossdataTable.opts)
+      val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
-    val tableOptions = serializeOptions(crossdataTable.opts)
-    val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
+      connection.setAutoCommit(false)
 
-    connection.setAutoCommit(false)
+      // check if the database-table exist in the persisted catalog
+      val resultSet = selectMetadata(tableWithTableMetadata, TableIdentifier(crossdataTable.tableName, crossdataTable.dbName))
 
-    // check if the database-table exist in the persisted catalog
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement.setString(1, crossdataTable.dbName.getOrElse(""))
-    preparedStatement.setString(2, crossdataTable.tableName)
-    val resultSet = preparedStatement.executeQuery()
-
-    if (!resultSet.isBeforeFirst) {
-      val prepped = connection.prepareStatement(
-       s"""|INSERT INTO $db.$table (
-           | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
-           |) VALUES (?,?,?,?,?,?,?)
+      if (!resultSet.isBeforeFirst) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $db.$tableWithTableMetadata (
+              | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
+              |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
-      prepped.setString(1, crossdataTable.dbName.getOrElse(""))
-      prepped.setString(2, crossdataTable.tableName)
-      prepped.setString(3, tableSchema)
-      prepped.setString(4, crossdataTable.datasource)
-      prepped.setString(5, partitionColumn)
-      prepped.setString(6, tableOptions)
-      prepped.setString(7, CrossdataVersion)
-      prepped.execute()
-    }
-    else {
-     val prepped = connection.prepareStatement(
-      s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-          |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
+        prepped.setString(1, crossdataTable.dbName.getOrElse(""))
+        prepped.setString(2, crossdataTable.tableName)
+        prepped.setString(3, tableSchema)
+        prepped.setString(4, crossdataTable.datasource)
+        prepped.setString(5, partitionColumn)
+        prepped.setString(6, tableOptions)
+        prepped.setString(7, CrossdataVersion)
+        prepped.execute()
+      } else {
+        val prepped =
+          connection.prepareStatement(
+            s"""|UPDATE $db.$tableWithTableMetadata
+                |SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+                |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
        """.stripMargin.replaceAll("\n", " "))
 
-      prepped.setString(1, tableSchema)
-      prepped.setString(2, crossdataTable.datasource)
-      prepped.setString(3, partitionColumn)
-      prepped.setString(4, tableOptions)
-      prepped.setString(5, CrossdataVersion)
-      prepped.execute()
+        prepped.setString(1, tableSchema)
+        prepped.setString(2, crossdataTable.datasource)
+        prepped.setString(3, partitionColumn)
+        prepped.setString(4, tableOptions)
+        prepped.setString(5, CrossdataVersion)
+        prepped.execute()
+      }
+      connection.commit()
+
+    } finally {
+      connection.setAutoCommit(true)
     }
-    connection.commit()
-    connection.setAutoCommit(true)
 
+  override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit =
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
+
+
+  override def dropAllPersistedTables(): Unit = {
+    connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithTableMetadata")
+    connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithViewMetadata")
   }
 
-  override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
+
+  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = {
+    val resultSet = selectMetadata(tableWithViewMetadata, TableIdentifier(tableName, databaseName))
+    if (!resultSet.isBeforeFirst) {
+      None
+    } else {
+      resultSet.next()
+      Option(resultSet.getString(SqlViewField))
+    }
   }
 
-  override def dropAllPersistedTables(): Unit = 
-    connection.createStatement.executeUpdate(s"TRUNCATE $db.$table")
-  
+  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
+    try {
+      connection.setAutoCommit(false)
+      val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
+
+      if (!resultSet.isBeforeFirst) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $db.$tableWithViewMetadata (
+              | $DatabaseField, $TableNameField, $SqlViewField, $CrossdataVersionField
+              |) VALUES (?,?,?,?)
+       """.stripMargin)
+        prepped.setString(1, tableIdentifier.database.getOrElse(""))
+        prepped.setString(2, tableIdentifier.table)
+        prepped.setString(3, sqlText)
+        prepped.setString(4, CrossdataVersion)
+        prepped.execute()
+      } else {
+        val prepped =
+          connection.prepareStatement(
+            s"""|UPDATE $db.$tableWithViewMetadata SET $SqlViewField=?
+                |WHERE $DatabaseField='${tableIdentifier.database.getOrElse("")}' AND $TableNameField='${tableIdentifier.table}'
+             """.stripMargin.replaceAll("\n", " "))
+
+        prepped.setString(1, sqlText)
+        prepped.execute()
+      }
+      connection.commit()
+
+    } finally {
+      connection.setAutoCommit(true)
+    }
+
+  private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
+
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
+    preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
+    preparedStatement.setString(2, tableIdentifier.table)
+    preparedStatement.executeQuery()
+
+  }
 
 }
