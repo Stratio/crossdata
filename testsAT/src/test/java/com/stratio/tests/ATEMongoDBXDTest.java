@@ -24,6 +24,7 @@ import org.testng.annotations.Test;
 import cucumber.api.CucumberOptions;
 
 import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.stratio.tests.utils.BaseTest;
 import com.stratio.cucumber.testng.CucumberRunner;
@@ -94,7 +95,15 @@ public class ATEMongoDBXDTest extends BaseTest{
                     .add("ident", i).append("names", names);
             tablearray.insert(documentBuilder.get());
         }
-
+        DBCollection tableSubField = db.getCollection("tablesubfield");
+        for(int i = 0; i < 10; i++){
+            //Creamos el subdocumento
+            BasicDBObject subDocumentBuilder = new BasicDBObject();
+            subDocumentBuilder.put("name", "name_+i");
+            BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
+                    .add("ident", i).append("person", subDocumentBuilder);
+            tableSubField.insert(documentBuilder.get());
+        }
         ////
         mongoClient.close();
         String connector = "Mongo";
