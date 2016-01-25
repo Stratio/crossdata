@@ -122,4 +122,17 @@ sealed trait MongoDefaultConstants {
   val struct = MongoDBObject("field1" -> 2 ,"field2" -> 3)
   val structofstruct = MongoDBObject("field1" -> date ,"field2" -> 3, "struct1" -> MongoDBObject("structField1"-> "structfield1", "structField2" -> 2))
 
+  // Complex compositions
+  val arraystructarraystruct = Seq(
+    MongoDBObject(
+      "stringfield" -> "aa",
+      "arrayfield" -> Seq(MongoDBObject("field1" -> 1, "field2" -> 2), MongoDBObject("field1" -> -1, "field2" -> -2))
+    ),
+    MongoDBObject(
+      "stringfield" -> "bb",
+      "arrayfield" -> Seq(MongoDBObject("field1" -> 11, "field2" -> 22)
+      )
+    )
+  )
+
 }
