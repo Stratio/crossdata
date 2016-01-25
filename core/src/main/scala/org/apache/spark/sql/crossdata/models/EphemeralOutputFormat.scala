@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.serializers
+package org.apache.spark.sql.crossdata.models
 
-import org.apache.spark.sql.crossdata.models.{EphemeralOutputFormat, EphemeralExecutionStatus}
-import org.json4s.ext.EnumNameSerializer
-import org.json4s._
+object EphemeralOutputFormat extends Enumeration {
 
-
-trait CrossdataSerializer {
-
-  implicit val json4sJacksonFormats: Formats =
-    DefaultFormats +
-      new EnumNameSerializer(EphemeralExecutionStatus) +
-      new EnumNameSerializer(EphemeralOutputFormat)
+  type Status = Value
+  val ROW, JSON = Value
 }
+

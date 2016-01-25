@@ -61,7 +61,7 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
   def setEphemeralStatus(status: EphemeralExecutionStatus.Value,
                          zookeeperConfiguration: Map[String, String],
                          ephemeralTableId: String,
-                        ephemeralTableName: Option[String] = None): Unit = {
+                        ephemeralTableName: String): Unit = {
 
     createEphemeralStatusActor(zookeeperConfiguration, ephemeralTableId, ephemeralTableName)
 
@@ -74,7 +74,7 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
                            streamingContext: StreamingContext,
                            zookeeperConfiguration: Map[String, String],
                            ephemeralTableId: String,
-                           ephemeralTableName: Option[String] = None,
+                           ephemeralTableName: String,
                            stopGracefully: Boolean = StopGracefully): Unit = {
 
     createEphemeralStatusActor(zookeeperConfiguration, ephemeralTableId, ephemeralTableName)
@@ -84,7 +84,7 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
       Await.result(futureResult, timeout.duration) match {
         case StatusResponse(status) => {
           if (status == EphemeralExecutionStatus.Stopping) {
-            closeWithSpark(sparkContext, streamingContext, stopGracefully)
+            closeSparkContexts(sparkContext, streamingContext, stopGracefully)
           }
         }
       }
@@ -104,18 +104,14 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
     System.exit(0)
   }
 
-  private def closeWithSpark(sparkContext: SparkContext,
+  private def closeSparkContexts(sparkContext: SparkContext,
                              streamingContext: StreamingContext,
                              stopGracefully: Boolean): Unit = {
     synchronized {
       try {
         streamingContext.stop(false, stopGracefully)
       } finally {
-        try {
-          sparkContext.stop()
-        } finally {
-          close()
-        }
+        sparkContext.stop()
       }
     }
   }
@@ -136,7 +132,7 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
 
   private def createEphemeralStatusActor(zookeeperConfiguration: Map[String, String],
                                          ephemeralTableId: String,
-                                         ephemeralTableName: Option[String] = None): Unit = {
+                                         ephemeralTableName: String): Unit = {
     synchronized {
       if (ephemeralStatusActor.isEmpty) {
         Try(actorSystem.actorOf(Props(new EphemeralStatusActor(ephemeralTableId, zookeeperConfiguration,
