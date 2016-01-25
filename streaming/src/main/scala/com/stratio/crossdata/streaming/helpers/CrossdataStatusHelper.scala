@@ -15,17 +15,19 @@
  */
 
 
-package com.stration.crossdata.streaming.helpers
+package com.stratio.crossdata.streaming.helpers
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import com.stration.crossdata.streaming.actors.EphemeralQueryActor.{AddListener, EphemeralQueriesResponse, GetQueries}
-import com.stration.crossdata.streaming.actors.EphemeralStatusActor.{GetStatus, SetStatus, StatusResponse}
-import com.stration.crossdata.streaming.actors.{EphemeralQueryActor, EphemeralStatusActor}
-import com.stration.crossdata.streaming.constants.AkkaConstants._
-import com.stration.crossdata.streaming.constants.ApplicationConstants._
+import com.stratio.crossdata.streaming.actors.{EphemeralQueryActor, EphemeralStatusActor}
+import com.stratio.crossdata.streaming.constants.{AkkaConstants, ApplicationConstants}
+import EphemeralQueryActor.{AddListener, EphemeralQueriesResponse, GetQueries}
+import EphemeralStatusActor.{GetStatus, SetStatus, StatusResponse}
+import com.stration.crossdata.streaming.actors.EphemeralQueryActor
+import AkkaConstants._
+import ApplicationConstants._
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralQueryModel}
 import org.apache.spark.streaming.StreamingContext

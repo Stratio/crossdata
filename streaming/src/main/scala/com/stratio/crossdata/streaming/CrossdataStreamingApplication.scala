@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.stration.crossdata.streaming
+package com.stratio.crossdata.streaming
 
 import com.google.common.io.BaseEncoding
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent

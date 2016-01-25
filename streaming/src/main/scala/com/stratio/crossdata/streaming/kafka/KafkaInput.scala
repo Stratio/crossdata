@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.stration.crossdata.streaming.kafka
+package com.stratio.crossdata.streaming.kafka
 
-import com.stration.crossdata.streaming.constants.KafkaConstants
+import com.stratio.crossdata.streaming.constants.KafkaConstants
 import kafka.serializer.StringDecoder
 import org.apache.spark.sql.crossdata.models.KafkaOptionsModel
 import org.apache.spark.storage.StorageLevel

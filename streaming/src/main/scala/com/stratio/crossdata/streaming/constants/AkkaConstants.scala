@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.stration.crossdata.streaming.constants
+package com.stratio.crossdata.streaming.constants
 
 object AkkaConstants {
 

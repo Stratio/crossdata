@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.stration.crossdata.streaming.config
+package com.stratio.crossdata.streaming.config
 
 import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent
-import com.stration.crossdata.streaming.constants.ApplicationConstants._
+import com.stratio.crossdata.streaming.constants.ApplicationConstants
+import ApplicationConstants._
 
 class StreamingResourceConfig extends TypesafeConfigComponent {
 

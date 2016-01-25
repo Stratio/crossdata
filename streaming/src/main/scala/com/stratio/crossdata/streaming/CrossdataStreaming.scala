@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package com.stration.crossdata.streaming
+package com.stratio.crossdata.streaming
 
 import com.github.nscala_time.time.Imports._
-import com.stration.crossdata.streaming.config.StreamingResourceConfig
-import com.stration.crossdata.streaming.constants.ApplicationConstants._
-import com.stration.crossdata.streaming.helpers.CrossdataStatusHelper
-import com.stration.crossdata.streaming.kafka.{KafkaInput, KafkaProducer}
+import com.stratio.crossdata.streaming.config.StreamingResourceConfig
+import com.stratio.crossdata.streaming.constants.ApplicationConstants
+import com.stratio.crossdata.streaming.helpers.CrossdataStatusHelper
+import com.stratio.crossdata.streaming.kafka.{KafkaInput, KafkaProducer}
+import ApplicationConstants._
+import CrossdataStatusHelper
+import com.stration.crossdata.streaming.kafka.KafkaProducer
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.crossdata.daos.EphemeralTableMapDAO
 import org.apache.spark.sql.crossdata.models._

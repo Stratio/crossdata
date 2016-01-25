@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package com.stration.crossdata.streaming.kafka
+package com.stratio.crossdata.streaming.kafka
 
 import java.util.Properties
-
-import com.stration.crossdata.streaming.constants.KafkaConstants
+import com.stratio.crossdata.streaming.constants.KafkaConstants
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import org.apache.spark.sql.crossdata.models.{ConnectionHostModel, KafkaOptionsModel}
 

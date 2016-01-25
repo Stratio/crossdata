@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.stration.crossdata.streaming.actors
+package com.stratio.crossdata.streaming.actors
 
 import akka.actor.Actor
-import com.stration.crossdata.streaming.actors.EphemeralQueryActor._
-import com.stration.crossdata.streaming.constants.ApplicationConstants._
+import com.stratio.crossdata.streaming.constants.ApplicationConstants
+import EphemeralQueryActor._
+import ApplicationConstants._
 import org.apache.curator.framework.recipes.cache.{PathChildrenCache, NodeCache}
 import org.apache.spark.sql.crossdata.daos.EphemeralQueriesMapDAO
 import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
