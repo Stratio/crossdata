@@ -155,8 +155,13 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   }
 
-  override def createExternalTable(tableName: String, source: String, schema: StructType, options: Map[String, String]): Boolean = {
-    print("Hoooooooooooooooola")
+  override def createExternalTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String]): Boolean = {
+
+    buildCassandraConnector(context, options).withSessionDo { s =>
+
+
+      s.execute("CREATE TABLE xd.luismiguel (id int PRIMARY KEY, name TEXT)")
+    }
     false
   }
 

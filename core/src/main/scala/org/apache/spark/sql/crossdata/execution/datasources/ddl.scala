@@ -134,7 +134,7 @@ case class CreateExternalTable(
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
 
     val tableManipulation = resolved.asInstanceOf[TableManipulation]
-    tableManipulation.createExternalTable(tableIdent.table, provider, userSpecifiedSchema, options)
+    tableManipulation.createExternalTable(sqlContext, tableIdent.table, provider, userSpecifiedSchema, options)
     Seq.empty
   }
 

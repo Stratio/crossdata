@@ -23,10 +23,22 @@ import org.scalatest.junit.JUnitRunner
 class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
 
-  "The Cassandra connector" should "execute natively a (SELECT count(*) FROM _)" in {
+  "The Cassandra connector" should "execute natively create a External Table" in {
     //assumeEnvironmentIsUpAndRunning
 
-    val createTableQUeryString = s"CREATE EXTERNAL TABLE newTable (id Integer, name String) USING $SourceProvider OPTIONS (spark_cassandra_connection_host '$CassandraHost')"
+    val createTableQUeryString =
+      s"""|CREATE EXTERNAL TABLE newTable (id Integer, name String)
+          |USING $SourceProvider
+          |OPTIONS (
+          |keyspace '$Catalog',
+          |cluster '$ClusterName',
+          |pushdown "true",
+          |spark_cassandra_connection_host '$CassandraHost'
+          |)
+      """.stripMargin.replaceAll("\n", " ")
+
+
+   // s"CREATE EXTERNAL TABLE newTable (id Integer, name String) USING $SourceProvider OPTIONS (spark_cassandra_connection_host '$CassandraHost')"
     val result = sql(createTableQUeryString).collect()
 
   }
