@@ -55,8 +55,8 @@ import cucumber.api.CucumberOptions;
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
         "src/test/resources/features/Udaf/Group_concat.feature",
-        "src/test/resources/features/Views/Views.feature"
-})
+        "src/test/resources/features/Views/TemporaryViews.feature",
+        "src/test/resources/features/Views/Views.feature"})
 public class ATElasticSearchXDJavaDriverTest extends BaseTest {
 	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearch");
     private String elasticSearchIP = System.getProperty("ELASTICSEARCH_HOST","172.17.0.3");

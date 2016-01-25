@@ -73,8 +73,16 @@ public class CrossdataSpecs extends BaseSpec {
         }
     }
 
-    @Then(value = "The spark result has to have '(.*?)' rows:$")
+    @Then(value = "The flattened result has to have '(.*?)' rows:$")
     public void assertResultSpark(String rows, DataTable table) {
+        asserThat(commonspec.getXdContext().getXDDataFrame()).hasFlattenedLength(Integer.parseInt(rows));
+        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsFlattenedMetadata(table.raw().get(0));
+        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsFlattenedResult(table.raw());
+
+    }
+
+    @Then(value = "The spark result has to have '(.*?)' rows:$")
+    public void assertResultflattened(String rows, DataTable table) {
         if (ThreadProperty.get("Driver").equals("context")) {
             commonspec.getLogger().info("The result obtained is: ");
             commonspec.getXdContext().showDataframe();
