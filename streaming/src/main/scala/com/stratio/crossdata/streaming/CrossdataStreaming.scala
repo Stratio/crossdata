@@ -22,13 +22,16 @@ import com.stratio.crossdata.streaming.constants.ApplicationConstants
 import com.stratio.crossdata.streaming.helpers.CrossdataStatusHelper
 import com.stratio.crossdata.streaming.kafka.{KafkaInput, KafkaProducer}
 import ApplicationConstants._
-import CrossdataStatusHelper
-import com.stration.crossdata.streaming.kafka.KafkaProducer
+import com.stratio.crossdata.streaming.kafka.KafkaProducer
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.daos.EphemeralTableMapDAO
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
+
+import scala.collection.JavaConversions._
 
 import scala.util.{Failure, Success, Try}
 
@@ -54,13 +57,7 @@ class CrossdataStreaming(ephemeralTableId: String,
       CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Starting,
         zookeeperMergedConfig, ephemeralTableId, ephemeralTableName)
       Try {
-        val ephemeralTable = dao.get(ephemeralTableId).getOrElse(//throw new Exception("Table not found"))
-          EphemeralTableModel(
-            "6",
-            "tablename",
-            EphemeralOptionsModel(KafkaOptionsModel(Seq(ConnectionHostModel("localhost", "2181", "9092")),
-              Seq(TopicModel("crossdata")),
-              "1", Option("2")))))
+        val ephemeralTable = dao.get(ephemeralTableId).getOrElse(throw new Exception("Table not found"))
 
         //TODO remove this
         dao.create(ephemeralTableId, ephemeralTable)
@@ -119,7 +116,12 @@ class CrossdataStreaming(ephemeralTableId: String,
     val sparkStreamingWindow = ephemeralTable.options.atomicWindow
     val sparkContext = new SparkContext(sparkConf)
     val streamingContext = new StreamingContext(sparkContext, Seconds(sparkStreamingWindow))
-    val sqlContext = new SQLContext(sparkContext)
+
+    //XDContext
+    val zookeeperCatalogConfig = Map("catalog.class" -> "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog") ++
+      zookeeperConf.map(config => s"catalog.${config._1}" -> config._2)
+    val xdContext = XDContext.getOrCreate(sparkContext, Option(ConfigFactory.parseMap(zookeeperCatalogConfig)))
+
     streamingContext.checkpoint(ephemeralTable.options.checkpointDirectory)
     val kafkaOptions = ephemeralTable.options.kafkaOptions.copy(additionalOptions = kafkaConf)
     val kafkaInput = new KafkaInput(kafkaOptions)
@@ -136,14 +138,14 @@ class CrossdataStreaming(ephemeralTableId: String,
         if (streamingQueries.nonEmpty) {
           streamingQueries.foreach(streamingQueryModel => {
             val rddFiltered = rdd.flatMap { case (time, row) =>
-              if (time > DateTime.now.getMillis - streamingQueryModel.window * 1000) Some(row)
+              if (time > DateTime.now.getMillis - streamingQueryModel.window * 1000) Option(row)
               else None
             }
-            val df = sqlContext.read.json(rddFiltered)
+            val df = xdContext.read.json(rddFiltered)
             df.registerTempTable(s"${ephemeralTable.name}${streamingQueryModel.id}")
             val query = streamingQueryModel.sql.replaceAll(ephemeralTable.name,
               s"${ephemeralTable.name}${streamingQueryModel.id}")
-            val dataFrame = sqlContext.sql(query)
+            val dataFrame = xdContext.sql(query)
             val topic = streamingQueryModel.alias.getOrElse(streamingQueryModel.id)
 
             ephemeralTable.options.outputFormat match {
@@ -151,7 +153,8 @@ class CrossdataStreaming(ephemeralTableId: String,
                 dataFrame.toJSON.foreachPartition(values =>
                   values.foreach(value => KafkaProducer.put(topic, value, kafkaOptions, kafkaOptions.partition)))
               case _ => dataFrame.rdd.foreachPartition(values =>
-                values.foreach(value => KafkaProducer.put(topic, value.mkString, kafkaOptions, kafkaOptions.partition)))
+                values.foreach(value =>
+                  KafkaProducer.put(topic, value.mkString(","), kafkaOptions, kafkaOptions.partition)))
             }
           })
         }

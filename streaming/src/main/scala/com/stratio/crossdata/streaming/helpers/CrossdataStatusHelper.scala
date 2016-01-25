@@ -70,6 +70,7 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
     }
   }
 
+  //TODO add in the streaming process
   def checkEphemeralStatus(sparkContext: SparkContext,
                            streamingContext: StreamingContext,
                            zookeeperConfiguration: Map[String, String],

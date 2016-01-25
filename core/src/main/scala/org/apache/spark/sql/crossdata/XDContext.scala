@@ -1,13 +1,11 @@
-/*
- * Modifications and adaptations - Copyright (C) 2015 Stratio (http://stratio.com)
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +27,8 @@ import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
+import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy,
+ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
@@ -124,7 +123,8 @@ class XDContext private (@transient val sc: SparkContext,
     for {srv <- functionInventoryServices
          datasourceName = srv.shortName()
          udf <- srv.nativeBuiltinFunctions
-    } functionRegistry.registerFunction(qualifyUDF(datasourceName, udf.name), e => NativeUDF(udf.name, udf.returnType, e))
+    } functionRegistry
+      .registerFunction(qualifyUDF(datasourceName, udf.name), e => NativeUDF(udf.name, udf.returnType, e))
 
     val gc = new GroupConcat(", ")
     udf.register("group_concat", gc)
@@ -191,9 +191,9 @@ object XDContext {
    * This function can be used to create a singleton SQLContext object that can be shared across
    * the JVM.
    */
-  def getOrCreate(sparkContext: SparkContext): XDContext = {
+  def getOrCreate(sparkContext: SparkContext, userConfig: Option[Config] = None): XDContext = {
     INSTANTIATION_LOCK.synchronized {
-      Some(lastInstantiatedContext.get()).getOrElse(new XDContext(sparkContext))
+      Option(lastInstantiatedContext.get()).getOrElse(new XDContext(sparkContext, userConfig))
     }
     lastInstantiatedContext.get()
   }
