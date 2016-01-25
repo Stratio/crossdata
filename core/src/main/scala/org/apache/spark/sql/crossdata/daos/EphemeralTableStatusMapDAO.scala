@@ -16,29 +16,29 @@
 
 package org.apache.spark.sql.crossdata.daos
 
-import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent
+import com.stratio.common.utils.components.config.impl.MapConfigComponent
 import com.stratio.common.utils.components.dao.DAOComponent
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.common.utils.components.repository.impl.ZookeeperRepositoryComponent
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
-import org.apache.spark.sql.crossdata.models.TableModel
+import org.apache.spark.sql.crossdata.models.EphemeralStatusModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.json4s.jackson.Serialization._
 
-trait TableDAOComponent extends DAOComponent[String, Array[Byte], TableModel]
-with ZookeeperRepositoryComponent with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+trait EphemeralTableStatusMapDAO extends DAOComponent[String, Array[Byte], EphemeralStatusModel]
+with ZookeeperRepositoryComponent with MapConfigComponent with SparkLoggerComponent with CrossdataSerializer {
 
-  val dao: DAO = new TableDAO {}
+  val dao: DAO = new EphemeralStatusTableDAO {}
 
-  trait TableDAO extends DAO {
+  trait EphemeralStatusTableDAO extends DAO {
 
-    def fromVtoM[TM >: TableModel <: TableModel : Manifest](v: Array[Byte]): TM =
+    def fromVtoM[TM >: EphemeralStatusModel <: EphemeralStatusModel : Manifest](v: Array[Byte]): TM =
       read[TM](new String(v))
 
-    def fromMtoV[TM <: TableModel : Manifest](m: TM): Array[Byte] =
+    def fromMtoV[TM <: EphemeralStatusModel : Manifest](m: TM): Array[Byte] =
       write(m).getBytes
 
-    def entity : String = TablesPath
+    def entity : String = EphemeralTableStatusPath
   }
 
 }

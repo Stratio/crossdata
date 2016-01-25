@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.models
+package com.stratio.crossdata.streaming.constants
 
-case class EphemeralTableModel(id: String,
-                               name: String,
-                               options: EphemeralOptionsModel)
+object ApplicationConstants {
+
+  val StreamingResourceConfig = "streaming-reference.conf"
+  val ParentPrefixName = "crossdata-streaming"
+  val ConfigPrefixName = "config"
+  val SparkPrefixName = "spark"
+  val ZookeeperPrefixName = "zookeeper"
+  val KafkaPrefixName = "kafka"
+  val SparkNameKey = "spark.app.name"
+  val StopGracefully = true
+
+}

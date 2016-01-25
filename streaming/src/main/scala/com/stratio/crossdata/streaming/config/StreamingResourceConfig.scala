@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.models
+package com.stratio.crossdata.streaming.config
 
-case class StreamingQueryModel(id: String,
-                               ephemeralTable: EphemeralTableModel,
-                               sql: String,
-                               window: Int = EphemeralOptionsModel.DefaultAtomicWindow,
-                               batchTables: Option[Seq[TableModel]] = None)
+import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent
+import com.stratio.crossdata.streaming.constants.ApplicationConstants
+import ApplicationConstants._
+
+class StreamingResourceConfig extends TypesafeConfigComponent {
+
+  override val config = new TypesafeConfig(None,
+    None,
+    Option(StreamingResourceConfig),
+    Option(s"$ParentPrefixName" + s".$ConfigPrefixName")
+  )
+
+}

@@ -16,4 +16,4 @@
 
 package org.apache.spark.sql.crossdata.models
 
-case class ConnectionHostModel(host: String, port: String)
+case class ConnectionHostModel(host: String, consumerPort: String, producerPort: String)

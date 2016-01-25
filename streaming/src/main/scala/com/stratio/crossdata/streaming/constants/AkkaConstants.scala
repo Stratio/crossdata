@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.models
+package com.stratio.crossdata.streaming.constants
 
-case class EphemeralTableModel(id: String,
-                               name: String,
-                               options: EphemeralOptionsModel)
+object AkkaConstants {
+
+  val EphemeralQueryActorName = "ephemeralQueryActor"
+  val EphemeralStatusActorName = "ephemeralStatusActor"
+
+}

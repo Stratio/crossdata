@@ -16,6 +16,9 @@
 
 package org.apache.spark.sql.crossdata.models
 
-case class EphemeralTableModel(id: String,
-                               name: String,
-                               options: EphemeralOptionsModel)
+case class EphemeralQueryModel(id: String,
+                               ephemeralTableId: String,
+                               sql: String,
+                               alias : Option[String] = None,
+                               window: Int = EphemeralOptionsModel.DefaultAtomicWindow,
+                               batchTables: Option[Seq[TableModel]] = None)
