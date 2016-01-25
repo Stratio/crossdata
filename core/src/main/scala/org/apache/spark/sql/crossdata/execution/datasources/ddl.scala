@@ -130,6 +130,10 @@ case class CreateExternalTable(
 
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
 
+    if (!resolved.isInstanceOf[TableManipulation]){
+      sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")
+    }
+
     val tableManipulation = resolved.asInstanceOf[TableManipulation]
     tableManipulation.createExternalTable(tableIdent.table, provider, userSpecifiedSchema, options)
     Seq.empty
