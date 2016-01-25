@@ -21,7 +21,7 @@ target/
 .DS_Store
 **/xdhistory.txt
 checkpoint/
-
+project/
 
 #hive ignores
 metastore_db/
