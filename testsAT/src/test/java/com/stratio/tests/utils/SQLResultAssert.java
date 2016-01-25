@@ -87,9 +87,16 @@ public class SQLResultAssert extends AbstractAssert<SQLResultAssert, SQLResult>{
                 failWithMessage("Expected column name to be <%s> but was <%s>",columnExpected[0],actualStructField[i]
                         .name());
             }
-            if(!columnExpected[1].equals(actualStructField[i].dataType().typeName())){
+            if((!columnExpected[1].equals(actualStructField[i].dataType().typeName())) && (!columnExpected[1].contains
+                    ("array"))){
                 failWithMessage("Expected type for column <%s> to be <%s> but was <%s>", columnExpected[0],
                         columnExpected[1],actualStructField[i].dataType().typeName());
+            }
+            if(actualStructField[i].dataType().typeName().equals("array")){
+                if(!columnExpected[1].equals(actualStructField[i].dataType().simpleString())){
+                    failWithMessage("Expected type for column <%s> to be <%s> but was <%s>", columnExpected[0],
+                            columnExpected[1],actualStructField[i].dataType().simpleString());
+                }
             }
 
         }

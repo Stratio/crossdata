@@ -32,7 +32,7 @@ import com.typesafe.config.ConfigValue;
 
 public class XDJavaDriver {
 
-    private JavaDriver xdDriver;
+    private JavaDriver xdDriver,xdFlattendDriver;
     private List<FieldMetadata> descTables;
     private List<JavaTableName> tableList;
     private List<String> databases;
@@ -70,7 +70,10 @@ public class XDJavaDriver {
     }
 
     public void describeTables(String tableName){
-        descTables = xdDriver.describeTable(tableName);
+        if(xdFlattendDriver == null) {
+            xdFlattendDriver = new JavaDriver(true);
+        }
+        descTables = xdFlattendDriver.describeTable(tableName);
     }
 
     public void listTables(){
@@ -87,11 +90,15 @@ public class XDJavaDriver {
 
     public void executeSyncQuery(String sql){
         if(xdDriver == null) {
-           //List<String> hosts = Arrays.asList(System.getProperty("CROSSDATA_HOST", "127.0.0.1").split(","));
-           //xdDriver = new JavaDriver(hosts, false);
            xdDriver = new JavaDriver();
         }
         result = xdDriver.syncQuery(new SQLCommand(sql, UUID.randomUUID(),false));
     }
 
+    public void executeflattenedSyncQuery(String sql){
+        if(xdDriver == null) {
+            xdDriver = new JavaDriver();
+        }
+        result = xdDriver.syncQuery(new SQLCommand(sql, UUID.randomUUID(),true));
+    }
 }
