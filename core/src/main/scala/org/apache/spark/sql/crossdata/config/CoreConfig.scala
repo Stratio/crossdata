@@ -28,6 +28,7 @@ object CoreConfig {
   val CoreUserConfigFile = "external.config.filename"
   val CoreUserConfigResource = "external.config.resource"
   val CatalogConfigKey = "catalog"
+  val StreamingConfigKey = "streaming"
 }
 
 trait CoreConfig {

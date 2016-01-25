@@ -15,7 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import java.util.UUID
 
 import com.stratio.crossdata.connector.TableInventory
 import org.apache.spark.Logging
@@ -27,6 +26,11 @@ import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import org.apache.spark.sql.crossdata.config.CoreConfig
+import org.apache.spark.sql.crossdata.daos.EphemeralTableMapDAO
+import org.apache.spark.sql.crossdata.daos.DAOConstants._
+import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.execution.datasources.ResolvedDataSource
@@ -37,7 +41,10 @@ import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 
-import scala.util.parsing.json.{JSONObject, JSON}
+import scala.util.parsing.json.{JSONFormat, JSONObject, JSON}
+
+import org.apache.spark.sql.crossdata.config._
+
 
 
 private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
@@ -128,26 +135,55 @@ private[crossdata] case class CreateEphemeralTable(
     tableIdent: TableIdentifier,
     columns: StructType,
     opts: Map[String, String])
-  extends LogicalPlan with RunnableCommand {
+  extends LogicalPlan with RunnableCommand with EphemeralTableMapDAO {
+
+  //TODO Correct all config and move it
+  override val memoryMap : Map[String, Any]= Map.empty
+  override lazy val config: Config = new DummyConfig(Some(CoreConfig.ParentConfigName + "." +CoreConfig.StreamingConfigKey))
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("EphemeralTableID", StringType, false))
+    )
+    schema.toAttributes
+  }
+
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    throw new AnalysisException("Ephemeral tables are not supported yet")
+   // throw new AnalysisException("Ephemeral tables are not supported yet")
 
-    val uuid = UUID.randomUUID().toString
+    val tableId = createId
+    //val kafkaConnection = config.getString("kafka.connection").get.split(",").map(_.split(":"))
 
+    val kafkaHost = config.getString("kafka.connectionHost","DefaultHost")
+    val kafkaConsumerPort = config.getString("kafka.connectionConsumerPort", "DefaultConsumer")
+    val kafkaProducerPort = config.getString("kafka.connectionProducerPort", "DefaultProducer")
+
+    //TODO read from configuration
+    val topics= Seq(TopicModel(config.getString("kafka.topicName", tableId)))
+    val connections = Seq(ConnectionHostModel(kafkaHost, kafkaConsumerPort, kafkaProducerPort))
+    val kafkaOptions = KafkaOptionsModel(connections, topics, "groupid", None, Map.empty)
+    val ephemeralOptions = EphemeralOptionsModel(kafkaOptions)
+
+    dao.create(tableId,
+      EphemeralTableModel(tableId,
+        tableIdent.table,
+        ephemeralOptions))
+
+/*
     // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
     // * This query will trigger 3 actions in the catalog persistence:
     //   1.- Associate the table with the schema.
     val schema = columns.json
     //   2.- Associate the table with the configuration.
-    val options = JSONObject(opts).toString
+    val options = JSONObject(opts).toString(JSONFormat.defaultFormatter)
     //   3.- Associate the QueryID with the involved table.
 
 
     // * SparkLauncher of StreamingProcess
-    val params = (uuid :: opts.values :: Nil).toArray[String]
+    val params = tableId :: opts.values.toList
     val sparkApp = new SparkLauncher()
-      .setAppName(uuid)
+      .setAppName(tableId)
       .setMaster(sqlContext.conf.getConfString("spark.master"))
       .setAppResource("streamingProcess.jar")
       .setMainClass("StreamingProcess")
@@ -156,7 +192,8 @@ private[crossdata] case class CreateEphemeralTable(
       .launch()
 
     // * Return the UUID of the process
-    Seq(Row(uuid))
+*/
+    Seq(Row(tableId))
   }
 }
 
