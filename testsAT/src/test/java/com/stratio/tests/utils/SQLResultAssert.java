@@ -27,6 +27,8 @@ import org.assertj.core.api.AbstractAssert;
 import com.stratio.crossdata.common.SQLResult;
 import com.stratio.crossdata.common.result.SuccessfulQueryResult;
 
+import scala.collection.JavaConverters;
+
 /**
  * Created by hdominguez on 19/10/15.
  */
@@ -85,9 +87,16 @@ public class SQLResultAssert extends AbstractAssert<SQLResultAssert, SQLResult>{
                 failWithMessage("Expected column name to be <%s> but was <%s>",columnExpected[0],actualStructField[i]
                         .name());
             }
-            if(!columnExpected[1].equals(actualStructField[i].dataType().typeName())){
+            if((!columnExpected[1].equals(actualStructField[i].dataType().typeName())) && (!columnExpected[1].contains
+                    ("array"))){
                 failWithMessage("Expected type for column <%s> to be <%s> but was <%s>", columnExpected[0],
                         columnExpected[1],actualStructField[i].dataType().typeName());
+            }
+            if(actualStructField[i].dataType().typeName().equals("array")){
+                if(!columnExpected[1].equals(actualStructField[i].dataType().simpleString())){
+                    failWithMessage("Expected type for column <%s> to be <%s> but was <%s>", columnExpected[0],
+                            columnExpected[1],actualStructField[i].dataType().simpleString());
+                }
             }
 
         }
@@ -231,6 +240,31 @@ public class SQLResultAssert extends AbstractAssert<SQLResultAssert, SQLResult>{
                             failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
                                     columnExpected[0], Timestamp.valueOf(table.get(i + 1).get(x)),
                                     actualRow.getTimestamp(x));
+                        }
+                        break;
+                    case "array<string>":
+                        if (!(actualRow.get(x) instanceof scala.collection.mutable.ArrayBuffer)){
+                            failWithMessage("Expected type for row <%s> for column <%s> to be an \"array\" "
+                                            + "but  was <%s>", i,
+                                    columnExpected[0], actualRow.get(x).getClass().getName());
+                        }
+                        scala.collection.mutable.ArrayBuffer<String> obtainedResult = (scala.collection.mutable
+                                .ArrayBuffer<String>)actualRow.get(x);
+                        List<String> obtainedResultList = JavaConverters.asJavaListConverter(obtainedResult).asJava();
+                        String[] expectedResult = table.get(i + 1).get(x).split(",");
+                        if(obtainedResult.size() != expectedResult.length){
+                            failWithMessage("Expected length of array to be <%s> but was <%s>", expectedResult.length,
+                                    obtainedResultList
+                                            .size());
+                        }
+                        for(int j = 0; j < obtainedResult.size(); j++){
+                            if(!obtainedResultList.get(j).equals(expectedResult[j])) {
+                                failWithMessage("Expected value for row <%s> and position <%s> for column <%s> to be "
+                                                + "<%s> but was <%s>",
+                                        i,j,
+                                        columnExpected[0], expectedResult[j],
+                                        obtainedResultList.get(j));
+                            }
                         }
                         break;
                     default:

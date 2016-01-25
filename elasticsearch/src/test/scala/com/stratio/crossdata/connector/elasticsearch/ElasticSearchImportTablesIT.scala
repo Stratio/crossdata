@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
-import com.sksamuel.elastic4s.mappings.FieldType.IntegerType
 import com.sksamuel.elastic4s.ElasticDsl._
 
 class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
@@ -46,7 +45,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
     //Expectations
     tableCountInHighschool should be (1)
-    ctx.tableNames() should contain (s"$Index.$Type")
+    xdContext.tableNames() should contain (s"$Index.$Type")
   }
 
   it should "infer schema after import all tables from an Index" in {
@@ -69,8 +68,8 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     sql(importQuery)
 
     //Expectations
-    ctx.tableNames() should contain (s"$Index.$Type")
-    ctx.table(s"$Index.$Type").schema should have length 6
+    xdContext.tableNames() should contain (s"$Index.$Type")
+    xdContext.table(s"$Index.$Type").schema should have length 6
   }
 
   it should "infer schema after import One table from an Index" in {
@@ -100,8 +99,8 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     sql(importQuery)
 
     //Expectations
-    ctx.tableNames() should contain (s"$Index.$Type")
-    ctx.tableNames() should not contain s"$Index.NewMapping"
+    xdContext.tableNames() should contain (s"$Index.$Type")
+    xdContext.tableNames() should not contain s"$Index.NewMapping"
   }
 
   it should "fail when infer schema with bad es.resource" in {

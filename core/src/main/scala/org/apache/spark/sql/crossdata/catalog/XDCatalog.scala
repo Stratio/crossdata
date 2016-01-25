@@ -13,15 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata
+package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.analysis.Catalog
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.Subquery
+import org.apache.spark.sql.catalyst.CatalystConf
+import org.apache.spark.sql.catalyst.SimpleCatalystConf
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.crossdata.CrossdataVersion
+import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
+import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.types._
-import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization.write
 
 import scala.collection.mutable
@@ -77,17 +84,27 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   override def lookupRelation(tableIdentifier: Seq[String], alias: Option[String]): LogicalPlan = {
     val tableIdent = processTableIdentifier(tableIdentifier)
+
     lookupRelationCache(tableIdent, alias).getOrElse {
       val (table, database) = tableIdToTuple(tableIdent)
       logInfo(s"XDCatalog: Looking up table ${tableIdent.mkString(".")}")
+
       lookupTable(table, database) match {
         case Some(crossdataTable) =>
           val table: LogicalPlan = createLogicalRelation(crossdataTable)
           registerTable(tableIdent, table)
           processAlias(tableIdent, table, alias)
-
         case None =>
-          sys.error(s"Table Not Found: ${tableIdent.mkString(".")}")
+          log.debug(s"Table Not Found: ${tableIdent.mkString(".")}")
+
+          lookupView(table, database) match {
+            case Some(sqlView) =>
+              val viewPlan: LogicalPlan = xdContext.sql(sqlView).logicalPlan
+              registerView(tableIdent, viewPlan)
+              processAlias(tableIdent, viewPlan, alias)
+            case None =>
+              sys.error(s"Table/View Not Found: ${tableIdent.mkString(".")}")
+          }
       }
     }
   }
@@ -127,7 +144,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     throw new UnsupportedOperationException
   }
 
-  private def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
+  protected[crossdata] def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
     val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
     LogicalRelation(resolved.relation)
   }
@@ -139,7 +156,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   // Defined by Crossdata
 
-  final def persistTable(crossdataTable: CrossdataTable, table: Option[LogicalPlan] = None): Unit = {
+  final def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit = {
     val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName).toSeq
 
     if (tableExists(tableIdentifier)){
@@ -147,9 +164,23 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
       throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
     } else {
       logInfo(s"XDCatalog: Persisting table ${crossdataTable.tableName}")
-      persistTableMetadata(crossdataTable, table)
+      persistTableMetadata(crossdataTable)
+      val tableIdentifier = TableIdentifier(crossdataTable.tableName,crossdataTable.dbName).toSeq
+      registerTable(tableIdentifier, table)
     }
+  }
 
+  final def persistView(tableIdentifier: TableIdentifier, plan: LogicalPlan, sqlText: String) = {
+    val tableIdent = tableIdentifier.toSeq
+
+    if (tableExists(tableIdent)){
+      logWarning(s"The view ${tableIdent mkString "."} already exists")
+      throw new UnsupportedOperationException(s"The view $tableIdentifier already exists")
+    } else {
+      logInfo(s"XDCatalog: Persisting view ${tableIdent mkString "."}")
+      persistViewMetadata(tableIdentifier: TableIdentifier, sqlText)
+      registerView(tableIdentifier.toSeq, plan)
+    }
   }
 
   final def dropTable(tableIdentifier: Seq[String]): Unit = {
@@ -165,13 +196,21 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     dropAllPersistedTables()
   }
 
-  def registerView(tableIdentifier: Seq[String], plan: LogicalPlan) = registerTable(tableIdentifier, plan)
+
+  def registerView(tableIdentifier: Seq[String], plan: LogicalPlan) =
+    registerTable(tableIdentifier, plan)
+
+  protected def lookupView(tableName: String, databaseName: Option[String]): Option[String]
 
   protected def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable]
 
   def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)]
 
-  protected def persistTableMetadata(crossdataTable: CrossdataTable, table: Option[LogicalPlan] = None): Unit
+  // TODO protected catalog
+
+  protected[crossdata] def persistTableMetadata(crossdataTable: CrossdataTable): Unit
+
+  protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit
 
   /**
    * Drop table if exists.
@@ -182,13 +221,16 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
 }
 
-object XDCatalog{
+object XDCatalog extends CrossdataSerializer {
 
   implicit def asXDCatalog(catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
 
 
+  case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType],
+                            datasource: String, partitionColumn: Array[String] = Array.empty,
+                            opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)
+
   def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
-    implicit val formats = DefaultFormats
 
     val jsonMap = JSON.parseFull(schemaJSON).get.asInstanceOf[Map[String, Any]]
     val fields = jsonMap.getOrElse("fields", throw new Error("Fields not found")).asInstanceOf[List[Map[String, Any]]]
@@ -216,17 +258,14 @@ object XDCatalog{
     JSON.parseFull(optsJSON).get.asInstanceOf[Map[String, String]]
 
   def serializeSchema(schema: StructType): String = {
-    implicit val formats = DefaultFormats
     write(schema.jsonValue.values)
   }
 
   def serializeOptions(options: Map[String, Any]): String = {
-    implicit val formats = DefaultFormats
     write(options)
   }
 
   def serializePartitionColumn(partitionColumn: Array[String]): String = {
-    implicit val formats = DefaultFormats
     write(partitionColumn)
   }
 
@@ -253,7 +292,7 @@ object XDCatalog{
         s"map<${convertToGrammar(tpeKey)},${convertToGrammar(tpeValue)}>"
 
       case tpeMap: Map[String @unchecked, _] =>
-        convertToGrammar(tpeMap.get("type").getOrElse(throw new Error("Type not found")))
+        convertToGrammar(tpeMap.getOrElse("type", throw new Error("Type not found")))
 
       case basicType: String => basicType
 

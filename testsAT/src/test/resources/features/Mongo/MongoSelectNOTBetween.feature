@@ -47,3 +47,11 @@ Feature: MongoSelectAnd
       |    7          | name_7        | 17.2          |  true         | 2007-07-07 |
       |    8          | name_8        | 18.2          |  true         | 2008-08-08 |
       |    9          | name_9        | 19.2          |  true         | 2009-09-09 |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT ident, names[0] as nombre FROM tablearray WHERE names[0] IN ('names_00', 'names_12', 'names_03');
+    When I execute 'SELECT ident, names[0] as nombre FROM tablearray WHERE names[0]  NOT BETWEEN 'name_03' AND 'name_09''
+    Then The spark result has to have '3' rows:
+      | ident-integer | nombre-string   |
+      |    0          | names_00        |
+      |    1          | names_01        |
+      |    2          | names_02        |

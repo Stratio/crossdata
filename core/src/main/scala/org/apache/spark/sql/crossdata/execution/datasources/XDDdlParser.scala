@@ -44,14 +44,13 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
 
 
   protected lazy val createView: Parser[LogicalPlan] = {
-    // TODO: Support database.table.
+
     (CREATE ~> TEMPORARY.? <~ VIEW) ~ tableIdentifier ~ (AS ~> restInput) ^^ {
       case temp  ~ viewIdentifier ~ query =>
         if (temp.isDefined)
           CreateTempView(viewIdentifier, parseQuery(query))
         else
-          CreateView(viewIdentifier, query)
-
+          CreateView(viewIdentifier, parseQuery(query), query)
     }
   }
 
