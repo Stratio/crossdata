@@ -61,7 +61,7 @@
                     <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
                     <assembleDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}
                     </assembleDirectory>
-                    <extraJvmArguments>-Xms512m</extraJvmArguments>
+                    <extraJvmArguments>-Xms512m -Xmx1024m -XX:MaxPermSize=512m</extraJvmArguments>
                     <repositoryLayout>flat</repositoryLayout>
                     <generateRepository>true</generateRepository>
                     <licenseHeaderFile>${project.basedir}/src/main/include/LICENSE</licenseHeaderFile>
