@@ -25,6 +25,8 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -35,7 +37,8 @@ import com.stratio.tests.utils.ThreadProperty;
 
 import cucumber.api.CucumberOptions;
 
-@CucumberOptions(features = { "src/test/resources/features/Mongo/MongoSelectSimple.feature",
+@CucumberOptions(features = {
+        "src/test/resources/features/Mongo/MongoSelectSimple.feature",
         "src/test/resources/features/Mongo/MongoSelectLimit.feature",
         "src/test/resources/features/Mongo/MongoSelectEqualsFilter.feature",
         "src/test/resources/features/Mongo/MongoSelectLessFilter.feature",
@@ -46,7 +49,10 @@ import cucumber.api.CucumberOptions;
         "src/test/resources/features/Mongo/MongoSelectAnd.feature",
         "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature",
           "src/test/resources/features/Udaf/Group_concat.feature",
-        "src/test/resources/features/Udaf/Group_concat.feature"
+        "src/test/resources/features/Udaf/Group_concat.feature",
+        "src/test/resources/features/DriverApi/DescribeTable.feature",
+        "src/test/resources/features/Views/TemporaryViews.feature",
+        "src/test/resources/features/Views/Views.feature"
 })
 
 public class ATEMongoDBXDJavaDriverTest extends BaseTest{
@@ -82,6 +88,45 @@ public class ATEMongoDBXDJavaDriverTest extends BaseTest{
                 .add("date", new java.sql.Date(parsedDate.getTime()));
             tabletest.insert(documentBuilder.get());
         }
+        //Table2
+        DBCollection tablearray  = db.getCollection("tablearray");
+        for(int i = 0; i < 10; i++){
+            BasicDBList names = new BasicDBList();
+            for(int x = 0; x < 5; x++){
+                names.add(x, "names_" + x + i);
+            }
+            BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
+                    .add("ident", i).append("names", names);
+            tablearray.insert(documentBuilder.get());
+        }
+        //Table3
+        DBCollection tableSubField = db.getCollection("tablesubfield");
+        for(int i = 0; i < 10; i++){
+            //Creamos el subdocumento
+            BasicDBObject subDocumentBuilder = new BasicDBObject();
+            subDocumentBuilder.put("name", "name_"+i);
+            BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
+                    .add("ident", i).append("person", subDocumentBuilder);
+            tableSubField.insert(documentBuilder.get());
+        }
+        //Table4
+        DBCollection composetable = db.getCollection("composetable");
+        BasicDBList daughter = new BasicDBList();
+        BasicDBObject subDocumentBuilder = new BasicDBObject();
+        subDocumentBuilder.put("name", "Juan");
+        subDocumentBuilder.put("age", 12);
+        daughter.add(0, subDocumentBuilder);
+        BasicDBObject subDocumentBuilder2 = new BasicDBObject();
+        subDocumentBuilder2.put("name", "Pepe");
+        subDocumentBuilder2.put("age", 13);
+        daughter.add(1,subDocumentBuilder2);
+        BasicDBObject subDocumentPerson = new BasicDBObject();
+        subDocumentPerson.put("name", "Hugo");
+        subDocumentPerson.append("daughter",daughter);
+        BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
+                .add("ident", 0).append("person", subDocumentPerson);
+        composetable.insert(documentBuilder.get());
+
         mongoClient.close();
         String connector = "Mongo";
         ThreadProperty.set("Host", "127.0.0.1");

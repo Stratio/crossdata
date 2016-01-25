@@ -96,4 +96,8 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
 
   override def dropAllPersistedTables(): Unit = dao.getAll().foreach(tableModel => dao.delete(tableModel.id))
 
+  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = ???
+
+  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = ???
+
 }

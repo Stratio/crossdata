@@ -24,7 +24,7 @@ import org.apache.spark.sql.crossdata.ExecutionType.{ExecutionType, Default, Nat
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import XDDataFrame.findNativeQueryExecutor
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
 
 private[sql] object XDDataFrame {
 
@@ -105,7 +105,6 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     }
   }
 
-  //TODO: Remove `annotatedCollect` wrapper method when a better alternative to PR#257 has been found
   def flattenedCollect(): Array[Row] = {
 
     def flattenProjectedColumns(exp: Expression, prev: List[String] = Nil): (List[String], Boolean) = exp match {
@@ -120,7 +119,10 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       case _ => prev -> false
     }
 
-    def flatRows(rows: Array[Row], firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty): Array[Row] = {
+    def flatRows(
+                  rows: Seq[Row],
+                  firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
+                ): Seq[Row] = {
 
       def baseName(parentName: String): String = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
 
@@ -147,21 +149,65 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       rows map {
         case row: GenericRowWithSchema =>
           val newFieldsArray = flatRow(row, thisLevelNames)
-          new GenericRowWithSchema(newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1))) : Row
+          val horizontallyFlattened: Row = new GenericRowWithSchema(
+            newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1)))
+          horizontallyFlattened
         case row: Row =>
           row
       }
     }
 
+    def verticallyFlatRowArrays(row: GenericRowWithSchema): Seq[GenericRowWithSchema] = {
+
+      def cartesian[T](ls: Seq[Seq[T]]): Seq[Seq[T]] = (ls :\ Seq(Seq.empty[T])) {
+        case (cur: Seq[T], prev) => for(x <- prev; y <- cur) yield y +: x
+      } filterNot(_.isEmpty)
+
+      val newSchema = StructType(
+        row.schema map {
+          case StructField(name, ArrayType(etype, _), nullable, meta) =>
+            StructField(name, etype, true)
+          case other => other
+        }
+      )
+
+      val elementsWithIndex = row.values zipWithIndex
+
+      val arrayColumnValues: Seq[Seq[(Int, _)]] = elementsWithIndex collect {
+        case (res: Seq[_], idx) => res map(idx -> _)
+      }
+
+      cartesian(arrayColumnValues) map { case replacements: Seq[(Int, _)] =>
+        val idx2newVal: Map[Int, Any] = replacements.toMap
+        val values = elementsWithIndex map { case (prevVal, idx: Int) =>
+          idx2newVal.getOrElse(idx, prevVal)
+        }
+        new GenericRowWithSchema(values, newSchema)
+      }
+    }
+
+    def iterativeFlatten(
+                          rows: Seq[Row],
+                          firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
+                        ): Seq[Row] =
+      flatRows(rows, firstLevelNames) flatMap {
+        case row: GenericRowWithSchema =>
+          row.schema collectFirst {
+            case StructField(_, _: ArrayType, _, _) =>
+              iterativeFlatten(verticallyFlatRowArrays(row))
+          } getOrElse Seq(row)
+        case row => Seq(row)
+      }
+
     def processProjection(plist: Seq[NamedExpression], child: LogicalPlan): Array[Row] = {
       val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
-      flatRows(collect(), fullyAnnotatedRequestedColumns)
+      iterativeFlatten(collect(), fullyAnnotatedRequestedColumns) toArray
     }
 
     queryExecution.optimizedPlan match {
       case Limit(_, Project(plist, child)) => processProjection(plist, child)
       case Project(plist, child) => processProjection(plist, child)
-      case _ => flatRows(collect())
+      case _ => iterativeFlatten(collect()) toArray
     }
 
   }

@@ -16,23 +16,25 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 import com.stratio.crossdata.connector.TableInventory
+import com.stratio.crossdata.connector.TableManipulation
 import org.apache.spark.Logging
-
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.{ResolvedDataSource, LogicalRelation}
+import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.sources.RelationProvider
+import org.apache.spark.sql.types.ArrayType
+import org.apache.spark.sql.types.BooleanType
+import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
 
-import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
-import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
-
-import XDCatalog._
-
-
-private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
+private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with Logging {
 
   // The result of IMPORT TABLE has only tableIdentifier so far.
@@ -108,14 +110,34 @@ private[crossdata] case class CreateTempView(viewIdentifier: TableIdentifier, qu
 
 }
 
-private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, query: String)
+private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan, sql: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    throw new AnalysisException("Only temporary views are supported. Use CREATE TEMPORARY VIEW")
+    sqlContext.catalog.persistView(viewIdentifier, queryPlan, sql)
+    Seq.empty
   }
 }
 
+case class CreateExternalTable(
+                                tableIdent: TableIdentifier,
+                                userSpecifiedSchema: StructType,
+                                provider: String,
+                                options: Map[String, String]) extends LogicalPlan with RunnableCommand {
 
 
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
+
+    if (!resolved.isInstanceOf[TableManipulation]){
+      sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")
+    }
+
+    val tableManipulation = resolved.asInstanceOf[TableManipulation]
+    tableManipulation.createExternalTable(tableIdent.table, provider, userSpecifiedSchema, options)
+    Seq.empty
+  }
+
+}
 

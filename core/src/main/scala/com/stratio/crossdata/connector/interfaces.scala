@@ -17,6 +17,7 @@ package com.stratio.crossdata.connector
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.sources.DataSourceRegister
@@ -116,4 +117,17 @@ object FunctionInventory {
  */
 trait NativeFunctionExecutor {
   def buildScan(requiredColumns: Array[String], filters: Array[Filter], udfs: Map[String, NativeUDF]): RDD[Row]
+}
+
+/**
+  * Interface including data source operations for Table manipulation like
+  * CREATE/DROP EXTERNAL TABLE
+  *
+  */
+trait TableManipulation {
+
+  def createExternalTable(tableName: String,
+                          source: String,
+                          schema: StructType,
+                          options: Map[String, String]): Boolean
 }
