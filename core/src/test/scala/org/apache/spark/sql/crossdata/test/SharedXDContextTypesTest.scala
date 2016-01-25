@@ -90,7 +90,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
         case _ => false
       } shouldBe empty
 
-      // No struct columns should be dound in the result schema
+      // No struct columns should be found in the result schema
       res.head.schema filter {
         case StructField(_, _: StructType, _, _) => true
         case _ => false
