@@ -183,7 +183,7 @@ object XDContext {
    */
   def getOrCreate(sparkContext: SparkContext): XDContext = {
     INSTANTIATION_LOCK.synchronized {
-      Some(lastInstantiatedContext.get()).getOrElse(new XDContext(sparkContext))
+      Option(lastInstantiatedContext.get()).getOrElse(new XDContext(sparkContext))
     }
     lastInstantiatedContext.get()
   }
