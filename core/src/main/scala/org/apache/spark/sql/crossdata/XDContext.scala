@@ -34,6 +34,7 @@ import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, X
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
@@ -107,6 +108,7 @@ class XDContext private (@transient val sc: SparkContext,
   @transient
   override protected[sql] lazy val functionRegistry: FunctionRegistry =
     new XDFunctionRegistry(FunctionRegistry.builtin, functionInventoryServices)
+
 
   private def functionInventoryLoader = {
     val loader = Utils.getContextOrSparkClassLoader
