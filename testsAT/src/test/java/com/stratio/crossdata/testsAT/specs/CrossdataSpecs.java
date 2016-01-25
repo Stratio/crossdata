@@ -21,22 +21,23 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import static com.stratio.tests.utils.DataFrameAssert.asserThat;
 import static com.stratio.tests.utils.SQLResultAssert.asserThat;
+import static com.stratio.tests.utils.FlattenerMetadataAssert.asserThat;
 import com.stratio.tests.utils.ThreadProperty;
 
 /**
  * Created by hdominguez on 13/10/15.
  */
-public class CrossdataSpecs extends BaseSpec  {
+public class CrossdataSpecs extends BaseSpec {
 
     public CrossdataSpecs(Common spec) {
         this.commonspec = spec;
     }
 
     @When(value = "^I execute '(.*?)'$")
-    public void execute(String query){
+    public void execute(String query) {
         commonspec.getExceptions().clear();
-        commonspec.getLogger().info("Executing native query: " + query );
-        if(ThreadProperty.get("Driver").equals("context")) {
+        commonspec.getLogger().info("Executing native query: " + query);
+        if (ThreadProperty.get("Driver").equals("context")) {
             try {
                 commonspec.getXdContext().executeQuery(query);
             } catch (Exception e) {
@@ -44,10 +45,10 @@ public class CrossdataSpecs extends BaseSpec  {
                 commonspec.getExceptions().add(e);
             }
             commonspec.getLogger().info("Query executed");
-        }else{
-            commonspec.getLogger().info("Executing native query in driver: " + query );
+        } else {
+            commonspec.getLogger().info("Executing native query in driver: " + query);
             try {
-            commonspec.getXdDriver().executeSyncQuery(query);
+                commonspec.getXdDriver().executeSyncQuery(query);
             } catch (Exception e) {
                 commonspec.getLogger().info(e.toString());
                 commonspec.getExceptions().add(e);
@@ -58,14 +59,14 @@ public class CrossdataSpecs extends BaseSpec  {
     }
 
     @Then(value = "The result has to have '(.*?)' rows:$")
-    public void assertResult(String rows, DataTable table){
-        if(ThreadProperty.get("Driver").equals("context")) {
+    public void assertResult(String rows, DataTable table) {
+        if (ThreadProperty.get("Driver").equals("context")) {
             commonspec.getLogger().info("The result obtained is: ");
             commonspec.getXdContext().showDataframe();
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsNative(table.raw());
-        }else{
+        } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
             asserThat(commonspec.getXdDriver().getResult()).equalsSQLResults(table.raw());
@@ -73,14 +74,14 @@ public class CrossdataSpecs extends BaseSpec  {
     }
 
     @Then(value = "The spark result has to have '(.*?)' rows:$")
-    public void assertResultSpark(String rows, DataTable table){
-        if(ThreadProperty.get("Driver").equals("context")) {
+    public void assertResultSpark(String rows, DataTable table) {
+        if (ThreadProperty.get("Driver").equals("context")) {
             commonspec.getLogger().info("The result obtained is: ");
             commonspec.getXdContext().showDataframe();
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsSpark(table.raw());
-        }else{
+        } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
             asserThat(commonspec.getXdDriver().getResult()).equalsSQLResults(table.raw());
@@ -88,37 +89,56 @@ public class CrossdataSpecs extends BaseSpec  {
     }
 
     @Then(value = "The result has to have '(.*?)' rows$")
-    public void assertResultLengh(String rows, DataTable table){
-        if(ThreadProperty.get("Driver").equals("context")) {
+    public void assertResultLengh(String rows, DataTable table) {
+        if (ThreadProperty.get("Driver").equals("context")) {
             commonspec.getLogger().info("The result obtained is: ");
             commonspec.getXdContext().showDataframe();
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
-        }else{
+        } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
         }
     }
 
     @Then(value = "The result has to have '(.*?)' rows ignoring the order:$")
-    public void assertResultLenghIgnoringOrder(String rows, DataTable table){
+    public void assertResultLenghIgnoringOrder(String rows, DataTable table) {
         commonspec.getLogger().info("The result obtained is: ");
-        if(ThreadProperty.get("Driver").equals("context")) {
-
+        if (ThreadProperty.get("Driver").equals("context")) {
             commonspec.getXdContext().showDataframe();
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsIgnoringOrderNative(table.raw());
-        }else{
+        } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
             asserThat(commonspec.getXdDriver().getResult()).equalsResultsIgnoringOrderNative(table.raw());
         }
     }
 
-    @Then(value = "^Drop the spark tables$")
-    public void dropTables(){
+    @Then(value = "Drop the spark tables$")
+    public void dropTables() {
         commonspec.getLogger().info("The result obtained is: ");
         commonspec.getXdContext().dropTables();
+    }
+
+    @When(value = "I describe table '(.*?)'")
+    public void describeTable(String tableName) {
+        commonspec.getExceptions().clear();
+        try {
+            commonspec.getXdDriver().describeTables(tableName);
+            commonspec.getLogger().info("Describe Tables executed correctly");
+
+        } catch (Exception e) {
+            commonspec.getLogger().info(e.toString());
+            commonspec.getExceptions().add(e);
+        }
+    }
+
+    @Then(value = "The table has to have '(.*?)' columns")
+    public void assertDescribeTables(String num_columns, DataTable metadata) {
+        asserThat(commonspec.getXdDriver().getTablesDescription()).hasLength(Integer.parseInt(num_columns));
+        asserThat(commonspec.getXdDriver().getTablesDescription()).checkMetadata(metadata);
+
     }
 }
