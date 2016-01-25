@@ -28,13 +28,12 @@ class CassandraPKFiltersIT extends CassandraWithSharedContext {
 
   val uuid = java.util.UUID.randomUUID.toString.replace("-", "").substring(16)
 
-  val FixedDate = "'2015-06-23 10:30+0100'"
+  val FixedDate = "'2015-06-23 10:30:00'"
 
   override val Catalog = s"ks$uuid"
   override val Table = s"t$uuid"
   override val UnregisteredTable = ""
   override val schema = ListMap("date" -> "timestamp")
-  //override val schema = ListMap("date" -> "text")
   override val pk = "date" :: Nil
   override val indexedColumn = ""
   override val testData = List(List(FixedDate))
