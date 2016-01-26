@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.models
+package org.apache.spark.sql.crossdata.daos.impl
 
-case class EphemeralQueryModel(id: String,
-                               ephemeralTableId: String,
-                               sql: String,
-                               alias : String,
-                               window: Int = EphemeralOptionsModel.DefaultAtomicWindow)
+import com.typesafe.config.Config
+import org.apache.spark.sql.crossdata.daos.TableDAO
+
+class TableTypesafeDAO(configuration: Config) extends TableDAO {
+
+  override val config = new TypesafeConfig(Option(configuration))
+
+}

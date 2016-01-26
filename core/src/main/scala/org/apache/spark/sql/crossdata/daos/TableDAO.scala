@@ -23,7 +23,7 @@ import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.models.TableModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
-trait TableDAOComponent extends GenericDAOComponent[TableModel]
+trait TableDAO extends GenericDAOComponent[TableModel]
 with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
 
   override implicit val formats = json4sJacksonFormats
