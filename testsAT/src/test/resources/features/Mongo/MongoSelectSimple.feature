@@ -239,3 +239,16 @@ Feature: MongoSelectSimple
       | names_07,names_17,names_27,names_37,names_47   |
       | names_08,names_18,names_28,names_38,names_48   |
       | names_09,names_19,names_29,names_39,names_49   |
+
+  Scenario: [CROSSDATA-257] SELECT * FROM composetable;
+    When I execute 'SELECT * FROM composetable'
+    Then The flattened result has to have '2' rows:
+      | ident-integer | person.name-string | person.daughter.name-string | person.daughter.age-integer |
+      | 0             | Hugo               | Juan                        | 12                   |
+      | 0             | Hugo               | Pepe                        | 13                   |
+
+  Scenario: [CROSSDATA-257] SELECT * FROM composetable;
+    When I execute 'SELECT ident, person.name, person.daughter[0].name FROM composetable'
+    Then The flattened result has to have '1' rows:
+      | ident-integer | person.name-string | _c2-string     |
+      | 0             | Hugo               | Juan           |

@@ -69,7 +69,8 @@ trait MongoDataTypesCollection extends MongoWithSharedContext with SharedXDConte
             "arraystruct" -> arraystruct,
             "arraystructwithdate" -> arraystructwithdate,
             "structofstruct" -> structofstruct,
-            "mapstruct" -> mapstruct
+            "mapstruct" -> mapstruct,
+            "arraystructarraystruct" -> arraystructarraystruct
           )
         }
       }
