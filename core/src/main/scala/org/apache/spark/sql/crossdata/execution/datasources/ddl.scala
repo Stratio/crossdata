@@ -34,7 +34,6 @@ import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 
-
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with Logging {
 
@@ -130,6 +129,10 @@ case class CreateExternalTable(
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
+
+    if (!resolved.isInstanceOf[TableManipulation]){
+      sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")
+    }
 
     val tableManipulation = resolved.asInstanceOf[TableManipulation]
     tableManipulation.createExternalTable(sqlContext, tableIdent.table, userSpecifiedSchema, options)

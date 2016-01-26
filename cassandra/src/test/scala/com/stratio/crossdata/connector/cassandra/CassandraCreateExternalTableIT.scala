@@ -24,8 +24,6 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
 
   "The Cassandra connector" should "execute natively create a External Table" in {
-    //assumeEnvironmentIsUpAndRunning
-
     val createTableQUeryString =
       s"""|CREATE EXTERNAL TABLE newTable (id Integer, name String)
           |USING $SourceProvider
@@ -33,13 +31,14 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
           |keyspace '$Catalog',
           |cluster '$ClusterName',
           |pushdown "true",
-          |spark_cassandra_connection_host '$CassandraHost'
+          |spark_cassandra_connection_host '$CassandraHost',
+          |primary_key 'id'
           |)
       """.stripMargin.replaceAll("\n", " ")
-
-
-   // s"CREATE EXTERNAL TABLE newTable (id Integer, name String) USING $SourceProvider OPTIONS (spark_cassandra_connection_host '$CassandraHost')"
+    //Experimentation
     val result = sql(createTableQUeryString).collect()
+
+    //Expectations
 
   }
 

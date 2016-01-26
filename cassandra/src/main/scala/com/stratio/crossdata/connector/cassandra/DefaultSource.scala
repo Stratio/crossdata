@@ -31,6 +31,7 @@ import com.stratio.crossdata.connector.FunctionInventory.UDF
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.TableManipulation
 import com.stratio.crossdata.connector.cassandra.DefaultSource._
+import com.stratio.crossdata.connector.cassandra.statements.CreateTableStatement
 import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode.Append
@@ -159,10 +160,10 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
     buildCassandraConnector(context, options).withSessionDo { s =>
 
-
-      s.execute("CREATE TABLE xd.luismiguel (id int PRIMARY KEY, name TEXT)")
+      val stm = new CreateTableStatement(tableName, schema, options)
+      s.execute(stm.toString())
     }
-    false
+    true
   }
 
   //-----------MetadataInventory-----------------
@@ -241,7 +242,7 @@ object DefaultSource {
   val CassandraConnectionHostProperty = "spark_cassandra_connection_host"
   val CassandraDataSourceProviderPackageName = DefaultSource.getClass.getPackage.getName
   val CassandraDataSourceProviderClassName = CassandraDataSourceProviderPackageName + ".DefaultSource"
-
+  val CassandraDataSourcePrimaryKeyNameProperty ="primary_key"
 
   /** Parse parameters into CassandraDataSourceOptions and TableRef object */
   def tableRefAndOptions(parameters: Map[String, String]): (TableRef, CassandraSourceOptions) = {
