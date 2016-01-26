@@ -154,6 +154,7 @@ object BasicShell extends App {
     loadHistory(console)
   }
 
+
   initialize(console)
 
   private def runConsole(console: ConsoleReader): Unit = {
