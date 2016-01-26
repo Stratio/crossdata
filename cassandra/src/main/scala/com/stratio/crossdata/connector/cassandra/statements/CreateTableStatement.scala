@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.stratio.crossdata.connector.cassandra.statements
 
 import com.datastax.spark.connector.types._
@@ -127,7 +142,7 @@ case class CreateTableStatement(tableName: String,
       case BinaryType => BlobType
       case SparkSqlBooleanType => BooleanType
       case SparkSqlTimestampType => TimestampType
-      //case SparkSqlDateType => DateType
+      //case SparkSqlDateType => DateType TODO support this type
       case SparkSqlDecimalType() => DecimalType
       case ArrayType(sparkSqlElementType, containsNull) =>
         val argType = fromSparkSqlType(sparkSqlElementType)
