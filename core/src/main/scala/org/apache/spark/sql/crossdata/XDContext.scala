@@ -25,7 +25,7 @@ import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.{XDStreamingCatalog, XDCatalog}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy,
 ImportTablesUsingWithOptions, XDDdlParser}
@@ -73,6 +73,18 @@ class XDContext private (@transient val sc: SparkContext,
 
     constr.newInstance(
       new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
+  }
+
+  protected[crossdata] lazy val streamingCatalog: Option[XDStreamingCatalog] = {
+    import XDContext.StreamingCatalogClass
+
+    if (catalogConfig.hasPath(StreamingCatalogClass)) {
+      val streamingCatalogClass = catalogConfig.getString(StreamingCatalogClass)
+      val xdStreamingCatalog = Class.forName(streamingCatalogClass)
+      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[XDContext])
+
+      Option(constr.newInstance(self).asInstanceOf[XDStreamingCatalog])
+    } else None
   }
 
   override lazy val logger = Logger.getLogger(classOf[XDContext])
@@ -176,6 +188,7 @@ class XDContext private (@transient val sc: SparkContext,
 object XDContext {
 
   val CatalogClass = "class"
+  val StreamingCatalogClass = "streaming-class"
   val CaseSensitive = "caseSensitive"
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
 

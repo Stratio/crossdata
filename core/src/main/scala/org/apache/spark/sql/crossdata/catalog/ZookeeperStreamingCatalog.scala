@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.models
+package org.apache.spark.sql.crossdata.catalog
 
-case class EphemeralQueryModel(id: String,
-                               ephemeralTableId: String,
-                               sql: String,
-                               alias : String,
-                               window: Int = EphemeralOptionsModel.DefaultAtomicWindow)
+import org.apache.spark.sql.crossdata.XDContext
+
+class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
+
+
+
+}
