@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralExecutionStatus, EphemeralStatusModel, EphemeralTableModel}
+import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
 /**
  * CrossdataStreamingCatalog aims to provide a mechanism to persist the
@@ -37,11 +37,11 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
 
   def createEphemeralTable(ephemeralTable: EphemeralTableModel): EphemeralTableModel
 
-  def updateEphemeralTable(ephemeralTable: EphemeralTableModel): Unit = {}
+  def updateEphemeralTable(ephemeralTable: EphemeralTableModel): Unit
 
-  def dropEphemeralTable(tableIdentifier: String): Unit = {}
+  def dropEphemeralTable(tableIdentifier: String): Unit
 
-  def dropAllEphemeralTables(): Unit = {}
+  def dropAllEphemeralTables(): Unit
 
   /**
    * Ephemeral Status Functions
@@ -50,11 +50,11 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
 
   def getAllEphemeralStatuses() : Seq[EphemeralStatusModel]
 
-  def updateEphemeralStatus(tableIdentifier: String, status: EphemeralExecutionStatus.Value) : Unit
+  def updateEphemeralStatus(tableIdentifier: String, status: EphemeralStatusModel) : Unit
 
-  protected[crossdata] def dropEphemeralStatus(tableIdentifier: String): Unit = {}
+  protected[crossdata] def dropEphemeralStatus(tableIdentifier: String): Unit
   
-  protected[crossdata] def dropAllEphemeralStatus(): Unit = {}
+  protected[crossdata] def dropAllEphemeralStatus(): Unit
 
   /**
    * Ephemeral Queries Functions
@@ -65,13 +65,13 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
 
   def getAllEphemeralQueries() : Seq[EphemeralQueryModel]
 
-  def createEphemeralQuery(ephemeralTable: EphemeralQueryModel): EphemeralQueryModel
+  def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): EphemeralQueryModel
 
-  def updateEphemeralQuery(ephemeralTable: EphemeralQueryModel): Unit = {}
+  def updateEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Unit
 
-  def dropEphemeralQuery(tableIdentifier: String): Unit = {}
+  def dropEphemeralQuery(queryAlias: String): Unit
 
-  def dropAllEphemeralQueries(): Unit = {}
+  def dropAllEphemeralQueries(): Unit
 
 }
 
