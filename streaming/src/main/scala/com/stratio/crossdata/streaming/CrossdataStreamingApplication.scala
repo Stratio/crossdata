@@ -23,16 +23,14 @@ import scala.util.{Failure, Success, Try}
 
 object CrossdataStreamingApplication extends SparkLoggerComponent {
 
-  val EphemeralTableIdIndex = 0
-  val EphemeralTableNameIndex = 1
-  val ZookeeperConfigurationIndex = 2
+  val EphemeralTableNameIndex = 0
+  val ZookeeperConfigurationIndex = 1
 
   def main(args: Array[String]): Unit = {
-    assert(args.length == 3, s"Invalid number of params: ${args.length}, args: $args")
+    assert(args.length == 2, s"Invalid number of params: ${args.length}, args: $args")
     Try {
-      //val ephemeralTableId = new String(BaseEncoding.base64().decode(args(EphemeralTableIdIndex)))
-      val ephemeralTableId = args(EphemeralTableIdIndex)
-      val ephemeralTableNAme = args(EphemeralTableNameIndex)
+      //val ephemeralTableName = new String(BaseEncoding.base64().decode(args(EphemeralTableNameIndex)))
+      val ephemeralTableName = args(EphemeralTableNameIndex)
 
       val zookeeperConfString = new String(BaseEncoding.base64().decode(args(ZookeeperConfigurationIndex)))
       //val zookeeperConf = Try(ConfigFactory.parseString(zookeeperConfString)).getOrElse(...)
@@ -43,7 +41,7 @@ object CrossdataStreamingApplication extends SparkLoggerComponent {
         Try(ConfigFactory.load(CrossdataStreaming.StreamingResourceConfig)
           .getConfig("zookeeper").atKey("zookeeper")).getOrElse(...)*/
 
-      val crossdataStreaming = new CrossdataStreaming(ephemeralTableId, ephemeralTableNAme, zookeeperConf)
+      val crossdataStreaming = new CrossdataStreaming(ephemeralTableName, zookeeperConf)
 
       crossdataStreaming.init()
     } match {
