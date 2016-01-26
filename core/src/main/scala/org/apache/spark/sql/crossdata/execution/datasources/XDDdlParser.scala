@@ -26,9 +26,13 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val DROP = Keyword("DROP")
   protected val VIEW = Keyword("VIEW")
   protected val EPHEMERAL = Keyword("EPHEMERAL")
+  protected val GET = Keyword("GET")
+  protected val STATUS = Keyword("STATUS")
+  protected val FROM = Keyword("FROM")
+
 
   override protected lazy val ddl: Parser[LogicalPlan] =
-    createTable | describeTable | refreshTable | importStart | dropTable | createView | createEphemeralTable
+    createTable | describeTable | refreshTable | importStart | dropTable | createView | createEphemeralTable | getEphemeralStatus
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -54,10 +58,17 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   }
 
   protected lazy val createEphemeralTable: Parser[LogicalPlan] = {
-    (CREATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ tableCols ~ (OPTIONS ~> options) ^^ {
-      case tableIdent ~ columns ~ opts => {
-        val userSpecifiedSchema = StructType(columns)
-        CreateEphemeralTable(tableIdent, userSpecifiedSchema, opts)
+    (CREATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ (OPTIONS ~> options) ^^ {
+      case tableIdent ~ opts => {
+        CreateEphemeralTable(tableIdent, opts)
+      }
+    }
+  }
+
+  protected lazy val getEphemeralStatus: Parser[LogicalPlan] = {
+    (GET  ~ STATUS ~ FROM) ~ (tableIdentifier) ^^ {
+      case status ~ tableIdent=> {
+        GetStatus(tableIdent)
       }
     }
   }
