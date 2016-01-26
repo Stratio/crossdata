@@ -16,9 +16,7 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.models.EphemeralStatusModel
 import org.apache.spark.sql.execution.datasources.DDLParser
-import org.apache.spark.sql.types.StructType
 
 class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
 

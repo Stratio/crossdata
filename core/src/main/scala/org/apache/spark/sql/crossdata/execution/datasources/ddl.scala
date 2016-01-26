@@ -141,21 +141,20 @@ private[crossdata] case class ExistsEphemeralTable(tableIdent: TableIdentifier) 
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("OperationId", StringType, false))
+      Seq(StructField("Exists table?", StringType, false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val tableId = createId
-
-    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
-      streamingCatalog =>
-        streamingCatalog.existsEphemeralTable(tableIdent.table)
+    val tableExist : Boolean = sqlContext.asInstanceOf[XDContext].streamingCatalog.exists {
+      streamingCatalog => streamingCatalog.existsEphemeralTable(tableIdent.table)
     }
 
-    Seq(Row(tableId))
+    val result = if (tableExist) "EXISTS" else "NOT EXISTS"
+
+    Seq(Row(s"${tableIdent.table} $result"))
   }
 }
 
@@ -243,10 +242,9 @@ private[crossdata] case class CreateEphemeralTable(
 
     sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
       streamingCatalog =>
-        val ephTable = EphemeralTableModel(tableId, tableIdent.table, ephemeralOptions)
+        val ephTable = EphemeralTableModel(tableIdent.table, ephemeralOptions)
         streamingCatalog.createEphemeralTable(ephTable)
     }
-
 
     /*
         // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
@@ -382,7 +380,7 @@ private[crossdata] case class GetAllEphemeralStatuses() extends LogicalPlan with
     val tableId = createId
 
     sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
-      streamingCatalog => streamingCatalog.getAllEphemeralStatuses()
+      streamingCatalog => streamingCatalog.getAllEphemeralStatuses
     }
 
     Seq(Row(tableId))

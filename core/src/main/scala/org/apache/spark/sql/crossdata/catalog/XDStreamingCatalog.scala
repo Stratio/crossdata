@@ -31,11 +31,11 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
    */
   def existsEphemeralTable(tableIdentifier: String): Boolean
   
-  def getEphemeralTable(tableIdentifier: String) : EphemeralTableModel
+  def getEphemeralTable(tableIdentifier: String) : Option[EphemeralTableModel]
 
-  def getAllEphemeralTables() : Seq[EphemeralTableModel]
+  def getAllEphemeralTables : Seq[EphemeralTableModel]
 
-  def createEphemeralTable(ephemeralTable: EphemeralTableModel): EphemeralTableModel
+  def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel]
 
   def updateEphemeralTable(ephemeralTable: EphemeralTableModel): Unit
 
@@ -46,9 +46,9 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
   /**
    * Ephemeral Status Functions
    */
-  def getEphemeralStatus(tableIdentifier: String) : EphemeralStatusModel
+  def getEphemeralStatus(tableIdentifier: String) : Option[EphemeralStatusModel]
 
-  def getAllEphemeralStatuses() : Seq[EphemeralStatusModel]
+  def getAllEphemeralStatuses : Seq[EphemeralStatusModel]
 
   def updateEphemeralStatus(tableIdentifier: String, status: EphemeralStatusModel) : Unit
 
@@ -61,11 +61,11 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
    */
   def existsEphemeralQuery(queryAlias: String): Boolean
 
-  def getEphemeralQuery(queryAlias: String) : EphemeralQueryModel
+  def getEphemeralQuery(queryAlias: String) : Option[EphemeralQueryModel]
 
-  def getAllEphemeralQueries() : Seq[EphemeralQueryModel]
+  def getAllEphemeralQueries : Seq[EphemeralQueryModel]
 
-  def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): EphemeralQueryModel
+  def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel]
 
   def updateEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Unit
 

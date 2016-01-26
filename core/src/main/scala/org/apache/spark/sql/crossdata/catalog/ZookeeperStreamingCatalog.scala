@@ -34,19 +34,25 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   override def getEphemeralTable(tableIdentifier: String): Option[EphemeralTableModel] =
     ephemeralTableDAO.dao.get(tableIdentifier)
 
-  override def createEphemeralTable(ephemeralTable: EphemeralTableModel): EphemeralTableModel =
-    ephemeralTableDAO.dao.upsert(ephemeralTable.name, ephemeralTable)
+  override def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel] =
+    if(ephemeralTableDAO.dao.exists(ephemeralTable.name))
+      Right(ephemeralTableDAO.dao.upsert(ephemeralTable.name, ephemeralTable))
+    else Left("Ephemeral table exists")
 
   override def updateEphemeralTable(ephemeralTable: EphemeralTableModel): Unit =
     ephemeralTableDAO.dao.update(ephemeralTable.name, ephemeralTable)
 
-  override def dropEphemeralTable(tableIdentifier: String): Unit =
+  override def dropEphemeralTable(tableIdentifier: String): Unit = {
     ephemeralTableDAO.dao.delete(tableIdentifier)
+    ephemeralTableStatusDAO.dao.delete(tableIdentifier)
+  }
 
-  override def dropAllEphemeralTables(): Unit =
+  override def dropAllEphemeralTables(): Unit = {
     ephemeralTableDAO.dao.deleteAll
+    ephemeralTableStatusDAO.dao.deleteAll
+  }
 
-  override def getAllEphemeralTables(): Seq[EphemeralTableModel] =
+  override def getAllEphemeralTables: Seq[EphemeralTableModel] =
     ephemeralTableDAO.dao.getAll()
 
 
@@ -56,13 +62,15 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   override def existsEphemeralQuery(queryAlias: String): Boolean =
     ephemeralQueriesDAO.dao.exists(queryAlias)
 
-  override def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): EphemeralQueryModel =
-    ephemeralQueriesDAO.dao.upsert(ephemeralQuery.alias, ephemeralQuery)
+  override def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel] =
+    if(ephemeralQueriesDAO.dao.exists(ephemeralQuery.alias))
+      Right(ephemeralQueriesDAO.dao.upsert(ephemeralQuery.alias, ephemeralQuery))
+    else Left("Ephemeral query exists")
 
   override def getEphemeralQuery(queryAlias: String): Option[EphemeralQueryModel] =
     ephemeralQueriesDAO.dao.get(queryAlias)
 
-  override def getAllEphemeralQueries(): Seq[EphemeralQueryModel] =
+  override def getAllEphemeralQueries: Seq[EphemeralQueryModel] =
     ephemeralQueriesDAO.dao.getAll()
 
   override def updateEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Unit =
@@ -81,7 +89,7 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   override def getEphemeralStatus(tableIdentifier: String): Option[EphemeralStatusModel] =
     ephemeralTableStatusDAO.dao.get(tableIdentifier)
 
-  override def getAllEphemeralStatuses(): Seq[EphemeralStatusModel] =
+  override def getAllEphemeralStatuses: Seq[EphemeralStatusModel] =
     ephemeralTableStatusDAO.dao.getAll()
 
   override def updateEphemeralStatus(tableIdentifier: String, status: EphemeralStatusModel): Unit =
@@ -92,5 +100,5 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
 
   override protected[crossdata] def dropAllEphemeralStatus(): Unit =
     ephemeralTableStatusDAO.dao.deleteAll
-  
+
 }

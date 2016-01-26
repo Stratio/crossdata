@@ -25,8 +25,7 @@ import org.apache.curator.framework.recipes.cache.NodeCache
 import org.apache.spark.sql.crossdata.daos.EphemeralTableStatusMapDAO
 import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralStatusModel}
 
-class EphemeralStatusActor(ephemeralTableId: String,
-                           zookeeperConfiguration: Map[String, String],
+class EphemeralStatusActor(zookeeperConfiguration: Map[String, String],
                            ephemeralTableName: String) extends Actor
 with EphemeralTableStatusMapDAO {
 
@@ -55,17 +54,17 @@ with EphemeralTableStatusMapDAO {
         startedTime = startTime.orElse(ephStatus.startedTime)))
     }
 
-    ephemeralStatus.fold(dao.create(ephemeralTableId,
-      EphemeralStatusModel(ephemeralTableId, ephemeralTableName, newStatus, startTime, stopTime)))
+    ephemeralStatus.fold(dao.create(ephemeralTableName,
+      EphemeralStatusModel(ephemeralTableName, newStatus, startTime, stopTime)))
     { ephemeralTable =>
-      dao.upsert(ephemeralTableId, ephemeralTable)
+      dao.upsert(ephemeralTableName, ephemeralTable)
     }
   }
 
   private def doAddListener(): Unit = {
     if (!listenerAdded) {
       repository.addListener[EphemeralStatusModel](dao.entity,
-        ephemeralTableId,
+        ephemeralTableName,
         (newEphemeralStatus: EphemeralStatusModel, nodeCache: NodeCache) => {
           ephemeralStatus = Option(newEphemeralStatus)
         })
@@ -74,7 +73,7 @@ with EphemeralTableStatusMapDAO {
   }
 
   private def getRepositoryStatusTable: Option[EphemeralStatusModel] = {
-    dao.get(ephemeralTableId)
+    dao.get(ephemeralTableName)
   }
 
   private def getStatusFromTable(ephemeralTable : Option[EphemeralStatusModel]) = {
