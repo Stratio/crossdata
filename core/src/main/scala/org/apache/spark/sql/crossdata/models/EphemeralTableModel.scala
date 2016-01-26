@@ -16,6 +16,5 @@
 
 package org.apache.spark.sql.crossdata.models
 
-case class EphemeralTableModel(id: String,
-                               name: String,
+case class EphemeralTableModel(name: String,
                                options: EphemeralOptionsModel)

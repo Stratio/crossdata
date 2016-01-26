@@ -137,7 +137,8 @@ private[crossdata] case class CreateEphemeralTable(
   extends LogicalPlan with RunnableCommand with EphemeralTableDAO {
 
   //TODO Correct all config and move it
-  override lazy val config: Config = new TypesafeConfig(None, None, Some(CoreConfig.CoreBasicConfig),Some(CoreConfig.ParentConfigName + "." +CoreConfig.StreamingConfigKey))
+  /*override lazy val config: Config = new TypesafeConfig(None, None, Some(CoreConfig.CoreBasicConfig),Some(CoreConfig
+    .ParentConfigName + "." +CoreConfig.StreamingConfigKey))*/
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
@@ -164,10 +165,10 @@ private[crossdata] case class CreateEphemeralTable(
     val kafkaOptions = KafkaOptionsModel(connections, topics, groupId, partition, Map.empty)
     val ephemeralOptions = EphemeralOptionsModel(kafkaOptions)
 
-    dao.create(tableId,
+    /*dao.create(tableId,
       EphemeralTableModel(tableId,
         tableIdent.table,
-        ephemeralOptions))
+        ephemeralOptions))*/
 
 /*
     // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205

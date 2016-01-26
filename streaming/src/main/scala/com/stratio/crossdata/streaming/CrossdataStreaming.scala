@@ -35,8 +35,7 @@ import scala.collection.JavaConversions._
 
 import scala.util.{Failure, Success, Try}
 
-class CrossdataStreaming(ephemeralTableId: String,
-                         ephemeralTableName: String,
+class CrossdataStreaming(ephemeralTableName: String,
                          zookeeperConfiguration: Map[String, Any])
   extends EphemeralTableMapDAO {
 
@@ -55,12 +54,12 @@ class CrossdataStreaming(ephemeralTableId: String,
       }
 
       CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Starting,
-        zookeeperMergedConfig, ephemeralTableId, ephemeralTableName)
+        zookeeperMergedConfig, ephemeralTableName)
       Try {
-        val ephemeralTable = dao.get(ephemeralTableId).getOrElse(throw new Exception("Table not found"))
+        val ephemeralTable = dao.get(ephemeralTableName).getOrElse(throw new Exception("Table not found"))
 
         //TODO remove this
-        dao.create(ephemeralTableId, ephemeralTable)
+        dao.create(ephemeralTableName, ephemeralTable)
 
         val sparkResourceConfig = streamingResourceConfig.config.getConfig(SparkPrefixName) match {
           case Some(conf) => conf.toStringMap
@@ -81,28 +80,28 @@ class CrossdataStreaming(ephemeralTableId: String,
             )
           })
 
-        logger.info(s"Started Ephemeral Table: $ephemeralTableId")
+        logger.info(s"Started Ephemeral Table: $ephemeralTableName")
         CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Started,
-          zookeeperMergedConfig, ephemeralTableId, ephemeralTableName)
+          zookeeperMergedConfig, ephemeralTableName)
 
         ssc.start()
         ssc.awaitTermination()
         ssc
       } match {
         case Success(_) =>
-          logger.info(s"Stopping Ephemeral Table: $ephemeralTableId")
+          logger.info(s"Stopping Ephemeral Table: $ephemeralTableName")
           CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Stopped,
-            zookeeperMergedConfig, ephemeralTableId, ephemeralTableName)
+            zookeeperMergedConfig, ephemeralTableName)
           CrossdataStatusHelper.close()
         case Failure(exception) =>
           logger.error(exception.getLocalizedMessage, exception)
           CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Error,
-            zookeeperMergedConfig, ephemeralTableId, ephemeralTableName)
+            zookeeperMergedConfig, ephemeralTableName)
           CrossdataStatusHelper.close()
       }
     } match {
       case Success(_) =>
-        logger.info(s"Ephemeral Table Finished correctly: $ephemeralTableId")
+        logger.info(s"Ephemeral Table Finished correctly: $ephemeralTableName")
       case Failure(exception) =>
         logger.error(exception.getLocalizedMessage, exception)
         CrossdataStatusHelper.close()
@@ -134,7 +133,7 @@ class CrossdataStreaming(ephemeralTableId: String,
       println("RDD YEEEEEEEEEEEAHHH")
 
       if (rdd.take(1).length > 0) {
-        val streamingQueries = CrossdataStatusHelper.queriesFromEphemeralTable(zookeeperConf, ephemeralTable.id)
+        val streamingQueries = CrossdataStatusHelper.queriesFromEphemeralTable(zookeeperConf, ephemeralTable.name)
         if (streamingQueries.nonEmpty) {
           streamingQueries.foreach(streamingQueryModel => {
             val rddFiltered = rdd.flatMap { case (time, row) =>
@@ -142,11 +141,11 @@ class CrossdataStreaming(ephemeralTableId: String,
               else None
             }
             val df = xdContext.read.json(rddFiltered)
-            df.registerTempTable(s"${ephemeralTable.name}${streamingQueryModel.id}")
+            df.registerTempTable(s"${ephemeralTable.name}${streamingQueryModel.alias}")
             val query = streamingQueryModel.sql.replaceAll(ephemeralTable.name,
-              s"${ephemeralTable.name}${streamingQueryModel.id}")
+              s"${ephemeralTable.name}${streamingQueryModel.alias}")
             val dataFrame = xdContext.sql(query)
-            val topic = streamingQueryModel.alias.getOrElse(streamingQueryModel.id)
+            val topic = streamingQueryModel.alias
 
             ephemeralTable.options.outputFormat match {
               case EphemeralOutputFormat.JSON =>
