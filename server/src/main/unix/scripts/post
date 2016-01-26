@@ -34,6 +34,8 @@ chown -R ${USER}:${GROUP} $DIR_INSTALL
 
 chown -R ${USER}:${GROUP} $DIR_CONF
 chown -R ${USER}:${GROUP} $DIR_LOG
+chown -R ${USER}:${GROUP} /var/run/sds
+
 chmod -R 775 $DIR_INSTALL
 chmod 775 $DIR_LOG
 
