@@ -27,7 +27,7 @@ import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, Ephemera
 
 class EphemeralStatusActor(ephemeralTableId: String,
                            zookeeperConfiguration: Map[String, String],
-                           ephemeralTableName: Option[String] = None) extends Actor
+                           ephemeralTableName: String) extends Actor
 with EphemeralTableStatusMapDAO {
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
@@ -56,7 +56,7 @@ with EphemeralTableStatusMapDAO {
     }
 
     ephemeralStatus.fold(dao.create(ephemeralTableId,
-      EphemeralStatusModel(ephemeralTableId, newStatus, startTime, stopTime, ephemeralTableName)))
+      EphemeralStatusModel(ephemeralTableId, ephemeralTableName, newStatus, startTime, stopTime)))
     { ephemeralTable =>
       dao.upsert(ephemeralTableId, ephemeralTable)
     }
