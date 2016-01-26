@@ -77,4 +77,10 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
 
 object XDStreamingCatalog {
 
+  val kafkaHost = "kafka.connectionHost"
+  val kafkaConsumerPort = "kafka.connectionConsumerPort"
+  val kafkaProducerPort = "kafka.connectionProducerPort"
+  val kafkaTopicName = "kafka.topicName"
+  val kafkaGroupId = "kafka.groupId"
+  val kafkaPartition = "kafka.partition"
 }

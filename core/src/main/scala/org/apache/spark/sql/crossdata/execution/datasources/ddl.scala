@@ -20,6 +20,7 @@ import com.stratio.crossdata.connector.TableInventory
 import org.apache.spark.Logging
 
 import org.apache.spark.launcher.SparkLauncher
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.{Row, SQLContext}
 
 import org.apache.spark.sql.catalyst.TableIdentifier
@@ -28,7 +29,7 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.daos.{EphemeralTableDAO, EphemeralTableMapDAO}
+import org.apache.spark.sql.crossdata.daos.{EphemeralTableStatusDAO, EphemeralTableDAO, EphemeralTableMapDAO}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.sql.execution.RunnableCommand
@@ -44,7 +45,7 @@ import org.apache.spark.sql.types.StructType
 import scala.util.parsing.json.{JSONFormat, JSONObject, JSON}
 
 import org.apache.spark.sql.crossdata.config._
-
+import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog._
 
 
 private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
@@ -131,13 +132,90 @@ private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryP
   }
 }
 
+
+  /**
+  * Ephemeral Table Functions
+  */
+
+private[crossdata] case class ExistsEphemeralTable(tableIdent: TableIdentifier) extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("OperationId", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val tableId = createId
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog =>
+        streamingCatalog.existsEphemeralTable(tableIdent.table)
+    }
+
+    Seq(Row(tableId))
+  }
+}
+
+private[crossdata] case class GetEphemeralTable(tableIdent: TableIdentifier) extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("OperationId", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val tableId = createId
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog =>
+        streamingCatalog.getEphemeralTable(tableIdent.table)
+    }
+
+    Seq(Row(tableId))
+  }
+}
+
+private[crossdata] case class GetAllEphemeralTables() extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("OperationId", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val tableId = createId
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog =>
+        streamingCatalog.getAllEphemeralTables
+    }
+
+    Seq(Row(tableId))
+  }
+}
+
 private[crossdata] case class CreateEphemeralTable(
-    tableIdent: TableIdentifier,
-    opts: Map[String, String])
+                                                    tableIdent: TableIdentifier,
+                                                    opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with EphemeralTableDAO {
 
-  //TODO Correct all config and move it
-  override lazy val config: Config = new TypesafeConfig(None, None, Some(CoreConfig.CoreBasicConfig),Some(CoreConfig.ParentConfigName + "." +CoreConfig.StreamingConfigKey))
+  // TODO choose config params from file or from OPTIONS()
+  override lazy val config: Config =
+    new TypesafeConfig(
+      None,
+      None,
+      Some(CoreConfig.CoreBasicConfig),
+      Some(CoreConfig.ParentConfigName + "." +CoreConfig.StreamingConfigKey)
+    )
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
@@ -146,75 +224,190 @@ private[crossdata] case class CreateEphemeralTable(
     schema.toAttributes
   }
 
-
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
     val tableId = createId
 
-    val kafkaHost = config.getString("kafka.connectionHost","DefaultHost")
-    val kafkaConsumerPort = config.getString("kafka.connectionConsumerPort", "DefaultConsumer")
-    val kafkaProducerPort = config.getString("kafka.connectionProducerPort", "DefaultProducer")
-
-    //TODO create a streamingCatalog object with contants
+    // TODO fill default values
     //kafka options
-    val topics= Seq(TopicModel(config.getString("kafka.topicName", tableId)))
-    val connections = Seq(ConnectionHostModel(kafkaHost, kafkaConsumerPort, kafkaProducerPort))
-    val groupId = config.getString("kafka.groupId", tableIdent.table)
-    val partition = config.getString("kafka.partition")
+    val host = config.getString(kafkaHost,"DefaultHost")
+    val consumerPort = config.getString(kafkaConsumerPort, "DefaultConsumer")
+    val producerPort = config.getString(kafkaProducerPort, "DefaultProducer")
+    val topics= Seq(TopicModel(config.getString(kafkaTopicName, tableId)))
+    val connections = Seq(ConnectionHostModel(host, consumerPort, producerPort))
+    val groupId = config.getString(kafkaGroupId, tableIdent.table)
+    val partition = config.getString(kafkaPartition)
     val kafkaOptions = KafkaOptionsModel(connections, topics, groupId, partition, Map.empty)
+
     val ephemeralOptions = EphemeralOptionsModel(kafkaOptions)
 
-    dao.create(tableId,
-      EphemeralTableModel(tableId,
-        tableIdent.table,
-        ephemeralOptions))
-
-/*
-    // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
-    // * This query will trigger 3 actions in the catalog persistence:
-    //   1.- Associate the table with the schema.
-    val schema = columns.json
-    //   2.- Associate the table with the configuration.
-    val options = JSONObject(opts).toString(JSONFormat.defaultFormatter)
-    //   3.- Associate the QueryID with the involved table.
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog =>
+        val ephTable = EphemeralTableModel(tableId, tableIdent.table, ephemeralOptions)
+        streamingCatalog.createEphemeralTable(ephTable)
+    }
 
 
-    // * SparkLauncher of StreamingProcess
-    val params = tableId :: opts.values.toList
-    val sparkApp = new SparkLauncher()
-      .setAppName(tableId)
-      .setMaster(sqlContext.conf.getConfString("spark.master"))
-      .setAppResource("streamingProcess.jar")
-      .setMainClass("StreamingProcess")
-      .setDeployMode("cluster")
-      .addAppArgs(params:_*)
-      .launch()
+    /*
+        // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
+        // * This query will trigger 3 actions in the catalog persistence:
+        //   1.- Associate the table with the schema.
+        val schema = columns.json
+        //   2.- Associate the table with the configuration.
+        val options = JSONObject(opts).toString(JSONFormat.defaultFormatter)
+        //   3.- Associate the QueryID with the involved table.
 
-    // * Return the UUID of the process
-*/
+        // * SparkLauncher of StreamingProcess
+        val params = tableId :: opts.values.toList
+        val sparkApp = new SparkLauncher()
+          .setAppName(tableId)
+          .setMaster(sqlContext.conf.getConfString("spark.master"))
+          .setAppResource("streamingProcess.jar")
+          .setMainClass("StreamingProcess")
+          .setDeployMode("cluster")
+          .addAppArgs(params:_*)
+          .launch()
+
+        // * Return the UUID of the process
+    */
     Seq(Row(tableId))
   }
 }
 
-// TODO change this
-private[crossdata] case class GetStatus(tableIdent: TableIdentifier)extends LogicalPlan with RunnableCommand with EphemeralTableMapDAO {
-
-  override val memoryMap : Map[String, Any]= Map.empty
-  override lazy val config: Config = new DummyConfig(Some(CoreConfig.ParentConfigName + "." +CoreConfig.StreamingConfigKey))
+private[crossdata] case class UpdateEphemeralTable(tableIdent: TableIdentifier , opts: Map[String, String])
+  extends LogicalPlan with RunnableCommand{
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("EphemeralTableID", StringType, false))
+      Seq(StructField("OperationId", StringType, false))
     )
     schema.toAttributes
   }
 
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val tableId = createId
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog =>
+      // TODO make EphemeralTableModel from opts. If there are not all the mandatory params throw an error
+
+//        val ephTable = EphemeralTableModel(tableId, tableIdent.table, EphemeralOptionsModel())
+//        streamingCatalog.updateEphemeralTable(ephTable)
+    }
+
+    Seq(Row(tableId))
+  }
+}
+
+private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
+  extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("OperationId", StringType, false))
+    )
+    schema.toAttributes
+  }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
     val tableId = createId
 
-    dao.get(tableId)
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog => streamingCatalog.dropEphemeralTable(tableIdent.table)
+    }
+
+    Seq(Row(tableId))
+  }
+}
+
+private[crossdata] case class DropAllEphemeralTables() extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("OperationId", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val tableId = createId
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog => streamingCatalog.dropAllEphemeralTables()
+    }
+
+    Seq(Row(tableId))
+  }
+}
+
+  /**
+  * Ephemeral Status Functions
+  */
+
+  private[crossdata] case class GetEphemeralStatus(tableIdent: TableIdentifier) extends LogicalPlan with RunnableCommand{
+
+    override val output: Seq[Attribute] = {
+      val schema = StructType(
+        Seq(StructField("OperationId", StringType, false))
+      )
+      schema.toAttributes
+    }
+
+    override def run(sqlContext: SQLContext): Seq[Row] = {
+
+      val tableId = createId
+
+      sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+        streamingCatalog => streamingCatalog.getEphemeralStatus(tableIdent.table)
+      }
+
+      Seq(Row(tableId))
+    }
+  }
+
+private[crossdata] case class GetAllEphemeralStatuses() extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("OperationId", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val tableId = createId
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog => streamingCatalog.getAllEphemeralStatuses()
+    }
+
+    Seq(Row(tableId))
+  }
+}
+
+private[crossdata] case class UpdateEphemeralStatus(tableIdent: TableIdentifier, opts: Map[String, String])
+  extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("OperationId", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val tableId = createId
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog =>
+        //TODO make EphemeralStatusModel from opts
+        //streamingCatalog.updateEphemeralStatus(tableIdent.table, EphemeralStatusModel)
+    }
 
     Seq(Row(tableId))
   }
@@ -222,3 +415,8 @@ private[crossdata] case class GetStatus(tableIdent: TableIdentifier)extends Logi
 
 
 
+
+
+  /**
+  * Ephemeral Queries Functions
+  */
