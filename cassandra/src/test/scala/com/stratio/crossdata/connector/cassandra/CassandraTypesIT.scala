@@ -16,7 +16,7 @@
 package com.stratio.crossdata.connector.cassandra
 
 import org.apache.spark.sql.crossdata.test.SharedXDContextTypesTest
-import org.apache.spark.sql.crossdata.test.SharedXDContextTypesTest.SparkSQLColdDef
+import org.apache.spark.sql.crossdata.test.SharedXDContextTypesTest.SparkSQLColDef
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -98,17 +98,17 @@ class CassandraTypesIT extends CassandraWithSharedContext with SharedXDContextTy
 
   }
 
-  override protected def typesSet: Seq[SparkSQLColdDef] = super.typesSet flatMap {
-    case SparkSQLColdDef(_, "TINYINT", _) | SparkSQLColdDef(_, "SMALLINT", _) => Nil
-    case SparkSQLColdDef(name, "DATE", typeChecker) =>
-      SparkSQLColdDef(name, "TIMESTAMP", _.isInstanceOf[java.sql.Timestamp])::Nil
-    case SparkSQLColdDef(name, sqlClause, typeChecker) if name contains "struct" =>
-      SparkSQLColdDef(name, sqlClause.replace("DATE", "TIMESTAMP"), typeChecker)::Nil
+  override protected def typesSet: Seq[SparkSQLColDef] = super.typesSet flatMap {
+    case SparkSQLColDef(_, "TINYINT", _) | SparkSQLColDef(_, "SMALLINT", _) => Nil
+    case SparkSQLColDef(name, "DATE", typeChecker) =>
+      SparkSQLColDef(name, "TIMESTAMP", _.isInstanceOf[java.sql.Timestamp])::Nil
+    case SparkSQLColDef(name, sqlClause, typeChecker) if name contains "struct" =>
+      SparkSQLColDef(name, sqlClause.replace("DATE", "TIMESTAMP"), typeChecker)::Nil
     case other =>
       other::Nil
   }
 
-  override def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef] = Seq(SparkSQLColdDef("id", "INT"))
+  override def sparkAdditionalKeyColumns: Seq[SparkSQLColDef] = Seq(SparkSQLColDef("id", "INT"))
   override def dataTypesSparkOptions: Map[String, String] = Map(
     "table"    -> TypesTable,
     "keyspace" -> Catalog,
