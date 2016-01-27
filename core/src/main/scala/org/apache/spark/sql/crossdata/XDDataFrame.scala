@@ -58,9 +58,9 @@ private[sql] object XDDataFrame {
       val nativeExecutors: Seq[NativeScan] = leafs.map { case LogicalRelation(ns: NativeScan, _) => ns }
 
       nativeExecutors match {
-        case Seq(head) => {
+        case Seq(head) =>
           Some(head)
-        }
+
         case _ =>
           if (nativeExecutors.sliding(2).forall { tuple =>
             tuple.head.getClass == tuple.head.getClass
