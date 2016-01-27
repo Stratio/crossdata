@@ -252,3 +252,10 @@ Feature: MongoSelectSimple
     Then The flattened result has to have '1' rows:
       | ident-integer | person.name-string | _c2-string     |
       | 0             | Hugo               | Juan           |
+
+  Scenario:[CROSSDATA-282] SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias
+    When I execute 'SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias'
+    Then The spark result has to have '1' rows:
+      | alias-boolean | count-long |
+      |true           | 10            |
+

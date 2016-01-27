@@ -166,7 +166,7 @@ Feature: CassandraSelectSimple
       |    name_8   | 18.2         |8               |true         |
       |    name_9   | 19.2         |9               |true         |
 
-  Scenario: [CASSANDRA : MONGO NATIVE] SELECT ident,name,money,new,date FROM tabletest;
+  Scenario: [CASSANDRA NATIVE] SELECT ident,name,money,new,date FROM tabletest;
     When I execute 'SELECT ident,name,money,new,date FROM tabletest'
     Then The result has to have '10' rows ignoring the order:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-timestamp      |
@@ -177,6 +177,13 @@ Feature: CassandraSelectSimple
       |    4          | name_4        | 14.2          |  true         | 2004-04-04 00:00:00 |
       |    5          | name_5        | 15.2          |  true         | 2005-05-05 00:00:00 |
       |    6          | name_6        | 16.2          |  true         | 2006-06-06 00:00:00 |
+      |    6          | name_6        | 16.2          |  true         | 2006-06-06 00:00:00 |
       |    7          | name_7        | 17.2          |  true         | 2007-07-07 00:00:00 |
       |    8          | name_8        | 18.2          |  true         | 2008-08-08 00:00:00 |
       |    9          | name_9        | 19.2          |  true         | 2009-09-09 00:00:00 |
+
+    Scenario:[CROSSDATA-282] SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias
+      When I execute 'SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias'
+      Then The spark result has to have '1' rows:
+      | alias-boolean | count-long |
+      |true           | 10            |
