@@ -20,6 +20,7 @@ import com.mongodb.casbah.MongoDB
 
 import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
+import com.stratio.crossdata.connector.TableManipulation
 import com.stratio.datasource.Config._
 import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions, MongodbConfig, MongodbRelation}
 import org.apache.spark.sql.SaveMode._
@@ -32,7 +33,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
  * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
  * Required options are detailed in [[com.stratio.datasource.mongodb.MongodbConfig]]
  */
-class DefaultSource extends ProviderDS with TableInventory with DataSourceRegister {
+class DefaultSource extends ProviderDS with TableInventory with DataSourceRegister with TableManipulation{
 
   import MongodbConfig._
 
@@ -174,4 +175,23 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
     finalMap
   }
 
+  override def createExternalTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String]): Boolean = {
+    val database: String = {
+      require(options.contains(CassandraDataSourceKeyspaceNameProperty),
+        s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command")
+      options.get("keyspace").get
+    }
+
+    buildCassandraConnector(context, options).withSessionDo { s =>
+
+      if (s.getCluster.getMetadata.getKeyspace(keyspace)== null){
+        val createKeyspace = new CreateKeyspaceStatement(options)
+        s.execute(createKeyspace.toString())
+      }
+
+      val stm = new CreateTableStatement(tableName, schema, options)
+      s.execute(stm.toString())
+    }
+    true
+  }
 }
