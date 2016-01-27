@@ -17,8 +17,8 @@ package com.stratio.crossdata.server.config
 
 import java.io.File
 
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{ConfigValueFactory, Config, ConfigFactory}
+import scala.collection.JavaConversions._
 import org.apache.log4j.Logger
 
 object ServerConfig {
@@ -77,11 +77,21 @@ trait ServerConfig extends NumberActorConfig {
       }
     }
 
-    // TODO Improve implementation
     // System properties
     defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
 
-    ConfigFactory.load(defaultConfig)
+    val finalConfig = {
+      if(defaultConfig.hasPath("akka.cluster.server-nodes")){
+        val serverNodes = defaultConfig.getString("akka.cluster.server-nodes")
+        defaultConfig.withValue(
+          "akka.cluster.seed-nodes",
+          ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
+      } else {
+        defaultConfig
+      }
+    }
+
+    ConfigFactory.load(finalConfig)
   }
 
 
