@@ -17,9 +17,9 @@ package com.stratio.crossdata.driver.config
 
 import java.io.File
 
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{ConfigValueFactory, Config, ConfigFactory}
 import org.apache.log4j.Logger
+import scala.collection.JavaConversions._
 
 object DriverConfig {
 
@@ -84,7 +84,20 @@ trait DriverConfig {
     // System properties
     val finalConfigWithSystemProperties = ConfigFactory.parseProperties(System.getProperties).withFallback(finalConfig)
 
-    ConfigFactory.load(finalConfigWithSystemProperties)
+    val finalConfigWithEnvVars = {
+      if(finalConfigWithSystemProperties.hasPath("config.cluster.servers")){
+        val serverNodes = finalConfigWithSystemProperties.getString("config.cluster.servers")
+        defaultConfig.withValue(
+          "config.cluster.hosts",
+          ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
+      } else {
+        finalConfigWithSystemProperties
+      }
+    }
+
+    println(s"Cluster.hosts = ${finalConfigWithEnvVars.getAnyRef("config.cluster.hosts")}")
+
+    ConfigFactory.load(finalConfigWithEnvVars)
   }
 
 }

@@ -84,6 +84,13 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-core</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -310,6 +317,10 @@
                                 <copyDirectory>
                                     <from>target/crossdata-dist-${project.version}/conf/</from>
                                     <to>/etc/sds/crossdata</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>target/crossdata-dist-${project.version}/lib/</from>
+                                    <to>/opt/sds/crossdata/lib</to>
                                 </copyDirectory>
                                 <copyDirectory>
                                     <from>target/crossdata-dist-${project.version}/bin</from>

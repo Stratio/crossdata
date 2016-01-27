@@ -36,7 +36,7 @@ import com.typesafe.config.ConfigValueFactory
 import org.apache.log4j.Logger
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
-import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
 
 
 import scala.collection.JavaConversions._
@@ -120,6 +120,7 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
 
   /**
     * Executes a SQL sentence in a synchronous way.
+    *
     * @param sqlCommand The SQL Command.
     * @param timeout Timeout in seconds.
     * @param retries Number of retries if the timeout was exceeded
@@ -136,6 +137,7 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
 
   /**
     * Executes a SQL sentence in an asynchronous way.
+    *
     * @param sqlCommand The SQL Command.
     * @param timeout Timeout in seconds.
     * @param retries Number of retries if the timeout was exceeded
@@ -155,6 +157,7 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
 
   /**
     * Gets a list of tables from a database or all if the database is None
+    *
     * @param databaseName The database name
     * @return A sequence of tables an its database
     */
@@ -174,6 +177,7 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
 
   /**
     * Gets the metadata from a specific table.
+    *
     * @param database Database of the table.
     * @param tableName The name of the table.
     * @return A sequence with the metadata of the fields of the table.
@@ -202,6 +206,8 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
   private def getFlattenedFields(fieldName: String, dataType: DataType): Seq[FieldMetadata] = dataType match {
     case structType: StructType =>
       structType.flatMap(field => getFlattenedFields(s"$fieldName.${field.name}", field.dataType))
+    case ArrayType(etype, _) =>
+      getFlattenedFields(fieldName, etype)
     case _ =>
       FieldMetadata(fieldName, dataType) :: Nil
   }
