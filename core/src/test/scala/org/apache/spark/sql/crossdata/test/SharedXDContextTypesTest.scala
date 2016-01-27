@@ -36,7 +36,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
   val emptyTypesSetError: String                                /* Error message to be shown when the types test data have not
                                                                  * been properly inserted in the data source */
   def saveTypesData: Int                                        // Entry point for saving types examples into the data source
-  def sparkAdditionalKeyColumns: Seq[SparkSQLColdDef] = Seq()   /* There are data sources which require their tables to have a
+  def sparkAdditionalKeyColumns: Seq[SparkSQLColDef] = Seq()   /* There are data sources which require their tables to have a
                                                                  * primary key. This entry point allows specifying primary keys
                                                                  * columns.
                                                                  * NOTE that these `SparkSQLColdDef`s shouldn't have type checker
@@ -105,34 +105,34 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
     require(saveTypesData > 0, emptyTypesSetError)
   }
 
-  protected def typesSet: Seq[SparkSQLColdDef] = Seq(
-    SparkSQLColdDef("int", "INT", _ shouldBe a[java.lang.Integer]),
-    SparkSQLColdDef("bigint", "BIGINT", _ shouldBe a[java.lang.Long]),
-    SparkSQLColdDef("long", "LONG", _ shouldBe a[java.lang.Long]),
-    SparkSQLColdDef("string", "STRING", _ shouldBe a[java.lang.String]),
-    SparkSQLColdDef("boolean", "BOOLEAN", _ shouldBe a[java.lang.Boolean]),
-    SparkSQLColdDef("double", "DOUBLE", _ shouldBe a[java.lang.Double]),
-    SparkSQLColdDef("float", "FLOAT", _ shouldBe a[java.lang.Float]),
-    SparkSQLColdDef("decimalint", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
-    SparkSQLColdDef("decimallong", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
-    SparkSQLColdDef("decimaldouble", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
-    SparkSQLColdDef("decimalfloat", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
-    SparkSQLColdDef("date", "DATE", _ shouldBe a[java.sql.Date]),
-    SparkSQLColdDef("timestamp", "TIMESTAMP", _ shouldBe a[java.sql.Timestamp]),
-    SparkSQLColdDef("tinyint", "TINYINT", _ shouldBe a[java.lang.Byte]),
-    SparkSQLColdDef("smallint", "SMALLINT", _ shouldBe a[java.lang.Short]),
-    SparkSQLColdDef("binary", "BINARY", _.asInstanceOf[Array[Byte]]),
-    SparkSQLColdDef("arrayint", "ARRAY<INT>", _ shouldBe a[Seq[_]]),
-    SparkSQLColdDef("arraystring", "ARRAY<STRING>", _ shouldBe a[Seq[_]]),
-    SparkSQLColdDef("mapintint", "MAP<INT, INT>", _ shouldBe a[Map[_, _]]),
-    SparkSQLColdDef("mapstringint", "MAP<STRING, INT>", _ shouldBe a[Map[_, _]]),
-    SparkSQLColdDef("mapstringstring", "MAP<STRING, STRING>", _ shouldBe a[Map[_, _]]),
-    SparkSQLColdDef("struct", "STRUCT<field1: INT, field2: INT>", _ shouldBe a[Row]),
-    SparkSQLColdDef("arraystruct", "ARRAY<STRUCT<field1: INT, field2: INT>>", _ shouldBe a[Seq[_]]),
-    SparkSQLColdDef("arraystructwithdate", "ARRAY<STRUCT<field1: DATE, field2: INT>>", _ shouldBe a[Seq[_]]),
-    SparkSQLColdDef("structofstruct", "STRUCT<field1: DATE, field2: INT, struct1: STRUCT<structField1: STRING, structField2: INT>>", _ shouldBe a[Row]),
-    SparkSQLColdDef("mapstruct", "MAP<STRING, STRUCT<structField1: DATE, structField2: INT>>", _ shouldBe a[Map[_,_]]),
-    SparkSQLColdDef(
+  protected def typesSet: Seq[SparkSQLColDef] = Seq(
+    SparkSQLColDef("int", "INT", _ shouldBe a[java.lang.Integer]),
+    SparkSQLColDef("bigint", "BIGINT", _ shouldBe a[java.lang.Long]),
+    SparkSQLColDef("long", "LONG", _ shouldBe a[java.lang.Long]),
+    SparkSQLColDef("string", "STRING", _ shouldBe a[java.lang.String]),
+    SparkSQLColDef("boolean", "BOOLEAN", _ shouldBe a[java.lang.Boolean]),
+    SparkSQLColDef("double", "DOUBLE", _ shouldBe a[java.lang.Double]),
+    SparkSQLColDef("float", "FLOAT", _ shouldBe a[java.lang.Float]),
+    SparkSQLColDef("decimalint", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
+    SparkSQLColDef("decimallong", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
+    SparkSQLColDef("decimaldouble", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
+    SparkSQLColDef("decimalfloat", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
+    SparkSQLColDef("date", "DATE", _ shouldBe a[java.sql.Date]),
+    SparkSQLColDef("timestamp", "TIMESTAMP", _ shouldBe a[java.sql.Timestamp]),
+    SparkSQLColDef("tinyint", "TINYINT", _ shouldBe a[java.lang.Byte]),
+    SparkSQLColDef("smallint", "SMALLINT", _ shouldBe a[java.lang.Short]),
+    SparkSQLColDef("binary", "BINARY", _.asInstanceOf[Array[Byte]]),
+    SparkSQLColDef("arrayint", "ARRAY<INT>", _ shouldBe a[Seq[_]]),
+    SparkSQLColDef("arraystring", "ARRAY<STRING>", _ shouldBe a[Seq[_]]),
+    SparkSQLColDef("mapintint", "MAP<INT, INT>", _ shouldBe a[Map[_, _]]),
+    SparkSQLColDef("mapstringint", "MAP<STRING, INT>", _ shouldBe a[Map[_, _]]),
+    SparkSQLColDef("mapstringstring", "MAP<STRING, STRING>", _ shouldBe a[Map[_, _]]),
+    SparkSQLColDef("struct", "STRUCT<field1: INT, field2: INT>", _ shouldBe a[Row]),
+    SparkSQLColDef("arraystruct", "ARRAY<STRUCT<field1: INT, field2: INT>>", _ shouldBe a[Seq[_]]),
+    SparkSQLColDef("arraystructwithdate", "ARRAY<STRUCT<field1: DATE, field2: INT>>", _ shouldBe a[Seq[_]]),
+    SparkSQLColDef("structofstruct", "STRUCT<field1: DATE, field2: INT, struct1: STRUCT<structField1: STRING, structField2: INT>>", _ shouldBe a[Row]),
+    SparkSQLColDef("mapstruct", "MAP<STRING, STRUCT<structField1: DATE, structField2: INT>>", _ shouldBe a[Map[_,_]]),
+    SparkSQLColDef(
       "arraystructarraystruct",
       "ARRAY<STRUCT<stringfield: STRING, arrayfield: ARRAY<STRUCT<field1: INT, field2: INT>>>>",
       { res =>
@@ -146,7 +146,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
 
   override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+ {
     val fields = (sparkAdditionalKeyColumns ++ typesSet) map {
-      case SparkSQLColdDef(name, tpe, _) => s"$name $tpe"
+      case SparkSQLColDef(name, tpe, _) => s"$name $tpe"
     } mkString ", "
     SparkTable(s"CREATE TEMPORARY TABLE $dataTypesTableName ( $fields )", dataTypesSparkOptions)
   }
@@ -155,9 +155,9 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
 
 object SharedXDContextTypesTest {
   val dataTypesTableName = "typesCheckTable"
-  case class SparkSQLColdDef(colname: String, sqlType: String, typeCheck: Option[Any => Unit] = None)
-  object SparkSQLColdDef {
-    def apply(colname: String, sqlType: String, typeCheck: Any => Unit): SparkSQLColdDef =
-    SparkSQLColdDef(colname, sqlType, Some(typeCheck))
+  case class SparkSQLColDef(colname: String, sqlType: String, typeCheck: Option[Any => Unit] = None)
+  object SparkSQLColDef {
+    def apply(colname: String, sqlType: String, typeCheck: Any => Unit): SparkSQLColDef =
+    SparkSQLColDef(colname, sqlType, Some(typeCheck))
   }
 }
