@@ -40,7 +40,7 @@ class DriverIT extends EndToEndTest {
     result.queryId should be(sqlCommand.queryId)
     result shouldBe an[ErrorResult]
     result.asInstanceOf[ErrorResult].cause.isDefined shouldBe (true)
-    result.asInstanceOf[ErrorResult].cause.get shouldBe a[AnalysisException]
+    result.asInstanceOf[ErrorResult].cause.get shouldBe a[Exception]
     result.asInstanceOf[ErrorResult].cause.get.getMessage should include regex "cannot resolve .*"
   }
 

@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata
+package com.stratio.crossdata.common
 
-object ExecutionType extends Enumeration{
-  type ExecutionType = Value
-  val Default, Spark, Native = Value
+import scala.io.Source
+
+package object crossdata {
+
+  lazy val CrossdataVersion = Source.fromInputStream(getClass.getResourceAsStream("/crossdata.version")).mkString
+
 }

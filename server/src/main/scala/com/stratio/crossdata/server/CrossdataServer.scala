@@ -27,6 +27,7 @@ import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.Daemon
 import org.apache.commons.daemon.DaemonContext
 import org.apache.log4j.Logger
+import org.apache.spark.sql.crossdata
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
@@ -74,7 +75,7 @@ class CrossdataServer extends Daemon with ServerConfig {
                 actorName)
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
     }
-    logger.info("Crossdata Server started --- v1.0.2")
+    logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
   }
 
   def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
