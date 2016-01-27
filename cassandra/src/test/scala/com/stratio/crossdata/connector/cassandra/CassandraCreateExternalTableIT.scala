@@ -74,7 +74,7 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
   it should "fail execute natively create a External Table with no existing Keyspace without with_replication" in {
     val createTableQUeryString =
-      s"""|CREATE EXTERNAL TABLE newTable (id Integer, name String)
+      s"""|CREATE EXTERNAL TABLE NoKeyspaceCreatedBefore.newTable (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
           |keyspace 'NoKeyspaceCreatedBefore',
@@ -109,7 +109,7 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
     the [IllegalArgumentException] thrownBy {
       sql(createTableQUeryString).collect()
-    }  should have message "requirement failed: with_replication required when use CREATE EXTERNAL TABLE command"
+    }  should have message "requirement failed: Catalog is required required when use CREATE EXTERNAL TABLE command"
 
   }
 }

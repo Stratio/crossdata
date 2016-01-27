@@ -162,7 +162,6 @@ private object DdlUtils{
 
     val resolvedDS = ResolvedDataSource(sqlContext,userSpecifiedSchema,Array.empty, provider, optionsWithTable)
 
-
     sqlContext.catalog.persistTable(
       CrossdataTable(table, database, userSpecifiedSchema, provider, Array.empty[String],
         optionsWithTable),
