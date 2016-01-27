@@ -162,7 +162,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     val keyspace: String = {
       require(options.contains(CassandraDataSourceKeyspaceNameProperty),
         s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command")
-      options.get("keyspace").get
+      options.get(CassandraDataSourceKeyspaceNameProperty).get
     }
 
     buildCassandraConnector(context, options).withSessionDo { s =>
