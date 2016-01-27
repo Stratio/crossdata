@@ -70,13 +70,14 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     Try(ConfigFactory.parseMap(zookeeperCatalogConfig)).toOption
   }
 
-  private def executeQuery(xdContext: SQLContext,
+  private def executeQuery(xdContext: XDContext,
                            rdd: RDD[(Long, String)],
                            ephemeralQuery: EphemeralQueryModel,
                            ephemeralTable: EphemeralTableModel,
                            kafkaOptions: KafkaOptionsModel): Unit = {
 
     val df = xdContext.read.json(filterRddWithWindow(rdd, ephemeralQuery.window))
+    //df.cache()
     if (df.head(1).length > 0) {
       val sqlTableName = s"${ephemeralTable.name}${ephemeralQuery.alias}${DateTime.now.getMillis}"
       df.registerTempTable(sqlTableName)

@@ -31,9 +31,6 @@ with EphemeralQueriesMapDAO {
   var streamingQueries : List[EphemeralQueryModel] = dao.getAll()
   var listenerAdded : Boolean = false
 
-  //TODO remove this
-  //dao.upsert("queryedad", EphemeralQueryModel("tablename2", "select * from tablename2 where edad > 31", "queryedad"))
-
   override def receive: Receive = {
     case GetQueries => doGetQueries()
     case AddListener => doAddListener()
