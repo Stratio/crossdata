@@ -177,9 +177,9 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
 
   override def createExternalTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String]): Boolean = {
     val database: String = {
-      require(options.contains(CassandraDataSourceKeyspaceNameProperty),
-        s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command")
-      options.get("keyspace").get
+      require(options.contains(Database),
+        s"$Database required when use CREATE EXTERNAL TABLE command")
+      options.get(Database).get
     }
 
     buildCassandraConnector(context, options).withSessionDo { s =>
