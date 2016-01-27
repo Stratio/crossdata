@@ -35,7 +35,7 @@ class CreateTableStatementSpec extends  BaseXDTest {
 
 
     val schema: StructType = StructType(Seq(idField, nameField))
-    val options: Map[String, String] = Map("keyspace" -> Keyspace, "primary_key" ->"id")
+    val options: Map[String, String] = Map("keyspace" -> Keyspace, "primary_key_string" ->"id")
     val stm = new CreateTableStatement(Table, schema, options)
 
     //Experimentation
@@ -50,7 +50,7 @@ class CreateTableStatementSpec extends  BaseXDTest {
 
 
     val schema: StructType = StructType(Seq(idField, nameField))
-    val options: Map[String, String] = Map("keyspace" -> Keyspace, "primary_key" ->"id, name")
+    val options: Map[String, String] = Map("keyspace" -> Keyspace, "primary_key_string" ->"id, name")
     val stm = new CreateTableStatement(Table, schema, options)
 
     //Experimentation

@@ -16,6 +16,7 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 import com.stratio.crossdata.connector.TableInventory
+import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.TableManipulation
 import org.apache.spark.Logging
 import org.apache.spark.sql.Row
@@ -128,6 +129,8 @@ case class CreateExternalTable(
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
+    require(tableIdent.database.isDefined, "Catalog is required required when use CREATE EXTERNAL TABLE command")
+
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
 
     if (!resolved.isInstanceOf[TableManipulation]){
@@ -136,8 +139,34 @@ case class CreateExternalTable(
 
     val tableManipulation = resolved.asInstanceOf[TableManipulation]
     tableManipulation.createExternalTable(sqlContext, tableIdent.table, userSpecifiedSchema, options)
+
+    DdlUtils.registerTable(sqlContext, provider, resolved, tableIdent.table, tableIdent.database, Some(userSpecifiedSchema), options)
     Seq.empty
+
   }
 
 }
 
+private object DdlUtils{
+
+  def registerTable(sqlContext:SQLContext,
+                    provider: String,
+                    resolved:Any,
+                    table:String, database:Option[String],
+                    userSpecifiedSchema:Option[StructType],
+                    options: Map[String, String]): Unit ={
+
+    val tableInventory = resolved.asInstanceOf[TableInventory]
+    val optionsWithTable = tableInventory.generateConnectorOpts(
+      Table(table, database, userSpecifiedSchema), options)
+
+    val resolvedDS = ResolvedDataSource(sqlContext,userSpecifiedSchema,Array.empty, provider, optionsWithTable)
+
+
+    sqlContext.catalog.persistTable(
+      CrossdataTable(table, database, userSpecifiedSchema, provider, Array.empty[String],
+        optionsWithTable),
+      LogicalRelation(resolvedDS.relation, None)
+    )
+  }
+}
