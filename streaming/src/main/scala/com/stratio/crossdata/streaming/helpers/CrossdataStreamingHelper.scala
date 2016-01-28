@@ -24,7 +24,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.XDContext._
 import org.apache.spark.sql.crossdata.models._
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -34,8 +34,6 @@ import scala.util.Try
 
 object CrossdataStreamingHelper extends SparkLoggerComponent {
 
-  private var xdContxt: Option[XDContext] = None
-
   def createContext(ephemeralTable: EphemeralTableModel,
                     sparkConf: SparkConf,
                     zookeeperConf: Map[String, String],
@@ -44,7 +42,6 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     val sparkContext = new SparkContext(sparkConf)
     val streamingContext = new StreamingContext(sparkContext, Seconds(sparkStreamingWindow))
 
-    xdContxt = Option(XDContext.getOrCreate(sparkContext, parseZookeeperCatalogConfig(zookeeperConf)))
     streamingContext.checkpoint(ephemeralTable.options.checkpointDirectory)
 
     val kafkaOptions = ephemeralTable.options.kafkaOptions.copy(additionalOptions = kafkaConf)
@@ -54,11 +51,10 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     kafkaDStream.foreachRDD { rdd =>
       if (rdd.take(1).length > 0) {
         val ephemeralQueries = CrossdataStatusHelper.queriesFromEphemeralTable(zookeeperConf, ephemeralTable.name)
-        xdContxt.foreach { context =>
-          if (ephemeralQueries.nonEmpty)
-            ephemeralQueries.foreach(ephemeralQuery =>
-              executeQuery(context, rdd, ephemeralQuery, ephemeralTable, kafkaOptions))
-        }
+
+        if (ephemeralQueries.nonEmpty)
+          ephemeralQueries.foreach(ephemeralQuery =>
+            executeQuery(rdd, ephemeralQuery, ephemeralTable, kafkaOptions, zookeeperConf))
       }
     }
     streamingContext
@@ -70,12 +66,13 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     Try(ConfigFactory.parseMap(zookeeperCatalogConfig)).toOption
   }
 
-  private def executeQuery(xdContext: XDContext,
-                           rdd: RDD[(Long, String)],
+  private def executeQuery(rdd: RDD[(Long, String)],
                            ephemeralQuery: EphemeralQueryModel,
                            ephemeralTable: EphemeralTableModel,
-                           kafkaOptions: KafkaOptionsModel): Unit = {
+                           kafkaOptions: KafkaOptionsModel,
+                           zookeeperConf: Map[String, String]): Unit = {
 
+    val xdContext = XDContext.getOrCreate(rdd.context, parseZookeeperCatalogConfig(zookeeperConf))
     val df = xdContext.read.json(filterRddWithWindow(rdd, ephemeralQuery.window))
     //df.cache()
     if (df.head(1).length > 0) {
