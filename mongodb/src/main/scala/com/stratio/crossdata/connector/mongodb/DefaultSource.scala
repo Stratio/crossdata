@@ -16,6 +16,8 @@
 package com.stratio.crossdata.connector.mongodb
 
 import com.mongodb.DBCollection
+import com.mongodb.casbah.Imports.DBObject
+import com.mongodb.casbah.Imports.DBObject
 import com.mongodb.casbah.MongoDB
 
 import com.stratio.crossdata.connector.TableInventory
@@ -36,6 +38,21 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 class DefaultSource extends ProviderDS with TableInventory with DataSourceRegister with TableManipulation{
 
   import MongodbConfig._
+
+  /**
+    * if the collection is capped
+    */
+  val MongoCollectionPropertyCapped:String= "capped"
+
+  /**
+    * collection size
+    */
+  val MongoCollectionPropertySize:String= "size"
+
+  /**
+    * max number of documents
+    */
+  val MongoCollectionPropertyMax:String= "max"
 
   override def shortName(): String = "mongodb"
 
@@ -182,16 +199,21 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
       options.get(Database).get
     }
 
-    buildCassandraConnector(context, options).withSessionDo { s =>
-
-      if (s.getCluster.getMetadata.getKeyspace(keyspace)== null){
-        val createKeyspace = new CreateKeyspaceStatement(options)
-        s.execute(createKeyspace.toString())
+    val mongoOptions = DBObject()
+    options.map(opt =>
+      opt match {
+        case (MongoCollectionPropertyCapped, value) => mongoOptions.put(MongoCollectionPropertyCapped, value)
+        case (MongoCollectionPropertySize, value) => mongoOptions.put(MongoCollectionPropertySize, value.toInt)
+        case (MongoCollectionPropertyMax, value) => mongoOptions.put(MongoCollectionPropertyMax, value.toInt)
+        case _ =>
       }
+    )
 
-      val stm = new CreateTableStatement(tableName, schema, options)
-      s.execute(stm.toString())
+    val hosts: List[String] = options(Host).split(",").toList
+    MongodbConnection.withClientDo(hosts) { mongoClient =>
+      mongoClient.getDB(database).createCollection(tableName, mongoOptions)
     }
+
     true
   }
 }
