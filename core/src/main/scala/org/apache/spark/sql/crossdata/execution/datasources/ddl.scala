@@ -16,6 +16,8 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 
+import org.json4s.{FieldSerializer, DefaultFormats}
+import org.json4s.jackson.Serialization._
 import com.stratio.crossdata.connector.TableInventory
 import org.apache.spark.Logging
 
@@ -36,11 +38,7 @@ import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.sources.RelationProvider
-import org.apache.spark.sql.types.ArrayType
-import org.apache.spark.sql.types.BooleanType
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.sql.types.StructField
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types._
 
 import scala.util.parsing.json.{JSONFormat, JSONObject, JSON}
 
@@ -162,21 +160,19 @@ private[crossdata] case class GetEphemeralTable(tableIdent: TableIdentifier) ext
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("OperationId", StringType, false))
+      Seq(StructField("Ephemeral table", StringType, false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val tableId = createId
-
-    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
-      streamingCatalog =>
-        streamingCatalog.getEphemeralTable(tableIdent.table)
+  val ephTable =
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+      streamingCatalog => streamingCatalog.getEphemeralTable(tableIdent.table)
     }
-
-    Seq(Row(tableId))
+    Seq(ephTable.map(Row(_)).getOrElse(Row.empty))
+    //Seq(Row(ephTable.getOrElse()))
   }
 }
 
@@ -303,20 +299,18 @@ private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("OperationId", StringType, false))
+      Seq(StructField("Dropped table", StringType, false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val tableId = createId
-
     sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
       streamingCatalog => streamingCatalog.dropEphemeralTable(tableIdent.table)
     }
 
-    Seq(Row(tableId))
+    Seq(Row(tableIdent.table))
   }
 }
 
@@ -324,20 +318,18 @@ private[crossdata] case class DropAllEphemeralTables() extends LogicalPlan with 
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("OperationId", StringType, false))
+      Seq(StructField("All tables dropped", StringType, false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val tableId = createId
-
     sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
       streamingCatalog => streamingCatalog.dropAllEphemeralTables()
     }
 
-    Seq(Row(tableId))
+    Seq.empty
   }
 }
 
@@ -349,20 +341,19 @@ private[crossdata] case class DropAllEphemeralTables() extends LogicalPlan with 
 
     override val output: Seq[Attribute] = {
       val schema = StructType(
-        Seq(StructField("OperationId", StringType, false))
+        Seq(StructField(s"${tableIdent.table} status", StringType, false))
       )
       schema.toAttributes
     }
 
     override def run(sqlContext: SQLContext): Seq[Row] = {
 
-      val tableId = createId
-
       sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
         streamingCatalog => streamingCatalog.getEphemeralStatus(tableIdent.table)
       }
 
-      Seq(Row(tableId))
+      //TODO return ephemeralStatus json
+      Seq(Row())
     }
   }
 
@@ -370,20 +361,19 @@ private[crossdata] case class GetAllEphemeralStatuses() extends LogicalPlan with
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("OperationId", StringType, false))
+      Seq(StructField("Statuses", StringType, false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val tableId = createId
-
     sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
       streamingCatalog => streamingCatalog.getAllEphemeralStatuses
     }
 
-    Seq(Row(tableId))
+    //TODO return ephemeralStatuses json
+    Seq(Row())
   }
 }
 
@@ -392,14 +382,12 @@ private[crossdata] case class UpdateEphemeralStatus(tableIdent: TableIdentifier,
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("OperationId", StringType, false))
+      Seq(StructField(s"New ${tableIdent.table} status", StringType, false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-
-    val tableId = createId
 
     sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
       streamingCatalog =>
@@ -407,12 +395,11 @@ private[crossdata] case class UpdateEphemeralStatus(tableIdent: TableIdentifier,
         //streamingCatalog.updateEphemeralStatus(tableIdent.table, EphemeralStatusModel)
     }
 
-    Seq(Row(tableId))
+    //TODO return new ephemeralStatus json
+
+    Seq(Row())
   }
 }
-
-
-
 
 
   /**
