@@ -56,13 +56,13 @@ class XDContext private (@transient val sc: SparkContext,
     userConf.withFallback(config)
   }
 
-  val catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
+  val catalogConfig = xdConfig.getConfig(XDContext.CatalogConfigKey)
 
   override protected[sql] lazy val catalog: XDCatalog = {
-    import XDContext.{CaseSensitive, CatalogClass, DerbyClass}
+    import XDContext.{CaseSensitive, CatalogClassConfigKey, DerbyClass}
 
-    val catalogClass = if (catalogConfig.hasPath(CatalogClass))
-      catalogConfig.getString(CatalogClass)
+    val catalogClass = if (catalogConfig.hasPath(CatalogClassConfigKey))
+      catalogConfig.getString(CatalogClassConfigKey)
     else DerbyClass
 
     val xdCatalog = Class.forName(catalogClass)
@@ -76,10 +76,10 @@ class XDContext private (@transient val sc: SparkContext,
   }
 
   protected[crossdata] lazy val streamingCatalog: Option[XDStreamingCatalog] = {
-    import XDContext.StreamingCatalogClass
+    import XDContext.StreamingClassConfigKey
 
-    if (catalogConfig.hasPath(StreamingCatalogClass)) {
-      val streamingCatalogClass = catalogConfig.getString(StreamingCatalogClass)
+    if (catalogConfig.hasPath(StreamingClassConfigKey)) {
+      val streamingCatalogClass = catalogConfig.getString(StreamingClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)
       val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[XDContext])
 
@@ -187,10 +187,16 @@ class XDContext private (@transient val sc: SparkContext,
  */
 object XDContext {
 
-  val CatalogClass = "class"
-  val StreamingCatalogClass = "streaming-class"
   val CaseSensitive = "caseSensitive"
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
+  val JDBCClass = "org.apache.spark.sql.crossdata.catalog.JDBCCatalog"
+  val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog"
+  val CatalogConfigKey = "catalog"
+  val ClassConfigKey = "class"
+  val CatalogClassConfigKey : String = s"$CatalogConfigKey.$CatalogClassConfigKey"
+  val StreamingClassConfigKey = "streaming-class"
+  val StreamingConfigKey = "streaming"
+
 
   private val INSTANTIATION_LOCK = new Object()
 
