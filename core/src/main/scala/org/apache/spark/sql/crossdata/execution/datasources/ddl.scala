@@ -20,6 +20,7 @@ import com.stratio.crossdata.connector.TableInventory
 import org.apache.spark.Logging
 
 import org.apache.spark.launcher.SparkLauncher
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.{Row, SQLContext}
 
 import org.apache.spark.sql.catalyst.TableIdentifier
@@ -201,7 +202,8 @@ private[crossdata] case class CreateEphemeralTable(
 private[crossdata] case class GetStatus(tableIdent: TableIdentifier)extends LogicalPlan with RunnableCommand with EphemeralTableMapDAO {
 
   override val memoryMap : Map[String, Any]= Map.empty
-  override lazy val config: Config = new DummyConfig(Some(CoreConfig.ParentConfigName + "." +CoreConfig.StreamingConfigKey))
+  override lazy val config: Config =
+    new DummyConfig(Some(s"${CoreConfig.ParentConfigName}.${XDContext.StreamingConfigKey}"))
 
   override val output: Seq[Attribute] = {
     val schema = StructType(

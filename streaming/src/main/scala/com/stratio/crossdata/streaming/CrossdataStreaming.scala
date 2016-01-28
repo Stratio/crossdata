@@ -16,22 +16,13 @@
 
 package com.stratio.crossdata.streaming
 
-import com.github.nscala_time.time.Imports._
 import com.stratio.crossdata.streaming.config.StreamingResourceConfig
-import com.stratio.crossdata.streaming.constants.ApplicationConstants
-import com.stratio.crossdata.streaming.helpers.CrossdataStatusHelper
-import com.stratio.crossdata.streaming.kafka.{KafkaInput, KafkaProducer}
-import ApplicationConstants._
-import com.stratio.crossdata.streaming.kafka.KafkaProducer
-import com.typesafe.config.ConfigFactory
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.crossdata.XDContext
+import com.stratio.crossdata.streaming.constants.ApplicationConstants._
+import com.stratio.crossdata.streaming.helpers.{CrossdataStatusHelper, CrossdataStreamingHelper}
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.crossdata.daos.EphemeralTableMapDAO
 import org.apache.spark.sql.crossdata.models._
-import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.apache.spark.{SparkConf, SparkContext}
-
-import scala.collection.JavaConversions._
+import org.apache.spark.streaming.StreamingContext
 
 import scala.util.{Failure, Success, Try}
 
@@ -42,7 +33,15 @@ class CrossdataStreaming(ephemeralTableName: String,
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   val streamingResourceConfig = new StreamingResourceConfig
 
-  //scalastyle:off
+  //TODO remove this
+  /*dao.upsert("tablename2", EphemeralTableModel(
+    "tablename2",
+    EphemeralOptionsModel(KafkaOptionsModel(Seq(ConnectionHostModel("localhost", "2181", "9092")),
+      Seq(TopicModel("crossdatajc")),
+      "1"))))*/
+
+  //dao.create("crossdataquery", EphemeralQueryModel("tablename2", "select * from tablename2", "crossdataquery"))
+
   def init(): Unit = {
     Try {
       val zookeeperResourceConfig = streamingResourceConfig.config.getConfig(ZookeeperPrefixName) match {
@@ -56,11 +55,7 @@ class CrossdataStreaming(ephemeralTableName: String,
       CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Starting,
         zookeeperMergedConfig, ephemeralTableName)
       Try {
-        val ephemeralTable = dao.get(ephemeralTableName).getOrElse(throw new Exception("Table not found"))
-
-        //TODO remove this
-        dao.create(ephemeralTableName, ephemeralTable)
-
+        val ephemeralTable = dao.get(ephemeralTableName).getOrElse(throw new Exception("Ephemeral table not found"))
         val sparkResourceConfig = streamingResourceConfig.config.getConfig(SparkPrefixName) match {
           case Some(conf) => conf.toStringMap
           case None => Map.empty[String, String]
@@ -73,7 +68,7 @@ class CrossdataStreaming(ephemeralTableName: String,
         val kafkaMergedOptions = kafkaResourceConfig ++ ephemeralTable.options.kafkaOptions.additionalOptions
         val ssc = StreamingContext.getOrCreate(ephemeralTable.options.checkpointDirectory,
           () => {
-            createContext(ephemeralTable,
+            CrossdataStreamingHelper.createContext(ephemeralTable,
               sparkMergedConfig,
               zookeeperMergedConfig,
               kafkaMergedOptions
@@ -81,8 +76,11 @@ class CrossdataStreaming(ephemeralTableName: String,
           })
 
         logger.info(s"Started Ephemeral Table: $ephemeralTableName")
-        CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Started,
-          zookeeperMergedConfig, ephemeralTableName)
+        CrossdataStatusHelper.setEphemeralStatus(
+          EphemeralExecutionStatus.Started,
+          zookeeperMergedConfig,
+          ephemeralTableName
+        )
 
         ssc.start()
         ssc.awaitTermination()
@@ -90,13 +88,19 @@ class CrossdataStreaming(ephemeralTableName: String,
       } match {
         case Success(_) =>
           logger.info(s"Stopping Ephemeral Table: $ephemeralTableName")
-          CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Stopped,
-            zookeeperMergedConfig, ephemeralTableName)
+          CrossdataStatusHelper.setEphemeralStatus(
+            EphemeralExecutionStatus.Stopped,
+            zookeeperMergedConfig,
+            ephemeralTableName
+          )
           CrossdataStatusHelper.close()
         case Failure(exception) =>
           logger.error(exception.getLocalizedMessage, exception)
-          CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Error,
-            zookeeperMergedConfig, ephemeralTableName)
+          CrossdataStatusHelper.setEphemeralStatus(
+            EphemeralExecutionStatus.Error,
+            zookeeperMergedConfig,
+            ephemeralTableName
+          )
           CrossdataStatusHelper.close()
       }
     } match {
@@ -106,60 +110,6 @@ class CrossdataStreaming(ephemeralTableName: String,
         logger.error(exception.getLocalizedMessage, exception)
         CrossdataStatusHelper.close()
     }
-  }
-
-  private def createContext(ephemeralTable: EphemeralTableModel,
-                            sparkConf: SparkConf,
-                            zookeeperConf: Map[String, String],
-                            kafkaConf: Map[String, String]): StreamingContext = {
-    val sparkStreamingWindow = ephemeralTable.options.atomicWindow
-    val sparkContext = new SparkContext(sparkConf)
-    val streamingContext = new StreamingContext(sparkContext, Seconds(sparkStreamingWindow))
-
-    //XDContext
-    val zookeeperCatalogConfig = Map("catalog.class" -> "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog") ++
-      zookeeperConf.map(config => s"catalog.${config._1}" -> config._2)
-    val xdContext = XDContext.getOrCreate(sparkContext, Option(ConfigFactory.parseMap(zookeeperCatalogConfig)))
-
-    streamingContext.checkpoint(ephemeralTable.options.checkpointDirectory)
-    val kafkaOptions = ephemeralTable.options.kafkaOptions.copy(additionalOptions = kafkaConf)
-    val kafkaInput = new KafkaInput(kafkaOptions)
-    val kafkaDStream = kafkaInput.createStream(streamingContext).map { case (_, kafkaEvent) =>
-      (DateTime.now.getMillis, kafkaEvent)
-    }.window(Seconds(ephemeralTable.options.maxWindow), Seconds(ephemeralTable.options.atomicWindow))
-
-    kafkaDStream.foreachRDD(rdd => {
-
-      println("RDD YEEEEEEEEEEEAHHH")
-
-      if (rdd.take(1).length > 0) {
-        val streamingQueries = CrossdataStatusHelper.queriesFromEphemeralTable(zookeeperConf, ephemeralTable.name)
-        if (streamingQueries.nonEmpty) {
-          streamingQueries.foreach(streamingQueryModel => {
-            val rddFiltered = rdd.flatMap { case (time, row) =>
-              if (time > DateTime.now.getMillis - streamingQueryModel.window * 1000) Option(row)
-              else None
-            }
-            val df = xdContext.read.json(rddFiltered)
-            df.registerTempTable(s"${ephemeralTable.name}${streamingQueryModel.alias}")
-            val query = streamingQueryModel.sql.replaceAll(ephemeralTable.name,
-              s"${ephemeralTable.name}${streamingQueryModel.alias}")
-            val dataFrame = xdContext.sql(query)
-            val topic = streamingQueryModel.alias
-
-            ephemeralTable.options.outputFormat match {
-              case EphemeralOutputFormat.JSON =>
-                dataFrame.toJSON.foreachPartition(values =>
-                  values.foreach(value => KafkaProducer.put(topic, value, kafkaOptions, kafkaOptions.partition)))
-              case _ => dataFrame.rdd.foreachPartition(values =>
-                values.foreach(value =>
-                  KafkaProducer.put(topic, value.mkString(","), kafkaOptions, kafkaOptions.partition)))
-            }
-          })
-        }
-      }
-    })
-    streamingContext
   }
 
   private def configToSparkConf(generalConfig: Map[String, String],
@@ -176,9 +126,9 @@ class CrossdataStreaming(ephemeralTableName: String,
   }
 
   private def setPrefixSpark(sparkConfig: Map[String, String]): Map[String, String] =
-    sparkConfig.map(entry => {
-      if (entry._1.startsWith(SparkPrefixName)) entry
-      else (s"$SparkPrefixName.${entry._1}", entry._2)
-    })
+    sparkConfig.map { case entry@(key, value) =>
+      if (key.startsWith(SparkPrefixName)) entry
+      else (s"$SparkPrefixName.${entry._1}", value)
+    }
 }
 
