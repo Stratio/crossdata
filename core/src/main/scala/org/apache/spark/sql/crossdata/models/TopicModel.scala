@@ -16,7 +16,10 @@
 
 package org.apache.spark.sql.crossdata.models
 
-case class TopicModel(name: String, partition: Int = TopicModel.DefaultPartition)
+case class TopicModel(name: String, partition: Int = TopicModel.DefaultPartition) {
+
+  def toStringPretty : String = ModelUtils.modelToJsonString(this)
+}
 
 object TopicModel {
 
