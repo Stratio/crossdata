@@ -54,25 +54,12 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
       doExist
     }
 
-    def persistTable(t: TableInventory.Table, tableInventory: TableInventory, relationProvider: RelationProvider) = {
-      val connectorOpts = tableInventory.generateConnectorOpts(t, opts)
-
-      sqlContext.catalog.persistTable(
-        CrossdataTable(t.tableName, t.database, t.schema, datasource, Array.empty[String], connectorOpts),
-        LogicalRelation(relationProvider.createRelation(sqlContext, connectorOpts)
-        )
-      )
-    }
-
     // Get a reference to the inventory relation.
     val resolved = ResolvedDataSource.lookupDataSource(datasource).newInstance()
-
     val inventoryRelation = resolved.asInstanceOf[TableInventory]
-    val relationProvider = resolved.asInstanceOf[RelationProvider]
 
     // Obtains the list of tables and persist it (if persistence implemented)
     val tables = inventoryRelation.listTables(sqlContext, opts)
-
 
     for {
       table: TableInventory.Table <- tables
@@ -82,7 +69,8 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
       val ignoreTable = tableExists(tableId)
       if (!ignoreTable) {
         logInfo(s"Importing table ${tableId mkString "."}")
-        persistTable(table, inventoryRelation, relationProvider)
+
+        DdlUtils.registerTable(sqlContext, datasource, resolved, table.tableName, table.database, table.schema, opts)
       }
       Row(tableId, ignoreTable)
     }
