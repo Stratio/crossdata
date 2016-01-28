@@ -22,6 +22,7 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
+import com.stratio.crossdata.connector.TableManipulation
 import org.apache.spark.sql.{DataFrame, SaveMode, SQLContext}
 import org.apache.spark.sql.types.StructType
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
@@ -44,8 +45,11 @@ object DefaultSource{
 /**
  * This class is used by Spark to create a new  [[ElasticSearchXDRelation]]
  */
-class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider
-                                                                        with TableInventory with DataSourceRegister {
+class DefaultSource extends RelationProvider with SchemaRelationProvider
+                                              with CreatableRelationProvider
+                                              with TableInventory
+                                              with DataSourceRegister
+                                              with TableManipulation  {
 
   import DefaultSource._
 
@@ -114,6 +118,27 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     }
 
     ElasticSearchConnectionUtils.listTypes(params(options))
+  }
+
+  override def createExternalTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String]): Boolean = {
+
+    val keyspace: String = {
+      require(options.contains(ES_RESOURCE),
+        s"$ES_RESOURCE required when use CREATE EXTERNAL TABLE command")
+      options.get(ES_RESOURCE).get
+    }
+
+    try {
+
+
+      true
+    } catch {
+      case e: IllegalArgumentException =>
+        throw e
+      case e: Exception =>
+        sys.error(e.getMessage)
+        false
+    }
   }
 
 }
