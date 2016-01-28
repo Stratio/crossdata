@@ -209,7 +209,7 @@ private[crossdata] case class CreateEphemeralTable(
       None,
       None,
       Some(CoreConfig.CoreBasicConfig),
-      Some(CoreConfig.ParentConfigName + "." +CoreConfig.StreamingConfigKey)
+      Some(CoreConfig.ParentConfigName + "." + XDContext.StreamingConfigKey)
     )
 
   override val output: Seq[Attribute] = {
