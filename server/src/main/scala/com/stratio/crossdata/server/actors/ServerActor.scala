@@ -45,9 +45,9 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
         } else (df.collect(), df.schema)
         sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, schema)
       } catch {
-        case e: Throwable => {
+        case e: Exception => {
           logger.error(e.getMessage)
-          sender ! ErrorResult(sqlCommand.queryId, e.getMessage, Some(new Exception(e.getMessage)))
+          sender ! ErrorResult(sqlCommand.queryId, e.getMessage, Some(e))
         }
       }
 
