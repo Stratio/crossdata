@@ -39,7 +39,8 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
           "enrolled" -> (a % 2 == 0),
           "name" -> s"Name $a",
           "address" -> MongoDBObject("street" -> s"${a}th Avenue", "city" -> s"City $a", "zip" -> (28000+a)),
-          "account" -> MongoDBObject("number" -> (11235813*a), "details" -> MongoDBObject("bank" -> "Mercantil", "office" -> (12357+a)))
+          "account" -> MongoDBObject("number" -> (11235813*a), "details" -> MongoDBObject("bank" -> "Mercantil", "office" -> (12357+a))),
+          "grades" -> Seq(MongoDBObject("FP" -> Seq(7.0, 8.0)), MongoDBObject("REACTIVEARCHS" -> Seq(9.0)))
         )
       }
     }

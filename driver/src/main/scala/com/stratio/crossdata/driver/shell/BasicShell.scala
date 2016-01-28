@@ -17,7 +17,7 @@ package com.stratio.crossdata.driver.shell
 
 import java.io._
 
-import com.stratio.crossdata.common.SQLCommand
+import com.stratio.crossdata.common.{crossdata, SQLCommand}
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
 import com.stratio.crossdata.driver.Driver
 import jline.console.{UserInterruptException, ConsoleReader}
@@ -162,9 +162,11 @@ object BasicShell extends App {
 
     Thread.sleep(1000)
 
+
+
     console.println()
     console.println("+-----------------+-------------------------+---------------------------+")
-    console.println("| CROSSDATA 1.1.0 | Powered by Apache Spark | Easy access to big things |")
+    console.println(s"| CROSSDATA ${crossdata.CrossdataVersion} | Powered by Apache Spark | Easy access to big things |")
     console.println("+-----------------+-------------------------+---------------------------+")
     console.println()
     console.flush
