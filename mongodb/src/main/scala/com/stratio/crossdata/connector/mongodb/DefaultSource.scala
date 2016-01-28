@@ -210,10 +210,19 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
     )
 
     val hosts: List[String] = options(Host).split(",").toList
-    MongodbConnection.withClientDo(hosts) { mongoClient =>
-      mongoClient.getDB(database).createCollection(tableName, mongoOptions)
-    }
 
-    true
+    try {
+
+      MongodbConnection.withClientDo(hosts) { mongoClient =>
+        mongoClient.getDB(database).createCollection(tableName, mongoOptions)
+      }
+      true
+    } catch {
+      case e: IllegalArgumentException =>
+        throw e
+      case e: Exception =>
+        sys.error(e.getMessage)
+        false
+    }
   }
 }
