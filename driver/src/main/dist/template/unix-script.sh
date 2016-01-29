@@ -31,12 +31,12 @@ PRGDIR=`dirname "${PRG}"`
 BASEDIR=`cd "${PRGDIR}/.." >/dev/null; pwd`
 
 
-if [ -z "${CROSSDATA_DRIVER_CONF}" ]; then
-    CROSSDATA_DRIVER_CONF="${BASEDIR}/conf"
+if [ -z "${CROSSDATA_SHELL_CONF}" ]; then
+    CROSSDATA_SHELL_CONF="${BASEDIR}/conf"
 fi
 
-if [ -f "${CROSSDATA_DRIVER_CONF}/crossdata-env.sh" ]; then
-    source "${CROSSDATA_DRIVER_CONF}/crossdata-env.sh"
+if [ -f "${CROSSDATA_SHELL_CONF}/crossdata-env.sh" ]; then
+    source "${CROSSDATA_SHELL_CONF}/crossdata-env.sh"
 fi
 
 
@@ -70,8 +70,8 @@ then
   REPO="${BASEDIR}"/@REPO@
 fi
 
-LIB=${CROSSDATA_DRIVER_LIB}
-CLASSPATH=${CLASSPATH}:${CROSSDATA_DRIVER_CONF}/:$(JARS=("$LIB"/*.jar); IFS=:; echo "${JARS[*]}")
+LIB=${CROSSDATA_SHELL_LIB}
+CLASSPATH=${CLASSPATH}:${CROSSDATA_SHELL_CONF}/:$(JARS=("$LIB"/*.jar); IFS=:; echo "${JARS[*]}")
 
 exec "${JAVACMD}" ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ \
   -classpath "${CLASSPATH}" \
