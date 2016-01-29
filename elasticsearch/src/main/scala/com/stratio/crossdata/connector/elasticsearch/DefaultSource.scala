@@ -29,6 +29,8 @@ import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 import org.elasticsearch.hadoop.{EsHadoopIllegalArgumentException, EsHadoopIllegalStateException}
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions
 import org.elasticsearch.spark.sql.ElasticSearchXDRelation
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.mappings.FieldType._
 
 import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
 import org.apache.spark.sql.sources.{RelationProvider, SchemaRelationProvider, CreatableRelationProvider, DataSourceRegister, BaseRelation}
@@ -122,14 +124,18 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
 
   override def createExternalTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String]): Boolean = {
 
-    val keyspace: String = {
-      require(options.contains(ES_RESOURCE),
-        s"$ES_RESOURCE required when use CREATE EXTERNAL TABLE command")
-      options.get(ES_RESOURCE).get
-    }
+    val (index, typeName) =  ElasticSearchConnectionUtils.extractIndexAndType(options)
+
 
     try {
-
+      val client = ElasticSearchConnectionUtils.buildClient(options)
+      client.execute {
+        putMapping(index) {
+          typeName  (
+            "" typed IntegerType
+            )
+        }
+      }
 
       true
     } catch {
