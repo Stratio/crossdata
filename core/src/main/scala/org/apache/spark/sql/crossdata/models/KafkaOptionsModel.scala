@@ -19,7 +19,7 @@ package org.apache.spark.sql.crossdata.models
 case class KafkaOptionsModel(connection: Seq[ConnectionHostModel],
                              topics: Seq[TopicModel],
                              groupId: String,
-                             partition: Option[String] = None,
+                             partitionOutput: Option[String] = None,
                              additionalOptions: Map[String, String] = Map.empty[String, String],
                              storageLevel: String = "MEMORY_AND_DISK_SER") {
 

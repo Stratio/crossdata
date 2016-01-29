@@ -38,6 +38,7 @@ object KafkaConstants {
    */
   val SerializerKey = "serializer.class"
   val BrokerListKey = "metadata.broker.list"
+  val PartitionKey = "partition"
 
   val RequiredAckKey = "requiredAcks"
   val CompressionCodecKey = "compressionCodec"
