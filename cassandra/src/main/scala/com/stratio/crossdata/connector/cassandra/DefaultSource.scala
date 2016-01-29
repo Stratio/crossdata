@@ -162,20 +162,26 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     val keyspace: String = {
       require(options.contains(CassandraDataSourceKeyspaceNameProperty),
         s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command")
-      options.get("keyspace").get
+      options.get(CassandraDataSourceKeyspaceNameProperty).get
     }
 
-    buildCassandraConnector(context, options).withSessionDo { s =>
-
-      if (s.getCluster.getMetadata.getKeyspace(keyspace)== null){
-        val createKeyspace = new CreateKeyspaceStatement(options)
-        s.execute(createKeyspace.toString())
+    try {
+      buildCassandraConnector(context, options).withSessionDo { s =>
+        if (s.getCluster.getMetadata.getKeyspace(keyspace) == null) {
+          val createKeyspace = new CreateKeyspaceStatement(options)
+          s.execute(createKeyspace.toString())
+        }
+        val stm = new CreateTableStatement(tableName, schema, options)
+        s.execute(stm.toString())
       }
-
-      val stm = new CreateTableStatement(tableName, schema, options)
-      s.execute(stm.toString())
+      true
+    } catch {
+      case e: IllegalArgumentException =>
+        throw e
+      case e: Exception =>
+        sys.error(e.getMessage)
+        false
     }
-    true
   }
 
   //-----------MetadataInventory-----------------

@@ -52,8 +52,6 @@ case class CreateTableStatement(tableName: String,
   }
 
   lazy val keyspace: String = {
-    require(options.contains(CassandraDataSourceKeyspaceNameProperty),
-      s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command")
     options.get("keyspace").get
   }
 
