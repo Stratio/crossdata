@@ -16,6 +16,8 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 
+import org.json4s.{FieldSerializer, DefaultFormats}
+import org.json4s.jackson.Serialization._
 import com.stratio.crossdata.connector.TableInventory
 import org.apache.spark.Logging
 
@@ -29,23 +31,19 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.daos.{EphemeralTableDAO, EphemeralTableMapDAO}
+import org.apache.spark.sql.crossdata.daos.{EphemeralTableStatusDAO, EphemeralTableDAO, EphemeralTableMapDAO}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.sources.RelationProvider
-import org.apache.spark.sql.types.ArrayType
-import org.apache.spark.sql.types.BooleanType
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.sql.types.StructField
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types._
 
 import scala.util.parsing.json.{JSONFormat, JSONObject, JSON}
 
 import org.apache.spark.sql.crossdata.config._
-
+import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog._
 
 
 private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
@@ -132,96 +130,474 @@ private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryP
   }
 }
 
+
+  /**
+  * Ephemeral Table Functions
+  */
+
+private[crossdata] case class ExistsEphemeralTable(tableIdent: TableIdentifier) extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Exists table?", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val tableExist : Boolean = sqlContext.asInstanceOf[XDContext].streamingCatalog.exists {
+      streamingCatalog => streamingCatalog.existsEphemeralTable(tableIdent.table)
+    }
+
+    val result = if (tableExist) "EXISTS" else "NOT EXISTS"
+
+    Seq(Row(s"${tableIdent.table} $result"))
+  }
+}
+
+private[crossdata] case class GetEphemeralTable(tableIdent: TableIdentifier) extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Ephemeral table", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+  val ephTable =
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+      streamingCatalog => streamingCatalog.getEphemeralTable(tableIdent.table)
+        .map(_.toStringPretty)
+        .getOrElse(s"${tableIdent.table} doesn't exists")
+    }
+    Seq(ephTable.map(Row(_)).getOrElse(Row.empty))
+  }
+}
+
+private[crossdata] case class GetAllEphemeralTables() extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Ephemeral tables", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val ephTables =
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+      streamingCatalog =>
+        streamingCatalog.getAllEphemeralTables.map(_.toStringPretty)
+    }
+
+    ephTables.map(_.map(Row(_))).getOrElse(Seq(Row.empty))
+  }
+}
+
 private[crossdata] case class CreateEphemeralTable(
-    tableIdent: TableIdentifier,
-    opts: Map[String, String])
+                                                    tableIdent: TableIdentifier,
+                                                    opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with EphemeralTableDAO {
 
-  //TODO Correct all config and move it
-  /*override lazy val config: Config = new TypesafeConfig(None, None, Some(CoreConfig.CoreBasicConfig),Some(CoreConfig
-    .ParentConfigName + "." +CoreConfig.StreamingConfigKey))*/
+  // TODO choose config params from file or from OPTIONS()
+  override lazy val config: Config =
+    new TypesafeConfig(
+      None,
+      None,
+      Some(CoreConfig.CoreBasicConfig),
+      Some(CoreConfig.ParentConfigName + "." + XDContext.StreamingConfigKey)
+    )
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField(ephemeralTableIdField, StringType, false))
+      Seq(StructField("Ephemeral table", StringType, false))
     )
     schema.toAttributes
   }
 
-
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val tableId = createId
-
-    val kafkaHost = config.getString("kafka.connectionHost","DefaultHost")
-    val kafkaConsumerPort = config.getString("kafka.connectionConsumerPort", "DefaultConsumer")
-    val kafkaProducerPort = config.getString("kafka.connectionProducerPort", "DefaultProducer")
-
-    //TODO create a streamingCatalog object with contants
+    // TODO fill default values
     //kafka options
-    val topics= Seq(TopicModel(config.getString("kafka.topicName", tableId)))
-    val connections = Seq(ConnectionHostModel(kafkaHost, kafkaConsumerPort, kafkaProducerPort))
-    val groupId = config.getString("kafka.groupId", tableIdent.table)
-    val partition = config.getString("kafka.partition")
+    val host = config.getString(kafkaHost,"DefaultHost")
+    val consumerPort = config.getString(kafkaConsumerPort, "DefaultConsumer")
+    val producerPort = config.getString(kafkaProducerPort, "DefaultProducer")
+    val topics= Seq(TopicModel(config.getString(kafkaTopicName, "DefaulTopicName")))
+    val connections = Seq(ConnectionHostModel(host, consumerPort, producerPort))
+    val groupId = config.getString(kafkaGroupId, tableIdent.table)
+    val partition = config.getString(kafkaPartition)
     val kafkaOptions = KafkaOptionsModel(connections, topics, groupId, partition, Map.empty)
+
     val ephemeralOptions = EphemeralOptionsModel(kafkaOptions)
 
-    /*dao.create(tableId,
-      EphemeralTableModel(tableId,
-        tableIdent.table,
-        ephemeralOptions))*/
+    val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+      streamingCatalog =>
+        val ephTable = EphemeralTableModel(tableIdent.table, ephemeralOptions)
+        streamingCatalog.createEphemeralTable(ephTable) match {
+          case Right(ephTable)  => ephTable.toStringPretty
+          case Left(message)    => message
+        }
+    }
 
-/*
-    // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
-    // * This query will trigger 3 actions in the catalog persistence:
-    //   1.- Associate the table with the schema.
-    val schema = columns.json
-    //   2.- Associate the table with the configuration.
-    val options = JSONObject(opts).toString(JSONFormat.defaultFormatter)
-    //   3.- Associate the QueryID with the involved table.
+    /*
+        // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
+        // * This query will trigger 3 actions in the catalog persistence:
+        //   1.- Associate the table with the schema.
+        val schema = columns.json
+        //   2.- Associate the table with the configuration.
+        val options = JSONObject(opts).toString(JSONFormat.defaultFormatter)
+        //   3.- Associate the QueryID with the involved table.
 
+        // * SparkLauncher of StreamingProcess
+        val params = tableId :: opts.values.toList
+        val sparkApp = new SparkLauncher()
+          .setAppName(tableId)
+          .setMaster(sqlContext.conf.getConfString("spark.master"))
+          .setAppResource("streamingProcess.jar")
+          .setMainClass("StreamingProcess")
+          .setDeployMode("cluster")
+          .addAppArgs(params:_*)
+          .launch()
 
-    // * SparkLauncher of StreamingProcess
-    val params = tableId :: opts.values.toList
-    val sparkApp = new SparkLauncher()
-      .setAppName(tableId)
-      .setMaster(sqlContext.conf.getConfString("spark.master"))
-      .setAppResource("streamingProcess.jar")
-      .setMainClass("StreamingProcess")
-      .setDeployMode("cluster")
-      .addAppArgs(params:_*)
-      .launch()
+        // * Return the UUID of the process
+    */
 
-    // * Return the UUID of the process
-*/
-    Seq(Row(tableId))
+    Seq(result.map(Row(_)).getOrElse(Row.empty))
+
   }
 }
 
-// TODO change this
-private[crossdata] case class GetStatus(tableIdent: TableIdentifier)extends LogicalPlan with RunnableCommand with EphemeralTableMapDAO {
-
-  override val memoryMap : Map[String, Any]= Map.empty
-  override lazy val config: Config =
-    new DummyConfig(Some(s"${CoreConfig.ParentConfigName}.${XDContext.StreamingConfigKey}"))
+private[crossdata] case class UpdateEphemeralTable(tableIdent: TableIdentifier , opts: Map[String, String])
+  extends LogicalPlan with RunnableCommand{
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("EphemeralTableID", StringType, false))
+      Seq(StructField("OperationId", StringType, false))
     )
     schema.toAttributes
   }
-
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
     val tableId = createId
 
-    dao.get(tableId)
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog =>
+      // TODO make EphemeralTableModel from opts. If there are not all the mandatory params throw an error
+
+//        val ephTable = EphemeralTableModel(tableId, tableIdent.table, EphemeralOptionsModel())
+//        streamingCatalog.updateEphemeralTable(ephTable)
+    }
 
     Seq(Row(tableId))
   }
 }
 
+private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
+  extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Dropped table", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog => streamingCatalog.dropEphemeralTable(tableIdent.table)
+    }
+
+    Seq(Row(tableIdent.table))
+  }
+}
+
+private[crossdata] case class DropAllEphemeralTables() extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Dropped tables", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val deletedTables = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+      streamingCatalog =>
+        val ephTables = streamingCatalog.getAllEphemeralTables
+        streamingCatalog.dropAllEphemeralTables
+        ephTables.map(_.toStringPretty)
+    }
+
+    deletedTables.map(_.map(Row(_))).getOrElse(Seq(Row.empty))
+  }
+}
+
+  /**
+  * Ephemeral Status Functions
+  */
+
+  private[crossdata] case class GetEphemeralStatus(tableIdent: TableIdentifier) extends LogicalPlan with RunnableCommand{
+
+    override val output: Seq[Attribute] = {
+      val schema = StructType(
+        Seq(StructField(s"${tableIdent.table} status", StringType, false))
+      )
+      schema.toAttributes
+    }
+
+    override def run(sqlContext: SQLContext): Seq[Row] = {
+
+      val ephStatus =
+      sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+        streamingCatalog => streamingCatalog.getEphemeralStatus(tableIdent.table)
+          .map(_.toStringPretty)
+          .getOrElse(s"${tableIdent.table} status doesn't exists")
+      }
+
+      Seq(ephStatus.map(Row(_)).getOrElse(Row.empty))
+    }
+  }
+
+private[crossdata] case class GetAllEphemeralStatuses() extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Statuses", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val ephStatuses =
+      sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+        streamingCatalog =>
+          streamingCatalog.getAllEphemeralStatuses.map(_.toStringPretty)
+      }
+
+    ephStatuses.map(_.map(Row(_))).getOrElse(Seq(Row.empty))
+  }
+}
+
+private[crossdata] case class UpdateEphemeralStatus(tableIdent: TableIdentifier, opts: Map[String, String])
+  extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField(s"New ${tableIdent.table} status", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog =>
+        //TODO make EphemeralStatusModel from opts
+        //streamingCatalog.updateEphemeralStatus(tableIdent.table, EphemeralStatusModel)
+    }
+
+    //TODO return new ephemeralStatus json
+
+    Seq(Row())
+  }
+}
 
 
+  /**
+  * Ephemeral Queries Functions
+  */
+
+private[crossdata] case class ExistsEphemeralQuery(queryIdent: TableIdentifier)
+  extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Exists query?", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val queryExist : Boolean = sqlContext.asInstanceOf[XDContext].streamingCatalog.exists {
+      streamingCatalog => streamingCatalog.existsEphemeralQuery(queryIdent.table)
+    }
+
+    val result = if (queryExist ) "EXISTS" else "NOT EXISTS"
+
+    Seq(Row(s"${queryIdent.table} $result"))
+  }
+}
+
+
+private[crossdata] case class GetEphemeralQuery(queryIdent: TableIdentifier)
+  extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Ephemeral query", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val ephQuery =
+      sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+        streamingCatalog => streamingCatalog.getEphemeralQuery(queryIdent.table)
+          .map(_.toStringPretty)
+          .getOrElse(s"${queryIdent.table} doesn't exists")
+      }
+    Seq(ephQuery.map(Row(_)).getOrElse(Row.empty))
+  }
+}
+
+
+private[crossdata] case class GetAllEphemeralQueries()
+  extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Ephemeral queries", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val ephQueries =
+      sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+        streamingCatalog =>
+          streamingCatalog.getAllEphemeralQueries.map(_.toStringPretty)
+      }
+
+    ephQueries.map(_.map(Row(_))).getOrElse(Seq(Row.empty))
+  }
+}
+
+
+private[crossdata] case class CreateEphemeralQuery(queryIdent: TableIdentifier, opts: Map[String, String])
+  extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Ephemeral query", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    //val ephemeralQuery = EphemeralQueryModel()
+
+    val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+      streamingCatalog =>
+//        val ephTable = EphemeralQueryModel(queryIdent.table)
+//        streamingCatalog.createEphemeralTable(ephTable) match {
+//          case Right(ephTable)  => ephTable.toStringPretty
+//          case Left(message)    => message
+//        }
+    }
+
+    /*
+        // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
+        // * This query will trigger 3 actions in the catalog persistence:
+        //   1.- Associate the table with the schema.
+        val schema = columns.json
+        //   2.- Associate the table with the configuration.
+        val options = JSONObject(opts).toString(JSONFormat.defaultFormatter)
+        //   3.- Associate the QueryID with the involved table.
+
+        // * SparkLauncher of StreamingProcess
+        val params = tableId :: opts.values.toList
+        val sparkApp = new SparkLauncher()
+          .setAppName(tableId)
+          .setMaster(sqlContext.conf.getConfString("spark.master"))
+          .setAppResource("streamingProcess.jar")
+          .setMainClass("StreamingProcess")
+          .setDeployMode("cluster")
+          .addAppArgs(params:_*)
+          .launch()
+
+        // * Return the UUID of the process
+    */
+
+    Seq(result.map(Row(_)).getOrElse(Row.empty))
+
+  }
+}
+
+
+private[crossdata] case class UpdateEphemeralQuery(queryIdent: TableIdentifier, opts: Map[String, String])
+  extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField(s"New ${queryIdent.table} status", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog =>
+      //TODO make EphemeralQueryModel from opts
+      //streamingCatalog.updateEphemeralQuery(tableIdent.table, EphemeralStatusModel)
+    }
+
+    //TODO return new ephemeralQuery json
+
+    Seq(Row())
+  }
+}
+
+private[crossdata] case class DropEphemeralQuery(queryIdent: TableIdentifier)
+  extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Dropped query", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+      streamingCatalog => streamingCatalog.dropEphemeralQuery(queryIdent.table)
+    }
+
+    Seq(Row(queryIdent.table))
+  }
+}
+
+private[crossdata] case class DropAllEphemeralQueries() extends LogicalPlan with RunnableCommand{
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Dropped queries", StringType, false))
+    )
+    schema.toAttributes
+  }
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val deletedQueries = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+      streamingCatalog =>
+        val ephTables = streamingCatalog.getAllEphemeralQueries
+        streamingCatalog.dropAllEphemeralQueries()
+        ephTables.map(_.toStringPretty)
+    }
+
+    deletedQueries.map(_.map(Row(_))).getOrElse(Seq(Row.empty))
+  }
+}

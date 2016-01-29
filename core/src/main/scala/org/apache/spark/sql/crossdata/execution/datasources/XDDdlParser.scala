@@ -17,7 +17,6 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.datasources.DDLParser
-import org.apache.spark.sql.types.StructType
 
 class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
 
@@ -28,11 +27,16 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val EPHEMERAL = Keyword("EPHEMERAL")
   protected val GET = Keyword("GET")
   protected val STATUS = Keyword("STATUS")
-  protected val FROM = Keyword("FROM")
-
+  protected val UPDATE = Keyword("UPDATE")
+  protected val QUERY = Keyword("QUERY")
+  protected val QUERIES = Keyword("QUERIES")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
-    createTable | describeTable | refreshTable | importStart | dropTable | createView | createEphemeralTable | getEphemeralStatus
+    createTable | describeTable | refreshTable | importStart | dropTable | createView | existsEphemeralTable |
+      getEphemeralTable | getAllEphemeralTables | createEphemeralTable | updateEphemeralTable | dropEphemeralTable |
+      getEphemeralStatus | getAllEphemeralStatuses | updateEphemeralStatus | existsEphemeralQuery | getEphemeralQuery |
+      getAllEphemeralQueries | createEphemeralQuery | updateEphemeralQuery | dropEphemeralQuery |
+      dropAllEphemeralQueries
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -49,11 +53,32 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected lazy val createView: Parser[LogicalPlan] = {
 
     (CREATE ~> TEMPORARY.? <~ VIEW) ~ tableIdentifier ~ (AS ~> restInput) ^^ {
-      case temp  ~ viewIdentifier ~ query =>
+      case temp ~ viewIdentifier ~ query =>
         if (temp.isDefined)
           CreateTempView(viewIdentifier, parseQuery(query))
         else
           CreateView(viewIdentifier, parseQuery(query), query)
+    }
+  }
+
+  /**
+  * Ephemeral Table Functions
+  */
+  protected lazy val existsEphemeralTable: Parser[LogicalPlan] = {
+    (EXISTS ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ^^ {
+      case tableIdent => ExistsEphemeralTable(tableIdent)
+    }
+  }
+
+  protected lazy val getEphemeralTable: Parser[LogicalPlan] = {
+    (GET ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ^^ {
+      case tableIdent => GetEphemeralTable(tableIdent)
+    }
+  }
+
+  protected lazy val getAllEphemeralTables: Parser[LogicalPlan] = {
+    (GET ~ EPHEMERAL ~ TABLES) ^^ {
+      case operation => GetAllEphemeralTables()
     }
   }
 
@@ -65,12 +90,85 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
     }
   }
 
-  protected lazy val getEphemeralStatus: Parser[LogicalPlan] = {
-    (GET  ~ STATUS ~ FROM) ~ (tableIdentifier) ^^ {
-      case status ~ tableIdent=> {
-        GetStatus(tableIdent)
-      }
+  protected lazy val updateEphemeralTable: Parser[LogicalPlan] = {
+    (UPDATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ (OPTIONS ~> options) ^^ {
+      case tableIdent ~ opts => UpdateEphemeralTable(tableIdent, opts)
     }
   }
+
+  protected lazy val dropEphemeralTable: Parser[LogicalPlan] = {
+    (DROP ~ EPHEMERAL ~ TABLE ~> tableIdentifier)  ^^ {
+      case tableIdent => DropEphemeralTable(tableIdent)
+    }
+  }
+
+  protected lazy val dropAllEphemeralTables: Parser[LogicalPlan] = {
+    (DROP ~ EPHEMERAL ~ TABLES)  ^^ {
+      case operation => DropAllEphemeralTables()
+    }
+  }
+
+  /**
+  * Ephemeral Status Functions
+  */
+
+  protected lazy val getEphemeralStatus: Parser[LogicalPlan] = {
+    (GET ~ EPHEMERAL ~ STATUS ~> tableIdentifier)  ^^ {
+      case tableIdent => GetEphemeralStatus(tableIdent)
+    }
+  }
+
+  protected lazy val getAllEphemeralStatuses: Parser[LogicalPlan] = {
+    (GET ~ EPHEMERAL ~ TABLES)  ^^ {
+      case operation => GetAllEphemeralStatuses()
+    }
+  }
+
+  protected lazy val updateEphemeralStatus: Parser[LogicalPlan] = {
+    (UPDATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ (OPTIONS ~> options) ^^ {
+      case tableIdent ~ opts => UpdateEphemeralStatus(tableIdent, opts)
+    }
+  }
+
+  /**
+  * Ephemeral Queries Functions
+  */
+
+  protected lazy val existsEphemeralQuery: Parser[LogicalPlan] = {
+    (EXISTS ~ EPHEMERAL ~ QUERY~> tableIdentifier) ^^ {
+      case tableIdent => ExistsEphemeralQuery(tableIdent)
+    }
+  }
+  protected lazy val getEphemeralQuery: Parser[LogicalPlan] = {
+    (GET ~ EPHEMERAL ~ QUERY ~> tableIdentifier) ^^ {
+      case tableIdent => GetEphemeralQuery(tableIdent)
+    }
+  }
+  protected lazy val getAllEphemeralQueries: Parser[LogicalPlan] = {
+    (GET ~ EPHEMERAL ~ QUERIES) ^^ {
+      case operation => GetAllEphemeralQueries()
+    }
+  }
+  protected lazy val createEphemeralQuery: Parser[LogicalPlan] = {
+    (CREATE ~ EPHEMERAL ~ QUERY~> tableIdentifier) ~ (OPTIONS ~> options) ^^ {
+      case queryIdentifier ~ opts => CreateEphemeralQuery(queryIdentifier, opts)
+    }
+  }
+  protected lazy val updateEphemeralQuery: Parser[LogicalPlan] = {
+    (UPDATE ~ EPHEMERAL ~ QUERY ~> tableIdentifier) ~ (OPTIONS ~> options) ^^ {
+      case queryIdentifier ~ opts => UpdateEphemeralQuery(queryIdentifier, opts)
+    }
+  }
+  protected lazy val dropEphemeralQuery: Parser[LogicalPlan] = {
+    (DROP ~ EPHEMERAL ~ QUERY ~> tableIdentifier) ^^ {
+      case queryIdentifier => DropEphemeralQuery(queryIdentifier)
+    }
+  }
+  protected lazy val dropAllEphemeralQueries: Parser[LogicalPlan] = {
+    (DROP ~ EPHEMERAL ~ QUERIES) ^^ {
+      case operation => DropAllEphemeralQueries()
+    }
+  }
+
 
 }
