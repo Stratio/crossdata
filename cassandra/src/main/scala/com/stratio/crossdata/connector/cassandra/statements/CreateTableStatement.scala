@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.connector.cassandra.statements
 
-import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourceKeyspaceNameProperty
 import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourcePrimaryKeySrtingProperty
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
@@ -26,24 +25,13 @@ case class CreateTableStatement(tableName: String,
                                ) {
 
   override def toString(): String = {
-    val cqlCommand = StringBuilder.newBuilder
-    cqlCommand.append("CREATE TABLE ")
 
-    if (ifNotExists) {
-      cqlCommand.append("IF NOT EXISTS ")
-    }
+    s"CREATE TABLE ${if(ifNotExists) "IF NOT EXISTS " else ""}$keyspace.$tableName (" + schema.fields.foldLeft("") {
+      case (prev: String, next: StructField) =>
+        val cassandraDataType = CassandraUtils.fromSparkSqlType(next.dataType)
+        prev + s"${next.name} ${cassandraDataType.cqlTypeName}, "
+    } + s"PRIMARY KEY ($primaryKeyString))"
 
-    cqlCommand.append(keyspace).append(".").append(tableName)
-
-    cqlCommand.append(" (")
-    schema.fields.foreach { field: StructField =>
-
-      val cassandraDataType = CassandraUtils.fromSparkSqlType(field.dataType)
-      cqlCommand.append(field.name).append(" ").append(cassandraDataType.cqlTypeName).append(", ")
-    }
-    cqlCommand.append("PRIMARY KEY (") .append(primaryKeyString).append("))")
-
-    cqlCommand.toString()
   }
 
 
