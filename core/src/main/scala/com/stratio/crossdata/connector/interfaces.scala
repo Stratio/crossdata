@@ -126,8 +126,8 @@ trait NativeFunctionExecutor {
   */
 trait TableManipulation {
 
-  def createExternalTable(tableName: String,
-                          source: String,
+  def createExternalTable(context: SQLContext,
+                          tableName: String,
                           schema: StructType,
                           options: Map[String, String]): Boolean
 }

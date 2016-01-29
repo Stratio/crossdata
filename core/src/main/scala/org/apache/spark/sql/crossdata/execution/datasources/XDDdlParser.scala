@@ -19,6 +19,8 @@ import scala.language.implicitConversions
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.datasources.DDLParser
 import org.apache.spark.sql.types._
+
+
 class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
 
   protected val IMPORT = Keyword("IMPORT")
@@ -26,6 +28,8 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val DROP = Keyword("DROP")
   protected val VIEW = Keyword("VIEW")
   protected val EXTERNAL = Keyword("EXTERNAL")
+  protected val PRIMARY =Keyword("PRIMARY")
+  protected val KEY = Keyword("KEY")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
     createTable | describeTable | refreshTable | importStart | dropTable | createView | createExternalTable
@@ -66,4 +70,5 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
 
 
   }
+
 }
