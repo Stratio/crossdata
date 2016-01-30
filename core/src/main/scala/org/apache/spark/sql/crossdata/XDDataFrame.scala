@@ -26,6 +26,38 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 import XDDataFrame.findNativeQueryExecutor
 import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
 
+import scala.collection.mutable.ListBuffer
+import scala.collection.{mutable, immutable, GenTraversableOnce}
+import scala.collection.generic.CanBuildFrom
+
+//TODO: Move to a common library
+private[crossdata] object WithTrackerFlatMapSeq {
+  implicit def seq2superflatmapseq[T](s: Seq[T]): WithTrackerFlatMapSeq[T] = new WithTrackerFlatMapSeq(s)
+}
+
+//TODO: Move to a common library
+private[crossdata] class WithTrackerFlatMapSeq[T] private(val s: Seq[T])
+  extends scala.collection.immutable.Seq[T] {
+  override def length: Int = s.length
+  override def apply(idx: Int): T = s(idx)
+  override def iterator: Iterator[T] = s.iterator
+
+
+  def withTrackerFlatMap[B, That](
+                               f: (T, Option[Int]) => GenTraversableOnce[B]
+                             )(implicit bf: CanBuildFrom[immutable.Seq[T], B, That]): That = {
+    def builder : mutable.Builder[B, That] = bf(repr)
+    val b = builder
+    val builderAsListBuffer = b match {
+      case lb: ListBuffer[That] => Some(lb)
+      case _ => None
+    }
+    for (x <- this) b ++= f(x, builderAsListBuffer.map(_.length)).seq
+    b.result
+  }
+
+}
+
 private[sql] object XDDataFrame {
 
   def apply(sqlContext: SQLContext, logicalPlan: LogicalPlan): DataFrame = {
@@ -188,18 +220,20 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       }
     }
 
+    import WithTrackerFlatMapSeq._
+
     def iterativeFlatten(
                           rows: Seq[Row],
                           firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
                         )(limit: Int = Int.MaxValue): Seq[Row] =
-      flatRows(rows, firstLevelNames).foldLeft(Seq.empty[Row]) {
-        case (acc: Seq[Row], _) if(acc.size >= limit) => acc
-        case (acc: Seq[Row], row: GenericRowWithSchema) =>
-          acc ++ { row.schema collectFirst {
+      flatRows(rows, firstLevelNames) withTrackerFlatMap {
+        case (_, Some(currentSize)) if(currentSize >= limit) => Seq()
+        case (row: GenericRowWithSchema, currentSize) =>
+          row.schema collectFirst {
             case StructField(_, _: ArrayType, _, _) =>
-              iterativeFlatten(verticallyFlatRowArrays(row)(limit-acc.size))(limit)
-          } getOrElse Seq(row) }
-        case (acc: Seq[Row], row: Row) => acc :+ row
+              iterativeFlatten(verticallyFlatRowArrays(row)(limit-currentSize.getOrElse(0)))(limit)
+          } getOrElse Seq(row)
+        case (row: Row, currentSize) => Seq(row)
       }
 
     def processProjection(plist: Seq[NamedExpression], child: LogicalPlan, limit: Int = Int.MaxValue): Array[Row] = {
