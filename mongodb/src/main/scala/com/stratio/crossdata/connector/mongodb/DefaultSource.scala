@@ -16,10 +16,13 @@
 package com.stratio.crossdata.connector.mongodb
 
 import com.mongodb.DBCollection
+import com.mongodb.casbah.Imports.DBObject
+import com.mongodb.casbah.Imports.DBObject
 import com.mongodb.casbah.MongoDB
 
 import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
+import com.stratio.crossdata.connector.TableManipulation
 import com.stratio.datasource.Config._
 import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions, MongodbConfig, MongodbRelation}
 import org.apache.spark.sql.SaveMode._
@@ -32,9 +35,24 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
  * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
  * Required options are detailed in [[com.stratio.datasource.mongodb.MongodbConfig]]
  */
-class DefaultSource extends ProviderDS with TableInventory with DataSourceRegister {
+class DefaultSource extends ProviderDS with TableInventory with DataSourceRegister with TableManipulation{
 
   import MongodbConfig._
+
+  /**
+    * if the collection is capped
+    */
+  val MongoCollectionPropertyCapped:String= "capped"
+
+  /**
+    * collection size
+    */
+  val MongoCollectionPropertySize:String= "size"
+
+  /**
+    * max number of documents
+    */
+  val MongoCollectionPropertyMax:String= "max"
 
   override def shortName(): String = "mongodb"
 
@@ -174,4 +192,37 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
     finalMap
   }
 
+  override def createExternalTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String]): Boolean = {
+    val database: String = {
+      require(options.contains(Database),
+        s"$Database required when use CREATE EXTERNAL TABLE command")
+      options.get(Database).get
+    }
+
+    val mongoOptions = DBObject()
+    options.map(opt =>
+      opt match {
+        case (MongoCollectionPropertyCapped, value) => mongoOptions.put(MongoCollectionPropertyCapped, value)
+        case (MongoCollectionPropertySize, value) => mongoOptions.put(MongoCollectionPropertySize, value.toInt)
+        case (MongoCollectionPropertyMax, value) => mongoOptions.put(MongoCollectionPropertyMax, value.toInt)
+        case _ =>
+      }
+    )
+
+    val hosts: List[String] = options(Host).split(",").toList
+
+    try {
+
+      MongodbConnection.withClientDo(hosts) { mongoClient =>
+        mongoClient.getDB(database).createCollection(tableName, mongoOptions)
+      }
+      true
+    } catch {
+      case e: IllegalArgumentException =>
+        throw e
+      case e: Exception =>
+        sys.error(e.getMessage)
+        false
+    }
+  }
 }

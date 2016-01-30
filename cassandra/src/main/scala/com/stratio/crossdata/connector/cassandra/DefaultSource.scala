@@ -29,7 +29,10 @@ import com.datastax.spark.connector.util.ConfigParameter
 import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.FunctionInventory.UDF
 import com.stratio.crossdata.connector.TableInventory.Table
+import com.stratio.crossdata.connector.TableManipulation
 import com.stratio.crossdata.connector.cassandra.DefaultSource._
+import com.stratio.crossdata.connector.cassandra.statements.CreateKeyspaceStatement
+import com.stratio.crossdata.connector.cassandra.statements.CreateTableStatement
 import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SaveMode.Append
@@ -74,7 +77,7 @@ import scala.collection.mutable
  *       spark_cassandra_connection_timeout_ms "1000"
  *      )
  */
-class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory with DataSourceRegister {
+class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory with DataSourceRegister with TableManipulation {
 
   override def shortName(): String = "cassandra"
 
@@ -154,6 +157,32 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   }
 
+  override def createExternalTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String]): Boolean = {
+
+    val keyspace: String = {
+      require(options.contains(CassandraDataSourceKeyspaceNameProperty),
+        s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command")
+      options.get(CassandraDataSourceKeyspaceNameProperty).get
+    }
+
+    try {
+      buildCassandraConnector(context, options).withSessionDo { s =>
+        if (s.getCluster.getMetadata.getKeyspace(keyspace) == null) {
+          val createKeyspace = new CreateKeyspaceStatement(options)
+          s.execute(createKeyspace.toString())
+        }
+        val stm = new CreateTableStatement(tableName, schema, options)
+        s.execute(stm.toString())
+      }
+      true
+    } catch {
+      case e: IllegalArgumentException =>
+        throw e
+      case e: Exception =>
+        sys.error(e.getMessage)
+        false
+    }
+  }
 
   //-----------MetadataInventory-----------------
 
@@ -220,7 +249,6 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
   ) ++ opts.filterKeys(Set(CassandraConnectionHostProperty, CassandraDataSourceClusterNameProperty).contains(_))
 
   //------------MetadataInventory-----------------
-
 }
 
 object DefaultSource {
@@ -232,7 +260,8 @@ object DefaultSource {
   val CassandraConnectionHostProperty = "spark_cassandra_connection_host"
   val CassandraDataSourceProviderPackageName = DefaultSource.getClass.getPackage.getName
   val CassandraDataSourceProviderClassName = CassandraDataSourceProviderPackageName + ".DefaultSource"
-
+  val CassandraDataSourcePrimaryKeySrtingProperty ="primary_key_string"
+  val CassandraDataSourceKeyspaceReplicationSrtingProperty ="with_replication"
 
   /** Parse parameters into CassandraDataSourceOptions and TableRef object */
   def tableRefAndOptions(parameters: Map[String, String]): (TableRef, CassandraSourceOptions) = {
