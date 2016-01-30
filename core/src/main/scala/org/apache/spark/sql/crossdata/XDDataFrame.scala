@@ -159,7 +159,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       }
     }
 
-    def verticallyFlatRowArrays(row: GenericRowWithSchema): Seq[GenericRowWithSchema] = {
+    def verticallyFlatRowArrays(row: GenericRowWithSchema)(limit: Int): Seq[GenericRowWithSchema] = {
 
       def cartesian[T](ls: Seq[Seq[T]]): Seq[Seq[T]] = (ls :\ Seq(Seq.empty[T])) {
         case (cur: Seq[T], prev) => for(x <- prev; y <- cur) yield y +: x
@@ -179,7 +179,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         case (res: Seq[_], idx) => res map(idx -> _)
       }
 
-      cartesian(arrayColumnValues) map { case replacements: Seq[(Int, _)] =>
+      cartesian(arrayColumnValues).take(limit) map { case replacements: Seq[(Int, _)] =>
         val idx2newVal: Map[Int, Any] = replacements.toMap
         val values = elementsWithIndex map { case (prevVal, idx: Int) =>
           idx2newVal.getOrElse(idx, prevVal)
@@ -191,25 +191,26 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     def iterativeFlatten(
                           rows: Seq[Row],
                           firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
-                        ): Seq[Row] =
-      flatRows(rows, firstLevelNames) flatMap {
-        case row: GenericRowWithSchema =>
-          row.schema collectFirst {
+                        )(limit: Int = Int.MaxValue): Seq[Row] =
+      flatRows(rows, firstLevelNames).foldLeft(Seq.empty[Row]) {
+        case (acc: Seq[Row], _) if(acc.size >= limit) => acc
+        case (acc: Seq[Row], row: GenericRowWithSchema) =>
+          acc ++ { row.schema collectFirst {
             case StructField(_, _: ArrayType, _, _) =>
-              iterativeFlatten(verticallyFlatRowArrays(row))
-          } getOrElse Seq(row)
-        case row => Seq(row)
+              iterativeFlatten(verticallyFlatRowArrays(row)(limit-acc.size))(limit)
+          } getOrElse Seq(row) }
+        case (acc: Seq[Row], row: Row) => acc :+ row
       }
 
-    def processProjection(plist: Seq[NamedExpression], child: LogicalPlan): Array[Row] = {
+    def processProjection(plist: Seq[NamedExpression], child: LogicalPlan, limit: Int = Int.MaxValue): Array[Row] = {
       val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
-      iterativeFlatten(collect(), fullyAnnotatedRequestedColumns) toArray
+      iterativeFlatten(collect(), fullyAnnotatedRequestedColumns)(limit) toArray
     }
 
     queryExecution.optimizedPlan match {
       case Limit(_, Project(plist, child)) => processProjection(plist, child)
       case Project(plist, child) => processProjection(plist, child)
-      case _ => iterativeFlatten(collect()) toArray
+      case _ => iterativeFlatten(collect())() toArray
     }
 
   }
