@@ -233,7 +233,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
             case StructField(_, _: ArrayType, _, _) =>
               iterativeFlatten(verticallyFlatRowArrays(row)(limit-currentSize.getOrElse(0)))(limit)
           } getOrElse Seq(row)
-        case (row: Row, currentSize) => Seq(row)
+        case (row: Row, _) => Seq(row)
       }
 
     def processProjection(plist: Seq[NamedExpression], child: LogicalPlan, limit: Int = Int.MaxValue): Array[Row] = {
