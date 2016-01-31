@@ -26,7 +26,7 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 import XDDataFrame.findNativeQueryExecutor
 import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.BufferLike
 import scala.collection.{mutable, immutable, GenTraversableOnce}
 import scala.collection.generic.CanBuildFrom
 
@@ -48,11 +48,11 @@ private[crossdata] class WithTrackerFlatMapSeq[T] private(val s: Seq[T])
                              )(implicit bf: CanBuildFrom[immutable.Seq[T], B, That]): That = {
     def builder : mutable.Builder[B, That] = bf(repr)
     val b = builder
-    val builderAsListBuffer = b match {
-      case lb: ListBuffer[That] => Some(lb)
+    val builderAsBufferLike = b match {
+      case bufferl: BufferLike[_, _] => Some(bufferl)
       case _ => None
     }
-    for (x <- this) b ++= f(x, builderAsListBuffer.map(_.length)).seq
+    for (x <- this) b ++= f(x, builderAsBufferLike.map(_.length)).seq
     b.result
   }
 
