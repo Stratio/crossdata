@@ -17,12 +17,11 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent
-import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent.TypesafeConfig
-import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent.TypesafeConfig
+import org.apache.log4j.Logger
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
+import org.apache.spark.sql.crossdata.models._
 
 /**
  * CrossdataStreamingCatalog aims to provide a mechanism to persist the
@@ -81,42 +80,139 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
 
 object XDStreamingCatalog extends TypesafeConfigComponent{
 
-  // Streaming parameters
-  val kafkaHost = "kafka.connectionHost"
-  val kafkaConsumerPort = "kafka.connectionConsumerPort"
-  val kafkaProducerPort = "kafka.connectionProducerPort"
+/***
+Ephemeral table config
+*/
+  //EphemeralTableModel.name //user has to set this param
+
+  //kafka
+  //Connection //format "host0:consumerPort0:producerPort0,host1:consumerPort1:producerPort1,host2:consumerPort2:producerPort2"
+  val kafkaConnection = "kafka.connection"
+
+  //format "topicName1,topicName2,topicName3"
   val kafkaTopicName = "kafka.topicName"
   val kafkaGroupId = "kafka.groupId"
-  val kafkaPartition = "kafka.partition"
 
-  // TODO add params and default options
+  val kafkaTopicPartition = "kafka.topicPartition" //optional
+
+  val kafkaPartition = "kafka.partition" //optional
+  //would go through additionalOptions param.
+  // One param for each element map. key = kafka.additionalOptions.x -> value = value
+  val kafkaAdditionalOptionsKey = "kafka.Options" //optional
+  val kafkaStorageLevel = "kafka.storageLevel" //optional
+  val atomicWindow ="atomicWindow"
+  val maxWindow = "maxWindow"
+  val outputFormat = "outputFormat" //optional
+  val checkpointDirectory = "checkpointDirectory" //optional
+  //would go through sparkOptions param.
+  // One param for each element map. key = sparkOptions.x -> value = value
+  val sparkOptionsKey = "sparkOptions" // optional is a Map
+
+  val listAllEphemeralTableKeys = List(
+      kafkaConnection,
+      kafkaTopicName,
+      kafkaGroupId,
+      kafkaTopicPartition,
+      kafkaAdditionalOptionsKey,
+      kafkaStorageLevel,
+      atomicWindow,
+      maxWindow,
+      outputFormat,
+      checkpointDirectory,
+      sparkOptionsKey)
+
 
   // Default mandatory values
+  val defaultKafkaConnection = "127.0.0.1:2181:9092"
+  val defaultKafkaTopicName = "XDTopic"
+  val defaultKafkaGroupId = "XDgroup"
+  val defaultAtomicWindow = "5000" //ms
+  val defaultMaxWindow = "20000" //ms
 
+  // Default values
+  val defaultKafkaStorageLevel = "MEMORY_AND_DISK_SER"
+
+  val listMandatoryEphemeralTableKeys = List(
+    kafkaConnection,
+    kafkaTopicName,
+    kafkaGroupId,
+    atomicWindow,
+    maxWindow,
+    outputFormat)
 
   // Default mandatory Map
-  val defaultMapConfig = Map()
+  val defaultEphemeralTableMapConfig = Map(
+    kafkaConnection -> defaultKafkaConnection,
+    kafkaTopicName -> defaultKafkaTopicName,
+    kafkaGroupId -> defaultKafkaGroupId,
+    atomicWindow -> defaultAtomicWindow,
+    maxWindow -> defaultMaxWindow)
+
+  private def extractConfigFromFile(filePath : String): Map[String, String] = {
+
+    val configFile =
+      new TypesafeConfig(
+      None,
+      None,
+      Some(filePath),
+      Some(CoreConfig.ParentConfigName + "." + XDContext.StreamingConfigKey)
+    )
+
+    configFile.toStringMap
+
+  }
+
+  private def getEphemeralTableOptions(opts : Map[String, String]): Map[String, String] = {
+    // first if opts has confFilePath, we take configFile, and then opts if there is no confFilePath , we take opts
+    val filePath = opts.get("streaming.confFilePath")
+    val options = filePath.fold(opts)(extractConfigFromFile(_))
+
+    val finalOptions = listMandatoryEphemeralTableKeys
+      .map(key => key -> options.getOrElse(key, notFound(key, defaultEphemeralTableMapConfig))).toMap
+
+    finalOptions
+    //TODO here parse options that has all the user conf
+
+  }
+
+  def createEphemeralTableModel(ident: String, opts : Map[String, String]) : EphemeralTableModel = {
+
+    val finalOptions = getEphemeralTableOptions(opts)
+
+    // Mandatory
+    val connections = finalOptions(kafkaConnection)
+      .split(",").map(_.split(":")).map(c => ConnectionHostModel(c(0), c(1), c(2))).toSeq
+    // TODO review topic: make sense several topics for one table?
+    val topicName = finalOptions(kafkaTopicName)
+    val topicPartition = finalOptions.getOrElse(kafkaTopicPartition, TopicModel.DefaultPartition).toString
+    val topics= Seq(TopicModel(topicName, topicPartition))
+    val groupId = finalOptions(kafkaGroupId)
+    val partition = finalOptions.get(kafkaPartition)
+    val kafkaAdditionalOptions = finalOptions.filter(kv => kv._1.startsWith(kafkaAdditionalOptionsKey))
+    val storageLevel = finalOptions.getOrElse(kafkaStorageLevel, defaultKafkaStorageLevel)
+    val kafkaOptions = KafkaOptionsModel(connections, topics, groupId, partition, kafkaAdditionalOptions, storageLevel)
+    val ephemeralOptions = EphemeralOptionsModel(kafkaOptions)
+
+    EphemeralTableModel(ident, ephemeralOptions)
+  }
 
 
-  // Parse params
-  val configFile = new TypesafeConfig(
-    None,
-    None,
-    Some(CoreConfig.CoreBasicConfig),
-    Some(CoreConfig.ParentConfigName + "." + XDContext.StreamingConfigKey)
-  )
+  def createEphemeralQueryModel(ident: String, opts : Map[String, String]) : EphemeralQueryModel = ???
 
-  //val configDdl
-
-  def parseEphemeralTableFileParams(): Map[String, String] = ???
-  def parseEphemeralTableDdlParams(): Map[String, String] = ???
-
-
-  def parseEphemeralQueryFileParams(): Map[String, String] = ???
-  def parseEphemeralQueryDdlParams(): Map[String, String] = ???
+  def createEphemeralStatusModel(ident: String, opts : Map[String, String]) : EphemeralStatusModel = ???
 
 
   def parseEphemeralStatusFileParams(): Map[String, String] = ???
-  def parseEphemeralStatusDdlParams(): Map[String, String] = ???
+  def parseEphemeralStatusDdlParams(opts : Map[String, String]): Map[String, String] = ???
+
+  // Return default value and log a message
+  def notFound(key: String, mandatoryOptions: Map[String, String]): String = {
+    val logger= Logger.getLogger(classOf[XDStreamingCatalog])
+    logger.warn(s"Mandatory parameter $key not specified, this could cause errors.")
+
+    mandatoryOptions(key)
+  }
+
+
 
 }

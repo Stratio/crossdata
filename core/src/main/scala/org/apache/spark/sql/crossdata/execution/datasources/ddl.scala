@@ -201,16 +201,7 @@ private[crossdata] case class GetAllEphemeralTables() extends LogicalPlan with R
 private[crossdata] case class CreateEphemeralTable(
                                                     tableIdent: TableIdentifier,
                                                     opts: Map[String, String])
-  extends LogicalPlan with RunnableCommand with EphemeralTableDAO {
-
-  // TODO choose config params from file or from OPTIONS()
-  override lazy val config: Config =
-    new TypesafeConfig(
-      None,
-      None,
-      Some(CoreConfig.CoreBasicConfig),
-      Some(CoreConfig.ParentConfigName + "." + XDContext.StreamingConfigKey)
-    )
+  extends LogicalPlan with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
@@ -221,24 +212,11 @@ private[crossdata] case class CreateEphemeralTable(
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    // TODO fill default values
-    //kafka options
-    val host = config.getString(kafkaHost,"DefaultHost")
-    val consumerPort = config.getString(kafkaConsumerPort, "DefaultConsumer")
-    val producerPort = config.getString(kafkaProducerPort, "DefaultProducer")
-    val topics= Seq(TopicModel(config.getString(kafkaTopicName, "DefaulTopicName")))
-    val connections = Seq(ConnectionHostModel(host, consumerPort, producerPort))
-    val groupId = config.getString(kafkaGroupId, tableIdent.table)
-    val partition = config.getString(kafkaPartition)
-    val kafkaOptions = KafkaOptionsModel(connections, topics, groupId, partition, Map.empty)
-
-    val ephemeralOptions = EphemeralOptionsModel(kafkaOptions)
-
     val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
       streamingCatalog =>
-        val ephTable = EphemeralTableModel(tableIdent.table, ephemeralOptions)
+        val ephTable = createEphemeralTableModel(tableIdent.table, opts)
         streamingCatalog.createEphemeralTable(ephTable) match {
-          case Right(ephTable)  => ephTable.toStringPretty
+          case Right(table)  => table.toStringPretty
           case Left(message)    => message
         }
     }
