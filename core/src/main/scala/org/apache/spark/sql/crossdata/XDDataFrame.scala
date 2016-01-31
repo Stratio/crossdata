@@ -242,8 +242,9 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     }
 
     queryExecution.optimizedPlan match {
-      case Limit(_, Project(plist, child)) => processProjection(plist, child)
+      case Limit(lexp, Project(plist, child)) => processProjection(plist, child, lexp.toString().toInt)
       case Project(plist, child) => processProjection(plist, child)
+      case Limit(lexp, _) => iterativeFlatten(collect())(lexp.toString().toInt) toArray
       case _ => iterativeFlatten(collect())() toArray
     }
 
