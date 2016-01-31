@@ -28,6 +28,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
+import com.stratio.crossdata.streaming.constants.KafkaConstants._
 
 import scala.collection.JavaConversions._
 import scala.util.Try
@@ -72,6 +73,9 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
                            kafkaOptions: KafkaOptionsModel,
                            zookeeperConf: Map[String, String]): Unit = {
 
+    val kafkaOptionsMerged = kafkaOptions.copy(
+      partitionOutput = ephemeralQuery.options.get(PartitionKey).orElse(kafkaOptions.partitionOutput),
+      additionalOptions = ephemeralQuery.options)
     val xdContext = XDContext.getOrCreate(rdd.context, parseZookeeperCatalogConfig(zookeeperConf))
     val df = xdContext.read.json(filterRddWithWindow(rdd, ephemeralQuery.window))
     //df.cache()
@@ -84,8 +88,8 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
         val topic = ephemeralQuery.alias
 
         ephemeralTable.options.outputFormat match {
-          case EphemeralOutputFormat.JSON => saveToKafkaInJSONFormat(dataFrame, topic, kafkaOptions)
-          case _ => saveToKafkaInRowFormat(dataFrame, topic, kafkaOptions)
+          case EphemeralOutputFormat.JSON => saveToKafkaInJSONFormat(dataFrame, topic, kafkaOptionsMerged)
+          case _ => saveToKafkaInRowFormat(dataFrame, topic, kafkaOptionsMerged)
         }
       }.getOrElse {
         logger.warn(s"There are problems executing the ephemeral query: $query \n with Schema: ${df.printSchema()} \n" +
@@ -107,10 +111,10 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
 
   private def saveToKafkaInJSONFormat(dataFrame: DataFrame, topic: String, kafkaOptions: KafkaOptionsModel): Unit =
     dataFrame.toJSON.foreachPartition(values =>
-      values.foreach(value => KafkaProducer.put(topic, value, kafkaOptions, kafkaOptions.partition)))
+      values.foreach(value => KafkaProducer.put(topic, value, kafkaOptions, kafkaOptions.partitionOutput)))
 
   private def saveToKafkaInRowFormat(dataFrame: DataFrame, topic: String, kafkaOptions: KafkaOptionsModel): Unit =
     dataFrame.rdd.foreachPartition(values =>
       values.foreach(value =>
-        KafkaProducer.put(topic, value.mkString(","), kafkaOptions, kafkaOptions.partition)))
+        KafkaProducer.put(topic, value.mkString(","), kafkaOptions, kafkaOptions.partitionOutput)))
 }
