@@ -195,7 +195,6 @@
         </configuration>
       </plugin>
 
-
       <!-- Plugin to compile Scala code -->
       <plugin>
         <groupId>org.scala-tools</groupId>
@@ -223,8 +222,6 @@
           </execution>
         </executions>
       </plugin>
-
-      
     </plugins>
   </build>
 </project>
