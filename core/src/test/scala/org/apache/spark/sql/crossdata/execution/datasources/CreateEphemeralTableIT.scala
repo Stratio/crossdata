@@ -25,8 +25,15 @@ class CreateEphemeralTableIT extends SharedXDContextTest{
   "Create temp view" should "return a XDDataFrame when executing a SQL query" in {
 
     val sqlContext = _xdContext
-    sql("CREATE EPHEMERAL TABLE ephemeralTest OPTIONS (kafka.Options.test 'optionalConfig')").show()
-// TODO real test
+    //sql("UPDATE EPHEMERAL TABLE ephemeralTest1 OPTIONS(kafka.options.test 'updateParam')").collect().foreach(print)
+    //sql("EXISTS EPHEMERAL TABLE ephemeralTest1").collect().foreach(print)
+    //sql("CREATE EPHEMERAL TABLE ephemeralTest1 OPTIONS(kafka.options.test 'optionalConfig')").collect().foreach(print)
+    //sql("GET EPHEMERAL TABLES").collect().foreach(print)
+    //sql("GET EPHEMERAL TABLE ephemeralTest4").collect().foreach(print)
+    // Works but needs ephemeralstatus
+    //sql("DROP EPHEMERAL TABLE ephemeralTest1").collect().foreach(print)
+    //sql("DROP EPHEMERAL TABLES").collect().foreach(print)
+    // TODO real test
     1 shouldBe (1)
   }
 

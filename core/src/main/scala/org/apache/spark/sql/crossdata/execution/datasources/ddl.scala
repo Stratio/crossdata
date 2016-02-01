@@ -254,24 +254,21 @@ private[crossdata] case class UpdateEphemeralTable(tableIdent: TableIdentifier ,
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("OperationId", StringType, false))
+      Seq(StructField("Updated table", StringType, false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val tableId = createId
-
     sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
       streamingCatalog =>
-      // TODO make EphemeralTableModel from opts. If there are not all the mandatory params throw an error
 
-//        val ephTable = EphemeralTableModel(tableId, tableIdent.table, EphemeralOptionsModel())
-//        streamingCatalog.updateEphemeralTable(ephTable)
+        val ephTable = createEphemeralTableModel(tableIdent.table, opts)
+        streamingCatalog.updateEphemeralTable(ephTable)
     }
 
-    Seq(Row(tableId))
+    Seq(Row(tableIdent.table))
   }
 }
 
@@ -369,22 +366,24 @@ private[crossdata] case class UpdateEphemeralStatus(tableIdent: TableIdentifier,
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField(s"New ${tableIdent.table} status", StringType, false))
+      Seq(StructField(s"Updated status", StringType, false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
+    val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
       streamingCatalog =>
-        //TODO make EphemeralStatusModel from opts
-        //streamingCatalog.updateEphemeralStatus(tableIdent.table, EphemeralStatusModel)
+        createEphemeralStatusModel(tableIdent.table, opts) match {
+          case Right(status) =>
+            streamingCatalog.updateEphemeralStatus(tableIdent.table, status)
+            tableIdent.table
+          case Left(message)  => message
+        }
     }
 
-    //TODO return new ephemeralStatus json
-
-    Seq(Row())
+    Seq(Row(result))
   }
 }
 

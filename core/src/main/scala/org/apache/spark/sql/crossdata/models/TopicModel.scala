@@ -16,12 +16,12 @@
 
 package org.apache.spark.sql.crossdata.models
 
-case class TopicModel(name: String, partition: String = TopicModel.DefaultPartition) {
+case class TopicModel(name: String, partition: Int = TopicModel.DefaultPartition) {
 
   def toStringPretty : String = ModelUtils.modelToJsonString(this)
 }
 
 object TopicModel {
 
-  val DefaultPartition = "1"
+  val DefaultPartition = 1
 }

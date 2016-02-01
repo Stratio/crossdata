@@ -17,14 +17,21 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.daos.impl.{EphemeralTableStatusTypesafeDAO, EphemeralQueriesTypesafeDAO, EphemeralTableTypesafeDAO}
+import org.apache.spark.sql.crossdata.config.CoreConfig
+import org.apache.spark.sql.crossdata.daos.impl._
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
 class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
 
-  val ephemeralTableDAO = new EphemeralTableTypesafeDAO(xdContext.catalogConfig)
-  val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(xdContext.catalogConfig)
-  val ephemeralTableStatusDAO = new EphemeralTableStatusTypesafeDAO(xdContext.catalogConfig)
+  // TODO use a Map to send config for DAO
+//  val ephemeralTableDAO = new EphemeralTableMapDAO()
+//  val ephemeralQueriesDAO = new EphemeralQueriesMapDAO()
+//  val ephemeralTableStatusDAO = new EphemeralTableStatusMapDAO()
+
+
+  val ephemeralTableDAO = new EphemeralTableTypesafeDAO(xdContext.catalogConfig.getConfig(XDContext.StreamingConfigKey))
+  val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(xdContext.catalogConfig.getConfig(XDContext.StreamingConfigKey))
+  val ephemeralTableStatusDAO = new EphemeralTableStatusTypesafeDAO(xdContext.catalogConfig.getConfig(XDContext.StreamingConfigKey))
   /**
    * Ephemeral Table Functions
    */
@@ -35,7 +42,7 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
     ephemeralTableDAO.dao.get(tableIdentifier)
 
   override def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel] =
-    if(ephemeralTableDAO.dao.exists(ephemeralTable.name))
+    if(!existsEphemeralTable(ephemeralTable.name))
       Right(ephemeralTableDAO.dao.upsert(ephemeralTable.name, ephemeralTable))
     else Left("Ephemeral table exists")
 
@@ -63,7 +70,7 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
     ephemeralQueriesDAO.dao.exists(queryAlias)
 
   override def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel] =
-    if(ephemeralQueriesDAO.dao.exists(ephemeralQuery.alias))
+    if(!existsEphemeralQuery(ephemeralQuery.alias))
       Right(ephemeralQueriesDAO.dao.upsert(ephemeralQuery.alias, ephemeralQuery))
     else Left("Ephemeral query exists")
 
