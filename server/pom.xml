@@ -356,7 +356,7 @@
 
                                         <copyFile>
                                             <path>target/${project.artifactId}-${project.version}-jar-with-dependencies.jar</path>
-                                            <toFile>/opt/sds/crossdata/lib/${project.artifactId}-${project.version}.jar</toFile>
+                                            <toFile>/opt/sds/crossdata/lib/${project.artifactId}-${project.version}-jar-with-dependencies.jar</toFile>
                                             <attributes>
                                                 <user>stratio</user>
                                                 <group>stratio</group>
@@ -434,7 +434,7 @@
 
                                         <copyFile>
                                             <path>target/${project.artifactId}-${project.version}-jar-with-dependencies.jar</path>
-                                            <toFile>/opt/sds/crossdata/lib/${project.artifactId}-${project.version}.jar</toFile>
+                                            <toFile>/opt/sds/crossdata/lib/${project.artifactId}-${project.version}-jar-with-dependencies.jar</toFile>
                                             <attributes>
                                                 <user>stratio</user>
                                                 <group>stratio</group>
