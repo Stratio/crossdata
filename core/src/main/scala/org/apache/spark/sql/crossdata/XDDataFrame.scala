@@ -17,14 +17,25 @@ package org.apache.spark.sql.crossdata
 
 import com.stratio.crossdata.connector.NativeScan
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.sql.{SQLContext, DataFrame, Row}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, LeafNode, Project, Limit, Aggregate}
-import org.apache.spark.sql.crossdata.ExecutionType.{ExecutionType, Default, Native, Spark}
+import org.apache.spark.sql.catalyst.plans.logical.Aggregate
+import org.apache.spark.sql.catalyst.plans.logical.LeafNode
+import org.apache.spark.sql.catalyst.plans.logical.Limit
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.Project
+import org.apache.spark.sql.crossdata.ExecutionType.Default
+import org.apache.spark.sql.crossdata.ExecutionType.ExecutionType
+import org.apache.spark.sql.crossdata.ExecutionType.Native
+import org.apache.spark.sql.crossdata.ExecutionType.Spark
+import org.apache.spark.sql.crossdata.XDDataFrame.findNativeQueryExecutor
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.execution.datasources.LogicalRelation
-import XDDataFrame.findNativeQueryExecutor
-import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
+import org.apache.spark.sql.types.ArrayType
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
 
 private[sql] object XDDataFrame {
 
@@ -58,8 +69,8 @@ private[sql] object XDDataFrame {
       val nativeExecutors: Seq[NativeScan] = leafs.map { case LogicalRelation(ns: NativeScan, _) => ns }
 
       nativeExecutors match {
-        case Seq(head) =>
-          Some(head)
+        case seq if seq.length == 1 =>
+          nativeExecutors.headOption
 
         case _ =>
           if (nativeExecutors.sliding(2).forall { tuple =>
@@ -124,7 +135,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     def flatRows(
                   rows: Seq[Row],
                   firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
-                ): Seq[Row] = {
+                  ): Seq[Row] = {
 
       def baseName(parentName: String): String = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
 
@@ -134,8 +145,8 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         (row.schema.fields zip row.values zipAll(parentsNamesAndAlias, null, "" -> false)) flatMap {
           case (null, _) => Seq.empty
           case ((StructField(_, t, nable, mdata), vobject), (name, true)) =>
-            Seq((StructField(name, t, nable, mdata),vobject))
-          case ((StructField(name, StructType(_), _, _), col : GenericRowWithSchema), (parentName, false)) =>
+            Seq((StructField(name, t, nable, mdata), vobject))
+          case ((StructField(name, StructType(_), _, _), col: GenericRowWithSchema), (parentName, false)) =>
             flatRow(col, Seq.fill(col.schema.size)(s"${baseName(parentName)}$name" -> false))
           case ((StructField(name, dtype, nullable, meta), vobject), (parentName, false)) =>
             Seq((StructField(s"${baseName(parentName)}$name", dtype, nullable, meta), vobject))
