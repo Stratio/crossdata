@@ -27,6 +27,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val EPHEMERAL = Keyword("EPHEMERAL")
   protected val GET = Keyword("GET")
   protected val STATUS = Keyword("STATUS")
+  protected val STATUSES = Keyword("STATUSES")
   protected val UPDATE = Keyword("UPDATE")
   protected val QUERY = Keyword("QUERY")
   protected val QUERIES = Keyword("QUERIES")
@@ -34,9 +35,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   override protected lazy val ddl: Parser[LogicalPlan] =
     createTable | describeTable | refreshTable | importStart | dropTable | createView | existsEphemeralTable |
       getEphemeralTable | getAllEphemeralTables | createEphemeralTable | updateEphemeralTable | dropEphemeralTable |
-      dropAllEphemeralTables | getEphemeralStatus | getAllEphemeralStatuses | updateEphemeralStatus |
-      existsEphemeralQuery | getEphemeralQuery | getAllEphemeralQueries | createEphemeralQuery | updateEphemeralQuery |
-      dropEphemeralQuery | dropAllEphemeralQueries
+      dropAllEphemeralTables | getEphemeralStatus | getAllEphemeralStatuses |  existsEphemeralQuery |
+      getEphemeralQuery | getAllEphemeralQueries | createEphemeralQuery | updateEphemeralQuery | dropEphemeralQuery |
+      dropAllEphemeralQueries
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -119,16 +120,11 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   }
 
   protected lazy val getAllEphemeralStatuses: Parser[LogicalPlan] = {
-    (GET ~ EPHEMERAL ~ TABLES)  ^^ {
+    (GET ~ EPHEMERAL ~ STATUSES)  ^^ {
       case operation => GetAllEphemeralStatuses()
     }
   }
 
-  protected lazy val updateEphemeralStatus: Parser[LogicalPlan] = {
-    (UPDATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ (OPTIONS ~> options) ^^ {
-      case tableIdent ~ opts => UpdateEphemeralStatus(tableIdent, opts)
-    }
-  }
 
   /**
   * Ephemeral Queries Functions

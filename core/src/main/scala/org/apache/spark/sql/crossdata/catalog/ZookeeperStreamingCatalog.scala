@@ -19,15 +19,9 @@ package org.apache.spark.sql.crossdata.catalog
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.daos.impl._
-import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
+import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
 class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
-
-  // TODO use a Map to send config for DAO
-//  val ephemeralTableDAO = new EphemeralTableMapDAO()
-//  val ephemeralQueriesDAO = new EphemeralQueriesMapDAO()
-//  val ephemeralTableStatusDAO = new EphemeralTableStatusMapDAO()
-
 
   val ephemeralTableDAO = new EphemeralTableTypesafeDAO(xdContext.catalogConfig.getConfig(XDContext.StreamingConfigKey))
   val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(xdContext.catalogConfig.getConfig(XDContext.StreamingConfigKey))
@@ -42,8 +36,10 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
     ephemeralTableDAO.dao.get(tableIdentifier)
 
   override def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel] =
-    if(!existsEphemeralTable(ephemeralTable.name))
+    if(!existsEphemeralTable(ephemeralTable.name)){
+      createEphemeralStatus(ephemeralTable.name, EphemeralStatusModel(ephemeralTable.name, EphemeralExecutionStatus.NotStarted))
       Right(ephemeralTableDAO.dao.upsert(ephemeralTable.name, ephemeralTable))
+      }
     else Left("Ephemeral table exists")
 
   override def updateEphemeralTable(ephemeralTable: EphemeralTableModel): Unit =
@@ -89,10 +85,13 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   override def dropAllEphemeralQueries(): Unit =
     ephemeralQueriesDAO.dao.deleteAll
 
-
   /**
    * Ephemeral Status Functions
    */
+  override def createEphemeralStatus(tableIdentifier: String,
+                                     ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel =
+    ephemeralTableStatusDAO.dao.upsert(tableIdentifier, ephemeralStatusModel)
+
   override def getEphemeralStatus(tableIdentifier: String): Option[EphemeralStatusModel] =
     ephemeralTableStatusDAO.dao.get(tableIdentifier)
 
