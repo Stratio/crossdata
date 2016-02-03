@@ -18,13 +18,16 @@ package com.stratio.crossdata.streaming
 
 import com.stratio.crossdata.streaming.config.StreamingResourceConfig
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
-import com.stratio.crossdata.streaming.helpers.{CrossdataStatusHelper, CrossdataStreamingHelper}
+import com.stratio.crossdata.streaming.helpers.CrossdataStatusHelper
+import com.stratio.crossdata.streaming.helpers.CrossdataStreamingHelper
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.crossdata.daos.EphemeralTableMapDAO
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.streaming.StreamingContext
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 class CrossdataStreaming(ephemeralTableName: String,
                          zookeeperConfiguration: Map[String, Any])
@@ -45,27 +48,32 @@ class CrossdataStreaming(ephemeralTableName: String,
   def init(): Unit = {
     Try {
       val zookeeperResourceConfig = streamingResourceConfig.config.getConfig(ZookeeperPrefixName) match {
-        case Some(conf) => conf.toStringMap
-        case None => Map.empty[String, String]
-      }
+          case Some(conf) => conf.toStringMap
+          case None => Map.empty
+        }
+
       val zookeeperMergedConfig = zookeeperResourceConfig ++ zookeeperConfiguration.map { case (key, value) =>
         (key, value.toString)
       }
 
-      CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Starting,
-        zookeeperMergedConfig, ephemeralTableName)
+      CrossdataStatusHelper.setEphemeralStatus(
+        EphemeralExecutionStatus.Starting,
+        zookeeperMergedConfig,
+        ephemeralTableName)
+
       Try {
         val ephemeralTable = dao.get(ephemeralTableName).getOrElse(throw new Exception("Ephemeral table not found"))
-        val sparkResourceConfig = streamingResourceConfig.config.getConfig(SparkPrefixName) match {
+        val sparkResourceConfig: Map[String, String] = streamingResourceConfig.config.getConfig(SparkPrefixName) match {
           case Some(conf) => conf.toStringMap
-          case None => Map.empty[String, String]
+          case None => Map.empty
         }
         val kafkaResourceConfig = streamingResourceConfig.config.getConfig(KafkaPrefixName) match {
           case Some(conf) => conf.toStringMap
-          case None => Map.empty[String, String]
+          case None => Map.empty
         }
         val sparkMergedConfig = configToSparkConf(sparkResourceConfig, ephemeralTable)
         val kafkaMergedOptions = kafkaResourceConfig ++ ephemeralTable.options.kafkaOptions.additionalOptions
+
         val ssc = StreamingContext.getOrCreate(ephemeralTable.options.checkpointDirectory,
           () => {
             CrossdataStreamingHelper.createContext(ephemeralTable,
@@ -84,7 +92,7 @@ class CrossdataStreaming(ephemeralTableName: String,
 
         ssc.start()
         ssc.awaitTermination()
-        ssc
+
       } match {
         case Success(_) =>
           logger.info(s"Stopping Ephemeral Table: $ephemeralTableName")
@@ -107,7 +115,7 @@ class CrossdataStreaming(ephemeralTableName: String,
       case Success(_) =>
         logger.info(s"Ephemeral Table Finished correctly: $ephemeralTableName")
       case Failure(exception) =>
-        logger.error(exception.getLocalizedMessage, exception)
+        logger.error(exception.getMessage, exception)
         CrossdataStatusHelper.close()
     }
   }

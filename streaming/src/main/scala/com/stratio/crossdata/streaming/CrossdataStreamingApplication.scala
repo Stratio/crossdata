@@ -19,7 +19,9 @@ package com.stratio.crossdata.streaming
 import com.google.common.io.BaseEncoding
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 object CrossdataStreamingApplication extends SparkLoggerComponent {
 
@@ -35,8 +37,13 @@ object CrossdataStreamingApplication extends SparkLoggerComponent {
       val zookeeperConfString = new String(BaseEncoding.base64().decode(args(ZookeeperConfigurationIndex)))
       //val zookeeperConf = Try(ConfigFactory.parseString(zookeeperConfString)).getOrElse(...)
       //val zookeeperConf = Try(JSON.parseFull(zookeeperConfString).get.asInstanceOf[Map[String,Any]]).getOrElse(...)
-      val zookeeperConf = Map("connectionString" -> "localhost:2181",
-        "connectionTimeout" -> 1500, "sessionTimeout" -> 60000, "retryAttempts" -> 6, "retryInterval" -> 10000)
+      val zookeeperConf = Map(
+        "connectionString" -> "localhost:2181",
+        "connectionTimeout" -> 1500,
+        "sessionTimeout" -> 60000,
+        "retryAttempts" -> 6,
+        "retryInterval" -> 10000
+      )
       /*val zookeeperConf =
         Try(ConfigFactory.load(CrossdataStreaming.StreamingResourceConfig)
           .getConfig("zookeeper").atKey("zookeeper")).getOrElse(...)*/
@@ -45,8 +52,11 @@ object CrossdataStreamingApplication extends SparkLoggerComponent {
 
       crossdataStreaming.init()
     } match {
-      case Success(_) => logger.info("Ephemeral Table Started")
-      case Failure(exception) => logger.error(exception.getLocalizedMessage, exception)
+      case Success(_) =>
+        logger.info("Ephemeral Table Started")
+      case Failure(exception) =>
+        logger.error(exception.getLocalizedMessage, exception)
+        sys.exit()
     }
   }
 }

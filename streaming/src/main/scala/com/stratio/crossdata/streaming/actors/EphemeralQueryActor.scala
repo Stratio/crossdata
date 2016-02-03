@@ -17,10 +17,8 @@
 package com.stratio.crossdata.streaming.actors
 
 import akka.actor.Actor
-import com.stratio.crossdata.streaming.constants.ApplicationConstants
-import EphemeralQueryActor._
-import ApplicationConstants._
-import org.apache.curator.framework.recipes.cache.PathChildrenCache
+import com.stratio.crossdata.streaming.actors.EphemeralQueryActor._
+import com.stratio.crossdata.streaming.constants.ApplicationConstants._
 import org.apache.spark.sql.crossdata.daos.EphemeralQueriesMapDAO
 import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
 
@@ -28,26 +26,26 @@ class EphemeralQueryActor(zookeeperConfiguration: Map[String, String]) extends A
 with EphemeralQueriesMapDAO {
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
-  var streamingQueries : List[EphemeralQueryModel] = dao.getAll()
-  var listenerAdded : Boolean = false
+  var streamingQueries: List[EphemeralQueryModel] = dao.getAll()
 
-  override def receive: Receive = {
+  import context.become
+
+  def receive: Receive = receive(listenerAdded = false)
+
+  def receive(listenerAdded: Boolean): Receive = {
     case GetQueries => doGetQueries()
-    case AddListener => doAddListener()
+    case AddListener if !listenerAdded =>
+      doAddListener()
+      become(receive(true))
   }
 
-  private def doGetQueries() : Unit = {
+  private def doGetQueries(): Unit = {
     sender ! EphemeralQueriesResponse(streamingQueries.toSeq)
   }
 
-  private def doAddListener() : Unit = {
-    if(!listenerAdded){
-      repository.addEntityListener(dao.entity, (nodeCache: PathChildrenCache) => {
-        streamingQueries = dao.getAll()
-      })
-      listenerAdded = true
-    }
-  }
+  private def doAddListener(): Unit =
+    repository.addEntityListener(dao.entity, _ => streamingQueries = dao.getAll())
+
 }
 
 object EphemeralQueryActor {

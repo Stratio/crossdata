@@ -17,9 +17,13 @@
 package com.stratio.crossdata.streaming.kafka
 
 import java.util.Properties
+
 import com.stratio.crossdata.streaming.constants.KafkaConstants
-import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
-import org.apache.spark.sql.crossdata.models.{ConnectionHostModel, KafkaOptionsModel}
+import kafka.producer.KeyedMessage
+import kafka.producer.Producer
+import kafka.producer.ProducerConfig
+import org.apache.spark.sql.crossdata.models.ConnectionHostModel
+import org.apache.spark.sql.crossdata.models.KafkaOptionsModel
 
 import scala.collection.mutable
 
@@ -27,18 +31,18 @@ object KafkaProducer {
 
   import KafkaConstants._
 
-  private val producers: mutable.Map[String, Producer[String, String]] =
-    mutable.Map.empty[String, Producer[String, String]]
+  private val producers: mutable.Map[String, Producer[String, String]] = mutable.Map.empty
 
   def put(topic: String,
           message: String,
           options : KafkaOptionsModel,
           partition: Option[String] = None): Unit = {
-    val keyedMessage = {
+
+    val keyedMessage =
       partition.fold(new KeyedMessage[String, String](topic, message)) { key =>
         new KeyedMessage[String, String](topic, key, message)
       }
-    }
+
     getProducer(options).send(keyedMessage)
   }
 
@@ -49,16 +53,16 @@ object KafkaProducer {
   private def getKey(connection: Seq[ConnectionHostModel]): String =
     connection.map(_.toString).mkString(".")
 
-  private def getInstance(key: String, options: KafkaOptionsModel): Producer[String, String] = {
+  private def getInstance(key: String, options: KafkaOptionsModel): Producer[String, String] =
     producers.getOrElse(key, {
       val producer = createProducer(options)
       producers.put(key, producer)
       producer
     })
-  }
+
 
   private def createProducer(options: KafkaOptionsModel): Producer[String, String] = {
-    val properties: Properties = new Properties()
+    val properties = new Properties()
 
     properties.put(BrokerListKey, getBrokerList(options.connection))
     properties.put(SerializerKey, DefaultSerializer)
