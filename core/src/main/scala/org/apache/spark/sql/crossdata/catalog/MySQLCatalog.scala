@@ -71,7 +71,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   import org.apache.spark.sql.crossdata._
 
-  private val config = xdContext.catalogConfig
+  private val config = XDContext.catalogConfig
   private val db = config.getString(Database)
   private val tableWithTableMetadata = config.getString(TableWithTableMetadata)
   private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
