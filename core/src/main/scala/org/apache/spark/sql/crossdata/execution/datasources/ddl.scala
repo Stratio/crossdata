@@ -16,34 +16,23 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 
-import org.json4s.{FieldSerializer, DefaultFormats}
-import org.json4s.jackson.Serialization._
 import com.stratio.crossdata.connector.TableInventory
 import org.apache.spark.Logging
-
-import org.apache.spark.launcher.SparkLauncher
-import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.{Row, SQLContext}
-
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog._
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.daos.{EphemeralTableStatusDAO, EphemeralTableDAO, EphemeralTableMapDAO}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
+import org.apache.spark.sql.crossdata.daos.EphemeralTableDAO
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.LogicalRelation
-import org.apache.spark.sql.execution.datasources.ResolvedDataSource
+import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.RelationProvider
 import org.apache.spark.sql.types._
-
-import scala.util.parsing.json.{JSONFormat, JSONObject, JSON}
-
-import org.apache.spark.sql.crossdata.config._
-import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog._
+import org.apache.spark.sql.{Row, SQLContext}
 
 
 private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
@@ -198,13 +187,12 @@ private[crossdata] case class GetAllEphemeralTables() extends LogicalPlan with R
   }
 }
 
-private[crossdata] case class CreateEphemeralTable(
-                                                    tableIdent: TableIdentifier,
+private[crossdata] case class CreateEphemeralTable(tableIdent: TableIdentifier,
                                                     opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with EphemeralTableDAO {
 
   // TODO choose config params from file or from OPTIONS()
-  override lazy val config: Config =
+  override val config: Config =
     new TypesafeConfig(
       None,
       None,
