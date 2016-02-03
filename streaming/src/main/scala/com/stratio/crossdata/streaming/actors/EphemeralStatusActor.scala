@@ -53,12 +53,12 @@ with EphemeralTableStatusMapDAO {
     ephemeralStatus.fold(
       dao.create(ephemeralTableName, EphemeralStatusModel(ephemeralTableName, newStatus, startTime, stopTime))
     ) { ephStatus =>
-      val newStatus = ephStatus.copy(
+      val newStatusModel = ephStatus.copy(
         status = newStatus,
         stoppedTime = stopTime,
         startedTime = startTime.orElse(ephStatus.startedTime)
       )
-      dao.upsert(ephemeralTableName, newStatus)
+      dao.upsert(ephemeralTableName, newStatusModel)
     }
   }
 
