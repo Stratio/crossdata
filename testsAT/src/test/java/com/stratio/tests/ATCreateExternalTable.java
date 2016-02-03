@@ -62,13 +62,13 @@ public class ATCreateExternalTable extends BaseTest {
 	public ATCreateExternalTable() {
 	}
 
-	@BeforeClass
+	@BeforeClass(groups = {"basic"})
 	public void setUp() {
 		ThreadProperty.set("Driver", "context");
 		ThreadProperty.set("Connector", "external");
 	}
 
-	@AfterClass
+	@AfterClass(groups = {"basic"})
 	public void cleanUp() {
 
 	}

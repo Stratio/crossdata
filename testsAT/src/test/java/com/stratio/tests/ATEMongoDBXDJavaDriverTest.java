@@ -63,7 +63,7 @@ public class ATEMongoDBXDJavaDriverTest extends BaseTest{
     private String mongoPortString = System.getProperty("MONGO_PORT", "27017");
     private int mongoPort = Integer.parseInt(mongoPortString);
     private String dataBase = "databasetest";
-    @BeforeClass
+    @BeforeClass(groups = {"basic"})
     public void setUp() throws UnknownHostException{
         MongoClient mongoClient = new MongoClient(mongoHost, mongoPort);
         mongoClient.dropDatabase(dataBase);
@@ -134,7 +134,7 @@ public class ATEMongoDBXDJavaDriverTest extends BaseTest{
         ThreadProperty.set("Driver", "javaDriver");
 
     }
-    @AfterClass
+    @AfterClass(groups = {"basic"})
     public void cleanUp() throws UnknownHostException{
         MongoClient mongoClient = new MongoClient(mongoHost, mongoPort);
         mongoClient.dropDatabase(dataBase);

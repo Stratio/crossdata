@@ -68,7 +68,7 @@ public class ATElasticSearchXDTest extends BaseTest {
     public ATElasticSearchXDTest() {
 	}
 
-	@BeforeClass
+	@BeforeClass(groups = {"basic"})
 	public void setUp() {
         String connector = "ElasticSearch";
         ThreadProperty.set("Connector", connector);
@@ -122,7 +122,7 @@ public class ATElasticSearchXDTest extends BaseTest {
         ThreadProperty.set("Driver", "context");
     }
 
-	@AfterClass
+	@AfterClass(groups = {"basic"})
 	public void cleanUp() {
         try {
             client = new TransportClient(settings)

@@ -55,7 +55,7 @@ public class ATCassandraXDTest extends BaseTest {
 	public ATCassandraXDTest() {
 	}
 
-	@BeforeClass
+	@BeforeClass(groups = {"basic"})
 	public void setUp() {
 		logger.info("Connecting to Cassandra Cluster");
 		cassandra.connect();
@@ -79,7 +79,7 @@ public class ATCassandraXDTest extends BaseTest {
 
 	}
 
-	@AfterClass
+	@AfterClass(groups = {"basic"})
 	public void cleanUp() {
 		cassandra.dropKeyspace(catalog);
 		try {
