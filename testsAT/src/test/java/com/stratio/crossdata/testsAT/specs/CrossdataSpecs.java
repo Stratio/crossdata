@@ -17,11 +17,14 @@ package com.stratio.crossdata.testsAT.specs;
 
 
 import cucumber.api.DataTable;
+import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import static com.stratio.tests.utils.DataFrameAssert.asserThat;
 import static com.stratio.tests.utils.SQLResultAssert.asserThat;
 import static com.stratio.tests.utils.FlattenerMetadataAssert.asserThat;
+import static org.hamcrest.Matchers.equalTo;
+import com.stratio.exceptions.DBException;
 import com.stratio.tests.utils.ThreadProperty;
 
 /**
@@ -41,7 +44,7 @@ public class CrossdataSpecs extends BaseSpec {
             try {
                 commonspec.getXdContext().executeQuery(query);
             } catch (Exception e) {
-                commonspec.getLogger().info(e.toString());
+                commonspec.getLogger().error("XD CONTEXT : " + e.toString());
                 commonspec.getExceptions().add(e);
             }
             commonspec.getLogger().info("Query executed");
@@ -50,7 +53,7 @@ public class CrossdataSpecs extends BaseSpec {
             try {
                 commonspec.getXdDriver().executeSyncQuery(query);
             } catch (Exception e) {
-                commonspec.getLogger().info(e.toString());
+                commonspec.getLogger().error(e.toString());
                 commonspec.getExceptions().add(e);
             }
             commonspec.getLogger().info("Query executed");
@@ -73,8 +76,17 @@ public class CrossdataSpecs extends BaseSpec {
         }
     }
 
-    @Then(value = "The spark result has to have '(.*?)' rows:$")
+    @Then(value = "The flattened result has to have '(.*?)' rows:$")
     public void assertResultSpark(String rows, DataTable table) {
+        if (ThreadProperty.get("Driver").equals("context")) {
+        asserThat(commonspec.getXdContext().getXDDataFrame()).hasFlattenedLength(Integer.parseInt(rows));
+        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsFlattenedMetadata(table.raw().get(0));
+        asserThat(commonspec.getXdContext().getXDDataFrame()).equalsFlattenedResult(table.raw());
+        }
+    }
+
+    @Then(value = "The spark result has to have '(.*?)' rows:$")
+    public void assertResultflattened(String rows, DataTable table) {
         if (ThreadProperty.get("Driver").equals("context")) {
             commonspec.getLogger().info("The result obtained is: ");
             commonspec.getXdContext().showDataframe();
@@ -139,6 +151,79 @@ public class CrossdataSpecs extends BaseSpec {
     public void assertDescribeTables(String num_columns, DataTable metadata) {
         asserThat(commonspec.getXdDriver().getTablesDescription()).hasLength(Integer.parseInt(num_columns));
         asserThat(commonspec.getXdDriver().getTablesDescription()).checkMetadata(metadata);
+    }
 
+    @Given(value = "I drop cassandra keyspace '(.*?)'")
+    public void dropCassandraKeyspace(String keyspace){
+        commonspec.getExceptions().clear();
+        commonspec.getLogger().info("Connecting to Cassandra");
+        commonspec.getCassandraClient().connect();
+        commonspec.getLogger().info("Drop cassandra keyspace " + keyspace);
+        commonspec.getLogger().info("Checking if the catalog exists");
+        if (commonspec.getCassandraClient().existsKeyspace(keyspace, false)) {
+            commonspec.getLogger().info("The catalog exists");
+            commonspec.getCassandraClient().dropKeyspace(keyspace);
+            commonspec.getLogger().info("The catalog has benn dropped");
+        }
+        try {
+            commonspec.getCassandraClient().disconnect();
+        }catch(Exception e){
+            commonspec.getExceptions().add(e);
+        }
+    }
+
+    @Given(value = "^I create a  cassandra keyspace '(.*?)'$")
+    public void createCassandraKeyspace(String keyspace){
+        commonspec.getExceptions().clear();
+        commonspec.getLogger().info("Connecting to Cassandra");
+        commonspec.getCassandraClient().connect();
+        commonspec.getLogger().info("Drop cassandra keyspace " + keyspace);
+        commonspec.getLogger().info("Checking if the catalog exists");
+        if (commonspec.getCassandraClient().existsKeyspace(keyspace, false)) {
+            commonspec.getLogger().info("The catalog exists");
+            commonspec.getCassandraClient().dropKeyspace(keyspace);
+            commonspec.getLogger().info("The catalog has benn dropped");
+        }
+        commonspec.getCassandraClient().createKeyspace(keyspace);
+        try {
+            commonspec.getCassandraClient().disconnect();
+        }catch(Exception e){
+            commonspec.getExceptions().add(e);
+        }
+    }
+
+    @Given(value = "^I create a  cassandra table '(.*?)' over keyspace '(.*?)'$")
+    public void createCassandraTable(String tableName,String keyspace){
+        commonspec.getExceptions().clear();
+        commonspec.getLogger().info("Connecting to Cassandra");
+        commonspec.getCassandraClient().connect();
+        commonspec.getLogger().info("Drop cassandra keyspace " + keyspace);
+        commonspec.getLogger().info("Checking if the catalog exists");
+        if (commonspec.getCassandraClient().existsKeyspace(keyspace, false)) {
+            commonspec.getLogger().info("The catalog exists");
+            commonspec.getCassandraClient().dropKeyspace(keyspace);
+            commonspec.getLogger().info("The catalog has benn dropped");
+        }
+        commonspec.getCassandraClient().createKeyspace(keyspace);
+        String query = "CREATE TABLE "+ keyspace + "." + tableName + "(id INT PRIMARY KEY, name TEXT);";
+        commonspec.getCassandraClient().executeQuery(query);
+        try {
+            commonspec.getCassandraClient().disconnect();
+        }catch(Exception e){
+            commonspec.getExceptions().add(e);
+        }
+    }
+
+    @Then(value= "The table '(.*?)' exists in cassandra keyspace '(.*?)'")
+    public void existsCassandraTable(String tableName,String keyspace){
+        commonspec.getLogger().info("Connecting to Cassandra");
+        commonspec.getCassandraClient().connect();
+        boolean res = commonspec.getCassandraClient().existsTable(keyspace, tableName, false);
+        try {
+            commonspec.getCassandraClient().disconnect();
+        }catch(Exception e){
+            commonspec.getExceptions().add(e);
+        }
+        org.hamcrest.MatcherAssert.assertThat("The Cassandra keyspace does not contains the table", res,equalTo(true));
     }
 }

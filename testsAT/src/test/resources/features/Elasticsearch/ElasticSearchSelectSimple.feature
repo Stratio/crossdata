@@ -178,3 +178,9 @@ Feature: ElsticSearchSelectSimple
       |    7          | name_7        | 17.2          |  true         | 2007-07-07 |
       |    8          | name_8        | 18.2          |  true         | 2008-08-08 |
       |    9          | name_9        | 19.2          |  true         | 2009-09-09 |
+
+  Scenario:[CROSSDATA-282] SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias
+    When I execute 'SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias'
+    Then The spark result has to have '1' rows:
+      | alias-boolean | count-long |
+      |true           | 10            |

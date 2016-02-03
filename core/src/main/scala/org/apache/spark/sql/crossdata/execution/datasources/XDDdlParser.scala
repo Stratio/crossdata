@@ -15,8 +15,11 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
+import scala.language.implicitConversions
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.datasources.DDLParser
+import org.apache.spark.sql.types._
+
 
 class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
 
@@ -24,9 +27,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val TABLES = Keyword("TABLES")
   protected val DROP = Keyword("DROP")
   protected val VIEW = Keyword("VIEW")
+  protected val EXTERNAL = Keyword("EXTERNAL")
+  protected val PRIMARY =Keyword("PRIMARY")
+  protected val KEY = Keyword("KEY")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
-    createTable | describeTable | refreshTable | importStart | dropTable | createView
+    createTable | describeTable | refreshTable | importStart | dropTable | createView | createExternalTable
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -50,6 +56,19 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
         else
           CreateView(viewIdentifier, parseQuery(query), query)
     }
+  }
+
+  protected lazy val createExternalTable: Parser[LogicalPlan] = {
+
+    CREATE ~> EXTERNAL ~> TABLE ~> tableIdentifier ~ tableCols ~ (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
+       case tableName ~ columns ~ provider ~ opts =>
+         val userSpecifiedSchema = StructType(columns)
+         val options = opts.getOrElse(Map.empty[String, String])
+
+         CreateExternalTable(tableName, userSpecifiedSchema, provider, options)
+    }
+
+
   }
 
 }

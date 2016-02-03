@@ -55,11 +55,11 @@ import cucumber.api.CucumberOptions;
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
         "src/test/resources/features/Udaf/Group_concat.feature",
-        "src/test/resources/features/Views/Views.feature"
-})
+        "src/test/resources/features/Views/TemporaryViews.feature",
+        "src/test/resources/features/Views/Views.feature"})
 public class ATElasticSearchXDJavaDriverTest extends BaseTest {
-	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearch");
-    private String elasticSearchIP = System.getProperty("ELASTICSEARCH_HOST","172.17.0.3");
+	private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
+    private String elasticSearchIP = System.getProperty("ES_NODES","172.17.0.3");
     Client client;
     private Settings settings = ImmutableSettings.settingsBuilder()
             .put("cluster.name", elasticSearchCluster).build();
@@ -135,8 +135,8 @@ public class ATElasticSearchXDJavaDriverTest extends BaseTest {
         client.close();
 	}
 
-	@Test(enabled = true)
-	public void ATElasticSearchXDTest() throws Exception {
+    @Test(enabled = true, groups = {"basic"})
+    public void ATElasticSearchXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
 

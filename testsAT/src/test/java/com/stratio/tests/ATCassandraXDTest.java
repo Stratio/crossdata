@@ -38,8 +38,8 @@ import cucumber.api.CucumberOptions;
 		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature",
 		"src/test/resources/features/Cassandra/CassandraPureNativeAggregation.feature",
 		"src/test/resources/features/Udaf/Group_concat.feature",
-		"src/test/resources/features/Views/Views.feature"
-})
+		"src/test/resources/features/Views/TemporaryViews.feature",
+		"src/test/resources/features/Views/Views.feature"})
 public class ATCassandraXDTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()
 			.getCanonicalName());
@@ -91,7 +91,7 @@ public class ATCassandraXDTest extends BaseTest {
 
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = true, groups = {"basic"})
 	public void ATCassandraXD() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
