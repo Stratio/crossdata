@@ -53,7 +53,7 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
         "id" -> a,
         "age" -> (10 + a),
         "description" -> s"A ${a}description about the Name$a",
-        "enrolled" -> (if (a % 2 == 0) true else false),
+        "enrolled" -> (if (a % 2 == 0) true else null),
         "name" -> s"Name $a",
         "birthday" -> DateTime.parse((1980+a)+"-01-01T10:00:00-00:00").toDate,
         "salary" -> a*1000.5,
