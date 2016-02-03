@@ -19,11 +19,8 @@ package com.stratio.crossdata.streaming.kafka
 import java.util.Properties
 
 import com.stratio.crossdata.streaming.constants.KafkaConstants
-import kafka.producer.KeyedMessage
-import kafka.producer.Producer
-import kafka.producer.ProducerConfig
-import org.apache.spark.sql.crossdata.models.ConnectionHostModel
-import org.apache.spark.sql.crossdata.models.KafkaOptionsModel
+import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
+import org.apache.spark.sql.crossdata.models.{ConnectionHostModel, KafkaOptionsModel}
 
 import scala.collection.mutable
 

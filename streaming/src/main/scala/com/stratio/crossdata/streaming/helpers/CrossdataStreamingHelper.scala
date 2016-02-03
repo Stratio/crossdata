@@ -20,20 +20,16 @@ package com.stratio.crossdata.streaming.helpers
 import com.github.nscala_time.time.Imports._
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.streaming.constants.KafkaConstants._
-import com.stratio.crossdata.streaming.kafka.KafkaInput
-import com.stratio.crossdata.streaming.kafka.KafkaProducer
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
+import com.stratio.crossdata.streaming.kafka.{KafkaInput, KafkaProducer}
+import com.typesafe.config.{Config, ConfigFactory}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.XDContext._
 import org.apache.spark.sql.crossdata.models._
+import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.dstream.DStream
-import org.apache.spark.streaming.Seconds
-import org.apache.spark.streaming.StreamingContext
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
 
 import scala.collection.JavaConversions._
 import scala.util.Try
