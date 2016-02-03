@@ -74,8 +74,8 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 	private String host = System.getProperty("CASSANDRA_HOST", "127.0.0.1");
 	private String sourceProvider = System.getProperty("SOURCE_PROVIDER",
 			"com.stratio.crossdata.sql.sources.cassandra");
-	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearchHugo");
-	private String elasticSearchIP = System.getProperty("ELASTICSEARCH_HOST","127.0.0.1");
+	private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
+	private String elasticSearchIP = System.getProperty("ES_NODES","172.17.0.3");
 	private Client client;
 	private Settings settings = ImmutableSettings.settingsBuilder()
 			.put("cluster.name", elasticSearchCluster).build();
