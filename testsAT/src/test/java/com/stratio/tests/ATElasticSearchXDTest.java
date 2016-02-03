@@ -60,8 +60,8 @@ import cucumber.api.CucumberOptions;
         "src/test/resources/features/Views/TemporaryViews.feature",
         "src/test/resources/features/Views/Views.feature"})
 public class ATElasticSearchXDTest extends BaseTest {
-	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearchHugo");
-    private String elasticSearchIP = System.getProperty("ELASTICSEARCH_HOST","127.0.0.1");
+    private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
+    private String elasticSearchIP = System.getProperty("ES_NODES","172.17.0.3");
     Client client;
     private Settings settings = ImmutableSettings.settingsBuilder()
             .put("cluster.name", elasticSearchCluster).build();
@@ -137,8 +137,8 @@ public class ATElasticSearchXDTest extends BaseTest {
         client.close();
 	}
 
-	@Test(enabled = true)
-	public void ATElasticSearchXDTest() throws Exception {
+    @Test(enabled = true, groups = {"basic"})
+    public void ATElasticSearchXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
 
