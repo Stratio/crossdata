@@ -12,8 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *//*
-
+ */
 package com.stratio.tests;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -84,7 +83,7 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 	public ATPersistentCatalogXDTest() {
 	}
 
-	@BeforeClass
+	@BeforeClass(enabled = false)
 	public void setUp() {
 		ThreadProperty.set("Connector", "Persistence MYSQL");
 		logger.info("Connecting to Cassandra Cluster");
@@ -176,7 +175,7 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 		client.close();
 	}
 
-	@AfterClass
+	@AfterClass(enabled = false)
 	public void cleanUp() {
         MongoClient mongoClient = null;
         try {
@@ -194,10 +193,9 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 		client.close();
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void ATPersistentCatalogXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
 
 }
-*/
