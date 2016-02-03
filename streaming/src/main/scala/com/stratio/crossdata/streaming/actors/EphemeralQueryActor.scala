@@ -28,6 +28,9 @@ with EphemeralQueriesMapDAO {
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var streamingQueries: List[EphemeralQueryModel] = dao.getAll()
 
+  // TODO remove this
+  //dao.create("crossdataquery", EphemeralQueryModel("ephtable", "select * from ephtable", "qalias"))
+
   import context.become
 
   def receive: Receive = receive(listenerAdded = false)

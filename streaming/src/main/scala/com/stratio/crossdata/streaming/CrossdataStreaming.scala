@@ -18,16 +18,13 @@ package com.stratio.crossdata.streaming
 
 import com.stratio.crossdata.streaming.config.StreamingResourceConfig
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
-import com.stratio.crossdata.streaming.helpers.CrossdataStatusHelper
-import com.stratio.crossdata.streaming.helpers.CrossdataStreamingHelper
+import com.stratio.crossdata.streaming.helpers.{CrossdataStatusHelper, CrossdataStreamingHelper}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.crossdata.daos.EphemeralTableMapDAO
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.streaming.StreamingContext
 
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class CrossdataStreaming(ephemeralTableName: String,
                          zookeeperConfiguration: Map[String, Any])
@@ -37,13 +34,11 @@ class CrossdataStreaming(ephemeralTableName: String,
   val streamingResourceConfig = new StreamingResourceConfig
 
   //TODO remove this
-  /*dao.upsert("tablename2", EphemeralTableModel(
-    "tablename2",
-    EphemeralOptionsModel(KafkaOptionsModel(Seq(ConnectionHostModel("localhost", "2181", "9092")),
-      Seq(TopicModel("crossdatajc")),
-      "1"))))*/
+  /*dao.upsert("ephtable", EphemeralTableModel(
+    "ephtable",
+    EphemeralOptionsModel(KafkaOptionsModel(Seq(ConnectionHostModel("localhost", "2181", "9092")),Seq(TopicModel("ephtable")), "1")))
+  )*/
 
-  //dao.create("crossdataquery", EphemeralQueryModel("tablename2", "select * from tablename2", "crossdataquery"))
 
   def init(): Unit = {
     Try {

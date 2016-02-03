@@ -16,12 +16,9 @@
 
 package com.stratio.crossdata.streaming
 
-import com.google.common.io.BaseEncoding
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 object CrossdataStreamingApplication extends SparkLoggerComponent {
 
@@ -32,8 +29,8 @@ object CrossdataStreamingApplication extends SparkLoggerComponent {
     assert(args.length == 2, s"Invalid number of params: ${args.length}, args: $args")
     Try {
       //val ephemeralTableName = new String(BaseEncoding.base64().decode(args(EphemeralTableNameIndex)))
-      val ephemeralTableName = args(EphemeralTableNameIndex)
-
+      val ephemeralTableName = args(EphemeralTableNameIndex)//"ephtable"
+      
       val zookeeperConfString = new String(BaseEncoding.base64().decode(args(ZookeeperConfigurationIndex)))
       //val zookeeperConf = Try(ConfigFactory.parseString(zookeeperConfString)).getOrElse(...)
       //val zookeeperConf = Try(JSON.parseFull(zookeeperConfString).get.asInstanceOf[Map[String,Any]]).getOrElse(...)
