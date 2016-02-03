@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *//*
+
 package com.stratio.tests;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -52,9 +53,9 @@ import com.stratio.tests.utils.ThreadProperty;
 import java.text.ParseException;
 import cucumber.api.CucumberOptions;
 
-@CucumberOptions(features = { //"src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
-		//"src/test/resources/features/Catalog/PersistentCatalogMySQLDropTable.feature",
-		//"src/test/resources/features/Catalog/PersistentCatalogMySQLImportTables.feature",
+@CucumberOptions(features = { "src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
+		"src/test/resources/features/Catalog/PersistentCatalogMySQLDropTable.feature",
+		"src/test/resources/features/Catalog/PersistentCatalogMySQLImportTables.feature",
 		"src/test/resources/features/Catalog/PersistentCatalogMySQLImportTablesUsingApi.feature"
 	})
 public class ATPersistentCatalogXDTest extends BaseTest {
@@ -199,3 +200,4 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 	}
 
 }
+*/
