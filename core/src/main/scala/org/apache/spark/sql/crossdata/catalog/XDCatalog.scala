@@ -25,6 +25,7 @@ import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.CrossdataVersion
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.execution.datasources.ResolvedDataSource
@@ -103,7 +104,16 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
               registerView(tableIdent, viewPlan)
               processAlias(tableIdent, viewPlan, alias)
             case None =>
-              sys.error(s"Table/View Not Found: ${tableIdent.mkString(".")}")
+              log.debug(s"View Not Found: ${tableIdent.mkString(".")}")
+                xdContext.streamingCatalog match {
+                  // TODO PoC => handle exceptions => force schema
+                  // TODO We should replace tableIdent.mkString with TableIdentifier
+                  case Some(streamingCatalog) if streamingCatalog.existsEphemeralTable(tableIdent.mkString(".")) =>
+                    StreamingRelation(tableIdent.mkString("."))
+                  case None =>
+                    sys.error(s"Table/View Not Found: ${tableIdent.mkString(".")}")
+                }
+
           }
       }
     }
