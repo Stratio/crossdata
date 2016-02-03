@@ -50,10 +50,10 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>acceptance-test</id>
                         <phase>integration-test</phase>
                         <goals>
                             <goal>integration-test</goal>
+                            <goal>verify</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -71,8 +71,9 @@
                             <value>com.stratio.tests.utils.JaCoCoClient</value>
                         </property>
                     </properties>
-                    <argLine>-Xmx1536m
-                        -javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/1.8.2/aspectjweaver-1.8.2.jar</argLine>
+                    <argLine>-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError
+                    </argLine>
+                    <!--&#45;&#45;javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/1.8.8/aspectjweaver-1.8.8.jar-->
                 </configuration>
             </plugin>
         </plugins>
