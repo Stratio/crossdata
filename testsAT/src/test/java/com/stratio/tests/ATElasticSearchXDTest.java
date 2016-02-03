@@ -137,8 +137,8 @@ public class ATElasticSearchXDTest extends BaseTest {
         client.close();
 	}
 
-	@Test(enabled = true)
-	public void ATElasticSearchXDTest() throws Exception {
+    @Test(enabled = true, groups = {"basic"})
+    public void ATElasticSearchXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
 

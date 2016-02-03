@@ -91,7 +91,7 @@ public class ATCassandraXDTest extends BaseTest {
 
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = true, groups = {"basic"})
 	public void ATCassandraXD() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
