@@ -16,4 +16,4 @@
 #
 
 cp files/zeppelin-site.xml $1/conf/zeppelin-site.xml
-cp -R files/interpreter/  $1/interpreter/
+cp -R files/interpreter/crossdata/  $1/interpreter/

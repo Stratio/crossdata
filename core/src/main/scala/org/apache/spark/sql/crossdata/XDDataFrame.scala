@@ -26,6 +26,38 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 import XDDataFrame.findNativeQueryExecutor
 import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
 
+import scala.collection.mutable.BufferLike
+import scala.collection.{mutable, immutable, GenTraversableOnce}
+import scala.collection.generic.CanBuildFrom
+
+//TODO: Move to a common library
+private[crossdata] object WithTrackerFlatMapSeq {
+  implicit def seq2superflatmapseq[T](s: Seq[T]): WithTrackerFlatMapSeq[T] = new WithTrackerFlatMapSeq(s)
+}
+
+//TODO: Move to a common library
+private[crossdata] class WithTrackerFlatMapSeq[T] private(val s: Seq[T])
+  extends scala.collection.immutable.Seq[T] {
+  override def length: Int = s.length
+  override def apply(idx: Int): T = s(idx)
+  override def iterator: Iterator[T] = s.iterator
+
+
+  def withTrackerFlatMap[B, That](
+                               f: (T, Option[Int]) => GenTraversableOnce[B]
+                             )(implicit bf: CanBuildFrom[immutable.Seq[T], B, That]): That = {
+    def builder : mutable.Builder[B, That] = bf(repr)
+    val b = builder
+    val builderAsBufferLike = b match {
+      case bufferl: BufferLike[_, _] => Some(bufferl)
+      case _ => None
+    }
+    for (x <- this) b ++= f(x, builderAsBufferLike.map(_.length)).seq
+    b.result
+  }
+
+}
+
 private[sql] object XDDataFrame {
 
   def apply(sqlContext: SQLContext, logicalPlan: LogicalPlan): DataFrame = {
@@ -159,7 +191,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       }
     }
 
-    def verticallyFlatRowArrays(row: GenericRowWithSchema): Seq[GenericRowWithSchema] = {
+    def verticallyFlatRowArrays(row: GenericRowWithSchema)(limit: Int): Seq[GenericRowWithSchema] = {
 
       def cartesian[T](ls: Seq[Seq[T]]): Seq[Seq[T]] = (ls :\ Seq(Seq.empty[T])) {
         case (cur: Seq[T], prev) => for(x <- prev; y <- cur) yield y +: x
@@ -179,7 +211,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         case (res: Seq[_], idx) => res map(idx -> _)
       }
 
-      cartesian(arrayColumnValues) map { case replacements: Seq[(Int, _)] =>
+      cartesian(arrayColumnValues).take(limit) map { case replacements: Seq[(Int, _)] =>
         val idx2newVal: Map[Int, Any] = replacements.toMap
         val values = elementsWithIndex map { case (prevVal, idx: Int) =>
           idx2newVal.getOrElse(idx, prevVal)
@@ -188,28 +220,32 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       }
     }
 
+    import WithTrackerFlatMapSeq._
+
     def iterativeFlatten(
                           rows: Seq[Row],
                           firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
-                        ): Seq[Row] =
-      flatRows(rows, firstLevelNames) flatMap {
-        case row: GenericRowWithSchema =>
+                        )(limit: Int = Int.MaxValue): Seq[Row] =
+      flatRows(rows, firstLevelNames) withTrackerFlatMap {
+        case (_, Some(currentSize)) if(currentSize >= limit) => Seq()
+        case (row: GenericRowWithSchema, currentSize) =>
           row.schema collectFirst {
             case StructField(_, _: ArrayType, _, _) =>
-              iterativeFlatten(verticallyFlatRowArrays(row))
+              iterativeFlatten(verticallyFlatRowArrays(row)(limit-currentSize.getOrElse(0)))(limit)
           } getOrElse Seq(row)
-        case row => Seq(row)
+        case (row: Row, _) => Seq(row)
       }
 
-    def processProjection(plist: Seq[NamedExpression], child: LogicalPlan): Array[Row] = {
+    def processProjection(plist: Seq[NamedExpression], child: LogicalPlan, limit: Int = Int.MaxValue): Array[Row] = {
       val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
-      iterativeFlatten(collect(), fullyAnnotatedRequestedColumns) toArray
+      iterativeFlatten(collect(), fullyAnnotatedRequestedColumns)(limit) toArray
     }
 
     queryExecution.optimizedPlan match {
-      case Limit(_, Project(plist, child)) => processProjection(plist, child)
+      case Limit(lexp, Project(plist, child)) => processProjection(plist, child, lexp.toString().toInt)
       case Project(plist, child) => processProjection(plist, child)
-      case _ => iterativeFlatten(collect()) toArray
+      case Limit(lexp, _) => iterativeFlatten(collect())(lexp.toString().toInt) toArray
+      case _ => iterativeFlatten(collect())() toArray
     }
 
   }
