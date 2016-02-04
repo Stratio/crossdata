@@ -23,7 +23,7 @@ case class EphemeralOptionsModel(kafkaOptions: KafkaOptionsModel,
                                  maxWindow: Int = DefaultMaxWindow,
                                  outputFormat: EphemeralOutputFormat.Value = EphemeralOutputFormat.ROW,
                                  checkpointDirectory: String = DefaultCheckpointDirectory,
-                                 sparkOptions: Map[String, String] = Map.empty[String, String]) {
+                                 sparkOptions: Map[String, String] = Map.empty) {
 
   def toStringPretty : String = ModelUtils.modelToJsonString(this)
 }

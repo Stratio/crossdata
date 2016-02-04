@@ -22,10 +22,11 @@ import ApplicationConstants._
 
 class StreamingResourceConfig extends TypesafeConfigComponent {
 
-  override val config = new TypesafeConfig(None,
+  override val config = new TypesafeConfig(
     None,
-    Option(StreamingResourceConfig),
-    Option(s"$ParentPrefixName" + s".$ConfigPrefixName")
+    None,
+    Some(StreamingResourceConfig),
+    Some(s"$ParentPrefixName.$ConfigPrefixName")
   )
 
 }

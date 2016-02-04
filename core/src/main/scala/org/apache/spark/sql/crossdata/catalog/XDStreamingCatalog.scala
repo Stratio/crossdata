@@ -16,11 +16,8 @@
 
 package org.apache.spark.sql.crossdata.catalog
 
-import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent
-import org.apache.log4j.Logger
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.models._
 
 /**
@@ -77,11 +74,5 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
   def dropEphemeralQuery(queryAlias: String): Unit
 
   def dropAllEphemeralQueries(): Unit
-
-}
-
-object XDStreamingCatalog extends TypesafeConfigComponent{
-
-
 
 }

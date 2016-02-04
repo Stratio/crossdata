@@ -18,12 +18,11 @@ package com.stratio.crossdata.streaming.actors
 
 import akka.actor.Actor
 import com.github.nscala_time.time.Imports._
-import com.stratio.crossdata.streaming.constants.ApplicationConstants
-import EphemeralStatusActor._
-import ApplicationConstants._
-import org.apache.curator.framework.recipes.cache.NodeCache
+import com.stratio.crossdata.streaming.actors.EphemeralStatusActor._
+import com.stratio.crossdata.streaming.constants.ApplicationConstants._
 import org.apache.spark.sql.crossdata.daos.EphemeralTableStatusMapDAO
-import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralStatusModel}
+import org.apache.spark.sql.crossdata.models.EphemeralExecutionStatus
+import org.apache.spark.sql.crossdata.models.EphemeralStatusModel
 
 class EphemeralStatusActor(zookeeperConfiguration: Map[String, String],
                            ephemeralTableName: String) extends Actor
@@ -31,12 +30,15 @@ with EphemeralTableStatusMapDAO {
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var ephemeralStatus: Option[EphemeralStatusModel] = getRepositoryStatusTable
-  var listenerAdded: Boolean = false
 
-  override def receive: Receive = {
+  override def receive: Receive = receive(listenerAdded = false)
+
+  def receive(listenerAdded: Boolean): Receive = {
     case GetStatus => doGetStatus()
     case SetStatus(status) => doSetStatus(status)
-    case AddListener => doAddListener()
+    case AddListener if !listenerAdded=>
+      doAddListener()
+      context.become(receive(true))
   }
 
   private def doGetStatus(): Unit = {
@@ -45,32 +47,27 @@ with EphemeralTableStatusMapDAO {
 
   private def doSetStatus(newStatus: EphemeralExecutionStatus.Value) : Unit = {
 
-    val startTime = if(newStatus == EphemeralExecutionStatus.Started) Option(DateTime.now.getMillis) else None
-    val stopTime = if(newStatus == EphemeralExecutionStatus.Stopped) Option(DateTime.now.getMillis) else None
+    val startTime = if (newStatus == EphemeralExecutionStatus.Started) Option(DateTime.now.getMillis) else None
+    val stopTime = if (newStatus == EphemeralExecutionStatus.Stopped) Option(DateTime.now.getMillis) else None
 
-    ephemeralStatus = ephemeralStatus.fold(ephemeralStatus) {
-      ephStatus => Option(ephStatus.copy(status = newStatus,
+    ephemeralStatus.fold(
+      dao.create(ephemeralTableName, EphemeralStatusModel(ephemeralTableName, newStatus, startTime, stopTime))
+    ) { ephStatus =>
+      val newStatusModel = ephStatus.copy(
+        status = newStatus,
         stoppedTime = stopTime,
-        startedTime = startTime.orElse(ephStatus.startedTime)))
-    }
-
-    ephemeralStatus.fold(dao.create(ephemeralTableName,
-      EphemeralStatusModel(ephemeralTableName, newStatus, startTime, stopTime)))
-    { ephemeralTable =>
-      dao.upsert(ephemeralTableName, ephemeralTable)
+        startedTime = startTime.orElse(ephStatus.startedTime)
+      )
+      dao.upsert(ephemeralTableName, newStatusModel)
     }
   }
 
-  private def doAddListener(): Unit = {
-    if (!listenerAdded) {
-      repository.addListener[EphemeralStatusModel](dao.entity,
+  private def doAddListener(): Unit =
+      repository.addListener[EphemeralStatusModel] (
+        dao.entity,
         ephemeralTableName,
-        (newEphemeralStatus: EphemeralStatusModel, nodeCache: NodeCache) => {
-          ephemeralStatus = Option(newEphemeralStatus)
-        })
-      listenerAdded = true
-    }
-  }
+        (newEphemeralStatus: EphemeralStatusModel, _) => ephemeralStatus = Option(newEphemeralStatus)
+      )
 
   private def getRepositoryStatusTable: Option[EphemeralStatusModel] = {
     dao.get(ephemeralTableName)
