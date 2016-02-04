@@ -17,12 +17,11 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent
-import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent.TypesafeConfig
-import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent.TypesafeConfig
+import org.apache.log4j.Logger
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
+import org.apache.spark.sql.crossdata.models._
 
 /**
  * CrossdataStreamingCatalog aims to provide a mechanism to persist the
@@ -50,6 +49,8 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
   /**
    * Ephemeral Status Functions
    */
+  def createEphemeralStatus(tableIdentifier: String, ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel
+
   def getEphemeralStatus(tableIdentifier: String) : Option[EphemeralStatusModel]
 
   def getAllEphemeralStatuses : Seq[EphemeralStatusModel]
@@ -81,42 +82,6 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
 
 object XDStreamingCatalog extends TypesafeConfigComponent{
 
-  // Streaming parameters
-  val kafkaHost = "kafka.connectionHost"
-  val kafkaConsumerPort = "kafka.connectionConsumerPort"
-  val kafkaProducerPort = "kafka.connectionProducerPort"
-  val kafkaTopicName = "kafka.topicName"
-  val kafkaGroupId = "kafka.groupId"
-  val kafkaPartition = "kafka.partition"
 
-  // TODO add params and default options
-
-  // Default mandatory values
-
-
-  // Default mandatory Map
-  val defaultMapConfig = Map()
-
-
-  // Parse params
-  val configFile = new TypesafeConfig(
-    None,
-    None,
-    Some(CoreConfig.CoreBasicConfig),
-    Some(CoreConfig.ParentConfigName + "." + XDContext.StreamingConfigKey)
-  )
-
-  //val configDdl
-
-  def parseEphemeralTableFileParams(): Map[String, String] = ???
-  def parseEphemeralTableDdlParams(): Map[String, String] = ???
-
-
-  def parseEphemeralQueryFileParams(): Map[String, String] = ???
-  def parseEphemeralQueryDdlParams(): Map[String, String] = ???
-
-
-  def parseEphemeralStatusFileParams(): Map[String, String] = ???
-  def parseEphemeralStatusDdlParams(): Map[String, String] = ???
 
 }

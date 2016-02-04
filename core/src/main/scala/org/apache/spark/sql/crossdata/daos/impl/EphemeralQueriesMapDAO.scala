@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.models
+package org.apache.spark.sql.crossdata.daos.impl
 
-import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
-import org.json4s.jackson.Serialization._
+import org.apache.spark.sql.crossdata.daos.{EphemeralQueriesMapDAO => EphQueriesMapDAO}
 
-object ModelUtils extends CrossdataSerializer {
+class EphemeralQueriesMapDAO(opts: Map[String, String], subPath: Option[String] = None)
+  extends EphQueriesMapDAO{
 
-  def modelToJsonString[T <: AnyRef](model: T) : String = writePretty(model)
+  val memoryMap = opts
+  override lazy val config: Config = new DummyConfig(subPath)
 }
