@@ -55,7 +55,7 @@ public class ATCassandraXDJavaDriverTest extends BaseTest {
 	public ATCassandraXDJavaDriverTest() {
 	}
 
-	@BeforeClass(groups = {"basic"})
+	@BeforeClass(groups = {"driver"})
 	public void setUp() {
 		logger.info("Connecting to Cassandra Cluster");
 		cassandra.connect();
@@ -74,7 +74,7 @@ public class ATCassandraXDJavaDriverTest extends BaseTest {
 
 	}
 
-	@AfterClass(groups = {"basic"})
+	@AfterClass(groups = {"driver"})
 	public void cleanUp() {
 		cassandra.dropKeyspace(catalog);
 		try {
@@ -86,7 +86,7 @@ public class ATCassandraXDJavaDriverTest extends BaseTest {
 
 	}
 
-	@Test(enabled = true, groups = {"basic"})
+	@Test(enabled = false, groups = {"driver"})
 	public void ATCassandraXDJavaDriverTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
