@@ -13,21 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.execution.datasources
+package org.apache.spark.sql.crossdata.daos.impl
 
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.apache.spark.sql.crossdata.daos.{EphemeralTableStatusMapDAO => EphTableStatusMapDAO }
+class EphemeralTableStatusMapDAO (opts: Map[String, String], subPath: Option[String] = None)
+  extends EphTableStatusMapDAO{
 
-@RunWith(classOf[JUnitRunner])
-class CreateEphemeralTableIT extends SharedXDContextTest{
-
-  "Create temp view" should "return a XDDataFrame when executing a SQL query" in {
-
-    val sqlContext = _xdContext
-    sql("CREATE EPHEMERAL TABLE ephemeral1 (field1 STRING, field2 INTEGER) OPTIONS (param1 'value1')").show()
-// TODO real test
-    1 shouldBe (1)
-  }
-
+  val memoryMap = opts
+  override lazy val config: Config = new DummyConfig(subPath)
 }
