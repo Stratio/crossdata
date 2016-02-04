@@ -23,6 +23,7 @@
         <aspect name="com.stratio.cucumber.aspects.AssertJAspect" />
 	</aspects>
     <weaver
-            options="-Xlint:ignore -Xset:weaveJavaPackages=false,weaveJavaxPackages=false">
+            options="-Xlint:ignore -Xset:weaveJavaPackages=true,weaveJavaxPackages=true">
+        <exclude within="org..*" />
     </weaver>
 </aspectj>
