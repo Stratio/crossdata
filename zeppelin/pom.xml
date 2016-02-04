@@ -167,10 +167,10 @@
               <includeScope>runtime</includeScope>
               <artifactItems>
                 <artifactItem>
-                  <groupId>${project.parent.groupId}</groupId>
-                  <artifactId>${project.parent.artifactId}</artifactId>
-                  <version>${project.parent.version}</version>
-                  <type>${project.parent.packaging}</type>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>${project.artifactId}</artifactId>
+                  <version>${project.version}</version>
+                  <type>${project.packaging}</type>
                 </artifactItem>
               </artifactItems>
             </configuration>

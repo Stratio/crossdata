@@ -42,7 +42,7 @@ public class XDContextUtils {
         private DataFrame df_spark;
         public XDContextUtils(){
             this.appName = System.getProperty("SPARK_APP_NAME", "appTests");
-            this.master = System.getProperty("SPARK_MASTER", "local[4]");
+            this.master = "local[4]";
         }
 
         public void setSparkConf(){

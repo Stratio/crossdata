@@ -78,6 +78,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
       val dataFrame = sql("SELECT structofstruct FROM typesCheckTable LIMIT 1")
       val rows = dataFrame.flattenedCollect()
       rows.head.schema.head.name shouldBe "structofstruct.field1"
+      rows.length shouldBe 1
     }
 
     it should "be able to vertically flatten results for array columns" in {
@@ -96,6 +97,18 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
         case _ => false
       } shouldBe empty
 
+    }
+
+    it should "correctly apply user limits to a vertically flattened array column" in {
+      val dataFrame = sql(s"SELECT arraystructarraystruct FROM typesCheckTable LIMIT 1")
+      val res = dataFrame.flattenedCollect()
+      res.length shouldBe 1
+    }
+
+    it should "correctly apply user limits to project-less queries where arrays are getting flattened" in {
+      val dataFrame = sql(s"SELECT * FROM typesCheckTable LIMIT 1")
+      val res = dataFrame.flattenedCollect()
+      res.length shouldBe 1
     }
 
   }
