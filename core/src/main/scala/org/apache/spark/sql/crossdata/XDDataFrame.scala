@@ -24,6 +24,7 @@ import org.apache.spark.sql.crossdata.ExecutionType.{ExecutionType, Default, Nat
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import XDDataFrame.findNativeQueryExecutor
+import org.apache.log4j.Logger
 import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
 
 private[sql] object XDDataFrame {
@@ -82,6 +83,8 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
                                @transient override val queryExecution: SQLContext#QueryExecution)
   extends DataFrame(sqlContext, queryExecution) {
 
+  val logger: Logger
+
   def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = {
     this(sqlContext, {
       val qe = sqlContext.executePlan(logicalPlan)
@@ -103,6 +106,11 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       super.collect()
     } else {
       val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
+      if(nativeQueryExecutor.isEmpty){
+        logger.info(s"Spark Query: ${queryExecution.simpleString}")
+      } else {
+        logger.info(s"Native query: ${queryExecution.simpleString}")
+      }
       nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
   }

@@ -21,7 +21,7 @@ import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.cluster.Cluster
 import akka.contrib.pattern.ClusterReceptionistExtension
-import akka.routing.RoundRobinPool
+import akka.routing.{DefaultResizer, RoundRobinPool}
 import com.stratio.crossdata.server.actors.ServerActor
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.Daemon
@@ -66,9 +66,11 @@ class CrossdataServer extends Daemon with ServerConfig {
     system = Some(ActorSystem(clusterName, config))
 
     system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
-      // TODO resizer
+      val minServerActorInstances = math.ceil(serverActorInstances/2.0).toInt
+      val maxServerActorInstances = minServerActorInstances*2
+      val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
       val serverActor = actorSystem.actorOf(
-        RoundRobinPool(serverActorInstances).props(
+        RoundRobinPool(serverActorInstances, Some(resizer)).props(
           Props(classOf[ServerActor],
                 Cluster(actorSystem),
                 xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")))),
