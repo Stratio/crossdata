@@ -113,7 +113,7 @@ class XDContext private (@transient val sc: SparkContext,
   override protected[sql] val planner: SparkPlanner = new XDPlanner
 
   @transient
-  protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_))
+  protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_), this)
 
   @transient
   override protected[sql] lazy val functionRegistry: FunctionRegistry =

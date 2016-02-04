@@ -17,8 +17,6 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent
-import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent.TypesafeConfig
-import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent.TypesafeConfig
 import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.config.CoreConfig

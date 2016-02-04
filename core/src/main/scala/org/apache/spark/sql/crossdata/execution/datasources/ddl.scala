@@ -28,11 +28,13 @@ import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.daos.{EphemeralTableStatusDAO, EphemeralTableDAO, EphemeralTableMapDAO}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
+import org.apache.spark.sql.crossdata.daos.EphemeralTableDAO
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.LogicalRelation
@@ -131,6 +133,8 @@ private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryP
 }
 
 
+
+// TODO move to streaming_ddl
   /**
   * Ephemeral Table Functions
   */
@@ -204,7 +208,7 @@ private[crossdata] case class CreateEphemeralTable(
   extends LogicalPlan with RunnableCommand with EphemeralTableDAO {
 
   // TODO choose config params from file or from OPTIONS()
-  override lazy val config: Config =
+  override val config: Config =
     new TypesafeConfig(
       None,
       None,
@@ -242,9 +246,7 @@ private[crossdata] case class CreateEphemeralTable(
           case Left(message)    => message
         }
     }
-
-    /*
-        // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
+    /*  // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
         // * This query will trigger 3 actions in the catalog persistence:
         //   1.- Associate the table with the schema.
         val schema = columns.json
@@ -265,9 +267,8 @@ private[crossdata] case class CreateEphemeralTable(
 
         // * Return the UUID of the process
     */
-
-    Seq(result.map(Row(_)).getOrElse(Row.empty))
-
+    val result2 = result.map(Row(_)).getOrElse(sys.error("StreamingXDCatalog is empty. Cannot create ephemeral tables"))
+    Seq(result2)
   }
 }
 
@@ -484,7 +485,7 @@ private[crossdata] case class GetAllEphemeralQueries()
 }
 
 
-private[crossdata] case class CreateEphemeralQuery(queryIdent: TableIdentifier, opts: Map[String, String])
+private[crossdata] case class AddEphemeralQuery(ephemeralTablename: String, sql: String, alias: String, window: Int, opts: Map[String, String] = Map.empty)
   extends LogicalPlan with RunnableCommand{
 
   override val output: Seq[Attribute] = {

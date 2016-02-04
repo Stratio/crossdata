@@ -17,16 +17,17 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.execution.datasources.CreateTableUsing
-import org.apache.spark.sql.execution.datasources.DescribeCommand
-import org.apache.spark.sql.execution.datasources.RefreshTable
+import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.execution.datasources.{CreateTableUsing, DescribeCommand, RefreshTable}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
-class XDDdlParserSpec extends BaseXDTest {
+class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
-  val parser = new XDDdlParser(_ => null)
+  val xdContext = mock[XDContext]
+  val parser = new XDDdlParser(_ => null, xdContext)
 
   "A XDDlParser" should  """successfully parse an "IMPORT TABLES" sentence into
                            |a ImportTablesUsingWithOptions RunnableCommand """.stripMargin in {
