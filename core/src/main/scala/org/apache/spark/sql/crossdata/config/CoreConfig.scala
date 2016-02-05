@@ -27,7 +27,7 @@ object CoreConfig {
   val ParentConfigName = "crossdata-core"
   val CoreUserConfigFile = "external.config.filename"
   val CoreUserConfigResource = "external.config.resource"
-  val CatalogConfigKey = "catalog"
+
 }
 
 trait CoreConfig {

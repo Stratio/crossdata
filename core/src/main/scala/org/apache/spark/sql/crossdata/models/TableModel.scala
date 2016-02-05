@@ -29,4 +29,6 @@ case class TableModel(id: String,
 
   def getExtendedName: String =
     database.fold(name) { databaseName => s"$databaseName.$name" }
+
+  def toStringPretty : String = ModelUtils.modelToJsonString(this)
 }

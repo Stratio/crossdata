@@ -17,5 +17,12 @@
 package org.apache.spark.sql.crossdata.models
 
 case class KafkaOptionsModel(connection: Seq[ConnectionHostModel],
+                             // TODO Seq(topic?? union??)
                              topics: Seq[TopicModel],
-                             storageLevel: String = "MEMORY_AND_DISK_SER")
+                             groupId: String,
+                             partitionOutput: Option[String] = None,
+                             additionalOptions: Map[String, String] = Map.empty,
+                             storageLevel: String = "MEMORY_AND_DISK_SER") {
+
+  def toStringPretty : String = ModelUtils.modelToJsonString(this)
+}

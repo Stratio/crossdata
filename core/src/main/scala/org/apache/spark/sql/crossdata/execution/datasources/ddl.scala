@@ -19,21 +19,15 @@ import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.TableManipulation
 import org.apache.spark.Logging
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.LogicalRelation
-import org.apache.spark.sql.execution.datasources.ResolvedDataSource
+import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.RelationProvider
-import org.apache.spark.sql.types.ArrayType
-import org.apache.spark.sql.types.BooleanType
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.sql.types.StructField
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
+import org.apache.spark.sql.{Row, SQLContext}
 
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with Logging {
@@ -70,7 +64,7 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
       if (!ignoreTable) {
         logInfo(s"Importing table ${tableId mkString "."}")
 
-        DdlUtils.registerTable(sqlContext, datasource, resolved, table.tableName, table.database, table.schema, opts)
+        DdlUtils.persistTable(sqlContext, datasource, resolved, table.tableName, table.database, table.schema, opts)
       }
       Row(tableId, ignoreTable)
     }
@@ -82,7 +76,6 @@ private[crossdata] case class DropTable(tableIdentifier: TableIdentifier)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-
     sqlContext.catalog.dropTable(tableIdentifier.toSeq)
     Seq.empty
   }
@@ -106,7 +99,9 @@ private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryP
     sqlContext.catalog.persistView(viewIdentifier, queryPlan, sql)
     Seq.empty
   }
+
 }
+
 
 case class CreateExternalTable(
                                 tableIdent: TableIdentifier,
@@ -121,6 +116,7 @@ case class CreateExternalTable(
 
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
 
+    
     if (!resolved.isInstanceOf[TableManipulation]){
       sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")
     }
@@ -128,7 +124,7 @@ case class CreateExternalTable(
     val tableManipulation = resolved.asInstanceOf[TableManipulation]
     tableManipulation.createExternalTable(sqlContext, tableIdent.table, userSpecifiedSchema, options)
 
-    DdlUtils.registerTable(sqlContext, provider, resolved, tableIdent.table, tableIdent.database, Some(userSpecifiedSchema), options)
+    DdlUtils.persistTable(sqlContext, provider, resolved, tableIdent.table, tableIdent.database, Some(userSpecifiedSchema), options)
     Seq.empty
 
   }
@@ -137,7 +133,8 @@ case class CreateExternalTable(
 
 private object DdlUtils{
 
-  def registerTable(sqlContext:SQLContext,
+  // TODO rename method => replace register with persist
+  def persistTable(sqlContext:SQLContext,
                     provider: String,
                     resolved:Any,
                     table:String, database:Option[String],
@@ -157,3 +154,4 @@ private object DdlUtils{
     )
   }
 }
+

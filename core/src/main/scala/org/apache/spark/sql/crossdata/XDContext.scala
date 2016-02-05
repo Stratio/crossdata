@@ -25,25 +25,20 @@ import java.util.concurrent.atomic.AtomicReference
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
+import org.apache.spark.{Logging, SparkContext}
 import org.apache.spark.sql.catalyst._
-import org.apache.spark.sql.catalyst.analysis.Analyzer
-import org.apache.spark.sql.catalyst.analysis.FunctionRegistry
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
+import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
+import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.ResolveAggregateAlias
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.execution.datasources.ExtendedDataSourceStrategy
-import org.apache.spark.sql.crossdata.execution.datasources.ImportTablesUsingWithOptions
-import org.apache.spark.sql.crossdata.execution.datasources.XDDdlParser
-import org.apache.spark.sql.crossdata.execution.ExtractNativeUDFs
-import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.crossdata.execution.XDStrategies
+import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
+import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
 import org.apache.spark.util.Utils
-import org.apache.spark.Logging
-import org.apache.spark.SparkContext
 
 /**
  * CrossdataContext leverages the features of [[SQLContext]]
@@ -60,19 +55,19 @@ class XDContext private (@transient val sc: SparkContext,
   def this(sc: SparkContext, config: Config) =
     this(sc, Some(config))
 
-  private val xdConfig: Config = userConfig.fold(config) { userConf =>
+  val xdConfig: Config = userConfig.fold(config) { userConf =>
     userConf.withFallback(config)
   }
 
-  val catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
+  val catalogConfig = xdConfig.getConfig(XDContext.CatalogConfigKey)
 
   override protected[sql] lazy val catalog: XDCatalog = {
-    import XDContext.CaseSensitive
-    import XDContext.CatalogClass
-    import XDContext.DerbyClass
 
-    val catalogClass = if (catalogConfig.hasPath(CatalogClass))
-      catalogConfig.getString(CatalogClass)
+    import XDContext.{CaseSensitive, DerbyClass}
+
+
+    val catalogClass = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
+      catalogConfig.getString(XDContext.ClassConfigKey)
     else DerbyClass
 
     val xdCatalog = Class.forName(catalogClass)
@@ -83,6 +78,19 @@ class XDContext private (@transient val sc: SparkContext,
 
     constr.newInstance(
       new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
+  }
+
+  protected[crossdata] lazy val streamingCatalog: Option[XDStreamingCatalog] = {
+    if (xdConfig.hasPath(StreamingCatalogClassConfigKey)) {
+      val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
+      val xdStreamingCatalog = Class.forName(streamingCatalogClass)
+      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[XDContext])
+
+      Option(constr.newInstance(self).asInstanceOf[XDStreamingCatalog])
+    } else {
+      logger.warn("empty streaming catalog")
+      None
+    }
   }
 
   override lazy val logger = Logger.getLogger(classOf[XDContext])
@@ -112,7 +120,7 @@ class XDContext private (@transient val sc: SparkContext,
   override protected[sql] val planner: SparkPlanner = new XDPlanner
 
   @transient
-  protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_))
+  protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_), this)
 
   @transient
   override protected[sql] lazy val functionRegistry: FunctionRegistry =
@@ -135,7 +143,8 @@ class XDContext private (@transient val sc: SparkContext,
     for {srv <- functionInventoryServices
          datasourceName = srv.shortName()
          udf <- srv.nativeBuiltinFunctions
-    } functionRegistry.registerFunction(qualifyUDF(datasourceName, udf.name), e => NativeUDF(udf.name, udf.returnType, e))
+    } functionRegistry
+      .registerFunction(qualifyUDF(datasourceName, udf.name), e => NativeUDF(udf.name, udf.returnType, e))
 
     val gc = new GroupConcat(", ")
     udf.register("group_concat", gc)
@@ -186,9 +195,15 @@ class XDContext private (@transient val sc: SparkContext,
  */
 object XDContext {
 
-  val CatalogClass = "class"
   val CaseSensitive = "caseSensitive"
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
+  val JDBCClass = "org.apache.spark.sql.crossdata.catalog.JDBCCatalog"
+  val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog"
+  val CatalogConfigKey = "catalog"
+  val StreamingConfigKey = "streaming"
+  val ClassConfigKey = "class"
+  val CatalogClassConfigKey : String = s"$CatalogConfigKey.$CatalogClassConfigKey"
+  val StreamingCatalogClassConfigKey : String = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
 
   private val INSTANTIATION_LOCK = new Object()
 
@@ -202,9 +217,9 @@ object XDContext {
    * This function can be used to create a singleton SQLContext object that can be shared across
    * the JVM.
    */
-  def getOrCreate(sparkContext: SparkContext): XDContext = {
+  def getOrCreate(sparkContext: SparkContext, userConfig: Option[Config] = None): XDContext = {
     INSTANTIATION_LOCK.synchronized {
-      Option(lastInstantiatedContext.get()).getOrElse(new XDContext(sparkContext))
+      Option(lastInstantiatedContext.get()).getOrElse(new XDContext(sparkContext, userConfig))
     }
     lastInstantiatedContext.get()
   }

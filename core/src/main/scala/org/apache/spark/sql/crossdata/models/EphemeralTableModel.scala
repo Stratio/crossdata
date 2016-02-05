@@ -16,6 +16,8 @@
 
 package org.apache.spark.sql.crossdata.models
 
-case class EphemeralTableModel(id: String,
-                               name: String,
-                               options: Option[EphemeralOptionsModel])
+case class EphemeralTableModel(name: String,
+                               options: EphemeralOptionsModel) {
+
+  def toStringPretty : String = ModelUtils.modelToJsonString(this)
+}

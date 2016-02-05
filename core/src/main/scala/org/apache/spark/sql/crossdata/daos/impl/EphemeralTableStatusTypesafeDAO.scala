@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.models
+package org.apache.spark.sql.crossdata.daos.impl
 
-case class StreamingQueryModel(id: String,
-                               ephemeralTable: EphemeralTableModel,
-                               sql: String,
-                               window: Int = EphemeralOptionsModel.DefaultAtomicWindow,
-                               batchTables: Option[Seq[TableModel]] = None)
+import com.typesafe.config.Config
+import org.apache.spark.sql.crossdata.daos.EphemeralTableStatusDAO
+
+class EphemeralTableStatusTypesafeDAO (configuration: Config) extends EphemeralTableStatusDAO {
+
+  override val config = new TypesafeConfig(Option(configuration))
+
+}
