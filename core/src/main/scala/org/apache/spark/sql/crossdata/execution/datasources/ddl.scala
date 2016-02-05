@@ -24,8 +24,9 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.RelationProvider
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
+
 
 private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with Logging {

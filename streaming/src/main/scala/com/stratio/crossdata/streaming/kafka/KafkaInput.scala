@@ -51,8 +51,7 @@ class KafkaInput(options: KafkaOptionsModel) {
   private def getTopics : Map[String, Int] = {
     if (options.topics.isEmpty) {
       throw new IllegalStateException(s"Invalid configuration, topics must be declared.")
-    }
-    else {
+    } else {
      options.topics.map(topicModel => (topicModel.name, topicModel.partition)).toMap
     }
   }

@@ -40,15 +40,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val SECS = Keyword("SECS")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
-
     createTable | describeTable | refreshTable | importStart | dropTable | createView | streamingSentences
 
   // TODO move to StreamingDdlParser
   protected lazy val streamingSentences: Parser[LogicalPlan] = existsEphemeralTable |
     getEphemeralTable | getAllEphemeralTables | createEphemeralTable | updateEphemeralTable | dropEphemeralTable |
-    getEphemeralStatus | getAllEphemeralStatuses | existsEphemeralQuery | getEphemeralQuery |
-    getAllEphemeralQueries | addEphemeralQuery  | dropEphemeralQuery |
-    dropAllEphemeralQueries
+    getAllEphemeralQueries | addEphemeralQuery  | dropEphemeralQuery | dropAllEphemeralQueries
 
 
   protected lazy val importStart: Parser[LogicalPlan] =

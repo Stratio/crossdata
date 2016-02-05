@@ -21,13 +21,11 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import com.stratio.crossdata.streaming.actors.EphemeralQueryActor.{AddListener, EphemeralQueriesResponse, GetQueries}
 import com.stratio.crossdata.streaming.actors.{EphemeralQueryActor, EphemeralStatusActor}
-import com.stratio.crossdata.streaming.constants.{AkkaConstants, ApplicationConstants}
-import EphemeralQueryActor.{AddListener, EphemeralQueriesResponse, GetQueries}
-import EphemeralStatusActor.{GetStatus, SetStatus, StatusResponse}
-import com.stratio.crossdata.streaming.actors.EphemeralQueryActor
-import AkkaConstants._
-import ApplicationConstants._
+import com.stratio.crossdata.streaming.actors.EphemeralStatusActor.{GetStatus, SetStatus, StatusResponse}
+import com.stratio.crossdata.streaming.constants.AkkaConstants._
+import com.stratio.crossdata.streaming.constants.ApplicationConstants._
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralQueryModel}
 import org.apache.spark.streaming.StreamingContext
@@ -64,7 +62,7 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
 
     createEphemeralStatusActor(zookeeperConfiguration, ephemeralTableName)
 
-    ephemeralStatusActor.fold() { statusActorRef =>
+    ephemeralStatusActor.foreach { statusActorRef =>
       statusActorRef ! SetStatus(status)
     }
   }
@@ -79,7 +77,8 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
 
     createEphemeralStatusActor(zookeeperConfiguration, ephemeralTableName)
 
-    ephemeralStatusActor.fold() { statusActorRef =>
+    ephemeralStatusActor.foreach { statusActorRef =>
+
       val futureResult = statusActorRef ? GetStatus
       Await.result(futureResult, timeout.duration) match {
         case StatusResponse(status) => {
@@ -109,7 +108,7 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
                              stopGracefully: Boolean): Unit = {
     synchronized {
       try {
-        streamingContext.stop(false, stopGracefully)
+        streamingContext.stop(stopSparkContext=false, stopGracefully)
       } finally {
         sparkContext.stop()
       }
@@ -119,8 +118,9 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
   private def createEphemeralQueryActor(zookeeperConfiguration: Map[String, String]): Unit = {
     synchronized {
       if (ephemeralQueryActor.isEmpty) {
-        Try(actorSystem.actorOf(Props(new EphemeralQueryActor(zookeeperConfiguration)),
-          EphemeralQueryActorName)) match {
+        Try (
+          actorSystem.actorOf(Props(new EphemeralQueryActor(zookeeperConfiguration)),EphemeralQueryActorName)
+        ) match {
           case Success(actorRef) =>
             ephemeralQueryActor = Option(actorRef)
             actorRef ! AddListener
@@ -134,8 +134,11 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
                                          ephemeralTableName: String): Unit = {
     synchronized {
       if (ephemeralStatusActor.isEmpty) {
-        Try(actorSystem.actorOf(Props(new EphemeralStatusActor(zookeeperConfiguration,
-          ephemeralTableName)), EphemeralStatusActorName)
+        Try(
+          actorSystem.actorOf(
+            Props(new EphemeralStatusActor(zookeeperConfiguration, ephemeralTableName)),
+            EphemeralStatusActorName
+          )
         ) match {
           case Success(actorRef) =>
             ephemeralStatusActor = Option(actorRef)
