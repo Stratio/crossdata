@@ -348,11 +348,14 @@ private[crossdata] case class AddEphemeralQuery(ephemeralTablename: String,
     val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map {
       streamingCatalog =>
         val eitherCreate = streamingCatalog.createEphemeralQuery(EphemeralQueryModel(ephemeralTablename, sql, alias, window, opts))
+        // TODO add streamingCatalog.createEphemeralQueryStatus
         if (eitherCreate.isLeft)
           sys.error(eitherCreate.left.get)
         else
           alias
     }.getOrElse(sys.error("StreamingXDCatalog is empty. Cannot create ephemeral queries"))
+
+
 
     /*// TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
         // * This query will trigger 3 actions in the catalog persistence:
