@@ -1,0 +1,4 @@
+/etc/default/crossdata
+/etc/sds/crossdata/crossdata-env.sh
+/etc/sds/crossdata/server-application.conf
+/etc/sds/crossdata/server-log.properties

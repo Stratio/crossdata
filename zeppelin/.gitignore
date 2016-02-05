@@ -1,0 +1,26 @@
+.classpath
+.project
+.settings
+*.log
+nbproject/
+build.xml
+nbactions.xml
+nb-configuration.xml
+.idea
+*.iml
+*.xml.asc
+src/main/resources/history.txt
+*.orig
+/crossdata-hive/derby.log
+sonar-project.properties
+*/.sonar
+*/test-output
+atlassian-ide-plugin.xml
+*.cache
+target/
+/out
+.DS_Store
+
+#crossdata ignores
+files/interpreter/**
+**/dependency-reduced-pom.xml

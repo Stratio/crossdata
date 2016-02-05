@@ -1,7 +1,7 @@
 Feature: VIEWS
 
-  Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest AS SELECT * FROM tabletest;
-    When I execute 'CREATE TEMPORARY VIEW viewTest AS SELECT * FROM tabletest'
+  Scenario: [CROSSDATA-237] CREATE VIEW viewTest AS SELECT * FROM tabletest;
+    When I execute 'CREATE VIEW viewTest AS SELECT * FROM tabletest'
     Then I execute 'SELECT * FROM viewTest'
     And The result has to have '10' rows ignoring the order:
       |ident-integer|date-timestamp     |money-double |name-string| new-boolean |
@@ -16,8 +16,8 @@ Feature: VIEWS
       |    9        |2009-09-09 00:00:00| 19.2        |name_9     |true         |
       |    3        |2003-03-03 00:00:00| 13.2        |name_3     |true         |
 
-  Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest AS SELECT ident FROM tabletest;
-    When I execute 'CREATE TEMPORARY VIEW viewTest1 AS SELECT ident FROM tabletest'
+  Scenario: [CROSSDATA-237] CREATE VIEW viewTest AS SELECT ident FROM tabletest;
+    When I execute 'CREATE VIEW viewTest1 AS SELECT ident FROM tabletest'
     Then I execute 'SELECT * FROM viewTest1'
     And The result has to have '10' rows ignoring the order:
       |ident-integer|
@@ -32,8 +32,8 @@ Feature: VIEWS
       |    9        |
       |    3        |
 
-  Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest2 AS SELECT ident as identificador FROM tabletest;
-    When I execute 'CREATE TEMPORARY VIEW viewTest2 AS SELECT ident as identificador FROM tabletest'
+  Scenario: [CROSSDATA-237] CREATE VIEW viewTest2 AS SELECT ident as identificador FROM tabletest;
+    When I execute 'CREATE VIEW viewTest2 AS SELECT ident as identificador FROM tabletest'
     Then I execute 'SELECT * FROM viewTest2'
     And The result has to have '10' rows ignoring the order:
       |identificador-integer|
@@ -48,8 +48,8 @@ Feature: VIEWS
       |    9                |
       |    3                |
 
-  Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest3 AS SELECT name as nombre FROM tabletest;
-    When I execute 'CREATE TEMPORARY VIEW viewTest3 AS SELECT name as nombre FROM tabletest'
+  Scenario: [CROSSDATA-237] CREATE VIEW viewTest3 AS SELECT name as nombre FROM tabletest;
+    When I execute 'CREATE VIEW viewTest3 AS SELECT name as nombre FROM tabletest'
     Then I execute 'SELECT * FROM viewTest3'
     And The result has to have '10' rows ignoring the order:
       | nombre-string   |
@@ -65,8 +65,8 @@ Feature: VIEWS
       | name_9        |
 
 
-  Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest3 AS SELECT name as nombre FROM tabletest;
-    When I execute 'CREATE TEMPORARY VIEW viewTest33 AS SELECT name as nombre FROM tabletest'
+  Scenario: [CROSSDATA-237] CREATE VIEW viewTest3 AS SELECT name as nombre FROM tabletest;
+    When I execute 'CREATE VIEW viewTest33 AS SELECT name as nombre FROM tabletest'
     Then I execute 'SELECT nombre as fullname FROM viewTest33'
     And The result has to have '10' rows ignoring the order:
       | fullname-string   |
@@ -81,8 +81,8 @@ Feature: VIEWS
       | name_8        |
       | name_9        |
 
-  Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest4 AS SELECT ident, name FROM tabletest;
-    When I execute 'CREATE TEMPORARY VIEW viewTest4 AS SELECT ident, name FROM tabletest'
+  Scenario: [CROSSDATA-237]CREATE VIEW viewTest4 AS SELECT ident, name FROM tabletest;
+    When I execute 'CREATE VIEW viewTest4 AS SELECT ident, name FROM tabletest'
     Then I execute 'SELECT * FROM viewTest4'
     And The result has to have '10' rows ignoring the order:
       | ident-integer | name-string   |

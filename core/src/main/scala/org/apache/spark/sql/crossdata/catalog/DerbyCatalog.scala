@@ -55,7 +55,6 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   import XDCatalog._
 
 
-
   private val db = "CROSSDATA"
   private val tableWithTableMetadata = "xdtables"
   private val tableWithViewMetadata = "xdviews"

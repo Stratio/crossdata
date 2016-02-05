@@ -50,7 +50,9 @@ import cucumber.api.CucumberOptions;
         "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature",
           "src/test/resources/features/Udaf/Group_concat.feature",
         "src/test/resources/features/Udaf/Group_concat.feature",
-        "src/test/resources/features/DriverApi/DescribeTable.feature"
+        "src/test/resources/features/DriverApi/DescribeTable.feature",
+        "src/test/resources/features/Views/TemporaryViews.feature",
+        "src/test/resources/features/Views/Views.feature"
 })
 
 public class ATEMongoDBXDJavaDriverTest extends BaseTest{
@@ -61,7 +63,7 @@ public class ATEMongoDBXDJavaDriverTest extends BaseTest{
     private String mongoPortString = System.getProperty("MONGO_PORT", "27017");
     private int mongoPort = Integer.parseInt(mongoPortString);
     private String dataBase = "databasetest";
-    @BeforeClass
+    @BeforeClass(groups = {"basic"})
     public void setUp() throws UnknownHostException{
         MongoClient mongoClient = new MongoClient(mongoHost, mongoPort);
         mongoClient.dropDatabase(dataBase);
@@ -107,6 +109,23 @@ public class ATEMongoDBXDJavaDriverTest extends BaseTest{
                     .add("ident", i).append("person", subDocumentBuilder);
             tableSubField.insert(documentBuilder.get());
         }
+        //Table4
+        DBCollection composetable = db.getCollection("composetable");
+        BasicDBList daughter = new BasicDBList();
+        BasicDBObject subDocumentBuilder = new BasicDBObject();
+        subDocumentBuilder.put("name", "Juan");
+        subDocumentBuilder.put("age", 12);
+        daughter.add(0, subDocumentBuilder);
+        BasicDBObject subDocumentBuilder2 = new BasicDBObject();
+        subDocumentBuilder2.put("name", "Pepe");
+        subDocumentBuilder2.put("age", 13);
+        daughter.add(1,subDocumentBuilder2);
+        BasicDBObject subDocumentPerson = new BasicDBObject();
+        subDocumentPerson.put("name", "Hugo");
+        subDocumentPerson.append("daughter",daughter);
+        BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
+                .add("ident", 0).append("person", subDocumentPerson);
+        composetable.insert(documentBuilder.get());
 
         mongoClient.close();
         String connector = "Mongo";
@@ -115,13 +134,13 @@ public class ATEMongoDBXDJavaDriverTest extends BaseTest{
         ThreadProperty.set("Driver", "javaDriver");
 
     }
-    @AfterClass
+    @AfterClass(groups = {"basic"})
     public void cleanUp() throws UnknownHostException{
         MongoClient mongoClient = new MongoClient(mongoHost, mongoPort);
         mongoClient.dropDatabase(dataBase);
     }
 
-    @Test(enabled = true)
+    @Test(enabled = true, groups = {"basic"})
     public void ATMongoDBXDTest() throws Exception{
         new CucumberRunner(this.getClass()).runCukes();
     }

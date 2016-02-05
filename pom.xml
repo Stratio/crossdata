@@ -28,7 +28,7 @@
 
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>parent</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Stratio Crossdata Parent</name>
     <description>Stratio Crossdata reactor</description>
@@ -90,7 +90,6 @@
         <module>common</module>
         <module>driver</module>
         <module>server</module>
-        <module>dist</module>
         <module>streaming</module>
     </modules>
 
@@ -107,7 +106,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <outputFileName>stratio-crossdata</outputFileName>
         <mariadb.version>1.2.3</mariadb.version>
-        <postgresql.version>9.3-1104-jdbc4</postgresql.version>
+        <postgresql.version>9.2-1003-jdbc4</postgresql.version>
         <derby.version>10.12.1.1</derby.version>
         <jackson4s.version>3.2.11</jackson4s.version>
         <common.utils.version>0.4.3</common.utils.version>
@@ -311,9 +310,7 @@
                         <exclude>**/org/apache/spark/sql/crossdata/test/TestXDContext.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/XDImplicits.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/XDTestUtils.scala</exclude>
-                        <exclude>**/sphinx/conf.py</exclude>
-                        <exclude>**/org/apache/spark/sql/crossdata/hive/XDHiveContext.scala</exclude>
-                        <exclude>**/org/apache/spark/sql/crossdata/hive/test/LocalXDHiveContext.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/catalyst/analysis/AnalysisTest.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/acceptance/TestXDContext.scala</exclude>
                         <exclude>**/testAT/**</exclude>
                         <exclude>**/unix/**</exclude>

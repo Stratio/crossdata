@@ -38,7 +38,9 @@ import cucumber.api.CucumberOptions;
 		"src/test/resources/features/Cassandra/CassandraSelectEqualsFilter.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature",
 		"src/test/resources/features/Cassandra/CassandraPureNativeAggregation.feature",
-		"src/test/resources/features/Udaf/Group_concat.feature"
+		"src/test/resources/features/Udaf/Group_concat.feature",
+		"src/test/resources/features/Views/TemporaryViews.feature",
+		"src/test/resources/features/Views/Views.feature"
 })
 public class ATCassandraXDJavaDriverTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()
@@ -53,7 +55,7 @@ public class ATCassandraXDJavaDriverTest extends BaseTest {
 	public ATCassandraXDJavaDriverTest() {
 	}
 
-	@BeforeClass
+	@BeforeClass(groups = {"basic"})
 	public void setUp() {
 		logger.info("Connecting to Cassandra Cluster");
 		cassandra.connect();
@@ -72,7 +74,7 @@ public class ATCassandraXDJavaDriverTest extends BaseTest {
 
 	}
 
-	@AfterClass
+	@AfterClass(groups = {"basic"})
 	public void cleanUp() {
 		cassandra.dropKeyspace(catalog);
 		try {
@@ -84,7 +86,7 @@ public class ATCassandraXDJavaDriverTest extends BaseTest {
 
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = true, groups = {"basic"})
 	public void ATCassandraXDJavaDriverTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}

@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class FlattenedTablesIT extends MongoWithSharedContext {
 
-  "The Driver" should " List table's description with nested fields flattened" in {
+  "The Driver" should " List table's description with nested and array fields flattened" in {
     assumeCrossdataUpAndRunning
 
     val flattenedDriver = Driver(true)
@@ -35,6 +35,8 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     //Expectations
     result should contain (new FieldMetadata("address.zip", IntegerType))
     result should contain (new FieldMetadata("account.details.bank", StringType))
+    result should contain (new FieldMetadata("account.details.bank", StringType))
+    result should contain (new FieldMetadata("grades.FP", DoubleType))
   }
 
   it should " List table's description with nested fields Not flattened" in {
@@ -78,6 +80,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     //Expectations
     result.head.toSeq(0).toString should be equals "description5"
   }
+
 }
 
 
