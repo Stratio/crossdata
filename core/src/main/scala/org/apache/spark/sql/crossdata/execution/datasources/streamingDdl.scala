@@ -94,6 +94,7 @@ private[crossdata] case class GetAllEphemeralTables() extends LogicalPlan with R
 
 private[crossdata] case class CreateEphemeralTable(
                                                     tableIdent: TableIdentifier,
+                                                    userSchema: StructType,
                                                     opts: Map[String, String])
   extends LogicalPlan with RunnableCommand {
 
@@ -108,7 +109,7 @@ private[crossdata] case class CreateEphemeralTable(
 
     val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
       streamingCatalog =>
-        val ephTable = createEphemeralTableModel(tableIdent.table, opts)
+        val ephTable = createEphemeralTableModel(tableIdent.table, userSchema, opts)
         streamingCatalog.createEphemeralTable(ephTable) match {
           case Right(table)  => table.toStringPretty
           case Left(message)    => message
