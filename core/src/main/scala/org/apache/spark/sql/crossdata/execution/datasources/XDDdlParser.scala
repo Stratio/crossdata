@@ -15,10 +15,13 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
+import java.util.UUID
+
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.datasources.DDLParser
 
-class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
+class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) extends DDLParser(parseQuery){
 
   protected val IMPORT = Keyword("IMPORT")
   protected val TABLES = Keyword("TABLES")
@@ -31,15 +34,18 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val UPDATE = Keyword("UPDATE")
   protected val QUERY = Keyword("QUERY")
   protected val QUERIES = Keyword("QUERIES")
+  protected val ADD = Keyword("ADD")
+  protected val WITH = Keyword("WITH")
+  protected val WINDOW = Keyword("WINDOW")
+  protected val SECS = Keyword("SECS")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
     createTable | describeTable | refreshTable | importStart | dropTable | createView | streamingSentences
 
+  // TODO move to StreamingDdlParser
   protected lazy val streamingSentences: Parser[LogicalPlan] = existsEphemeralTable |
     getEphemeralTable | getAllEphemeralTables | createEphemeralTable | updateEphemeralTable | dropEphemeralTable |
-    getEphemeralStatus | getAllEphemeralStatuses | existsEphemeralQuery | getEphemeralQuery |
-    getAllEphemeralQueries | createEphemeralQuery | updateEphemeralQuery | dropEphemeralQuery |
-    dropAllEphemeralQueries
+    getAllEphemeralQueries | addEphemeralQuery  | dropEphemeralQuery | dropAllEphemeralQueries
 
 
   protected lazy val importStart: Parser[LogicalPlan] =
@@ -65,6 +71,17 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
     }
   }
 
+
+
+
+
+
+
+
+
+  /**
+   * Streaming
+   */
   /**
   * Ephemeral Table Functions
   */
@@ -148,16 +165,40 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
       case operation => GetAllEphemeralQueries()
     }
   }
-  protected lazy val createEphemeralQuery: Parser[LogicalPlan] = {
-    (CREATE ~ EPHEMERAL ~ QUERY~> tableIdentifier) ~ (OPTIONS ~> options) ^^ {
-      case queryIdentifier ~ opts => CreateEphemeralQuery(queryIdentifier, opts)
+  protected lazy val addEphemeralQuery: Parser[LogicalPlan] = {
+
+    ADD.? ~ streamingSql ~ (WITH ~ WINDOW ~> numericLit <~ SECS ) ~ (AS ~> ident.?) ^^ {
+      case addDefined ~ streamQl ~ litN ~ topIdent =>
+
+        val ephTables: Seq[String] = xDContext.sql(streamQl).queryExecution.analyzed.collect{case StreamingRelation(ephTableName) => ephTableName}
+        ephTables.distinct match {
+          case Seq(eTableName) =>
+            AddEphemeralQuery(eTableName,streamQl, topIdent.getOrElse(UUID.randomUUID().toString),new Integer(litN))
+          case tableNames =>
+            sys.error(s"Expected an epehemeral table within the query, but found ${tableNames.mkString(",")}")
+        }
+    }
+
+  }
+
+  // Returns the select statement without the streaming info
+  protected lazy val streamingSql: Parser[String] = new Parser[String] {
+    def apply(in: Input): ParseResult[String] = {
+      val indexOfWithWindow = in.source.toString.indexOf("WITH WINDOW")
+      if (indexOfWithWindow <= 0){
+        restInput(in)
+      } else {
+        val streamSql = in.source.subSequence(in.offset, indexOfWithWindow).toString.trim
+
+        def streamingInfoInput(inpt: Input): Input = {
+          val startsWithWindow = inpt.source.subSequence(inpt.offset, inpt.source.length()).toString.trim.startsWith("WITH WINDOW")
+          if (startsWithWindow) inpt else streamingInfoInput(inpt.rest)
+        }
+        Success(streamSql,streamingInfoInput(in))
+      }
     }
   }
-  protected lazy val updateEphemeralQuery: Parser[LogicalPlan] = {
-    (UPDATE ~ EPHEMERAL ~ QUERY ~> tableIdentifier) ~ (OPTIONS ~> options) ^^ {
-      case queryIdentifier ~ opts => UpdateEphemeralQuery(queryIdentifier, opts)
-    }
-  }
+
   protected lazy val dropEphemeralQuery: Parser[LogicalPlan] = {
     (DROP ~ EPHEMERAL ~ QUERY ~> tableIdentifier) ^^ {
       case queryIdentifier => DropEphemeralQuery(queryIdentifier)

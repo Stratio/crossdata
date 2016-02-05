@@ -27,10 +27,10 @@ import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
-import org.apache.spark.sql.crossdata.catalog.{XDStreamingCatalog, XDCatalog}
+import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
+import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy,
-ImportTablesUsingWithOptions, XDDdlParser}
+import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
@@ -54,17 +54,17 @@ class XDContext private (@transient val sc: SparkContext,
   def this(sc: SparkContext, config: Config) =
     this(sc, Some(config))
 
-  private val xdConfig: Config = userConfig.fold(config) { userConf =>
+  val xdConfig: Config = userConfig.fold(config) { userConf =>
     userConf.withFallback(config)
   }
 
   val catalogConfig = xdConfig.getConfig(XDContext.CatalogConfigKey)
 
   override protected[sql] lazy val catalog: XDCatalog = {
-    import XDContext.{CaseSensitive, CatalogClassConfigKey, DerbyClass}
+    import XDContext.{CaseSensitive, DerbyClass}
 
-    val catalogClass = if (catalogConfig.hasPath(CatalogClassConfigKey))
-      catalogConfig.getString(CatalogClassConfigKey)
+    val catalogClass = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
+      catalogConfig.getString(XDContext.ClassConfigKey)
     else DerbyClass
 
     val xdCatalog = Class.forName(catalogClass)
@@ -78,15 +78,16 @@ class XDContext private (@transient val sc: SparkContext,
   }
 
   protected[crossdata] lazy val streamingCatalog: Option[XDStreamingCatalog] = {
-    import XDContext.StreamingClassConfigKey
-
-    if (catalogConfig.hasPath(StreamingClassConfigKey)) {
-      val streamingCatalogClass = catalogConfig.getString(StreamingClassConfigKey)
+    if (xdConfig.hasPath(StreamingCatalogClassConfigKey)) {
+      val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)
       val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[XDContext])
 
       Option(constr.newInstance(self).asInstanceOf[XDStreamingCatalog])
-    } else None
+    } else {
+      logger.warn("empty streaming catalog")
+      None
+    }
   }
 
   override lazy val logger = Logger.getLogger(classOf[XDContext])
@@ -115,7 +116,7 @@ class XDContext private (@transient val sc: SparkContext,
   override protected[sql] val planner: SparkPlanner = new XDPlanner
 
   @transient
-  protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_))
+  protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_), this)
 
   @transient
   override protected[sql] lazy val functionRegistry: FunctionRegistry =
@@ -194,11 +195,10 @@ object XDContext {
   val JDBCClass = "org.apache.spark.sql.crossdata.catalog.JDBCCatalog"
   val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog"
   val CatalogConfigKey = "catalog"
+  val StreamingConfigKey = "streaming"
   val ClassConfigKey = "class"
   val CatalogClassConfigKey : String = s"$CatalogConfigKey.$CatalogClassConfigKey"
-  val StreamingClassConfigKey = "streaming-class"
-  val StreamingConfigKey = "streaming"
-
+  val StreamingCatalogClassConfigKey : String = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
 
   private val INSTANTIATION_LOCK = new Object()
 

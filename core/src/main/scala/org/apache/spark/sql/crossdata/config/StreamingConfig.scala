@@ -68,26 +68,6 @@ object StreamingConfig extends TypesafeConfigComponent{
 
   }
 
-  def createEphemeralQueryModel(ident: String, opts : Map[String, String]) : Either[Seq[String], EphemeralQueryModel] = {
-
-    val finalOptions = getOptions(opts)
-
-    val notPresent = Seq(queryAlias, querySql) filterNot (finalOptions contains _)
-    val parametersOk = notPresent.isEmpty
-
-    parametersOk match {
-      case true   =>
-        val alias = finalOptions(queryAlias)
-        val sql = finalOptions(querySql)
-        val window = finalOptions.getOrElse(queryWindow, "5").toInt
-        val queryOptions = finalOptions.filter{case (k, v) => k.startsWith(queryOptionsKey)}
-        Right(EphemeralQueryModel(ident, alias, sql, window, queryOptions))
-
-      case false  =>
-        Left(notPresent.map(notFoundMandatory))
-    }
-  }
-
   // Options with order preference
   private def getOptions(opts : Map[String, String]): Map[String, String] = {
     val filePath = opts.get(streamingConfFilePath)

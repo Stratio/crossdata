@@ -110,7 +110,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
                   // TODO We should replace tableIdent.mkString with TableIdentifier
                   case Some(streamingCatalog) if streamingCatalog.existsEphemeralTable(tableIdent.mkString(".")) =>
                     StreamingRelation(tableIdent.mkString("."))
-                  case None =>
+                  case _ =>
                     sys.error(s"Table/View Not Found: ${tableIdent.mkString(".")}")
                 }
 

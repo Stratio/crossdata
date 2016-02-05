@@ -17,15 +17,18 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.daos.impl._
 import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
 class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
 
-  val ephemeralTableDAO = new EphemeralTableTypesafeDAO(xdContext.catalogConfig.getConfig(XDContext.StreamingConfigKey))
-  val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(xdContext.catalogConfig.getConfig(XDContext.StreamingConfigKey))
-  val ephemeralTableStatusDAO = new EphemeralTableStatusTypesafeDAO(xdContext.catalogConfig.getConfig(XDContext.StreamingConfigKey))
+  // TODO add several requires
+  require(xdContext.xdConfig.hasPath(XDContext.StreamingConfigKey))
+  private val streamingConfig = xdContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
+
+  val ephemeralTableDAO = new EphemeralTableTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+  val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+  val ephemeralTableStatusDAO = new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
   /**
    * Ephemeral Table Functions
    */

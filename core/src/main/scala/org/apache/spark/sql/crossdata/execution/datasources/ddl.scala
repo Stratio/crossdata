@@ -17,20 +17,14 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import com.stratio.crossdata.connector.TableInventory
 import org.apache.spark.Logging
-import org.apache.spark.sql.types.{BooleanType, StringType, ArrayType, StructField, StructType}
-import org.apache.spark.sql.{Row, SQLContext}
-
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
-
-
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.RelationProvider
-
+import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
 
 
