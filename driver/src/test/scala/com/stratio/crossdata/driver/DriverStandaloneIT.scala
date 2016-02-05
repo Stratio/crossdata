@@ -30,9 +30,12 @@ class DriverStandaloneIT extends BaseXDTest {
   "Crossdata driver" should "fail with a timeout when there is no server" in {
     val driver = Driver()
     val sqlCommand = SQLCommand("select * from any")
+
     val result = driver.syncQuery(sqlCommand, Timeout(1 seconds), 1)
+
     result.hasError should be(true)
     a[RuntimeException] should be thrownBy result.resultSet
+
     result.queryId should be(sqlCommand.queryId)
     result shouldBe an[ErrorResult]
     result.asInstanceOf[ErrorResult].message should include regex "(?i)timeout was exceed"
@@ -44,5 +47,15 @@ class DriverStandaloneIT extends BaseXDTest {
     val driver = Driver()
     val future = driver.asyncQuery(SQLCommand("select * from any"), Timeout(1 seconds), 1)
     a[TimeoutException] should be thrownBy Await.result(future, 2 seconds)
+  }
+
+  it should "fail with Retry" in {
+    val driver = Driver()
+    val sqlCommand = SQLCommand("select * from any")
+
+    val result = driver.syncQuery(sqlCommand, Timeout(2 seconds), 3)
+
+    result.hasError should be(true)
+    a[RuntimeException] should be thrownBy result.resultSet
   }
 }
