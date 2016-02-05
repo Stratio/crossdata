@@ -33,11 +33,14 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val QUERIES = Keyword("QUERIES")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
-    createTable | describeTable | refreshTable | importStart | dropTable | createView | existsEphemeralTable |
-      getEphemeralTable | getAllEphemeralTables | createEphemeralTable | updateEphemeralTable | dropEphemeralTable |
-      dropAllEphemeralTables | getEphemeralStatus | getAllEphemeralStatuses |  existsEphemeralQuery |
-      getEphemeralQuery | getAllEphemeralQueries | createEphemeralQuery | updateEphemeralQuery | dropEphemeralQuery |
-      dropAllEphemeralQueries
+    createTable | describeTable | refreshTable | importStart | dropTable | createView | streamingSentences
+
+  protected lazy val streamingSentences: Parser[LogicalPlan] = existsEphemeralTable |
+    getEphemeralTable | getAllEphemeralTables | createEphemeralTable | updateEphemeralTable | dropEphemeralTable |
+    getEphemeralStatus | getAllEphemeralStatuses | existsEphemeralQuery | getEphemeralQuery |
+    getAllEphemeralQueries | createEphemeralQuery | updateEphemeralQuery | dropEphemeralQuery |
+    dropAllEphemeralQueries
+
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
