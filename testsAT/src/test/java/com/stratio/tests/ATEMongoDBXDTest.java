@@ -60,7 +60,7 @@ public class ATEMongoDBXDTest extends BaseTest{
     private String mongoPortString = System.getProperty("MONGO_PORT", "27017");
     private int mongoPort = Integer.parseInt(mongoPortString);
     private String dataBase = "databasetest";
-    @BeforeClass
+    @BeforeClass(groups = {"basic"})
     public void setUp() throws UnknownHostException{
         MongoClient mongoClient = new MongoClient(mongoHost, mongoPort);
         mongoClient.dropDatabase(dataBase);
@@ -129,13 +129,13 @@ public class ATEMongoDBXDTest extends BaseTest{
         ThreadProperty.set("Connector", connector);
         ThreadProperty.set("Driver", "context");
     }
-    @AfterClass
+    @AfterClass(groups = {"basic"})
     public void cleanUp() throws UnknownHostException{
         MongoClient mongoClient = new MongoClient(mongoHost, mongoPort);
         mongoClient.dropDatabase(dataBase);
     }
 
-    @Test(enabled = true)
+    @Test(enabled = true, groups = {"basic"})
     public void ATMongoDBXDTest() throws Exception{
         new CucumberRunner(this.getClass()).runCukes();
     }
