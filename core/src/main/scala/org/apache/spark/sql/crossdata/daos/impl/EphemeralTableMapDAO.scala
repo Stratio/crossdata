@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.spark.sql.crossdata.daos.impl
 
-package org.apache.spark.sql.crossdata.models
+import org.apache.spark.sql.crossdata.daos.{EphemeralTableMapDAO => EphTableMapDAO}
 
-case class KafkaOptionsModel(connection: Seq[ConnectionHostModel],
-                             // TODO Seq(topic?? union??)
-                             topics: Seq[TopicModel],
-                             groupId: String,
-                             partitionOutput: Option[String] = None,
-                             additionalOptions: Map[String, String] = Map.empty,
-                             storageLevel: String = "MEMORY_AND_DISK_SER") {
+class EphemeralTableMapDAO (opts: Map[String, String], subPath: Option[String] = None)
+  extends EphTableMapDAO{
 
-  def toStringPretty : String = ModelUtils.modelToJsonString(this)
+  val memoryMap = opts
+  override lazy val config: Config = new DummyConfig(subPath)
 }
