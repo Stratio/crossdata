@@ -15,7 +15,9 @@
  */
 package org.apache.spark.sql.crossdata
 
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
+import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.{SQLContext, DataFrame, Row}
 import org.apache.spark.sql.catalyst.expressions._
@@ -24,7 +26,6 @@ import org.apache.spark.sql.crossdata.ExecutionType.{ExecutionType, Default, Nat
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import XDDataFrame.findNativeQueryExecutor
-import org.apache.log4j.Logger
 import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
 
 private[sql] object XDDataFrame {
@@ -81,9 +82,7 @@ private[sql] object XDDataFrame {
  */
 class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
                                @transient override val queryExecution: SQLContext#QueryExecution)
-  extends DataFrame(sqlContext, queryExecution) {
-
-  val logger: Logger
+  extends DataFrame(sqlContext, queryExecution) with SparkLoggerComponent {
 
   def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = {
     this(sqlContext, {
@@ -96,7 +95,6 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     )
   }
 
-
   /**
    * @inheritdoc
    */
@@ -107,9 +105,9 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     } else {
       val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
       if(nativeQueryExecutor.isEmpty){
-        logger.info(s"Spark Query: ${queryExecution.simpleString}")
+        log.info(s"Spark Query: ${queryExecution.simpleString}")
       } else {
-        logger.info(s"Native query: ${queryExecution.simpleString}")
+        log.info(s"Native query: ${queryExecution.simpleString}")
       }
       nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
