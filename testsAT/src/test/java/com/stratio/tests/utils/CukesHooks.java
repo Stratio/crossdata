@@ -107,7 +107,6 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             commonspec.getXdContext().setSparkContext();
             commonspec.getXdContext().setXDContext();
         }
-
         System.out.println(ThreadProperty.get("Connector"));
         switch(ThreadProperty.get("Connector")){
         case "Cassandra":
