@@ -15,14 +15,15 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.config.StreamingConfig._
-import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.config.StreamingConfig._
+import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{Row, SQLContext}
 
 /**
   * Ephemeral Table Functions
@@ -327,8 +328,13 @@ private[crossdata] case class GetAllEphemeralQueries()
 }
 
 
-private[crossdata] case class CreateEphemeralQuery(queryIdent: TableIdentifier, opts: Map[String, String])
-  extends LogicalPlan with RunnableCommand{
+private[crossdata] case class AddEphemeralQuery(ephemeralTablename: String,
+                                                sql: String,
+                                                alias: String,
+                                                window: Int,
+                                                opts: Map[String, String] = Map.empty)
+
+  extends LogicalPlan with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
@@ -339,21 +345,16 @@ private[crossdata] case class CreateEphemeralQuery(queryIdent: TableIdentifier, 
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
+    val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map {
       streamingCatalog =>
-        createEphemeralQueryModel(queryIdent.table, opts) match {
-          case Right(queryModel) =>
-            streamingCatalog.createEphemeralQuery(queryModel) match {
-              case Right(query)   => query.toStringPretty
-              case Left(message)  => message
-            }
-          case Left(message) => message
-        }
+        val eitherCreate = streamingCatalog.createEphemeralQuery(EphemeralQueryModel(ephemeralTablename, sql, alias, window, opts))
+        if (eitherCreate.isLeft)
+          sys.error(eitherCreate.left.get)
+        else
+          alias
+    }.getOrElse(sys.error("StreamingXDCatalog is empty. Cannot create ephemeral queries"))
 
-    }
-
-    /*
-        // TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
+    /*// TODO: Blocked by CROSSDATA-148 and CROSSDATA-205
         // * This query will trigger 3 actions in the catalog persistence:
         //   1.- Associate the table with the schema.
         val schema = columns.json
@@ -372,39 +373,10 @@ private[crossdata] case class CreateEphemeralQuery(queryIdent: TableIdentifier, 
           .addAppArgs(params:_*)
           .launch()
 
-        // * Return the UUID of the process
     */
 
     Seq(Row(result))
 
-  }
-}
-
-
-private[crossdata] case class UpdateEphemeralQuery(queryIdent: TableIdentifier, opts: Map[String, String])
-  extends LogicalPlan with RunnableCommand{
-
-  override val output: Seq[Attribute] = {
-    val schema = StructType(
-      Seq(StructField(s"Query updated", StringType, false))
-    )
-    schema.toAttributes
-  }
-
-  override def run(sqlContext: SQLContext): Seq[Row] = {
-
-    val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
-      streamingCatalog =>
-      createEphemeralQueryModel(queryIdent.table, opts) match {
-        case Right(query) =>
-          streamingCatalog.updateEphemeralQuery(query)
-          queryIdent.table
-        case Left(message) => message
-      }
-
-    }
-
-    Seq(Row(result))
   }
 }
 

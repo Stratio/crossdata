@@ -47,7 +47,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val streamingSentences: Parser[LogicalPlan] = existsEphemeralTable |
     getEphemeralTable | getAllEphemeralTables | createEphemeralTable | updateEphemeralTable | dropEphemeralTable |
     getEphemeralStatus | getAllEphemeralStatuses | existsEphemeralQuery | getEphemeralQuery |
-    getAllEphemeralQueries | addEphemeralQuery | updateEphemeralQuery | dropEphemeralQuery |
+    getAllEphemeralQueries | addEphemeralQuery  | dropEphemeralQuery |
     dropAllEphemeralQueries
 
 
@@ -178,7 +178,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
           case Seq(eTableName) =>
             AddEphemeralQuery(eTableName,streamQl, topIdent.getOrElse(UUID.randomUUID().toString),new Integer(litN))
           case tableNames =>
-            throw new Exception(s"Expected an epehemeral table within the query, but found ${tableNames.mkString(",")}")
+            sys.error(s"Expected an epehemeral table within the query, but found ${tableNames.mkString(",")}")
         }
     }
 
@@ -202,11 +202,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
   }
 
-  protected lazy val updateEphemeralQuery: Parser[LogicalPlan] = {
-    (UPDATE ~ EPHEMERAL ~ QUERY ~> tableIdentifier) ~ (OPTIONS ~> options) ^^ {
-      case queryIdentifier ~ opts => UpdateEphemeralQuery(queryIdentifier, opts)
-    }
-  }
   protected lazy val dropEphemeralQuery: Parser[LogicalPlan] = {
     (DROP ~ EPHEMERAL ~ QUERY ~> tableIdentifier) ^^ {
       case queryIdentifier => DropEphemeralQuery(queryIdentifier)
