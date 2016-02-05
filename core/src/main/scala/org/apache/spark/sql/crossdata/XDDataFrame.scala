@@ -195,7 +195,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
 
       def cartesian[T](ls: Seq[Seq[T]]): Seq[Seq[T]] = (ls :\ Seq(Seq.empty[T])) {
         case (cur: Seq[T], prev) => for(x <- prev; y <- cur) yield y +: x
-      } filterNot(_.isEmpty)
+      }
 
       val newSchema = StructType(
         row.schema map {
