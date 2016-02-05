@@ -15,11 +15,16 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
+
 import java.util.UUID
 
+
+import scala.language.implicitConversions
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.datasources.DDLParser
+import org.apache.spark.sql.types._
+
 
 class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) extends DDLParser(parseQuery){
 
@@ -27,6 +32,8 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val TABLES = Keyword("TABLES")
   protected val DROP = Keyword("DROP")
   protected val VIEW = Keyword("VIEW")
+  protected val EXTERNAL = Keyword("EXTERNAL")
+  //Streaming keywords
   protected val EPHEMERAL = Keyword("EPHEMERAL")
   protected val GET = Keyword("GET")
   protected val STATUS = Keyword("STATUS")
@@ -40,12 +47,15 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val SECS = Keyword("SECS")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
-    createTable | describeTable | refreshTable | importStart | dropTable | createView | streamingSentences
+    createTable | describeTable | refreshTable | importStart | dropTable |
+      createView | createExternalTable | streamingSentences
 
   // TODO move to StreamingDdlParser
   protected lazy val streamingSentences: Parser[LogicalPlan] = existsEphemeralTable |
     getEphemeralTable | getAllEphemeralTables | createEphemeralTable | updateEphemeralTable | dropEphemeralTable |
     getAllEphemeralQueries | addEphemeralQuery  | dropEphemeralQuery | dropAllEphemeralQueries
+
+
 
 
   protected lazy val importStart: Parser[LogicalPlan] =
@@ -71,13 +81,17 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
   }
 
+  protected lazy val createExternalTable: Parser[LogicalPlan] = {
 
+    CREATE ~> EXTERNAL ~> TABLE ~> tableIdentifier ~ tableCols ~ (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
+      case tableName ~ columns ~ provider ~ opts =>
+        val userSpecifiedSchema = StructType(columns)
+        val options = opts.getOrElse(Map.empty[String, String])
 
+        CreateExternalTable(tableName, userSpecifiedSchema, provider, options)
+    }
 
-
-
-
-
+  }
 
   /**
    * Streaming
@@ -209,6 +223,5 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
       case operation => DropAllEphemeralQueries()
     }
   }
-
 
 }

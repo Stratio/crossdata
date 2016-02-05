@@ -28,6 +28,7 @@ CASSANDRA_LIB="$SPARK_HOME/lib/crossdata-cassandra-$CROSSDATA_VERSION-jar-with-d
 ELASTICSEARCH_LIB="$SPARK_HOME/lib/crossdata-elasticsearch-$CROSSDATA_VERSION-jar-with-dependencies.jar"
 
 
+
 # Keep all the arguments, then remove the XD specific ones and only keep the Spark arguments.
 sparkArguments="$@"
 

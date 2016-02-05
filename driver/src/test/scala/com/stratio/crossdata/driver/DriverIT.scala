@@ -40,7 +40,7 @@ class DriverIT extends EndToEndTest {
     result.queryId should be(sqlCommand.queryId)
     result shouldBe an[ErrorResult]
     result.asInstanceOf[ErrorResult].cause.isDefined shouldBe (true)
-    result.asInstanceOf[ErrorResult].cause.get shouldBe a[AnalysisException]
+    result.asInstanceOf[ErrorResult].cause.get shouldBe a[Exception]
     result.asInstanceOf[ErrorResult].cause.get.getMessage should include regex "cannot resolve .*"
   }
 
@@ -77,21 +77,5 @@ class DriverIT extends EndToEndTest {
 
     driver.listTables() should contain allOf(("jsonTable2", Some("db")), ("jsonTable2", None))
   }
-
-  "The JavaDriver" should "get a list of tables" in {
-
-    val javadriver = new JavaDriver()
-
-    javadriver.syncQuery(
-      SQLCommand(s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
-    )
-    javadriver.syncQuery(
-      SQLCommand(s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
-    )
-
-    javadriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
-
-  }
-
 
 }

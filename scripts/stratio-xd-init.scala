@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 //Commmons
+import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.SPARK_VERSION
@@ -35,6 +36,6 @@ println("""Welcome to Stratio
     _\ \/ _ \/ _ `/ __/  '_/
    /___/ .__/\_,_/_/ /_/\_\   version %s
       /_/
-        """.format("1.0.1", SPARK_VERSION))
+        """.format(CrossdataVersion, SPARK_VERSION))
 
 val xdContext = new XDContext(sc)

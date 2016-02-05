@@ -15,16 +15,11 @@
  */
 package org.apache.spark.sql.crossdata.execution
 
-import org.apache.spark.Logging
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.Strategy
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.execution.datasources.{CreateTableUsingAsSelect, CreateTableUsing}
+import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTableUsingAsSelect}
 import org.apache.spark.sql.execution.{ExecutedCommand, SparkPlan, SparkStrategies}
-
-import org.apache.spark.sql.Strategy
 
 trait XDStrategies extends SparkStrategies {
   self: XDContext#XDPlanner =>
