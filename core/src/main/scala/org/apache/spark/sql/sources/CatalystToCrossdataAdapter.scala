@@ -31,7 +31,6 @@ import org.apache.spark.sql.types.ArrayType
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.unsafe.types.UTF8String
 
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 object CatalystToCrossdataAdapter {
@@ -80,38 +79,41 @@ object CatalystToCrossdataAdapter {
 
     val itemAccess2att: Map[GetArrayItem, Attribute] = att2itemAccess.map(_.swap)
 
-    val ignoredExpressions: mutable.Buffer[Expression] = mutable.Buffer.empty
+    object ExpressionType extends Enumeration {
+      type ExpressionType = Value
+      val Requested, Found, Ignored = Value
+    }
 
-    def extractRequestedColumns(namedExpression: Expression): Seq[(Boolean, Attribute)] = namedExpression match {
+    import ExpressionType._
+
+    def extractRequestedColumns(namedExpression: Expression): Seq[(ExpressionType, Expression)] = namedExpression match {
 
       case Alias(child, _) =>
         extractRequestedColumns(child)
 
       case aRef: AttributeReference =>
-        Seq(true -> aRef)
+        Seq(Requested -> aRef)
 
       case nudf: NativeUDF =>
         nudf.references flatMap {
         case nat: AttributeReference if att2udf contains nat =>
-          udfFlattenedActualParameters(nat, at => false -> relation.attributeMap(at)) :+ (true -> nat)
+          udfFlattenedActualParameters(nat, at => Found -> relation.attributeMap(at)) :+ (Requested -> nat)
        } toSeq
 
       case c: GetArrayItem if itemAccess2att contains c =>
-        c.references.map(false -> relation.attributeMap(_)).toSeq :+ (true -> itemAccess2att(c))
+        c.references.map(Found -> relation.attributeMap(_)).toSeq :+ (Requested -> itemAccess2att(c))
 
       // TODO should these expressions be ignored? We are ommitting expressions within structfields
       case c: GetStructField  => c.references flatMap {
-        case x => Seq(true -> relation.attributeMap(x))
+        case x => Seq(Requested -> relation.attributeMap(x))
       } toSeq
 
       case ignoredExpr =>
-        ignoredExpressions append ignoredExpr
-        Nil
+        Seq(Ignored -> ignoredExpr)
     }
 
 
-
-    val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap {
+    val columnExpressions: Map[ExpressionType, Seq[Expression]] = projects.flatMap {
       extractRequestedColumns
     } groupBy (_._1) mapValues (_.map(_._2))
 
@@ -129,13 +131,17 @@ object CatalystToCrossdataAdapter {
       case Aggregate(groupingExpression, aggregationExpression, child) => (groupingExpression, aggregationExpression)
     }
 
+    val requestedColumns: Seq[Attribute] = columnExpressions(Requested) collect {
+      case a: Attribute => a
+    }
+
     val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
-      SimpleLogicalPlan(requestedCols(true), filters.toArray, att2udf, att2itemAccess)
+      SimpleLogicalPlan(requestedColumns, filters.toArray, att2udf, att2itemAccess)
     } { case (groupingExpression, selectExpression) =>
       AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)
     }
 
-    (baseLogicalPlan, ProjectReport(ignoredExpressions.toSeq), filterReport)
+    (baseLogicalPlan, ProjectReport(columnExpressions(Ignored)), filterReport)
   }
 
   def udfFlattenedActualParameters[B](
