@@ -81,7 +81,7 @@ object CatalystToCrossdataAdapter {
 
     object ExpressionType extends Enumeration {
       type ExpressionType = Value
-      val REQUESTED, FOUND, IGNORED = Value
+      val Requested, Found, Ignored = Value
     }
 
     import ExpressionType._
@@ -92,24 +92,24 @@ object CatalystToCrossdataAdapter {
         extractRequestedColumns(child)
 
       case aRef: AttributeReference =>
-        Seq(REQUESTED -> aRef)
+        Seq(Requested -> aRef)
 
       case nudf: NativeUDF =>
         nudf.references flatMap {
         case nat: AttributeReference if att2udf contains nat =>
-          udfFlattenedActualParameters(nat, at => FOUND -> relation.attributeMap(at)) :+ (REQUESTED -> nat)
+          udfFlattenedActualParameters(nat, at => Found -> relation.attributeMap(at)) :+ (Requested -> nat)
        } toSeq
 
       case c: GetArrayItem if itemAccess2att contains c =>
-        c.references.map(FOUND -> relation.attributeMap(_)).toSeq :+ (REQUESTED -> itemAccess2att(c))
+        c.references.map(Found -> relation.attributeMap(_)).toSeq :+ (Requested -> itemAccess2att(c))
 
       // TODO should these expressions be ignored? We are ommitting expressions within structfields
       case c: GetStructField  => c.references flatMap {
-        case x => Seq(REQUESTED -> relation.attributeMap(x))
+        case x => Seq(Requested -> relation.attributeMap(x))
       } toSeq
 
       case ignoredExpr =>
-        Seq(IGNORED -> ignoredExpr)
+        Seq(Ignored -> ignoredExpr)
     }
 
 
@@ -131,7 +131,7 @@ object CatalystToCrossdataAdapter {
       case Aggregate(groupingExpression, aggregationExpression, child) => (groupingExpression, aggregationExpression)
     }
 
-    val requestedColumns: Seq[Attribute] = columnExpressions(REQUESTED) collect {
+    val requestedColumns: Seq[Attribute] = columnExpressions(Requested) collect {
       case a: Attribute => a
     }
 
@@ -141,7 +141,7 @@ object CatalystToCrossdataAdapter {
       AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)
     }
 
-    (baseLogicalPlan, ProjectReport(columnExpressions(IGNORED)), filterReport)
+    (baseLogicalPlan, ProjectReport(columnExpressions(Ignored)), filterReport)
   }
 
   def udfFlattenedActualParameters[B](
