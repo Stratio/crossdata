@@ -45,6 +45,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val WITH = Keyword("WITH")
   protected val WINDOW = Keyword("WINDOW")
   protected val SECS = Keyword("SECS")
+  protected val START = Keyword("START")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
     createTable | describeTable | refreshTable | importStart | dropTable |
@@ -53,7 +54,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   // TODO move to StreamingDdlParser
   protected lazy val streamingSentences: Parser[LogicalPlan] = existsEphemeralTable |
     getEphemeralTable | getAllEphemeralTables | createEphemeralTable | updateEphemeralTable | dropEphemeralTable |
-    getAllEphemeralQueries | addEphemeralQuery  | dropEphemeralQuery | dropAllEphemeralQueries
+    getAllEphemeralQueries | addEphemeralQuery  | dropEphemeralQuery | dropAllEphemeralQueries | startProcess
 
 
 
@@ -223,5 +224,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
       case operation => DropAllEphemeralQueries()
     }
   }
+
+  protected lazy val startProcess: Parser[LogicalPlan] = {
+    (START ~> tableIdentifier ) ^^ {
+      case table => StartProcess(table.unquotedString)
+    }
+  }
+
 
 }
