@@ -206,7 +206,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
 
       def cartesian[T](ls: Seq[Seq[T]]): Seq[Seq[T]] = (ls :\ Seq(Seq.empty[T])) {
         case (cur: Seq[T], prev) => for(x <- prev; y <- cur) yield y +: x
-      } filterNot(_.isEmpty)
+      }
 
       val newSchema = StructType(
         row.schema map {
@@ -242,7 +242,8 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         case (row: GenericRowWithSchema, currentSize) =>
           row.schema collectFirst {
             case StructField(_, _: ArrayType, _, _) =>
-              iterativeFlatten(verticallyFlatRowArrays(row)(limit-currentSize.getOrElse(0)))(limit)
+              val newLimit = limit-currentSize.getOrElse(0)
+              iterativeFlatten(verticallyFlatRowArrays(row)(newLimit))(newLimit)
           } getOrElse Seq(row)
         case (row: Row, _) => Seq(row)
       }

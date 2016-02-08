@@ -19,9 +19,11 @@
 <aspectj>
 	<aspects>
 		<aspect name="com.stratio.cucumber.aspects.ReplacementAspect" />
+        <aspect name="com.stratio.cucumber.aspects.AssertAspect" />
+        <aspect name="com.stratio.cucumber.aspects.AssertJAspect" />
 	</aspects>
     <weaver
             options="-Xlint:ignore -Xset:weaveJavaPackages=true,weaveJavaxPackages=true">
-        <dump within="com.stratio.testsAT.specs..*" beforeandafter="true"/>
+        <exclude within="org..*" />
     </weaver>
 </aspectj>

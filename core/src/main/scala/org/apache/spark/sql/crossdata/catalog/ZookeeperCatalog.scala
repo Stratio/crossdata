@@ -32,7 +32,7 @@ import org.apache.spark.sql.crossdata.daos.DAOConstants._
 class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) with TableDAOComponent {
 
-  override val config = new TypesafeConfig(Option(xdContext.catalogConfig))
+  override val config = new TypesafeConfig(Option(XDContext.catalogConfig))
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
     if (dao.count > 0) {

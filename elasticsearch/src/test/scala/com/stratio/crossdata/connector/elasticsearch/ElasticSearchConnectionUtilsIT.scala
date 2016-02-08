@@ -55,7 +55,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     //Expectations
     types should not be (null)
     types.size should be (1)
-    types(0).schema.get.size should be (6)
+    types(0).schema.get.size should be (8)
 
   }
 
