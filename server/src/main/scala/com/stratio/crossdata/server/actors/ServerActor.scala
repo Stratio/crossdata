@@ -38,12 +38,9 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
       try {
         val df = xdContext.sql(query)
-        val (rows, schema) = if(withColnames) {
-          val r = df.asInstanceOf[XDDataFrame].flattenedCollect()
-          val longestRow = r.headOption.map(_ => r.maxBy(_.schema.length))
-          (r, longestRow.map(_.schema).getOrElse(df.schema))
-        } else (df.collect(), df.schema)
-        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, schema)
+        val rows = if(withColnames) df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
+        else df.collect()
+        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, df.schema)
       } catch {
         case e: Throwable => {
           logger.error(e.getMessage)

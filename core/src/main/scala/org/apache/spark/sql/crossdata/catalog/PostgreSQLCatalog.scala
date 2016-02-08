@@ -58,7 +58,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
   import PostgreSQLCatalog._
   import XDCatalog._
 
-  private val config = xdContext.catalogConfig
+  private val config = XDContext.catalogConfig
 
   private val db = config.getString(Database)
   private val table = config.getString(Table)

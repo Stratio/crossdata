@@ -24,7 +24,16 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
   "The Cassandra connector" should "execute natively create a External Table" in {
     val createTableQUeryString =
-      s"""|CREATE EXTERNAL TABLE $Catalog.newtable (id Integer, name String)
+      s"""|CREATE EXTERNAL TABLE $Catalog.newtable (
+          |id Integer,
+          |name String,
+          |booleanFile boolean,
+          |timeTime Timestamp,
+          |binaryType Binary,
+          |arrayType ARRAY<STRING>,
+          |mapType MAP<INT, INT>,
+          |decimalType DECIMAL
+          |)
           |USING $SourceProvider
           |OPTIONS (
           |keyspace '$Catalog',
