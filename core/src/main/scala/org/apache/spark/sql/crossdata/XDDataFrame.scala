@@ -231,8 +231,8 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         case (row: GenericRowWithSchema, currentSize) =>
           row.schema collectFirst {
             case StructField(_, _: ArrayType, _, _) =>
-              val vFlatStep = verticallyFlatRowArrays(row)(limit-currentSize.getOrElse(0))
-              iterativeFlatten(vFlatStep)(limit-vFlatStep.length+1)
+              val newLimit = limit-currentSize.getOrElse(0)
+              iterativeFlatten(verticallyFlatRowArrays(row)(newLimit))(newLimit)
           } getOrElse Seq(row)
         case (row: Row, _) => Seq(row)
       }
