@@ -22,7 +22,7 @@ import org.apache.spark.sql.types._
 import org.elasticsearch.client.IndicesAdminClient
 import org.elasticsearch.cluster.metadata.MappingMetaData
 import org.elasticsearch.common.collect.ImmutableOpenMap
-import org.elasticsearch.common.settings.ImmutableSettings
+import org.elasticsearch.common.settings. ImmutableSettings
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 
 object ElasticSearchConnectionUtils {
