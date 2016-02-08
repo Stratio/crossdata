@@ -31,7 +31,7 @@ object CrossdataStreamingApplication extends SparkLoggerComponent {
       //val ephemeralTableName = new String(BaseEncoding.base64().decode(args(EphemeralTableNameIndex)))
       val ephemeralTableName = args(EphemeralTableNameIndex)//"ephtable"
       
-      val zookeeperConfString = new String(BaseEncoding.base64().decode(args(ZookeeperConfigurationIndex)))
+      //val zookeeperConfString = new String(BaseEncoding.base64().decode(args(ZookeeperConfigurationIndex)))
       //val zookeeperConf = Try(ConfigFactory.parseString(zookeeperConfString)).getOrElse(...)
       //val zookeeperConf = Try(JSON.parseFull(zookeeperConfString).get.asInstanceOf[Map[String,Any]]).getOrElse(...)
       val zookeeperConf = Map(
