@@ -182,7 +182,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   }
   protected lazy val addEphemeralQuery: Parser[LogicalPlan] = {
 
-    ADD.? ~ streamingSql ~ (WITH ~ WINDOW ~> numericLit <~ SECS ) ~ (AS ~> ident.?) ^^ {
+    ADD.? ~ streamingSql ~ (WITH ~ WINDOW ~> numericLit <~ SECS ) ~ (AS ~> ident).? ^^ {
       case addDefined ~ streamQl ~ litN ~ topIdent =>
 
         val ephTables: Seq[String] = xDContext.sql(streamQl).queryExecution.analyzed.collect{case StreamingRelation(ephTableName) => ephTableName}
