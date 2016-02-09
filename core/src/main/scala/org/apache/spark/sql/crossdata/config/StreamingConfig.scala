@@ -20,12 +20,13 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
+import org.apache.spark.sql.types.StructType
 
 object StreamingConfig extends TypesafeConfigComponent{
 
-  def createEphemeralTableModel(ident: String, opts : Map[String, String]) : EphemeralTableModel = {
+  def createEphemeralTableModel(ident: String, userSchema: StructType, opts : Map[String, String]) : EphemeralTableModel = {
 
-    val finalOptions = getEphemeralTableOptions(opts)
+    val finalOptions = getEphemeralTableOptions(opts, ident)
 
     val connections = finalOptions(kafkaConnection)
       .split(",").map(_.split(":")).map{
@@ -53,29 +54,22 @@ object StreamingConfig extends TypesafeConfigComponent{
     val sparkOpts = finalOptions.filter{case (k, v) => k.startsWith(sparkOptionsKey)}
     val ephemeralOptions = EphemeralOptionsModel(kafkaOptions, minW, maxW, outFormat, checkpoint, sparkOpts)
 
-    EphemeralTableModel(ident, ephemeralOptions)
+    EphemeralTableModel(ident, userSchema, ephemeralOptions)
 
   }
 
   // Options with order preference
-  private def getEphemeralTableOptions(opts : Map[String, String]): Map[String, String] = {
+  private def getEphemeralTableOptions(opts : Map[String, String], ephTable: String): Map[String, String] = {
     // first if opts has confFilePath, we take configFile, and then opts if there is no confFilePath , we take opts
     val filePath = opts.get(streamingConfFilePath)
-    val options = filePath.fold(opts)(extractConfigFromFile) ++ opts
+    val options = filePath.fold(opts)(extractConfigFromFile(_, ephTable)) ++ opts
 
     options ++ listMandatoryEphemeralTableKeys
       .map(key => key -> options.getOrElse(key, notFound(key, defaultEphemeralTableMapConfig))).toMap
 
   }
 
-  // Options with order preference
-  private def getOptions(opts : Map[String, String]): Map[String, String] = {
-    val filePath = opts.get(streamingConfFilePath)
-    filePath.fold(opts)(extractConfigFromFile) ++ opts
-  }
-
-
-  private def extractConfigFromFile(filePath : String): Map[String, String] = {
+  private def extractConfigFromFile(filePath : String, ephTable: String): Map[String, String] = {
 
     val configFile =
       new TypesafeConfig(
@@ -83,7 +77,7 @@ object StreamingConfig extends TypesafeConfigComponent{
         None,
         Some(filePath),
         Some(CoreConfig.ParentConfigName + "." + XDContext.StreamingConfigKey)
-      )
+      ).getConfig(ephTable).getOrElse(new TypesafeConfig())
 
     configFile.toStringMap
   }
