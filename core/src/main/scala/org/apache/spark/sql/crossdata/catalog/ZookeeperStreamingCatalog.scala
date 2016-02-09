@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.daos.impl._
-import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
+import org.apache.spark.sql.crossdata.models._
 
 class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
 
@@ -29,6 +29,7 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   val ephemeralTableDAO = new EphemeralTableTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
   val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
   val ephemeralTableStatusDAO = new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+
   /**
    * Ephemeral Table Functions
    */
@@ -85,8 +86,7 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   override def dropEphemeralQuery(queryAlias: String): Unit =
     ephemeralQueriesDAO.dao.delete(queryAlias)
 
-  override def dropAllEphemeralQueries(): Unit =
-    ephemeralQueriesDAO.dao.deleteAll
+  override def dropAllEphemeralQueries(): Unit = ephemeralQueriesDAO.dao.deleteAll
 
   /**
    * Ephemeral Status Functions
