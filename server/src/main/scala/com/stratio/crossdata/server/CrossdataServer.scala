@@ -66,11 +66,9 @@ class CrossdataServer extends Daemon with ServerConfig {
     system = Some(ActorSystem(clusterName, config))
 
     system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
-      val minServerActorInstances = math.ceil(serverActorInstances/2.0).toInt
-      val maxServerActorInstances = minServerActorInstances*2
       val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
       val serverActor = actorSystem.actorOf(
-        RoundRobinPool(serverActorInstances, Some(resizer)).props(
+        RoundRobinPool(initServerActorInstances, Some(resizer)).props(
           Props(classOf[ServerActor],
                 Cluster(actorSystem),
                 xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")))),
