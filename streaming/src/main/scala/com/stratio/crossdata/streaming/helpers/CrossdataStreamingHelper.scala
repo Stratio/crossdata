@@ -112,6 +112,7 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
 
   private def toWindowDStream(inputStream: DStream[(String, String)],
                               ephemeralOptions: EphemeralOptionsModel): DStream[(Long, String)] =
+    // TODO window per query?
     inputStream.mapPartitions{ iterator =>
       val dateTime = DateTime.now.getMillis
       iterator.map{ case (_, kafkaEvent) => (dateTime, kafkaEvent)}

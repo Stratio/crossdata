@@ -18,6 +18,14 @@ package org.apache.spark.sql.crossdata.config
 
 object StreamingConstants {
 
+  val StreamingConfPath = "streaming"
+  val LauncherConfPath = "launcher"
+  val SparkConfPath = "spark"
+  val SparkHome = "sparkHome"
+  val MainClass = "com.stratio.crossdata.streaming.CrossdataStreamingApplication"
+
+  val LauncherConnection = "zookeeper.connectionString"
+
   val streamingConfFilePath = "streaming.confFilePath"
 
   val loggerName = "Streaming"
