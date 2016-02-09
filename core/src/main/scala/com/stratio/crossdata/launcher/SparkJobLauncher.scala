@@ -31,7 +31,7 @@ import scala.util.{Failure, Properties, Success, Try}
 
 class SparkJobLauncher(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog) extends Logging{
 
-  // TODO requiere // vs if
+  // TODO require
   private val streamingConfig = crossdataConfig.getConfig(StreamingConfPath)
   private val launcherConfig = streamingConfig.getConfig(LauncherConfPath)
 
@@ -122,8 +122,7 @@ class SparkJobLauncher(crossdataConfig: Config, streamingCatalog: XDStreamingCat
   }
 
   // TODO require, optional
-  private def sparkConf: Seq[(String, String)] = launcherConfig.getConfig(SparkConfPath).entrySet()
-    .toSeq
+  private def sparkConf: Seq[(String, String)] = launcherConfig.getConfig(SparkConfPath).entrySet().toSeq
     .map(e => (s"$SparkConfPath.${e.getKey}", e.getValue.toString))
 
 
@@ -135,12 +134,4 @@ class SparkJobLauncher(crossdataConfig: Config, streamingCatalog: XDStreamingCat
   private def validateSparkHome(): Unit = require(Try(sparkHome).isSuccess,
     "You must set the $SPARK_HOME path in configuration or environment")
 
-  /* TODO this spark.args can be replaced with streaming.launcher.spark
-    ClusterLauncherActor.toMap(AppConstant.NumExecutors, "--num-executors", ClusterConfig) ++
-    ClusterLauncherActor.toMap(AppConstant.ExecutorCores, "--executor-cores", ClusterConfig) ++
-    ClusterLauncherActor.toMap(AppConstant.TotalExecutorCores, "--total-executor-cores", ClusterConfig) ++
-    ClusterLauncherActor.toMap(AppConstant.ExecutorMemory, "--executor-memory", ClusterConfig) ++
-    // Yarn only
-    ClusterLauncherActor.toMap(AppConstant.YarnQueue, "--queue", ClusterConfig)
-    */
 }
