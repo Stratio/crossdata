@@ -68,7 +68,6 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       }finally {
         esClient.close()
       }
-      ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
     }
   }
 
