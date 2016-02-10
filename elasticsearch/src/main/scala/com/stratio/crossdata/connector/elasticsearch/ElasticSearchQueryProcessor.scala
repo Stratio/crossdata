@@ -69,9 +69,13 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       val (esIndex, esType) = extractIndexAndType(parameters).get
 
       val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
-      val resp: SearchResponse = buildClient(parameters).execute(finalQuery).await
-
-      ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
+      val esClient = buildClient(parameters)
+      try {
+        val resp: SearchResponse = esClient.execute(finalQuery).await
+        ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
+      }finally {
+        esClient.close()
+      }
     }
   }
 
