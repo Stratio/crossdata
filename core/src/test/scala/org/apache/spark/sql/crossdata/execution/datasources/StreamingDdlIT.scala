@@ -17,6 +17,7 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.types.{StringType, StructType, StructField}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.apache.spark.sql.crossdata.config.StreamingConfig._
@@ -30,31 +31,26 @@ class StreamingDdlIT extends SharedXDContextTest{
 
     val sqlContext = _xdContext
 
-    val create = sql("CREATE EPHEMERAL TABLE ephemeralTest1 OPTIONS(kafka.options.test 'optionalConfig')").collect()
+    val create = sql("CREATE EPHEMERAL TABLE ephemeralTest1 (id STRING) OPTIONS(kafka.options.test 'optionalConfig')").collect()
     val getStatus = sql("GET EPHEMERAL STATUS ephemeralTest1").collect()
     val getAllStatus = sql("GET EPHEMERAL STATUSES").collect()
-    val update = sql("UPDATE EPHEMERAL TABLE ephemeralTest1 OPTIONS(kafka.options.test 'updateParam')").collect()
-    val exists = sql("EXISTS EPHEMERAL TABLE ephemeralTest1").collect()
-    val getTable = sql("GET EPHEMERAL TABLE ephemeralTest1").collect()
-    val getAllTables = sql("GET EPHEMERAL TABLES").collect()
+    val getTable = sql("DESCRIBE EPHEMERAL TABLE ephemeralTest1").collect()
+    val getAllTables = sql("SHOW EPHEMERAL TABLES").collect()
     val dropTable = sql("DROP EPHEMERAL TABLE ephemeralTest1").collect()
-    sql("CREATE EPHEMERAL TABLE ephemeralTest1 OPTIONS(kafka.options.test 'optionalConfig')").collect()
-    sql("CREATE EPHEMERAL TABLE ephemeralTest2 OPTIONS(kafka.options.test 'optionalConfig')").collect()
+    sql("CREATE EPHEMERAL TABLE ephemeralTest1 (id STRING) OPTIONS(kafka.options.test 'optionalConfig')").collect()
+    sql("CREATE EPHEMERAL TABLE ephemeralTest2 (id STRING) OPTIONS(kafka.options.test 'optionalConfig')").collect()
     val dropAllTables = sql("DROP EPHEMERAL TABLES").collect()
 
     // Results
-    val createResult = Seq(Row(createEphemeralTableModel("ephemeralTest1", Map("kafka.options.test" -> "optionalConfig")).toStringPretty))
+    val createResult = Seq(Row(createEphemeralTableModel("ephemeralTest1", new StructType(Array(new StructField("id", StringType))), Map("kafka.options.test" -> "optionalConfig")).toStringPretty))
     val getResult = Seq(Row("{\n  \"ephemeralTableName\" : \"ephemeralTest1\",\n  \"status\" : \"NotStarted\"\n}"))
-    val updateResult = Seq(Row("ephemeralTest1"))
     val existsResult = Seq(Row("ephemeralTest1 EXISTS"))
-    val getTableResult = Seq(Row(createEphemeralTableModel("ephemeralTest1", Map("kafka.options.test" -> "updateParam")).toStringPretty))
+    val getTableResult = Seq(Row(createEphemeralTableModel("ephemeralTest1", new StructType(Array(new StructField("id", StringType))), Map("kafka.options.test" -> "updateParam")).toStringPretty))
     val dropResult = Seq(Row("ephemeralTest1"))
 
     create should be (createResult)
     getStatus should be (getResult)
     getAllStatus should be (getResult)
-    update should be (updateResult)
-    exists should be (existsResult)
     getTable should be (getTableResult)
     getAllTables should be (getTableResult)
     dropTable should be (dropResult)
