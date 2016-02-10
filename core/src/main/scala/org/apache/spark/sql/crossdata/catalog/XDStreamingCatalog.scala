@@ -66,8 +66,6 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends CatalogCommon wi
 
   def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel]
 
-  def updateEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Unit
-
   def dropEphemeralQuery(queryAlias: String): Unit
 
   def dropAllEphemeralQueries(): Unit

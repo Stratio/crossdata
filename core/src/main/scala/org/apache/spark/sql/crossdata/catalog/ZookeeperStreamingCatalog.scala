@@ -84,9 +84,6 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   override def getAllEphemeralQueries: Seq[EphemeralQueryModel] =
     ephemeralQueriesDAO.dao.getAll()
 
-  override def updateEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Unit =
-    ephemeralQueriesDAO.dao.update(ephemeralQuery.alias, ephemeralQuery)
-
   override def dropEphemeralQuery(queryAlias: String): Unit =
     ephemeralQueriesDAO.dao.delete(queryAlias)
 
