@@ -184,8 +184,9 @@ private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
-      streamingCatalog => streamingCatalog.dropEphemeralTable(tableIdent.table)
+
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{ streamingCatalog =>
+      streamingCatalog.dropEphemeralTable(tableIdent.table)
     }
 
     Seq(Row(tableIdent.table))
