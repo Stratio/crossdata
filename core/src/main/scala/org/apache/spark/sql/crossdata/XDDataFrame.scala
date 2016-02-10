@@ -15,7 +15,9 @@
  */
 package org.apache.spark.sql.crossdata
 
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
+import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.{SQLContext, DataFrame, Row}
 import org.apache.spark.sql.catalyst.expressions._
@@ -112,7 +114,7 @@ private[sql] object XDDataFrame {
  */
 class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
                                @transient override val queryExecution: SQLContext#QueryExecution)
-  extends DataFrame(sqlContext, queryExecution) {
+  extends DataFrame(sqlContext, queryExecution) with SparkLoggerComponent {
 
   def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = {
     this(sqlContext, {
@@ -125,7 +127,6 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     )
   }
 
-
   /**
    * @inheritdoc
    */
@@ -135,6 +136,11 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       super.collect()
     } else {
       val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
+      if(nativeQueryExecutor.isEmpty){
+        log.info(s"Spark Query: ${queryExecution.simpleString}")
+      } else {
+        log.info(s"Native query: ${queryExecution.simpleString}")
+      }
       nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
   }
