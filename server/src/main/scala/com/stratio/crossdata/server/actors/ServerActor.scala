@@ -37,7 +37,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   def receive: Receive = {
 
     case sqlCommand @ SQLCommand(query, _, withColnames) =>
-      logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
+      logger.info(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
       try {
         val df = xdContext.sql(query)
         val (rows, schema) = if(withColnames) {
