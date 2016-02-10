@@ -19,7 +19,7 @@ import com.typesafe.config.Config
 
 
 object NumberActorConfig {
-  val ServerExecutorInstances = 5
+  val DefaultServerExecutorInstances = 5
   val ServerActorInstancesInit = "config.akka.number.server-actor-init"
   val ServerActorInstancesMin = "config.akka.number.server-actor-min"
   val ServerActorInstancesMax = "config.akka.number.server-actor-max"
@@ -30,10 +30,10 @@ trait NumberActorConfig {
   import NumberActorConfig.ServerActorInstancesInit
   import NumberActorConfig.ServerActorInstancesMin
   import NumberActorConfig.ServerActorInstancesMax
-  import NumberActorConfig.ServerExecutorInstances
-  lazy val initServerActorInstances: Int = Option(config.getString(ServerActorInstancesInit)).map(_.toInt).getOrElse(ServerExecutorInstances)
-  lazy val minServerActorInstances: Int = Option(config.getString(ServerActorInstancesMin)).map(_.toInt).getOrElse(ServerExecutorInstances)
-  lazy val maxServerActorInstances: Int = Option(config.getString(ServerActorInstancesMax)).map(_.toInt).getOrElse(ServerExecutorInstances*2)
+  import NumberActorConfig.DefaultServerExecutorInstances
+  lazy val initServerActorInstances: Int = Option(config.getString(ServerActorInstancesInit)).map(_.toInt).getOrElse(DefaultServerExecutorInstances)
+  lazy val minServerActorInstances: Int = Option(config.getString(ServerActorInstancesMin)).map(_.toInt).getOrElse(initServerActorInstances)
+  lazy val maxServerActorInstances: Int = Option(config.getString(ServerActorInstancesMax)).map(_.toInt).getOrElse(minServerActorInstances*2)
   def config: Config
 
 }
