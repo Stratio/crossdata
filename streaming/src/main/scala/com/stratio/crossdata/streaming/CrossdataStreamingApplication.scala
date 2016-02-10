@@ -18,7 +18,7 @@ package com.stratio.crossdata.streaming
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Try, Failure, Success}
 
 object CrossdataStreamingApplication extends SparkLoggerComponent {
 
@@ -35,7 +35,7 @@ object CrossdataStreamingApplication extends SparkLoggerComponent {
       //val zookeeperConf = Try(ConfigFactory.parseString(zookeeperConfString)).getOrElse(...)
       //val zookeeperConf = Try(JSON.parseFull(zookeeperConfString).get.asInstanceOf[Map[String,Any]]).getOrElse(...)
       val zookeeperConf = Map(
-        "connectionString" -> "localhost:2181",
+        "connectionString" -> args(ZookeeperConfigurationIndex),
         "connectionTimeout" -> 1500,
         "sessionTimeout" -> 60000,
         "retryAttempts" -> 6,

@@ -37,8 +37,6 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
 
   def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel]
 
-  def updateEphemeralTable(ephemeralTable: EphemeralTableModel): Unit
-
   def dropEphemeralTable(tableIdentifier: String): Unit
 
   def dropAllEphemeralTables(): Unit

@@ -15,15 +15,20 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
+import com.stratio.crossdata.launcher.SparkJobLauncher
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.config.StreamingConfig._
 import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
+
+// TODO avoid this ec??
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Ephemeral Table Functions
@@ -94,6 +99,7 @@ private[crossdata] case class ShowEphemeralTables() extends LogicalPlan with Run
 
 private[crossdata] case class CreateEphemeralTable(
                                                     tableIdent: TableIdentifier,
+                                                    userSchema: StructType,
                                                     opts: Map[String, String])
   extends LogicalPlan with RunnableCommand {
 
@@ -108,7 +114,7 @@ private[crossdata] case class CreateEphemeralTable(
 
     val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
       streamingCatalog =>
-        val ephTable = createEphemeralTableModel(tableIdent.table, opts)
+        val ephTable = createEphemeralTableModel(tableIdent.table, userSchema, opts)
         streamingCatalog.createEphemeralTable(ephTable) match {
           case Right(table)  => table.toStringPretty
           case Left(message)    => message
@@ -143,28 +149,6 @@ private[crossdata] case class CreateEphemeralTable(
   }
 }
 
-private[crossdata] case class UpdateEphemeralTable(tableIdent: TableIdentifier , opts: Map[String, String])
-  extends LogicalPlan with RunnableCommand{
-
-  override val output: Seq[Attribute] = {
-    val schema = StructType(
-      Seq(StructField("Updated table", StringType, false))
-    )
-    schema.toAttributes
-  }
-
-  override def run(sqlContext: SQLContext): Seq[Row] = {
-
-    sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach{
-      streamingCatalog =>
-
-        val ephTable = createEphemeralTableModel(tableIdent.table, opts)
-        streamingCatalog.updateEphemeralTable(ephTable)
-    }
-
-    Seq(Row(tableIdent.table))
-  }
-}
 
 private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
   extends LogicalPlan with RunnableCommand{
@@ -398,5 +382,19 @@ private[crossdata] case class DropAllEphemeralQueries() extends LogicalPlan with
     }
 
     deletedQueries.map(_.map(Row(_))).getOrElse(Seq(Row.empty))
+  }
+}
+
+private[crossdata] case class StartProcess(tableIdentifier: String) extends LogicalPlan with RunnableCommand{
+
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    val xdContext = sqlContext.asInstanceOf[XDContext]
+    val streamCatalog: XDStreamingCatalog = xdContext.streamingCatalog.getOrElse(
+      sys.error("A streaming catalog must be configured")
+    )
+    val jobLauncher = new SparkJobLauncher(xdContext.xdConfig, streamCatalog)
+    jobLauncher.doInitSparkStreamingJob(tableIdentifier)
+    Seq.empty
   }
 }

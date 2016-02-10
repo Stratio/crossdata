@@ -46,8 +46,6 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
       }
     else Left("Ephemeral table exists")
 
-  override def updateEphemeralTable(ephemeralTable: EphemeralTableModel): Unit =
-    ephemeralTableDAO.dao.update(ephemeralTable.name, ephemeralTable)
 
   override def dropEphemeralTable(tableIdentifier: String): Unit = {
     ephemeralTableDAO.dao.delete(tableIdentifier)

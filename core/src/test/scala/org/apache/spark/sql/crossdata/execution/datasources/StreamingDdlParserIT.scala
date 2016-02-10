@@ -40,14 +40,18 @@ class StreamingDdlParserIT extends SharedXDContextTest {
 */
   it should "parse... 2" in {
 
-    val sqlContext = _xdContext
-    //sqlContext.sql("CREATE EPHEMERAL TABLE t OPTIONS (ho 'hol')")
+  /*  val sqlContext = _xdContext
+    sqlContext.sql("CREATE EPHEMERAL TABLE t OPTIONS (ho 'hol')")
    // val temp = sqlContext.ddlParser.parse("ADD SELECT * FROM t WITH WINDOW 5 SECS AS topic")
     sqlContext.sql("ADD SELECT count(*) FROM t WITH WINDOW 5 SECS AS topic2")
-    //temp.toString()
-    println("dsf")
+    //temp.toString()*/
   }
 
+  it should "parse... 3" in {
+
+    val sqlContext = _xdContext
+    sqlContext.sql("START t")
+  }
 
 }
 
