@@ -43,7 +43,7 @@ class SparkJobLauncher(crossdataConfig: Config, streamingCatalog: XDStreamingCat
       // TODO read appName from config
       val appName = s"${eTable.name}_${UUID.randomUUID()}"
 
-      val appArgs = Seq(eTable.name,launcherConfig.getString(LauncherConnection))
+      val appArgs = Seq(eTable.name,launcherConfig.getString(LauncherConnectionKey))
       val master = launcherConfig.getString("spark.master")
       val jar = launcherConfig.getString("jar")
       val jars = launcherConfig.getStringList("jars").toList

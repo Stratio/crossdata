@@ -23,5 +23,5 @@ case class TopicModel(name: String, partition: Int = TopicModel.DefaultPartition
 
 object TopicModel {
 
-  val DefaultPartition = 1
+  val DefaultPartition = 0
 }

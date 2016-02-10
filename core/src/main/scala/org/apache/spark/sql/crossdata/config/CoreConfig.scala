@@ -19,7 +19,7 @@ package org.apache.spark.sql.crossdata.config
 import java.io.File
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.apache.log4j.Logger
+import org.apache.spark.Logging
 
 object CoreConfig {
 
@@ -30,11 +30,9 @@ object CoreConfig {
 
 }
 
-trait CoreConfig {
+trait CoreConfig extends Logging {
 
   import CoreConfig._
-
-  val logger: Logger
 
   val config: Config = {
 
@@ -48,16 +46,16 @@ trait CoreConfig {
       if (resource != null) {
         val userConfig = ConfigFactory.parseResources(configResource).getConfig(ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
-        logger.info("User resource (" + configResource + ") found in resources")
+        logInfo("User resource (" + configResource + ") found in resources")
       } else {
-        logger.warn("User resource (" + configResource + ") hasn't been found")
+        logWarning("User resource (" + configResource + ") hasn't been found")
         val file = new File(configResource)
         if (file.exists()) {
           val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
           defaultConfig = userConfig.withFallback(defaultConfig)
-          logger.info("User resource (" + configResource + ") found in classpath")
+          logInfo("User resource (" + configResource + ") found in classpath")
         } else {
-          logger.warn("User file (" + configResource + ") hasn't been found in classpath")
+          logWarning("User file (" + configResource + ") hasn't been found in classpath")
         }
       }
     }
@@ -67,9 +65,9 @@ trait CoreConfig {
       if (file.exists()) {
         val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
-        logger.info("External file (" + configFile + ") found")
+        logInfo("External file (" + configFile + ") found")
       } else {
-        logger.warn("External file (" + configFile + ") hasn't been found")
+        logWarning("External file (" + configFile + ") hasn't been found")
       }
     }
 
@@ -80,4 +78,5 @@ trait CoreConfig {
     ConfigFactory.load(defaultConfig)
   }
 }
+
 
