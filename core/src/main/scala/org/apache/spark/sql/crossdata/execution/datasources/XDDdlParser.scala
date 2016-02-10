@@ -18,12 +18,12 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import java.util.UUID
 
-
-import scala.language.implicitConversions
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.datasources.DDLParser
 import org.apache.spark.sql.types._
+
+import scala.language.implicitConversions
 
 
 class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) extends DDLParser(parseQuery){
@@ -44,7 +44,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val ADD = Keyword("ADD")
   protected val WITH = Keyword("WITH")
   protected val WINDOW = Keyword("WINDOW")
+  protected val SEC = Keyword("SEC")
   protected val SECS = Keyword("SECS")
+  protected val SECONDS = Keyword("SECONDS")
   protected val START = Keyword("START")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
@@ -183,7 +185,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   }
   protected lazy val addEphemeralQuery: Parser[LogicalPlan] = {
 
-    ADD.? ~ streamingSql ~ (WITH ~ WINDOW ~> numericLit <~ SECS ) ~ (AS ~> ident).? ^^ {
+    ADD.? ~ streamingSql ~ (WITH ~ WINDOW ~> numericLit <~ (SEC | SECS | SECONDS)) ~ (AS ~> ident).? ^^ {
       case addDefined ~ streamQl ~ litN ~ topIdent =>
 
         val ephTables: Seq[String] = xDContext.sql(streamQl).queryExecution.analyzed.collect{case StreamingRelation(ephTableName) => ephTableName}
