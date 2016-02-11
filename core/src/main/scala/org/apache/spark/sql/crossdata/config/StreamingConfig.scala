@@ -54,9 +54,9 @@ object StreamingConfig extends CoreConfig {
       case other => EphemeralOutputFormat.ROW
     }
 
-    val checkpoint = finalOptions(s"$CheckpointDirectory/$ident")
+    val checkpointDirectory = s"${finalOptions(CheckpointDirectory)}/$ident"
     val sparkOpts = finalOptions.filter{case (k, v) => k.startsWith(SparkConfPath)}
-    val ephemeralOptions = EphemeralOptionsModel(kafkaOptions, minW, maxW, outFormat, checkpoint, sparkOpts)
+    val ephemeralOptions = EphemeralOptionsModel(kafkaOptions, minW, maxW, outFormat, checkpointDirectory, sparkOpts)
 
     EphemeralTableModel(ident, userSchema, ephemeralOptions)
   }
@@ -72,7 +72,7 @@ object StreamingConfig extends CoreConfig {
 
   // Return default value
   def notFound(key: String) = {
-    logWarning(s"Mandatory parameter $key not specified, you have to specify it")
+    logError(s"Mandatory parameter $key not specified, you have to specify it")
     throw new RuntimeException(key)
   }
 
