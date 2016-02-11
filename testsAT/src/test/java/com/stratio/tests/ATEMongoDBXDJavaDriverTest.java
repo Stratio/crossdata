@@ -85,7 +85,8 @@ public class ATEMongoDBXDJavaDriverTest extends BaseTest{
                 .add("name", "name_" + i)
                 .add("money", 10.2 + i)
                 .add("new", true)
-                .add("date", new java.sql.Date(parsedDate.getTime()));
+                //.add("date", new java.sql.Date(parsedDate.getTime()));
+                .add("date", java.sql.Date.valueOf(fecha));
             tabletest.insert(documentBuilder.get());
         }
         //Table2
