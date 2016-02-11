@@ -140,8 +140,8 @@ object CatalystToCrossdataAdapter {
     } { case (groupingExpression, selectExpression) =>
       AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)
     }
-
-    (baseLogicalPlan, ProjectReport(columnExpressions(Ignored)), filterReport)
+    val projectReport = columnExpressions.getOrElse(Ignored, Seq.empty)
+    (baseLogicalPlan, ProjectReport(projectReport), filterReport)
   }
 
   def udfFlattenedActualParameters[B](
