@@ -52,7 +52,7 @@ Feature: VIEWS
     When I execute 'CREATE TEMPORARY VIEW viewTest3 AS SELECT name as nombre FROM tabletest'
     Then I execute 'SELECT * FROM viewTest3'
     And The result has to have '10' rows ignoring the order:
-      | nombre-long   |
+      | nombre-string   |
       | name_0        |
       | name_1        |
       | name_2        |
@@ -69,7 +69,7 @@ Feature: VIEWS
     When I execute 'CREATE TEMPORARY VIEW viewTest33 AS SELECT name as nombre FROM tabletest'
     Then I execute 'SELECT nombre as fullname FROM viewTest33'
     And The result has to have '10' rows ignoring the order:
-      | fullname-long   |
+      | fullname-string   |
       | name_0        |
       | name_1        |
       | name_2        |
