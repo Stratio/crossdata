@@ -48,7 +48,7 @@ import com.stratio.tests.utils.ThreadProperty;
 import cucumber.api.CucumberOptions;
 
 //Indicar feature
-@CucumberOptions(features = { "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
+@CucumberOptions(features = { //"src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
@@ -57,8 +57,9 @@ import cucumber.api.CucumberOptions;
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
         "src/test/resources/features/Udaf/Group_concat.feature",
-        "src/test/resources/features/Views/TemporaryViews.feature",
-        "src/test/resources/features/Views/Views.feature"})
+        "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
+        "src/test/resources/features/Elasticsearch/Views.feature"
+})
 public class ATElasticSearchXDTest extends BaseTest {
     private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
     private String elasticSearchIP = System.getProperty("ES_NODES","172.17.0.3");
@@ -104,7 +105,7 @@ public class ATElasticSearchXDTest extends BaseTest {
                                                     .field("name", lineArray[1])
                                                     .field("money", Double.parseDouble(lineArray[2]))
                                                     .field("new", new Boolean(lineArray[3]))
-                                                    .field("date", new java.sql.Date(parsed.getTime()))
+                                                    .field("date", new java.sql.Timestamp(parsed.getTime()))
                                                     .endObject()
                                     );
                             bulkRequest.add(res);

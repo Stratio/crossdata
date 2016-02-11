@@ -86,7 +86,7 @@ public class ATCassandraXDJavaDriverTest extends BaseTest {
 
 	}
 
-	@Test(enabled = true, groups = {"basic"})
+	@Test(enabled = false, groups = {"basic"})
 	public void ATCassandraXDJavaDriverTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
