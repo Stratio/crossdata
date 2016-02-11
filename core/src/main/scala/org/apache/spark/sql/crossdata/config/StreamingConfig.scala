@@ -28,7 +28,7 @@ object StreamingConfig extends CoreConfig {
   lazy val streamingConfigMap: Map[String, String] =
     streamingConfig.entrySet().map(entry => (entry.getKey, streamingConfig.getAnyRef(entry.getKey).toString)).toMap
 
-  def createEphemeralTableModel(ident: String, userSchema: StructType, opts : Map[String, String]) : EphemeralTableModel = {
+  def createEphemeralTableModel(ident: String, userSchema: Option[StructType], opts : Map[String, String]) : EphemeralTableModel = {
 
     val finalOptions = getEphemeralTableOptions(ident, opts)
 
@@ -54,7 +54,7 @@ object StreamingConfig extends CoreConfig {
       case other => EphemeralOutputFormat.ROW
     }
 
-    val checkpoint = finalOptions(CheckpointDirectory)
+    val checkpoint = finalOptions(s"$CheckpointDirectory/$ident")
     val sparkOpts = finalOptions.filter{case (k, v) => k.startsWith(SparkConfPath)}
     val ephemeralOptions = EphemeralOptionsModel(kafkaOptions, minW, maxW, outFormat, checkpoint, sparkOpts)
 

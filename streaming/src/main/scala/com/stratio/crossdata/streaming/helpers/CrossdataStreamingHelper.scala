@@ -39,15 +39,14 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
 
   def createContext(ephemeralTable: EphemeralTableModel,
                     sparkConf: SparkConf,
-                    zookeeperConf: Map[String, String],
-                    kafkaConf: Map[String, String]): StreamingContext = {
+                    zookeeperConf: Map[String, String]): StreamingContext = {
     val sparkStreamingWindow = ephemeralTable.options.atomicWindow
     val sparkContext = new SparkContext(sparkConf)
     val streamingContext = new StreamingContext(sparkContext, Seconds(sparkStreamingWindow))
 
     streamingContext.checkpoint(ephemeralTable.options.checkpointDirectory)
 
-    val kafkaOptions = ephemeralTable.options.kafkaOptions.copy(additionalOptions = kafkaConf)
+    val kafkaOptions = ephemeralTable.options.kafkaOptions
     val kafkaInput = new KafkaInput(kafkaOptions)
     val kafkaDStream = toWindowDStream(kafkaInput.createStream(streamingContext), ephemeralTable.options)
 
@@ -81,8 +80,10 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
       partitionOutput = ephemeralQuery.options.get(PartitionKey).orElse(kafkaOptions.partitionOutput),
       additionalOptions = ephemeralQuery.options)
     val xdContext = XDContext.getOrCreate(rdd.context, parseZookeeperCatalogConfig(zookeeperConf))
-    // TODO add optional schema => xdContext.read.schema; at least -> sampling ratio
-    val df = xdContext.read.json(filterRddWithWindow(rdd, ephemeralQuery.window))
+    // TODO add least -> sampling ratio
+    val dfReader = xdContext.read
+    val dfReaderWithschema = ephemeralTable.schema.map(dfReader.schema).getOrElse(dfReader)
+    val df = dfReaderWithschema.json(filterRddWithWindow(rdd, ephemeralQuery.window))
     //df.cache()
     if (df.head(1).length > 0) {
       val sqlTableName = s"${ephemeralTable.name}${ephemeralQuery.alias}${DateTime.now.getMillis}"

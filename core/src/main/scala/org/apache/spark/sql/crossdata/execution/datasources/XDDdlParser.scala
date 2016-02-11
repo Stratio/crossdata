@@ -59,7 +59,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val streamingSentences: Parser[LogicalPlan] =
     describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropEphemeralTable | dropAllEphemeralTables |
-    getEphemeralStatus | getAllEphemeralStatuses |  startProcess | stopProcess |
+    showEphemeralStatus | showEphemeralStatuses |  startProcess | stopProcess |
    showEphemeralQueries  | addEphemeralQuery  | dropEphemeralQuery | dropAllEphemeralQueries
 
 
@@ -118,10 +118,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   }
 
   protected lazy val createEphemeralTable: Parser[LogicalPlan] = {
-    (CREATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ tableCols ~ (OPTIONS ~> options) ^^ {
+    (CREATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ tableCols.? ~ (OPTIONS ~> options) ^^ {
       case tableIdent ~ columns ~ opts => {
-        val schema = StructType(columns)
-        CreateEphemeralTable(tableIdent, schema, opts)
+        val userSpecifiedSchema = columns.flatMap(fields => Some(StructType(fields)))
+        CreateEphemeralTable(tableIdent, userSpecifiedSchema, opts)
       }
     }
   }
@@ -142,15 +142,15 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   * Ephemeral Table Status Functions
   */
 
-  protected lazy val getEphemeralStatus: Parser[LogicalPlan] = {
-    (GET ~ EPHEMERAL ~ STATUS ~> tableIdentifier)  ^^ {
-      case tableIdent => GetEphemeralStatus(tableIdent)
+  protected lazy val showEphemeralStatus: Parser[LogicalPlan] = {
+    (SHOW ~ EPHEMERAL ~ STATUS ~> tableIdentifier)  ^^ {
+      case tableIdent => ShowEphemeralStatus(tableIdent)
     }
   }
 
-  protected lazy val getAllEphemeralStatuses: Parser[LogicalPlan] = {
-    (GET ~ EPHEMERAL ~ STATUSES)  ^^ {
-      case operation => GetAllEphemeralStatuses()
+  protected lazy val showEphemeralStatuses: Parser[LogicalPlan] = {
+    (SHOW ~ EPHEMERAL ~ STATUSES)  ^^ {
+      case operation => ShowAllEphemeralStatuses()
     }
   }
 
