@@ -49,6 +49,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val SECS = Keyword("SECS")
   protected val SECONDS = Keyword("SECONDS")
   protected val START = Keyword("START")
+  protected val STOP = Keyword("STOP")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
     createTable | describeTable | refreshTable | importStart | dropTable |
@@ -57,8 +58,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   // TODO move to StreamingDdlParser
 
   protected lazy val streamingSentences: Parser[LogicalPlan] =
-    describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropEphemeralTable |
-    showEphemeralQueries | addEphemeralQuery  | dropEphemeralQuery | dropAllEphemeralQueries
+    describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropEphemeralTable | dropAllEphemeralTables |
+    getEphemeralStatus | getAllEphemeralStatuses |  startProcess | stopProcess |
+   showEphemeralQueries  | addEphemeralQuery  | dropEphemeralQuery | dropAllEphemeralQueries
+
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -155,14 +158,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   * Ephemeral Queries Functions
   */
 
-  protected lazy val describeEphemeralQuery: Parser[LogicalPlan] = {
-    (DESCRIBE ~ EPHEMERAL ~ QUERY ~> ident) ^^ {
-      case queryIdent => DescribeEphemeralQuery(queryIdent)
-    }
-  }
   protected lazy val showEphemeralQueries: Parser[LogicalPlan] = {
-    (SHOW ~ EPHEMERAL ~ QUERIES) ^^ {
-      case operation => ShowEphemeralQueries()
+    (SHOW ~ EPHEMERAL ~ QUERIES ~> ident.?) ^^ {
+      case queryIdent => ShowEphemeralQueries(queryIdent)
     }
   }
   protected lazy val addEphemeralQuery: Parser[LogicalPlan] = {
@@ -213,6 +211,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val startProcess: Parser[LogicalPlan] = {
     (START ~> tableIdentifier ) ^^ {
       case table => StartProcess(table.unquotedString)
+    }
+  }
+
+  protected lazy val stopProcess: Parser[LogicalPlan] = {
+    (STOP ~> tableIdentifier ) ^^ {
+      case table => StopProcess(table.unquotedString)
     }
   }
 

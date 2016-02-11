@@ -22,7 +22,7 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.config.StreamingConfig._
-import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
+import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralStatusModel, EphemeralQueryModel}
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
@@ -244,30 +244,7 @@ private[crossdata] case class GetAllEphemeralStatuses() extends LogicalPlan with
   * Ephemeral Queries Functions
   */
 
-private[crossdata] case class DescribeEphemeralQuery(queryIdent: String)
-  extends LogicalPlan with RunnableCommand{
-
-  override val output: Seq[Attribute] = {
-    val schema = StructType(
-      Seq(StructField("Ephemeral query", StringType, false))
-    )
-    schema.toAttributes
-  }
-
-  override def run(sqlContext: SQLContext): Seq[Row] = {
-
-    val ephQuery =
-      sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
-        streamingCatalog => streamingCatalog.getEphemeralQuery(queryIdent)
-          .map(_.toStringPretty)
-          .getOrElse(s"$queryIdent doesn't exists")
-      }
-    Seq(ephQuery.map(Row(_)).getOrElse(Row.empty))
-  }
-}
-
-
-private[crossdata] case class ShowEphemeralQueries()
+private[crossdata] case class ShowEphemeralQueries(tableIdentifier: Option[String])
   extends LogicalPlan with RunnableCommand{
 
   override val output: Seq[Attribute] = {
@@ -278,14 +255,12 @@ private[crossdata] case class ShowEphemeralQueries()
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-
-    val ephQueries =
-      sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
-        streamingCatalog =>
-          streamingCatalog.getAllEphemeralQueries.map(_.toStringPretty)
-      }
-
-    ephQueries.map(_.map(Row(_))).getOrElse(Seq(Row.empty))
+    sqlContext.asInstanceOf[XDContext].streamingCatalog.map{ streamingCatalog =>
+      val queries = streamingCatalog.getAllEphemeralQueries
+      val filteredQueries =
+        tableIdentifier.map( table => queries.filter( eqm => eqm.ephemeralTableName == table)).getOrElse(queries)
+      filteredQueries.map( q => Row(q.toStringPretty))
+      } getOrElse Seq.empty
   }
 }
 
@@ -396,6 +371,20 @@ private[crossdata] case class StartProcess(tableIdentifier: String) extends Logi
     )
     val jobLauncher = new SparkJobLauncher(xdContext.xdConfig, streamCatalog)
     jobLauncher.doInitSparkStreamingJob(tableIdentifier)
+    Seq.empty
+  }
+}
+
+private[crossdata] case class StopProcess(tableIdentifier: String) extends LogicalPlan with RunnableCommand{
+
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    val xdContext = sqlContext.asInstanceOf[XDContext]
+    val streamCatalog: XDStreamingCatalog = xdContext.streamingCatalog.getOrElse(
+      sys.error("A streaming catalog must be configured")
+    )
+    logInfo(s"Stopping process $tableIdentifier")
+    streamCatalog.updateEphemeralStatus(tableIdentifier, EphemeralStatusModel(tableIdentifier, EphemeralExecutionStatus.Stopping))
     Seq.empty
   }
 }
