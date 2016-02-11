@@ -69,6 +69,7 @@ public class CrossdataSpecs extends BaseSpec {
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsNative(table.raw());
+            commonspec.getXdContext().clearXDF();
         } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
@@ -82,6 +83,7 @@ public class CrossdataSpecs extends BaseSpec {
         asserThat(commonspec.getXdContext().getXDDataFrame()).hasFlattenedLength(Integer.parseInt(rows));
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsFlattenedMetadata(table.raw().get(0));
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsFlattenedResult(table.raw());
+            commonspec.getXdContext().clearXDF();
         }
     }
 
@@ -93,6 +95,7 @@ public class CrossdataSpecs extends BaseSpec {
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsSpark(table.raw());
+            commonspec.getXdContext().clearXDF();
         } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
@@ -107,6 +110,7 @@ public class CrossdataSpecs extends BaseSpec {
             commonspec.getXdContext().showDataframe();
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
+            commonspec.getXdContext().clearXDF();
         } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
@@ -121,6 +125,7 @@ public class CrossdataSpecs extends BaseSpec {
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsIgnoringOrderNative(table.raw());
+            commonspec.getXdContext().clearXDF();
         } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
