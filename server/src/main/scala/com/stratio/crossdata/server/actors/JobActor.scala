@@ -40,13 +40,13 @@ object JobActor {
   }
 
   object Events {
-    case class JobCompleted() extends JobEvent
+    case object JobCompleted extends JobEvent
     case class JobFailed(err: Throwable) extends JobEvent
   }
 
   object Commands {
     trait JobCommand
-    case class GetJobStatus()
+    case object GetJobStatus
   }
 
   def props(xDContext: XDContext, command: SQLCommand, requester: ActorRef): Props =
@@ -66,7 +66,8 @@ class JobActor(
   override def preStart(): Unit = {
     super.preStart()
 
-    import context.dispatcher
+    //import context.dispatcher
+    import scala.concurrent.ExecutionContext.Implicits.global
 
     Future {
       val df = xdContext.sql(command.query)
@@ -79,7 +80,7 @@ class JobActor(
       requester ! SuccessfulQueryResult(command.queryId, rows, df.schema)
 
       // Complete the job lifecycle
-      self ! JobCompleted()
+      self ! JobCompleted
 
     } onComplete {
       case Failure(e) =>
@@ -92,7 +93,7 @@ class JobActor(
   override def receive: Receive = receive(Starting)
 
   private def receive(status: JobStatus): Receive = {
-    case GetJobStatus() =>
+    case GetJobStatus =>
       sender ! status
     case JobStarted() if status == Starting =>
       context.become(receive(Running))
@@ -101,7 +102,7 @@ class JobActor(
       context.parent ! event
       requester ! ErrorResult(command.queryId, e.getMessage, Some(new Exception(e.getMessage)))
       throw e //Let It Crash: It'll be managed by its supervisor
-    case event: JobCompleted if sender == self && status == Running =>
+    case JobCompleted if sender == self && status == Running =>
       context.become(receive(Completed))
       context.parent ! JobCompleted
   }
