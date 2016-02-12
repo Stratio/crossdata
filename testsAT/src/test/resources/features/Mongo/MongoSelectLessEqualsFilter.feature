@@ -4,7 +4,7 @@ Feature: MongoSelectLessEqualsFilter
     When I execute 'SELECT * FROM tabletest WHERE ident <= 0'
     Then The result has to have '1' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
-      |    0          | name_0        | 10.2          |  true         | 1999-11-30 |
+      |    0          | name_0        | 10.2          |  true         | 2000-1-1 |
 
   Scenario: [MONGO NATIVE] SELECT * FROM tabletest WHERE ident = 10;
     When I execute 'SELECT * FROM tabletest WHERE ident <= -1'
@@ -45,11 +45,11 @@ Feature: MongoSelectLessEqualsFilter
       |  true         |
       |  true         |
       |  true         |
-  Scenario: [CROSSDATA-79, CROSSDATA-81 : MONGO NATIVE] SELECT date FROM tabletest WHERE date <= '1999-11-30';
-    When I execute 'SELECT date FROM tabletest WHERE date <= '1999-11-30''
+  Scenario: [CROSSDATA-79, CROSSDATA-81 : MONGO NATIVE] SELECT date FROM tabletest WHERE date <= '2000-1-1';
+    When I execute 'SELECT date FROM tabletest WHERE date <= '2000-1-1''
     Then The result has to have '1' rows:
       | date-date  |
-      | 1999-11-30 |
+      | 2000-1-1 |
 
   Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT * FROM tablearray WHERE names[0] <= 'names_08';
     When I execute 'SELECT * FROM tablearray WHERE names[0] <= 'names_08''
