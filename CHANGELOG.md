@@ -2,6 +2,9 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
+## 1.2.0 (upcoming)
+* Enabled Scala cross builds for Scala 2.10 and Scala 2.11.
+
 ## 1.1.0 (January 2016)
 * Flattener of subdocuments for relational interfaces 
 * Flattener of collections for relational interfaces
