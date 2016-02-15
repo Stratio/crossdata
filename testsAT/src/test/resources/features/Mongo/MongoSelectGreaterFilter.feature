@@ -4,7 +4,7 @@ Feature: MongoSelectGreaterFilter
     When I execute 'SELECT * FROM tabletest WHERE ident > 8'
     Then The result has to have '1' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
-      |    9          | name_9        | 19.2          |  true         | 2009-09-09 |
+      |    9          | name_9        | 19.2          |  true         | 2009-1-1 |
 
   Scenario: [MONGO NATIVE] SELECT * FROM tabletest WHERE ident > 9;
     When I execute 'SELECT * FROM tabletest WHERE ident > 9'
@@ -53,17 +53,16 @@ Feature: MongoSelectGreaterFilter
       |  true         |
 
 
-  Scenario: [CROSSDATA-79,CROSSDATA-81 : MONGO NATIVE] SELECT date FROM tabletest WHERE date > '2009-08-09';
-    When I execute 'SELECT date FROM tabletest WHERE date > '2009-08-09''
+  Scenario: [CROSSDATA-79,CROSSDATA-81 : MONGO NATIVE] SELECT date FROM tabletest WHERE date > '2008-12-31';
+    When I execute 'SELECT date FROM tabletest WHERE date > '2008-12-31''
     Then The result has to have '1' rows:
       | date-date   |
-      |  2009-09-09 |
+      | 2009-1-1 |
 
   Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT * FROM tablearray WHERE names[0] > 'names_00';
     When I execute 'SELECT * FROM tablearray WHERE names[0] > 'names_00''
     Then The result has to have '9' rows:
       | ident-integer | names-array<string>   |
-
       |    1          | names_01,names_11,names_21,names_31,names_41   |
       |    2          | names_02,names_12,names_22,names_32,names_42   |
       |    3          | names_03,names_13,names_23,names_33,names_43   |
@@ -102,3 +101,6 @@ Feature: MongoSelectGreaterFilter
       |    7          | names_07        |
       |    8          | names_08        |
       |    9          | names_09        |
+
+
+

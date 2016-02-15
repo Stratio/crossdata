@@ -4,7 +4,7 @@ Feature: MongoSelectGreaterEqualsFilter
     When I execute 'SELECT * FROM tabletest WHERE ident >= 9'
     Then The result has to have '1' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
-      |    9          | name_9        | 19.2          |  true         | 2009-09-09 |
+      |    9          | name_9        | 19.2          |  true         |   2009-1-1 |
 
   Scenario: [MONGO NATIVE] SELECT * FROM tabletest WHERE ident >= 19;
     When I execute 'SELECT * FROM tabletest WHERE ident >= 19'
@@ -53,11 +53,11 @@ Feature: MongoSelectGreaterEqualsFilter
       |  true         |
 
 
-  Scenario: [CROSSDATA-79,CROSSDATA-81 : MONGO NATIVE] SELECT date FROM tabletest WHERE date >= '2009-09-09';
-    When I execute 'SELECT date FROM tabletest WHERE date >= '2009-09-09''
+  Scenario: [CROSSDATA-79,CROSSDATA-81 : MONGO NATIVE] SELECT date FROM tabletest WHERE date >= '2009-1-1 00:00:00';
+    When I execute 'SELECT date FROM tabletest WHERE date >= '2009-1-1 00:00:00''
     Then The result has to have '1' rows:
       | date-date   |
-      |  2009-09-09 |
+      |    2009-1-1 |
 
 
   Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT * FROM tablearray WHERE names[0] >= 'names_00';

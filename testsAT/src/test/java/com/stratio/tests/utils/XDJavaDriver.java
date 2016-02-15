@@ -84,8 +84,8 @@ public class XDJavaDriver {
             xdDriver = new JavaDriver(hosts,true);
         }
         descTables = xdFlattendDriver.describeTable(tableName);
-        xdDriver.close();
-        xdDriver = null;
+//        xdDriver.close();
+//        xdDriver = null;
     }
 
     public void listTables(){
@@ -105,8 +105,8 @@ public class XDJavaDriver {
             xdDriver = new JavaDriver(hosts,false);
         }
         result = xdDriver.syncQuery(new SQLCommand(sql, UUID.randomUUID(),false));
-        xdDriver.close();
-        xdDriver = null;
+//        xdDriver.close();
+//        xdDriver = null;
     }
 
     public void executeflattenedSyncQuery(String sql){
@@ -114,7 +114,7 @@ public class XDJavaDriver {
             xdDriver = new JavaDriver(hosts,false);
         }
         result = xdDriver.syncQuery(new SQLCommand(sql, UUID.randomUUID(),true));
-        xdDriver.close();
-        xdDriver = null;
+//        xdDriver.close();
+//        xdDriver = null;
     }
 }
