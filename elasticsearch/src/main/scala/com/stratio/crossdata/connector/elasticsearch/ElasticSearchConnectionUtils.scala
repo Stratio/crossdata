@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
+import com.sksamuel.elastic4s.mappings.FieldType.ObjectType
 import com.sksamuel.elastic4s.{ElasticsearchClientUri, ElasticClient}
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.elasticsearch.DefaultSource._
@@ -88,25 +89,31 @@ object ElasticSearchConnectionUtils {
   private def convertType(typeName:String): DataType = {
 
     typeName match {
-      case "string"=> StringType
+      case "string" => StringType
       case "integer" => IntegerType
       case "date" => DateType
       case "boolean" => BooleanType
       case "double" => DoubleType
       case "long" => LongType
       case "float" => FloatType
+      case "short" => ShortType
+      case "byte" => ByteType
+      case "binary" => BinaryType
       case "null" => NullType
-      case _ => throw new RuntimeException (s"The type $typeName isn't supported yet in Elasticsearch connector.")
+      case _ => throw new RuntimeException (s"The type $typeName isn't supported yet by the Elasticsearch connector.")
     }
 
   }
 
   private def buildStructType(mapping: MappingMetaData): StructType ={
 
-    val esFields = mapping.sourceAsMap().get("properties").asInstanceOf[java.util.LinkedHashMap[String,java.util.LinkedHashMap[String, String]]].toMap;
+    val esFields = mapping.sourceAsMap().get("properties").asInstanceOf[java.util.LinkedHashMap[String,java.util.LinkedHashMap[String, String]]].toMap
 
     val fields: Seq[StructField] = esFields.map {
-          case (colName, propertyValueMap) => StructField(colName, convertType(propertyValueMap.get("type")), false)
+      case (colName, propertyValueMap) if propertyValueMap.containsKey("type") =>
+        StructField(colName, convertType(propertyValueMap.get("type")), false)
+      case (colName, propertyValueMap) if propertyValueMap.containsKey("properties") =>
+        throw new RuntimeException ("Complex types aren't supported yet by the Elasticsearch connector.")
     }(collection.breakOut)
 
     StructType(fields)
