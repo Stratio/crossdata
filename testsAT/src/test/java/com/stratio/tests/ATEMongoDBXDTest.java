@@ -48,8 +48,8 @@ import com.stratio.tests.utils.ThreadProperty;
         "src/test/resources/features/Mongo/MongoSelectAnd.feature",
         "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature",
         "src/test/resources/features/Udaf/Group_concat.feature",
-        "src/test/resources/features/Views/TemporaryViews.feature",
-        "src/test/resources/features/Views/Views.feature"
+        "src/test/resources/features/Mongo/TemporaryViews.feature",
+        "src/test/resources/features/Mongo/Views.feature"
 })
 
 public class ATEMongoDBXDTest extends BaseTest{
@@ -70,19 +70,14 @@ public class ATEMongoDBXDTest extends BaseTest{
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
         format.setTimeZone(TimeZone.getTimeZone("CET"));
         for(int i = 0; i < 10; i++){
-            Date parsedDate = null;
-            String fecha = i + "/" + i + "/200" + i;
-            try {
-                parsedDate = format.parse(fecha);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            String fecha = "200" + i + "-01-01";
             BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
                 .add("ident", i)
                 .add("name", "name_" + i)
                 .add("money", 10.2 + i)
                 .add("new", true)
-                .add("date", new java.sql.Date(parsedDate.getTime()));
+               //.add("date", new java.sql.Date(parsedDate.getTime()));
+                .add("date", java.sql.Date.valueOf(fecha));
             tabletest.insert(documentBuilder.get());
         }
         //Table2
