@@ -47,8 +47,8 @@ import org.apache.spark.sql.types.StructType
 class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) {
 
-  val tableDAO = new TableTypesafeDAO(xdContext.catalogConfig)
-  val viewDAO = new ViewTypesafeDAO(xdContext.catalogConfig)
+  val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
+  val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
     if (tableDAO.dao.count > 0) {
