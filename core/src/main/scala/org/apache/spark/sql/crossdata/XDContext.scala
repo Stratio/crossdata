@@ -74,7 +74,7 @@ class XDContext private (@transient val sc: SparkContext,
     userConf.withFallback(config)
   }
 
-  val catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
+  catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
 
 
   override protected[sql] lazy val catalog: XDCatalog = {

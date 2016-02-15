@@ -21,6 +21,7 @@ import org.apache.spark.sql.types._
 trait CatalogConstants {
   val Database = "database"
   val TableName = "tableName"
+  val ViewName = "viewName"
   val AnotherTable = "anotherTable"
   val Field1Name = "column1"
   val Field2Name = "column2"
@@ -45,4 +46,5 @@ trait CatalogConstants {
   val ColumnsWithArrayWithSubdocuments = StructType(Seq(StructField(Field1Name, StringType, nullable = true), StructField(FieldWithSubcolumnsName, StructType(SubFields), nullable = true), arrayFieldWithSubDocs) )
   val ColumnsWithMapWithArrayWithSubdocuments = StructType(Seq(StructField(Field1Name, MapType(ColumnsWithSubColumns, ColumnsWithArrayWithSubdocuments))))
   val OptsJSON = Map("path" -> "/fake_path")
+  val sqlView = s"select $Field1Name from $Database.$TableName"
 }

@@ -20,7 +20,22 @@
   * you may not use this file except in compliance with the License.
   * You may obtain a copy of the License at
   *
-  *         http://www.apache.org/licenses/LICENSE-2.0
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+/**
+  * Copyright (C) 2015 Stratio (http://stratio.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
   * distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,8 +62,8 @@ import org.apache.spark.sql.types.StructType
 class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) {
 
-  val tableDAO = new TableTypesafeDAO(xdContext.catalogConfig)
-  val viewDAO = new ViewTypesafeDAO(xdContext.catalogConfig)
+  val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
+  val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
     if (tableDAO.dao.count > 0) {
@@ -109,7 +124,10 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
     tableDAO.dao.getAll().filter(tableModel => tableName == tableModel.name && databaseName == tableModel.database)
       .foreach(tableModel => tableDAO.dao.delete(tableModel.id))
 
-  override def dropAllPersistedTables(): Unit = tableDAO.dao.getAll().foreach(tableModel => tableDAO.dao.delete(tableModel.id))
+  override def dropAllPersistedTables(): Unit = {
+    tableDAO.dao.deleteAll
+    viewDAO.dao.getAll.foreach(view=>viewDAO.dao.delete(view.id))
+  }
 
   override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = {
     if (viewDAO.dao.count > 0) {
@@ -132,9 +150,16 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
   override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = {
     val viewId = createId
 
-    viewDAO.dao.create(viewId,ViewModel(viewId,tableIdentifier.table,tableIdentifier.database,sqlText))
+    viewDAO.dao.create(viewId, ViewModel(viewId, tableIdentifier.table, tableIdentifier.database, sqlText))
 
   }
 
+  override protected def dropPersistedView(viewName: String, databaseName: Option[String]): Unit = {
+    viewDAO.dao.getAll().filter(view => view.name == viewName && view.database == databaseName).foreach(selectedView => viewDAO.dao.delete(selectedView.id))
 
+  }
+
+  override protected def dropAllPersistedViews(): Unit = {
+    viewDAO.dao.deleteAll
+  }
 }

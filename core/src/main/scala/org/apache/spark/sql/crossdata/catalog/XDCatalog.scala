@@ -45,6 +45,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   val tables = new mutable.HashMap[String, LogicalPlan]()
 
+
   override def tableExists(tableIdentifier: Seq[String]): Boolean = {
     val tableIdent = processTableIdentifier(tableIdentifier)
     if (tables.get(getDbTableName(tableIdent)).isDefined) {
@@ -137,6 +138,8 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     tables remove getDbTableName(tableIdent)
   }
 
+
+
   override def unregisterAllTables(): Unit =
     tables.clear()
 
@@ -196,6 +199,18 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     dropAllPersistedTables()
   }
 
+  final def dropView(viewIdentifier: Seq[String]): Unit = {
+    logInfo(s"XDCatalog: Deleting table ${viewIdentifier.mkString(".")}from catalog")
+    val (view, catalog) = tableIdToTuple(viewIdentifier)
+    unregisterTable(viewIdentifier)
+    dropPersistedView(view, catalog)
+  }
+
+  final def dropAllViews(): Unit = {
+    logInfo("XDCatalog: Drop all tables from catalog")
+    dropAllPersistedViews()
+  }
+
 
   def registerView(tableIdentifier: Seq[String], plan: LogicalPlan) =
     registerTable(tableIdentifier, plan)
@@ -213,11 +228,15 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit
 
   /**
-   * Drop table if exists.
+   * Drop table(s)/view(s) if exists.
    */
   protected def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit
 
   protected def dropAllPersistedTables(): Unit
+
+  protected def dropPersistedView(viewName:String, databaseName: Option[String]): Unit
+
+  protected def dropAllPersistedViews(): Unit
 
 }
 
