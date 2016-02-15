@@ -79,9 +79,6 @@ class JobActor(
       // Sends the result to the requester
       requester ! SuccessfulQueryResult(command.queryId, rows, df.schema)
 
-      // Complete the job lifecycle
-      self ! JobCompleted
-
     } onComplete {
       case Failure(e) =>
         self ! JobFailed(e)
