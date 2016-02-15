@@ -51,11 +51,11 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
             zkTable.options,
             zkTable.version))
         case None =>
-          tableDAO.logger.warn("Table doesn't exists")
+          tableDAO.logger.warn("Table doesn't exist")
           None
       }
     } else {
-      tableDAO.logger.warn("Tables path doesn't exists")
+      tableDAO.logger.warn("Tables path doesn't exist")
       None
     }
   }
@@ -72,7 +72,7 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
           }
         })
     } else {
-      tableDAO.logger.warn("Tables path doesn't exists")
+      tableDAO.logger.warn("Tables path doesn't exist")
       Seq.empty[(String, Boolean)]
     }
   }
@@ -105,11 +105,11 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
         case Some(zkView) =>
           Some(zkView.sqlViewField)
         case None =>
-          viewDAO.logger.warn("View doesn't exists")
+          viewDAO.logger.warn("View doesn't exist")
           None
       }
     } else {
-      viewDAO.logger.warn("View path doesn't exists")
+      viewDAO.logger.warn("View path doesn't exist")
       None
     }
   }
