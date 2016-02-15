@@ -64,7 +64,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
   private val config = xdContext.catalogConfig
 
   private val db = config.getString(Database)
-  private val table = config.getString(Table)
+  private val tableWithTableMetadata = config.getString(Table)
   private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
 
   lazy val connection: Connection = {
@@ -82,7 +82,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
       jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
 
     jdbcConnection.createStatement().executeUpdate(
-      s"""|CREATE TABLE IF NOT EXISTS $db.$table (
+      s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithTableMetadata (
           |$DatabaseField VARCHAR(50),
           |$TableNameField VARCHAR(50),
           |$SchemaField TEXT,
@@ -106,7 +106,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
 
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithTableMetadata WHERE $DatabaseField= ? AND $TableNameField= ?")
     preparedStatement.setString(1, databaseName.getOrElse(""))
     preparedStatement.setString(2, tableName)
     val resultSet = preparedStatement.executeQuery()
@@ -144,9 +144,17 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
 
     val statement = connection.createStatement
     val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
-    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$table $dbFilter")
+    val resultSetTables = statement.executeQuery(
+      s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
 
-    getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
+    val TablesSeq = getSequenceAux(resultSetTables, resultSetTables.next).map(tableId => (tableId, false)).toSeq
+
+    val resultSetViews = statement.executeQuery(
+      s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithViewMetadata $dbFilter")
+
+    val ViewsSeq = getSequenceAux(resultSetViews, resultSetViews.next).map(tableId => (tableId, false)).toSeq
+
+    TablesSeq ++ ViewsSeq
   }
 
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit = {
@@ -158,14 +166,14 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     connection.setAutoCommit(false)
 
     // check if the database-table exist in the persisted catalog
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithTableMetadata WHERE $DatabaseField= ? AND $TableNameField= ?")
     preparedStatement.setString(1, crossdataTable.dbName.getOrElse(""))
     preparedStatement.setString(2, crossdataTable.tableName)
     val resultSet = preparedStatement.executeQuery()
 
     if (!resultSet.isBeforeFirst) {
       val prepped = connection.prepareStatement(
-        s"""|INSERT INTO $db.$table (
+        s"""|INSERT INTO $db.$tableWithTableMetadata (
             | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
             |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
@@ -180,7 +188,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     }
     else {
       val prepped = connection.prepareStatement(
-        s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+        s"""|UPDATE $db.$tableWithTableMetadata SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
             |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
        """.stripMargin.replaceAll("\n", " "))
 
@@ -196,11 +204,11 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
   }
 
   override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
   }
 
   override def dropAllPersistedTables(): Unit =
-    connection.createStatement.executeUpdate(s"TRUNCATE $db.$table")
+    connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithTableMetadata")
 
   def schemaExists(schema: String, connection: Connection): Boolean = {
     val statement = connection.createStatement()
