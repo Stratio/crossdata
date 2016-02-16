@@ -380,14 +380,21 @@ private[crossdata] case class StartProcess(tableIdentifier: String) extends Logi
 
 private[crossdata] case class StopProcess(tableIdentifier: String) extends LogicalPlan with RunnableCommand{
 
-
   override def run(sqlContext: SQLContext): Seq[Row] = {
     val xdContext = sqlContext.asInstanceOf[XDContext]
     val streamCatalog: XDStreamingCatalog = xdContext.streamingCatalog.getOrElse(
       sys.error("A streaming catalog must be configured")
     )
     logInfo(s"Stopping process $tableIdentifier")
-    streamCatalog.updateEphemeralStatus(tableIdentifier, EphemeralStatusModel(tableIdentifier, EphemeralExecutionStatus.Stopping))
+    val currentStatus = streamCatalog.getEphemeralStatus(tableIdentifier).get.status
+    if (currentStatus == EphemeralExecutionStatus.Started || currentStatus == EphemeralExecutionStatus.Started){
+      streamCatalog.updateEphemeralStatus(
+        tableIdentifier,
+        EphemeralStatusModel(tableIdentifier, EphemeralExecutionStatus.Stopping)
+      )
+    } else {
+      sys.error(s"Cannot stop process. $tableIdentifier status is $currentStatus")
+    }
     Seq.empty
   }
 }

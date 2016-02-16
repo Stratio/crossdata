@@ -42,7 +42,7 @@ class StreamingDdlParserIT extends SharedXDContextTest {
 
 
 
-
+/*
  it should "parse... 2" in {
 
     val sqlContext = _xdContext
@@ -50,9 +50,14 @@ class StreamingDdlParserIT extends SharedXDContextTest {
    // val temp = sqlContext.ddlParser.parse("ADD SELECT * FROM t WITH WINDOW 5 SECS AS topic")
     sqlContext.sql("ADD SELECT count(*) FROM t WITH WINDOW 5 SECS AS qalias")
     //temp.toString()
-  }
+  }*/
 
- 
+  it should "parse... 2" in {
+
+    val sqlContext = _xdContext
+    sqlContext.sql("STOP t")
+
+  }
 
 }
 
