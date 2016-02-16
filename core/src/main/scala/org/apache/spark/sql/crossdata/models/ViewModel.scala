@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.daos
+package org.apache.spark.sql.crossdata.models
 
-import java.util.UUID
+import org.apache.spark.sql.crossdata
 
-object DAOConstants {
+case class ViewModel(id: String,
+                     name: String,
+                     database: Option[String] = None,
+                     sqlViewField: String,
+                     version: String = crossdata.CrossdataVersion) {
 
-  val BaseZKPath = "stratio/crossdata"
-  val TablesPath = s"$BaseZKPath/tables"
-  val ViewsPath = s"$BaseZKPath/views"
-  val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
-  val StreamingQueriesPath = s"$BaseZKPath/streamingqueries"
-
-  def createId: String = UUID.randomUUID.toString
+  def getExtendedName: String =
+    database.fold(name) { databaseName => s"$databaseName.$name" }
 }

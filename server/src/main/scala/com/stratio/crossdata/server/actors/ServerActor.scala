@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.server.actors
 
+import java.util.UUID
+
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
 import com.stratio.crossdata.common.SQLCommand
@@ -35,22 +37,29 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   def receive: Receive = {
 
     case sqlCommand @ SQLCommand(query, _, withColnames) =>
-      logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
+      logger.info(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
       try {
         val df = xdContext.sql(query)
         val rows = if(withColnames) df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
         else df.collect()
         sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, df.schema)
       } catch {
-        case e: Throwable => {
-          logger.error(e.getMessage)
-          sender ! ErrorResult(sqlCommand.queryId, e.getMessage, Some(new Exception(e.getMessage)))
-        }
+        case e: Exception => logAndReply(sqlCommand.queryId, e)
+        case soe: StackOverflowError => logAndReply(sqlCommand.queryId, soe)
+        case oome: OutOfMemoryError =>
+          System.gc()
+          logAndReply(sqlCommand.queryId, oome)
       }
 
     case any =>
       logger.error(s"Something is going wrong!. Unknown message: $any")
 
   }
+
+  private def logAndReply(queryId: UUID, trowable: Throwable): Unit = {
+    logger.error(trowable.getMessage)
+    sender ! ErrorResult(queryId, trowable.getMessage, Some(trowable))
+  }
+
 
 }
