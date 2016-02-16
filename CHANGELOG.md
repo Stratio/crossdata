@@ -9,6 +9,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Improvements in the aliases resolution of Spark through the Crossdata Context
 * Improvements in the stability of the Crossdata Servers
 * Usage of environment variables to configure Crossdata
+* Crossdata interpreter for Apache Zeppelin added
 
 ## 1.0.2 (January 2016)
 * Downgrade postgres version to 9.2
