@@ -20,13 +20,20 @@ import akka.actor.Actor
 import com.github.nscala_time.time.Imports._
 import com.stratio.crossdata.streaming.actors.EphemeralStatusActor._
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.crossdata.daos.EphemeralTableStatusMapDAO
-import org.apache.spark.sql.crossdata.models.EphemeralExecutionStatus
-import org.apache.spark.sql.crossdata.models.EphemeralStatusModel
+import org.apache.spark.sql.crossdata.daos.impl.EphemeralTableMapDAO
+import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralStatusModel}
+import org.apache.spark.streaming.StreamingContext
 
-class EphemeralStatusActor(zookeeperConfiguration: Map[String, String],
+import scala.concurrent.duration._
+
+class EphemeralStatusActor(streamingContext: StreamingContext,
+                           zookeeperConfiguration: Map[String, String],
                            ephemeralTableName: String) extends Actor
 with EphemeralTableStatusMapDAO {
+
+  val ephemeralTMDao = new EphemeralTableMapDAO(Map(ZookeeperPrefixName -> zookeeperConfiguration))
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var ephemeralStatus: Option[EphemeralStatusModel] = getRepositoryStatusTable
@@ -34,6 +41,7 @@ with EphemeralTableStatusMapDAO {
   override def receive: Receive = receive(listenerAdded = false)
 
   def receive(listenerAdded: Boolean): Receive = {
+    case CheckStatus => doCheckStatus()
     case GetStatus => doGetStatus()
     case SetStatus(status) => doSetStatus(status)
     case AddListener if !listenerAdded =>
@@ -41,8 +49,38 @@ with EphemeralTableStatusMapDAO {
       context.become(receive(true))
   }
 
+  // TODO require tableModel
+  private val ephemeralTableModel = ephemeralTMDao.dao.get(ephemeralTableName).get
+  private val delayMs = ephemeralTableModel.options.atomicWindow * 1000
+
+  context.system.scheduler.schedule(delayMs milliseconds, delayMs milliseconds, self, CheckStatus)(context.dispatcher)
+
+
   private def doGetStatus(): Unit = {
     sender ! StatusResponse(getStatusFromTable(ephemeralStatus))
+  }
+
+  private def doCheckStatus(): Unit =
+    // TODO check if the status can be read from ephemeralStatus insteadof getRepository...; the listener should work
+    getRepositoryStatusTable.foreach{ statusModel =>
+      if (statusModel.status == EphemeralExecutionStatus.Stopping){
+        // TODO add an actor containing status and query actor in order to exit gracefully
+        closeSparkContexts(streamingContext.sparkContext, streamingContext, stopGracefully = true)
+      }
+    }
+
+  // TODO callStatusHelper close => It might be nice to have a common parent actor
+  private def closeSparkContexts(sparkContext: SparkContext,
+                                 streamingContext: StreamingContext,
+                                 stopGracefully: Boolean): Unit = {
+    synchronized {
+      try {
+        streamingContext.stop(stopSparkContext = false, stopGracefully)
+      } finally {
+        // TODO stopSparkContext=true; otherwise, the application will exit before.
+        sparkContext.stop()
+      }
+    }
   }
 
   private def doSetStatus(newStatus: EphemeralExecutionStatus.Value) : Unit = {
@@ -85,6 +123,8 @@ object EphemeralStatusActor {
   case object GetStatus
 
   case object AddListener
+
+  case object CheckStatus
 
   case class SetStatus(status: EphemeralExecutionStatus.Value)
 
