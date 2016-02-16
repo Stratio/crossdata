@@ -25,9 +25,9 @@ import org.elasticsearch.cluster.metadata.MappingMetaData
 import org.elasticsearch.common.collect.ImmutableOpenMap
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
+import collection.JavaConversions._
 
 object ElasticSearchConnectionUtils {
-
 
   def buildClient(parameters: Map[String, String]): ElasticClient = {
     val host: String = parameters.getOrElse(ES_NODES, ES_NODES_DEFAULT)
