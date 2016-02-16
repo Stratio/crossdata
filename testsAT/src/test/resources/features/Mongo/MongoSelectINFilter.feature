@@ -4,8 +4,8 @@ Feature: MongoSelectINFilter
     When I execute 'SELECT * FROM tabletest WHERE ident IN (0,10,5,27)'
     Then The result has to have '2' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
-      |    0          | name_0        | 10.2          |  true         | 1999-11-30 |
-      |    5          | name_5        | 15.2          |  true         | 2005-05-05 |
+      |    0          | name_0        | 10.2          |  true         |   2000-1-1 |
+      |    5          | name_5        | 15.2          |  true         |   2005-1-1 |
 
   Scenario: [MONGO NATIVE] SELECT ident FROM tabletest WHERE ident IN (0,10,5,27);
     When I execute 'SELECT ident FROM tabletest WHERE ident IN (0,10,5,27)'
@@ -63,12 +63,12 @@ Feature: MongoSelectINFilter
     Then The result has to have '0' rows:
       | new-boolean |
 
-  Scenario: [MONGO NATIVE] SELECT date FROM tabletest WHERE date IN ('1999-11-30','1998-12-25','2005-05-05','2008-2-27');
-    When I execute 'SELECT date FROM tabletest WHERE date IN ('1999-11-30','1998-12-25','2005-05-05','2008-2-27')'
+  Scenario: [MONGO NATIVE] SELECT date FROM tabletest WHERE date IN ('2000-1-1','1998-12-25','2005-1-1','2008-2-27');
+    When I execute 'SELECT date FROM tabletest WHERE date IN ('2000-1-1','1998-12-25','2005-1-1','2008-2-27')'
     Then The result has to have '2' rows:
        | date-date  |
-       | 1999-11-30 |
-       | 2005-05-05 |
+       | 2000-1-1  |
+       | 2005-1-1  |
 
   Scenario: [MONGO NATIVE] SELECT date FROM tabletest WHERE date IN ('1998-12-25','2008-2-27');
     When I execute 'SELECT date FROM tabletest WHERE date IN ('1998-12-25','2008-2-27')'
