@@ -51,7 +51,6 @@ import cucumber.api.CucumberOptions;
         "src/test/resources/features/Udaf/Group_concat.feature",
         "src/test/resources/features/Mongo/TemporaryViews.feature",
         "src/test/resources/features/Mongo/Views.feature",
-        "src/test/resources/features/DriverApi/DescribeTable.feature",
 })
 
 public class ATEMongoDBXDJavaDriverTest extends BaseTest{
