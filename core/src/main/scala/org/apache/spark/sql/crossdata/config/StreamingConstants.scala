@@ -19,9 +19,7 @@ package org.apache.spark.sql.crossdata.config
 object StreamingConstants {
 
   val MainClass = "com.stratio.crossdata.streaming.CrossdataStreamingApplication"
-
   val StreamingConfPath = "streaming"
-  val LauncherConfPath = "launcher"
   val SparkConfPath = "spark"
 
   /**
@@ -53,8 +51,10 @@ object StreamingConstants {
    * SparkOptions
    */
   // One param for each element map. key = sparkOptions.x -> value = value
-  val LauncherConnectionKey = "zookeeper.connectionString"
+  val ZooKeeperConnectionKey = "catalog.zookeeper.connectionString"
   val SparkHomeKey = "sparkHome"
+  val AppJarKey = "appJar"
+  val ExternalJarsKey = "jars"
   // val SparkConfPath = "spark"
 
 

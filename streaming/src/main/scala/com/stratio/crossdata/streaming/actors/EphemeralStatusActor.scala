@@ -36,7 +36,7 @@ with EphemeralTableStatusMapDAO {
   def receive(listenerAdded: Boolean): Receive = {
     case GetStatus => doGetStatus()
     case SetStatus(status) => doSetStatus(status)
-    case AddListener if !listenerAdded=>
+    case AddListener if !listenerAdded =>
       doAddListener()
       context.become(receive(true))
   }

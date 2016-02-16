@@ -22,14 +22,14 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.streaming.constants.KafkaConstants._
 import com.stratio.crossdata.streaming.kafka.{KafkaInput, KafkaProducer}
 import com.typesafe.config.{Config, ConfigFactory}
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.XDContext._
 import org.apache.spark.sql.crossdata.models._
-import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
 import scala.util.Try
@@ -41,7 +41,7 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
                     sparkConf: SparkConf,
                     zookeeperConf: Map[String, String]): StreamingContext = {
     val sparkStreamingWindow = ephemeralTable.options.atomicWindow
-    val sparkContext = new SparkContext(sparkConf)
+    val sparkContext = SparkContext.getOrCreate(sparkConf)
     val streamingContext = new StreamingContext(sparkContext, Seconds(sparkStreamingWindow))
 
     streamingContext.checkpoint(ephemeralTable.options.checkpointDirectory)
@@ -75,20 +75,19 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
                            ephemeralTable: EphemeralTableModel,
                            kafkaOptions: KafkaOptionsModel,
                            zookeeperConf: Map[String, String]): Unit = {
-
+    val sqlTableName = ephemeralTable.name
+    val query = ephemeralQuery.sql
     val kafkaOptionsMerged = kafkaOptions.copy(
       partitionOutput = ephemeralQuery.options.get(PartitionKey).orElse(kafkaOptions.partitionOutput),
       additionalOptions = ephemeralQuery.options)
     val xdContext = XDContext.getOrCreate(rdd.context, parseZookeeperCatalogConfig(zookeeperConf))
-    // TODO add least -> sampling ratio
+    // TODO add sampling ratio
     val dfReader = xdContext.read
     val dfReaderWithschema = ephemeralTable.schema.map(dfReader.schema).getOrElse(dfReader)
     val df = dfReaderWithschema.json(filterRddWithWindow(rdd, ephemeralQuery.window))
     //df.cache()
     if (df.head(1).length > 0) {
-      val sqlTableName = s"${ephemeralTable.name}${ephemeralQuery.alias}${DateTime.now.getMillis}"
       df.registerTempTable(sqlTableName)
-      val query = ephemeralQuery.sql.replaceAll(ephemeralTable.name, sqlTableName)
       Try {
         val dataFrame = xdContext.sql(query)
         val topic = ephemeralQuery.alias
@@ -97,11 +96,11 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
           case EphemeralOutputFormat.JSON => saveToKafkaInJSONFormat(dataFrame, topic, kafkaOptionsMerged)
           case _ => saveToKafkaInRowFormat(dataFrame, topic, kafkaOptionsMerged)
         }
-        xdContext.dropTempTable(sqlTableName)
       }.getOrElse {
         logger.warn(s"There are problems executing the ephemeral query: $query \n with Schema: ${df.printSchema()} \n" +
           s" and the first row is: ${df.show(1)}")
       }
+      xdContext.dropTempTable(sqlTableName)
     }
   }
 

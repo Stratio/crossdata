@@ -17,7 +17,6 @@
 package org.apache.spark.sql.crossdata.models
 
 case class KafkaOptionsModel(connection: Seq[ConnectionHostModel],
-                             // TODO Seq(topic?? union??)
                              topics: Seq[TopicModel],
                              groupId: String,
                              partitionOutput: Option[String] = None,

@@ -31,23 +31,22 @@ import scala.util.{Failure, Properties, Success, Try}
 
 class SparkJobLauncher(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog) extends Logging{
 
-  // TODO require
+  // TODO validate
   private val streamingConfig = crossdataConfig.getConfig(StreamingConfPath)
-  private val launcherConfig = streamingConfig.getConfig(LauncherConfPath)
 
   def doInitSparkStreamingJob(ephemeralTableName: String)(implicit executionContext: ExecutionContext): Unit = {
     Try {
-      // TODO log.info("Init")
+      // TODO logInfo("Init spark launcher: "+ephemeralTableName)
       validateSparkHome()
       val eTable = streamingCatalog.getEphemeralTable(ephemeralTableName).getOrElse(notFound(ephemeralTableName))
       // TODO read appName from config
       val appName = s"${eTable.name}_${UUID.randomUUID()}"
-
-      val appArgs = Seq(eTable.name,launcherConfig.getString(LauncherConnectionKey))
-      val master = launcherConfig.getString("spark.master")
-      val jar = launcherConfig.getString("jar")
-      val jars = launcherConfig.getStringList("jars").toList
-      val sparkArgs = Map.empty[String,String]
+      val appArgs = Seq(eTable.name,streamingConfig.getString(ZooKeeperConnectionKey))
+      val master = streamingConfig.getString("spark.master")
+      val jar = streamingConfig.getString(AppJarKey)
+      val jars = Seq.empty
+      //val jars = streamingConfig.getStringList(ExternalJarsKey).toList
+      val sparkArgs: Map[String,String] = Map.empty
 
       launch(StreamingConstants.MainClass, appArgs, appName, master, jar, jars, sparkArgs)(executionContext)
       //val appMain =
@@ -58,7 +57,7 @@ class SparkJobLauncher(crossdataConfig: Config, streamingCatalog: XDStreamingCat
       // TODO launch(SparktaDriver, hdfsDriverPath, Master, sparkArgs, driverParams)
     } match {
       case Failure(exception) =>
-        log.error(exception.getMessage, exception)
+        logError(exception.getMessage, exception)
         // TODO handle error
       case Success(_) => {
         //TODO info
@@ -83,7 +82,7 @@ class SparkJobLauncher(crossdataConfig: Config, streamingCatalog: XDStreamingCat
       .setMainClass(appMain)
       .addAppArgs(appArgs:_*)
       .setMaster(master)
-      //.setDeployMode("cluster")
+      .setDeployMode("cluster")
 
     externalJars.foreach(sparkLauncher.addJar)
     //Spark params (everything starting with spark.)
@@ -91,7 +90,9 @@ class SparkJobLauncher(crossdataConfig: Config, streamingCatalog: XDStreamingCat
 
     val sparkProcess = Try(sparkLauncher.launch()) match {
       case Success(process) => process
-      case Failure(exception) => throw exception
+      case Failure(exception) => 
+        logError(exception.getMessage)
+        throw exception
     }
 
     val launchedProcess = Future [Int]{
@@ -121,12 +122,15 @@ class SparkJobLauncher(crossdataConfig: Config, streamingCatalog: XDStreamingCat
 
   }
 
-  // TODO require, optional
-  private def sparkConf: Seq[(String, String)] = launcherConfig.getConfig(SparkConfPath).entrySet().toSeq
-    .map(e => (s"$SparkConfPath.${e.getKey}", e.getValue.toString))
+  // TODO require, optional => filter without sparkconfpath
+  private def sparkConf: Seq[(String, String)] = {
+    val conf = streamingConfig.getConfig(SparkConfPath)
+    conf.entrySet().toSeq
+      .map(e => (s"$SparkConfPath.${e.getKey}", conf.getAnyRef(e.getKey).toString))
+  }
 
 
-  private def sparkHome: String = Properties.envOrElse("SPARK_HOME", "/home/darrollo/Escritorio/spark-1.5.2-bin-hadoop2.4"/*launcherConfig.getString(SparkHome)*/)
+  private def sparkHome: String = Properties.envOrElse("SPARK_HOME", streamingConfig.getString(SparkHomeKey))
 
   /**
    * Checks if we have a valid Spark home.
