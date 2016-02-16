@@ -27,8 +27,7 @@ import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Count, Expre
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Limit, Aggregate}
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
 import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{AggregationLogicalPlan, BaseLogicalPlan}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{ProjectReport, AggregationLogicalPlan, BaseLogicalPlan, FilterReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{Filter => SourceFilter, CatalystToCrossdataAdapter}
 import org.apache.spark.sql.{Row, sources}
 
@@ -146,8 +145,10 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
         case ExtendedPhysicalOperation(projectList, filterList, _) =>
           CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-            case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
-            case (basePlan, _) => Some(basePlan)
+            case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
+              None
+            case (basePlan, _, _) =>
+              Some(basePlan)
           }
       }
     }

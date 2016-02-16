@@ -29,7 +29,7 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit => LogicalLimit, LogicalPlan}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{ProjectReport, BaseLogicalPlan, FilterReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
@@ -204,8 +204,9 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
 
       case PhysicalOperation(projectList, filterList, _) =>
         CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-          case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
-          case (basePlan: SimpleLogicalPlan, _) =>
+          case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
+            None
+          case (basePlan: SimpleLogicalPlan, _, _) =>
             Some(basePlan)
           case _ => ??? // TODO
         }
