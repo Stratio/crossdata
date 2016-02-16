@@ -95,7 +95,7 @@ trait DriverConfig {
       }
     }
 
-    println(s"Cluster.hosts = ${finalConfigWithEnvVars.getAnyRef("config.cluster.hosts")}")
+    logger.info(s"Cluster.hosts = ${finalConfigWithEnvVars.getAnyRef("config.cluster.hosts")}")
 
     ConfigFactory.load(finalConfigWithEnvVars)
   }
