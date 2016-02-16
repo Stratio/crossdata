@@ -40,7 +40,7 @@ class CrossdataStreaming(ephemeralTableName: String,
 
   def init(): Unit = {
     Try {
-      val zookeeperConfig = zookeeperConfiguration.mapValues(_.toString)
+      val zookeeperConfig = zookeeperConfiguration.mapValues(_.toString).map(identity)
 
       CrossdataStatusHelper.setEphemeralStatus(
         EphemeralExecutionStatus.Starting,
@@ -49,16 +49,13 @@ class CrossdataStreaming(ephemeralTableName: String,
 
       Try {
         val ephemeralTable = dao.get(ephemeralTableName).getOrElse(throw new Exception("Ephemeral table not found"))
-
         val sparkConfig = configToSparkConf(ephemeralTable)
-
-        val kafkaConfig = ephemeralTable.options.kafkaOptions
 
         val ssc = StreamingContext.getOrCreate(ephemeralTable.options.checkpointDirectory,
           () => {
             CrossdataStreamingHelper.createContext(ephemeralTable,
-              sparkConfig,
-              zookeeperConfig
+            sparkConfig,
+            zookeeperConfig
             )
           })
 
