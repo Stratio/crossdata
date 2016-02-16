@@ -17,24 +17,27 @@ package com.stratio.crossdata.connector.mongodb
 
 import java.util.regex.Pattern
 
-import com.mongodb.casbah.Imports._
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
+import com.mongodb.casbah.Imports._
 import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.MongodbConfig
-import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
 import com.stratio.datasource.mongodb.MongodbRelation._
-
+import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
 import org.apache.spark.Logging
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
-import org.apache.spark.sql.catalyst.plans.logical.{Limit => LogicalLimit, LogicalPlan}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, SimpleLogicalPlan}
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.{Limit => LogicalLimit}
+import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.ProjectReport
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.BaseLogicalPlan
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.FilterReport
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.sources
 
 object MongoQueryProcessor {
 
@@ -204,8 +207,9 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
 
       case PhysicalOperation(projectList, filterList, _) =>
         CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-          case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
-          case (basePlan: SimpleLogicalPlan, _) =>
+          case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
+            None
+          case (basePlan: SimpleLogicalPlan, _, _) =>
             Some(basePlan)
           case _ => ??? // TODO
         }

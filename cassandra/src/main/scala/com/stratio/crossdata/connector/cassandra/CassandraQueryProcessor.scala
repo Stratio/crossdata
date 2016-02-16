@@ -17,20 +17,34 @@ package com.stratio.crossdata.connector.cassandra
 
 
 import com.datastax.driver.core.ResultSet
-import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.{Unknown, ClusteringKey, Indexed}
-import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.{PartitionKey, NonIndexed, Function}
 import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.CassandraAttributeRole
-import com.stratio.crossdata.connector.{SQLLikeQueryProcessorUtils, SQLLikeUDFQueryProcessorUtils}
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.ClusteringKey
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.Indexed
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.Unknown
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.Function
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.NonIndexed
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.PartitionKey
+import com.stratio.crossdata.connector.SQLLikeQueryProcessorUtils
+import com.stratio.crossdata.connector.SQLLikeUDFQueryProcessorUtils
 import org.apache.spark.Logging
-import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
-import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Count, Expression, Literal, NamedExpression}
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Limit, Aggregate}
+import org.apache.spark.sql.cassandra.CassandraSQLRow
+import org.apache.spark.sql.cassandra.CassandraXDSourceRelation
+import org.apache.spark.sql.catalyst.expressions.Alias
+import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.expressions.Count
+import org.apache.spark.sql.catalyst.expressions.Expression
+import org.apache.spark.sql.catalyst.expressions.Literal
+import org.apache.spark.sql.catalyst.expressions.NamedExpression
+import org.apache.spark.sql.catalyst.plans.logical.Aggregate
+import org.apache.spark.sql.catalyst.plans.logical.Limit
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
 import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{AggregationLogicalPlan, BaseLogicalPlan}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
-import org.apache.spark.sql.sources.{Filter => SourceFilter, CatalystToCrossdataAdapter}
-import org.apache.spark.sql.{Row, sources}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter._
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
+import org.apache.spark.sql.sources.{Filter => SourceFilter}
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.sources
 
 object CassandraQueryProcessor extends SQLLikeQueryProcessorUtils with SQLLikeUDFQueryProcessorUtils {
 
@@ -146,8 +160,10 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
         case ExtendedPhysicalOperation(projectList, filterList, _) =>
           CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-            case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
-            case (basePlan, _) => Some(basePlan)
+            case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
+              None
+            case (basePlan, _, _) =>
+              Some(basePlan)
           }
       }
     }
