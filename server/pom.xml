@@ -318,10 +318,7 @@
                                     <from>target/crossdata-dist-${project.version}/conf/</from>
                                     <to>/etc/sds/crossdata</to>
                                 </copyDirectory>
-                                <!--<copyDirectory>-->
-                                    <!--<from>target/crossdata-dist-${project.version}/lib/</from>-->
-                                    <!--<to>/opt/sds/crossdata/lib</to>-->
-                                <!--</copyDirectory>-->
+
                                 <copyDirectory>
                                     <from>target/crossdata-dist-${project.version}/bin</from>
                                     <to>/opt/sds/crossdata/bin</to>
