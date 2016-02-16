@@ -130,7 +130,7 @@ public class ATEMongoDBXDTest extends BaseTest{
         mongoClient.dropDatabase(dataBase);
     }
 
-    @Test(enabled = true, groups = {"basic"})
+    @Test(enabled = false, groups = {"basic"})
     public void ATMongoDBXDTest() throws Exception{
         new CucumberRunner(this.getClass()).runCukes();
     }
