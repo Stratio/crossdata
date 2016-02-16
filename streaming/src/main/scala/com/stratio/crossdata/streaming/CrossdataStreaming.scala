@@ -43,10 +43,10 @@ class CrossdataStreaming(ephemeralTableName: String,
       val zookeeperConfig = zookeeperConfiguration.mapValues(_.toString).map(identity)
 
       // TODO remove starting status
-      CrossdataStatusHelper.setEphemeralStatus(
+      /*CrossdataStatusHelper.setEphemeralStatus(
         EphemeralExecutionStatus.Starting,
         zookeeperConfig,
-        ephemeralTableName)
+        ephemeralTableName)*/
 
       Try {
         val ephemeralTable = dao.get(ephemeralTableName).getOrElse(throw new Exception("Ephemeral table not found"))

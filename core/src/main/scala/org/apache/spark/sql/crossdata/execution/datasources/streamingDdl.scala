@@ -387,7 +387,7 @@ private[crossdata] case class StopProcess(tableIdentifier: String) extends Logic
     )
     logInfo(s"Stopping process $tableIdentifier")
     val currentStatus = streamCatalog.getEphemeralStatus(tableIdentifier).get.status
-    if (currentStatus == EphemeralExecutionStatus.Started || currentStatus == EphemeralExecutionStatus.Started){
+    if (currentStatus == EphemeralExecutionStatus.Started || currentStatus == EphemeralExecutionStatus.Starting){
       streamCatalog.updateEphemeralStatus(
         tableIdentifier,
         EphemeralStatusModel(tableIdentifier, EphemeralExecutionStatus.Stopping)
