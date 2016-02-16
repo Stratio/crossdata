@@ -2,7 +2,7 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
-## 1.1.0 (January 2016)
+## 1.1.0 (February 2016)
 * Flattener of subdocuments for relational interfaces 
 * Flattener of collections for relational interfaces
 * Persistent views (not materialized)
