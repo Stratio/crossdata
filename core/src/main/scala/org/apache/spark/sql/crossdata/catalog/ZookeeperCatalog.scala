@@ -19,24 +19,25 @@ package org.apache.spark.sql.crossdata.catalog
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
-import org.apache.spark.sql.crossdata.daos.TableDAOComponent
-import org.apache.spark.sql.crossdata.models.TableModel
-import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
+import org.apache.spark.sql.crossdata.daos.impl.{TableTypesafeDAO, ViewTypesafeDAO}
+import org.apache.spark.sql.crossdata.models.{TableModel, ViewModel}
+import org.apache.spark.sql.types.StructType
 
 /**
- * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.XDCatalog]] with persistence using Zookeeper.
- * Using the common Stratio components for access and manage Zookeeper connections with Apache Curator.
- * @param conf An implementation of the [[CatalystConf]].
- */
+  * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.XDCatalog]] with persistence using Zookeeper.
+  * Using the common Stratio components for access and manage Zookeeper connections with Apache Curator.
+  * @param conf An implementation of the [[CatalystConf]].
+  */
 class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends XDCatalog(conf, xdContext) with TableDAOComponent {
+  extends XDCatalog(conf, xdContext) {
 
-  override val config = new TypesafeConfig(Option(XDContext.catalogConfig))
+  val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
+  val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
-    if (dao.count > 0) {
-      val findTable = dao.getAll()
+    if (tableDAO.dao.count > 0) {
+      val findTable = tableDAO.dao.getAll()
         .find(tableModel =>
           tableModel.name == tableName && tableModel.database == databaseName)
 
@@ -50,18 +51,18 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
             zkTable.options,
             zkTable.version))
         case None =>
-          logger.warn("Table not exists")
+          tableDAO.logger.warn("Table doesn't exist")
           None
       }
     } else {
-      logger.warn("Tables path not exists")
+      tableDAO.logger.warn("Tables path doesn't exist")
       None
     }
   }
 
   override def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
-    if (dao.count > 0) {
-      dao.getAll()
+    if (tableDAO.dao.count > 0) {
+      tableDAO.dao.getAll()
         .flatMap(tableModel => {
           databaseName.fold(Option((tableModel.getExtendedName, false))) { dbName =>
             tableModel.database.flatMap(dbNameModel => {
@@ -71,16 +72,15 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
           }
         })
     } else {
-      logger.warn("Tables path not exists")
+      tableDAO.logger.warn("Tables path doesn't exist")
       Seq.empty[(String, Boolean)]
     }
   }
 
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit = {
     val tableId = createId
-    val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName).toSeq
 
-    dao.create(tableId,
+    tableDAO.dao.create(tableId,
       TableModel(tableId,
         crossdataTable.tableName,
         serializeSchema(crossdataTable.userSpecifiedSchema.getOrElse(new StructType())),
@@ -91,13 +91,35 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
   }
 
   override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit =
-    dao.getAll().filter(tableModel => tableName == tableModel.name && databaseName == tableModel.database)
-      .foreach(tableModel => dao.delete(tableModel.id))
+    tableDAO.dao.getAll().filter(tableModel => tableName == tableModel.name && databaseName == tableModel.database)
+      .foreach(tableModel => tableDAO.dao.delete(tableModel.id))
 
-  override def dropAllPersistedTables(): Unit = dao.getAll().foreach(tableModel => dao.delete(tableModel.id))
+  override def dropAllPersistedTables(): Unit = tableDAO.dao.getAll().foreach(tableModel => tableDAO.dao.delete(tableModel.id))
 
-  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = ???
+  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = {
+    if (viewDAO.dao.count > 0) {
+      val findView = viewDAO.dao.getAll()
+        .find(viewModel => viewModel.name == tableName && viewModel.database == databaseName)
 
-  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = ???
+      findView match {
+        case Some(zkView) =>
+          Some(zkView.sqlViewField)
+        case None =>
+          viewDAO.logger.warn("View doesn't exist")
+          None
+      }
+    } else {
+      viewDAO.logger.warn("View path doesn't exist")
+      None
+    }
+  }
+
+  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = {
+    val viewId = createId
+
+    viewDAO.dao.create(viewId,ViewModel(viewId,tableIdentifier.table,tableIdentifier.database,sqlText))
+
+  }
+
 
 }

@@ -108,7 +108,7 @@
         <postgresql.version>9.2-1003-jdbc4</postgresql.version>
         <derby.version>10.12.1.1</derby.version>
         <jackson4s.version>3.2.11</jackson4s.version>
-        <common.utils.version>0.3.0</common.utils.version>
+        <common.utils.version>0.4.3</common.utils.version>
         <guava.version>18.0</guava.version>
     </properties>
 
