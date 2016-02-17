@@ -95,5 +95,9 @@ public class XDContextUtils {
             df.show();
         }
 
+        public void clearXDF(){
+            df = null;
+        }
+
 
 }

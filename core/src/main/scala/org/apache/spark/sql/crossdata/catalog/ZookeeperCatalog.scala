@@ -13,36 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
-  * Copyright (C) 2015 Stratio (http://stratio.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
-/**
-  * Copyright (C) 2015 Stratio (http://stratio.com)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+
 
 package org.apache.spark.sql.crossdata.catalog
 
@@ -81,11 +52,11 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
             zkTable.options,
             zkTable.version))
         case None =>
-          tableDAO.logger.warn("Table not exists")
+          tableDAO.logger.warn("Table doesn't exist")
           None
       }
     } else {
-      tableDAO.logger.warn("Tables path not exists")
+      tableDAO.logger.warn("Tables path doesn't exist")
       None
     }
   }
@@ -102,7 +73,7 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
           }
         })
     } else {
-      tableDAO.logger.warn("Tables path not exists")
+      tableDAO.logger.warn("Tables path doesn't exist")
       Seq.empty[(String, Boolean)]
     }
   }
@@ -138,11 +109,11 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
         case Some(zkView) =>
           Some(zkView.sqlViewField)
         case None =>
-          viewDAO.logger.warn("View not exists")
+          viewDAO.logger.warn("View doesn't exist")
           None
       }
     } else {
-      viewDAO.logger.warn("View path not exists")
+      viewDAO.logger.warn("View path doesn't exist")
       None
     }
   }
