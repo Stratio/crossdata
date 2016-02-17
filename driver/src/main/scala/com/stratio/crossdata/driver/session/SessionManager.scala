@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common
+package com.stratio.crossdata.driver.session
+
+import java.util.UUID
 
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.test.BaseXDTest
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
-class MessagesSpec extends BaseXDTest {
+object SessionManager {
 
-  "A SQLCommand" should "generate random uuids" in {
-    SQLCommand("a", new Session("a")).queryId should not be SQLCommand("a", new Session("a")).queryId
+  def createSession(auth: Authentication): Session ={
+    return Session(UUID.randomUUID.toString)
   }
 
 }
+
+case class Authentication(user: String, password: String)
+

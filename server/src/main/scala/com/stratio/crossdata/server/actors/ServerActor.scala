@@ -36,8 +36,9 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   def receive: Receive = {
 
-    case sqlCommand @ SQLCommand(query, _, withColnames) =>
+    case sqlCommand @ SQLCommand(query, session, _, withColnames) =>
       logger.info(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
+      // TODO: session must be forwarded to the sql call of the xdContext
       try {
         val df = xdContext.sql(query)
         val rows = if(withColnames) df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion

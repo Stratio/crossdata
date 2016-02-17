@@ -160,10 +160,6 @@ object BasicShell extends App {
   private def runConsole(console: ConsoleReader): Unit = {
     val driver = Driver()
 
-    Thread.sleep(1000)
-
-
-
     console.println()
     console.println("+-----------------+-------------------------+---------------------------+")
     console.println(s"| CROSSDATA ${crossdata.CrossdataVersion} | Powered by Apache Spark | Easy access to big things |")
