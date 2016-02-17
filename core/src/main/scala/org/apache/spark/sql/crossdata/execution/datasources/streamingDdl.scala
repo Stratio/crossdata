@@ -22,10 +22,12 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.config.StreamingConfig._
-import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralStatusModel, EphemeralQueryModel}
+import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralQueryModel, EphemeralStatusModel}
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
+
+import scala.util.{Failure, Success}
 
 // TODO avoid this ec??
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -372,9 +374,20 @@ private[crossdata] case class StartProcess(tableIdentifier: String) extends Logi
     val streamCatalog: XDStreamingCatalog = xdContext.streamingCatalog.getOrElse(
       sys.error("A streaming catalog must be configured")
     )
-    val jobLauncher = new SparkJobLauncher(xdContext.xdConfig, streamCatalog)
-    jobLauncher.doInitSparkStreamingJob(tableIdentifier)
+
+
+    val sparkJob = SparkJobLauncher.getSparkStreamingJob(xdContext.xdConfig, streamCatalog, tableIdentifier)
+
+    sparkJob match {
+      case Failure(exception) =>
+        logError(exception.getMessage, exception)
+        sys.error("Validation error: " + exception.getMessage)
+      case Success(job) =>
+        job.submit()
+    }
+
     Seq.empty
+
   }
 }
 
