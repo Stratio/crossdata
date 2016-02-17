@@ -54,7 +54,9 @@ import com.stratio.tests.utils.ThreadProperty;
 
 import cucumber.api.CucumberOptions;
 
-@CucumberOptions(features = { "src/test/resources/features/Catalog/CreateExternalTables.feature"
+@CucumberOptions(features = {
+		"src/test/resources/features/Catalog/CreateCassandraExternalTables.feature",
+		"src/test/resources/features/Catalog/CreateMongoDBExternalTables.feature"
 	})
 public class ATCreateExternalTable extends BaseTest {
 
