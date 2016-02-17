@@ -18,11 +18,13 @@ package com.stratio.crossdata.server.actors
 import akka.actor.{Props, ActorRef, Actor}
 import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.server.actors.JobActor.Commands.GetJobStatus
+import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobFailed, JobCompleted}
+import com.stratio.crossdata.server.actors.JobActor.Task
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
 
 import scala.concurrent.Future
+import scala.concurrent.duration.FiniteDuration
 import scala.util.{Success, Failure}
 
 object JobActor {
@@ -33,7 +35,6 @@ object JobActor {
   }
 
   trait JobEvent
-
 
   private object InternalEvents {
     case class JobStarted() extends JobEvent
@@ -47,21 +48,25 @@ object JobActor {
   object Commands {
     trait JobCommand
     case object GetJobStatus
+    case object CancelJob
   }
 
-  def props(xDContext: XDContext, command: SQLCommand, requester: ActorRef): Props =
-    Props(new JobActor(xDContext, command, requester))
+  case class Task(command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration])
+
+  def props(xDContext: XDContext, command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration]): Props =
+    Props(new JobActor(xDContext, Task(command, requester, timeout)))
 
 }
 
 class JobActor(
                 val xdContext: XDContext,
-                val command: SQLCommand,
-                val requester: ActorRef
+                val task: Task
               ) extends Actor {
 
   import JobActor.JobStatus._
   import JobActor.InternalEvents._
+
+  import task._
 
   override def preStart(): Unit = {
     super.preStart()
@@ -70,6 +75,7 @@ class JobActor(
     import scala.concurrent.ExecutionContext.Implicits.global
 
     Future {
+      xdContext.sparkContext.setJobGroup(command.queryId.toString, command.query, true)
       val df = xdContext.sql(command.query)
       self ! JobStarted()
       val rows = if(command.retrieveColumnNames)
@@ -85,15 +91,25 @@ class JobActor(
       case Success(_) =>
         self ! JobCompleted
     }
+
+    timeout.foreach(context.system.scheduler.scheduleOnce(_, self, CancelJob))
+
   }
 
   override def receive: Receive = receive(Starting)
 
   private def receive(status: JobStatus): Receive = {
+    // Commands
     case GetJobStatus =>
       sender ! status
     case JobStarted() if status == Starting =>
       context.become(receive(Running))
+    case CancelJob =>
+      xdContext.sparkContext.cancelJobGroup(command.queryId.toString)
+    // Events
+    /* TODO: Jobs cancellations will be treated as errors.
+        I'd be nice (and it'll be done) to discriminate among errors and cancellations
+     */
     case event @ JobFailed(e) if sender == self && (Seq(Starting, Running) contains status) =>
       context.become(receive(Failed))
       context.parent ! event

@@ -43,9 +43,9 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
   def receive: Receive = {
-    case sqlCommand @ SQLCommand(query, _, withColnames) =>
+    case sqlCommand @ SQLCommand(query, _, withColnames, timeout) =>
       logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
-      context.actorOf(JobActor.props(xdContext, sqlCommand, sender()))
+      context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
     case JobFailed(e) =>
       logger.error(e.getMessage)
       context.stop(sender())
