@@ -20,6 +20,8 @@ import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.daos.impl._
 import org.apache.spark.sql.crossdata.models._
 
+import scala.util.Try
+
 class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
 
   private val streamingConfig = xdContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
@@ -56,8 +58,11 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   }
 
   override def dropAllEphemeralTables(): Unit = {
-    ephemeralTableDAO.dao.deleteAll
-    ephemeralTableStatusDAO.dao.deleteAll
+    // TODO it should be improved after changing ephemeralTableDAO.dao.deleteAll
+    Try {
+      ephemeralTableDAO.dao.deleteAll
+      ephemeralTableStatusDAO.dao.deleteAll
+    }
   }
 
   override def getAllEphemeralTables: Seq[EphemeralTableModel] =
