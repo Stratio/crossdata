@@ -54,7 +54,9 @@ import com.stratio.tests.utils.ThreadProperty;
 
 import cucumber.api.CucumberOptions;
 
-@CucumberOptions(features = { "src/test/resources/features/Catalog/CreateExternalTables.feature"
+@CucumberOptions(features = {
+		"src/test/resources/features/Catalog/CreateCassandraExternalTables.feature",
+		"src/test/resources/features/Catalog/CreateMongoDBExternalTables.feature"
 	})
 public class ATCreateExternalTable extends BaseTest {
 
@@ -73,7 +75,7 @@ public class ATCreateExternalTable extends BaseTest {
 
 	}
 
-	@Test(enabled = false, groups = {"basic"})
+	@Test(enabled = true, groups = {"basic"})
 	public void ATCreateExternalTable() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
