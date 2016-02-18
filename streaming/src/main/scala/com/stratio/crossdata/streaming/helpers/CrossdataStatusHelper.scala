@@ -22,8 +22,8 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.streaming.actors.EphemeralQueryActor.{AddListener, EphemeralQueriesResponse, GetQueries}
-import com.stratio.crossdata.streaming.actors.{EphemeralQueryActor, EphemeralStatusActor}
 import com.stratio.crossdata.streaming.actors.EphemeralStatusActor.{GetStatus, SetStatus, StatusResponse}
+import com.stratio.crossdata.streaming.actors.{EphemeralQueryActor, EphemeralStatusActor}
 import com.stratio.crossdata.streaming.constants.AkkaConstants._
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
 import org.apache.spark.SparkContext
@@ -51,7 +51,7 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
       Await.result(futureResult, timeout.duration) match {
         case EphemeralQueriesResponse(queries) =>
           queries.filter(streamingQueryModel => streamingQueryModel.ephemeralTableName == ephemeralTableName)
-        case _ => Seq.empty[EphemeralQueryModel]
+        case _ => Seq.empty
       }
     }
   }
@@ -68,12 +68,11 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
   }
 
   //TODO add in the streaming process
-  def checkEphemeralStatus(sparkContext: SparkContext,
-                           streamingContext: StreamingContext,
-                           zookeeperConfiguration: Map[String, String],
-                           ephemeralTableId: String,
-                           ephemeralTableName: String,
-                           stopGracefully: Boolean = StopGracefully): Unit = {
+  def checkEphemeralStatus( sparkContext: SparkContext,
+                            streamingContext: StreamingContext,
+                            zookeeperConfiguration: Map[String, String],
+                            ephemeralTableName: String,
+                            stopGracefully: Boolean = StopGracefully): Unit = {
 
     createEphemeralStatusActor(zookeeperConfiguration, ephemeralTableName)
 
@@ -81,11 +80,10 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
 
       val futureResult = statusActorRef ? GetStatus
       Await.result(futureResult, timeout.duration) match {
-        case StatusResponse(status) => {
+        case StatusResponse(status) =>
           if (status == EphemeralExecutionStatus.Stopping) {
             closeSparkContexts(sparkContext, streamingContext, stopGracefully)
           }
-        }
       }
     }
   }

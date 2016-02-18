@@ -18,12 +18,12 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import java.util.UUID
 
-
-import scala.language.implicitConversions
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.datasources.DDLParser
 import org.apache.spark.sql.types._
+
+import scala.language.implicitConversions
 
 
 class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) extends DDLParser(parseQuery){
@@ -45,8 +45,11 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val ADD = Keyword("ADD")
   protected val WITH = Keyword("WITH")
   protected val WINDOW = Keyword("WINDOW")
+  protected val SEC = Keyword("SEC")
   protected val SECS = Keyword("SECS")
+  protected val SECONDS = Keyword("SECONDS")
   protected val START = Keyword("START")
+  protected val STOP = Keyword("STOP")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
     createTable | describeTable | refreshTable | importStart | dropTable |
@@ -55,8 +58,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   // TODO move to StreamingDdlParser
 
   protected lazy val streamingSentences: Parser[LogicalPlan] =
-    describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropEphemeralTable |
-    showEphemeralQueries | addEphemeralQuery  | dropEphemeralQuery | dropAllEphemeralQueries
+    describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropEphemeralTable | dropAllEphemeralTables |
+    showEphemeralStatus | showEphemeralStatuses |  startProcess | stopProcess |
+   showEphemeralQueries  | addEphemeralQuery  | dropEphemeralQuery | dropAllEphemeralQueries
+
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -113,10 +118,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   }
 
   protected lazy val createEphemeralTable: Parser[LogicalPlan] = {
-    (CREATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ tableCols ~ (OPTIONS ~> options) ^^ {
+    (CREATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ tableCols.? ~ (OPTIONS ~> options) ^^ {
       case tableIdent ~ columns ~ opts => {
-        val schema = StructType(columns)
-        CreateEphemeralTable(tableIdent, schema, opts)
+        val userSpecifiedSchema = columns.flatMap(fields => Some(StructType(fields)))
+        CreateEphemeralTable(tableIdent, userSpecifiedSchema, opts)
       }
     }
   }
@@ -137,15 +142,15 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   * Ephemeral Table Status Functions
   */
 
-  protected lazy val getEphemeralStatus: Parser[LogicalPlan] = {
-    (GET ~ EPHEMERAL ~ STATUS ~> tableIdentifier)  ^^ {
-      case tableIdent => GetEphemeralStatus(tableIdent)
+  protected lazy val showEphemeralStatus: Parser[LogicalPlan] = {
+    (SHOW ~ EPHEMERAL ~ STATUS ~> tableIdentifier)  ^^ {
+      case tableIdent => ShowEphemeralStatus(tableIdent)
     }
   }
 
-  protected lazy val getAllEphemeralStatuses: Parser[LogicalPlan] = {
-    (GET ~ EPHEMERAL ~ STATUSES)  ^^ {
-      case operation => GetAllEphemeralStatuses()
+  protected lazy val showEphemeralStatuses: Parser[LogicalPlan] = {
+    (SHOW ~ EPHEMERAL ~ STATUSES)  ^^ {
+      case operation => ShowAllEphemeralStatuses()
     }
   }
 
@@ -153,19 +158,14 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   * Ephemeral Queries Functions
   */
 
-  protected lazy val describeEphemeralQuery: Parser[LogicalPlan] = {
-    (DESCRIBE ~ EPHEMERAL ~ QUERY ~> ident) ^^ {
-      case queryIdent => DescribeEphemeralQuery(queryIdent)
-    }
-  }
   protected lazy val showEphemeralQueries: Parser[LogicalPlan] = {
-    (SHOW ~ EPHEMERAL ~ QUERIES) ^^ {
-      case operation => ShowEphemeralQueries()
+    (SHOW ~ EPHEMERAL ~ QUERIES ~> ident.?) ^^ {
+      case queryIdent => ShowEphemeralQueries(queryIdent)
     }
   }
   protected lazy val addEphemeralQuery: Parser[LogicalPlan] = {
 
-    ADD.? ~ streamingSql ~ (WITH ~ WINDOW ~> numericLit <~ SECS ) ~ (AS ~> ident).? ^^ {
+    ADD.? ~ streamingSql ~ (WITH ~ WINDOW ~> numericLit <~ (SEC | SECS | SECONDS)) ~ (AS ~> ident).? ^^ {
       case addDefined ~ streamQl ~ litN ~ topIdent =>
 
         val ephTables: Seq[String] = xDContext.sql(streamQl).queryExecution.analyzed.collect{case StreamingRelation(ephTableName) => ephTableName}
@@ -211,6 +211,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val startProcess: Parser[LogicalPlan] = {
     (START ~> tableIdentifier ) ^^ {
       case table => StartProcess(table.unquotedString)
+    }
+  }
+
+  protected lazy val stopProcess: Parser[LogicalPlan] = {
+    (STOP ~> tableIdentifier ) ^^ {
+      case table => StopProcess(table.unquotedString)
     }
   }
 

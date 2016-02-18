@@ -30,10 +30,12 @@ object CrossdataStreamingApplication extends SparkLoggerComponent {
     Try {
       //val ephemeralTableName = new String(BaseEncoding.base64().decode(args(EphemeralTableNameIndex)))
       val ephemeralTableName = args(EphemeralTableNameIndex)//"ephtable"
-      
+
       //val zookeeperConfString = new String(BaseEncoding.base64().decode(args(ZookeeperConfigurationIndex)))
       //val zookeeperConf = Try(ConfigFactory.parseString(zookeeperConfString)).getOrElse(...)
       //val zookeeperConf = Try(JSON.parseFull(zookeeperConfString).get.asInstanceOf[Map[String,Any]]).getOrElse(...)
+
+      // args(ZookeeperConfigurationIndex),
       val zookeeperConf = Map(
         "connectionString" -> args(ZookeeperConfigurationIndex),
         "connectionTimeout" -> 1500,
@@ -52,7 +54,7 @@ object CrossdataStreamingApplication extends SparkLoggerComponent {
       case Success(_) =>
         logger.info("Ephemeral Table Started")
       case Failure(exception) =>
-        logger.error(exception.getLocalizedMessage, exception)
+        logger.error(exception.getMessage, exception)
         sys.exit()
     }
   }

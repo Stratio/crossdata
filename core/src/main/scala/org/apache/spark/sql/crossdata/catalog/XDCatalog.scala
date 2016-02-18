@@ -15,20 +15,14 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.analysis.Catalog
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.plans.logical.Subquery
-import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.CrossdataVersion
-import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
-import org.apache.spark.sql.execution.datasources.LogicalRelation
-import org.apache.spark.sql.execution.datasources.ResolvedDataSource
+import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
+import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.types._
 import org.json4s.jackson.Serialization.write
 
@@ -40,7 +34,7 @@ import scala.util.parsing.json.JSON
  * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
  */
 abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
-                         xdContext: XDContext) extends Catalog with Logging with Serializable {
+                         xdContext: XDContext) extends Catalog with CatalogCommon with Serializable {
 
   // TODO We should use a limited cache
 

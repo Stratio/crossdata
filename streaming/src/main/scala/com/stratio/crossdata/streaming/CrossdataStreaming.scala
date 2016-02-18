@@ -16,7 +16,6 @@
 
 package com.stratio.crossdata.streaming
 
-import com.stratio.crossdata.streaming.config.StreamingResourceConfig
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
 import com.stratio.crossdata.streaming.helpers.{CrossdataStatusHelper, CrossdataStreamingHelper}
 import org.apache.spark.SparkConf
@@ -31,7 +30,6 @@ class CrossdataStreaming(ephemeralTableName: String,
   extends EphemeralTableMapDAO {
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
-  val streamingResourceConfig = new StreamingResourceConfig
 
   //TODO remove this
   /*dao.upsert("ephtable", EphemeralTableModel(
@@ -42,46 +40,29 @@ class CrossdataStreaming(ephemeralTableName: String,
 
   def init(): Unit = {
     Try {
-      val zookeeperResourceConfig = streamingResourceConfig.config.getConfig(ZookeeperPrefixName) match {
-          case Some(conf) => conf.toStringMap
-          case None => Map.empty
-        }
-
-      val zookeeperMergedConfig = zookeeperResourceConfig ++ zookeeperConfiguration.map { case (key, value) =>
-        (key, value.toString)
-      }
+      val zookeeperConfig = zookeeperConfiguration.mapValues(_.toString).map(identity)
 
       CrossdataStatusHelper.setEphemeralStatus(
         EphemeralExecutionStatus.Starting,
-        zookeeperMergedConfig,
+        zookeeperConfig,
         ephemeralTableName)
 
       Try {
         val ephemeralTable = dao.get(ephemeralTableName).getOrElse(throw new Exception("Ephemeral table not found"))
-        val sparkResourceConfig: Map[String, String] = streamingResourceConfig.config.getConfig(SparkPrefixName) match {
-          case Some(conf) => conf.toStringMap
-          case None => Map.empty
-        }
-        val kafkaResourceConfig = streamingResourceConfig.config.getConfig(KafkaPrefixName) match {
-          case Some(conf) => conf.toStringMap
-          case None => Map.empty
-        }
-        val sparkMergedConfig = configToSparkConf(sparkResourceConfig, ephemeralTable)
-        val kafkaMergedOptions = kafkaResourceConfig ++ ephemeralTable.options.kafkaOptions.additionalOptions
+        val sparkConfig = configToSparkConf(ephemeralTable)
 
         val ssc = StreamingContext.getOrCreate(ephemeralTable.options.checkpointDirectory,
           () => {
             CrossdataStreamingHelper.createContext(ephemeralTable,
-              sparkMergedConfig,
-              zookeeperMergedConfig,
-              kafkaMergedOptions
+            sparkConfig,
+            zookeeperConfig
             )
           })
 
         logger.info(s"Started Ephemeral Table: $ephemeralTableName")
         CrossdataStatusHelper.setEphemeralStatus(
           EphemeralExecutionStatus.Started,
-          zookeeperMergedConfig,
+          zookeeperConfig,
           ephemeralTableName
         )
 
@@ -93,7 +74,7 @@ class CrossdataStreaming(ephemeralTableName: String,
           logger.info(s"Stopping Ephemeral Table: $ephemeralTableName")
           CrossdataStatusHelper.setEphemeralStatus(
             EphemeralExecutionStatus.Stopped,
-            zookeeperMergedConfig,
+            zookeeperConfig,
             ephemeralTableName
           )
           CrossdataStatusHelper.close()
@@ -101,7 +82,7 @@ class CrossdataStreaming(ephemeralTableName: String,
           logger.error(exception.getLocalizedMessage, exception)
           CrossdataStatusHelper.setEphemeralStatus(
             EphemeralExecutionStatus.Error,
-            zookeeperMergedConfig,
+            zookeeperConfig,
             ephemeralTableName
           )
           CrossdataStatusHelper.close()
@@ -115,23 +96,14 @@ class CrossdataStreaming(ephemeralTableName: String,
     }
   }
 
-  private def configToSparkConf(generalConfig: Map[String, String],
-                                ephemeralTable: EphemeralTableModel): SparkConf = {
-    val conf = new SparkConf()
+  private def configToSparkConf(ephemeralTable: EphemeralTableModel): SparkConf =
+    new SparkConf().setAll(setPrefixSpark(ephemeralTable.options.sparkOptions))
 
-    conf.setAll(setPrefixSpark(generalConfig))
-    conf.setAll(setPrefixSpark(ephemeralTable.options.sparkOptions))
-    conf.set(SparkNameKey, {
-      if (conf.contains(SparkNameKey)) s"${conf.get(SparkNameKey)}-${ephemeralTable.name}"
-      else ephemeralTable.name
-    })
-    conf
-  }
 
   private def setPrefixSpark(sparkConfig: Map[String, String]): Map[String, String] =
     sparkConfig.map { case entry@(key, value) =>
       if (key.startsWith(SparkPrefixName)) entry
-      else (s"$SparkPrefixName.${entry._1}", value)
+      else (s"$SparkPrefixName.$key", value)
     }
 }
 

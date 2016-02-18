@@ -24,21 +24,20 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
-import org.apache.log4j.Logger
-import org.apache.spark.{Logging, SparkContext}
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
 import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.ResolveAggregateAlias
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
+import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
 import org.apache.spark.util.Utils
+import org.apache.spark.{Logging, SparkContext}
 
 /**
  * CrossdataContext leverages the features of [[SQLContext]]
@@ -88,12 +87,11 @@ class XDContext private (@transient val sc: SparkContext,
 
       Option(constr.newInstance(self).asInstanceOf[XDStreamingCatalog])
     } else {
-      logger.warn("empty streaming catalog")
+      logWarning("empty streaming catalog")
       None
     }
   }
 
-  override lazy val logger = Logger.getLogger(classOf[XDContext])
 
   @transient
   override protected[sql] lazy val analyzer: Analyzer =

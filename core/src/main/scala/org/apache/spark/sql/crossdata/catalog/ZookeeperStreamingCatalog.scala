@@ -48,6 +48,12 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
 
 
   override def dropEphemeralTable(tableIdentifier: String): Unit = {
+    val isRunning = ephemeralTableStatusDAO.dao.get(tableIdentifier).map{ tableStatus =>
+      tableStatus.status == EphemeralExecutionStatus.Started || tableStatus.status == EphemeralExecutionStatus.Starting
+    } getOrElse notFound(tableIdentifier)
+
+    if(isRunning) throw new RuntimeException("The ephemeral is running. The process should be stopped first using 'Stop <tableIdentifier>'")
+    
     ephemeralTableDAO.dao.delete(tableIdentifier)
     ephemeralTableStatusDAO.dao.delete(tableIdentifier)
   }
@@ -78,9 +84,6 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   override def getAllEphemeralQueries: Seq[EphemeralQueryModel] =
     ephemeralQueriesDAO.dao.getAll()
 
-  override def updateEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Unit =
-    ephemeralQueriesDAO.dao.update(ephemeralQuery.alias, ephemeralQuery)
-
   override def dropEphemeralQuery(queryAlias: String): Unit =
     ephemeralQueriesDAO.dao.delete(queryAlias)
 
@@ -107,5 +110,7 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
 
   override protected[crossdata] def dropAllEphemeralStatus(): Unit =
     ephemeralTableStatusDAO.dao.deleteAll
+
+
 
 }

@@ -13,20 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.spark.sql.crossdata.catalog
 
-package com.stratio.crossdata.streaming.config
+import org.apache.spark.Logging
 
-import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent
-import com.stratio.crossdata.streaming.constants.ApplicationConstants
-import ApplicationConstants._
+trait CatalogCommon extends Logging {
 
-class StreamingResourceConfig extends TypesafeConfigComponent {
-
-  override val config = new TypesafeConfig(
-    None,
-    None,
-    Some(StreamingResourceConfig),
-    Some(s"$ParentPrefixName.$ConfigPrefixName")
-  )
-
+  protected def notFound(resource: String) = {
+    val message = s"$resource not found"
+    logWarning(message)
+    throw new RuntimeException(message)
+  }
 }

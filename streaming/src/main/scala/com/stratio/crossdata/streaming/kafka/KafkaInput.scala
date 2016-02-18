@@ -52,7 +52,7 @@ class KafkaInput(options: KafkaOptionsModel) {
     if (options.topics.isEmpty) {
       throw new IllegalStateException(s"Invalid configuration, topics must be declared.")
     } else {
-     options.topics.map(topicModel => (topicModel.name, topicModel.partition)).toMap
+     options.topics.map(topicModel => (topicModel.name, topicModel.numPartitions)).toMap
     }
   }
 

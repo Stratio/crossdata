@@ -16,7 +16,6 @@
 
 package org.apache.spark.sql.crossdata.catalog
 
-import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.models._
 
@@ -24,7 +23,7 @@ import org.apache.spark.sql.crossdata.models._
  * CrossdataStreamingCatalog aims to provide a mechanism to persist the
  * Streaming metadata executions.
  */
-abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Serializable {
+abstract class XDStreamingCatalog(xdContext: XDContext) extends CatalogCommon with Serializable {
 
   /**
    * Ephemeral Table Functions
@@ -66,8 +65,6 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends Logging with Ser
   def getAllEphemeralQueries : Seq[EphemeralQueryModel]
 
   def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel]
-
-  def updateEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Unit
 
   def dropEphemeralQuery(queryAlias: String): Unit
 

@@ -30,6 +30,7 @@ class StreamingDdlParserIT extends SharedXDContextTest {
     Try(ConfigFactory.load("core-catalog.conf").getConfig(CoreConfig.ParentConfigName)).toOption
 
 
+
 /*  "StreamingDDLParser" should "parse..." in {
 
     val sqlContext = _xdContext
@@ -38,20 +39,20 @@ class StreamingDdlParserIT extends SharedXDContextTest {
     temp.toString()
   }
 */
-  it should "parse... 2" in {
 
-  /*  val sqlContext = _xdContext
-    sqlContext.sql("CREATE EPHEMERAL TABLE t OPTIONS (ho 'hol')")
-   // val temp = sqlContext.ddlParser.parse("ADD SELECT * FROM t WITH WINDOW 5 SECS AS topic")
-    sqlContext.sql("ADD SELECT count(*) FROM t WITH WINDOW 5 SECS AS topic2")
-    //temp.toString()*/
-  }
 
-  it should "parse... 3" in {
+
+
+ it should "parse... 2" in {
 
     val sqlContext = _xdContext
-    sqlContext.sql("START t")
+    sqlContext.sql("CREATE EPHEMERAL TABLE t OPTIONS (receiver.kafka.topic 'ephtable:1', receiver.kafka.groupId 'xd1')")
+   // val temp = sqlContext.ddlParser.parse("ADD SELECT * FROM t WITH WINDOW 5 SECS AS topic")
+    sqlContext.sql("ADD SELECT count(*) FROM t WITH WINDOW 5 SECS AS qalias")
+    //temp.toString()
   }
+
+ 
 
 }
 
