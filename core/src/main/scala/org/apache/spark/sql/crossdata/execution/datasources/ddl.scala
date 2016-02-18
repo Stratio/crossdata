@@ -108,6 +108,15 @@ private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryP
   }
 }
 
+private[crossdata] case class DropView(viewIdentifier: TableIdentifier)
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    sqlContext.catalog.dropView(viewIdentifier.toSeq)
+    Seq.empty
+  }
+}
+
 case class CreateExternalTable(
                                 tableIdent: TableIdentifier,
                                 userSpecifiedSchema: StructType,

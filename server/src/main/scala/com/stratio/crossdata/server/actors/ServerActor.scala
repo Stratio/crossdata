@@ -58,7 +58,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   }
 
   private def logAndReply(queryId: UUID, trowable: Throwable): Unit = {
-    logger.error(trowable.getMessage)
+    logger.error(s" $queryId : ${trowable.getMessage}")
     sender ! ErrorResult(queryId, trowable.getMessage, Some(trowable))
   }
 
