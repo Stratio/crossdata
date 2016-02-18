@@ -19,7 +19,7 @@ import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.common.{SQLCommand, SQLResult}
+import com.stratio.crossdata.common.{SecureSQLCommand, SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.config.DriverConfig.{DriverConfigHosts, DriverRetryDuration, DriverRetryTimes}
@@ -89,8 +89,8 @@ class Driver(properties: java.util.Map[String, ConfigValue] = Map.empty[String, 
 
   val driverSession = SessionManager.createSession(auth)
 
-  def securizeCommand(command: SQLCommand): SQLCommand = {
-    new SQLCommand(command.query, driverSession, command.queryId, command.retrieveColumnNames)
+  def securitizeCommand(command: SQLCommand): SecureSQLCommand = {
+    new SecureSQLCommand(command, driverSession)
   }
 
   /**
@@ -161,7 +161,7 @@ class Driver(properties: java.util.Map[String, ConfigValue] = Map.empty[String, 
   def asyncQuery(sqlCommand: SQLCommand,
                  timeout: Timeout = defaultTimeout,
                  retries: Int = defaultRetries): Future[SQLResult] = {
-    val secureSQLCommand = securizeCommand(sqlCommand)
+    val secureSQLCommand = securitizeCommand(sqlCommand)
     RetryPolitics.askRetry(proxyActor, secureSQLCommand, timeout, retries)
   }
 

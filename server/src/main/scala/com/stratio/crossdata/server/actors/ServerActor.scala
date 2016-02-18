@@ -19,7 +19,7 @@ import java.util.UUID
 
 import akka.actor.{Actor, Props}
 import akka.cluster.Cluster
-import com.stratio.crossdata.common.SQLCommand
+import com.stratio.crossdata.common.{SecureSQLCommand, SQLCommand}
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
@@ -36,21 +36,22 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   def receive: Receive = {
 
-    case sqlCommand @ SQLCommand(query, session, _, withColnames) =>
-      logger.info(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
-      // TODO: session must be forwarded to the sql call of the xdContext
-      try {
-        val df = xdContext.sql(query)
-        val rows = if(withColnames) df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
-        else df.collect()
-        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, df.schema)
-      } catch {
-        case e: Exception => logAndReply(sqlCommand.queryId, e)
-        case soe: StackOverflowError => logAndReply(sqlCommand.queryId, soe)
-        case oome: OutOfMemoryError =>
-          System.gc()
-          logAndReply(sqlCommand.queryId, oome)
-      }
+    case secureSQLCommand @ SecureSQLCommand(sqlCommand, session) =>
+      case sqlCommand @ SQLCommand(query, queryId, withColnames) =>
+        try {
+          // TODO: session must be forwarded to the sql call of the xdContext
+          logger.info(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
+          val df = xdContext.sql(query)
+          val rows = if(withColnames) df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
+          else df.collect()
+          sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, df.schema)
+        } catch {
+          case e: Exception => logAndReply(sqlCommand.queryId, e)
+          case soe: StackOverflowError => logAndReply(sqlCommand.queryId, soe)
+          case oome: OutOfMemoryError =>
+            System.gc()
+            logAndReply(sqlCommand.queryId, oome)
+        }
 
     case any =>
       logger.error(s"Something is going wrong!. Unknown message: $any")

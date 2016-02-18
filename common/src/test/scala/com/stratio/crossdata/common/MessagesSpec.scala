@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.common
 
-import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -24,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 class MessagesSpec extends BaseXDTest {
 
   "A SQLCommand" should "generate random uuids" in {
-    SQLCommand("a", new Session("a")).queryId should not be SQLCommand("a", new Session("a")).queryId
+    SQLCommand("a").queryId should not be SQLCommand("a").queryId
   }
 
 }

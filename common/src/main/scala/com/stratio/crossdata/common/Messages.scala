@@ -22,11 +22,11 @@ import com.stratio.crossdata.common.security.Session
 import org.apache.spark.sql.Row
 
 //TODO: Remove `retrieveColumnNames` when a better alternative to PR#257 has been found
-case class SQLCommand(
-                       query: String,
-                       session: Session = new Session(UUID.randomUUID.toString),
-                       queryId: UUID = UUID.randomUUID(),
-                       retrieveColumnNames: Boolean = false)
+case class SQLCommand(query: String,
+                      queryId: UUID = UUID.randomUUID(),
+                      retrieveColumnNames: Boolean = false)
+
+case class SecureSQLCommand(sqlCommand: SQLCommand, session: Session)
 
 trait SQLResult extends Serializable {
   val queryId: UUID
