@@ -15,11 +15,12 @@
  */
 
 package org.apache.spark.sql.crossdata.models
+
 import org.apache.spark.sql.types.StructType
 
 case class EphemeralTableModel(name: String,
-                               schema: Option[StructType],
-                               options: EphemeralOptionsModel) {
+                               options: EphemeralOptionsModel,
+                               schema: Option[StructType] = None) {
 
   def toStringPretty : String = ModelUtils.modelToJsonString(this)
 }

@@ -16,7 +16,7 @@
 
 package com.stratio.crossdata.streaming.actors
 
-import akka.actor.Actor
+import akka.actor.{Actor, Cancellable}
 import com.github.nscala_time.time.Imports._
 import com.stratio.crossdata.streaming.actors.EphemeralStatusActor._
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
@@ -34,9 +34,10 @@ class EphemeralStatusActor(streamingContext: StreamingContext,
 with EphemeralTableStatusMapDAO {
 
   val ephemeralTMDao = new EphemeralTableMapDAO(Map(ZookeeperPrefixName -> zookeeperConfiguration))
-
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var ephemeralStatus: Option[EphemeralStatusModel] = getRepositoryStatusTable
+  var cancellableCheckStatus: Option[Cancellable] = None
+
 
   override def receive: Receive = receive(listenerAdded = false)
 
@@ -49,12 +50,21 @@ with EphemeralTableStatusMapDAO {
       context.become(receive(true))
   }
 
-  // TODO require tableModel
-  private val ephemeralTableModel = ephemeralTMDao.dao.get(ephemeralTableName).get
-  private val delayMs = ephemeralTableModel.options.atomicWindow * 1000
+  override def preStart(): Unit = {
+    super.preStart()
 
-  context.system.scheduler.schedule(delayMs milliseconds, delayMs milliseconds, self, CheckStatus)(context.dispatcher)
+    val ephemeralTableModel = ephemeralTMDao.dao.get(ephemeralTableName).get
+    val delayMs = ephemeralTableModel.options.atomicWindow * 1000
+    cancellableCheckStatus = Option(cancellableCheckStatus.fold(
+      context.system.scheduler.schedule(delayMs milliseconds, delayMs milliseconds, self, CheckStatus)(context.dispatcher)
+    )(identity))
+  }
 
+
+  override def postStop(): Unit = {
+    super.postStop()
+    cancellableCheckStatus.foreach(_.cancel())
+  }
 
   private def doGetStatus(): Unit = {
     sender ! StatusResponse(getStatusFromTable(ephemeralStatus))
