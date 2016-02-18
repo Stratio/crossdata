@@ -50,18 +50,10 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     df shouldBe a[XDDataFrame]
   }
 
-  it should s"persist a view in $catalogName" in {
-
-    val viewIdentifier = TableIdentifier(ViewName, Option(Database))
-    xdContext.catalog.persistViewMetadata(viewIdentifier, sqlView)
-
-    val df = xdContext.sql(s"SELECT * FROM $Database.$ViewName")
-    df shouldBe a[XDDataFrame]
-  }
-
   it should s"drop view in $catalogName" in {
 
     val viewIdentifier = TableIdentifier(ViewName, Option(Database))
+    xdContext.catalog.persistViewMetadata(viewIdentifier, sqlView)
 
     xdContext.catalog.dropView(viewIdentifier.toSeq)
     xdContext.catalog.tableExists(viewIdentifier.toSeq) shouldBe false
