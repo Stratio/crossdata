@@ -16,6 +16,7 @@
 
 package org.apache.spark.sql.crossdata.catalog
 
+import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
@@ -48,6 +49,16 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val df = xdContext.sql(s"SELECT * FROM $Database.$TableName")
     df shouldBe a[XDDataFrame]
   }
+
+  it should s"drop view in $catalogName" in {
+
+    val viewIdentifier = TableIdentifier(ViewName, Option(Database))
+    xdContext.catalog.persistViewMetadata(viewIdentifier, sqlView)
+
+    xdContext.catalog.dropView(viewIdentifier.toSeq)
+    xdContext.catalog.tableExists(viewIdentifier.toSeq) shouldBe false
+  }
+
 
   it should s"persist a table with catalog and partitionColumns with multiple subdocuments as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
@@ -197,8 +208,10 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     xdContext.sql(s"DESCRIBE $Database.$TableName").count() should not be 0
   }
 
+  
   override protected def afterAll() {
     xdContext.catalog.dropAllTables()
+    xdContext.catalog.dropAllViews()
     super.afterAll()
   }
 
