@@ -58,10 +58,9 @@ object StreamingConfig extends CoreConfig {
     val sparkOpts = finalOptions.filter{case (k, v) => k.startsWith(SparkConfPath)}
     val ephemeralOptions = EphemeralOptionsModel(kafkaOptions, minW, maxW, outFormat, checkpointDirectory, sparkOpts)
 
-    EphemeralTableModel(ident, userSchema, ephemeralOptions)
+    EphemeralTableModel(ident, ephemeralOptions, userSchema)
   }
 
-  // Options with order preference
   private def getEphemeralTableOptions(ephTable: String, opts : Map[String, String]): Map[String, String] = {
 
     listMandatoryEphemeralTableKeys.foreach{ mandatoryOption =>

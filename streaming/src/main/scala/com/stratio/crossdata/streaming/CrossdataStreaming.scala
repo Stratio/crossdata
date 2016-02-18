@@ -42,10 +42,11 @@ class CrossdataStreaming(ephemeralTableName: String,
     Try {
       val zookeeperConfig = zookeeperConfiguration.mapValues(_.toString).map(identity)
 
-      CrossdataStatusHelper.setEphemeralStatus(
+      // TODO remove starting status
+      /*CrossdataStatusHelper.setEphemeralStatus(
         EphemeralExecutionStatus.Starting,
         zookeeperConfig,
-        ephemeralTableName)
+        ephemeralTableName)*/
 
       Try {
         val ephemeralTable = dao.get(ephemeralTableName).getOrElse(throw new Exception("Ephemeral table not found"))
@@ -59,6 +60,8 @@ class CrossdataStreaming(ephemeralTableName: String,
             )
           })
 
+        CrossdataStatusHelper.initStatusActor(ssc, zookeeperConfig, ephemeralTable.name)
+
         logger.info(s"Started Ephemeral Table: $ephemeralTableName")
         CrossdataStatusHelper.setEphemeralStatus(
           EphemeralExecutionStatus.Started,
@@ -71,7 +74,8 @@ class CrossdataStreaming(ephemeralTableName: String,
 
       } match {
         case Success(_) =>
-          logger.info(s"Stopping Ephemeral Table: $ephemeralTableName")
+          logInfo(s"Stopping Ephemeral Table: $ephemeralTableName")
+          // TODO this setStatus won't be executed because the actorSystem will be shutdown before
           CrossdataStatusHelper.setEphemeralStatus(
             EphemeralExecutionStatus.Stopped,
             zookeeperConfig,
@@ -79,7 +83,7 @@ class CrossdataStreaming(ephemeralTableName: String,
           )
           CrossdataStatusHelper.close()
         case Failure(exception) =>
-          logger.error(exception.getLocalizedMessage, exception)
+          logError(exception.getLocalizedMessage, exception)
           CrossdataStatusHelper.setEphemeralStatus(
             EphemeralExecutionStatus.Error,
             zookeeperConfig,
@@ -88,6 +92,7 @@ class CrossdataStreaming(ephemeralTableName: String,
           CrossdataStatusHelper.close()
       }
     } match {
+      // TODO dead code
       case Success(_) =>
         logger.info(s"Ephemeral Table Finished correctly: $ephemeralTableName")
       case Failure(exception) =>
