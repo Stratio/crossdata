@@ -169,7 +169,7 @@ sealed trait ZookeeperStreamingDefaultTestConstants {
     Map("key" -> "value"),
     "MEMORY_AND_DISK" )
   val EphemeralTableOptions = EphemeralOptionsModel(KafkaOptions,5)
-  val EphemeralTable = EphemeralTableModel(EphemeralTableName, None, EphemeralTableOptions)
+  val EphemeralTable = EphemeralTableModel(EphemeralTableName, EphemeralTableOptions)
 
   //Queries
   val QueryAlias = "qalias"
