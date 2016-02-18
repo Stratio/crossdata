@@ -69,7 +69,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     // CREATE PERSISTENT METADATA TABLE
 
-    if(!schemaExists(s"$db", jdbcConnection)) {
+    if(!schemaExists(db, jdbcConnection)) {
       jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
 
 
@@ -254,5 +254,12 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   }
 
+  override protected def dropPersistedView(viewName: String, databaseName: Option[String]): Unit = {
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='$viewName' AND db='${databaseName.getOrElse("")}'")
+  }
 
+  override protected def dropAllPersistedViews(): Unit = {
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
+  }
 }
