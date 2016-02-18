@@ -42,10 +42,10 @@ class StreamingDdlIT extends SharedXDContextTest{
     val dropAllTables = sql("DROP EPHEMERAL TABLES").collect()
 
     // Results
-    val createResult = Seq(Row(createEphemeralTableModel("ephemeralTest1", Option(StructType(Array(StructField("id", StringType)))), Map("kafka.options.test" -> "optionalConfig")).toStringPretty))
+    val createResult = Seq(Row(createEphemeralTableModel("ephemeralTest1",  Map("kafka.options.test" -> "optionalConfig")).toStringPretty), Option(StructType(Array(StructField("id", StringType)))))
     val getResult = Seq(Row("{\n  \"ephemeralTableName\" : \"ephemeralTest1\",\n  \"status\" : \"NotStarted\"\n}"))
     val existsResult = Seq(Row("ephemeralTest1 EXISTS"))
-    val getTableResult = Seq(Row(createEphemeralTableModel("ephemeralTest1", Option(StructType(Array(StructField("id", StringType)))), Map("kafka.options.test" -> "updateParam")).toStringPretty))
+    val getTableResult = Seq(Row(createEphemeralTableModel("ephemeralTest1", Map("kafka.options.test" -> "updateParam")).toStringPretty), Option(StructType(Array(StructField("id", StringType)))))
     val dropResult = Seq(Row("ephemeralTest1"))
 
     create should be (createResult)

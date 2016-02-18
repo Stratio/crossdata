@@ -43,13 +43,13 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends CatalogCommon wi
   /**
    * Ephemeral Status Functions
    */
-  def createEphemeralStatus(tableIdentifier: String, ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel
+  protected[crossdata] def createEphemeralStatus(tableIdentifier: String, ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel
 
-  def getEphemeralStatus(tableIdentifier: String) : Option[EphemeralStatusModel]
+  protected[crossdata] def getEphemeralStatus(tableIdentifier: String) : Option[EphemeralStatusModel]
 
-  def getAllEphemeralStatuses : Seq[EphemeralStatusModel]
+  protected[crossdata] def getAllEphemeralStatuses : Seq[EphemeralStatusModel]
 
-  def updateEphemeralStatus(tableIdentifier: String, status: EphemeralStatusModel) : Unit
+  protected[crossdata] def updateEphemeralStatus(tableIdentifier: String, status: EphemeralStatusModel) : Unit
 
   protected[crossdata] def dropEphemeralStatus(tableIdentifier: String): Unit
   

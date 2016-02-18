@@ -28,7 +28,7 @@ object StreamingConfig extends CoreConfig {
   lazy val streamingConfigMap: Map[String, String] =
     streamingConfig.entrySet().map(entry => (entry.getKey, streamingConfig.getAnyRef(entry.getKey).toString)).toMap
 
-  def createEphemeralTableModel(ident: String, userSchema: Option[StructType], opts : Map[String, String]) : EphemeralTableModel = {
+  def createEphemeralTableModel(ident: String, opts : Map[String, String], userSchema: Option[StructType] = None) : EphemeralTableModel = {
 
     val finalOptions = getEphemeralTableOptions(ident, opts)
 

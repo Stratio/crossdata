@@ -20,15 +20,14 @@ import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.daos.impl._
 import org.apache.spark.sql.crossdata.models._
 
+import scala.util.Try
+
 class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
 
-  // TODO add several requires
-  require(xdContext.xdConfig.hasPath(XDContext.StreamingConfigKey))
   private val streamingConfig = xdContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
-
-  val ephemeralTableDAO = new EphemeralTableTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
-  val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
-  val ephemeralTableStatusDAO = new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+  private val ephemeralTableDAO = new EphemeralTableTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+  private val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+  private val ephemeralTableStatusDAO = new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
 
   /**
    * Ephemeral Table Functions
@@ -59,8 +58,11 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   }
 
   override def dropAllEphemeralTables(): Unit = {
-    ephemeralTableDAO.dao.deleteAll
-    ephemeralTableStatusDAO.dao.deleteAll
+    // TODO it should be improved after changing ephemeralTableDAO.dao.deleteAll
+    Try {
+      ephemeralTableDAO.dao.deleteAll
+      ephemeralTableStatusDAO.dao.deleteAll
+    }
   }
 
   override def getAllEphemeralTables: Seq[EphemeralTableModel] =
@@ -110,7 +112,5 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
 
   override protected[crossdata] def dropAllEphemeralStatus(): Unit =
     ephemeralTableStatusDAO.dao.deleteAll
-
-
 
 }

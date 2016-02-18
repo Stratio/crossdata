@@ -87,7 +87,7 @@ class XDContext private (@transient val sc: SparkContext,
 
       Option(constr.newInstance(self).asInstanceOf[XDStreamingCatalog])
     } else {
-      logWarning("empty streaming catalog")
+      logError("Empty streaming catalog")
       None
     }
   }

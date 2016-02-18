@@ -119,7 +119,7 @@ private[crossdata] case class CreateEphemeralTable(
 
     val result = sqlContext.asInstanceOf[XDContext].streamingCatalog.map{
       streamingCatalog =>
-        val ephTable = createEphemeralTableModel(tableIdent.table, userSchema, opts)
+        val ephTable = createEphemeralTableModel(tableIdent.table, opts, userSchema)
         streamingCatalog.createEphemeralTable(ephTable) match {
           case Right(table)  => table.toStringPretty
           case Left(message)    => message
