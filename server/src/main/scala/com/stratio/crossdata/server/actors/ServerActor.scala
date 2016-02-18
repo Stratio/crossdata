@@ -36,21 +36,20 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   def receive: Receive = {
 
-    case secureSQLCommand @ SecureSQLCommand(sqlCommand, session) =>
-      case sqlCommand @ SQLCommand(query, queryId, withColnames) =>
+    case SecureSQLCommand(SQLCommand(query, queryId, withColnames), session) =>
         try {
           // TODO: session must be forwarded to the sql call of the xdContext
-          logger.info(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
+          logger.info(s"Query received ${queryId}: ${query}. Actor ${self.path.toStringWithoutAddress}")
           val df = xdContext.sql(query)
           val rows = if(withColnames) df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
           else df.collect()
-          sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, df.schema)
+          sender ! SuccessfulQueryResult(queryId, rows, df.schema)
         } catch {
-          case e: Exception => logAndReply(sqlCommand.queryId, e)
-          case soe: StackOverflowError => logAndReply(sqlCommand.queryId, soe)
+          case e: Exception => logAndReply(queryId, e)
+          case soe: StackOverflowError => logAndReply(queryId, soe)
           case oome: OutOfMemoryError =>
             System.gc()
-            logAndReply(sqlCommand.queryId, oome)
+            logAndReply(queryId, oome)
         }
 
     case any =>

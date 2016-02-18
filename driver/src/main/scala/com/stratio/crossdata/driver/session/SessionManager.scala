@@ -21,9 +21,7 @@ import com.stratio.crossdata.common.security.Session
 
 object SessionManager {
 
-  def createSession(auth: Authentication): Session ={
-    return Session(UUID.randomUUID.toString)
-  }
+  def createSession(auth: Authentication): Session = Session(UUID.randomUUID.toString)
 
 }
 
