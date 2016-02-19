@@ -15,31 +15,61 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
+import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.{Config, ConfigFactory}
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.mock.MockitoSugar
 
 import scala.util.Try
 
+
 @RunWith(classOf[JUnitRunner])
-class StreamingDdlParserIT extends SharedXDContextTest {
+class StreamingDdlParserSpec extends BaseXDTest with MockitoSugar{
+
+    val xdContext = mock[XDContext]
+    val parser = new XDDdlParser(_ => null, xdContext)
 
   override val catalogConfig : Option[Config] =
     Try(ConfigFactory.load("core-catalog.conf").getConfig(CoreConfig.ParentConfigName)).toOption
 
 
+  DescribeEphemeralTable
+  ShowEphemeralTables
+  CreateEphemeralTable
+  DropEphemeralTable
+  DropAllEphemeralTables
+  ShowEphemeralStatus
+  ShowAllEphemeralStatuses
+  ShowEphemeralQueries
+  AddEphemeralQuery
+  DropEphemeralQuery
+  DropAllEphemeralQueries
+  StartProcess
+  StopProcess
 
-/*  "StreamingDDLParser" should "parse..." in {
+  "StreamingDDLParser" should "parse a create ephemeral table" in {
 
     val sqlContext = _xdContext
 
     val temp = sqlContext.ddlParser.parse("ADD SELECT * FROM t")
+
     temp.toString()
   }
-*/
 
+/*  val create = sql("CREATE EPHEMERAL TABLE ephemeralTest1 (id STRING) OPTIONS(kafka.options.test 'optionalConfig')").collect()
+  val getStatus = sql("GET EPHEMERAL STATUS ephemeralTest1").collect()
+  val getAllStatus = sql("GET EPHEMERAL STATUSES").collect()
+  val getTable = sql("DESCRIBE EPHEMERAL TABLE ephemeralTest1").collect()
+  val getAllTables = sql("SHOW EPHEMERAL TABLES").collect()
+  val dropTable = sql("DROP EPHEMERAL TABLE ephemeralTest1").collect()
+  sql("CREATE EPHEMERAL TABLE ephemeralTest1 (id STRING) OPTIONS(kafka.options.test 'optionalConfig')").collect()
+  sql("CREATE EPHEMERAL TABLE ephemeralTest2 (id STRING) OPTIONS(kafka.options.test 'optionalConfig')").collect()
+  val dropAllTables = sql("DROP EPHEMERAL TABLES").collect()
+  */
 
 
 /*
@@ -55,6 +85,8 @@ class StreamingDdlParserIT extends SharedXDContextTest {
   it should "parse... 2" in {
 
     val sqlContext = _xdContext
+    sqlContext.sql("START t")
+    Thread.sleep(50000)
     sqlContext.sql("STOP t")
 
   }

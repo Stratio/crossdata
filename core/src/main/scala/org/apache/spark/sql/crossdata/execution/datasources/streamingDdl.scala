@@ -55,7 +55,7 @@ private[crossdata] case class DescribeEphemeralTable(tableIdent: TableIdentifier
 
 }
 
-private[crossdata] case class ShowEphemeralTables() extends LogicalPlan with RunnableCommand {
+private[crossdata] case object ShowEphemeralTables extends LogicalPlan with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(Seq(
@@ -82,8 +82,7 @@ private[crossdata] case class ShowEphemeralTables() extends LogicalPlan with Run
   }
 }
 
-private[crossdata] case class CreateEphemeralTable(
-                                                    tableIdent: TableIdentifier,
+private[crossdata] case class CreateEphemeralTable(tableIdent: TableIdentifier,
                                                     userSchema: Option[StructType],
                                                     opts: Map[String, String])
   extends LogicalPlan with RunnableCommand {
@@ -156,7 +155,7 @@ private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
   }
 }
 
-private[crossdata] case class DropAllEphemeralTables() extends LogicalPlan with RunnableCommand {
+private[crossdata] case object DropAllEphemeralTables extends LogicalPlan with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
@@ -204,7 +203,7 @@ private[crossdata] case class ShowEphemeralStatus(tableIdent: TableIdentifier) e
   }
 }
 
-private[crossdata] case class ShowAllEphemeralStatuses() extends LogicalPlan with RunnableCommand {
+private[crossdata] case object ShowAllEphemeralStatuses extends LogicalPlan with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
@@ -304,7 +303,7 @@ private[crossdata] case class AddEphemeralQuery(ephemeralTablename: String,
   }
 }
 
-private[crossdata] case class DropEphemeralQuery(queryIdent: TableIdentifier)
+private[crossdata] case class DropEphemeralQuery(queryIdent: String)
   extends LogicalPlan with RunnableCommand {
 
   override val output: Seq[Attribute] = {
@@ -317,14 +316,14 @@ private[crossdata] case class DropEphemeralQuery(queryIdent: TableIdentifier)
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
     sqlContext.asInstanceOf[XDContext].streamingCatalog.foreach {
-      streamingCatalog => streamingCatalog.dropEphemeralQuery(queryIdent.table)
+      streamingCatalog => streamingCatalog.dropEphemeralQuery(queryIdent)
     }
 
-    Seq(Row(queryIdent.table))
+    Seq(Row(queryIdent))
   }
 }
 
-private[crossdata] case class DropAllEphemeralQueries() extends LogicalPlan with RunnableCommand {
+private[crossdata] case class DropAllEphemeralQueries(table: Option[String] = None) extends LogicalPlan with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
