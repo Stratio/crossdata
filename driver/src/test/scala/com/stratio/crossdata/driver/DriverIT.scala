@@ -34,7 +34,7 @@ class DriverIT extends EndToEndTest {
   "Crossdata" should "return an ErrorResult when running an unparseable query" in {
 
     assumeCrossdataUpAndRunning()
-    val driver = Driver()
+    val driver = Driver.getOrCreate()
     val sqlCommand = SQLCommand("select select")
     val result = driver.syncQuery(sqlCommand, Timeout(10 seconds), 2)
     result.queryId should be(sqlCommand.queryId)
@@ -46,7 +46,7 @@ class DriverIT extends EndToEndTest {
 
   it should "return a SuccessfulQueryResult when executing a select *" in {
     assumeCrossdataUpAndRunning()
-    val driver = Driver()
+    val driver = Driver.getOrCreate()
 
     driver.syncQuery(
       SQLCommand(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')")
@@ -66,7 +66,7 @@ class DriverIT extends EndToEndTest {
   }
 
   it should "get a list of tables" in {
-    val driver = Driver()
+    val driver = Driver.getOrCreate()
 
     driver.syncQuery(
       SQLCommand(s"CREATE TABLE db.jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')")

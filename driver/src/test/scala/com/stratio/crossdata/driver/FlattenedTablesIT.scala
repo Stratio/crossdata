@@ -27,7 +27,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
   "The Driver" should " List table's description with nested and array fields flattened" in {
     assumeCrossdataUpAndRunning
 
-    val flattenedDriver = Driver(true)
+    val flattenedDriver = Driver.getOrCreate(true)
 
     //Experimentation
     val result:Seq[FieldMetadata] = flattenedDriver.describeTable(Some(Database), Collection)
@@ -42,7 +42,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
   it should " List table's description with nested fields Not flattened" in {
     assumeCrossdataUpAndRunning
 
-    val driver = Driver()
+    val driver = Driver.getOrCreate()
 
     //Experimentation
     val result:Seq[FieldMetadata] = driver.describeTable(Some(Database), Collection)
@@ -60,7 +60,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
   it should " Query with Flattened Fields" in {
     assumeCrossdataUpAndRunning
 
-    val flattenedDriver = Driver(true)
+    val flattenedDriver = Driver.getOrCreate(true)
 
     //Experimentation
     val result= flattenedDriver.syncQuery(SQLCommand(s"SELECT address.street from $Database.$Collection")).resultSet
@@ -72,7 +72,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
   it should " Query with Flattened Fields On Filters" in {
     assumeCrossdataUpAndRunning
 
-    val flattenedDriver = Driver(true)
+    val flattenedDriver = Driver.getOrCreate(true)
 
     //Experimentation
     val result= flattenedDriver.syncQuery(SQLCommand(s"SELECT description FROM $Database.$Collection WHERE address.street = '5th Avenue'")).resultSet

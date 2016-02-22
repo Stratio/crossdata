@@ -158,11 +158,9 @@ object BasicShell extends App {
   initialize(console)
 
   private def runConsole(console: ConsoleReader): Unit = {
-    val driver = Driver()
+    val driver = Driver.getOrCreate()
 
-    Thread.sleep(1000)
-
-
+    Thread.sleep(2000)
 
     console.println()
     console.println("+-----------------+-------------------------+---------------------------+")
