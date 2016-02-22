@@ -15,12 +15,12 @@
  */
 package com.stratio.crossdata.server.actors
 
-import java.util.UUID
-
-import akka.actor.{Actor, Props}
+import akka.actor.SupervisorStrategy.{Stop, Restart}
+import akka.actor._
 import akka.cluster.Cluster
 import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.{XDDataFrame, XDContext}
@@ -35,31 +35,21 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
   def receive: Receive = {
-
-    case sqlCommand @ SQLCommand(query, _, withColnames) =>
-      logger.info(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
-      try {
-        val df = xdContext.sql(query)
-        val rows = if(withColnames) df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
-        else df.collect()
-        sender ! SuccessfulQueryResult(sqlCommand.queryId, rows, df.schema)
-      } catch {
-        case e: Exception => logAndReply(sqlCommand.queryId,e)
-        case soe: StackOverflowError => logAndReply(sqlCommand.queryId, soe)
-        case oome: OutOfMemoryError =>
-          System.gc()
-          logAndReply(sqlCommand.queryId, oome)
-      }
-
+    case sqlCommand @ SQLCommand(query, _, withColnames, timeout) =>
+      logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
+      context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
+    case JobFailed(e) =>
+      logger.error(e.getMessage)
+    case JobCompleted =>
+      context.stop(sender()) //TODO: This could be changed so done works could be inquired about their state
     case any =>
-      logger.error(s"Something is going wrong!. Unknown message: $any")
-
+      logger.error(s"Something is going wrong! Unknown message: $any")
   }
 
-  private def logAndReply(queryId: UUID, trowable: Throwable): Unit = {
-    logger.error(s" $queryId : ${trowable.getMessage}")
-    sender ! ErrorResult(queryId, trowable.getMessage, Some(trowable))
+  //TODO: Use number of tries and timeout configuration parameters
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {
+    case _: ActorKilledException => Stop  //In the future it might be interesting to add the
+    case _ => Restart //Crashed job gets restarted
   }
-
 
 }

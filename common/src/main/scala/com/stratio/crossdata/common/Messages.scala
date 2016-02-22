@@ -20,12 +20,23 @@ import java.util.UUID
 
 import org.apache.spark.sql.Row
 
-//TODO: Remove `retrieveColumnNames` when a better alternative to PR#257 has been found
-case class SQLCommand(query: String, queryId: UUID = UUID.randomUUID(), retrieveColumnNames: Boolean = false)
+import scala.concurrent.duration.FiniteDuration
 
-trait SQLResult extends Serializable {
+trait Command
+
+case class SQLCommand(
+                       query: String,
+                       queryId: UUID = UUID.randomUUID(),
+                       retrieveColumnNames: Boolean = false,
+                       timeout: Option[FiniteDuration] = None
+                     ) extends Command
+
+trait Result extends Serializable {
   val queryId: UUID
-  def resultSet: Array[Row]
   def hasError: Boolean
+}
+
+trait SQLResult extends Result {
+  def resultSet: Array[Row]
 }
 

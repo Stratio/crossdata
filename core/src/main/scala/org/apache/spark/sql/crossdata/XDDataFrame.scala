@@ -17,7 +17,6 @@ package org.apache.spark.sql.crossdata
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
-import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
@@ -228,7 +227,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         case (res: Seq[_], idx) => res map(idx -> _)
       }
 
-      cartesian(arrayColumnValues).take(limit) map { case replacements: Seq[(Int, _)] =>
+      cartesian(arrayColumnValues).take(limit) map { case replacements: Seq[(Int, _) @unchecked] =>
         val idx2newVal: Map[Int, Any] = replacements.toMap
         val values = elementsWithIndex map { case (prevVal, idx: Int) =>
           idx2newVal.getOrElse(idx, prevVal)
