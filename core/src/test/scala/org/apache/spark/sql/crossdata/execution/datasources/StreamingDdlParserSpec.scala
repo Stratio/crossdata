@@ -19,6 +19,8 @@ import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.config.StreamingConfig
+import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -101,11 +103,11 @@ class StreamingDdlParserSpec extends BaseXDTest with StreamingDDLTestConstants w
     logicalPlan shouldBe ShowEphemeralQueries(Some(EphemeralTableIdentifier.unquotedString))
   }
 
-  it should "fail parsing an add query without window" in {
+  it should "fail parsing an add query statement without window" in {
     an [Exception] should be thrownBy parser.parse(s"ADD $Sql AS topic")
   }
 
-  it should "parse a drop  ephemeral query" in {
+  it should "parse a drop ephemeral query" in {
     val logicalPlan = parser.parse(s"DROP EPHEMERAL QUERY $QueryName")
     logicalPlan shouldBe DropEphemeralQuery(QueryName)
 
@@ -135,6 +137,18 @@ trait StreamingDDLTestConstants {
   val QueryName = "qName"
   val Sql = s"SELECT * FROM $EphemeralTableName"
   val Window = 5
+  val MandatoryTableOptions: Map[String, String] = {
+    val KafkaGroupId = "xd1"
+    val KafkaTopic = "ephtable"
+    val KafkaNumPartitions = 1
+    Map(
+      "receiver.kafka.topic" -> s"$KafkaTopic:$KafkaNumPartitions",
+      "receiver.kafka.groupId" -> KafkaGroupId
+    )
+  }
+  val EphemeralTable =  StreamingConfig.createEphemeralTableModel(EphemeralTableName, MandatoryTableOptions)
+
+  val EphemeralQuery = EphemeralQueryModel(EphemeralTableName, Sql, QueryName, Window)
 
   val ZookeeperStreamingConnectionKey = "streaming.catalog.zookeeper.connectionString"
   val ZookeeperConnection: Option[String] =
