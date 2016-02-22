@@ -112,7 +112,6 @@ class JobActor(
      */
     case event @ JobFailed(e) if sender == self && (Seq(Starting, Running) contains status) =>
       context.become(receive(Failed))
-      context.parent ! event
       requester ! ErrorResult(command.queryId, e.getMessage, Some(new Exception(e.getMessage)))
       throw e //Let It Crash: It'll be managed by its supervisor
     case JobCompleted if sender == self && status == Running =>
