@@ -40,7 +40,6 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
     case JobFailed(e) =>
       logger.error(e.getMessage)
-      context.stop(sender())
     case JobCompleted =>
       context.stop(sender()) //TODO: This could be changed so done works could be inquired about their state
     case any =>
