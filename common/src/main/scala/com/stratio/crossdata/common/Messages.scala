@@ -20,17 +20,23 @@ import java.util.UUID
 
 import com.stratio.crossdata.common.security.Session
 import org.apache.spark.sql.Row
+import scala.concurrent.duration.FiniteDuration
 
-//TODO: Remove `retrieveColumnNames` when a better alternative to PR#257 has been found
+trait Command
+
 case class SQLCommand(query: String,
                       queryId: UUID = UUID.randomUUID(),
-                      retrieveColumnNames: Boolean = false)
+                      retrieveColumnNames: Boolean = false,
+                      timeout: Option[FiniteDuration] = None) extends Command
 
 case class SecureSQLCommand(sqlCommand: SQLCommand, session: Session)
 
-trait SQLResult extends Serializable {
+trait Result extends Serializable {
   val queryId: UUID
-  def resultSet: Array[Row]
   def hasError: Boolean
+}
+
+trait SQLResult extends Result {
+  def resultSet: Array[Row]
 }
 
