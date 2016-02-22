@@ -25,17 +25,9 @@ import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.{XDDataFrame, XDContext}
 
+
 object ServerActor {
-
-
-
   def props(cluster: Cluster, xdContext: XDContext): Props = Props(new ServerActor(cluster, xdContext))
-
-  object Messages {
-
-
-  }
-
 }
 
 class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with ServerConfig {
@@ -60,4 +52,5 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
     case _: ActorKilledException => Stop  //In the future it might be interesting to add the
     case _ => Restart //Crashed job gets restarted
   }
+
 }

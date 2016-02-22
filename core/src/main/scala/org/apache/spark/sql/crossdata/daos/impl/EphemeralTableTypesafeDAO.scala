@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.crossdata.daos
+package org.apache.spark.sql.crossdata.daos.impl
 
-import java.util.UUID
+import com.typesafe.config.Config
+import org.apache.spark.sql.crossdata.daos.EphemeralTableDAO
 
-object DAOConstants {
+class EphemeralTableTypesafeDAO(configuration: Config) extends EphemeralTableDAO {
 
-  val BaseZKPath = "stratio/crossdata"
-  val TablesPath = s"$BaseZKPath/tables"
-  val ViewsPath = s"$BaseZKPath/views"
-  val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
-  val StreamingQueriesPath = s"$BaseZKPath/streamingqueries"
+  override val config = new TypesafeConfig(Option(configuration))
 
-  def createId: String = UUID.randomUUID.toString
 }
+

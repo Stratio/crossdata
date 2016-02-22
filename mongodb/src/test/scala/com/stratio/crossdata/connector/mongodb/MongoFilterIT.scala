@@ -145,7 +145,16 @@ class MongoFilterIT extends MongoDataTypesCollection {
     assumeEnvironmentIsUpAndRunning
 
     val sparkRow = sql(s"SELECT timestamp FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp > '1970-01-02'").collect(ExecutionType.Native)
-    sparkRow.foreach(print(_))
     sparkRow.length should be (9)
+  }
+
+
+  it should "execute Spark UDFs by Spark" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT substring(name,0,2) FROM $Collection LIMIT 2").collect(ExecutionType.Default)
+    sparkRow.length should be (2)
+    sparkRow(0).getString(0) should have length 2
+    sparkRow(1).getString(0) should have length 2
   }
 }

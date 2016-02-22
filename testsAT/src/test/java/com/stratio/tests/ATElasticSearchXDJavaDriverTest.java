@@ -135,7 +135,7 @@ public class ATElasticSearchXDJavaDriverTest extends BaseTest {
         client.close();
 	}
 
-    @Test(enabled = false, groups = {"basic"})
+    @Test(enabled = true, groups = {"basic"})
     public void ATElasticSearchXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}

@@ -163,7 +163,7 @@
                                     <programs>
                                         <program>
                                             <mainClass>com.stratio.crossdata.driver.shell.BasicShell</mainClass>
-                                            <id>crossdata-driver</id>
+                                            <id>crossdata-shell</id>
                                             <platforms>
                                                 <platform>unix</platform>
                                             </platforms>

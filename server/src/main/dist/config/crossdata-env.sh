@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# CROSSDATA_CONF is global enviroment variable
+# CROSSDATA_CONF is global environment variable
 # JAVA_OPTS
 # JSVCCMD
 # JAVA_HOME
