@@ -22,6 +22,6 @@ case class EphemeralTableModel(name: String,
                                options: EphemeralOptionsModel,
                                schema: Option[StructType] = None) {
 
-  def toStringPretty : String = ModelUtils.modelToJsonString(this).replaceAll("\\\\\"","\"")
+  def toPrettyString : String = ModelUtils.modelToJsonString(this).replaceAll("\\\\\"","\"")
 
 }

@@ -21,5 +21,5 @@ case class EphemeralStatusModel(ephemeralTableName: String,
                                 startedTime: Option[Long] = None,
                                 stoppedTime: Option[Long] = None) {
 
-  def toStringPretty : String = ModelUtils.modelToJsonString(this)
+  def toPrettyString : String = ModelUtils.modelToJsonString(this)
 }
