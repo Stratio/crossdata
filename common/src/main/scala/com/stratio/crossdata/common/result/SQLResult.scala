@@ -18,7 +18,7 @@ package com.stratio.crossdata.common.result
 
 import java.util.UUID
 
-import com.stratio.crossdata.common.SQLResult
+import com.stratio.crossdata.common.{Result, SQLResult}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 
@@ -27,6 +27,10 @@ case class SuccessfulQueryResult(queryId: UUID, result: Array[Row], schema: Stru
 
   def hasError = false
 
+}
+
+case class QueryCancelled(queryId: UUID) extends Result {
+  override def hasError: Boolean = false
 }
 
 case class ErrorResult(queryId: UUID, message: String, cause: Option[Throwable] = None) extends SQLResult {
