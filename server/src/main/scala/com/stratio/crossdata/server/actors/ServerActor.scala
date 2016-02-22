@@ -47,7 +47,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   }
 
   //TODO: Use number of tries and timeout configuration parameters
-  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {
     case _: ActorKilledException => Stop  //In the future it might be interesting to add the
     case _ => Restart //Crashed job gets restarted
   }

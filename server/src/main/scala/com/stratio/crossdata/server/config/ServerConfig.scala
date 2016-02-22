@@ -16,10 +16,14 @@
 package com.stratio.crossdata.server.config
 
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.{ConfigValueFactory, Config, ConfigFactory}
 import scala.collection.JavaConversions._
 import org.apache.log4j.Logger
+
+import scala.concurrent.duration.Duration
+import scala.util.Try
 
 object ServerConfig {
   val ServerBasicConfig = "server-reference.conf"
@@ -31,6 +35,10 @@ object ServerConfig {
   val ServerUserConfigFile = "external.config.filename"
   val ServerUserConfigResource = "external.config.resource"
 
+  // Retry policy parameters
+  val ServerRetryMaxAttempts = "config.queries.attempts"
+  val ServerRetryCountWindow = "config.queries.retrycountwindow"
+
 }
 
 trait ServerConfig extends NumberActorConfig {
@@ -39,6 +47,11 @@ trait ServerConfig extends NumberActorConfig {
 
   lazy val clusterName = config.getString(ServerConfig.ServerClusterNameKey)
   lazy val actorName = config.getString(ServerConfig.ServerActorNameKey)
+
+  lazy val retryNoAttempts: Int = Try(config.getInt(ServerConfig.ServerRetryMaxAttempts)).getOrElse(0)
+  lazy val retryCountWindow: Duration = Try(
+    config.getDuration(ServerConfig.ServerRetryCountWindow, TimeUnit.MILLISECONDS)
+  ) map(Duration(_, TimeUnit.MILLISECONDS)) getOrElse(Duration.Inf)
 
   override val config: Config = {
 
