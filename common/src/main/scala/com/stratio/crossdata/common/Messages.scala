@@ -29,7 +29,7 @@ case class SQLCommand(query: String,
                       retrieveColumnNames: Boolean = false,
                       timeout: Option[FiniteDuration] = None) extends Command
 
-case class SecureSQLCommand(sqlCommand: SQLCommand, session: Session)
+case class SecureSQLCommand(cmd: Command, session: Session)
 
 trait Result extends Serializable {
   val queryId: UUID
