@@ -133,6 +133,7 @@ class XDContext private (@transient val sc: SparkContext,
     ServiceLoader.load(classOf[FunctionInventory], loader)
   }
 
+  @transient
   private lazy val functionInventoryServices: Seq[FunctionInventory] = {
     import scala.collection.JavaConversions._
     functionInventoryLoader.iterator().toSeq
