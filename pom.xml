@@ -90,6 +90,7 @@
         <module>common</module>
         <module>driver</module>
         <module>server</module>
+        <module>testsIT</module>
     </modules>
 
     <properties>
