@@ -87,15 +87,13 @@ class DriverIT extends EndToEndTest {
 
     driver.close()
 
-    Thread.sleep(18000)
+    Thread.sleep(6000)
 
     driver = Driver.getOrCreate()
 
     val result = driver.syncQuery(
       SQLCommand(s"SHOW TABLES")
     )
-
-    println(s"ERROR: $result")
 
     result.hasError should equal (false)
 
