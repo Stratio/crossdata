@@ -22,5 +22,5 @@ case class EphemeralQueryModel(ephemeralTableName: String,
                                window: Int = EphemeralOptionsModel.DefaultAtomicWindow,
                                options: Map[String, String] = Map.empty) {
 
-  def toStringPretty : String = ModelUtils.modelToJsonString(this)
+  def toPrettyString : String = ModelUtils.modelToJsonString(this)
 }

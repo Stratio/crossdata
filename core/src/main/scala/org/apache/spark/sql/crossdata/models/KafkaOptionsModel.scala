@@ -23,5 +23,5 @@ case class KafkaOptionsModel(connection: Seq[ConnectionHostModel],
                              additionalOptions: Map[String, String] = Map.empty,
                              storageLevel: String = "MEMORY_AND_DISK_SER") {
 
-  def toStringPretty : String = ModelUtils.modelToJsonString(this)
+  def toPrettyString : String = ModelUtils.modelToJsonString(this)
 }
