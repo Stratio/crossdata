@@ -78,4 +78,27 @@ class DriverIT extends EndToEndTest {
     driver.listTables() should contain allOf(("jsonTable2", Some("db")), ("jsonTable2", None))
   }
 
+  "Crossdata Driver" should "be able to close the connection and start it again" in {
+    var driver = Driver.getOrCreate()
+
+    driver.syncQuery(
+      SQLCommand(s"SHOW TABLES")
+    )
+
+    driver.close()
+
+    Thread.sleep(18000)
+
+    driver = Driver.getOrCreate()
+
+    val result = driver.syncQuery(
+      SQLCommand(s"SHOW TABLES")
+    )
+
+    println(s"ERROR: $result")
+
+    result.hasError should equal (false)
+
+  }
+
 }

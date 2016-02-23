@@ -18,7 +18,7 @@ package com.stratio.crossdata.driver
 import java.util
 import java.util.concurrent.atomic.AtomicReference
 
-import akka.actor.ActorSystem
+import akka.actor.{PoisonPill, ActorSystem}
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
@@ -189,7 +189,10 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
   /**
    * Execute an ordered shutdown
    */
-  def close() = if(!system.isTerminated) system.shutdown()
+  def close() = {
+    if(!system.isTerminated) system.shutdown()
+    stop()
+  }
 
   def stop() = Driver.clearActiveContext()
 
