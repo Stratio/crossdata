@@ -29,7 +29,23 @@ case class SQLCommand(
                        queryId: UUID = UUID.randomUUID(),
                        retrieveColumnNames: Boolean = false,
                        timeout: Option[FiniteDuration] = None
-                     ) extends Command
+                     ) extends Command {
+
+  def this(
+            query: String,
+            queryId: UUID,
+            retrieveColumnNames: Boolean,
+            timeout: FiniteDuration
+            ) = this(query, queryId, retrieveColumnNames, Option(timeout))
+
+  def this(
+            query: String,
+            queryId: UUID,
+            retrieveColumnNames: Boolean
+          ) = this(query, queryId, retrieveColumnNames, None)
+
+
+}
 
 trait Result extends Serializable {
   val queryId: UUID
