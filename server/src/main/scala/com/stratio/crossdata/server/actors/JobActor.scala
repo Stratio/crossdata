@@ -92,8 +92,6 @@ class JobActor(
         self ! JobCompleted
     }
 
-    timeout.foreach(context.system.scheduler.scheduleOnce(_, self, CancelJob))
-
   }
 
   override def receive: Receive = receive(Starting)
@@ -104,6 +102,8 @@ class JobActor(
       sender ! status
     case JobStarted() if status == Starting =>
       context.become(receive(Running))
+      import context.dispatcher
+      timeout.foreach(context.system.scheduler.scheduleOnce(_, self, CancelJob))
     case CancelJob =>
       xdContext.sparkContext.cancelJobGroup(command.queryId.toString)
     // Events

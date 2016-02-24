@@ -71,7 +71,8 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   }
 
   private val topicReceive: Receive = {
-    case DelegateCommand(cmd, requester) if(sender != self) => self.tell(cmd, requester)
+    case DelegateCommand(cmd, requester) if(sender != self) =>
+      self.tell(cmd, requester)
   }
 
   private def ready(jobsById: Map[JobId, ActorRef]): Receive = topicReceive orElse {
