@@ -49,6 +49,16 @@ class StreamingDdlIT extends SharedXDContextTest with StreamingDDLTestConstants{
     logicalPlan shouldBe AddEphemeralQuery(EphemeralTableName, Sql, QueryName, Window)
   }
 
+  "StreamingDDLParser" should "parse a join query with window" in {
+    val complexQuery = s"""
+                      |SELECT name FROM $EphemeralTableName INNER JOIN $EphemeralTableName
+                      |ON $EphemeralTableName.id = $EphemeralTableName.id
+                      |WITH WINDOW 10 SECS AS joinTopic""".stripMargin
+    val logicalPlan = xdContext.ddlParser.parse(s"ADD $Sql WITH WINDOW $Window SEC AS $QueryName")
+    logicalPlan shouldBe AddEphemeralQuery(EphemeralTableName, Sql, QueryName, Window)
+  }
+
+
   it should "parse an add ephemeral query ommiting the add" in {
     val logicalPlan = xdContext.ddlParser.parse(s"$Sql WITH WINDOW 5 SEC AS $QueryName")
     logicalPlan shouldBe AddEphemeralQuery(EphemeralTableName, Sql, QueryName, Window)

@@ -74,7 +74,7 @@ trait DriverConfig {
           val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
           userConfig.withFallback(configWithResource)
         } else {
-          logger.error("User file (" + configFile + ") haven't been found")
+          logger.warn("User file (" + configFile + ") haven't been found")
           configWithResource
         }
       }
@@ -95,7 +95,7 @@ trait DriverConfig {
       }
     }
 
-    println(s"Cluster.hosts = ${finalConfigWithEnvVars.getAnyRef("config.cluster.hosts")}")
+    logger.debug(s"Cluster.hosts = ${finalConfigWithEnvVars.getAnyRef("config.cluster.hosts")}")
 
     ConfigFactory.load(finalConfigWithEnvVars)
   }
