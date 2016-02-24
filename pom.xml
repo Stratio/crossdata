@@ -91,6 +91,7 @@
         <module>driver</module>
         <module>server</module>
         <module>streaming</module>
+        <module>testsIT</module>
     </modules>
 
     <properties>

@@ -22,6 +22,7 @@ import java.lang.reflect.Constructor
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 
+import org.apache.log4j.Logger
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.spark.sql.catalyst._
@@ -45,7 +46,7 @@ import org.apache.spark.{Logging, SparkContext}
  * @param sc A [[SparkContext]].
  */
 class XDContext private (@transient val sc: SparkContext,
-                userConfig: Option[Config] = None) extends SQLContext(sc) with Logging with CoreConfig {
+                userConfig: Option[Config] = None) extends SQLContext(sc) with Logging  {
   self =>
 
   def this(sc: SparkContext) =
@@ -54,11 +55,23 @@ class XDContext private (@transient val sc: SparkContext,
   def this(sc: SparkContext, config: Config) =
     this(sc, Some(config))
 
-  val xdConfig: Config = userConfig.fold(config) { userConf =>
+
+  /* TODO: Remove the config attributes from the companion object!!!
+     This only works because you can only have a SQLContext per running instance
+     but its a dirty trick to avoid typesafe's Config serialization when sending the tasks
+     to each worker.
+
+     Config should be changed by a map and implicitly converted into `Config` whenever one of its
+     methods is called.
+     */
+  import XDContext.{xdConfig, catalogConfig, config}
+
+  xdConfig = userConfig.fold(config) { userConf =>
     userConf.withFallback(config)
   }
 
-  val catalogConfig = xdConfig.getConfig(XDContext.CatalogConfigKey)
+  catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
+
 
   override protected[sql] lazy val catalog: XDCatalog = {
 
@@ -130,6 +143,7 @@ class XDContext private (@transient val sc: SparkContext,
     ServiceLoader.load(classOf[FunctionInventory], loader)
   }
 
+  @transient
   private lazy val functionInventoryServices: Seq[FunctionInventory] = {
     import scala.collection.JavaConversions._
     functionInventoryLoader.iterator().toSeq
@@ -191,7 +205,17 @@ class XDContext private (@transient val sc: SparkContext,
  * This XDContext object contains utility functions to create a singleton XDContext instance,
  * or to get the last created XDContext instance.
  */
-object XDContext {
+object XDContext extends CoreConfig {
+
+  /* TODO: Remove the config attributes from the companion object!!!
+      AS WELL AS change the companion object so it doesn't extends `CoreConfig`!!!!
+   */
+
+  //This is definitely NOT right and will only work as long a single instance of XDContext exits
+  override lazy val logger = Logger.getLogger(classOf[XDContext])
+
+  var xdConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
+  var catalogConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
 
   val CaseSensitive = "caseSensitive"
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
@@ -235,5 +259,6 @@ object XDContext {
       lastInstantiatedContext.set(xdContext)
     }
   }
+
 }
 

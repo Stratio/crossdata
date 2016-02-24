@@ -54,8 +54,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val IN = Keyword("IN")
 
   override protected lazy val ddl: Parser[LogicalPlan] =
+
     createTable | describeTable | refreshTable | importStart | dropTable |
-      createView | createExternalTable | streamingSentences
+      createView | createExternalTable | dropView | streamingSentences
 
   // TODO move to StreamingDdlParser
 
@@ -63,7 +64,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropAllEphemeralQueries  | dropAllEphemeralTables |
       showEphemeralStatus | showEphemeralStatuses | startProcess | stopProcess |
       showEphemeralQueries | addEphemeralQuery | dropEphemeralQuery | dropEphemeralTable
-
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -76,6 +76,14 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
       case tableId =>
         DropTable(tableId)
     }
+
+
+  protected lazy val dropView: Parser[LogicalPlan] =
+    DROP ~> VIEW ~> tableIdentifier ^^ {
+      case tableId =>
+        DropView(tableId)
+    }
+
 
   protected lazy val createView: Parser[LogicalPlan] = {
 

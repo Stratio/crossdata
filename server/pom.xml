@@ -319,13 +319,9 @@
                                     <to>/etc/sds/crossdata</to>
                                 </copyDirectory>
                                 <copyDirectory>
-                                    <from>target/crossdata-dist-${project.version}/lib/</from>
-                                    <to>/opt/sds/crossdata/lib</to>
-                                </copyDirectory>
-                                <copyDirectory>
                                     <from>target/crossdata-dist-${project.version}/bin</from>
                                     <to>/opt/sds/crossdata/bin</to>
-                                    <!-- afects all files on this directory -->
+                                    <!-- affects all files on this directory -->
                                     <fileAttributes>
                                         <user>stratio</user>
                                         <group>stratio</group>
@@ -355,8 +351,8 @@
                                         </copyFile>
 
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/lib/${project.artifactId}-${project.version}.jar</path>
-                                            <toFile>/opt/sds/crossdata/lib/${project.artifactId}-${project.version}.jar</toFile>
+                                            <path>target/${project.artifactId}-${project.version}-jar-with-dependencies.jar</path>
+                                            <toFile>/opt/sds/crossdata/lib/${project.artifactId}-${project.version}-jar-with-dependencies.jar</toFile>
                                             <attributes>
                                                 <user>stratio</user>
                                                 <group>stratio</group>
@@ -433,8 +429,8 @@
                                         </copyFile>
 
                                         <copyFile>
-                                            <path>target/crossdata-dist-${project.version}/lib/${project.artifactId}-${project.version}.jar</path>
-                                            <toFile>/opt/sds/crossdata/lib/${project.artifactId}-${project.version}.jar</toFile>
+                                            <path>target/${project.artifactId}-${project.version}-jar-with-dependencies.jar</path>
+                                            <toFile>/opt/sds/crossdata/lib/${project.artifactId}-${project.version}-jar-with-dependencies.jar</toFile>
                                             <attributes>
                                                 <user>stratio</user>
                                                 <group>stratio</group>

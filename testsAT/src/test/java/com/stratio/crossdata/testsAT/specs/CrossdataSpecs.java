@@ -69,6 +69,7 @@ public class CrossdataSpecs extends BaseSpec {
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsNative(table.raw());
+            commonspec.getXdContext().clearXDF();
         } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
@@ -82,6 +83,7 @@ public class CrossdataSpecs extends BaseSpec {
         asserThat(commonspec.getXdContext().getXDDataFrame()).hasFlattenedLength(Integer.parseInt(rows));
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsFlattenedMetadata(table.raw().get(0));
         asserThat(commonspec.getXdContext().getXDDataFrame()).equalsFlattenedResult(table.raw());
+            commonspec.getXdContext().clearXDF();
         }
     }
 
@@ -93,6 +95,7 @@ public class CrossdataSpecs extends BaseSpec {
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsSpark(table.raw());
+            commonspec.getXdContext().clearXDF();
         } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
@@ -107,6 +110,7 @@ public class CrossdataSpecs extends BaseSpec {
             commonspec.getXdContext().showDataframe();
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
+            commonspec.getXdContext().clearXDF();
         } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
@@ -121,6 +125,7 @@ public class CrossdataSpecs extends BaseSpec {
             asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
             asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsIgnoringOrderNative(table.raw());
+            commonspec.getXdContext().clearXDF();
         } else {
             asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
             asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
@@ -225,5 +230,65 @@ public class CrossdataSpecs extends BaseSpec {
             commonspec.getExceptions().add(e);
         }
         org.hamcrest.MatcherAssert.assertThat("The Cassandra keyspace does not contains the table", res,equalTo(true));
+    }
+
+    @Given(value = "^I create a mongoDB database '(.*?)'$")
+    public void createMongoDBDataBase(String database){
+        commonspec.getExceptions().clear();
+        commonspec.getLogger().info("Connecting to Mongo");
+        try {
+            commonspec.getMongoDBClient().connect();
+            commonspec.getMongoDBClient().connectToMongoDBDataBase(database);
+            commonspec.getMongoDBClient().disconnect();
+        } catch (DBException e) {
+            commonspec.getExceptions().add(e);
+        }
+    }
+
+    @Given(value = "^I drop a mongoDB database '(.*?)'$")
+    public void dropMongoDBDataBase(String database){
+        commonspec.getExceptions().clear();
+        commonspec.getLogger().info("Connecting to Mongo");
+        try {
+            commonspec.getMongoDBClient().connect();
+            commonspec.getMongoDBClient().dropMongoDBDataBase(database);
+            commonspec.getMongoDBClient().disconnect();
+        } catch (DBException e) {
+            commonspec.getExceptions().add(e);
+        }
+    }
+
+    @Given(value = "^I create a mongoDB collection '(.*?)' over database '(.*?)'$")
+    public void createMongoDBCollection(String collection, String database){
+        commonspec.getExceptions().clear();
+        commonspec.getLogger().info("Connecting to Mongo");
+        try {
+            commonspec.getMongoDBClient().connect();
+            commonspec.getMongoDBClient().connectToMongoDBDataBase(database);
+            commonspec.getMongoDBClient().createMongoDBCollection(collection);
+            commonspec.getMongoDBClient().disconnect();
+        } catch (DBException e) {
+            commonspec.getExceptions().add(e);
+        }
+    }
+
+    @Then(value= "The collection '(.*?)' exists in mongo database '(.*?)'")
+    public void existsMongoCollection(String collection,String database){
+        commonspec.getExceptions().clear();
+        commonspec.getLogger().info("Connecting to Mongo");
+        try {
+            commonspec.getMongoDBClient().connect();
+            commonspec.getMongoDBClient().exitsMongoDbDataBase(database);
+            org.hamcrest.MatcherAssert.assertThat("The Mongo database does not exists", commonspec
+                    .getMongoDBClient().exitsMongoDbDataBase(database), equalTo(true));
+            commonspec.getMongoDBClient().connectToMongoDBDataBase(database);
+            org.hamcrest.MatcherAssert.assertThat("The Mongo collection "+ collection +"does not exists in the database " +
+                            database,
+                    commonspec
+                            .getMongoDBClient().exitsCollections(collection),equalTo(true));
+            commonspec.getMongoDBClient().disconnect();
+        } catch (DBException e) {
+            commonspec.getExceptions().add(e);
+        }
     }
 }
