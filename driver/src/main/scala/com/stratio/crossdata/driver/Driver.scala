@@ -15,11 +15,14 @@
  */
 package com.stratio.crossdata.driver
 
+import java.util
+import java.util.concurrent.atomic.AtomicReference
+
 import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.common.{SecureSQLCommand, SQLCommand, SQLResult}
+import com.stratio.crossdata.common.{SQLCommand, SQLResult, SecureSQLCommand}
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.config.DriverConfig.{DriverConfigHosts, DriverRetryDuration, DriverRetryTimes}
@@ -33,19 +36,176 @@ import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
 import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Try
 
 object Driver extends DriverConfig {
+
   override lazy val logger = Logger.getLogger(getClass)
+
+  private val DRIVER_CONSTRUCTOR_LOCK = new Object()
+
+  private val activeDriver: AtomicReference[Driver] =
+    new AtomicReference[Driver](null)
+
   val ActorsPath = "/user/receptionist"
 
-  def apply(seedNodes: java.util.List[String]) =
-    new Driver(seedNodes)
+  private[driver] def setActiveDriver(driver: Driver) = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      activeDriver.set(driver)
+    }
+  }
 
-  def apply() = new Driver()
+  def clearActiveContext() = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      activeDriver.set(null)
+    }
+  }
+
+  def getOrCreate(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(new Driver(properties, Driver.generateDefaultAuth, flattenTables))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(properties: java.util.Map[String, ConfigValue], auth: Authentication, flattenTables: Boolean): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(new Driver(properties, auth, flattenTables))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(seedNodes: java.util.List[String], flattenTables: Boolean): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(seedNodes)),
+            flattenTables))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(seedNodes: java.util.List[String], auth: Authentication, flattenTables: Boolean): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(seedNodes)),
+            auth,
+            flattenTables))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(flattenTables: Boolean): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            new util.HashMap[String, ConfigValue](),
+            flattenTables))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(auth: Authentication, flattenTables: Boolean): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            new util.HashMap[String, ConfigValue](),
+            auth,
+            flattenTables))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(seedNodes: java.util.List[String]): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(seedNodes)),
+            false))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(seedNodes: java.util.List[String], auth: Authentication): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(seedNodes)),
+            auth,
+            false))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(properties: java.util.Map[String, ConfigValue]): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            properties,
+            false))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(properties: java.util.Map[String, ConfigValue], auth: Authentication): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            properties,
+            auth,
+            false))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(auth: Authentication): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            new util.HashMap[String, ConfigValue](),
+            auth,
+            false))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            new util.HashMap[String, ConfigValue](),
+            false))
+      }
+      activeDriver.get()
+    }
+  }
 
   lazy val defaultTimeout = Timeout(config .getDuration(DriverRetryDuration, MILLISECONDS), MILLISECONDS)
   lazy val defaultRetries = config.getInt(DriverRetryTimes)
@@ -69,6 +229,8 @@ class Driver(properties: java.util.Map[String, ConfigValue] = Map.empty[String, 
     Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
     auth,
     flattenTables)
+
+  def this(properties: java.util.Map[String, ConfigValue]) = this(properties, Driver.generateDefaultAuth, false)
 
   def this(serverHosts: java.util.List[String], auth: Authentication) = this(
     Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
@@ -130,8 +292,12 @@ class Driver(properties: java.util.Map[String, ConfigValue] = Map.empty[String, 
   /**
    * Execute an ordered shutdown
    */
-  def close() = if(!system.isTerminated) system.shutdown()
+  def close() = {
+    if(!system.isTerminated) system.shutdown()
+    stop()
+  }
 
+  def stop() = Driver.clearActiveContext()
 
   /**
     * Executes a SQL sentence in a synchronous way.
