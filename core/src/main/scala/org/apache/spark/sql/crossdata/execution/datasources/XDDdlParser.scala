@@ -18,6 +18,7 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import java.util.UUID
 
+import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.datasources.DDLParser
@@ -182,13 +183,22 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     ADD.? ~ streamingSql ~ (WITH ~ WINDOW ~> numericLit <~ (SEC | SECS | SECONDS)) ~ (AS ~> ident).? ^^ {
       case addDefined ~ streamQl ~ litN ~ topIdent =>
 
-        val ephTables: Seq[String] = xDContext.sql(streamQl).queryExecution.analyzed.collect { case StreamingRelation(ephTableName) => ephTableName }
+        val queryTables: Seq[LogicalPlan] = parseQuery(streamQl).collect {
+          case UnresolvedRelation(tableIdent, alias) =>
+            xDContext.catalog.lookupRelation(tableIdent, alias)
+        }
+
+        val ephTables: Seq[String] = queryTables.collect{
+          case StreamingRelation(ephTableName) => ephTableName
+        }
+
         ephTables.distinct match {
           case Seq(eTableName) =>
             AddEphemeralQuery(eTableName, streamQl, topIdent.getOrElse(UUID.randomUUID().toString), new Integer(litN))
           case tableNames =>
             sys.error(s"Expected an ephemeral table within the query, but found ${tableNames.mkString(",")}")
         }
+
     }
 
   }
