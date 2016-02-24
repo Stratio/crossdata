@@ -15,29 +15,81 @@
  */
 package com.stratio.crossdata.server.actors
 
-import akka.actor.SupervisorStrategy.{Stop, Restart}
+import java.util.UUID
+
+import akka.contrib.pattern.DistributedPubSubExtension
+import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
-import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+import akka.contrib.pattern.DistributedPubSubMediator.{Publish, SubscribeAck, Subscribe}
+import com.stratio.crossdata.common.{CancelQueryExecution, SQLCommand, ControlCommand}
+import com.stratio.crossdata.server.actors.JobActor.Commands.CancelJob
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
+import com.stratio.crossdata.server.actors.ServerActor.ManagementMessages.DelegateCommand
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.{XDDataFrame, XDContext}
+import org.apache.spark.sql.crossdata.XDContext
 
 
 object ServerActor {
+
+  val managementTopic: String = "jobsManagement"
+
   def props(cluster: Cluster, xdContext: XDContext): Props = Props(new ServerActor(cluster, xdContext))
+
+  protected case class JobId(requester: ActorRef, queryId: UUID)
+
+  protected case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
+
+  object ManagementMessages {
+    case class DelegateCommand(command: ControlCommand, requester: ActorRef)
+  }
+
 }
 
 class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with ServerConfig {
 
+  import ServerActor._
+
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
-  def receive: Receive = {
+  lazy val mediator = DistributedPubSubExtension(context.system).mediator
+
+  override def preStart(): Unit = {
+    super.preStart()
+    // Subscribe to the management distributed topic
+    mediator ! Subscribe(managementTopic, self)
+  }
+
+  // Actor behaviours
+
+  override def receive: Actor.Receive = initial
+
+  private val initial: Receive = {
+    case SubscribeAck(Subscribe(managementTopic, None, self)) =>
+      context.become(ready(Map.empty))
+  }
+
+  private val topicReceive: Receive = {
+    case DelegateCommand(cmd, requester) if(sender != self) => self.tell(cmd, requester)
+  }
+
+  private def ready(jobsById: Map[JobId, ActorRef]): Receive = topicReceive orElse {
+
+    // Commands
+
     case sqlCommand @ SQLCommand(query, _, withColnames, timeout) =>
       logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
-      context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
+      val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
+      context.become(ready(jobsById + (JobId(sender(), sqlCommand.queryId) -> jobActor)))
+
+    case cc @ CancelQueryExecution(queryId) =>
+      jobsById.get(JobId(sender, queryId)) map (_ ! CancelJob) getOrElse {
+        mediator ! Publish(managementTopic, DelegateCommand(cc, sender))
+      }
+
+    // Events
+
     case JobFailed(e) =>
       logger.error(e.getMessage)
     case JobCompleted =>
@@ -48,8 +100,8 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   //TODO: Use number of tries and timeout configuration parameters
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {
-    case _: ActorKilledException => Stop  //In the future it might be interesting to add the
-    case _ => Restart //Crashed job gets restarted
+    //case _: ActorKilledException => Stop  //In the future it might be interesting to add the
+    case _ => Restart //Crashed job gets restarted (or not, depending on `retryNoAttempts` and `retryCountWindow`)
   }
 
 }

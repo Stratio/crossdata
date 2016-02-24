@@ -47,6 +47,9 @@ case class SQLCommand(
 
 }
 
+trait ControlCommand
+case class CancelQueryExecution(queryId: UUID) extends ControlCommand
+
 trait Result extends Serializable {
   val queryId: UUID
   def hasError: Boolean
