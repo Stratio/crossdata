@@ -18,8 +18,8 @@ package com.stratio.crossdata.common
 
 import java.util.UUID
 
+import com.stratio.crossdata.common.security.Session
 import org.apache.spark.sql.Row
-
 import scala.concurrent.duration.FiniteDuration
 
 trait Command
@@ -36,7 +36,7 @@ case class SQLCommand(
             queryId: UUID,
             retrieveColumnNames: Boolean,
             timeout: FiniteDuration
-            ) = this(query, queryId, retrieveColumnNames, Option(timeout))
+          ) = this(query, queryId, retrieveColumnNames, Option(timeout))
 
   def this(
             query: String,
@@ -46,6 +46,8 @@ case class SQLCommand(
 
 
 }
+
+case class SecureSQLCommand(cmd: Command, session: Session)
 
 trait Result extends Serializable {
   val queryId: UUID

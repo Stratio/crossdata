@@ -15,15 +15,14 @@
  */
 package com.stratio.crossdata.server.actors
 
-import akka.actor.SupervisorStrategy.{Stop, Restart}
+import akka.actor.SupervisorStrategy.{Restart, Stop}
 import akka.actor._
 import akka.cluster.Cluster
-import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+import com.stratio.crossdata.common.{SQLCommand, SecureSQLCommand}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.{XDDataFrame, XDContext}
+import org.apache.spark.sql.crossdata.XDContext
 
 
 object ServerActor {
@@ -35,9 +34,10 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
   def receive: Receive = {
-    case sqlCommand @ SQLCommand(query, _, withColnames, timeout) =>
-      logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
-      context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
+
+    case SecureSQLCommand(command @ SQLCommand(query, queryId, withColnames, timeout), session) =>
+      logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
+      context.actorOf(JobActor.props(xdContext, command, sender(), timeout))
     case JobFailed(e) =>
       logger.error(e.getMessage)
     case JobCompleted =>
