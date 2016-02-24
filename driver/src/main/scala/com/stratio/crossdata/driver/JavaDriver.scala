@@ -33,14 +33,19 @@ class JavaDriver(properties: java.util.Map[String, ConfigValue], flattenTables: 
   def this(serverHosts: java.util.List[String], flattenTables: Boolean) =
     this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),flattenTables)
 
+  def this(serverHosts: java.util.List[String]) =
+    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)), false)
+
+  def this(properties: java.util.Map[String, ConfigValue]) =
+    this(properties, false)
+
   def this(flattenTables: Boolean) = this(Map.empty[String, ConfigValue],flattenTables)
 
   def this() = this (Map.empty[String, ConfigValue])
 
-
   private lazy val logger = Logger.getLogger(getClass)
 
-  private val scalaDriver = new Driver(properties, flattenTables)
+  private val scalaDriver = Driver.getOrCreate(properties, flattenTables)
 
   /**
    * Sync execution with defaults: timeout 10 sec, nr-retries 2
