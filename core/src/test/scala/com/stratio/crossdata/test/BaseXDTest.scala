@@ -24,6 +24,6 @@ import org.scalatest.{FlatSpec, Matchers}
  */
 abstract class BaseXDTest extends FlatSpec with Matchers with TimeLimitedTests {
 
-  val timeLimit = 5 minutes
+  val timeLimit = 2 minutes
 
 }
