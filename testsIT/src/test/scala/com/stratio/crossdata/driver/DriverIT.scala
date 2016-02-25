@@ -37,7 +37,7 @@ class DriverIT extends EndToEndTest {
     val driver = Driver.getOrCreate()
     val sqlCommand = SQLCommand("select select")
     val result = driver.syncQuery(sqlCommand, Timeout(10 seconds), 2)
-    result.queryId should be(sqlCommand.queryId)
+    result.queryId should be(sqlCommand.commandId)
     result shouldBe an[ErrorResult]
     result.asInstanceOf[ErrorResult].cause.isDefined shouldBe (true)
     result.asInstanceOf[ErrorResult].cause.get shouldBe a[Exception]
@@ -56,7 +56,7 @@ class DriverIT extends EndToEndTest {
     val sqlCommand = SQLCommand("SELECT * FROM jsonTable")
     val result = driver.syncQuery(sqlCommand)
     result shouldBe an[SuccessfulQueryResult]
-    result.queryId should be(sqlCommand.queryId)
+    result.queryId should be(sqlCommand.commandId)
     result.hasError should be(false)
     val rows = result.resultSet
     rows should have length 2

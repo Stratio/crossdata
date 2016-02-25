@@ -22,28 +22,44 @@ import org.apache.spark.sql.Row
 
 import scala.concurrent.duration.FiniteDuration
 
-trait Command
+trait Command {
+  val commandId:UUID=UUID.randomUUID()
+  def timeout:Option[FiniteDuration]
+
+}
 
 case class SQLCommand(
                        query: String,
-                       queryId: UUID = UUID.randomUUID(),
                        retrieveColumnNames: Boolean = false,
                        timeout: Option[FiniteDuration] = None
                      ) extends Command {
 
   def this(
             query: String,
-            queryId: UUID,
             retrieveColumnNames: Boolean,
             timeout: FiniteDuration
-            ) = this(query, queryId, retrieveColumnNames, Option(timeout))
+            ) = this(query, retrieveColumnNames, Option(timeout))
 
   def this(
             query: String,
-            queryId: UUID,
             retrieveColumnNames: Boolean
-          ) = this(query, queryId, retrieveColumnNames, None)
+          ) = this(query, retrieveColumnNames, None)
 
+
+}
+
+case class AddJARCommand(
+                          path: String,
+                          timeout: Option[FiniteDuration] = None
+                        ) extends Command {
+  def this(
+            path: String,
+            timeout: FiniteDuration
+          ) = this(path,  Option(timeout))
+
+  def this(
+            path: String
+          ) = this(path,   None)
 
 }
 

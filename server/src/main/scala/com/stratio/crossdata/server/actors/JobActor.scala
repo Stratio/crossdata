@@ -16,7 +16,7 @@
 package com.stratio.crossdata.server.actors
 
 import akka.actor.{Props, ActorRef, Actor}
-import com.stratio.crossdata.common.SQLCommand
+import com.stratio.crossdata.common.{Command, AddJARCommand, SQLCommand}
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobFailed, JobCompleted}
@@ -51,10 +51,13 @@ object JobActor {
     case object CancelJob
   }
 
-  case class Task(command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration])
+  case class Task(command: Command, requester: ActorRef, timeout: Option[FiniteDuration])
 
-  def props(xDContext: XDContext, command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration]): Props =
-    Props(new JobActor(xDContext, Task(command, requester, timeout)))
+  def props(xDContext: XDContext, SqlCommand: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration]): Props =
+    Props(new JobActor(xDContext, Task(SqlCommand, requester, timeout)))
+
+  def props(xDContext: XDContext, addJarCommand: AddJARCommand, requester: ActorRef, timeout: Option[FiniteDuration]): Props =
+    Props(new JobActor(xDContext, Task(addJarCommand, requester, timeout)))
 
 }
 
@@ -75,16 +78,10 @@ class JobActor(
     import scala.concurrent.ExecutionContext.Implicits.global
 
     Future {
-      xdContext.sparkContext.setJobGroup(command.queryId.toString, command.query, true)
-      val df = xdContext.sql(command.query)
-      self ! JobStarted()
-      val rows = if(command.retrieveColumnNames)
-        df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
-      else df.collect()
-
-      // Sends the result to the requester
-      requester ! SuccessfulQueryResult(command.queryId, rows, df.schema)
-
+      command match {
+        case sqlCommand:SQLCommand => executeSQLCommand(sqlCommand)
+        case addJarCommand:AddJARCommand =>
+      }
     } onComplete {
       case Failure(e) =>
         self ! JobFailed(e)
@@ -96,6 +93,23 @@ class JobActor(
 
   }
 
+  private def executeSQLCommand(command:SQLCommand)={
+    xdContext.sparkContext.setJobGroup(command.commandId.toString, command.query, true)
+    val df = xdContext.sql(command.query)
+    self ! JobStarted()
+    val rows = if(command.retrieveColumnNames)
+      df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
+    else df.collect()
+    requester ! SuccessfulQueryResult(command.commandId, rows, df.schema)
+  }
+
+  private def executeAddJar(command:AddJARCommand)={
+    xdContext.sparkContext.setJobGroup(command.commandId.toString, command.path, true)
+    xdContext.addJar(command.path)
+    self ! JobStarted()
+    requester ! SuccessfulQueryResult(command.commandId, _, _)
+  }
+
   override def receive: Receive = receive(Starting)
 
   private def receive(status: JobStatus): Receive = {
@@ -104,8 +118,8 @@ class JobActor(
       sender ! status
     case JobStarted() if status == Starting =>
       context.become(receive(Running))
-    case CancelJob =>
-      xdContext.sparkContext.cancelJobGroup(command.queryId.toString)
+    case CancelJob => xdContext.sparkContext.cancelJobGroup(command.commandId.toString)
+
     // Events
     /* TODO: Jobs cancellations will be treated as errors.
         I'd be nice (and it'll be done) to discriminate among errors and cancellations
@@ -113,7 +127,7 @@ class JobActor(
     case event @ JobFailed(e) if sender == self && (Seq(Starting, Running) contains status) =>
       context.become(receive(Failed))
       context.parent ! event
-      requester ! ErrorResult(command.queryId, e.getMessage, Some(new Exception(e.getMessage)))
+      requester ! ErrorResult(command.commandId, e.getMessage, Some(new Exception(e.getMessage)))
       throw e //Let It Crash: It'll be managed by its supervisor
     case JobCompleted if sender == self && status == Running =>
       context.become(receive(Completed))

@@ -36,7 +36,7 @@ class DriverStandaloneIT extends BaseXDTest {
     result.hasError should be(true)
     a[RuntimeException] should be thrownBy result.resultSet
 
-    result.queryId should be(sqlCommand.queryId)
+    result.queryId should be(sqlCommand.commandId)
     result shouldBe an[ErrorResult]
     result.asInstanceOf[ErrorResult].message should include regex "(?i)timeout was exceed"
 
