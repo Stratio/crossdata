@@ -90,25 +90,25 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
           val table: LogicalPlan = createLogicalRelation(crossdataTable)
           registerTable(tableIdent, table)
           processAlias(tableIdent, table, alias)
+
         case None =>
           log.debug(s"Table Not Found: ${tableIdent.mkString(".")}")
-
           lookupView(table, database) match {
             case Some(sqlView) =>
               val viewPlan: LogicalPlan = xdContext.sql(sqlView).logicalPlan
               registerView(tableIdent, viewPlan)
               processAlias(tableIdent, viewPlan, alias)
+
             case None =>
               log.debug(s"View Not Found: ${tableIdent.mkString(".")}")
-                xdContext.streamingCatalog match {
-                  // TODO PoC => handle exceptions => force schema
-                  // TODO We should replace tableIdent.mkString with TableIdentifier
-                  case Some(streamingCatalog) if streamingCatalog.existsEphemeralTable(tableIdent.mkString(".")) =>
-                    StreamingRelation(tableIdent.mkString("."))
-                  case _ =>
-                    sys.error(s"Table/View Not Found: ${tableIdent.mkString(".")}")
-                }
-
+              xdContext.streamingCatalog match {
+                // TODO PoC => handle exceptions
+                // TODO We should replace tableIdent.mkString with TableIdentifier
+                case Some(streamingCatalog) if streamingCatalog.existsEphemeralTable(tableIdent.mkString(".")) =>
+                  StreamingRelation(tableIdent.mkString("."))
+                case _ =>
+                  sys.error(s"Table/View Not Found: ${tableIdent.mkString(".")}")
+              }
           }
       }
     }

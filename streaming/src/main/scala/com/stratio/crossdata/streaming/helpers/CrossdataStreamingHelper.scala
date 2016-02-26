@@ -30,7 +30,7 @@ import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 object CrossdataStreamingHelper extends SparkLoggerComponent {
 
@@ -96,9 +96,17 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
           case EphemeralOutputFormat.JSON => saveToKafkaInJSONFormat(dataFrame, topic, kafkaOptionsMerged)
           case _ => saveToKafkaInRowFormat(dataFrame, topic, kafkaOptionsMerged)
         }
-      }.getOrElse {
-        logger.warn(s"There are problems executing the ephemeral query: $query \n with Schema: ${df.printSchema()} \n" +
-          s" and the first row is: ${df.show(1)}")
+      } match {
+        case Failure(throwable) =>
+          logger.warn(
+            s"""|There are problems executing the ephemeral query: $query
+                |with Schema: ${df.printSchema()}
+                |and the first row is: ${df.show(1)}
+                |Exception message: ${throwable.getMessage}
+                |Exception stackTrace: ${throwable.getStackTraceString}
+           """.stripMargin
+          )
+        case _ =>
       }
       xdContext.dropTempTable(sqlTableName)
     }

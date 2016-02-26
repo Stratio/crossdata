@@ -75,7 +75,7 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with Logging {
     val projectSet = AttributeSet(pro)
     val filterSet = AttributeSet(filterPredicates.flatMap(
       _.references flatMap {
-        case nat: AttributeReference if (att2udf contains nat) =>
+        case nat: AttributeReference if att2udf contains nat =>
           CatalystToCrossdataAdapter.udfFlattenedActualParameters(nat, (x: Attribute) => x)(att2udf) :+ nat
         case x => Seq(relation.attributeMap(x))
       }

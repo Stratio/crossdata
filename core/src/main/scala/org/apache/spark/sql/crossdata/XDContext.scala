@@ -22,9 +22,9 @@ import java.lang.reflect.Constructor
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 
-import org.apache.log4j.Logger
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
+import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
 import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
@@ -64,7 +64,7 @@ class XDContext private (@transient val sc: SparkContext,
      Config should be changed by a map and implicitly converted into `Config` whenever one of its
      methods is called.
      */
-  import XDContext.{xdConfig, catalogConfig, config}
+  import XDContext.{catalogConfig, config, xdConfig}
 
   xdConfig = userConfig.fold(config) { userConf =>
     userConf.withFallback(config)

@@ -55,6 +55,10 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
     
     ephemeralTableDAO.dao.delete(tableIdentifier)
     ephemeralTableStatusDAO.dao.delete(tableIdentifier)
+
+    ephemeralQueriesDAO.dao.getAll().filter( _.ephemeralTableName == tableIdentifier) foreach { query =>
+      ephemeralQueriesDAO.dao.delete(query.alias)
+    }
   }
 
   override def dropAllEphemeralTables(): Unit = {
@@ -62,6 +66,7 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
     Try {
       ephemeralTableDAO.dao.deleteAll
       ephemeralTableStatusDAO.dao.deleteAll
+      ephemeralQueriesDAO.dao.deleteAll
     }
   }
 

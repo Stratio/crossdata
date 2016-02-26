@@ -147,9 +147,9 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     } else {
       val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
       if(nativeQueryExecutor.isEmpty){
-        log.info(s"Spark Query: ${queryExecution.simpleString}")
+        logInfo(s"Spark Query: ${queryExecution.simpleString}")
       } else {
-        log.info(s"Native query: ${queryExecution.simpleString}")
+        logInfo(s"Native query: ${queryExecution.simpleString}")
       }
       nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
@@ -162,7 +162,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         flattenProjectedColumns(child, field.name :: prev)
       case AttributeReference(name, _, _, _) =>
         (name :: prev, false)
-      case Alias(child @ GetStructField(_, StructField(fname, _, _, _), _), name) if(fname == name) =>
+      case Alias(child @ GetStructField(_, StructField(fname, _, _, _), _), name) if fname == name =>
         flattenProjectedColumns(child)
       case Alias(child, name) =>
         List(name) -> true
