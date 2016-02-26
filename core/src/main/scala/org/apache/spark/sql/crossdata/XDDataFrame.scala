@@ -146,13 +146,11 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       super.collect()
     } else {
       val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
-      /*
       if(nativeQueryExecutor.isEmpty){
         log.info(s"Spark Query: ${queryExecution.simpleString}")
       } else {
         log.info(s"Native query: ${queryExecution.simpleString}")
       }
-      */
       nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
   }
