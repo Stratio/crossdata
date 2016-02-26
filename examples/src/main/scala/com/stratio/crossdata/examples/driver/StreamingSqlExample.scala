@@ -21,6 +21,7 @@ import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.examples.cassandra._
 
+
 /**
  * Driver example - Join Kafka and Cassandra - Output to Kafka
  */
@@ -30,7 +31,7 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
 
   val driver = {
     val hosts = util.Arrays.asList("127.0.0.1:13420")
-    Driver(hosts)
+    Driver.getOrCreate(hosts)
   }
 
   val importQuery =
@@ -59,20 +60,12 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
 
     // Adds a streaming query. It will be executed when the streaming process is running
     driver.syncQuery(SQLCommand(s"SELECT count(*) FROM $EphemeralTableName WITH WINDOW 5 SECS AS outputTopic"))
-
-    /*driver.syncQuery(SQLCommand(
-      s"""
-         |SELECT name FROM $EphemeralTableName INNER JOIN $Catalog.$Table
-         |ON $EphemeralTableName.id = $Catalog.$Table.id
-         |WITH WINDOW 10 SECS AS joinTopic
-      """.stripMargin))*/
-    driver.syncQuery(SQLCommand(s"SELECT count(*) FROM $EphemeralTableName FULL OUTER JOIN $Catalog.$Table WITH WINDOW 10 SECS AS joinTopic"))
-
+   
 
     // Starts the streaming process associated to the ephemeral table
     driver.syncQuery(SQLCommand(s"START $EphemeralTableName"))
 
-    // WARNING: You should produce data to Kafka by using a Kafka console producer or whatever you want
+    // WARNING: Data could be added to Kafka by using a Kafka console producer
     // Example: kafka-console-producer.sh --broker-list localhost:9092 --topic <ephemeral-table-name>
     // Input events format: {"id": 1, "msg": "Hello world", "city": "Tolomango"}
 
@@ -82,16 +75,18 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
 
     // Later, we can add a query to join batch and streaming sources, which output will be other Kafka topic
     // NOTE: In order to produce results, you should add ids matching the id's range of Cassandra table (1 to 10)
+    driver.syncQuery(SQLCommand(
+      s"""
+         |SELECT name FROM $EphemeralTableName INNER JOIN $Catalog.$Table
+         |ON $EphemeralTableName.id = $Table.id
+         |WITH WINDOW 10 SECS AS joinTopic
+      """.stripMargin))
 
-    println("Streaming process started")
+    Thread.sleep(400 * 1000)
 
-    // Stops the process. Once we want to stop receiving data, we could stop the process. The queries won't be deleted,
-    // so if we start the process again the queries will be executed.
-    Thread.sleep(400*1000)
+    // Stops the process. Once we want to stop receiving data, we can stop the process. The queries won't be deleted,
+    // so if we restart the process the queries will be executed.
     driver.syncQuery(SQLCommand(s"STOP $EphemeralTableName"))
-
-    // TODO stop & delete => the process is not stopped => improve listener
-    // TODO improve API
 
   } finally {
     driver.syncQuery(SQLCommand(s"DROP ALL EPHEMERAL QUERIES"))

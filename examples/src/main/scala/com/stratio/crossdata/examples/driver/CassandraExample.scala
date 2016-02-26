@@ -31,7 +31,7 @@ object CassandraExample extends App with CassandraDefaultConstants {
   val driver = {
     val host: java.util.List[String] = new util.ArrayList[String]()
     host.add("127.0.0.1:13420")
-    Driver(host)
+    Driver.getOrCreate(host)
   }
 
   val importQuery =

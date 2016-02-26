@@ -43,7 +43,7 @@ object CassandraExample extends App with CassandraDefaultConstants {
     xdContext.sql(s"SELECT *  FROM $Table ").show(5)
 
     // Spark queries
-    xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 1 AND id = 5").show(5)
+    xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 'Comment 5' AND id = 5").show(5)
 
   }
 
