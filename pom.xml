@@ -157,7 +157,7 @@
             </dependency>
             <dependency>
                 <groupId>com.stratio.common</groupId>
-                <artifactId>common-utils</artifactId>
+                <artifactId>common-utils_${scala.binary.version}</artifactId>
                 <version>${common.utils.version}</version>
             </dependency>
             <dependency>
