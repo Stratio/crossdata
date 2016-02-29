@@ -37,6 +37,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
     case SecureSQLCommand(command @ SQLCommand(query, queryId, withColnames, timeout), session) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
+      logger.debug(s"Session identifier $session")
       context.actorOf(JobActor.props(xdContext, command, sender(), timeout))
     case JobFailed(e) =>
       logger.error(e.getMessage)
