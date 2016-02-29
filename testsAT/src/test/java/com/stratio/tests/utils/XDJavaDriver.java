@@ -47,7 +47,7 @@ public class XDJavaDriver {
     private List<JavaTableName> tableList;
     private List<String> databases;
     private SQLResult result;
-    private List<String> hosts = Arrays.asList(System.getProperty("CROSSDATA_HOST","hdominguez-PC:13420").split(","));
+    private List<String> hosts = Arrays.asList(System.getProperty("CROSSDATA_HOST","127.0.0.1:13420").split(","));
     public XDJavaDriver(){
    }
 
@@ -84,8 +84,6 @@ public class XDJavaDriver {
             xdDriver = new JavaDriver(hosts,true);
         }
         descTables = xdFlattendDriver.describeTable(tableName);
-//        xdDriver.close();
-//        xdDriver = null;
     }
 
     public void listTables(){
