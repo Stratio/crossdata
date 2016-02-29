@@ -29,6 +29,7 @@ class JavaDriverIT extends EndToEndTest{
 
   "JavaDriver (with default options)" should "get a list of tables" in {
 
+    assumeCrossdataUpAndRunning()
     val javadriver = new JavaDriver()
 
     javadriver.syncQuery(

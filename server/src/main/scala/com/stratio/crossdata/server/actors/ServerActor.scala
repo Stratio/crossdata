@@ -22,7 +22,7 @@ import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, SubscribeAck, Subscribe}
-import com.stratio.crossdata.common.{CancelQueryExecution, SQLCommand, ControlCommand}
+import com.stratio.crossdata.common.{SecureCommand, CancelQueryExecution, SQLCommand, ControlCommand}
 import com.stratio.crossdata.server.actors.JobActor.Commands.CancelJob
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.actors.ServerActor.ManagementMessages.DelegateCommand
@@ -42,7 +42,7 @@ object ServerActor {
   protected case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
 
   object ManagementMessages {
-    case class DelegateCommand(command: ControlCommand, requester: ActorRef)
+    case class DelegateCommand(scommand: SecureCommand, requester: ActorRef)
   }
 
 }
@@ -79,14 +79,14 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
     // Commands
 
-    case sqlCommand @ SQLCommand(query, _, withColnames, timeout) =>
+    case SecureCommand(sqlCommand @ SQLCommand(query, queryId, withColnames, timeout), session) =>
       logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
       val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
       context.become(ready(jobsById + (JobId(sender(), sqlCommand.queryId) -> jobActor)))
 
-    case cc @ CancelQueryExecution(queryId) =>
+    case sc @ SecureCommand(cc @ CancelQueryExecution(queryId), session) =>
       jobsById.get(JobId(sender, queryId)) map (_ ! CancelJob) getOrElse {
-        mediator ! Publish(managementTopic, DelegateCommand(cc, sender))
+        mediator ! Publish(managementTopic, DelegateCommand(sc, sender))
       }
 
     // Events

@@ -90,6 +90,7 @@
         <module>common</module>
         <module>driver</module>
         <module>server</module>
+        <module>testsIT</module>
     </modules>
 
     <properties>
@@ -108,7 +109,7 @@
         <postgresql.version>9.2-1003-jdbc4</postgresql.version>
         <derby.version>10.12.1.1</derby.version>
         <jackson4s.version>3.2.11</jackson4s.version>
-        <common.utils.version>0.4.3</common.utils.version>
+        <common.utils.version>0.5.0-SNAPSHOT</common.utils.version>
         <guava.version>18.0</guava.version>
     </properties>
 
@@ -156,7 +157,7 @@
             </dependency>
             <dependency>
                 <groupId>com.stratio.common</groupId>
-                <artifactId>common-utils</artifactId>
+                <artifactId>common-utils_${scala.binary.version}</artifactId>
                 <version>${common.utils.version}</version>
             </dependency>
             <dependency>

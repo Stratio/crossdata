@@ -145,7 +145,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
       super.collect()
     } else {
-      val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
+      val nativeQueryExecutor: Option[NativeScan] = None //findNativeQueryExecutor(queryExecution.optimizedPlan)
       if(nativeQueryExecutor.isEmpty){
         log.info(s"Spark Query: ${queryExecution.simpleString}")
       } else {
