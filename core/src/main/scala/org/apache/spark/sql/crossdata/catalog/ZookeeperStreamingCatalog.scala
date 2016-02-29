@@ -24,10 +24,13 @@ import scala.util.Try
 
 class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
 
-  private val streamingConfig = XDContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
-  private val ephemeralTableDAO = new EphemeralTableTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
-  private val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
-  private val ephemeralTableStatusDAO = new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+  private[spark] val streamingConfig = XDContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
+  private[spark] val ephemeralTableDAO =
+    new EphemeralTableTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+  private[spark] val ephemeralQueriesDAO =
+    new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+  private[spark] val ephemeralTableStatusDAO =
+    new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
 
   /**
    * Ephemeral Table Functions

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.crossdata.streaming
 
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
@@ -24,89 +23,53 @@ import org.apache.spark.sql.crossdata.daos.EphemeralTableMapDAO
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.streaming.StreamingContext
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 class CrossdataStreaming(ephemeralTableName: String,
                          streamingCatalogConfig: Map[String, String],
                          crossdataCatalogConfiguration: Map[String, String])
   extends EphemeralTableMapDAO {
 
-  private val zookeeperCatalogConfig = streamingCatalogConfig.collect{
+  private val zookeeperCatalogConfig = streamingCatalogConfig.collect {
     case (key, value) if key.startsWith(ZooKeeperStreamingCatalogPath) =>
       (key.substring("catalog.".length), value)
   }
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperCatalogConfig)
 
-  def init(): Unit = {
+  def init(): Try[Any] = {
     Try {
-      val zookeeperConfig = zookeeperCatalogConfig
+      val ephemeralTable = dao.get(ephemeralTableName)
+        .getOrElse(throw new IllegalStateException("Ephemeral table not found"))
+      val sparkConfig = configToSparkConf(ephemeralTable)
 
-      // TODO remove starting status
-      /*CrossdataStatusHelper.setEphemeralStatus(
-        EphemeralExecutionStatus.Starting,
-        zookeeperConfig,
-        ephemeralTableName)*/
-
-      Try {
-        val ephemeralTable = dao.get(ephemeralTableName).getOrElse(throw new Exception("Ephemeral table not found"))
-        val sparkConfig = configToSparkConf(ephemeralTable)
-
-        val ssc = StreamingContext.getOrCreate(ephemeralTable.options.checkpointDirectory,
-          () => {
-            CrossdataStreamingHelper.createContext(ephemeralTable,
+      val ssc = StreamingContext.getOrCreate(ephemeralTable.options.checkpointDirectory,
+        () => {
+          CrossdataStreamingHelper.createContext(ephemeralTable,
             sparkConfig,
-            zookeeperConfig,
+            zookeeperCatalogConfig,
             crossdataCatalogConfiguration
-            )
-          })
-
-        CrossdataStatusHelper.initStatusActor(ssc, zookeeperConfig, ephemeralTable.name)
-
-        logger.info(s"Started Ephemeral Table: $ephemeralTableName")
-        CrossdataStatusHelper.setEphemeralStatus(
-          EphemeralExecutionStatus.Started,
-          zookeeperConfig,
-          ephemeralTableName
-        )
-
-        ssc.start()
-        ssc.awaitTermination()
-
-      } match {
-        case Success(_) =>
-          logInfo(s"Stopping Ephemeral Table: $ephemeralTableName")
-          // TODO this setStatus won't be executed because the actorSystem will be shutdown before
-          CrossdataStatusHelper.setEphemeralStatus(
-            EphemeralExecutionStatus.Stopped,
-            zookeeperConfig,
-            ephemeralTableName
           )
-          CrossdataStatusHelper.close()
-        case Failure(exception) =>
-          logError(exception.getLocalizedMessage, exception)
-          CrossdataStatusHelper.setEphemeralStatus(
-            EphemeralExecutionStatus.Error,
-            zookeeperConfig,
-            ephemeralTableName
-          )
-          CrossdataStatusHelper.close()
-      }
-    } match {
-      // TODO dead code
-      case Success(_) =>
-        logger.info(s"Ephemeral Table Finished correctly: $ephemeralTableName")
-      case Failure(exception) =>
-        logger.error(exception.getMessage, exception)
-        CrossdataStatusHelper.close()
+        })
+
+      CrossdataStatusHelper.initStatusActor(ssc, zookeeperCatalogConfig, ephemeralTable.name)
+
+      logger.info(s"Started Ephemeral Table: $ephemeralTableName")
+      CrossdataStatusHelper.setEphemeralStatus(
+        EphemeralExecutionStatus.Started,
+        zookeeperCatalogConfig,
+        ephemeralTableName
+      )
+
+      ssc.start()
+      ssc.awaitTermination()
     }
   }
 
-  private def configToSparkConf(ephemeralTable: EphemeralTableModel): SparkConf =
+  private[streaming] def configToSparkConf(ephemeralTable: EphemeralTableModel): SparkConf =
     new SparkConf().setAll(setPrefixSpark(ephemeralTable.options.sparkOptions))
 
-
-  private def setPrefixSpark(sparkConfig: Map[String, String]): Map[String, String] =
+  private[streaming] def setPrefixSpark(sparkConfig: Map[String, String]): Map[String, String] =
     sparkConfig.map { case entry@(key, value) =>
       if (key.startsWith(SparkPrefixName)) entry
       else (s"$SparkPrefixName.$key", value)

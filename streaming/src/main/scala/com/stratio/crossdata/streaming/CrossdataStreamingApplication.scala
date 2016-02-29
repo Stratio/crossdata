@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.crossdata.streaming
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import com.stratio.crossdata.streaming.helpers.CrossdataStatusHelper
+import org.apache.spark.sql.crossdata.models.EphemeralExecutionStatus
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
-    import org.json4s.jackson.Serialization._
+import org.json4s.jackson.Serialization._
+
 import scala.util.{Failure, Success, Try}
 
-object CrossdataStreamingApplication extends SparkLoggerComponent with CrossdataSerializer{
+object CrossdataStreamingApplication extends SparkLoggerComponent with CrossdataSerializer {
 
   val EphemeralTableNameIndex = 0
   val StreamingCatalogConfigurationIndex = 1
@@ -30,40 +32,40 @@ object CrossdataStreamingApplication extends SparkLoggerComponent with Crossdata
   def main(args: Array[String]): Unit = {
     assert(args.length == 3, s"Invalid number of params: ${args.length}, args: $args")
     Try {
-      //val ephemeralTableName = new String(BaseEncoding.base64().decode(args(EphemeralTableNameIndex)))
-      val ephemeralTableName = args(EphemeralTableNameIndex)//"ephtable"
+      val ephemeralTableName = args(EphemeralTableNameIndex)
+      val zookeeperConf = parseMapArguments(args(StreamingCatalogConfigurationIndex)).getOrElse {
+          val message = s"Error parsing zookeeper argument -> ${args(StreamingCatalogConfigurationIndex)}"
+          logger.error(message)
+          throw new IllegalArgumentException(message)
+        }
 
-      //val zookeeperConfString = new String(BaseEncoding.base64().decode(args(ZookeeperConfigurationIndex)))
-      //val zookeeperConf = Try(ConfigFactory.parseString(zookeeperConfString)).getOrElse(...)
-      //val zookeeperConf = Try(JSON.parseFull(zookeeperConfString).get.asInstanceOf[Map[String,Any]]).getOrElse(...)
-
-      // args(ZookeeperConfigurationIndex),
-
-      val zookeeperConf = parseMapArguments(args(StreamingCatalogConfigurationIndex)).getOrElse{
-       logger.warn(s"Error parsing zookeeper configuration, using defaults with localhost -> ${args(CrossdataCatalogIndex)}")
-       Map.empty[String,String] // TODO DefaultZookeeperConfiguration
-     }
-
-      val xdCatalogConf = parseMapArguments(args(CrossdataCatalogIndex)).getOrElse{
-        logger.warn(s"Error parsing zookeeper configuration, using defaults with localhost :${args(CrossdataCatalogIndex)} ")
-        Map.empty[String,String]
+      val xdCatalogConf = parseMapArguments(args(CrossdataCatalogIndex)).getOrElse {
+        val message = s"Error parsing XDCatalog argument -> ${args(CrossdataCatalogIndex)}"
+        logger.error(message)
+        throw new IllegalArgumentException(message)
       }
 
       val crossdataStreaming = new CrossdataStreaming(ephemeralTableName, zookeeperConf, xdCatalogConf)
-      crossdataStreaming.init()
-      
+      crossdataStreaming.init() match {
+        case Success(_) =>
+          logger.info(s"Ephemeral Table Finished correctly: $ephemeralTableName")
+          CrossdataStatusHelper.close()
+        case Failure(exception) =>
+          logger.error(exception.getMessage, exception)
+          CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Error, zookeeperConf, ephemeralTableName)
+          CrossdataStatusHelper.close()
+          sys.exit(-1)
+      }
     } match {
       case Success(_) =>
-        logger.info("Ephemeral Table Started")
+        logger.info(s"Application finished correctly")
+        sys.exit()
       case Failure(exception) =>
         logger.error(exception.getMessage, exception)
-        sys.exit()
+        CrossdataStatusHelper.close()
     }
   }
 
-  private[streaming] def parseMapArguments(serializedMap: String) : Try[Map[String, String]] =
-    Try(read[Map[String,String]](serializedMap))
-  
-
-
+  private[streaming] def parseMapArguments(serializedMap: String): Try[Map[String, String]] =
+    Try(read[Map[String, String]](serializedMap))
 }

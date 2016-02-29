@@ -39,16 +39,16 @@ class KafkaInput(options: KafkaOptionsModel) {
       storageLevel(options.storageLevel))
   }
 
-  private def getConnection : (String, String) = {
+  private[streaming] def getConnection : (String, String) = {
     val connectionChain =
       options.connection.map(connection => s"${connection.host}:${connection.consumerPort}").mkString(",")
 
     (ZookeeperConnectionKey, if(connectionChain.isEmpty) s"$DefaultHost:$DefaulConsumerPort" else connectionChain)
   }
 
-  private def getGroupId : (String, String) = (GroupIdKey, options.groupId)
+  private[streaming] def getGroupId : (String, String) = (GroupIdKey, options.groupId)
 
-  private def getTopics : Map[String, Int] = {
+  private[streaming] def getTopics : Map[String, Int] = {
     if (options.topics.isEmpty) {
       throw new IllegalStateException(s"Invalid configuration, topics must be declared.")
     } else {
@@ -56,7 +56,7 @@ class KafkaInput(options: KafkaOptionsModel) {
     }
   }
 
-  private def storageLevel(sparkStorageLevel: String): StorageLevel = {
+  private[streaming] def storageLevel(sparkStorageLevel: String): StorageLevel = {
     StorageLevel.fromString(sparkStorageLevel)
   }
 

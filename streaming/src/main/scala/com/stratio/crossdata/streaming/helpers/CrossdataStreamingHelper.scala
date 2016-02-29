@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.crossdata.streaming.helpers
-
 
 import com.github.nscala_time.time.Imports._
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
@@ -33,7 +31,6 @@ import org.apache.spark.{SparkConf, SparkContext}
 import scala.util.{Failure, Try}
 
 object CrossdataStreamingHelper extends SparkLoggerComponent {
-
 
   def createContext(ephemeralTable: EphemeralTableModel,
                     sparkConf: SparkConf,
@@ -63,7 +60,7 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     streamingContext
   }
 
-  private def parseCatalogConfig(catalogConf: Map[String, String]): Option[Config] = {
+  def parseCatalogConfig(catalogConf: Map[String, String]): Option[Config] = {
     import collection.JavaConversions._
     Try(ConfigFactory.parseMap(catalogConf)).toOption
   }
@@ -76,9 +73,7 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
                            catalogConf: Map[String, String]): Unit = {
     val sqlTableName = ephemeralTable.name
     val query = ephemeralQuery.sql
-    val kafkaOptionsMerged = kafkaOptions.copy(
-      partitionOutput = ephemeralQuery.options.get(PartitionKey).orElse(kafkaOptions.partitionOutput),
-      additionalOptions = ephemeralQuery.options)
+    val kafkaOptionsMerged = mergeKafkaOptions(ephemeralQuery, kafkaOptions)
     val xdContext = XDContext.getOrCreate(rdd.context, parseCatalogConfig(catalogConf))
     // TODO add sampling ratio
     val dfReader = xdContext.read
@@ -111,25 +106,32 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     }
   }
 
-  private def filterRddWithWindow(rdd: RDD[(Long, String)], window: Int): RDD[String] =
+  private[streaming] def mergeKafkaOptions(ephemeralQuery: EphemeralQueryModel,
+                                           kafkaOptions: KafkaOptionsModel): KafkaOptionsModel = {
+    kafkaOptions.copy(
+      partitionOutput = ephemeralQuery.options.get(PartitionKey).orElse(kafkaOptions.partitionOutput),
+      additionalOptions = kafkaOptions.additionalOptions ++ ephemeralQuery.options)
+  }
+
+  private[streaming] def filterRddWithWindow(rdd: RDD[(Long, String)], window: Int): RDD[String] =
     rdd.flatMap { case (time, row) =>
       if (time > DateTime.now.getMillis - window * 1000) Option(row)
       else None
     }
 
-  private def toWindowDStream(inputStream: DStream[(String, String)],
-                              ephemeralOptions: EphemeralOptionsModel): DStream[(Long, String)] =
-    // TODO window per query?
-    inputStream.mapPartitions{ iterator =>
+  private[streaming] def toWindowDStream(inputStream: DStream[(String, String)],
+                                         ephemeralOptions: EphemeralOptionsModel): DStream[(Long, String)] =
+  // TODO window per query?
+    inputStream.mapPartitions { iterator =>
       val dateTime = DateTime.now.getMillis
-      iterator.map{ case (_, kafkaEvent) => (dateTime, kafkaEvent)}
+      iterator.map { case (_, kafkaEvent) => (dateTime, kafkaEvent) }
     }.window(Seconds(ephemeralOptions.maxWindow), Seconds(ephemeralOptions.atomicWindow))
 
-  private def saveToKafkaInJSONFormat(dataFrame: DataFrame, topic: String, kafkaOptions: KafkaOptionsModel): Unit =
+  private[streaming] def saveToKafkaInJSONFormat(dataFrame: DataFrame, topic: String, kafkaOptions: KafkaOptionsModel): Unit =
     dataFrame.toJSON.foreachPartition(values =>
       values.foreach(value => KafkaProducer.put(topic, value, kafkaOptions, kafkaOptions.partitionOutput)))
 
-  private def saveToKafkaInRowFormat(dataFrame: DataFrame, topic: String, kafkaOptions: KafkaOptionsModel): Unit =
+  private[streaming] def saveToKafkaInRowFormat(dataFrame: DataFrame, topic: String, kafkaOptions: KafkaOptionsModel): Unit =
     dataFrame.rdd.foreachPartition(values =>
       values.foreach(value =>
         KafkaProducer.put(topic, value.mkString(","), kafkaOptions, kafkaOptions.partitionOutput)))
