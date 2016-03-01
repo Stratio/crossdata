@@ -22,7 +22,8 @@ import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, SubscribeAck, Subscribe}
-import com.stratio.crossdata.common.{SecureCommand, CancelQueryExecution, SQLCommand, ControlCommand}
+import com.stratio.crossdata.common.security.Session
+import com.stratio.crossdata.common._
 import com.stratio.crossdata.server.actors.JobActor.Commands.CancelJob
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.actors.ServerActor.ManagementMessages.DelegateCommand
@@ -42,14 +43,18 @@ object ServerActor {
   protected case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
 
   object ManagementMessages {
-    case class DelegateCommand(scommand: SecureCommand, requester: ActorRef)
+    case class DelegateCommand(scommand: SecureCommand, broadcaster: ActorRef)
   }
+
+  case class State(jobsById: Map[JobId, ActorRef])
 
 }
 
 class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with ServerConfig {
 
   import ServerActor._
+
+
 
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
@@ -67,27 +72,50 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   private val initial: Receive = {
     case SubscribeAck(Subscribe(managementTopic, None, self)) =>
-      context.become(ready(Map.empty))
+      context.become(ready(State(Map.empty)))
   }
 
-  private val topicReceive: Receive = {
-    case DelegateCommand(cmd, requester) if(sender != self) =>
-      self.tell(cmd, requester)
-  }
-
-  private def ready(jobsById: Map[JobId, ActorRef]): Receive = topicReceive orElse {
-
-    // Commands
-
-    case SecureCommand(sqlCommand @ SQLCommand(query, queryId, withColnames, timeout), session) =>
+  /**
+    * If a `cmd` is passed to this method is because it has already been checked that this server can run it.
+    *
+    * @param cmd
+    * @param st
+    */
+  private def executeAccepted(cmd: SecureCommand)(st: State): Unit = cmd match{
+    case SecureCommand(sqlCommand @ SQLCommand(query, queryId, withColnames, timeout), session @ Session(id, requester)) =>
       logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
       val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
-      context.become(ready(jobsById + (JobId(sender(), sqlCommand.queryId) -> jobActor)))
+      context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
 
-    case sc @ SecureCommand(cc @ CancelQueryExecution(queryId), session) =>
-      jobsById.get(JobId(sender, queryId)) map (_ ! CancelJob) getOrElse {
-        mediator ! Publish(managementTopic, DelegateCommand(sc, sender))
+    case SecureCommand(cc @ CancelQueryExecution(queryId), session @ Session(id, requester)) =>
+      st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
+  }
+
+  private def ready(st: State): Receive = {
+
+    // Broadcast requests
+
+    case DelegateCommand(_, broadcaster) if(broadcaster == self) => //Discards from this server broadcast delegated-commands
+    case DelegateCommand(cmd, broadcaster) if(broadcaster != self) =>
+      cmd match { // Inner pattern matching for future delegated command validations
+        case sc @ SecureCommand(CancelQueryExecution(queryId), Session(_, requester)) =>
+          st.jobsById.get(JobId(requester, queryId)) foreach(_ => executeAccepted(sc)(st))
+          /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
+              servers through the topic. */
       }
+
+
+    // Check and accept/discard commands
+
+    case sc @ SecureCommand(cc @ CancelQueryExecution(queryId), session @ Session(id, requester)) =>
+      st.jobsById.get(JobId(requester, queryId)) map { _ =>
+        executeAccepted(sc)(st) // Command validated to be executed by this server.
+      } getOrElse {
+        // If it can't run here it should be executed somewhere else
+        mediator ! Publish(managementTopic, DelegateCommand(sc, self))
+      }
+
+    case sc @ SecureCommand(_: SQLCommand, _) => executeAccepted(sc)(st)
 
     // Events
 
