@@ -19,6 +19,7 @@ package com.stratio.crossdata.streaming
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
 import com.stratio.crossdata.streaming.helpers.{CrossdataStatusHelper, CrossdataStreamingHelper}
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.crossdata.config.StreamingConstants._
 import org.apache.spark.sql.crossdata.daos.EphemeralTableMapDAO
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.streaming.StreamingContext
@@ -26,21 +27,20 @@ import org.apache.spark.streaming.StreamingContext
 import scala.util.{Failure, Success, Try}
 
 class CrossdataStreaming(ephemeralTableName: String,
-                         zookeeperConfiguration: Map[String, Any])
+                         streamingCatalogConfig: Map[String, String],
+                         crossdataCatalogConfiguration: Map[String, String])
   extends EphemeralTableMapDAO {
 
-  val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
+  private val zookeeperCatalogConfig = streamingCatalogConfig.collect{
+    case (key, value) if key.startsWith(ZooKeeperStreamingCatalogPath) =>
+      (key.substring("catalog.".length), value)
+  }
 
-  //TODO remove this
-  /*dao.upsert("ephtable", EphemeralTableModel(
-    "ephtable",
-    EphemeralOptionsModel(KafkaOptionsModel(Seq(ConnectionHostModel("localhost", "2181", "9092")),Seq(TopicModel("ephtable")), "1")))
-  )*/
-
+  val memoryMap = Map(ZookeeperPrefixName -> zookeeperCatalogConfig)
 
   def init(): Unit = {
     Try {
-      val zookeeperConfig = zookeeperConfiguration.mapValues(_.toString).map(identity)
+      val zookeeperConfig = zookeeperCatalogConfig
 
       // TODO remove starting status
       /*CrossdataStatusHelper.setEphemeralStatus(
@@ -56,7 +56,8 @@ class CrossdataStreaming(ephemeralTableName: String,
           () => {
             CrossdataStreamingHelper.createContext(ephemeralTable,
             sparkConfig,
-            zookeeperConfig
+            zookeeperConfig,
+            crossdataCatalogConfiguration
             )
           })
 

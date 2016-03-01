@@ -21,14 +21,16 @@ import com.typesafe.config.Config
 import org.apache.spark.Logging
 import org.apache.spark.launcher.SparkLauncher
 import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog
-import org.apache.spark.sql.crossdata.config.StreamingConstants
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
+import org.apache.spark.sql.crossdata.config.{CoreConfig, StreamingConstants}
+import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
+import org.json4s.jackson.Serialization._
 
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext
 import scala.util.{Properties, Try}
 
-object SparkJobLauncher extends Logging{
+object SparkJobLauncher extends Logging with CrossdataSerializer{
 
   def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String)
                           (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
@@ -37,9 +39,12 @@ object SparkJobLauncher extends Logging{
       Properties.envOrNone("SPARK_HOME").orElse(Try(streamingConfig.getString(SparkHomeKey)).toOption).getOrElse(
         throw new RuntimeException("You must set the $SPARK_HOME path in configuration or environment")
       )
+
+    val catalogPropertiesMapString = typeSafeConfigToMapString(crossdataConfig, Option(CoreConfig.CatalogConfigKey))
+    val zooKeeperPropertiesMapString = typeSafeConfigToMapString(streamingConfig, Option(ZooKeeperStreamingCatalogPath))
     val eTable = streamingCatalog.getEphemeralTable(ephemeralTableName).getOrElse(notFound(ephemeralTableName))
     val appName = s"${eTable.name}_${UUID.randomUUID()}"
-    val appArgs = Seq(eTable.name, streamingConfig.getString(ZooKeeperConnectionKey))
+    val appArgs = Seq(eTable.name, write(zooKeeperPropertiesMapString), write(catalogPropertiesMapString))
     val master = streamingConfig.getString(SparkMasterKey)
     val jar = streamingConfig.getString(AppJarKey)
     val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq).getOrElse(Seq.empty)
@@ -76,10 +81,17 @@ object SparkJobLauncher extends Logging{
 
   private def notFound(resource: String) = sys.error(s"$resource not found")
 
-  private def sparkConf(streamingConfig: Config): Map[String, String] = {
-    val conf = streamingConfig.getConfig(SparkConfPath)
-    conf.entrySet().toSeq.map(e =>
-      (s"$SparkConfPath.${e.getKey}", conf.getAnyRef(e.getKey).toString)).toMap
+  private def sparkConf(streamingConfig: Config): Map[String, String] =
+    typeSafeConfigToMapString(streamingConfig, Option(SparkConfPath))
+
+
+  private def typeSafeConfigToMapString(config: Config, path: Option[String]= None): Map[String, String] = {
+    val conf = path.map(config.getConfig).getOrElse(config)
+    conf.entrySet().toSeq.map( e =>
+      (s"${path.fold("")(_+".")+ e.getKey}", conf.getAnyRef(e.getKey).toString)
+    ).toMap
   }
+
+
 
 }

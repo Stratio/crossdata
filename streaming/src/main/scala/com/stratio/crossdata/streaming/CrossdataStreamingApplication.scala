@@ -17,16 +17,18 @@
 package com.stratio.crossdata.streaming
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
+    import org.json4s.jackson.Serialization._
+import scala.util.{Failure, Success, Try}
 
-import scala.util.{Try, Failure, Success}
-
-object CrossdataStreamingApplication extends SparkLoggerComponent {
+object CrossdataStreamingApplication extends SparkLoggerComponent with CrossdataSerializer{
 
   val EphemeralTableNameIndex = 0
-  val ZookeeperConfigurationIndex = 1
+  val StreamingCatalogConfigurationIndex = 1
+  val CrossdataCatalogIndex = 2
 
   def main(args: Array[String]): Unit = {
-    assert(args.length == 2, s"Invalid number of params: ${args.length}, args: $args")
+    assert(args.length == 3, s"Invalid number of params: ${args.length}, args: $args")
     Try {
       //val ephemeralTableName = new String(BaseEncoding.base64().decode(args(EphemeralTableNameIndex)))
       val ephemeralTableName = args(EphemeralTableNameIndex)//"ephtable"
@@ -36,20 +38,20 @@ object CrossdataStreamingApplication extends SparkLoggerComponent {
       //val zookeeperConf = Try(JSON.parseFull(zookeeperConfString).get.asInstanceOf[Map[String,Any]]).getOrElse(...)
 
       // args(ZookeeperConfigurationIndex),
-      val zookeeperConf = Map(
-        "connectionString" -> args(ZookeeperConfigurationIndex),
-        "connectionTimeout" -> 1500,
-        "sessionTimeout" -> 60000,
-        "retryAttempts" -> 6,
-        "retryInterval" -> 10000
-      )
-      /*val zookeeperConf =
-        Try(ConfigFactory.load(CrossdataStreaming.StreamingResourceConfig)
-          .getConfig("zookeeper").atKey("zookeeper")).getOrElse(...)*/
 
-      val crossdataStreaming = new CrossdataStreaming(ephemeralTableName, zookeeperConf)
+      val zookeeperConf = parseMapArguments(args(StreamingCatalogConfigurationIndex)).getOrElse{
+       logger.warn(s"Error parsing zookeeper configuration, using defaults with localhost -> ${args(CrossdataCatalogIndex)}")
+       Map.empty[String,String] // TODO DefaultZookeeperConfiguration
+     }
 
+      val xdCatalogConf = parseMapArguments(args(CrossdataCatalogIndex)).getOrElse{
+        logger.warn(s"Error parsing zookeeper configuration, using defaults with localhost :${args(CrossdataCatalogIndex)} ")
+        Map.empty[String,String]
+      }
+
+      val crossdataStreaming = new CrossdataStreaming(ephemeralTableName, zookeeperConf, xdCatalogConf)
       crossdataStreaming.init()
+      
     } match {
       case Success(_) =>
         logger.info("Ephemeral Table Started")
@@ -58,4 +60,10 @@ object CrossdataStreamingApplication extends SparkLoggerComponent {
         sys.exit()
     }
   }
+
+  private[streaming] def parseMapArguments(serializedMap: String) : Try[Map[String, String]] =
+    Try(read[Map[String,String]](serializedMap))
+  
+
+
 }
