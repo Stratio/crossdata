@@ -250,7 +250,7 @@ class Driver(properties: java.util.Map[String, ConfigValue] = Map.empty[String, 
 
   import Driver._
 
-  val driverSession = SessionManager.createSession(auth)
+  lazy val driverSession = SessionManager.createSession(auth, proxyActor)
 
   def securitizeCommand(command: Command): SecureCommand = {
     new SecureCommand(command, driverSession)
