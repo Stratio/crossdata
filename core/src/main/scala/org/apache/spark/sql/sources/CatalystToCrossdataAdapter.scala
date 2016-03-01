@@ -18,16 +18,17 @@ package org.apache.spark.sql.sources
 
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.CatalystTypeConverters.convertToScala
-import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.expressions
-
-import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
-
-import org.apache.spark.sql.crossdata.execution.{EvaluateNativeUDF, NativeUDF}
+import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.plans.logical.Aggregate
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
+import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
-import org.apache.spark.sql.types.{ArrayType, StringType}
+import org.apache.spark.sql.types.ArrayType
+import org.apache.spark.sql.types.StringType
 import org.apache.spark.unsafe.types.UTF8String
 
 import scala.collection.mutable.ListBuffer
@@ -35,6 +36,7 @@ import scala.collection.mutable.ListBuffer
 object CatalystToCrossdataAdapter {
 
   case class FilterReport(filtersIgnored: Seq[Expression], ignoredNativeUDFReferences: Seq[AttributeReference])
+  case class ProjectReport(expressionsIgnored: Seq[Expression])
 
   abstract class BaseLogicalPlan(
                                   val projects: Seq[NamedExpression],
@@ -64,7 +66,7 @@ object CatalystToCrossdataAdapter {
    */
   def getConnectorLogicalPlan(logicalPlan: LogicalPlan,
                               projects: Seq[NamedExpression],
-                              filterPredicates: Seq[Expression]): (BaseLogicalPlan, FilterReport) = {
+                              filterPredicates: Seq[Expression]): (BaseLogicalPlan, ProjectReport, FilterReport) = {
 
     val relation = logicalPlan.collectFirst { case lr: LogicalRelation => lr }.get
     implicit val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
@@ -77,19 +79,47 @@ object CatalystToCrossdataAdapter {
 
     val itemAccess2att: Map[GetArrayItem, Attribute] = att2itemAccess.map(_.swap)
 
-    val requestedCols: Map[Boolean, Seq[Attribute]] = projects.flatMap {
-      case exp @ Alias(c: GetArrayItem, name) if(itemAccess2att contains c) =>
-        exp.references.map(false -> relation.attributeMap(_)).toSeq :+ (true -> itemAccess2att(c))
-      case exp: Expression => exp.references flatMap {
-        case nat: AttributeReference if (att2udf contains nat) =>
-          udfFlattenedActualParameters(nat, at => false -> relation.attributeMap(at)) :+ (true -> nat)
-        case x => Seq(true -> relation.attributeMap(x))
-      }
+    object ExpressionType extends Enumeration {
+      type ExpressionType = Value
+      val Requested, Found, Ignored = Value
+    }
+
+    import ExpressionType._
+
+    def extractRequestedColumns(namedExpression: Expression): Seq[(ExpressionType, Expression)] = namedExpression match {
+
+      case Alias(child, _) =>
+        extractRequestedColumns(child)
+
+      case aRef: AttributeReference =>
+        Seq(Requested -> aRef)
+
+      case nudf: NativeUDF =>
+        nudf.references flatMap {
+        case nat: AttributeReference if att2udf contains nat =>
+          udfFlattenedActualParameters(nat, at => Found -> relation.attributeMap(at)) :+ (Requested -> nat)
+       } toSeq
+
+      case c: GetArrayItem if itemAccess2att contains c =>
+        c.references.map(Found -> relation.attributeMap(_)).toSeq :+ (Requested -> itemAccess2att(c))
+
+      // TODO should these expressions be ignored? We are ommitting expressions within structfields
+      case c: GetStructField  => c.references flatMap {
+        case x => Seq(Requested -> relation.attributeMap(x))
+      } toSeq
+
+      case ignoredExpr =>
+        Seq(Ignored -> ignoredExpr)
+    }
+
+
+    val columnExpressions: Map[ExpressionType, Seq[Expression]] = projects.flatMap {
+      extractRequestedColumns
     } groupBy (_._1) mapValues (_.map(_._2))
 
     val pushedFilters = filterPredicates.map {
       _ transform {
-        case getitem: GetArrayItem if(itemAccess2att contains getitem) => itemAccess2att(getitem)
+        case getitem: GetArrayItem if itemAccess2att contains getitem => itemAccess2att(getitem)
         case a: AttributeReference if att2udf contains a => a
         case a: Attribute => relation.attributeMap(a) // Match original case of attributes.
       }
@@ -101,13 +131,16 @@ object CatalystToCrossdataAdapter {
       case Aggregate(groupingExpression, aggregationExpression, child) => (groupingExpression, aggregationExpression)
     }
 
+
     val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
-      SimpleLogicalPlan(requestedCols(true), filters.toArray, att2udf, att2itemAccess)
+      val requestedColumns: Seq[Attribute] =
+        columnExpressions.getOrElse(Requested, Seq.empty) collect { case a: Attribute => a }
+      SimpleLogicalPlan(requestedColumns, filters.toArray, att2udf, att2itemAccess)
     } { case (groupingExpression, selectExpression) =>
       AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)
     }
-
-    (baseLogicalPlan, filterReport)
+    val projectReport = columnExpressions.getOrElse(Ignored, Seq.empty)
+    (baseLogicalPlan, ProjectReport(projectReport), filterReport)
   }
 
   def udfFlattenedActualParameters[B](

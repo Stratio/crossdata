@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.examples
+package com.stratio.crossdata.examples.elasticsearch
 
-import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.mappings.FieldType._
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse
-import org.elasticsearch.action.index.IndexResponse
 import org.elasticsearch.common.settings.ImmutableSettings
 
 sealed trait ElasticsearchDefaultConstants {

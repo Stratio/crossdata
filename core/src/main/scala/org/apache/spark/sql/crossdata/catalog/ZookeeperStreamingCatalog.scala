@@ -24,7 +24,7 @@ import scala.util.Try
 
 class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
 
-  private val streamingConfig = xdContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
+  private val streamingConfig = XDContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
   private val ephemeralTableDAO = new EphemeralTableTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
   private val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
   private val ephemeralTableStatusDAO = new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
@@ -55,6 +55,10 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
     
     ephemeralTableDAO.dao.delete(tableIdentifier)
     ephemeralTableStatusDAO.dao.delete(tableIdentifier)
+
+    ephemeralQueriesDAO.dao.getAll().filter( _.ephemeralTableName == tableIdentifier) foreach { query =>
+      ephemeralQueriesDAO.dao.delete(query.alias)
+    }
   }
 
   override def dropAllEphemeralTables(): Unit = {
@@ -62,6 +66,7 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
     Try {
       ephemeralTableDAO.dao.deleteAll
       ephemeralTableStatusDAO.dao.deleteAll
+      ephemeralQueriesDAO.dao.deleteAll
     }
   }
 

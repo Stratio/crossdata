@@ -19,7 +19,9 @@ package org.apache.spark.sql.crossdata.config
 import java.io.File
 
 import com.typesafe.config.{Config, ConfigFactory}
+import org.apache.log4j.Logger
 import org.apache.spark.Logging
+
 
 object CoreConfig {
 
@@ -27,12 +29,14 @@ object CoreConfig {
   val ParentConfigName = "crossdata-core"
   val CoreUserConfigFile = "external.config.filename"
   val CoreUserConfigResource = "external.config.resource"
-
+  val CatalogConfigKey = "catalog"
 }
 
 trait CoreConfig extends Logging {
 
   import CoreConfig._
+
+  val logger: Logger
 
   val config: Config = {
 

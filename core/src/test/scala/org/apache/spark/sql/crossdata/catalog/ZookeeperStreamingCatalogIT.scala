@@ -78,7 +78,6 @@ class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConsta
     val streamCatalog = xdContext.streamingCatalog.get
 
     streamCatalog.getEphemeralTable("stronker").isEmpty shouldBe true
-    streamCatalog.getAllEphemeralTables.isEmpty shouldBe true
   }
 
   it should "fail when dropping a ephemeral table which does not exist" in {

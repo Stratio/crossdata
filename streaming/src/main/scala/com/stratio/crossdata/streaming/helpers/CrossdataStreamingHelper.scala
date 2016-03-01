@@ -21,18 +21,16 @@ import com.github.nscala_time.time.Imports._
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.streaming.constants.KafkaConstants._
 import com.stratio.crossdata.streaming.kafka.{KafkaInput, KafkaProducer}
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.XDContext._
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 
-import scala.collection.JavaConversions._
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 object CrossdataStreamingHelper extends SparkLoggerComponent {
 
@@ -65,9 +63,11 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
   }
 
   private def parseZookeeperCatalogConfig(zookeeperConf: Map[String, String]): Option[Config] = {
-    val zookeeperCatalogConfig = Map(CatalogClassConfigKey -> ZookeeperClass) ++
+    // TODO read common config
+    /*val zookeeperCatalogConfig = Map(CatalogClassConfigKey -> ZookeeperClass) ++
       zookeeperConf.map { case (key, value) => s"$CatalogConfigKey.$key" -> value }
-    Try(ConfigFactory.parseMap(zookeeperCatalogConfig)).toOption
+    Try(ConfigFactory.parseMap(zookeeperCatalogConfig)).toOption*/
+    None
   }
 
   private def executeQuery(rdd: RDD[(Long, String)],
@@ -96,9 +96,17 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
           case EphemeralOutputFormat.JSON => saveToKafkaInJSONFormat(dataFrame, topic, kafkaOptionsMerged)
           case _ => saveToKafkaInRowFormat(dataFrame, topic, kafkaOptionsMerged)
         }
-      }.getOrElse {
-        logger.warn(s"There are problems executing the ephemeral query: $query \n with Schema: ${df.printSchema()} \n" +
-          s" and the first row is: ${df.show(1)}")
+      } match {
+        case Failure(throwable) =>
+          logger.warn(
+            s"""|There are problems executing the ephemeral query: $query
+                |with Schema: ${df.printSchema()}
+                |and the first row is: ${df.show(1)}
+                |Exception message: ${throwable.getMessage}
+                |Exception stackTrace: ${throwable.getStackTraceString}
+           """.stripMargin
+          )
+        case _ =>
       }
       xdContext.dropTempTable(sqlTableName)
     }

@@ -40,6 +40,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   val tables = new mutable.HashMap[String, LogicalPlan]()
 
+
   override def tableExists(tableIdentifier: Seq[String]): Boolean = {
     val tableIdent = processTableIdentifier(tableIdentifier)
     if (tables.get(getDbTableName(tableIdent)).isDefined) {
@@ -89,25 +90,25 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
           val table: LogicalPlan = createLogicalRelation(crossdataTable)
           registerTable(tableIdent, table)
           processAlias(tableIdent, table, alias)
+
         case None =>
           log.debug(s"Table Not Found: ${tableIdent.mkString(".")}")
-
           lookupView(table, database) match {
             case Some(sqlView) =>
               val viewPlan: LogicalPlan = xdContext.sql(sqlView).logicalPlan
               registerView(tableIdent, viewPlan)
               processAlias(tableIdent, viewPlan, alias)
+
             case None =>
               log.debug(s"View Not Found: ${tableIdent.mkString(".")}")
-                xdContext.streamingCatalog match {
-                  // TODO PoC => handle exceptions => force schema
-                  // TODO We should replace tableIdent.mkString with TableIdentifier
-                  case Some(streamingCatalog) if streamingCatalog.existsEphemeralTable(tableIdent.mkString(".")) =>
-                    StreamingRelation(tableIdent.mkString("."))
-                  case _ =>
-                    sys.error(s"Table/View Not Found: ${tableIdent.mkString(".")}")
-                }
-
+              xdContext.streamingCatalog match {
+                // TODO PoC => handle exceptions
+                // TODO We should replace tableIdent.mkString with TableIdentifier
+                case Some(streamingCatalog) if streamingCatalog.existsEphemeralTable(tableIdent.mkString(".")) =>
+                  StreamingRelation(tableIdent.mkString("."))
+                case _ =>
+                  sys.error(s"Table/View Not Found: ${tableIdent.mkString(".")}")
+              }
           }
       }
     }
@@ -140,6 +141,8 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     val tableIdent = processTableIdentifier(tableIdentifier)
     tables remove getDbTableName(tableIdent)
   }
+
+
 
   override def unregisterAllTables(): Unit =
     tables.clear()
@@ -200,6 +203,18 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     dropAllPersistedTables()
   }
 
+  final def dropView(viewIdentifier: Seq[String]): Unit = {
+    logInfo(s"XDCatalog: Deleting table ${viewIdentifier.mkString(".")}from catalog")
+    val (view, catalog) = tableIdToTuple(viewIdentifier)
+    unregisterTable(viewIdentifier)
+    dropPersistedView(view, catalog)
+  }
+
+  final def dropAllViews(): Unit = {
+    logInfo("XDCatalog: Drop all tables from catalog")
+    dropAllPersistedViews()
+  }
+
 
   def registerView(tableIdentifier: Seq[String], plan: LogicalPlan) =
     registerTable(tableIdentifier, plan)
@@ -217,11 +232,15 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit
 
   /**
-   * Drop table if exists.
+   * Drop table(s)/view(s) if exists.
    */
   protected def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit
 
   protected def dropAllPersistedTables(): Unit
+
+  protected def dropPersistedView(viewName:String, databaseName: Option[String]): Unit
+
+  protected def dropAllPersistedViews(): Unit
 
 }
 

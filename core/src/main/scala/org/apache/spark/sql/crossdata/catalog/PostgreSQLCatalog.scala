@@ -34,6 +34,7 @@ object PostgreSQLCatalog {
   val Url = "jdbc.url"
   val Database = "jdbc.db.name"
   val Table = "jdbc.db.table"
+  val TableWithViewMetadata = "jdbc.db.view"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
   // CatalogFields
@@ -44,6 +45,8 @@ object PostgreSQLCatalog {
   val PartitionColumnField = "partitionColumn"
   val OptionsField = "options"
   val CrossdataVersionField = "crossdataVersion"
+  val SqlViewField = "sqlView"
+
 }
 
 /**
@@ -58,10 +61,11 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
   import PostgreSQLCatalog._
   import XDCatalog._
 
-  private val config = xdContext.catalogConfig
+  private val config = XDContext.catalogConfig
 
   private val db = config.getString(Database)
   private val table = config.getString(Table)
+  private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
 
   lazy val connection: Connection = {
 
@@ -86,6 +90,14 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
           |$PartitionColumnField TEXT,
           |$OptionsField TEXT,
           |$CrossdataVersionField TEXT,
+          |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+
+    jdbcConnection.createStatement().executeUpdate(
+      s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
+          |$DatabaseField VARCHAR(50),
+          |$TableNameField VARCHAR(50),
+          |$SqlViewField TEXT,
+          |$CrossdataVersionField VARCHAR(30),
           |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
     jdbcConnection
@@ -196,7 +208,64 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     result.isBeforeFirst
   }
 
-  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = ???
+  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = {
+    val resultSet = selectMetadata(tableWithViewMetadata, TableIdentifier(tableName, databaseName))
+    if (!resultSet.isBeforeFirst) {
+      None
+    } else {
+      resultSet.next()
+      Option(resultSet.getString(SqlViewField))
+    }
+  }
 
-  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = ???
+  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = {
+    try {
+      connection.setAutoCommit(false)
+      val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
+
+      if (!resultSet.isBeforeFirst) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $db.$tableWithViewMetadata (
+              | $DatabaseField, $TableNameField, $SqlViewField, $CrossdataVersionField
+              |) VALUES (?,?,?,?)
+       """.stripMargin)
+        prepped.setString(1, tableIdentifier.database.getOrElse(""))
+        prepped.setString(2, tableIdentifier.table)
+        prepped.setString(3, sqlText)
+        prepped.setString(4, CrossdataVersion)
+        prepped.execute()
+      } else {
+        val prepped =
+          connection.prepareStatement(
+            s"""|UPDATE $db.$tableWithViewMetadata SET $SqlViewField=?
+                |WHERE $DatabaseField='${tableIdentifier.database.getOrElse("")}' AND $TableNameField='${tableIdentifier.table}'
+             """.stripMargin.replaceAll("\n", " "))
+
+        prepped.setString(1, sqlText)
+        prepped.execute()
+      }
+      connection.commit()
+
+    } finally {
+      connection.setAutoCommit(true)
+    }
+  }
+
+  private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
+
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
+    preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
+    preparedStatement.setString(2, tableIdentifier.table)
+    preparedStatement.executeQuery()
+
+  }
+
+  override protected def dropPersistedView(viewName: String, databaseName: Option[String]): Unit = {
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='$viewName' AND db='${databaseName.getOrElse("")}'")
+  }
+
+  override protected def dropAllPersistedViews(): Unit = {
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
+  }
 }

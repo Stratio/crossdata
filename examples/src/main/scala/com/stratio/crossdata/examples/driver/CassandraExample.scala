@@ -13,47 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.examples
+package com.stratio.crossdata.examples.driver
 
 import java.util
 
-import com.datastax.driver.core.{Session, Cluster}
 import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.driver.Driver
+import com.stratio.crossdata.examples.cassandra._
 
+/**
+ * Driver example - Cassandra
+ */
+object CassandraExample extends App with CassandraDefaultConstants {
 
-sealed trait DefaultConstants {
-  val ClusterName = "Test Cluster"
-  val Catalog = "highschool"
-  val Table = "students"
-  val CassandraHost = "127.0.0.1"
-  val SourceProvider = "cassandra"
-  // Cassandra provider => org.apache.spark.sql.cassandra
-}
+  val (cluster, session) = prepareEnvironment()
 
-object DriverExample extends App with DefaultConstants {
-
-  val (cluster, session) = CassandraExample.prepareEnvironment()
-
-  var host: java.util.List[String] = new util.ArrayList[String]()
-  host.add("127.0.0.1:13420")
-  val driver = Driver(host)
+  val driver = {
+    val host: java.util.List[String] = new util.ArrayList[String]()
+    host.add("127.0.0.1:13420")
+    Driver.getOrCreate(host)
+  }
 
   val importQuery =
     s"""
        |IMPORT TABLES
-       |USING com.stratio.crossdata.connector.cassandra
+       |USING $SourceProvider
        |OPTIONS (
        | cluster "$ClusterName",
        | spark_cassandra_connection_host '$CassandraHost'
        |)
       """.stripMargin
 
-  driver.syncQuery(SQLCommand(importQuery))
+  try{
+    // Import tables from Cassandra cluster
+    driver.syncQuery(SQLCommand(importQuery))
+    // List tables
+    driver.listTables().foreach(println(_))
+    // SQL
+    driver.syncQuery(SQLCommand(s"SELECT * FROM $Catalog.$Table")).resultSet.foreach(println)
 
-  driver.listTables().foreach(println(_))
+  } finally {
+    driver.close()
+    cleanEnvironment(cluster, session)
+  }
 
-    driver.syncQuery(SQLCommand(s"SELECT * FROM $Catalog.$Table")).resultSet.foreach(println(_))
-
-  CassandraExample.cleanEnvironment(cluster, session)
 }
