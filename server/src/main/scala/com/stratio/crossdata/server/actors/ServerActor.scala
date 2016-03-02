@@ -24,7 +24,7 @@ import akka.cluster.Cluster
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, SubscribeAck, Subscribe}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common._
-import com.stratio.crossdata.server.actors.JobActor.Commands.CancelJob
+import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.actors.ServerActor.ManagementMessages.DelegateCommand
 import com.stratio.crossdata.server.config.ServerConfig
@@ -85,6 +85,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
     case SecureCommand(sqlCommand @ SQLCommand(query, queryId, withColnames, timeout), session @ Session(id, requester)) =>
       logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
       val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
+      jobActor ! StartJob
       context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
 
     case SecureCommand(cc @ CancelQueryExecution(queryId), session @ Session(id, requester)) =>
