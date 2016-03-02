@@ -83,7 +83,8 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
     */
   private def executeAccepted(cmd: SecureCommand)(st: State): Unit = cmd match{
     case SecureCommand(sqlCommand @ SQLCommand(query, queryId, withColnames, timeout), session @ Session(id, requester)) =>
-      logger.debug(s"Query received ${sqlCommand.queryId}: ${sqlCommand.query}. Actor ${self.path.toStringWithoutAddress}")
+      logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
+      logger.debug(s"Session identifier $session")
       val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
       jobActor ! StartJob
       context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
@@ -130,7 +131,6 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   //TODO: Use number of tries and timeout configuration parameters
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {
-    //case _: ActorKilledException => Stop  //In the future it might be interesting to add the
     case _ => Restart //Crashed job gets restarted (or not, depending on `retryNoAttempts` and `retryCountWindow`)
   }
 
