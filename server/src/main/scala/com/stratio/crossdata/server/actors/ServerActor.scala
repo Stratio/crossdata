@@ -26,10 +26,11 @@ import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
-import com.stratio.crossdata.server.actors.ServerActor.ManagementMessages.DelegateCommand
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
+
+import scala.concurrent.duration.FiniteDuration
 
 
 object ServerActor {
@@ -42,8 +43,9 @@ object ServerActor {
 
   protected case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
 
-  object ManagementMessages {
+  private object ManagementMessages {
     case class DelegateCommand(scommand: SecureCommand, broadcaster: ActorRef)
+    case class FinishJob(jobActor: ActorRef)
   }
 
   case class State(jobsById: Map[JobId, ActorRef])
@@ -53,8 +55,7 @@ object ServerActor {
 class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with ServerConfig {
 
   import ServerActor._
-
-
+  import ServerActor.ManagementMessages._
 
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
@@ -62,8 +63,10 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   override def preStart(): Unit = {
     super.preStart()
+
     // Subscribe to the management distributed topic
     mediator ! Subscribe(managementTopic, self)
+
   }
 
   // Actor behaviours
@@ -81,7 +84,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
     * @param cmd
     * @param st
     */
-  private def executeAccepted(cmd: SecureCommand)(st: State): Unit = cmd match{
+  private def executeAccepted(cmd: SecureCommand)(st: State): Unit = cmd match {
     case SecureCommand(sqlCommand @ SQLCommand(query, queryId, withColnames, timeout), session @ Session(id, requester)) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
@@ -93,6 +96,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
   }
 
+  // TODO: Split `ready` in other specific receive generators and compose them in `ready` using `orElse`
   private def ready(st: State): Receive = {
 
     // Broadcast requests
@@ -109,25 +113,39 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
     // Check and accept/discard commands
 
-    case sc @ SecureCommand(cc @ CancelQueryExecution(queryId), session @ Session(id, requester)) =>
-      st.jobsById.get(JobId(requester, queryId)) map { _ =>
+    case sc @ SecureCommand(_: SQLCommand, _) => executeAccepted(sc)(st)
+
+    case sc @ SecureCommand(cc: ControlCommand, session @ Session(id, requester)) =>
+      st.jobsById.get(JobId(requester, cc.queryId)) map { _ =>
         executeAccepted(sc)(st) // Command validated to be executed by this server.
       } getOrElse {
         // If it can't run here it should be executed somewhere else
         mediator ! Publish(managementTopic, DelegateCommand(sc, self))
       }
 
-    case sc @ SecureCommand(_: SQLCommand, _) => executeAccepted(sc)(st)
-
     // Events
 
     case JobFailed(e) =>
       logger.error(e.getMessage)
+      sentenceToDeath(sender())
     case JobCompleted =>
-      context.stop(sender()) //TODO: This could be changed so done works could be inquired about their state
+      sentenceToDeath(sender())
+
+    case FinishJob(who) =>
+      context.become(ready(st.copy(jobsById = st.jobsById.filterNot(_._2 == who))))
+      context.stop(who)
+
     case any =>
       logger.error(s"Something is going wrong! Unknown message: $any")
+
   }
+
+  private def sentenceToDeath(victim: ActorRef): Unit = completedJobTTL match {
+    case finite: FiniteDuration =>
+      context.system.scheduler.scheduleOnce(finite, self, FinishJob(victim))(context.dispatcher)
+    case _ =>
+  }
+
 
   //TODO: Use number of tries and timeout configuration parameters
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {

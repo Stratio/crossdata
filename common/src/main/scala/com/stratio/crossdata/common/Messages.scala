@@ -48,8 +48,11 @@ case class SQLCommand(
 
 }
 
-trait ControlCommand extends Command
+trait ControlCommand extends Command {
+  val queryId: UUID
+}
 case class CancelQueryExecution(queryId: UUID) extends ControlCommand
+case class GetJobStatus(queryId: UUID) extends ControlCommand
 
 case class SecureCommand(cmd: Command, session: Session)
 
