@@ -18,15 +18,16 @@ package com.stratio.crossdata.driver
 import java.util
 import java.util.concurrent.atomic.AtomicReference
 
-import akka.actor.{PoisonPill, ActorSystem}
+import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.common.{Command, AddJARCommand, SQLCommand, SQLResult}
+import com.stratio.crossdata.common.{Command, SQLCommand, SQLResult, SecureSQLCommand}
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.config.DriverConfig.{DriverConfigHosts, DriverRetryDuration, DriverRetryTimes}
 import com.stratio.crossdata.driver.metadata.FieldMetadata
+import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import com.typesafe.config.{ConfigValue, ConfigValueFactory}
 import org.apache.log4j.Logger
@@ -35,8 +36,8 @@ import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
 import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Try
 
@@ -66,7 +67,16 @@ object Driver extends DriverConfig {
   def getOrCreate(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean): Driver = {
     DRIVER_CONSTRUCTOR_LOCK.synchronized {
       if(activeDriver.get() == null) {
-        setActiveDriver(new Driver(properties, flattenTables))
+        setActiveDriver(new Driver(properties, Driver.generateDefaultAuth, flattenTables))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(properties: java.util.Map[String, ConfigValue], auth: Authentication, flattenTables: Boolean): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(new Driver(properties, auth, flattenTables))
       }
       activeDriver.get()
     }
@@ -78,6 +88,19 @@ object Driver extends DriverConfig {
         setActiveDriver(
           getOrCreate(
             Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(seedNodes)),
+            flattenTables))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(seedNodes: java.util.List[String], auth: Authentication, flattenTables: Boolean): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(seedNodes)),
+            auth,
             flattenTables))
       }
       activeDriver.get()
@@ -96,6 +119,19 @@ object Driver extends DriverConfig {
     }
   }
 
+  def getOrCreate(auth: Authentication, flattenTables: Boolean): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            new util.HashMap[String, ConfigValue](),
+            auth,
+            flattenTables))
+      }
+      activeDriver.get()
+    }
+  }
+
   def getOrCreate(seedNodes: java.util.List[String]): Driver = {
     DRIVER_CONSTRUCTOR_LOCK.synchronized {
       if(activeDriver.get() == null) {
@@ -108,12 +144,51 @@ object Driver extends DriverConfig {
     }
   }
 
+  def getOrCreate(seedNodes: java.util.List[String], auth: Authentication): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(seedNodes)),
+            auth,
+            false))
+      }
+      activeDriver.get()
+    }
+  }
+
   def getOrCreate(properties: java.util.Map[String, ConfigValue]): Driver = {
     DRIVER_CONSTRUCTOR_LOCK.synchronized {
       if(activeDriver.get() == null) {
         setActiveDriver(
           getOrCreate(
             properties,
+            false))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(properties: java.util.Map[String, ConfigValue], auth: Authentication): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            properties,
+            auth,
+            false))
+      }
+      activeDriver.get()
+    }
+  }
+
+  def getOrCreate(auth: Authentication): Driver = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if(activeDriver.get() == null) {
+        setActiveDriver(
+          getOrCreate(
+            new util.HashMap[String, ConfigValue](),
+            auth,
             false))
       }
       activeDriver.get()
@@ -134,23 +209,51 @@ object Driver extends DriverConfig {
 
   lazy val defaultTimeout = Timeout(config .getDuration(DriverRetryDuration, MILLISECONDS), MILLISECONDS)
   lazy val defaultRetries = config.getInt(DriverRetryTimes)
+
+  def generateDefaultAuth = new Authentication("crossdata", "stratio")
+
 }
 
-class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean) {
+/*
+ * ======================================== NOTE ========================================
+ * Take into account that every time the interface of this class is modified or expanded,
+ * the JavaDriver.scala has to be updated according to those changes.
+ * =======================================================================================
+ */
 
-  def this(serverHosts: java.util.List[String], flattenTables: Boolean) =
-    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)), flattenTables)
+class Driver(properties: java.util.Map[String, ConfigValue] = Map.empty[String, ConfigValue],
+             auth: Authentication = Driver.generateDefaultAuth,
+             flattenTables: Boolean = false) {
 
-  def this(properties: java.util.Map[String, ConfigValue]) = this(properties, false)
+  def this(serverHosts: java.util.List[String], auth: Authentication, flattenTables: Boolean) = this(
+    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
+    auth,
+    flattenTables)
 
-  def this(serverHosts: java.util.List[String]) =
-    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)), false)
+  def this(properties: java.util.Map[String, ConfigValue]) = this(properties, Driver.generateDefaultAuth, false)
 
-  def this(flattenTables: Boolean) = this(Map.empty[String, ConfigValue], flattenTables)
+  def this(serverHosts: java.util.List[String], auth: Authentication) = this(
+    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
+    auth,
+    false)
 
-  def this() = this(false)
+  def this(serverHosts: java.util.List[String], flattenTables: Boolean) = this(
+    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
+    Driver.generateDefaultAuth,
+    flattenTables)
+
+  def this(serverHosts: java.util.List[String]) = this(
+    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
+    Driver.generateDefaultAuth,
+    false)
 
   import Driver._
+
+  val driverSession = SessionManager.createSession(auth)
+
+  def securitizeCommand(command: Command): SecureSQLCommand = {
+    new SecureSQLCommand(command, driverSession)
+  }
 
   /**
     * Tuple (tableName, Optional(databaseName))
@@ -225,7 +328,10 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
   def asyncQuery(command: Command,
                  timeout: Timeout = defaultTimeout,
                  retries: Int = defaultRetries): Future[SQLResult] = {
-    RetryPolitics.askRetry(proxyActor, command, timeout, retries)
+
+    val secureSQLCommand = securitizeCommand(command)
+    RetryPolitics.askRetry(proxyActor, secureSQLCommand, timeout, retries)
+
   }
 
 

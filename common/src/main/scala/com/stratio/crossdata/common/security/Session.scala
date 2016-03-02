@@ -13,17 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.test
+package com.stratio.crossdata.common.security
 
-import org.scalatest.concurrent.TimeLimitedTests
-import org.scalatest.time.SpanSugar._
-import org.scalatest.{FlatSpec, Matchers}
-
-/**
- * Base class for both unit and integration tests
- */
-abstract class BaseXDTest extends FlatSpec with Matchers with TimeLimitedTests {
-
-  val timeLimit = 2 minutes
-
-}
+case class Session(id: String)

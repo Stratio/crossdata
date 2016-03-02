@@ -18,33 +18,67 @@ package com.stratio.crossdata.driver
 import akka.util.Timeout
 import com.stratio.crossdata.common.{AddJARCommand, SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.config.DriverConfig.DriverConfigHosts
-import com.stratio.crossdata.driver.metadata.FieldMetadata
-import com.stratio.crossdata.driver.metadata.JavaTableName
-import com.typesafe.config.ConfigValue
-import com.typesafe.config.ConfigValueFactory
+import com.stratio.crossdata.driver.metadata.{FieldMetadata, JavaTableName}
+import com.stratio.crossdata.driver.session.Authentication
+import com.typesafe.config.{ConfigValue, ConfigValueFactory}
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
 
 
-class JavaDriver(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean=false) {
+class JavaDriver(properties: java.util.Map[String, ConfigValue],
+                 auth: Authentication,
+                 flattenTables: Boolean) {
 
-  def this(serverHosts: java.util.List[String], flattenTables: Boolean) =
-    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),flattenTables)
+  def this(serverHosts: java.util.List[String], auth: Authentication, flattenTables: Boolean) = this(
+    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
+    auth,
+    flattenTables)
 
-  def this(serverHosts: java.util.List[String]) =
-    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)), false)
+  def this(properties: java.util.Map[String, ConfigValue], auth: Authentication) = this(
+    properties,
+    auth,
+    false)
 
-  def this(properties: java.util.Map[String, ConfigValue]) =
-    this(properties, false)
+  def this(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean) = this(
+    properties,
+    Driver.generateDefaultAuth,
+    flattenTables)
 
-  def this(flattenTables: Boolean) = this(Map.empty[String, ConfigValue],flattenTables)
+  def this(serverHosts: java.util.List[String], auth: Authentication) = this(
+    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
+    auth,
+    false)
 
-  def this() = this (Map.empty[String, ConfigValue])
+  def this(serverHosts: java.util.List[String], flattenTables: Boolean) = this(
+    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
+    Driver.generateDefaultAuth,
+    flattenTables)
+
+  def this(auth: Authentication, flattenTables: Boolean) = this(
+    Map.empty[String, ConfigValue],
+    auth,
+    flattenTables)
+
+  def this(properties: java.util.Map[String, ConfigValue]) = this(
+    properties,
+    Driver.generateDefaultAuth,
+    false)
+
+  def this(serverHosts: java.util.List[String]) = this(
+    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
+    Driver.generateDefaultAuth,
+    false)
+
+  def this(auth: Authentication) = this(auth, false)
+
+  def this(flattenTables: Boolean) = this(Map.empty[String, ConfigValue], flattenTables)
+
+  def this() = this(false)
 
   private lazy val logger = Logger.getLogger(getClass)
 
-  private val scalaDriver = Driver.getOrCreate(properties, flattenTables)
+  private val scalaDriver = Driver.getOrCreate(properties, auth, flattenTables)
 
   /**
    * Sync execution with defaults: timeout 10 sec, nr-retries 2

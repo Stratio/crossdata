@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.test
+package com.stratio.crossdata.driver.session
 
-import org.scalatest.concurrent.TimeLimitedTests
-import org.scalatest.time.SpanSugar._
-import org.scalatest.{FlatSpec, Matchers}
+import java.util.UUID
 
-/**
- * Base class for both unit and integration tests
- */
-abstract class BaseXDTest extends FlatSpec with Matchers with TimeLimitedTests {
+import com.stratio.crossdata.common.security.Session
 
-  val timeLimit = 2 minutes
+object SessionManager {
+
+  def createSession(auth: Authentication): Session = Session(UUID.randomUUID.toString)
 
 }
+
+case class Authentication(user: String, password: String)
+

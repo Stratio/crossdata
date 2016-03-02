@@ -98,6 +98,4 @@ public class XDContextUtils {
         public void clearXDF(){
             df = null;
         }
-
-
 }

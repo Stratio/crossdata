@@ -40,8 +40,10 @@ import cucumber.api.CucumberOptions;
 		"src/test/resources/features/Cassandra/CassandraPureNativeAggregation.feature",
 		"src/test/resources/features/Udaf/Group_concat.feature",
 		"src/test/resources/features/Views/TemporaryViews.feature",
-		"src/test/resources/features/Views/Views.feature"
-})
+		"src/test/resources/features/Views/Views.feature",
+		"src/test/resources/features/Views/DropViews.feature"
+
+		})
 public class ATCassandraXDJavaDriverTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()
 			.getCanonicalName());
