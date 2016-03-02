@@ -22,7 +22,7 @@ import akka.actor.{PoisonPill, ActorSystem}
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.common.{AddJARCommand, SQLCommand, SQLResult}
+import com.stratio.crossdata.common.{Command, AddJARCommand, SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.config.DriverConfig.{DriverConfigHosts, DriverRetryDuration, DriverRetryTimes}
@@ -199,63 +199,33 @@ class Driver(properties: java.util.Map[String, ConfigValue], flattenTables: Bool
   /**
     * Executes a SQL sentence in a synchronous way.
     *
-    * @param sqlCommand The SQL Command.
+    * @param command The SQL Command.
     * @param timeout Timeout in seconds.
     * @param retries Number of retries if the timeout was exceeded
     * @return A list of rows with the result of the query
     */
   // TODO syncQuery and asynQuery should be private when the driver get improved
-  def syncQuery(sqlCommand: SQLCommand,
+  def syncQuery(command: Command,
                 timeout: Timeout = defaultTimeout,
                 retries: Int = defaultRetries): SQLResult = {
     Try {
-      Await.result(asyncQuery(sqlCommand, timeout, retries), timeout.duration * retries)
-    } getOrElse ErrorResult(sqlCommand.commandId, s"Not found answer to query ${sqlCommand.query}. Timeout was exceed.")
+      Await.result(asyncQuery(command, timeout, retries), timeout.duration * retries)
+    } getOrElse ErrorResult(command.commandId, s"Not found answer to query ${command.commandId}. Timeout was exceed.")
   }
 
-  /**
-    * Executes a SQL sentence in a synchronous way.
-    *
-    * @param addJarCommand The add jar Command.
-    * @param timeout Timeout in seconds.
-    * @param retries Number of retries if the timeout was exceeded
-    * @return A list of rows with the result of the query
-    */
-  // TODO syncQuery and asynQuery should be private when the driver get improved
-  def syncQuery(addJarCommand: AddJARCommand,
-                timeout: Timeout = defaultTimeout,
-                retries: Int = defaultRetries): SQLResult = {
-    Try {
-      Await.result(asyncQuery(addJarCommand, timeout, retries), timeout.duration * retries)
-    } getOrElse ErrorResult(addJarCommand.commandId, s"Not found answer to query ${addJarCommand.path}. Timeout was exceed.")
-  }
 
   /**
     * Executes a SQL sentence in an asynchronous way.
     *
-    * @param sqlCommand The SQL Command.
+    * @param command The SQL Command.
     * @param timeout Timeout in seconds.
     * @param retries Number of retries if the timeout was exceeded
     * @return A list of rows with the result of the query
     */
-  def asyncQuery(sqlCommand: SQLCommand,
+  def asyncQuery(command: Command,
                  timeout: Timeout = defaultTimeout,
                  retries: Int = defaultRetries): Future[SQLResult] = {
-    RetryPolitics.askRetry(proxyActor, sqlCommand, timeout, retries)
-  }
-
-  /**
-    * Executes a SQL sentence in an asynchronous way.
-    *
-    * @param addJarCommand The add jar Command.
-    * @param timeout Timeout in seconds.
-    * @param retries Number of retries if the timeout was exceeded
-    * @return A list of rows with the result of the query
-    */
-  def asyncQuery(addJarCommand: AddJARCommand,
-                 timeout: Timeout = defaultTimeout,
-                 retries: Int = defaultRetries): Future[SQLResult] = {
-    RetryPolitics.askRetry(proxyActor, addJarCommand, timeout, retries)
+    RetryPolitics.askRetry(proxyActor, command, timeout, retries)
   }
 
 

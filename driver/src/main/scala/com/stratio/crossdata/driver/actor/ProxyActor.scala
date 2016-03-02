@@ -17,7 +17,7 @@ package com.stratio.crossdata.driver.actor
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
-import com.stratio.crossdata.common.SQLCommand
+import com.stratio.crossdata.common.{AddJARCommand, SQLCommand}
 import com.stratio.crossdata.driver.Driver
 import org.apache.log4j.Logger
 
@@ -36,9 +36,13 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
   lazy val logger = Logger.getLogger(classOf[ProxyActor])
 
   override def receive: Receive = {
-    case sqlCommand@SQLCommand(query, _, _, _) =>
+    case sqlCommand@SQLCommand(query, _, _) =>
       clusterClientActor forward ClusterClient.Send(ProxyActor.ServerPath, sqlCommand, localAffinity = false)
       logger.debug(s"Send query $query")
+
+    case addJarCommand@AddJARCommand(path, _) =>
+      clusterClientActor forward ClusterClient.Send(ProxyActor.ServerPath, addJarCommand, localAffinity = false)
+      logger.debug(s"Send Add Jar command")
 
     case any =>
       logger.info("Unknown message: " + any)

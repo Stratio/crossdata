@@ -31,6 +31,11 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val PRIMARY =Keyword("PRIMARY")
   protected val KEY = Keyword("KEY")
 
+  //TODO Add new Command parser to add a jar
+  protected val ADD =Keyword("ADD")
+  protected val JAR = Keyword("JAR")
+
+
   override protected lazy val ddl: Parser[LogicalPlan] =
     createTable | describeTable | refreshTable | importStart | dropTable | createView | createExternalTable | dropView
 
@@ -73,8 +78,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
 
          CreateExternalTable(tableName, userSpecifiedSchema, provider, options)
     }
-
-
   }
+
+  protected lazy val addJar: Parser[LogicalPlan] =
+    ADD ~> JAR ~> ident ^^ {
+      case jarPath =>
+        AddJar(jarPath)
+    }
 
 }
