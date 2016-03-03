@@ -25,6 +25,7 @@ import com.stratio.crossdata.server.actors.JobActor.Events.{JobFailed, JobComple
 import com.stratio.crossdata.server.actors.JobActor.Task
 
 import com.stratio.common.utils.concurrent.Cancellable
+import org.apache.log4j.Logger
 
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
 
@@ -60,6 +61,11 @@ object JobActor {
 
   case class Task(command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration])
 
+  /**
+    * The [[JobActor]] state is directly given by the running task which can be: None (Idle st) or a Running, Completed,
+    * Cancelled or Failed task.
+    * @param runningTask [[Cancellable]] wrapping a [[scala.concurrent.Future]] which acts as a Spark driver.
+    */
   case class State(runningTask: Option[Cancellable[SuccessfulQueryResult]]) {
     import JobStatus._
     def getStatus: JobStatus = runningTask map { task =>
@@ -86,6 +92,8 @@ class JobActor(
 
   import task._
 
+  lazy val logger = Logger.getLogger(classOf[ServerActor])
+
   override def receive: Receive = receive(State(None))
 
   private def receive(st: State): Receive = {
@@ -93,6 +101,9 @@ class JobActor(
     // Commands
 
     case StartJob if st.getStatus == Idle =>
+
+      logger.debug(s"Starting Job under ${context.parent.path}")
+
       import scala.concurrent.ExecutionContext.Implicits.global
       val runningTask = launchTask
       runningTask.future onComplete {
@@ -108,7 +119,10 @@ class JobActor(
       context.become(receive(st.copy(runningTask = Some(runningTask))))
 
     case CancelJob =>
-      st.runningTask.foreach(_.cancel)
+      st.runningTask.foreach{ tsk =>
+        logger.debug(s"Cancelling ${self.path}'s task ")
+        tsk.cancel
+      }
 
     case GetJobStatus =>
       sender ! st.getStatus
@@ -116,10 +130,12 @@ class JobActor(
     // Events
 
     case event @ JobFailed(e) if sender == self =>
+      logger.debug(s"Task failed at ${self.path}")
       context.parent ! event
       requester ! ErrorResult(command.queryId, e.getMessage, Some(new Exception(e.getMessage)))
       throw e //Let It Crash: It'll be managed by its supervisor
     case JobCompleted if sender == self =>
+      logger.debug(s"Completed or cancelled ${self.path} task")
       context.parent ! JobCompleted
   }
 
