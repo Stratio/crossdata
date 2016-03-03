@@ -16,13 +16,14 @@
 package com.stratio.crossdata.driver
 
 import java.util
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
 import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.common.{SQLCommand, SQLResult, SecureSQLCommand}
+import com.stratio.crossdata.common._
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConfig
 import com.stratio.crossdata.driver.config.DriverConfig.{DriverConfigHosts, DriverRetryDuration, DriverRetryTimes}
@@ -230,10 +231,10 @@ class Driver private(properties: java.util.Map[String, ConfigValue] = Map.empty[
 
   import Driver._
 
-  val driverSession = SessionManager.createSession(auth)
+  lazy val driverSession = SessionManager.createSession(auth, proxyActor)
 
-  def securitizeCommand(command: SQLCommand): SecureSQLCommand = {
-    new SecureSQLCommand(command, driverSession)
+  def securitizeCommand(command: Command): SecureCommand = {
+    new SecureCommand(command, driverSession)
   }
 
   /**
@@ -382,5 +383,8 @@ class Driver private(properties: java.util.Map[String, ConfigValue] = Map.empty[
       throw new RuntimeException(message)
     // TODO manage exceptions
   }
+
+  def cancelQuery(queryId: UUID): Unit = proxyActor ! securitizeCommand(CancelQueryExecution(queryId))
+
 
 }
