@@ -17,11 +17,13 @@ package com.stratio.crossdata.driver.session
 
 import java.util.UUID
 
+import akka.actor.ActorRef
 import com.stratio.crossdata.common.security.Session
 
 object SessionManager {
 
-  def createSession(auth: Authentication): Session = Session(UUID.randomUUID.toString)
+  def createSession(auth: Authentication, clientRef: ActorRef): Session =
+    Session(UUID.randomUUID.toString, clientRef)
 
 }
 

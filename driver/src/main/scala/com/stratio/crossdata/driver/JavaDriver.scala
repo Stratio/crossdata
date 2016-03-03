@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.driver
 
+import java.util.UUID
+
 import akka.util.Timeout
 import com.stratio.crossdata.common.{SQLCommand, SQLResult}
 import com.stratio.crossdata.driver.config.DriverConfig.DriverConfigHosts
@@ -114,6 +116,8 @@ class JavaDriver(properties: java.util.Map[String, ConfigValue],
   def close(): Unit = {
     scalaDriver.close()
   }
+
+  def cancelQuery(queryId: UUID): Unit = scalaDriver.cancelQuery(queryId)
 
 }
 

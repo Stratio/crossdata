@@ -20,6 +20,7 @@ import java.util.UUID
 
 import com.stratio.crossdata.common.security.Session
 import org.apache.spark.sql.Row
+
 import scala.concurrent.duration.FiniteDuration
 
 trait Command
@@ -47,7 +48,13 @@ case class SQLCommand(
 
 }
 
-case class SecureSQLCommand(cmd: Command, session: Session)
+trait ControlCommand extends Command {
+  val queryId: UUID
+}
+case class CancelQueryExecution(queryId: UUID) extends ControlCommand
+case class GetJobStatus(queryId: UUID) extends ControlCommand
+
+case class SecureCommand(cmd: Command, session: Session)
 
 trait Result extends Serializable {
   val queryId: UUID
