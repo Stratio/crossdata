@@ -22,11 +22,13 @@ import akka.contrib.pattern.DistributedPubSubExtension
 import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
+
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, SubscribeAck, Subscribe}
 import akka.remote.DisassociatedEvent
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob}
+import com.stratio.crossdata.common.{SecureCommand, SQLCommand}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
@@ -90,7 +92,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
     * @param st
     */
   private def executeAccepted(cmd: SecureCommand)(st: State): Unit = cmd match {
-    case SecureCommand(sqlCommand @ SQLCommand(query, queryId, withColnames, timeout), session @ Session(id, requester)) =>
+    case SecureCommand(sqlCommand @ SQLCommand(query, requestId, queryId, withColnames, timeout), session @ Session(id, requester)) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
       val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
@@ -105,9 +107,9 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   // Broadcast messages treatment
   def broadcastRequestsRec(st: State): Receive = {
-    case DelegateCommand(_, broadcaster) if(broadcaster == self) => //Discards from this server broadcast delegated-commands
+    case DelegateCommand(_, broadcaster) if broadcaster == self => //Discards from this server broadcast delegated-commands
 
-    case DelegateCommand(cmd, broadcaster) if(broadcaster != self) =>
+    case DelegateCommand(cmd, broadcaster) if broadcaster != self =>
       cmd match { // Inner pattern matching for future delegated command validations
         case sc @ SecureCommand(CancelQueryExecution(queryId), Session(_, requester)) =>
           st.jobsById.get(JobId(requester, queryId)) foreach(_ => executeAccepted(sc)(st))
@@ -122,7 +124,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
     case sc @ SecureCommand(_: SQLCommand, _) => executeAccepted(sc)(st)
 
     case sc @ SecureCommand(cc: ControlCommand, session @ Session(id, requester)) =>
-      st.jobsById.get(JobId(requester, cc.queryId)) map { _ =>
+      st.jobsById.get(JobId(requester, cc.requestId)) map { _ =>
         executeAccepted(sc)(st) // Command validated to be executed by this server.
       } getOrElse {
         // If it can't run here it should be executed somewhere else

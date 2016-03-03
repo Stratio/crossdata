@@ -17,10 +17,10 @@ package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
-import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.driver.metadata.JavaTableName
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+
 import scala.collection.JavaConversions._
 
 @RunWith(classOf[JUnitRunner])
@@ -32,11 +32,11 @@ class JavaDriverIT extends EndToEndTest{
     assumeCrossdataUpAndRunning()
     val javadriver = new JavaDriver()
 
-    javadriver.syncQuery(
-      SQLCommand(s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    javadriver.sql(
+      s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
     )
-    javadriver.syncQuery(
-      SQLCommand(s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    javadriver.sql(
+      s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
     )
 
     javadriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
@@ -48,11 +48,11 @@ class JavaDriverIT extends EndToEndTest{
     assumeCrossdataUpAndRunning()
     val javaDriver = new JavaDriver(List("127.0.0.1:13420"), false)
 
-    javaDriver.syncQuery(
-      SQLCommand(s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    javaDriver.sql(
+      s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
     )
-    javaDriver.syncQuery(
-      SQLCommand(s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')")
+    javaDriver.sql(
+      s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
     )
 
     javaDriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))

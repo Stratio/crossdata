@@ -18,50 +18,53 @@ package com.stratio.crossdata.common
 
 import java.util.UUID
 
+import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.common.security.Session
-import org.apache.spark.sql.Row
 
 import scala.concurrent.duration.FiniteDuration
 
-trait Command
+// Driver -> Server messages
+private[crossdata] trait Command {
+  def requestId: UUID
+}
 
-case class SQLCommand(
-                       query: String,
-                       queryId: UUID = UUID.randomUUID(),
-                       retrieveColumnNames: Boolean = false,
-                       timeout: Option[FiniteDuration] = None
-                     ) extends Command {
+private[crossdata] case class SQLCommand private(sql: String,
+                                                 requestId: UUID = UUID.randomUUID(),
+                                                 queryId: UUID = UUID.randomUUID(),
+                                                 retrieveColumnNames: Boolean = false,
+                                                 timeout: Option[FiniteDuration] = None
+                                                  ) extends Command {
 
-  def this(
-            query: String,
-            queryId: UUID,
-            retrieveColumnNames: Boolean,
-            timeout: FiniteDuration
-          ) = this(query, queryId, retrieveColumnNames, Option(timeout))
+  def this( query: String,
+            retrieveColNames: Boolean,
+            timeoutDuration: FiniteDuration
+          ) = this(sql = query, retrieveColumnNames = retrieveColNames, timeout = Option(timeoutDuration))
 
-  def this(
-            query: String,
-            queryId: UUID,
-            retrieveColumnNames: Boolean
-          ) = this(query, queryId, retrieveColumnNames, None)
-
+  def this( query: String,
+            retrieveColNames: Boolean
+          ) = this(sql = query, retrieveColumnNames = retrieveColNames, timeout = None)
 
 }
+
 
 trait ControlCommand extends Command {
-  val queryId: UUID
+  val requestId: UUID
 }
-case class CancelQueryExecution(queryId: UUID) extends ControlCommand
-case class GetJobStatus(queryId: UUID) extends ControlCommand
+private[crossdata] case class CancelQueryExecution(requestId: UUID) extends ControlCommand
+private[crossdata] case class GetJobStatus(requestId: UUID) extends ControlCommand
 
-case class SecureCommand(cmd: Command, session: Session)
+private[crossdata] case class CancelCommand(requestId: UUID) extends Command
 
-trait Result extends Serializable {
-  val queryId: UUID
-  def hasError: Boolean
+private[crossdata] case class SecureCommand(cmd: Command, session: Session)
+
+
+// Server -> Driver messages
+private[crossdata] trait ServerAnswer {
+  def requestId: UUID
 }
 
-trait SQLResult extends Result {
-  def resultSet: Array[Row]
-}
+private[crossdata] case class QueryCancelledAnswer(requestId: UUID) extends ServerAnswer
+
+private[crossdata] case class SQLAnswer(requestId: UUID, sqlResult: SQLResult)  extends ServerAnswer
+
 

@@ -15,10 +15,10 @@
  */
 package com.stratio.crossdata.driver
 
-import java.util.UUID
 
-import akka.util.Timeout
-import com.stratio.crossdata.common.{SQLCommand, SQLResult}
+import java.util.UUID
+import com.stratio.crossdata.common.result.SQLResult
+
 import com.stratio.crossdata.driver.config.DriverConfig.DriverConfigHosts
 import com.stratio.crossdata.driver.metadata.{FieldMetadata, JavaTableName}
 import com.stratio.crossdata.driver.session.Authentication
@@ -26,7 +26,7 @@ import com.typesafe.config.{ConfigValue, ConfigValueFactory}
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
-
+import scala.concurrent.duration.Duration
 
 class JavaDriver(properties: java.util.Map[String, ConfigValue],
                  auth: Authentication,
@@ -85,17 +85,11 @@ class JavaDriver(properties: java.util.Map[String, ConfigValue],
   /**
    * Sync execution with defaults: timeout 10 sec, nr-retries 2
    */
-  def syncQuery(sqlCommand: SQLCommand): SQLResult = {
-    scalaDriver.syncQuery(sqlCommand)
-  }
+  def sql(sqlText: String): SQLResult =
+    scalaDriver.sql(sqlText).waitForResult()
 
-  def syncQuery(sqlCommand: SQLCommand, timeout: Timeout, retries: Int): SQLResult = {
-    scalaDriver.syncQuery(sqlCommand, timeout, retries)
-  }
-
-  def listDatabases(): java.util.List[String] = {
-    scalaDriver.listDatabases()
-  }
+  def sql(sqlText: String, timeoutDuration: Duration): SQLResult =
+    scalaDriver.sql(sqlText).waitForResult(timeoutDuration)
 
   def listTables(): java.util.List[JavaTableName] = {
     scalaDriver.listTables(None).map { case (table, database) => new JavaTableName(table, database.getOrElse("")) }
@@ -113,11 +107,12 @@ class JavaDriver(properties: java.util.Map[String, ConfigValue],
     scalaDriver.describeTable(None, tableName)
   }
 
-  def close(): Unit = {
-    scalaDriver.close()
+  def stop(): Unit = {
+    scalaDriver.stop()
   }
 
-  def cancelQuery(queryId: UUID): Unit = scalaDriver.cancelQuery(queryId)
+  @deprecated("Close will be removed from public API. Use stop instead")
+  def close() = stop()
 
 }
 

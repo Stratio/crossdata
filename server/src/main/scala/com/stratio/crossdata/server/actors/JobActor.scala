@@ -18,9 +18,10 @@ package com.stratio.crossdata.server.actors
 import java.util.concurrent.CancellationException
 
 import akka.actor.{Props, ActorRef, Actor}
-import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+import com.stratio.crossdata.common.{SQLAnswer, SQLCommand}
+import com.stratio.crossdata.common.result.{SQLResult, ErrorSQLResult, SQLResponse, SuccessfulSQLResult}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob, GetJobStatus}
+import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobFailed, JobCompleted}
 import com.stratio.crossdata.server.actors.JobActor.Task
 
@@ -66,7 +67,7 @@ object JobActor {
     * Cancelled or Failed task.
     * @param runningTask [[Cancellable]] wrapping a [[scala.concurrent.Future]] which acts as a Spark driver.
     */
-  case class State(runningTask: Option[Cancellable[SuccessfulQueryResult]]) {
+  case class State(runningTask: Option[Cancellable[SQLAnswer]]) {
     import JobStatus._
     def getStatus: JobStatus = runningTask map { task =>
       task.future.value map {
@@ -96,10 +97,10 @@ class JobActor(
 
   override def receive: Receive = receive(State(None))
 
+
   private def receive(st: State): Receive = {
 
     // Commands
-
     case StartJob if st.getStatus == Idle =>
 
       logger.debug(s"Starting Job under ${context.parent.path}")
@@ -132,23 +133,22 @@ class JobActor(
     case event @ JobFailed(e) if sender == self =>
       logger.debug(s"Task failed at ${self.path}")
       context.parent ! event
-      requester ! ErrorResult(command.queryId, e.getMessage, Some(new Exception(e.getMessage)))
+      requester ! SQLAnswer(command.requestId, ErrorSQLResult(e.getMessage, Some(new Exception(e.getMessage))))
       throw e //Let It Crash: It'll be managed by its supervisor
     case JobCompleted if sender == self =>
       logger.debug(s"Completed or cancelled ${self.path} task")
       context.parent ! JobCompleted
   }
 
-  private def launchTask: Cancellable[SuccessfulQueryResult] = {
+  private def launchTask: Cancellable[SQLAnswer] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     Cancellable {
-      xdContext.sparkContext.setJobGroup(command.queryId.toString, command.query, true)
-      val df = xdContext.sql(command.query)
+      val df = xdContext.sql(command.sql)
       val rows = if (command.retrieveColumnNames)
         df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
       else df.collect()
 
-      SuccessfulQueryResult(command.queryId, rows, df.schema)
+      SQLAnswer(command.queryId, SuccessfulSQLResult(rows, df.schema))
     }
   }
 }
