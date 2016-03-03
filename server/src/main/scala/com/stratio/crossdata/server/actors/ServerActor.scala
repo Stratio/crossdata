@@ -35,12 +35,13 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
   def receive: Receive = {
 
-    case SecureSQLCommand(command @ SQLCommand(query, queryId, withColnames, timeout), session) =>
-     logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
+    case SecureSQLCommand(command @ SQLCommand(query, withColnames, timeout), session) =>
+     logger.debug(s"Query received ${command.commandId}: $query. Actor ${self.path.toStringWithoutAddress}")
      logger.debug(s"Session identifier $session")
      context.actorOf(JobActor.props(xdContext, command, sender(), timeout))
-    case addJarCommand @ AddJARCommand(path, timeout) =>
+    case SecureSQLCommand(addJarCommand @ AddJARCommand(path, timeout),session) =>
       logger.debug(s"Add JAR received ${addJarCommand.commandId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
+      logger.debug(s"Session identifier $session")
       context.actorOf(JobActor.props(xdContext, addJarCommand, sender(), timeout))
     case JobFailed(e) =>
       logger.error(e.getMessage)

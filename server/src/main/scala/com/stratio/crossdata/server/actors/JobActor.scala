@@ -90,7 +90,7 @@ class JobActor(
     Future {
       command match {
         case sqlCommand: SQLCommand => executeSQLCommand(sqlCommand)
-        case addJarCommand: AddJARCommand =>
+        case addJarCommand: AddJARCommand => executeAddJar(addJarCommand)
       }
     } onComplete {
       case Failure(e) =>

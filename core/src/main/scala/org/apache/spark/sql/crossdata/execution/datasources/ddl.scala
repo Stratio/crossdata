@@ -127,7 +127,7 @@ private[crossdata] case class AddJar(jarPath: String)
       sqlContext.sparkContext.addJar(jarPath)
       Seq.empty
     } else {
-      throw new Error("File doesn't exists or is not a hdfs file")
+      sys.error("File doesn't exists or is not a hdfs file")
     }
   }
 }

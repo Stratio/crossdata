@@ -38,11 +38,8 @@ case class SQLCommand(
             query: String,
             retrieveColumnNames: Boolean,
             timeout: FiniteDuration
-<<<<<<< HEAD
             ) = this(query, retrieveColumnNames, Option(timeout))
-=======
-          ) = this(query, queryId, retrieveColumnNames, Option(timeout))
->>>>>>> c75b93fb7377a8523266d442de844d924a05b019
+
 
   def this(
             query: String,
