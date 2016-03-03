@@ -221,31 +221,12 @@ object Driver extends DriverConfig {
  * =======================================================================================
  */
 
-class Driver(properties: java.util.Map[String, ConfigValue] = Map.empty[String, ConfigValue],
+class Driver private(properties: java.util.Map[String, ConfigValue] = Map.empty[String, ConfigValue],
              auth: Authentication = Driver.generateDefaultAuth,
              flattenTables: Boolean = false) {
 
-  def this(serverHosts: java.util.List[String], auth: Authentication, flattenTables: Boolean) = this(
-    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
-    auth,
-    flattenTables)
-
-  def this(properties: java.util.Map[String, ConfigValue]) = this(properties, Driver.generateDefaultAuth, false)
-
-  def this(serverHosts: java.util.List[String], auth: Authentication) = this(
-    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
-    auth,
-    false)
-
-  def this(serverHosts: java.util.List[String], flattenTables: Boolean) = this(
-    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
-    Driver.generateDefaultAuth,
-    flattenTables)
-
-  def this(serverHosts: java.util.List[String]) = this(
-    Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
-    Driver.generateDefaultAuth,
-    false)
+  //Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),
+  //def this(properties: java.util.Map[String, ConfigValue]) = this(properties, Driver.generateDefaultAuth, false)
 
   import Driver._
 
