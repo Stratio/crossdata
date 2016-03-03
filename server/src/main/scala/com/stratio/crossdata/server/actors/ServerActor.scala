@@ -96,22 +96,23 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
   }
 
-  // TODO: Split `ready` in other specific receive generators and compose them in `ready` using `orElse`
-  private def ready(st: State): Receive = {
+  // Receive functions:
 
-    // Broadcast requests
-
+  // Broadcast messages treatment
+  def broadcastRequestsRec(st: State): Receive = {
     case DelegateCommand(_, broadcaster) if(broadcaster == self) => //Discards from this server broadcast delegated-commands
+
     case DelegateCommand(cmd, broadcaster) if(broadcaster != self) =>
       cmd match { // Inner pattern matching for future delegated command validations
         case sc @ SecureCommand(CancelQueryExecution(queryId), Session(_, requester)) =>
           st.jobsById.get(JobId(requester, queryId)) foreach(_ => executeAccepted(sc)(st))
-          /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
-              servers through the topic. */
+        /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
+            servers through the topic. */
       }
+  }
 
-
-    // Check and accept/discard commands
+  // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
+  def commandMessagesRec(st: State): Receive = {
 
     case sc @ SecureCommand(_: SQLCommand, _) => executeAccepted(sc)(st)
 
@@ -123,11 +124,15 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
         mediator ! Publish(managementTopic, DelegateCommand(sc, self))
       }
 
-    // Events
+  }
+
+  // Manages events from the `JobActor` which runs the task
+  def eventsRec(st: State): Receive = {
 
     case JobFailed(e) =>
       logger.error(e.getMessage)
       sentenceToDeath(sender())
+
     case JobCompleted =>
       sentenceToDeath(sender())
 
@@ -135,9 +140,16 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       context.become(ready(st.copy(jobsById = st.jobsById.filterNot(_._2 == who))))
       context.stop(who)
 
+  }
+
+  // Function composition to build the finally applied receive-function
+  private def ready(st: State): Receive =
+    broadcastRequestsRec(st) orElse
+      commandMessagesRec(st) orElse
+      eventsRec(st) orElse {
+
     case any =>
       logger.error(s"Something is going wrong! Unknown message: $any")
-
   }
 
   private def sentenceToDeath(victim: ActorRef): Unit = completedJobTTL match {
