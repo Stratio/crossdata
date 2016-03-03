@@ -84,6 +84,7 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+        <!-- TESTS -->
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-core</artifactId>
@@ -155,6 +156,7 @@
                                                 META-INF/services/org.apache.spark.sql.sources.DataSourceRegister
                                             </resource>
                                         </transformer>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                     </transformers>
 
                                     <filters>
