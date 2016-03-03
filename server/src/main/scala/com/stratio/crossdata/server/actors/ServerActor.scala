@@ -17,11 +17,13 @@ package com.stratio.crossdata.server.actors
 
 import java.util.UUID
 
+import akka.cluster.ClusterEvent.InitialStateAsSnapshot
 import akka.contrib.pattern.DistributedPubSubExtension
 import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, SubscribeAck, Subscribe}
+import akka.remote.DisassociatedEvent
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob}
@@ -66,6 +68,9 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
     // Subscribe to the management distributed topic
     mediator ! Subscribe(managementTopic, self)
+
+    // Subscribe to disassociation events in the cluster
+    cluster.subscribe(self, InitialStateAsSnapshot, classOf[DisassociatedEvent])
 
   }
 
@@ -138,8 +143,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
     case FinishJob(who) =>
       context.become(ready(st.copy(jobsById = st.jobsById.filterNot(_._2 == who))))
-      context.stop(who)
-
+      context.children.find(_ == who).foreach(gracefullyKill)
   }
 
   // Function composition to build the finally applied receive-function
@@ -148,6 +152,22 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       commandMessagesRec(st) orElse
       eventsRec(st) orElse {
 
+    case DisassociatedEvent(_, remoteAddress, _) =>
+      /*
+        Uses `DisassociatedEvent` to get notified of an association loss.
+        An akka association consist on the connection of a JVM to another to build remote connections upon.
+        Thus, the reception of this event message means all remote clients within the addressed jvm are down.
+
+         More info at: http://doc.akka.io/docs/akka/snapshot/scala/remoting.html
+       */
+      val newjobsmap = st.jobsById filter {
+        case (JobId(requester, _), job) if requester.path.address == remoteAddress =>
+          gracefullyKill(job) // WARNING! Side-effect
+          false
+        case _ => true
+      }
+      context.become(ready(st.copy(jobsById = newjobsmap)))
+
     case any =>
       logger.error(s"Something is going wrong! Unknown message: $any")
   }
@@ -155,9 +175,13 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   private def sentenceToDeath(victim: ActorRef): Unit = completedJobTTL match {
     case finite: FiniteDuration =>
       context.system.scheduler.scheduleOnce(finite, self, FinishJob(victim))(context.dispatcher)
-    case _ =>
+    case _ => // Reprieve by infinite limit
   }
 
+  private def gracefullyKill(victim: ActorRef): Unit = {
+    victim ! CancelJob
+    victim ! PoisonPill
+  }
 
   //TODO: Use number of tries and timeout configuration parameters
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {

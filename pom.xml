@@ -79,6 +79,11 @@
             <name>Jose Carlos García Serrano</name>
             <email>jcgarcia at stratio dot com</email>
         </developer>
+        <developer>
+            <id>pfcoperez</id>
+            <name>Pablo Francisco Pérez Hidalgo</name>
+            <email>contact at pablofranciscoperez dot info</email>
+        </developer>
     </developers>
 
     <modules>

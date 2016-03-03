@@ -103,7 +103,6 @@ class JobActor(
         case Failure(reason) => self ! JobFailed(reason) // Job failure
       }
       runningTask.future.value.map(_ => None).getOrElse(timeout) foreach {
-        //import context.dispatcher
         context.system.scheduler.scheduleOnce(_, self, CancelJob)
       }
       context.become(receive(st.copy(runningTask = Some(runningTask))))
