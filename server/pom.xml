@@ -182,7 +182,7 @@
                             <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
                             <assembleDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}
                             </assembleDirectory>
-                            <extraJvmArguments>-Xms512m</extraJvmArguments>
+                            <extraJvmArguments>-Xms2048m -Xmx2048m</extraJvmArguments>
                             <repositoryLayout>flat</repositoryLayout>
                             <generateRepository>true</generateRepository>
                             <licenseHeaderFile>src/main/dist/include/LICENSE</licenseHeaderFile>
