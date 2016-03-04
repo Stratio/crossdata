@@ -66,7 +66,7 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
     driver.syncQuery(SQLCommand(s"START $EphemeralTableName"))
 
     // WARNING: Data could be added to Kafka by using a Kafka console producer
-    // Example: kafka-console-producer.sh --broker-list localhost:9092 --topic <ephemeral-table-name>
+    // Example: kafka-console-producer.sh --broker-list localhost:9092 --topic <input-topic>
     // Input events format: {"id": 1, "msg": "Hello world", "city": "Tolomango"}
 
 

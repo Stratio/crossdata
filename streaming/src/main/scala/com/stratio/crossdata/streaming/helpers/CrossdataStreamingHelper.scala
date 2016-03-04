@@ -21,7 +21,7 @@ import com.github.nscala_time.time.Imports._
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.streaming.constants.KafkaConstants._
 import com.stratio.crossdata.streaming.kafka.{KafkaInput, KafkaProducer}
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.crossdata.XDContext
@@ -37,7 +37,8 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
 
   def createContext(ephemeralTable: EphemeralTableModel,
                     sparkConf: SparkConf,
-                    zookeeperConf: Map[String, String]): StreamingContext = {
+                    zookeeperConf: Map[String, String],
+                    crossdataCatalogConf: Map[String, String]): StreamingContext = {
     val sparkStreamingWindow = ephemeralTable.options.atomicWindow
     val sparkContext = SparkContext.getOrCreate(sparkConf)
     val streamingContext = new StreamingContext(sparkContext, Seconds(sparkStreamingWindow))
@@ -54,7 +55,7 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
 
         if (ephemeralQueries.nonEmpty) {
           ephemeralQueries.foreach(ephemeralQuery =>
-            executeQuery(rdd, ephemeralQuery, ephemeralTable, kafkaOptions, zookeeperConf)
+            executeQuery(rdd, ephemeralQuery, ephemeralTable, kafkaOptions, zookeeperConf, crossdataCatalogConf)
           )
         }
       }
@@ -62,25 +63,23 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     streamingContext
   }
 
-  private def parseZookeeperCatalogConfig(zookeeperConf: Map[String, String]): Option[Config] = {
-    // TODO read common config
-    /*val zookeeperCatalogConfig = Map(CatalogClassConfigKey -> ZookeeperClass) ++
-      zookeeperConf.map { case (key, value) => s"$CatalogConfigKey.$key" -> value }
-    Try(ConfigFactory.parseMap(zookeeperCatalogConfig)).toOption*/
-    None
+  private def parseCatalogConfig(catalogConf: Map[String, String]): Option[Config] = {
+    import collection.JavaConversions._
+    Try(ConfigFactory.parseMap(catalogConf)).toOption
   }
 
   private def executeQuery(rdd: RDD[(Long, String)],
                            ephemeralQuery: EphemeralQueryModel,
                            ephemeralTable: EphemeralTableModel,
                            kafkaOptions: KafkaOptionsModel,
-                           zookeeperConf: Map[String, String]): Unit = {
+                           zookeeperConf: Map[String, String],
+                           catalogConf: Map[String, String]): Unit = {
     val sqlTableName = ephemeralTable.name
     val query = ephemeralQuery.sql
     val kafkaOptionsMerged = kafkaOptions.copy(
       partitionOutput = ephemeralQuery.options.get(PartitionKey).orElse(kafkaOptions.partitionOutput),
       additionalOptions = ephemeralQuery.options)
-    val xdContext = XDContext.getOrCreate(rdd.context, parseZookeeperCatalogConfig(zookeeperConf))
+    val xdContext = XDContext.getOrCreate(rdd.context, parseCatalogConfig(catalogConf))
     // TODO add sampling ratio
     val dfReader = xdContext.read
     val dfReaderWithschema = ephemeralTable.schema.map(dfReader.schema).getOrElse(dfReader)

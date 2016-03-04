@@ -51,7 +51,7 @@ object StreamingConstants {
    * SparkOptions
    */
   // One param for each element map. key = sparkOptions.x -> value = value
-  val ZooKeeperConnectionKey = "catalog.zookeeper.connectionString"
+  val ZooKeeperStreamingCatalogPath = "catalog.zookeeper"
   val SparkHomeKey = "sparkHome"
   val AppJarKey = "appJar"
   val SparkMasterKey = "spark.master"
