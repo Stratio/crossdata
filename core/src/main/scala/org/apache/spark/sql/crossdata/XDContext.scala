@@ -224,7 +224,7 @@ object XDContext extends CoreConfig {
   val CatalogConfigKey = "catalog"
   val StreamingConfigKey = "streaming"
   val ClassConfigKey = "class"
-  val CatalogClassConfigKey : String = s"$CatalogConfigKey.$CatalogClassConfigKey"
+  val CatalogClassConfigKey : String = s"$CatalogConfigKey.$ClassConfigKey"
   val StreamingCatalogClassConfigKey : String = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
 
   private val INSTANTIATION_LOCK = new Object()

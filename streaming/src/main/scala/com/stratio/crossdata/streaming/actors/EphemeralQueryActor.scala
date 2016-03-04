@@ -22,33 +22,34 @@ import com.stratio.crossdata.streaming.constants.ApplicationConstants._
 import org.apache.spark.sql.crossdata.daos.EphemeralQueriesMapDAO
 import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
 
+import scala.util.Try
+
 class EphemeralQueryActor(zookeeperConfiguration: Map[String, String]) extends Actor
 with EphemeralQueriesMapDAO {
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var streamingQueries: List[EphemeralQueryModel] = dao.getAll()
 
-  // TODO remove this
-  //dao.create("crossdataquery", EphemeralQueryModel("ephtable", "select * from ephtable", "qalias"))
-
   import context.become
 
   def receive: Receive = receive(listenerAdded = false)
 
   def receive(listenerAdded: Boolean): Receive = {
-    case GetQueries => doGetQueries()
+    case GetQueries if listenerAdded =>
+      doGetQueries()
     case AddListener if !listenerAdded =>
       doAddListener()
-      become(receive(true))
+      become(receive(listenerAdded = true))
   }
 
   private def doGetQueries(): Unit = {
     sender ! EphemeralQueriesResponse(streamingQueries.toSeq)
   }
 
-  private def doAddListener(): Unit =
+  private def doAddListener(): Unit = {
     repository.addEntityListener(dao.entity, _ => streamingQueries = dao.getAll())
-
+    sender ! ListenerResponse(true)
+  }
 }
 
 object EphemeralQueryActor {
@@ -56,6 +57,8 @@ object EphemeralQueryActor {
   case object GetQueries
 
   case object AddListener
+
+  case class ListenerResponse(added : Boolean)
 
   case class EphemeralQueriesResponse(streamingQueries: Seq[EphemeralQueryModel])
 

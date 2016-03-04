@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.crossdata.streaming.kafka
 
 import java.util.Properties
@@ -32,38 +31,45 @@ object KafkaProducer {
 
   def put(topic: String,
           message: String,
-          options : KafkaOptionsModel,
+          options: KafkaOptionsModel,
           partition: Option[String] = None): Unit = {
+    val keyedMessage = kafkaMessage(topic, message, partition)
 
-    val keyedMessage =
-      partition.fold(new KeyedMessage[String, String](topic, message)) { key =>
-        new KeyedMessage[String, String](topic, key, message)
-      }
-
-    getProducer(options).send(keyedMessage)
+    sendMessage(keyedMessage, options)
   }
 
-  private def getProducer(options: KafkaOptionsModel): Producer[String, String] = {
+  private[streaming] def kafkaMessage(topic: String,
+                                  message: String,
+                                  partition: Option[String]): KeyedMessage[String, String] = {
+    partition.fold(new KeyedMessage[String, String](topic, message)) { key =>
+      new KeyedMessage[String, String](topic, key, message)
+    }
+  }
+
+  private[streaming] def sendMessage(message: KeyedMessage[String, String], options: KafkaOptionsModel): Unit = {
+    getProducer(options).send(message)
+  }
+
+  private[streaming] def getProducer(options: KafkaOptionsModel): Producer[String, String] = {
     KafkaProducer.getInstance(getKey(options.connection), options)
   }
 
-  private def getKey(connection: Seq[ConnectionHostModel]): String =
+  private[streaming] def getKey(connection: Seq[ConnectionHostModel]): String =
     connection.map(_.toString).mkString(".")
 
-  private def getInstance(key: String, options: KafkaOptionsModel): Producer[String, String] =
+  private[streaming] def getInstance(key: String, options: KafkaOptionsModel): Producer[String, String] =
     producers.getOrElse(key, {
       val producer = createProducer(options)
       producers.put(key, producer)
       producer
     })
 
-
-  private def createProducer(options: KafkaOptionsModel): Producer[String, String] = {
+  private[streaming] def createProducer(options: KafkaOptionsModel): Producer[String, String] = {
     val properties = new Properties()
 
     properties.put(BrokerListKey, getBrokerList(options.connection))
     properties.put(SerializerKey, DefaultSerializer)
-    options.additionalOptions.foreach{ case (key, value) =>
+    options.additionalOptions.foreach { case (key, value) =>
       producerProperties.get(key).foreach(kafkaKey => properties.put(kafkaKey, value))
     }
 
@@ -71,11 +77,20 @@ object KafkaProducer {
     new Producer[String, String](producerConfig)
   }
 
-  private def getBrokerList(connection: Seq[ConnectionHostModel],
-                            defaultHost: String = DefaultHost,
-                            defaultPort: String = DefaulProducerPort): String = {
+  private[streaming] def getBrokerList(connection: Seq[ConnectionHostModel],
+                                   defaultHost: String = DefaultHost,
+                                   defaultPort: String = DefaulProducerPort): String = {
     val connectionString = connection.map(c => s"${c.host}:${c.producerPort}").mkString(",")
 
     if (connectionString.isEmpty) s"$defaultHost:$defaultPort" else connectionString
   }
+
+  private[streaming] def deleteProducers(): Unit = {
+    producers.foreach { case (key, producer) =>
+      producer.close()
+      producers.remove(key)
+    }
+  }
+
+  private[streaming] def size: Int = producers.size
 }
