@@ -19,7 +19,7 @@ import java.util.UUID
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
-import com.stratio.crossdata.common.{ServerAnswer, SecureCommand, SQLCommand}
+import com.stratio.crossdata.common.{ServerReply, SecureCommand, SQLCommand}
 import com.stratio.crossdata.driver.Driver
 import org.apache.log4j.Logger
 

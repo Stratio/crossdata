@@ -18,7 +18,7 @@ package com.stratio.crossdata.server.actors
 import java.util.concurrent.CancellationException
 
 import akka.actor.{Props, ActorRef, Actor}
-import com.stratio.crossdata.common.{SQLAnswer, SQLCommand}
+import com.stratio.crossdata.common.{SQLReply, SQLCommand}
 import com.stratio.crossdata.common.result.{SQLResult, ErrorSQLResult, SQLResponse, SuccessfulSQLResult}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob, GetJobStatus}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus}
@@ -67,7 +67,7 @@ object JobActor {
     * Cancelled or Failed task.
     * @param runningTask [[Cancellable]] wrapping a [[scala.concurrent.Future]] which acts as a Spark driver.
     */
-  case class State(runningTask: Option[Cancellable[SQLAnswer]]) {
+  case class State(runningTask: Option[Cancellable[SQLReply]]) {
     import JobStatus._
     def getStatus: JobStatus = runningTask map { task =>
       task.future.value map {
@@ -133,14 +133,14 @@ class JobActor(
     case event @ JobFailed(e) if sender == self =>
       logger.debug(s"Task failed at ${self.path}")
       context.parent ! event
-      requester ! SQLAnswer(command.requestId, ErrorSQLResult(e.getMessage, Some(new Exception(e.getMessage))))
+      requester ! SQLReply(command.requestId, ErrorSQLResult(e.getMessage, Some(new Exception(e.getMessage))))
       throw e //Let It Crash: It'll be managed by its supervisor
     case JobCompleted if sender == self =>
       logger.debug(s"Completed or cancelled ${self.path} task")
       context.parent ! JobCompleted
   }
 
-  private def launchTask: Cancellable[SQLAnswer] = {
+  private def launchTask: Cancellable[SQLReply] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     Cancellable {
       val df = xdContext.sql(command.sql)
@@ -148,7 +148,7 @@ class JobActor(
         df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
       else df.collect()
 
-      SQLAnswer(command.queryId, SuccessfulSQLResult(rows, df.schema))
+      SQLReply(command.queryId, SuccessfulSQLResult(rows, df.schema))
     }
   }
 }

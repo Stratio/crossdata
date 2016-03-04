@@ -59,12 +59,12 @@ private[crossdata] case class SecureCommand(cmd: Command, session: Session)
 
 
 // Server -> Driver messages
-private[crossdata] trait ServerAnswer {
+private[crossdata] trait ServerReply {
   def requestId: UUID
 }
 
-private[crossdata] case class QueryCancelledAnswer(requestId: UUID) extends ServerAnswer
+private[crossdata] case class QueryCancelledReply(requestId: UUID) extends ServerReply
 
-private[crossdata] case class SQLAnswer(requestId: UUID, sqlResult: SQLResult)  extends ServerAnswer
+private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult)  extends ServerReply
 
 

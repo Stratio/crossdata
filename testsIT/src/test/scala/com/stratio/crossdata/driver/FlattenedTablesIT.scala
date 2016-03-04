@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.driver
 
+import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.FieldMetadata
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
@@ -26,7 +27,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
   "The Driver" should " List table's description with nested and array fields flattened" in {
     assumeCrossdataUpAndRunning
 
-    val flattenedDriver = Driver.getOrCreate(true)
+    val flattenedDriver = Driver.getOrCreate(new DriverConf().setFlattenTables(true))
 
     //Experimentation
     val result:Seq[FieldMetadata] = flattenedDriver.describeTable(Some(Database), Collection)
@@ -63,7 +64,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
   it should " Query with Flattened Fields" in {
     assumeCrossdataUpAndRunning
 
-    val flattenedDriver = Driver.getOrCreate(true)
+    val flattenedDriver = Driver.getOrCreate(new DriverConf().setFlattenTables(true))
 
     //Experimentation
     val result= flattenedDriver.sql(s"SELECT address.street from $Database.$Collection").resultSet
@@ -77,7 +78,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
   it should " Query with Flattened Fields On Filters" in {
     assumeCrossdataUpAndRunning
 
-    val flattenedDriver = Driver.getOrCreate(true)
+    val flattenedDriver = Driver.getOrCreate(new DriverConf().setFlattenTables(true))
 
     //Experimentation
     val result= flattenedDriver.sql(s"SELECT description FROM $Database.$Collection WHERE address.street = '5th Avenue'").resultSet

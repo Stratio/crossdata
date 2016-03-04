@@ -17,6 +17,7 @@ package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
+import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.JavaTableName
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -46,7 +47,7 @@ class JavaDriverIT extends EndToEndTest{
   "JavaDriver (specifying serverHost, and flattened value)" should "return a list of tables " in {
 
     assumeCrossdataUpAndRunning()
-    val javaDriver = new JavaDriver(List("127.0.0.1:13420"), false)
+    val javaDriver = new JavaDriver(List("127.0.0.1:13420"), new DriverConf().setFlattenTables(true))
 
     javaDriver.sql(
       s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"

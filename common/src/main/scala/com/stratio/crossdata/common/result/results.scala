@@ -80,7 +80,7 @@ trait SQLResult extends Result {
       }.addString(sb, "|", "|", "|\n")
     }
 
-    sb.append(sep).toString.split("\n")
+    sb.append(sep).toString().split("\n")
   }
 }
 

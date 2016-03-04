@@ -17,9 +17,8 @@ package com.stratio.crossdata.examples
 
 import java.util
 
-import com.datastax.driver.core.{Session, Cluster}
-import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.driver.Driver
+import com.stratio.crossdata.driver.config.DriverConf
 
 
 sealed trait DefaultConstants {
@@ -29,31 +28,34 @@ sealed trait DefaultConstants {
   val CassandraHost = "127.0.0.1"
   val SourceProvider = "cassandra"
   // Cassandra provider => org.apache.spark.sql.cassandra
+  val CassandraOptions = Map(
+    "cluster" -> ClusterName,
+    "spark_cassandra_connection_host" -> CassandraHost
+  )
 }
 
 object DriverExample extends App with DefaultConstants {
 
   val (cluster, session) = CassandraExample.prepareEnvironment()
 
-  var host: java.util.List[String] = new util.ArrayList[String]()
-  host.add("127.0.0.1:13420")
-  val driver = Driver(host)
+  val host: java.util.List[String] = util.Arrays.asList("127.0.0.1:13420","127.0.0.1:13425")
+  var driver: Option[Driver] = None
 
-  val importQuery =
-    s"""
-       |IMPORT TABLES
-       |USING com.stratio.crossdata.connector.cassandra
-       |OPTIONS (
-       | cluster "$ClusterName",
-       | spark_cassandra_connection_host '$CassandraHost'
-       |)
-      """.stripMargin
+  try {
+    val driverConf = new DriverConf().setFlattenTables(true).setTunnelTimeout(30).setClusterContactPoint(host)
+    driver = Option(Driver.getOrCreate(driverConf))
 
-  driver.syncQuery(SQLCommand(importQuery))
+    for {
+      xdDriver <- driver
+    } {
+      xdDriver.importTables(SourceProvider, CassandraOptions)
+      xdDriver.listTables().foreach(println(_))
+      xdDriver.show(s"SELECT * FROM $Catalog.$Table")
+    }
 
-  driver.listTables().foreach(println(_))
+  } finally {
+    driver.foreach(_.stop())
+    CassandraExample.cleanEnvironment(cluster, session)
+  }
 
-    driver.syncQuery(SQLCommand(s"SELECT * FROM $Catalog.$Table")).resultSet.foreach(println(_))
-
-  CassandraExample.cleanEnvironment(cluster, session)
 }
