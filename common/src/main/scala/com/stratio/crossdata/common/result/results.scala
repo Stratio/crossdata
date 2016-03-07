@@ -27,6 +27,7 @@ trait Result {
 
 trait SQLResult extends Result {
   def resultSet: Array[Row]
+
   def schema: StructType
 
   /**
@@ -94,7 +95,7 @@ case class ErrorSQLResult(message: String, cause: Option[Throwable] = None) exte
   override lazy val schema = throw mkException
 
   private def mkException: Exception =
-    cause.map(throwable => new RuntimeException(message,throwable)).getOrElse(new RuntimeException(message))
+    cause.map(throwable => new RuntimeException(message, throwable)).getOrElse(new RuntimeException(message))
 }
 
 

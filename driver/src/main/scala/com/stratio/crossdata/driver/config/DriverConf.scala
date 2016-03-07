@@ -74,7 +74,7 @@ class DriverConf extends Logging {
   }
 
   def setTunnelTimeout(seconds: Int): DriverConf = {
-    userSettings.put("akka.contrib.cluster.receptionist.response-tunnel-receive-timeout", ConfigValueFactory.fromAnyRef(seconds * 1000))
+    userSettings.put(AkkaClusterRecepcionistTunnelTimeout, ConfigValueFactory.fromAnyRef(seconds * 1000))
     this
   }
 
@@ -124,9 +124,9 @@ class DriverConf extends Logging {
 
     //Get the user external driver-application.conf properties if exists
     val finalConfig: Config = {
-      if(configFile.isEmpty){
+      if (configFile.isEmpty) {
         configWithResource
-      }else{
+      } else {
         val file = new File(configFile)
         if (file.exists()) {
           val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
@@ -143,7 +143,7 @@ class DriverConf extends Logging {
     val finalConfigWithSystemProperties = ConfigFactory.parseProperties(System.getProperties).withFallback(finalConfig)
 
     val finalConfigWithEnvVars = {
-      if(finalConfigWithSystemProperties.hasPath("config.cluster.servers")){
+      if (finalConfigWithSystemProperties.hasPath("config.cluster.servers")) {
         val serverNodes = finalConfigWithSystemProperties.getString("config.cluster.servers")
         defaultConfig.withValue(
           DriverConfigHosts,
@@ -170,4 +170,5 @@ object DriverConf {
   val DriverConfigHosts = "config.cluster.hosts"
   val DriverFlattenTables = "config.flatten-tables"
   val DriverClusterName = "config.cluster.name"
+  val AkkaClusterRecepcionistTunnelTimeout = "akka.contrib.cluster.receptionist.response-tunnel-receive-timeout"
 }

@@ -21,7 +21,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.contrib.pattern.ClusterClient
 import akka.pattern.ask
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SQLResponse, SQLResult, SuccessfulSQLResult}
-import com.stratio.crossdata.common.{CancelCommand, SQLReply, SQLCommand, SecureCommand, ServerReply}
+import com.stratio.crossdata.common.{CancelCommand, SQLCommand, SQLReply, SecureCommand, ServerReply}
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.FieldMetadata
@@ -99,28 +99,28 @@ class Driver private(driverConf: DriverConf,
 
 
   def importTables(dataSourceProvider: String, options: Map[String, String]): SQLResponse =
-     sql(
-       s"""|IMPORT TABLES
-           |USING $dataSourceProvider
-           |${mkOptionsStatement(options)}
+    sql(
+      s"""|IMPORT TABLES
+          |USING $dataSourceProvider
+          |${mkOptionsStatement(options)}
        """.stripMargin
-     )
+    )
 
 
   // TODO schema -> StructType insteadOf String
   // schema -> e.g "( name STRING, age INT )"
-  def createTable(name: String, dataSourceProvider: String, schema: Option[String], options: Map[String, String], isTemporary : Boolean = false): SQLResponse =
+  def createTable(name: String, dataSourceProvider: String, schema: Option[String], options: Map[String, String], isTemporary: Boolean = false): SQLResponse =
     sql(
-      s"""|CREATE ${ if (isTemporary) "TEMPORARY" else ""} TABLE $name
+      s"""|CREATE ${if (isTemporary) "TEMPORARY" else ""} TABLE $name
           |USING $dataSourceProvider
           |${schema.getOrElse("")}
           |${mkOptionsStatement(options)}
        """.stripMargin
     )
 
-  def dropTable(name: String, isTemporary : Boolean = false): SQLResponse =
+  def dropTable(name: String, isTemporary: Boolean = false): SQLResponse =
     sql(
-      s"""|DROP ${ if (isTemporary) "TEMPORARY" else ""}
+      s"""|DROP ${if (isTemporary) "TEMPORARY" else ""}
           |TABLE $name
        """.stripMargin
     )
@@ -219,7 +219,7 @@ class Driver private(driverConf: DriverConf,
 
   private def handleCommandError(result: SQLResult) = result match {
     case ErrorSQLResult(message, Some(cause)) =>
-      logger.error(message,cause)
+      logger.error(message, cause)
       throw new RuntimeException(message, cause)
     case ErrorSQLResult(message, _) =>
       logger.error(message)
@@ -246,7 +246,7 @@ object Driver {
   def clearActiveContext() = {
     DRIVER_CONSTRUCTOR_LOCK.synchronized {
       val system = activeDriver.get().system
-      if(!system.isTerminated) system.shutdown()
+      if (!system.isTerminated) system.shutdown()
       activeDriver.set(null)
     }
   }
@@ -273,7 +273,7 @@ object Driver {
    */
   private[crossdata] def getOrCreate(driverConf: DriverConf, authentication: Authentication): Driver =
     DRIVER_CONSTRUCTOR_LOCK.synchronized {
-      if(activeDriver.get() == null) {
+      if (activeDriver.get() == null) {
         setActiveDriver(new Driver(driverConf, authentication))
       }
       activeDriver.get()

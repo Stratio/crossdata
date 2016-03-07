@@ -25,7 +25,7 @@ trait Response extends Serializable {
   def id: UUID
 }
 
-case class SQLResponse (id: UUID, sqlResult: Future[SQLResult]) extends Response  {
+case class SQLResponse(id: UUID, sqlResult: Future[SQLResult]) extends Response {
   def waitForResult(duration: Duration = Duration.Inf): SQLResult = {
     Try {
       Await.result(sqlResult, duration)

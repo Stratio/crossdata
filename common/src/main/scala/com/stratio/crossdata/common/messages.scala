@@ -35,14 +35,14 @@ private[crossdata] case class SQLCommand private(sql: String,
                                                  timeout: Option[FiniteDuration] = None
                                                   ) extends Command {
 
-  def this( query: String,
-            retrieveColNames: Boolean,
-            timeoutDuration: FiniteDuration
-          ) = this(sql = query, retrieveColumnNames = retrieveColNames, timeout = Option(timeoutDuration))
+  def this(query: String,
+           retrieveColNames: Boolean,
+           timeoutDuration: FiniteDuration
+            ) = this(sql = query, retrieveColumnNames = retrieveColNames, timeout = Option(timeoutDuration))
 
-  def this( query: String,
-            retrieveColNames: Boolean
-          ) = this(sql = query, retrieveColumnNames = retrieveColNames, timeout = None)
+  def this(query: String,
+           retrieveColNames: Boolean
+            ) = this(sql = query, retrieveColumnNames = retrieveColNames, timeout = None)
 
 }
 
@@ -50,7 +50,9 @@ private[crossdata] case class SQLCommand private(sql: String,
 trait ControlCommand extends Command {
   val requestId: UUID
 }
+
 private[crossdata] case class CancelQueryExecution(requestId: UUID) extends ControlCommand
+
 private[crossdata] case class GetJobStatus(requestId: UUID) extends ControlCommand
 
 private[crossdata] case class CancelCommand(requestId: UUID) extends Command
@@ -65,6 +67,4 @@ private[crossdata] trait ServerReply {
 
 private[crossdata] case class QueryCancelledReply(requestId: UUID) extends ServerReply
 
-private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult)  extends ServerReply
-
-
+private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply

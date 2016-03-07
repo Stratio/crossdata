@@ -26,8 +26,8 @@ import scala.collection.JavaConversions._
 import scala.concurrent.duration.Duration
 
 
-class JavaDriver private (driverConf: DriverConf,
-                          auth: Authentication) {
+class JavaDriver private(driverConf: DriverConf,
+                         auth: Authentication) {
 
   def this(driverConf: DriverConf) =
     this(driverConf, Driver.generateDefaultAuth)
@@ -63,10 +63,10 @@ class JavaDriver private (driverConf: DriverConf,
   def importTables(dataSourceProvider: String, options: java.util.Map[String, String]): SQLResult =
     scalaDriver.importTables(dataSourceProvider, options.toMap)
 
-  def createTable(name: String, dataSourceProvider: String, schema: Option[String], options: java.util.Map[String, String], isTemporary : Boolean): SQLResult =
+  def createTable(name: String, dataSourceProvider: String, schema: Option[String], options: java.util.Map[String, String], isTemporary: Boolean): SQLResult =
     scalaDriver.createTable(name, dataSourceProvider, schema, options.toMap, isTemporary).waitForResult()
 
-  def dropTable(name: String, isTemporary : Boolean = false): SQLResult =
+  def dropTable(name: String, isTemporary: Boolean = false): SQLResult =
     scalaDriver.dropTable(name, isTemporary)
 
   def listTables(): java.util.List[JavaTableName] =
