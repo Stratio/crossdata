@@ -79,6 +79,11 @@
             <name>Jose Carlos García Serrano</name>
             <email>jcgarcia at stratio dot com</email>
         </developer>
+        <developer>
+            <id>pfcoperez</id>
+            <name>Pablo Francisco Pérez Hidalgo</name>
+            <email>contact at pablofranciscoperez dot info</email>
+        </developer>
     </developers>
 
     <modules>
@@ -109,7 +114,7 @@
         <postgresql.version>9.2-1003-jdbc4</postgresql.version>
         <derby.version>10.12.1.1</derby.version>
         <jackson4s.version>3.2.11</jackson4s.version>
-        <common.utils.version>0.5.0-SNAPSHOT</common.utils.version>
+        <common.utils.version>0.5.0</common.utils.version>
         <guava.version>18.0</guava.version>
     </properties>
 
