@@ -17,43 +17,48 @@ package com.stratio.crossdata.examples.driver
 
 import java.util
 
-import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.driver.Driver
+import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.examples.cassandra._
 
 /**
  * Driver example - Cassandra
  */
-object CassandraExample extends App with CassandraDefaultConstants {
+
+sealed trait DefaultConstants {
+  val ClusterName = "Test Cluster"
+  val Catalog = "highschool"
+  val Table = "students"
+  val CassandraHost = "127.0.0.1"
+  val SourceProvider = "cassandra"
+  // Cassandra provider => org.apache.spark.sql.cassandra
+  val CassandraOptions = Map(
+    "cluster" -> ClusterName,
+    "spark_cassandra_connection_host" -> CassandraHost
+  )
+}
+
+object DriverExample extends App with DefaultConstants {
 
   val (cluster, session) = prepareEnvironment()
 
-  val driver = {
-    val host: java.util.List[String] = new util.ArrayList[String]()
-    host.add("127.0.0.1:13420")
-    Driver.getOrCreate(host)
-  }
+  val host: java.util.List[String] = util.Arrays.asList("127.0.0.1:13420","127.0.0.1:13425")
+  var driver: Option[Driver] = None
 
-  val importQuery =
-    s"""
-       |IMPORT TABLES
-       |USING $SourceProvider
-       |OPTIONS (
-       | cluster "$ClusterName",
-       | spark_cassandra_connection_host '$CassandraHost'
-       |)
-      """.stripMargin
+  try {
+    val driverConf = new DriverConf().setFlattenTables(true).setTunnelTimeout(30).setClusterContactPoint(host)
+    driver = Option(Driver.getOrCreate(driverConf))
 
-  try{
-    // Import tables from Cassandra cluster
-    driver.syncQuery(SQLCommand(importQuery))
-    // List tables
-    driver.listTables().foreach(println(_))
-    // SQL
-    driver.syncQuery(SQLCommand(s"SELECT * FROM $Catalog.$Table")).resultSet.foreach(println)
+    for {
+      xdDriver <- driver
+    } {
+      xdDriver.importTables(SourceProvider, CassandraOptions)
+      xdDriver.listTables().foreach(println(_))
+      xdDriver.show(s"SELECT * FROM $Catalog.$Table")
+    }
 
   } finally {
-    driver.close()
+    driver.foreach(_.stop())
     cleanEnvironment(cluster, session)
   }
 

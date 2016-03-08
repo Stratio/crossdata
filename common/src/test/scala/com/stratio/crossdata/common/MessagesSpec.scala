@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 class MessagesSpec extends BaseXDTest {
 
   "A SQLCommand" should "generate random uuids" in {
-    SQLCommand("a").queryId should not be SQLCommand("a").queryId
+    new SQLCommand("a", false).requestId should not be new SQLCommand("a", false).requestId
   }
 
 }

@@ -15,72 +15,85 @@
  */
 package com.stratio.crossdata.driver
 
-import akka.util.Timeout
-import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.SQLResult
-import com.stratio.crossdata.driver.config.DriverConfig.DriverConfigHosts
-import com.stratio.crossdata.driver.metadata.FieldMetadata
-import com.stratio.crossdata.driver.metadata.JavaTableName
-import com.typesafe.config.ConfigValue
-import com.typesafe.config.ConfigValueFactory
-import org.apache.log4j.Logger
+
+import com.stratio.crossdata.common.result.SQLResult
+import com.stratio.crossdata.driver.config.DriverConf
+import com.stratio.crossdata.driver.metadata.{FieldMetadata, JavaTableName}
+import com.stratio.crossdata.driver.session.Authentication
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
+import scala.concurrent.duration.Duration
 
 
-class JavaDriver(properties: java.util.Map[String, ConfigValue], flattenTables: Boolean=false) {
+class JavaDriver private(driverConf: DriverConf,
+                         auth: Authentication) {
 
-  def this(serverHosts: java.util.List[String], flattenTables: Boolean) =
-    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)),flattenTables)
+  def this(driverConf: DriverConf) =
+    this(driverConf, Driver.generateDefaultAuth)
 
-  def this(serverHosts: java.util.List[String]) =
-    this(Map(DriverConfigHosts -> ConfigValueFactory.fromAnyRef(serverHosts)), false)
+  def this() = this(new DriverConf)
 
-  def this(properties: java.util.Map[String, ConfigValue]) =
-    this(properties, false)
+  def this(user: String, password: String, driverConf: DriverConf) =
+    this(driverConf, Authentication(user, password))
 
-  def this(flattenTables: Boolean) = this(Map.empty[String, ConfigValue],flattenTables)
+  def this(user: String, password: String) =
+    this(user, password, new DriverConf)
 
-  def this() = this (Map.empty[String, ConfigValue])
+  def this(seedNodes: java.util.List[String], driverConf: DriverConf) =
+    this(driverConf.setClusterContactPoint(seedNodes))
 
-  private lazy val logger = Logger.getLogger(getClass)
+  def this(seedNodes: java.util.List[String]) =
+    this(seedNodes, new DriverConf)
 
-  private val scalaDriver = Driver.getOrCreate(properties, flattenTables)
+
+  private lazy val logger = LoggerFactory.getLogger(classOf[JavaDriver])
+
+  private val scalaDriver = Driver.getOrCreate(driverConf, auth)
 
   /**
    * Sync execution with defaults: timeout 10 sec, nr-retries 2
    */
-  def syncQuery(sqlCommand: SQLCommand): SQLResult = {
-    scalaDriver.syncQuery(sqlCommand)
-  }
+  def sql(sqlText: String): SQLResult =
+    scalaDriver.sql(sqlText).waitForResult()
 
-  def syncQuery(sqlCommand: SQLCommand, timeout: Timeout, retries: Int): SQLResult = {
-    scalaDriver.syncQuery(sqlCommand, timeout, retries)
-  }
+  def sql(sqlText: String, timeoutDuration: Duration): SQLResult =
+    scalaDriver.sql(sqlText).waitForResult(timeoutDuration)
 
-  def listDatabases(): java.util.List[String] = {
-    scalaDriver.listDatabases()
-  }
+  def importTables(dataSourceProvider: String, options: java.util.Map[String, String]): SQLResult =
+    scalaDriver.importTables(dataSourceProvider, options.toMap)
 
-  def listTables(): java.util.List[JavaTableName] = {
+  def createTable(name: String, dataSourceProvider: String, schema: Option[String], options: java.util.Map[String, String], isTemporary: Boolean): SQLResult =
+    scalaDriver.createTable(name, dataSourceProvider, schema, options.toMap, isTemporary).waitForResult()
+
+  def dropTable(name: String, isTemporary: Boolean = false): SQLResult =
+    scalaDriver.dropTable(name, isTemporary)
+
+  def listTables(): java.util.List[JavaTableName] =
     scalaDriver.listTables(None).map { case (table, database) => new JavaTableName(table, database.getOrElse("")) }
-  }
 
-  def listTables(database: String): java.util.List[JavaTableName] = {
+
+  def listTables(database: String): java.util.List[JavaTableName] =
     scalaDriver.listTables(Some(database)).map { case (table, database) => new JavaTableName(table, database.getOrElse("")) }
-  }
 
-  def describeTable(database: String, tableName: String): java.util.List[FieldMetadata] = {
+
+  def describeTable(database: String, tableName: String): java.util.List[FieldMetadata] =
     scalaDriver.describeTable(Some(database), tableName)
-  }
 
-  def describeTable(tableName: String): java.util.List[FieldMetadata] = {
+
+  def describeTable(tableName: String): java.util.List[FieldMetadata] =
     scalaDriver.describeTable(None, tableName)
+
+
+  def show(sqlText: String): Unit =
+    scalaDriver.show(sqlText)
+
+  def stop(): Unit = {
+    scalaDriver.stop()
   }
 
-  def close(): Unit = {
-    scalaDriver.close()
-  }
+  @deprecated("Close will be removed from public API. Use stop instead")
+  def close() = stop()
 
 }
 

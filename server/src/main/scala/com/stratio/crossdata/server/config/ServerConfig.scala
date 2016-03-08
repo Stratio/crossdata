@@ -22,7 +22,7 @@ import com.typesafe.config.{ConfigValueFactory, Config, ConfigFactory}
 import scala.collection.JavaConversions._
 import org.apache.log4j.Logger
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.util.Try
 
 object ServerConfig {
@@ -39,6 +39,9 @@ object ServerConfig {
   val ServerRetryMaxAttempts = "config.queries.attempts"
   val ServerRetryCountWindow = "config.queries.retrycountwindow"
 
+  // Job management settings
+  val FinishedJobTTL = "config.jobs.finished.ttl_ms"
+
 }
 
 trait ServerConfig extends NumberActorConfig {
@@ -52,6 +55,10 @@ trait ServerConfig extends NumberActorConfig {
   lazy val retryCountWindow: Duration = Try(
     config.getDuration(ServerConfig.ServerRetryCountWindow, TimeUnit.MILLISECONDS)
   ) map(Duration(_, TimeUnit.MILLISECONDS)) getOrElse(Duration.Inf)
+
+  lazy val completedJobTTL: Duration = Try(
+    config.getDuration(ServerConfig.FinishedJobTTL, TimeUnit.MILLISECONDS)
+  ) map(FiniteDuration(_, TimeUnit.MILLISECONDS)) getOrElse(Duration.Inf)
 
   override val config: Config = {
 

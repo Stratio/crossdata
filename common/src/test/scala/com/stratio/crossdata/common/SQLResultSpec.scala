@@ -15,9 +15,11 @@
  */
 package com.stratio.crossdata.common
 
+//import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+
 import java.util.UUID
 
-import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
@@ -29,7 +31,7 @@ import org.scalatest.mock.MockitoSugar
 class SQLResultSpec extends BaseXDTest  with MockitoSugar{
 
   "An error result" should "have an empty result" in {
-    val error = ErrorResult(UUID.randomUUID(),"message")
+    val error = ErrorSQLResult("message")
     error.hasError should be (true)
     a [RuntimeException] should be thrownBy error.resultSet
   }
@@ -41,14 +43,15 @@ class SQLResultSpec extends BaseXDTest  with MockitoSugar{
     val result: Array[Row] = Array(row)
     val schema: StructType = mock[StructType]
 
-    val toTest = SuccessfulQueryResult(queryId, result, schema)
+    val toTest = SuccessfulSQLResult(result, schema)
 
     //Experimentation
-    val res = toTest.result
+    val res = toTest.resultSet
     val hasError = toTest.hasError
 
     res should not be (null)
     res should be equals Array(row)
     hasError should be (false)
   }
+
 }
