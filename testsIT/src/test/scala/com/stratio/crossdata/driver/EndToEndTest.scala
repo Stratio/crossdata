@@ -17,7 +17,7 @@ package com.stratio.crossdata.driver
 
 import com.stratio.crossdata.server.CrossdataServer
 import com.stratio.crossdata.test.BaseXDTest
-import org.scalatest.{BeforeAndAfterAll}
+import org.scalatest.BeforeAndAfterAll
 
 trait EndToEndTest extends BaseXDTest with BeforeAndAfterAll {
 

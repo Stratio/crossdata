@@ -17,15 +17,12 @@ package com.stratio.crossdata.driver.shell
 
 import java.io._
 
-import com.stratio.crossdata.common.{crossdata, SQLCommand}
-import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
+import com.stratio.crossdata.common.crossdata
+import com.stratio.crossdata.common.result.ErrorSQLResult
 import com.stratio.crossdata.driver.Driver
-import jline.console.{UserInterruptException, ConsoleReader}
 import jline.console.history.FileHistory
-import org.apache.commons.lang3.StringUtils
+import jline.console.{ConsoleReader, UserInterruptException}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.StructType
 
 import scala.collection.JavaConversions._
 
@@ -48,60 +45,6 @@ object BasicShell extends App {
 
   createHistoryDirectory(HistoryPath)
 
-  /**
-    * NOTE: This method is based on the method org.apache.spark.sql.DataFrame#showString from Apache Spark.
-    *       For more information, go to http://spark.apache.org.
-    * Compose the string representing rows for output
-    */
-  private def stringifyResult(resultSet: Array[Row], schema: StructType): Array[String] = {
-
-    val sb = new StringBuilder
-
-    val numCols = schema.fieldNames.length
-
-    // For array values, replace Seq and Array with square brackets
-    // For cells that are beyond 20 characters, replace it with the first 17 and "..."
-    val rows: Seq[Seq[String]] = schema.fieldNames.toSeq +: resultSet.map { row =>
-      row.toSeq.map { cell =>
-        val str = cell match {
-          case null => "null"
-          case array: Array[_] => array.mkString("[", ", ", "]")
-          case seq: Seq[_] => seq.mkString("[", ", ", "]")
-          case _ => cell.toString
-        }
-        str
-      }: Seq[String]
-    }
-
-    // Initialise the width of each column to a minimum value of '3'
-    val colWidths = Array.fill(numCols)(3)
-
-    // Compute the width of each column
-    for (row <- rows) {
-      for ((cell, i) <- row.zipWithIndex) {
-        colWidths(i) = math.max(colWidths(i), cell.length)
-      }
-    }
-
-    // Create SeparateLine
-    val sep: String = colWidths.map("-" * _).addString(sb, "+", "+", "+\n").toString()
-
-    // column names
-    rows.head.zipWithIndex.map { case (cell, i) =>
-      StringUtils.rightPad(cell, colWidths(i))
-    }.addString(sb, "|", "|", "|\n")
-
-    sb.append(sep)
-
-    // data
-    rows.tail.map {
-      _.zipWithIndex.map { case (cell, i) =>
-        StringUtils.rightPad(cell.toString, colWidths(i))
-      }.addString(sb, "|", "|", "|\n")
-    }
-
-    sb.append(sep).toString.split("\n")
-  }
 
   private def getLine(reader: ConsoleReader): Option[String] = {
     try {
@@ -160,8 +103,6 @@ object BasicShell extends App {
   private def runConsole(console: ConsoleReader): Unit = {
     val driver = Driver.getOrCreate()
 
-    Thread.sleep(2000)
-
     console.println()
     console.println("+-----------------+-------------------------+---------------------------+")
     console.println(s"| CROSSDATA ${crossdata.CrossdataVersion} | Powered by Apache Spark | Easy access to big things |")
@@ -178,17 +119,16 @@ object BasicShell extends App {
       }
 
       if (line.get.trim.nonEmpty) {
-        val result = driver.syncQuery(SQLCommand(line.get))
 
-        console.println(s"Result for query ID: ${result.queryId}")
+        val sqlResponse = driver.sql(line.get)
+        val result = sqlResponse.waitForResult()
+        console.println(s"Result for query ID: ${sqlResponse.id}")
         if (result.hasError) {
           console.println("ERROR")
-          console.println(result.asInstanceOf[ErrorResult].message)
+          console.println(result.asInstanceOf[ErrorSQLResult].message)
         } else {
           console.println("SUCCESS")
-          stringifyResult(
-            result.resultSet,
-            result.asInstanceOf[SuccessfulQueryResult].schema).foreach(l => console.println(l))
+          result.prettyResult.foreach(l => console.println(l))
         }
       }
       console.flush

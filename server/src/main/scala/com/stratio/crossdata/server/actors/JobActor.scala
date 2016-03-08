@@ -15,30 +15,35 @@
  */
 package com.stratio.crossdata.server.actors
 
-import akka.actor.{Props, ActorRef, Actor}
-import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus}
-import com.stratio.crossdata.server.actors.JobActor.Events.{JobFailed, JobCompleted}
+import java.util.concurrent.CancellationException
+
+import akka.actor.{Actor, ActorRef, Props}
+import com.stratio.common.utils.concurrent.Cancellable
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.common.{SQLCommand, SQLReply}
+import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus, StartJob}
+import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.actors.JobActor.Task
+import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
 
-import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
+
+
 
 object JobActor {
 
-  object JobStatus extends Enumeration {
-    type JobStatus = Value
-    val Starting, Running, Failed, Completed = Value
+  trait JobStatus
+  object JobStatus {
+    case object Idle extends JobStatus
+    case object Running  extends JobStatus
+    case object Completed extends JobStatus
+    case object Cancelled extends JobStatus
+    case class  Failed(reason: Throwable) extends JobStatus
   }
 
   trait JobEvent
-
-  private object InternalEvents {
-    case class JobStarted() extends JobEvent
-  }
 
   object Events {
     case object JobCompleted extends JobEvent
@@ -49,9 +54,26 @@ object JobActor {
     trait JobCommand
     case object GetJobStatus
     case object CancelJob
+    case object StartJob
   }
 
   case class Task(command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration])
+
+  /**
+    * The [[JobActor]] state is directly given by the running task which can be: None (Idle st) or a Running, Completed,
+    * Cancelled or Failed task.
+    * @param runningTask [[Cancellable]] wrapping a [[scala.concurrent.Future]] which acts as a Spark driver.
+    */
+  case class State(runningTask: Option[Cancellable[SQLReply]]) {
+    import JobStatus._
+    def getStatus: JobStatus = runningTask map { task =>
+      task.future.value map {
+        case Success(_) => Completed
+        case Failure(_: CancellationException) => Cancelled
+        case Failure(err) => Failed(err)
+      } getOrElse Running
+    } getOrElse Idle
+  }
 
   def props(xDContext: XDContext, command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration]): Props =
     Props(new JobActor(xDContext, Task(command, requester, timeout)))
@@ -64,62 +86,69 @@ class JobActor(
               ) extends Actor {
 
   import JobActor.JobStatus._
-  import JobActor.InternalEvents._
-
+  import JobActor.State
   import task._
 
-  override def preStart(): Unit = {
-    super.preStart()
+  lazy val logger = Logger.getLogger(classOf[ServerActor])
 
-    //import context.dispatcher
-    import scala.concurrent.ExecutionContext.Implicits.global
+  override def receive: Receive = receive(State(None))
 
-    Future {
-      xdContext.sparkContext.setJobGroup(command.queryId.toString, command.query, true)
-      val df = xdContext.sql(command.query)
-      self ! JobStarted()
-      val rows = if(command.retrieveColumnNames)
-        df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
-      else df.collect()
 
-      // Sends the result to the requester
-      requester ! SuccessfulQueryResult(command.queryId, rows, df.schema)
+  private def receive(st: State): Receive = {
 
-    } onComplete {
-      case Failure(e) =>
-        self ! JobFailed(e)
-      case Success(_) =>
-        self ! JobCompleted
-    }
-
-    timeout.foreach(context.system.scheduler.scheduleOnce(_, self, CancelJob))
-
-  }
-
-  override def receive: Receive = receive(Starting)
-
-  private def receive(status: JobStatus): Receive = {
     // Commands
-    case GetJobStatus =>
-      sender ! status
-    case JobStarted() if status == Starting =>
-      context.become(receive(Running))
+    case StartJob if st.getStatus == Idle =>
+
+      logger.debug(s"Starting Job under ${context.parent.path}")
+
+      import scala.concurrent.ExecutionContext.Implicits.global
+      val runningTask = launchTask
+      runningTask.future onComplete {
+        case Success(queryRes) =>
+          requester ! queryRes
+          self ! JobCompleted
+        case Failure(_: CancellationException) => self ! JobCompleted // Job cancellation
+        case Failure(reason) => self ! JobFailed(reason) // Job failure
+      }
+
+      val isRunning = runningTask.future.value.isEmpty
+
+      timeout.filter(_ => isRunning).foreach {
+        context.system.scheduler.scheduleOnce(_, self, CancelJob)
+      }
+
+      context.become(receive(st.copy(runningTask = Some(runningTask))))
+
     case CancelJob =>
-      xdContext.sparkContext.cancelJobGroup(command.queryId.toString)
+      st.runningTask.foreach{ tsk =>
+        logger.debug(s"Cancelling ${self.path}'s task ")
+        tsk.cancel()
+      }
+
+    case GetJobStatus =>
+      sender ! st.getStatus
+
     // Events
-    /* TODO: Jobs cancellations will be treated as errors.
-        I'd be nice (and it'll be done) to discriminate among errors and cancellations
-     */
-    case event @ JobFailed(e) if sender == self && (Seq(Starting, Running) contains status) =>
-      context.become(receive(Failed))
+
+    case event @ JobFailed(e) if sender == self =>
+      logger.debug(s"Task failed at ${self.path}")
       context.parent ! event
-      requester ! ErrorResult(command.queryId, e.getMessage, Some(new Exception(e.getMessage)))
+      requester ! SQLReply(command.requestId, ErrorSQLResult(e.getMessage, Some(new Exception(e.getMessage))))
       throw e //Let It Crash: It'll be managed by its supervisor
-    case JobCompleted if sender == self && status == Running =>
-      context.become(receive(Completed))
+    case JobCompleted if sender == self =>
+      logger.debug(s"Completed or cancelled ${self.path} task")
       context.parent ! JobCompleted
   }
 
+  private def launchTask: Cancellable[SQLReply] = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Cancellable {
+      val df = xdContext.sql(command.sql)
+      val rows = if (command.flattenResults)
+        df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
+      else df.collect()
 
-
+      SQLReply(command.queryId, SuccessfulSQLResult(rows, df.schema))
+    }
+  }
 }

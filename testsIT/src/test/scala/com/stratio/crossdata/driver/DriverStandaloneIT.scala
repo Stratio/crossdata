@@ -18,10 +18,9 @@ package com.stratio.crossdata.driver
 
 import java.util.concurrent.TimeoutException
 
-import akka.util.Timeout
-import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.ErrorResult
+import com.stratio.crossdata.common.result.ErrorSQLResult
 import com.stratio.crossdata.test.BaseXDTest
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -29,33 +28,22 @@ class DriverStandaloneIT extends BaseXDTest {
 
   "Crossdata driver" should "fail with a timeout when there is no server" in {
     val driver = Driver.getOrCreate()
-    val sqlCommand = SQLCommand("select * from any")
 
-    val result = driver.syncQuery(sqlCommand, Timeout(1 seconds), 1)
+    val result = driver.sql("select * from any").waitForResult(1 seconds)
 
     result.hasError should be(true)
     a[RuntimeException] should be thrownBy result.resultSet
 
-    result.queryId should be(sqlCommand.queryId)
-    result shouldBe an[ErrorResult]
-    result.asInstanceOf[ErrorResult].message should include regex "(?i)timeout was exceed"
+    result shouldBe an[ErrorSQLResult]
+    result.asInstanceOf[ErrorSQLResult].message should include regex "(?i)timeout was exceed"
 
   }
 
 
   it should "return a future with a timeout when there is no server" in {
     val driver = Driver.getOrCreate()
-    val future = driver.asyncQuery(SQLCommand("select * from any"), Timeout(1 seconds), 1)
+    val future = driver.sql("select * from any").sqlResult
     a[TimeoutException] should be thrownBy Await.result(future, 2 seconds)
   }
 
-  it should "fail with Retry" in {
-    val driver = Driver.getOrCreate()
-    val sqlCommand = SQLCommand("select * from any")
-
-    val result = driver.syncQuery(sqlCommand, Timeout(2 seconds), 3)
-
-    result.hasError should be(true)
-    a[RuntimeException] should be thrownBy result.resultSet
-  }
 }
