@@ -43,14 +43,11 @@ trait SQLResult extends Result {
     // For array values, replace Seq and Array with square brackets
     // For cells that are beyond 20 characters, replace it with the first 17 and "..."
     val rows: Seq[Seq[String]] = schema.fieldNames.toSeq +: resultSet.map { row =>
-      row.toSeq.map { cell =>
-        val str = cell match {
+      row.toSeq.map {
           case null => "null"
           case array: Array[_] => array.mkString("[", ", ", "]")
           case seq: Seq[_] => seq.mkString("[", ", ", "]")
-          case _ => cell.toString
-        }
-        str
+          case cell => cell.toString
       }: Seq[String]
     }
 

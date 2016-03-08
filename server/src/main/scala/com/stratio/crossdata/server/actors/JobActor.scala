@@ -17,21 +17,18 @@ package com.stratio.crossdata.server.actors
 
 import java.util.concurrent.CancellationException
 
-import akka.actor.{Props, ActorRef, Actor}
-import com.stratio.crossdata.common.{SQLReply, SQLCommand}
-import com.stratio.crossdata.common.result.{SQLResult, ErrorSQLResult, SQLResponse, SuccessfulSQLResult}
-import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob, GetJobStatus}
-import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus}
-import com.stratio.crossdata.server.actors.JobActor.Events.{JobFailed, JobCompleted}
-import com.stratio.crossdata.server.actors.JobActor.Task
-
+import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.common.utils.concurrent.Cancellable
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.common.{SQLCommand, SQLReply}
+import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus, StartJob}
+import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
+import com.stratio.crossdata.server.actors.JobActor.Task
 import org.apache.log4j.Logger
-
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
 
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 
 
@@ -90,7 +87,6 @@ class JobActor(
 
   import JobActor.JobStatus._
   import JobActor.State
-
   import task._
 
   lazy val logger = Logger.getLogger(classOf[ServerActor])
@@ -114,15 +110,19 @@ class JobActor(
         case Failure(_: CancellationException) => self ! JobCompleted // Job cancellation
         case Failure(reason) => self ! JobFailed(reason) // Job failure
       }
-      runningTask.future.value.map(_ => None).getOrElse(timeout) foreach {
+
+      val isRunning = runningTask.future.value.isEmpty
+
+      timeout.filter(_ => isRunning).foreach {
         context.system.scheduler.scheduleOnce(_, self, CancelJob)
       }
+
       context.become(receive(st.copy(runningTask = Some(runningTask))))
 
     case CancelJob =>
       st.runningTask.foreach{ tsk =>
         logger.debug(s"Cancelling ${self.path}'s task ")
-        tsk.cancel
+        tsk.cancel()
       }
 
     case GetJobStatus =>
@@ -144,7 +144,7 @@ class JobActor(
     import scala.concurrent.ExecutionContext.Implicits.global
     Cancellable {
       val df = xdContext.sql(command.sql)
-      val rows = if (command.retrieveColumnNames)
+      val rows = if (command.flattenResults)
         df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
       else df.collect()
 

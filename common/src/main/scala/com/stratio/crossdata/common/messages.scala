@@ -31,31 +31,29 @@ private[crossdata] trait Command {
 private[crossdata] case class SQLCommand private(sql: String,
                                                  requestId: UUID = UUID.randomUUID(),
                                                  queryId: UUID = UUID.randomUUID(),
-                                                 retrieveColumnNames: Boolean = false,
+                                                 flattenResults: Boolean = false,
                                                  timeout: Option[FiniteDuration] = None
                                                   ) extends Command {
 
   def this(query: String,
            retrieveColNames: Boolean,
            timeoutDuration: FiniteDuration
-            ) = this(sql = query, retrieveColumnNames = retrieveColNames, timeout = Option(timeoutDuration))
+            ) = this(sql = query, flattenResults = retrieveColNames, timeout = Option(timeoutDuration))
 
   def this(query: String,
            retrieveColNames: Boolean
-            ) = this(sql = query, retrieveColumnNames = retrieveColNames, timeout = None)
+            ) = this(sql = query, flattenResults = retrieveColNames, timeout = None)
 
 }
 
 
-trait ControlCommand extends Command {
-  val requestId: UUID
-}
+trait ControlCommand extends Command
 
 private[crossdata] case class CancelQueryExecution(requestId: UUID) extends ControlCommand
 
 private[crossdata] case class GetJobStatus(requestId: UUID) extends ControlCommand
 
-private[crossdata] case class CancelCommand(requestId: UUID) extends Command
+private[crossdata] case class CancelCommand(requestId: UUID) extends ControlCommand
 
 private[crossdata] case class SecureCommand(cmd: Command, session: Session)
 
