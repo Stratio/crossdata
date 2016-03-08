@@ -17,20 +17,18 @@ package com.stratio.crossdata.server.actors
 
 import java.util.concurrent.CancellationException
 
-import akka.actor.{Props, ActorRef, Actor}
-import com.stratio.crossdata.common.SQLCommand
-import com.stratio.crossdata.common.result.{ErrorResult, SuccessfulQueryResult}
-import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob, GetJobStatus}
-import com.stratio.crossdata.server.actors.JobActor.Events.{JobFailed, JobCompleted}
-import com.stratio.crossdata.server.actors.JobActor.Task
-
+import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.common.utils.concurrent.Cancellable
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.common.{SQLCommand, SQLReply}
+import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus, StartJob}
+import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
+import com.stratio.crossdata.server.actors.JobActor.Task
 import org.apache.log4j.Logger
-
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
 
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 
 
@@ -66,7 +64,7 @@ object JobActor {
     * Cancelled or Failed task.
     * @param runningTask [[Cancellable]] wrapping a [[scala.concurrent.Future]] which acts as a Spark driver.
     */
-  case class State(runningTask: Option[Cancellable[SuccessfulQueryResult]]) {
+  case class State(runningTask: Option[Cancellable[SQLReply]]) {
     import JobStatus._
     def getStatus: JobStatus = runningTask map { task =>
       task.future.value map {
@@ -89,17 +87,16 @@ class JobActor(
 
   import JobActor.JobStatus._
   import JobActor.State
-
   import task._
 
   lazy val logger = Logger.getLogger(classOf[ServerActor])
 
   override def receive: Receive = receive(State(None))
 
+
   private def receive(st: State): Receive = {
 
     // Commands
-
     case StartJob if st.getStatus == Idle =>
 
       logger.debug(s"Starting Job under ${context.parent.path}")
@@ -113,15 +110,19 @@ class JobActor(
         case Failure(_: CancellationException) => self ! JobCompleted // Job cancellation
         case Failure(reason) => self ! JobFailed(reason) // Job failure
       }
-      runningTask.future.value.map(_ => None).getOrElse(timeout) foreach {
+
+      val isRunning = runningTask.future.value.isEmpty
+
+      timeout.filter(_ => isRunning).foreach {
         context.system.scheduler.scheduleOnce(_, self, CancelJob)
       }
+
       context.become(receive(st.copy(runningTask = Some(runningTask))))
 
     case CancelJob =>
       st.runningTask.foreach{ tsk =>
         logger.debug(s"Cancelling ${self.path}'s task ")
-        tsk.cancel
+        tsk.cancel()
       }
 
     case GetJobStatus =>
@@ -132,23 +133,22 @@ class JobActor(
     case event @ JobFailed(e) if sender == self =>
       logger.debug(s"Task failed at ${self.path}")
       context.parent ! event
-      requester ! ErrorResult(command.queryId, e.getMessage, Some(new Exception(e.getMessage)))
+      requester ! SQLReply(command.requestId, ErrorSQLResult(e.getMessage, Some(new Exception(e.getMessage))))
       throw e //Let It Crash: It'll be managed by its supervisor
     case JobCompleted if sender == self =>
       logger.debug(s"Completed or cancelled ${self.path} task")
       context.parent ! JobCompleted
   }
 
-  private def launchTask: Cancellable[SuccessfulQueryResult] = {
+  private def launchTask: Cancellable[SQLReply] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     Cancellable {
-      xdContext.sparkContext.setJobGroup(command.queryId.toString, command.query, true)
-      val df = xdContext.sql(command.query)
-      val rows = if (command.retrieveColumnNames)
+      val df = xdContext.sql(command.sql)
+      val rows = if (command.flattenResults)
         df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
       else df.collect()
 
-      SuccessfulQueryResult(command.queryId, rows, df.schema)
+      SQLReply(command.queryId, SuccessfulSQLResult(rows, df.schema))
     }
   }
 }
