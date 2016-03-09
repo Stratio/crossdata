@@ -22,7 +22,7 @@ import org.scalatest.junit.JUnitRunner
 class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with ElasticSearchDefaultConstants {
   
   "ElasticSearchConnectionUtils" should "build a native ES Connection" in {
-
+    assumeEnvironmentIsUpAndRunning
     val options: Map[String, String] = Map(
       "es.nodes" -> s"$ElasticHost",
       "es.port" -> s"$ElasticRestPort",
