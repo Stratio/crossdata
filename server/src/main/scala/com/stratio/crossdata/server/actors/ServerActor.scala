@@ -22,19 +22,21 @@ import akka.contrib.pattern.DistributedPubSubExtension
 import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
-
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, SubscribeAck, Subscribe}
 import akka.remote.DisassociatedEvent
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob}
-import com.stratio.crossdata.common.{SecureCommand, SQLCommand}
+import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.types.StructType
 
 import scala.concurrent.duration.FiniteDuration
+import scala.reflect.io.File
 
 
 object ServerActor {
@@ -48,7 +50,7 @@ object ServerActor {
   protected case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
 
   private object ManagementMessages {
-    case class DelegateCommand(scommand: SecureCommand, broadcaster: ActorRef)
+    case class DelegateCommand(scommand: CommandEnvelope, broadcaster: ActorRef)
     case class FinishJob(jobActor: ActorRef)
   }
 
@@ -91,15 +93,26 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
     * @param cmd
     * @param st
     */
-  private def executeAccepted(cmd: SecureCommand)(st: State): Unit = cmd match {
-    case SecureCommand(sqlCommand @ SQLCommand(query, requestId, queryId, withColnames, timeout), session @ Session(id, requester)) =>
+  private def executeAccepted(cmd: CommandEnvelope)(st: State): Unit = cmd match {
+    case CommandEnvelope(sqlCommand @ SQLCommand(query, requestId, queryId, withColnames, timeout), session @ Session(id, requester)) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
       val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
       jobActor ! StartJob
       context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
 
-    case SecureCommand(cc @ CancelQueryExecution(queryId), session @ Session(id, requester)) =>
+    case CommandEnvelope(addJarCommand:AddJARCommand,session @ Session(id, requester)) =>
+      logger.debug(s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
+      logger.debug(s"Session identifier $session")
+      //TODO  Maybe include job controller if it is necessary as in sql command
+      if ((addJarCommand.path.toLowerCase.startsWith("hdfs://")) || (File(addJarCommand.path).exists)) {
+        xdContext.addJar(addJarCommand.path)
+        sender ! SQLReply(addJarCommand.requestId,SuccessfulSQLResult(Array.empty, new StructType()))
+      } else {
+        sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exists or is not a hdfs file", Some(new Exception("File doesn't exists or is not a hdfs file"))))
+      }
+
+    case CommandEnvelope(cc @ CancelQueryExecution(queryId), session @ Session(id, requester)) =>
       st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
   }
 
@@ -111,7 +124,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
 
     case DelegateCommand(cmd, broadcaster) if broadcaster != self =>
       cmd match { // Inner pattern matching for future delegated command validations
-        case sc @ SecureCommand(CancelQueryExecution(queryId), Session(_, requester)) =>
+        case sc @ CommandEnvelope(CancelQueryExecution(queryId), Session(_, requester)) =>
           st.jobsById.get(JobId(requester, queryId)) foreach(_ => executeAccepted(sc)(st))
         /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
             servers through the topic. */
@@ -121,15 +134,22 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
   def commandMessagesRec(st: State): Receive = {
 
-    case sc @ SecureCommand(_: SQLCommand, _) => executeAccepted(sc)(st)
+    case sc @ CommandEnvelope(_: SQLCommand, _) =>
+      executeAccepted(sc)(st)
 
-    case sc @ SecureCommand(cc: ControlCommand, session @ Session(id, requester)) =>
+    case sc @ CommandEnvelope(_: AddJARCommand, _) =>
+      executeAccepted(sc)(st)
+
+    case sc @ CommandEnvelope(cc: ControlCommand, session @ Session(id, requester)) =>
       st.jobsById.get(JobId(requester, cc.requestId)) map { _ =>
         executeAccepted(sc)(st) // Command validated to be executed by this server.
       } getOrElse {
         // If it can't run here it should be executed somewhere else
         mediator ! Publish(managementTopic, DelegateCommand(sc, self))
       }
+    case other:CommandEnvelope =>
+      other.cmd
+
 
   }
 
@@ -189,5 +209,6 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {
     case _ => Restart //Crashed job gets restarted (or not, depending on `retryNoAttempts` and `retryCountWindow`)
   }
+
 
 }

@@ -17,20 +17,28 @@ package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
+
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
+import akka.util.Timeout
+import com.stratio.crossdata.common.{AddJARCommand, SQLCommand}
+import com.stratio.crossdata.driver.metadata.JavaTableName
+import org.apache.spark.sql.AnalysisException
+
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.reflect.io.File
 
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
-
+/*
   "Crossdata" should "return an ErrorResult when running an unparseable query" in {
 
     assumeCrossdataUpAndRunning()
     val driver = Driver.getOrCreate()
+
     val result = driver.sql("select select").waitForResult(10 seconds)
     result shouldBe an[ErrorSQLResult]
     result.asInstanceOf[ErrorSQLResult].cause.isDefined shouldBe (true)
@@ -43,6 +51,7 @@ class DriverIT extends EndToEndTest {
     val driver = Driver.getOrCreate()
 
     driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
+
 
     // TODO how to process metadata ops?
     val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
@@ -84,6 +93,36 @@ class DriverIT extends EndToEndTest {
 
     result.hasError should equal (false)
 
+  }
+
+*/
+  "Crossdata Driver" should "be able to execute ADD JAR Command of an existent file" in {
+    val file=File("/tmp/jar").createFile(false)
+    val driver = Driver.getOrCreate()
+    val result = driver.addJar(s"/tmp/jar").waitForResult()
+
+    driver.stop
+    file.delete
+
+    result.hasError should equal (false)
+  }
+
+  "Crossdata Driver" should "be return an Error when execute ADD JAR Command of an un-existent file" in {
+
+    val driver = Driver.getOrCreate()
+    val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
+    driver.stop
+
+    result.hasError should equal (true)
+  }
+
+  "Crossdata Driver" should "be able to execute ADD JAR Command of any HDFS file" in {
+
+    val driver = Driver.getOrCreate()
+    val result = driver.addJar(s"hdfs://repo/file.jar").waitForResult()
+    driver.stop
+
+    result.hasError should equal (false)
   }
 
 }

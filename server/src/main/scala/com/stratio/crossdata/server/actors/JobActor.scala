@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.stratio.crossdata.server.actors
 
 import java.util.concurrent.CancellationException
@@ -26,11 +27,8 @@ import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFai
 import com.stratio.crossdata.server.actors.JobActor.Task
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
-
 import scala.concurrent.duration.FiniteDuration
 import scala.util.{Failure, Success}
-
-
 
 object JobActor {
 
@@ -46,18 +44,26 @@ object JobActor {
   trait JobEvent
 
   object Events {
+
     case object JobCompleted extends JobEvent
+
     case class JobFailed(err: Throwable) extends JobEvent
+
   }
 
   object Commands {
+
     trait JobCommand
+
     case object GetJobStatus
+
     case object CancelJob
+
     case object StartJob
   }
 
   case class Task(command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration])
+
 
   /**
     * The [[JobActor]] state is directly given by the running task which can be: None (Idle st) or a Running, Completed,
@@ -85,13 +91,16 @@ class JobActor(
                 val task: Task
               ) extends Actor {
 
+
   import JobActor.JobStatus._
   import JobActor.State
+
   import task._
 
   lazy val logger = Logger.getLogger(classOf[ServerActor])
 
   override def receive: Receive = receive(State(None))
+
 
 
   private def receive(st: State): Receive = {
@@ -110,6 +119,7 @@ class JobActor(
         case Failure(_: CancellationException) => self ! JobCompleted // Job cancellation
         case Failure(reason) => self ! JobFailed(reason) // Job failure
       }
+
 
       val isRunning = runningTask.future.value.isEmpty
 
@@ -148,7 +158,9 @@ class JobActor(
         df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
       else df.collect()
 
+
       SQLReply(command.queryId, SuccessfulSQLResult(rows, df.schema))
     }
   }
+
 }

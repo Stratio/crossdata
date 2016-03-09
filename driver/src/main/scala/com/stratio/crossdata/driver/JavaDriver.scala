@@ -15,9 +15,9 @@
  */
 package com.stratio.crossdata.driver
 
-
 import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.driver.config.DriverConf
+
 import com.stratio.crossdata.driver.metadata.{FieldMetadata, JavaTableName}
 import com.stratio.crossdata.driver.session.Authentication
 import org.slf4j.LoggerFactory
@@ -60,6 +60,7 @@ class JavaDriver private(driverConf: DriverConf,
   def sql(sqlText: String, timeoutDuration: Duration): SQLResult =
     scalaDriver.sql(sqlText).waitForResult(timeoutDuration)
 
+
   def importTables(dataSourceProvider: String, options: java.util.Map[String, String]): SQLResult =
     scalaDriver.importTables(dataSourceProvider, options.toMap)
 
@@ -68,6 +69,7 @@ class JavaDriver private(driverConf: DriverConf,
 
   def dropTable(name: String, isTemporary: Boolean = false): SQLResult =
     scalaDriver.dropTable(name, isTemporary)
+
 
   def listTables(): java.util.List[JavaTableName] =
     scalaDriver.listTables(None).map { case (table, database) => new JavaTableName(table, database.getOrElse("")) }
@@ -91,6 +93,9 @@ class JavaDriver private(driverConf: DriverConf,
   def stop(): Unit = {
     scalaDriver.stop()
   }
+
+  def addJar(path:String): Unit =
+    scalaDriver.addJar(path)
 
   @deprecated("Close will be removed from public API. Use stop instead")
   def close() = stop()

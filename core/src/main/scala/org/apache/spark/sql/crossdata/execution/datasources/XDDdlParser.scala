@@ -15,10 +15,11 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import scala.language.implicitConversions
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.datasources.DDLParser
 import org.apache.spark.sql.types._
+
+import scala.language.implicitConversions
 
 
 class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuery) {
@@ -31,8 +32,13 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
   protected val PRIMARY =Keyword("PRIMARY")
   protected val KEY = Keyword("KEY")
 
+  //TODO Add new Command parser to add a jar
+  protected val ADD =Keyword("ADD")
+  protected val JAR = Keyword("JAR")
+
+
   override protected lazy val ddl: Parser[LogicalPlan] =
-    createTable | describeTable | refreshTable | importStart | dropTable | createView | createExternalTable | dropView
+    createTable | describeTable | refreshTable | importStart | dropTable | createView | createExternalTable | dropView | addJar
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -73,8 +79,15 @@ class XDDdlParser(parseQuery: String => LogicalPlan) extends DDLParser(parseQuer
 
          CreateExternalTable(tableName, userSpecifiedSchema, provider, options)
     }
-
-
   }
+
+  protected lazy val addJar: Parser[LogicalPlan] =
+    ADD ~> JAR ~> restInput ^^ {
+      case jarPath =>
+        AddJar(jarPath.trim)
+    }
+
+
+
 
 }
