@@ -17,8 +17,7 @@ package com.stratio.crossdata.driver.actor
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
-import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.{SecureSQLCommand, SQLCommand}
+import com.stratio.crossdata.common.{SQLCommand, SecureCommand}
 import com.stratio.crossdata.driver.Driver
 import org.apache.log4j.Logger
 
@@ -36,12 +35,13 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
   lazy val logger = Logger.getLogger(classOf[ProxyActor])
 
+
   override def receive: Receive = {
-    case secureSQLCommand @ SecureSQLCommand(cmd, _) =>
+    case secureSQLCommand @ SecureCommand(cmd, _) =>
       clusterClientActor forward ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
       cmd match {
-        case sqlCommand: SQLCommand => logger.info(s"Sending query: ${sqlCommand.query}")
+        case sqlCommand: SQLCommand => logger.info(s"Sending query: ${sqlCommand.sql}")
         case any => logger.info(s"Sending query: $any")
       }
 

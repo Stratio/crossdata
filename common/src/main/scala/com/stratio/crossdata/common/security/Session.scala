@@ -15,4 +15,6 @@
  */
 package com.stratio.crossdata.common.security
 
-case class Session(id: String)
+import akka.actor.ActorRef
+
+private [crossdata] case class Session(id: String, clientRef: ActorRef)
