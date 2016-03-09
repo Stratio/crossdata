@@ -33,7 +33,7 @@ import scala.reflect.io.File
 
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
-/*
+
   "Crossdata" should "return an ErrorResult when running an unparseable query" in {
 
     assumeCrossdataUpAndRunning()
@@ -95,7 +95,7 @@ class DriverIT extends EndToEndTest {
 
   }
 
-*/
+
   "Crossdata Driver" should "be able to execute ADD JAR Command of an existent file" in {
     val file=File("/tmp/jar").createFile(false)
     val driver = Driver.getOrCreate()
