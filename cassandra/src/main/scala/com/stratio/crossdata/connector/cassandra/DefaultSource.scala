@@ -159,7 +159,11 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   override def createExternalTable(context: SQLContext, tableName: String, databaseName: Option[String], schema: StructType, options: Map[String, String]): Boolean = {
 
+<<<<<<< HEAD
     val keyspace: String = options.get(CassandraDataSourceKeyspaceNameProperty).orElse(databaseName).
+=======
+    val keyspace: String = databaseName.orElse(options.get(CassandraDataSourceKeyspaceNameProperty)).
+>>>>>>> 155a864e34d1b59a8c0f9e968e0fb68b0e7a1a6a
       getOrElse(throw new RuntimeException(s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command"))
 
     try {

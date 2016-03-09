@@ -25,6 +25,7 @@ import com.sksamuel.elastic4s.IndexType
 import com.sksamuel.elastic4s.mappings._
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
+
 import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, DataSourceRegister, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.{BooleanType, DateType, DoubleType, FloatType, IntegerType, LongType, StringType, StructType}
@@ -124,6 +125,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
 
     val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).orElse(databaseName.map((_, tableName))).
       getOrElse(throw new RuntimeException(s"$ES_RESOURCE is required when running CREATE EXTERNAL TABLE"))
+
 
     val elasticSchema = schema.map { field =>
       field.dataType match {
