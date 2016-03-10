@@ -37,19 +37,18 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
 
   override def receive: Receive = {
-    case secureSQLCommand @ CommandEnvelope(cmd, _) =>
-      cmd match {
-        case sqlCommand: SQLCommand =>
+
+    case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
           logger.info(s"Sending query: ${sqlCommand.sql}")
           clusterClientActor forward ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
-        case addJarCommand:AddJARCommand =>
+
+    case secureSQLCommand @ CommandEnvelope(_:AddJARCommand, _) =>
           logger.debug(s"Send Add Jar command to all servers")
           clusterClientActor forward ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
-        case any => logger.info(s"Sending query: $any")
 
-      }
     case SQLCommand =>
       logger.warn("Command message not securitized. Message won't be sent to the Crossdata cluster")
+
     case any =>
       logger.warn(s"Unknown message: $any. Message won't be sent to the Crossdata cluster")
   }

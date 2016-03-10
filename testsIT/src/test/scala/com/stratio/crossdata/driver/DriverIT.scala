@@ -17,13 +17,7 @@ package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
-
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
-import akka.util.Timeout
-import com.stratio.crossdata.common.{AddJARCommand, SQLCommand}
-import com.stratio.crossdata.driver.metadata.JavaTableName
-import org.apache.spark.sql.AnalysisException
-
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
