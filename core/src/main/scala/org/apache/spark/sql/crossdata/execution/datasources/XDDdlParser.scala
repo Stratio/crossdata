@@ -15,7 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-
 import java.util.UUID
 
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
@@ -34,6 +33,8 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val DROP = Keyword("DROP")
   protected val VIEW = Keyword("VIEW")
   protected val EXTERNAL = Keyword("EXTERNAL")
+  protected val ADD =Keyword("ADD")
+  protected val JAR = Keyword("JAR")
   //Streaming keywords
   protected val EPHEMERAL = Keyword("EPHEMERAL")
   protected val SHOW = Keyword("SHOW")
@@ -43,7 +44,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val STATUSES = Keyword("STATUSES")
   protected val QUERY = Keyword("QUERY")
   protected val QUERIES = Keyword("QUERIES")
-  protected val ADD = Keyword("ADD")
   protected val WITH = Keyword("WITH")
   protected val WINDOW = Keyword("WINDOW")
   protected val SEC = Keyword("SEC")
@@ -56,7 +56,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable |
-      createView | createExternalTable | dropView | streamingSentences
+      createView | createExternalTable | dropView | addJar | streamingSentences
 
   // TODO move to StreamingDdlParser
 
@@ -84,7 +84,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
         DropView(tableId)
     }
 
-
   protected lazy val createView: Parser[LogicalPlan] = {
 
     (CREATE ~> TEMPORARY.? <~ VIEW) ~ tableIdentifier ~ (AS ~> restInput) ^^ {
@@ -105,8 +104,13 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
         CreateExternalTable(tableName, userSpecifiedSchema, provider, options)
     }
-
   }
+
+  protected lazy val addJar: Parser[LogicalPlan] =
+    ADD ~> JAR ~> restInput ^^ {
+      case jarPath =>
+        AddJar(jarPath.trim)
+    }
 
   /**
    * Streaming
@@ -186,11 +190,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
       case queryIdent => ShowEphemeralQueries(queryIdent)
     }
   }
-  protected lazy val addEphemeralQuery: Parser[LogicalPlan] = {
 
+  protected lazy val addEphemeralQuery: Parser[LogicalPlan] = {
     ADD.? ~ streamingSql ~ (WITH ~ WINDOW ~> numericLit <~ (SEC | SECS | SECONDS)) ~ (AS ~> ident).? ^^ {
       case addDefined ~ streamQl ~ litN ~ topIdent =>
-
         val queryTables: Seq[LogicalPlan] = parseQuery(streamQl).collect {
           case UnresolvedRelation(tableIdent, alias) =>
             xDContext.catalog.lookupRelation(tableIdent, alias)
@@ -206,23 +209,20 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
           case tableNames =>
             sys.error(s"Expected an ephemeral table within the query, but found ${tableNames.mkString(",")}")
         }
-
     }
-
   }
-
 
   protected lazy val dropEphemeralQuery: Parser[LogicalPlan] = {
     (DROP ~ EPHEMERAL ~ QUERY ~> ident) ^^ {
       case queryIdentifier => DropEphemeralQuery(queryIdentifier)
     }
   }
+
   protected lazy val dropAllEphemeralQueries: Parser[LogicalPlan] = {
     (DROP ~ ALL ~ EPHEMERAL ~ QUERIES ~> (IN ~> tableIdentifier).? ) ^^ {
       case tableIdent => DropAllEphemeralQueries(tableIdent.map(_.unquotedString))
     }
   }
-
 
   // Returns the select statement without the streaming info
   protected lazy val streamingSql: Parser[String] = new Parser[String] {
