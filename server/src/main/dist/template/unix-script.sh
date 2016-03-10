@@ -73,7 +73,7 @@ fi
 LIB=${CROSSDATA_LIB}
 CLASSPATH=${CLASSPATH}:${CROSSDATA_CONF}/:$(JARS=("$LIB"/*.jar); IFS=:; echo "${JARS[*]}")
 
-exec "${JAVACMD}" "${CROSSDATA_JAVA_OPTS}" @EXTRA_JVM_ARGUMENTS@ \
+exec "${JAVACMD}" @EXTRA_JVM_ARGUMENTS@ \
   -classpath "${CLASSPATH}" \
   -Dapp.name="@APP_NAME@" \
   -Dapp.pid="$$" \
