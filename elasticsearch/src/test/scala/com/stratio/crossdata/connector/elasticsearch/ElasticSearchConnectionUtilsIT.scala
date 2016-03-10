@@ -38,7 +38,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
   }
 
 
-  it should "List ElasticSearch Tables in One Index" in {
+  it should "list ElasticSearch Tables in One Index" in {
     assumeEnvironmentIsUpAndRunning
 
     val options: Map[String, String] = Map(
@@ -59,7 +59,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
 
   }
 
-  it should "List All ElasticSearch Tables" in {
+  it should "list All ElasticSearch Tables" in {
     assumeEnvironmentIsUpAndRunning
 
     val options: Map[String, String] = Map(
@@ -85,7 +85,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
   }
 
 
-  it should "List tables on an empty index" in {
+  it should "list tables on an empty index" in {
     assumeEnvironmentIsUpAndRunning
 
     val options: Map[String, String] = Map(
