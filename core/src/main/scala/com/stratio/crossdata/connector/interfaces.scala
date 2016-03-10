@@ -127,9 +127,10 @@ trait NativeFunctionExecutor {
   */
 trait TableManipulation extends GenerateConnectorOptions{
 
+
   def createExternalTable(context: SQLContext,
                           tableName: String,
                           databaseName: Option[String],
                           schema: StructType,
-                          options: Map[String, String]): Boolean
+                          options: Map[String, String]): Option[TableInventory.Table]
 }

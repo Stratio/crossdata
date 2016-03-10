@@ -189,10 +189,16 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
     finalMap
   }
 
-  override def createExternalTable(context: SQLContext, tableName: String, databaseName: Option[String], schema: StructType, options: Map[String, String]): Boolean = {
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   databaseName: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String]): Option[Table] = {
 
     val database: String = options.get(Database).orElse(databaseName).
       getOrElse(throw new RuntimeException(s"$Database required when use CREATE EXTERNAL TABLE command"))
+
+    val collection: String = options.getOrElse(Collection, tableName)
 
     val mongoOptions = DBObject()
     options.map {
@@ -207,15 +213,15 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
     try {
 
       MongodbConnection.withClientDo(hosts) { mongoClient =>
-        mongoClient.getDB(database).createCollection(tableName, mongoOptions)
+        mongoClient.getDB(database).createCollection(collection, mongoOptions)
       }
-      true
+      Option(Table(collection, Option(database), Option(schema)))
     } catch {
       case e: IllegalArgumentException =>
         throw e
       case e: Exception =>
         sys.error(e.getMessage)
-        false
+        None
     }
   }
 }

@@ -43,12 +43,13 @@ class ElasticSearchCreateExternalTableIT extends ElasticWithSharedContext {
     table should not be null
     table.schema.fieldNames should contain ("name")
 
+    client.get.admin.indices.prepareTypesExists(Index).setTypes(Type).get.isExists shouldBe true
   }
 
   it should "create an external table without es.resource" in {
     assumeEnvironmentIsUpAndRunning
     val createTableQUeryString =
-      s"""|CREATE EXTERNAL TABLE $Index.newtable (id Integer, name String)
+      s"""|CREATE EXTERNAL TABLE $Index.newtable2 (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
           |es.nodes '$ElasticHost',
@@ -61,10 +62,11 @@ class ElasticSearchCreateExternalTableIT extends ElasticWithSharedContext {
       sql(createTableQUeryString).collect()
 
     //Expectations
-    val table = xdContext.table(s"$Index.otherTable")
+    val table = xdContext.table(s"$Index.newtable2")
     table should not be null
     table.schema.fieldNames should contain ("name")
 
+    client.get.admin.indices.prepareTypesExists(Index).setTypes("newtable2").get.isExists shouldBe true
 
   }
 

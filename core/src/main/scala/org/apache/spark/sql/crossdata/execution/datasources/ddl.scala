@@ -15,7 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.TableIdentifier
@@ -121,8 +120,6 @@ case class CreateExternalTable(
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    require(tableIdent.database.isDefined, "Catalog is required when using CREATE EXTERNAL TABLE command")
-
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
 
     resolved match {
@@ -132,10 +129,13 @@ case class CreateExternalTable(
 
       case tableManipulation: TableManipulation =>
 
-        tableManipulation.createExternalTable(sqlContext, tableIdent.table, tableIdent.database, userSpecifiedSchema, options)
-        val optionsWithTable = tableManipulation.generateConnectorOpts(Table(tableIdent.table, tableIdent.database, Option(userSpecifiedSchema)), options)
-        val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
-        sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
+        val tableInventory = tableManipulation.createExternalTable(sqlContext, tableIdent.table, tableIdent.database, userSpecifiedSchema, options)
+        tableInventory.map{ tableInventory =>
+          val optionsWithTable = tableManipulation.generateConnectorOpts(tableInventory, options)
+          val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
+          sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
+        } getOrElse( throw new RuntimeException(s"External table can't be created"))
+
 
       case _ =>
         sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")

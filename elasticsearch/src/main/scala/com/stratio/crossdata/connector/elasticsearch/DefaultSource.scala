@@ -121,7 +121,11 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
     ElasticSearchConnectionUtils.listTypes(params(options))
   }
 
-  override def createExternalTable(context: SQLContext, tableName: String, databaseName: Option[String], schema: StructType, options: Map[String, String]): Boolean = {
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   databaseName: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String]): Option[Table] = {
 
     val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).orElse(databaseName.map((_, tableName))).
       getOrElse(throw new RuntimeException(s"$ES_RESOURCE is required when running CREATE EXTERNAL TABLE"))
@@ -145,11 +149,11 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
       client.execute {
         put.mapping(indexType) as elasticSchema
       }
-      true
+      Option(Table(typeName, Option(index), Option(schema)))
     } catch {
       case e: Exception =>
         sys.error(e.getMessage)
-        false
+        None
     }
   }
 
