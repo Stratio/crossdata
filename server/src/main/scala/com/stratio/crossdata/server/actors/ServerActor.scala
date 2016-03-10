@@ -105,7 +105,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       logger.debug(s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
       //TODO  Maybe include job controller if it is necessary as in sql command
-      if ((addJarCommand.path.toLowerCase.startsWith("hdfs://")) || (File(addJarCommand.path).exists)) {
+      if (addJarCommand.path.toLowerCase.startsWith("hdfs://") || File(addJarCommand.path).exists) {
         xdContext.addJar(addJarCommand.path)
         sender ! SQLReply(addJarCommand.requestId,SuccessfulSQLResult(Array.empty, new StructType()))
       } else {
