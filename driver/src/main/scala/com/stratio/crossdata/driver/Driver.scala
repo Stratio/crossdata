@@ -21,7 +21,8 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.contrib.pattern.ClusterClient
 import akka.pattern.ask
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SQLResponse, SQLResult, SuccessfulSQLResult}
-import com.stratio.crossdata.common.{CancelCommand, SQLCommand, SQLReply, SecureCommand, ServerReply}
+import com.stratio.crossdata.common._
+
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.FieldMetadata
@@ -43,8 +44,10 @@ import scala.reflect.ClassTag
  * the JavaDriver.scala has to be updated according to those changes.
  * =======================================================================================
  */
+
 class Driver private(driverConf: DriverConf,
                      auth: Authentication = Driver.generateDefaultAuth) {
+
 
   /**
    * Tuple (tableName, Optional(databaseName))
@@ -89,12 +92,32 @@ class Driver private(driverConf: DriverConf,
    * @return A SQLResponse with the id and the result set.
    */
   def sql(query: String): SQLResponse = {
-    val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
-    val secureCommand = SecureCommand(sqlCommand, driverSession)
-    new SQLResponse(sqlCommand.requestId, askCommand[SQLReply](proxyActor, secureCommand).map(_.sqlResult)) {
-      // TODO cancel sync => 5 secs
-      override def cancelCommand() = askCommand(proxyActor, CancelCommand(sqlCommand.requestId))
+
+    //TODO remove this part when servers broadcast bus was realized
+    //Preparse query to know if it is an special command sent from the shell or other driver user that is not a query
+    val Pattern="""(\s*add)(\s+jar\s+)(.*)""".r
+    query match {
+      case Pattern(add,jar,path)=>addJar(path.trim)
+      case _=>
+        val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
+        val secureCommand = CommandEnvelope(sqlCommand, driverSession)
+        new SQLResponse(sqlCommand.requestId, askCommand[SQLReply](proxyActor, secureCommand).map(_.sqlResult)) {
+          // TODO cancel sync => 5 secs
+          override def cancelCommand() = askCommand(proxyActor, CancelCommand(sqlCommand.requestId))
+        }
     }
+  }
+
+
+  /**
+    * Add Jar to the XD Context
+    * @param path The path of the JAR
+    * @return A SQLResponse with the id and the result set.
+    */
+  def addJar(path: String): SQLResponse = {
+    val addJarCommand = new AddJARCommand(path)
+    val secureCommand = CommandEnvelope(addJarCommand, driverSession)
+    new SQLResponse(addJarCommand.requestId, askCommand[SQLReply](proxyActor, secureCommand).map(_.sqlResult))
   }
 
 
@@ -136,10 +159,6 @@ class Driver private(driverConf: DriverConf,
   private def askCommand[T <: ServerReply : ClassTag](remoteActor: ActorRef, message: Any, timeout: FiniteDuration = 1 day): Future[T] = {
     remoteActor.ask(message)(timeout).mapTo[T]
   }
-
-
-  /* TODO create command in XD Parser => syncQuery(SQLCommand("SHOW DATABASES"))
-  def listDatabases(): Seq[String] = ??? */
 
 
   /**
@@ -204,8 +223,8 @@ class Driver private(driverConf: DriverConf,
   def close() = stop()
 
 
-  private def securitizeCommand(command: SQLCommand): SecureCommand =
-    new SecureCommand(command, driverSession)
+  private def securitizeCommand(command: SQLCommand): CommandEnvelope =
+    new CommandEnvelope(command, driverSession)
 
 
   private def getFlattenedFields(fieldName: String, dataType: DataType): Seq[FieldMetadata] = dataType match {
