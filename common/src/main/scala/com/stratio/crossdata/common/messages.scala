@@ -25,11 +25,11 @@ import scala.concurrent.duration.FiniteDuration
 
 // Driver -> Server messages
 private[crossdata] trait Command {
-  def requestId: UUID
+  val requestId: UUID
 }
 
 private[crossdata] case class SQLCommand private(sql: String,
-                                                 requestId: UUID = UUID.randomUUID(),
+                                                 override val requestId: UUID = UUID.randomUUID(),
                                                  queryId: UUID = UUID.randomUUID(),
                                                  flattenResults: Boolean = false,
                                                  timeout: Option[FiniteDuration] = None
@@ -46,16 +46,31 @@ private[crossdata] case class SQLCommand private(sql: String,
 
 }
 
+case class AddJARCommand(path: String,
+                          override val requestId: UUID = UUID.randomUUID(),
+                          timeout: Option[FiniteDuration] = None
+                        ) extends Command {
+  def this(
+            jarpath: String,
+            timeout: FiniteDuration
+          ) = this(path=jarpath,  timeout=Option(timeout))
+
+  def this(
+            jarpath: String
+          ) = this(path=jarpath)
+
+}
+
 
 trait ControlCommand extends Command
 
-private[crossdata] case class CancelQueryExecution(requestId: UUID) extends ControlCommand
+private[crossdata] case class CancelQueryExecution(override val requestId: UUID) extends ControlCommand
 
-private[crossdata] case class GetJobStatus(requestId: UUID) extends ControlCommand
+private[crossdata] case class GetJobStatus(override val requestId: UUID) extends ControlCommand
 
-private[crossdata] case class CancelCommand(requestId: UUID) extends ControlCommand
+private[crossdata] case class CancelCommand(override val requestId: UUID) extends ControlCommand
 
-private[crossdata] case class SecureCommand(cmd: Command, session: Session)
+private[crossdata] case class CommandEnvelope(cmd: Command, session: Session)
 
 
 // Server -> Driver messages

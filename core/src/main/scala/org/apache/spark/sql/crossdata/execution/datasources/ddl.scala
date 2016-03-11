@@ -26,6 +26,8 @@ import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
 import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
 
+import scala.reflect.io.File
+
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with Logging {
 
@@ -107,6 +109,19 @@ private[crossdata] case class DropView(viewIdentifier: TableIdentifier)
   override def run(sqlContext: SQLContext): Seq[Row] = {
     sqlContext.catalog.dropView(viewIdentifier.toSeq)
     Seq.empty
+  }
+}
+
+private[crossdata] case class AddJar(jarPath: String)
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    if ((jarPath.toLowerCase.startsWith("hdfs://")) || (File(jarPath).exists)) {
+      sqlContext.sparkContext.addJar(jarPath)
+      Seq.empty
+    } else {
+      sys.error("File doesn't exists or is not a hdfs file")
+    }
   }
 }
 

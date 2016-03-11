@@ -131,4 +131,9 @@ class XDDdlParserSpec extends BaseXDTest {
 
   }
 
+  it should "successfully parse a ADD JAR into a AddJar RunnableCommand" in {
+    val sentence = "ADD JAR /tmp/jar"
+    parser.parse(sentence) shouldBe AddJar("/tmp/jar")
+  }
+
 }
