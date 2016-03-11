@@ -27,18 +27,20 @@ import org.apache.spark.streaming.{Milliseconds, StreamingContext, StreamingCont
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest._
+import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.time.SpanSugar._
 
 @RunWith(classOf[JUnitRunner])
 class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
-with DefaultTimeout
-with ImplicitSender
-with WordSpecLike
-with BeforeAndAfterAll
-with CommonValues
-with BeforeAndAfter
-with ShouldMatchers {
+  with DefaultTimeout
+  with ImplicitSender
+  with WordSpecLike
+  with BeforeAndAfterAll
+  with CommonValues
+  with BeforeAndAfter
+  with ShouldMatchers
+  with TimeLimitedTests {
 
   def this() = this(ActorSystem("EphemeralStatusActor"))
 
@@ -47,6 +49,8 @@ with ShouldMatchers {
   var ssc: StreamingContext = _
   var zkTestServer: TestingServer = _
   var zookeeperConnection: String = _
+
+  val timeLimit = 2 minutes
 
   override def beforeAll: Unit = {
     zkTestServer = new TestingServer()

@@ -23,21 +23,25 @@ import com.stratio.crossdata.streaming.test.CommonValues
 import org.apache.curator.test.TestingServer
 import org.apache.curator.utils.CloseableUtils
 import org.junit.runner.RunWith
+import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.mock.MockitoSugar
-import org.scalatest.{FlatSpecLike, BeforeAndAfterAll, WordSpecLike}
+import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
+import org.scalatest.time.SpanSugar._
 
 @RunWith(classOf[JUnitRunner])
 class EphemeralQueryActorIT(_system: ActorSystem) extends TestKit(_system)
 with DefaultTimeout
 with ImplicitSender
 with WordSpecLike
-with BeforeAndAfterAll {
+with BeforeAndAfterAll
+with TimeLimitedTests {
 
   def this() = this(ActorSystem("EphemeralQueryActor"))
 
   var zkTestServer: TestingServer = _
   var zookeeperConnection: String = _
+
+  val timeLimit = 2 minutes
 
   override def beforeAll: Unit = {
     zkTestServer = new TestingServer()
