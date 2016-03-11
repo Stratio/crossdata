@@ -20,6 +20,7 @@ import akka.actor.{ActorSystem, Props}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.stratio.crossdata.streaming.actors.EphemeralStatusActor._
 import com.stratio.crossdata.streaming.test.CommonValues
+import com.stratio.crossdata.test.BaseXDTest
 import org.apache.curator.test.TestingServer
 import org.apache.curator.utils.CloseableUtils
 import org.apache.spark.sql.crossdata.models.EphemeralExecutionStatus
@@ -32,13 +33,14 @@ import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
 class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
-with DefaultTimeout
-with ImplicitSender
-with WordSpecLike
-with BeforeAndAfterAll
-with CommonValues
-with BeforeAndAfter
-with ShouldMatchers {
+  with DefaultTimeout
+  with ImplicitSender
+  with WordSpecLike
+  with BeforeAndAfterAll
+  with CommonValues
+  with BeforeAndAfter
+  with ShouldMatchers
+  with BaseXDTest {
 
   def this() = this(ActorSystem("EphemeralStatusActor"))
 

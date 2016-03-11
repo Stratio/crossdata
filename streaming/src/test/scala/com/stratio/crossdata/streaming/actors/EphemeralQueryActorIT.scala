@@ -20,6 +20,7 @@ import akka.actor.{ActorSystem, Props}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.stratio.crossdata.streaming.actors.EphemeralQueryActor._
 import com.stratio.crossdata.streaming.test.CommonValues
+import com.stratio.crossdata.test.BaseXDTest
 import org.apache.curator.test.TestingServer
 import org.apache.curator.utils.CloseableUtils
 import org.junit.runner.RunWith
@@ -32,7 +33,8 @@ class EphemeralQueryActorIT(_system: ActorSystem) extends TestKit(_system)
 with DefaultTimeout
 with ImplicitSender
 with WordSpecLike
-with BeforeAndAfterAll {
+with BeforeAndAfterAll
+with BaseXDTest {
 
   def this() = this(ActorSystem("EphemeralQueryActor"))
 

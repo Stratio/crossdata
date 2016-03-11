@@ -16,12 +16,12 @@
 
 package com.stratio.crossdata.streaming.test
 
+import com.stratio.crossdata.test.BaseXDTest
 import org.scalatest._
 import org.scalatest.concurrent.Eventually
 
-trait BaseSparkStreamingXDTest extends FunSuite
-with Matchers
-with ShouldMatchers
-with BeforeAndAfterAll
-with BeforeAndAfter
-with Eventually
+trait BaseSparkStreamingXDTest extends BaseXDTest
+  with ShouldMatchers
+  with BeforeAndAfterAll
+  with BeforeAndAfter
+  with Eventually
