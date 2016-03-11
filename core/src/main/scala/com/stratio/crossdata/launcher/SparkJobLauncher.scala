@@ -92,6 +92,4 @@ object SparkJobLauncher extends Logging with CrossdataSerializer{
     ).toMap
   }
 
-
-
 }

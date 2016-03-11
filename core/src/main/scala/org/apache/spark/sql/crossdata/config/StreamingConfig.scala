@@ -59,6 +59,8 @@ object StreamingConfig extends CoreConfig {
 
     val checkpointDirectory = s"${finalOptions(CheckpointDirectory)}/$ident"
     val sparkOpts = finalOptions.filter{case (k, v) => k.startsWith(SparkConfPath)}
+    validateSparkConfig(sparkOpts)
+
     val ephemeralOptions = EphemeralOptionsModel(kafkaOptions, minW, maxW, outFormat, checkpointDirectory, sparkOpts)
 
     EphemeralTableModel(ident, ephemeralOptions, userSchema)
@@ -76,6 +78,12 @@ object StreamingConfig extends CoreConfig {
   def notFound(key: String) = {
     logError(s"Mandatory parameter $key not specified, you have to specify it")
     throw new RuntimeException(key)
+  }
+
+  private def validateSparkConfig(config: Map[String, String]): Unit = {
+    config.get(SparkCoresMax).foreach{ maxCores =>
+      if (maxCores.toInt < 2) throw new RuntimeException(s"At least 2 cores are required to launch streaming applications")
+    }
   }
 
 }

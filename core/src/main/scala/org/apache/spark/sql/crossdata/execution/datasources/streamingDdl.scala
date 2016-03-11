@@ -201,6 +201,12 @@ private[crossdata] case object ShowAllEphemeralStatuses extends LogicalPlan with
 
 private[crossdata] case class StartProcess(tableIdentifier: String) extends LogicalPlan with RunnableCommand {
 
+  override val output: Seq[Attribute] = {
+    val schema = StructType(Seq(
+      StructField("infoMessage", StringType, nullable = true)
+    ))
+    schema.toAttributes
+  }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     val xdContext = sqlContext.asInstanceOf[XDContext]
@@ -215,11 +221,12 @@ private[crossdata] case class StartProcess(tableIdentifier: String) extends Logi
       case Failure(exception) =>
         logError(exception.getMessage, exception)
         sys.error("Validation error: " + exception.getMessage)
+        Seq(Row(exception.getMessage))
+
       case Success(job) =>
         job.submit()
+        Seq(Row("Spark app launched"))
     }
-
-    Seq.empty
 
   }
 }

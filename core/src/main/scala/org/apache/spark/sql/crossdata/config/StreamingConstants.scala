@@ -56,7 +56,7 @@ object StreamingConstants {
   val AppJarKey = "appJar"
   val SparkMasterKey = "spark.master"
   val ExternalJarsKey = "jars"
-
+  val SparkCoresMax = "spark.cores.max"
 
   // TODO define and validate mandatory options like spark.master, kafka.topic and groupid, ...
   val listMandatoryEphemeralTableKeys = List(
