@@ -15,21 +15,19 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import com.stratio.crossdata.connector.TableInventory
-import com.stratio.crossdata.connector.TableInventory.Table
-import com.stratio.crossdata.connector.TableManipulation
+import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
-import org.apache.spark.sql.sources.RelationProvider
+import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
-import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
 
 import scala.reflect.io.File
+
 
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with Logging {
@@ -65,8 +63,9 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
       val ignoreTable = tableExists(tableId)
       if (!ignoreTable) {
         logInfo(s"Importing table ${tableId mkString "."}")
-
-        DdlUtils.persistTable(sqlContext, datasource, resolved, table.tableName, table.database, table.schema, opts)
+        val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
+        val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
+        sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
       }
       Row(tableId, ignoreTable)
     }
@@ -118,7 +117,7 @@ private[crossdata] case class AddJar(jarPath: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    if ((jarPath.toLowerCase.startsWith("hdfs://")) || (File(jarPath).exists)) {
+    if (jarPath.toLowerCase.startsWith("hdfs://") || File(jarPath).exists) {
       sqlContext.sparkContext.addJar(jarPath)
       Seq.empty
     } else {
@@ -131,51 +130,35 @@ case class CreateExternalTable(
                                 tableIdent: TableIdentifier,
                                 userSpecifiedSchema: StructType,
                                 provider: String,
-                                options: Map[String, String]) extends LogicalPlan with RunnableCommand {
+                                options: Map[String, String],
+                                allowExisting: Boolean = false) extends LogicalPlan with RunnableCommand {
 
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    require(tableIdent.database.isDefined, "Catalog is required required when use CREATE EXTERNAL TABLE command")
-
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
 
-    
-    if (!resolved.isInstanceOf[TableManipulation]){
-      sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")
+    resolved match {
+
+      case _ if sqlContext.catalog.tableExists(tableIdent.toSeq) =>
+        throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
+
+      case tableManipulation: TableManipulation =>
+
+        val tableInventory = tableManipulation.createExternalTable(sqlContext, tableIdent.table, tableIdent.database, userSpecifiedSchema, options)
+        tableInventory.map{ tableInventory =>
+          val optionsWithTable = tableManipulation.generateConnectorOpts(tableInventory, options)
+          val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
+          sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
+        } getOrElse( throw new RuntimeException(s"External table can't be created"))
+
+      case _ =>
+        sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")
     }
 
-    val tableManipulation = resolved.asInstanceOf[TableManipulation]
-    tableManipulation.createExternalTable(sqlContext, tableIdent.table, userSpecifiedSchema, options)
-
-    DdlUtils.persistTable(sqlContext, provider, resolved, tableIdent.table, tableIdent.database, Some(userSpecifiedSchema), options)
     Seq.empty
 
   }
 
-}
-
-private object DdlUtils{
-
-  // TODO rename method => replace register with persist
-  def persistTable(sqlContext:SQLContext,
-                    provider: String,
-                    resolved:Any,
-                    table:String, database:Option[String],
-                    userSpecifiedSchema:Option[StructType],
-                    options: Map[String, String]): Unit ={
-
-    val tableInventory = resolved.asInstanceOf[TableInventory]
-    val optionsWithTable = tableInventory.generateConnectorOpts(
-      Table(table, database, userSpecifiedSchema), options)
-
-    val resolvedDS = ResolvedDataSource(sqlContext,userSpecifiedSchema,Array.empty, provider, optionsWithTable)
-
-    sqlContext.catalog.persistTable(
-      CrossdataTable(table, database, userSpecifiedSchema, provider, Array.empty[String],
-        optionsWithTable),
-      LogicalRelation(resolvedDS.relation, None)
-    )
-  }
 }
 

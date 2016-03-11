@@ -75,9 +75,12 @@ class StreamingConfigSpec extends BaseXDTest {
 
   }
 
-  it should "fail if there are mandatory properties left" in {
-    an [Exception] should be thrownBy StreamingConfig.createEphemeralTableModel(EphemeralTableName, EmptyTableOptions)
+  it should "fail if spark.cores.max is less than 2" in {
+    val wrongOptions = CompleteTableOptions + (StreamingConstants.SparkCoresMax -> "1")
+    an [Exception] should be thrownBy StreamingConfig.createEphemeralTableModel(EphemeralTableName, wrongOptions)
   }
+
+
 
 
 }

@@ -23,29 +23,13 @@ package com.stratio.crossdata.connector.elasticsearch
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.IndexType
 import com.sksamuel.elastic4s.mappings._
-import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
-import com.stratio.crossdata.connector.TableManipulation
-import org.apache.spark.sql.SaveMode.Append
-import org.apache.spark.sql.SaveMode.ErrorIfExists
-import org.apache.spark.sql.SaveMode.Ignore
-import org.apache.spark.sql.SaveMode.Overwrite
-import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.sources.CreatableRelationProvider
-import org.apache.spark.sql.sources.DataSourceRegister
-import org.apache.spark.sql.sources.RelationProvider
-import org.apache.spark.sql.sources.SchemaRelationProvider
-import org.apache.spark.sql.types.BooleanType
-import org.apache.spark.sql.types.DateType
-import org.apache.spark.sql.types.DoubleType
-import org.apache.spark.sql.types.IntegerType
-import org.apache.spark.sql.types.LongType
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.sql.types.FloatType
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.SaveMode
+import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
+
+import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
+import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, DataSourceRegister, RelationProvider, SchemaRelationProvider}
+import org.apache.spark.sql.types.{BooleanType, DateType, DoubleType, FloatType, IntegerType, LongType, StringType, StructType}
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.elasticsearch.hadoop.EsHadoopIllegalStateException
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 import org.elasticsearch.spark.sql.ElasticSearchXDRelation
@@ -137,13 +121,15 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
     ElasticSearchConnectionUtils.listTypes(params(options))
   }
 
-  override def createExternalTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String]): Boolean = {
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   databaseName: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String]): Option[Table] = {
 
+    val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).orElse(databaseName.map((_, tableName))).
+      getOrElse(throw new RuntimeException(s"$ES_RESOURCE is required when running CREATE EXTERNAL TABLE"))
 
-    val (index, typeName) = {
-      require(options.contains(ES_RESOURCE), s"$ES_RESOURCE is required when use CREATE EXTERNAL TABLE command")
-      ElasticSearchConnectionUtils.extractIndexAndType(options).get
-    }
 
     val elasticSchema = schema.map { field =>
       field.dataType match {
@@ -163,11 +149,11 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
       client.execute {
         put.mapping(indexType) as elasticSchema
       }
-      true
+      Option(Table(typeName, Option(index), Option(schema)))
     } catch {
       case e: Exception =>
         sys.error(e.getMessage)
-        false
+        None
     }
   }
 

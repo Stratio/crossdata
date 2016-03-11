@@ -16,7 +16,6 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 import java.util.UUID
-
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
@@ -53,6 +52,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val STOP = Keyword("STOP")
   protected val IN = Keyword("IN")
 
+
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable |
@@ -64,6 +64,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropAllEphemeralQueries  | dropAllEphemeralTables |
       showEphemeralStatus | showEphemeralStatuses | startProcess | stopProcess |
       showEphemeralQueries | addEphemeralQuery | dropEphemeralQuery | dropEphemeralTable
+
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -193,6 +194,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val addEphemeralQuery: Parser[LogicalPlan] = {
     ADD.? ~ streamingSql ~ (WITH ~ WINDOW ~> numericLit <~ (SEC | SECS | SECONDS)) ~ (AS ~> ident).? ^^ {
+
       case addDefined ~ streamQl ~ litN ~ topIdent =>
         val queryTables: Seq[LogicalPlan] = parseQuery(streamQl).collect {
           case UnresolvedRelation(tableIdent, alias) =>

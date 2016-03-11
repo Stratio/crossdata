@@ -16,7 +16,7 @@
 package com.stratio.crossdata.connector.cassandra.statements
 
 import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourceKeyspaceNameProperty
-import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourceKeyspaceReplicationSrtingProperty
+import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourceKeyspaceReplicationStringProperty
 
 case class CreateKeyspaceStatement(options: Map[String, String]) {
 
@@ -34,9 +34,9 @@ case class CreateKeyspaceStatement(options: Map[String, String]) {
 
 
   lazy val replication: String = {
-    require(options.contains(CassandraDataSourceKeyspaceReplicationSrtingProperty),
-      s"$CassandraDataSourceKeyspaceReplicationSrtingProperty required when use CREATE EXTERNAL TABLE command")
-    options.get(CassandraDataSourceKeyspaceReplicationSrtingProperty).get
+    require(options.contains(CassandraDataSourceKeyspaceReplicationStringProperty),
+      s"$CassandraDataSourceKeyspaceReplicationStringProperty required when use CREATE EXTERNAL TABLE command")
+    options.get(CassandraDataSourceKeyspaceReplicationStringProperty).get
   }
 
 }

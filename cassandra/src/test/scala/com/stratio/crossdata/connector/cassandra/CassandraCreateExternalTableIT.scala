@@ -24,7 +24,7 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
   "The Cassandra connector" should "execute natively create a External Table" in {
     val createTableQUeryString =
-      s"""|CREATE EXTERNAL TABLE $Catalog.newtable (
+      s"""|CREATE EXTERNAL TABLE newtable (
           |id Integer,
           |name String,
           |booleanFile boolean,
@@ -37,6 +37,7 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
           |USING $SourceProvider
           |OPTIONS (
           |keyspace '$Catalog',
+          |table 'newtable',
           |cluster '$ClusterName',
           |pushdown "true",
           |spark_cassandra_connection_host '$CassandraHost',
@@ -47,9 +48,11 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
     val result = sql(createTableQUeryString).collect()
 
     //Expectations
-    val table = xdContext.table(s"$Catalog.newtable")
+    val table = xdContext.table(s"newtable")
     table should not be null
     table.schema.fieldNames should contain ("name")
+
+    client.get._1.getMetadata.getKeyspace(Catalog).getTable("newtable").getId should not be null
 
   }
 
@@ -101,24 +104,5 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
   }
 
-
-  it should "fail execute natively create a External Table without keyspace" in {
-    val createTableQUeryString =
-      s"""|CREATE EXTERNAL TABLE newtable  (id Integer, name String)
-          |USING $SourceProvider
-          |OPTIONS (
-          |keyspace '$Catalog',
-          |cluster '$ClusterName',
-          |pushdown "true",
-          |spark_cassandra_connection_host '$CassandraHost',
-          |primary_key_string 'id'
-          |)
-      """.stripMargin.replaceAll("\n", " ")
-    //Experimentation
-
-    the [IllegalArgumentException] thrownBy {
-      sql(createTableQUeryString).collect()
-    }  should have message "requirement failed: Catalog is required required when use CREATE EXTERNAL TABLE command"
-
-  }
+  
 }
