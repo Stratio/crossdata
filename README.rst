@@ -21,8 +21,7 @@ get rid of the drawbacks of Apache Spark, perform analytics from a BI tool and s
 Crossdata is broken up into the following components:
 
 - Crossdata Core: It is a library that you can deploy in any existent system using Spark with no changes, just add the Crossdata jar file. SparkSQL extension with improvements in the DataSource API and new features. Crossdata expands the functionalities of Apache Spark in order to provide a richer SQL-like language, to improve some aspects (metastore, execution trees, ...)
-- Crossdata Server: Provides a multi-user environment to SparkSQL, giving a reliable architecture with
-high-availability and scalability out of the box.
+- Crossdata Server: Provides a multi-user environment to SparkSQL, giving a reliable architecture with high-availability and scalability out of the box.
 - Crossdata Driver: Entry point with an API for both Scala and Java. Crossdata ODBC/JDBC uses this driver.
 - Crossdata Connectors: Take advantage of the Crossdata DataSource API to speed up the queries in specific datasources
 and provide new features.
