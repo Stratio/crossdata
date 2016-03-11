@@ -38,16 +38,16 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
   lazy val logger = Logger.getLogger(classOf[ProxyActor])
 
-  private val catalogOpExp: Regex = """^\s*CREATE\s+TEMPORARY\s+TABLE\s+.*$""".r
+  private val catalogOpExp: Regex = """^\s*CREATE\s+TEMPORARY.+$""".r
 
   override def receive: Receive = {
 
     /* TODO: This is a dirty trick to keep temporary tables synchronized at each XDContext
-        it should be fixed as soon as Spark version is updated to 1.6 since it'll enable
-
+        it should be fixed as soon as Spark version is updated to 1.6 since it'll enable.
+        WARNING: This disables creation cancellation commands and exposes the system behaviour to client-side code.
      */
-    case secureSQLCommand @ CommandEnvelope(sqlCommand @ SQLCommand(sql @ catalogOpExp, _, _, _, _), _) =>
-      logger.info(s"Sending TEMPORARY TABLE creation query to all servers: $sql")
+    case secureSQLCommand @ CommandEnvelope(sqlCommand @ SQLCommand(sql @ catalogOpExp(), _, _, _, _), _) =>
+      logger.info(s"Sending temporary catalog entry creation query to all servers: $sql")
       clusterClientActor forward ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
 
     case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
