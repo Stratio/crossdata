@@ -15,16 +15,16 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
-import org.apache.spark.sql.crossdata.ExecutionType.Native
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class ElasticSearchCreateExternalTableIT extends ElasticWithSharedContext {
 
-  "The ElasticSearch Connector " should " Create an external table" in {
+  "The ElasticSearch Connector" should "Create an external table" in {
+    assumeEnvironmentIsUpAndRunning
 
-    val createTableQUeryString =
+    val createTableQueryString =
       s"""|CREATE EXTERNAL TABLE $Index.newtable (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
@@ -36,19 +36,20 @@ class ElasticSearchCreateExternalTableIT extends ElasticWithSharedContext {
           |)
       """.stripMargin.replaceAll("\n", " ")
     //Experimentation
-    sql(createTableQUeryString).collect()
+    sql(createTableQueryString).collect()
 
     //Expectations
     val table = xdContext.table(s"$Index.newtable")
     table should not be null
     table.schema.fieldNames should contain ("name")
 
+    client.get.admin.indices.prepareTypesExists(Index).setTypes(Type).get.isExists shouldBe true
   }
 
-  it should " Fail when Create an external table without es.resource " in {
-
+  it should "create an external table without es.resource" in {
+    assumeEnvironmentIsUpAndRunning
     val createTableQUeryString =
-      s"""|CREATE EXTERNAL TABLE $Index.newtable (id Integer, name String)
+      s"""|CREATE EXTERNAL TABLE $Index.newtable2 (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
           |es.nodes '$ElasticHost',
@@ -58,11 +59,14 @@ class ElasticSearchCreateExternalTableIT extends ElasticWithSharedContext {
           |)
       """.stripMargin.replaceAll("\n", " ")
 
-    //Experimentation
-    the [IllegalArgumentException] thrownBy {
       sql(createTableQUeryString).collect()
-    } should have message "requirement failed: es.resource is required when use CREATE EXTERNAL TABLE command"
 
+    //Expectations
+    val table = xdContext.table(s"$Index.newtable2")
+    table should not be null
+    table.schema.fieldNames should contain ("name")
+
+    client.get.admin.indices.prepareTypesExists(Index).setTypes("newtable2").get.isExists shouldBe true
 
   }
 

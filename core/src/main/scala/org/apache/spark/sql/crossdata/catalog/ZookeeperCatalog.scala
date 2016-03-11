@@ -84,7 +84,7 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
     tableDAO.dao.create(tableId,
       TableModel(tableId,
         crossdataTable.tableName,
-        serializeSchema(crossdataTable.userSpecifiedSchema.getOrElse(new StructType())),
+        serializeSchema(crossdataTable.schema.getOrElse(new StructType())),
         crossdataTable.datasource,
         crossdataTable.dbName,
         crossdataTable.partitionColumn,

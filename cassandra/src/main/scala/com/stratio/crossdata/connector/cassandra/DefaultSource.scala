@@ -20,39 +20,22 @@ package com.stratio.crossdata.connector.cassandra
 
 import java.util.Collection
 
-import com.datastax.driver.core.KeyspaceMetadata
-import com.datastax.driver.core.TableMetadata
-import com.datastax.spark.connector.cql.CassandraConnector
-import com.datastax.spark.connector.cql.CassandraConnectorConf
+import com.datastax.driver.core.{KeyspaceMetadata, TableMetadata}
+import com.datastax.spark.connector.cql.{CassandraConnector, CassandraConnectorConf}
 import com.datastax.spark.connector.rdd.ReadConf
 import com.datastax.spark.connector.util.ConfigParameter
 import com.datastax.spark.connector.writer.WriteConf
 import com.stratio.crossdata.connector.FunctionInventory.UDF
 import com.stratio.crossdata.connector.TableInventory.Table
-import com.stratio.crossdata.connector.TableManipulation
 import com.stratio.crossdata.connector.cassandra.DefaultSource._
-import com.stratio.crossdata.connector.cassandra.statements.CreateKeyspaceStatement
-import com.stratio.crossdata.connector.cassandra.statements.CreateTableStatement
-import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
+import com.stratio.crossdata.connector.cassandra.statements.{CreateKeyspaceStatement, CreateTableStatement}
+import com.stratio.crossdata.connector.{FunctionInventory, TableInventory, TableManipulation}
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.SaveMode.Append
-import org.apache.spark.sql.SaveMode.Overwrite
-import org.apache.spark.sql.SaveMode.Ignore
-import org.apache.spark.sql.SaveMode.ErrorIfExists
-import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS}
-import org.apache.spark.sql.cassandra.CassandraXDSourceRelation
-import org.apache.spark.sql.cassandra.TableRef
-import org.apache.spark.sql.cassandra.CassandraSourceRelation
-import org.apache.spark.sql.cassandra.CassandraSourceOptions
-import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.sources.DataSourceRegister
-import org.apache.spark.sql.types.DataTypes
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.sql.types.StructField
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
+import org.apache.spark.sql.cassandra.{CassandraSourceOptions, CassandraSourceRelation, CassandraXDSourceRelation, DefaultSource => CassandraConnectorDS, TableRef}
+import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
+import org.apache.spark.sql.types.{DataTypes, StringType, StructField, StructType}
 
 import scala.collection.mutable
 
@@ -157,13 +140,15 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   }
 
-  override def createExternalTable(context: SQLContext, tableName: String, schema: StructType, options: Map[String, String]): Boolean = {
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   databaseName: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String]): Option[Table] = {
+    val keyspace: String = options.get(CassandraDataSourceKeyspaceNameProperty).orElse(databaseName).
+      getOrElse(throw new RuntimeException(s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command"))
 
-    val keyspace: String = {
-      require(options.contains(CassandraDataSourceKeyspaceNameProperty),
-        s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command")
-      options.get(CassandraDataSourceKeyspaceNameProperty).get
-    }
+    val table: String = options.getOrElse(CassandraDataSourceTableNameProperty, tableName)
 
     try {
       buildCassandraConnector(context, options).withSessionDo { s =>
@@ -171,16 +156,16 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
           val createKeyspace = new CreateKeyspaceStatement(options)
           s.execute(createKeyspace.toString())
         }
-        val stm = new CreateTableStatement(tableName, schema, options)
+        val stm = new CreateTableStatement(table, schema, options)
         s.execute(stm.toString())
       }
-      true
+      Option(Table(table, Option(keyspace), Option(schema)))
     } catch {
       case e: IllegalArgumentException =>
         throw e
       case e: Exception =>
         sys.error(e.getMessage)
-        false
+        None
     }
   }
 
@@ -260,8 +245,8 @@ object DefaultSource {
   val CassandraConnectionHostProperty = "spark_cassandra_connection_host"
   val CassandraDataSourceProviderPackageName = DefaultSource.getClass.getPackage.getName
   val CassandraDataSourceProviderClassName = CassandraDataSourceProviderPackageName + ".DefaultSource"
-  val CassandraDataSourcePrimaryKeySrtingProperty ="primary_key_string"
-  val CassandraDataSourceKeyspaceReplicationSrtingProperty ="with_replication"
+  val CassandraDataSourcePrimaryKeyStringProperty ="primary_key_string"
+  val CassandraDataSourceKeyspaceReplicationStringProperty ="with_replication"
 
   /** Parse parameters into CassandraDataSourceOptions and TableRef object */
   def tableRefAndOptions(parameters: Map[String, String]): (TableRef, CassandraSourceOptions) = {
