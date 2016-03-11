@@ -2,6 +2,14 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
+## 1.2.0 (March 2016)
+* StreamSQL: Streaming capabilities from a SQL language including insert into select (Batch + Streaming)
+* Create external tables
+* Cancellable jobs
+* Zookeeper catalog
+* Session identifiers in queries
+* Zeppelin interpreter added
+
 ## 1.1.0 (February 2016)
 * Flattener of subdocuments for relational interfaces 
 * Flattener of collections for relational interfaces
