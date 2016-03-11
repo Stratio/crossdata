@@ -152,7 +152,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   protected[crossdata] def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
-    val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
+    val resolved = ResolvedDataSource(xdContext, crossdataTable.schema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
     LogicalRelation(resolved.relation)
   }
 
@@ -171,7 +171,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
       throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
     } else {
       logInfo(s"XDCatalog: Persisting table ${crossdataTable.tableName}")
-      persistTableMetadata(crossdataTable)
+      persistTableMetadata(crossdataTable.copy(schema = Option(table.schema)))
       val tableIdentifier = TableIdentifier(crossdataTable.tableName,crossdataTable.dbName).toSeq
       registerTable(tableIdentifier, table)
     }
@@ -249,7 +249,7 @@ object XDCatalog extends CrossdataSerializer {
   implicit def asXDCatalog(catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
 
 
-  case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType],
+  case class CrossdataTable(tableName: String, dbName: Option[String],  schema: Option[StructType],
                             datasource: String, partitionColumn: Array[String] = Array.empty,
                             opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)
 

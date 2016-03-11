@@ -17,15 +17,11 @@ package com.stratio.crossdata.connector
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.sources.DataSourceRegister
-import org.apache.spark.sql.sources.Filter
-import org.apache.spark.sql.types.DataType
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.sources.{DataSourceRegister, Filter}
+import org.apache.spark.sql.types.{DataType, StructType}
 
 
 /**
@@ -53,13 +49,8 @@ sealed trait PushDownable {
   def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean
 }
 
-/**
- * Interface including data source operations for listing and describing tables
- * at a data source.
- *
- */
-@DeveloperApi
-trait TableInventory {
+
+sealed trait GenerateConnectorOptions {
 
   import TableInventory.Table
 
@@ -71,6 +62,16 @@ trait TableInventory {
    *         to a low-level option map.
    */
   def generateConnectorOpts(item: Table, userOpts: Map[String, String] = Map.empty): Map[String, String]
+}
+/**
+ * Interface including data source operations for listing and describing tables
+ * at a data source.
+ *
+ */
+@DeveloperApi
+trait TableInventory extends GenerateConnectorOptions{
+
+  import TableInventory.Table
 
   /**
    * Overriding this function allows tables import filtering. e.g: Avoiding system tables.
@@ -124,10 +125,12 @@ trait NativeFunctionExecutor {
   * CREATE/DROP EXTERNAL TABLE
   *
   */
-trait TableManipulation {
+trait TableManipulation extends GenerateConnectorOptions{
+
 
   def createExternalTable(context: SQLContext,
                           tableName: String,
+                          databaseName: Option[String],
                           schema: StructType,
-                          options: Map[String, String]): Boolean
+                          options: Map[String, String]): Option[TableInventory.Table]
 }

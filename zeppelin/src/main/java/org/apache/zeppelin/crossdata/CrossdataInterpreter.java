@@ -15,12 +15,11 @@
  */
 package org.apache.zeppelin.crossdata;
 
-import akka.util.Timeout;
-import com.stratio.crossdata.common.SQLCommand;
-import com.stratio.crossdata.common.SQLResult;
-import com.stratio.crossdata.common.result.ErrorResult;
-import com.stratio.crossdata.common.result.SuccessfulQueryResult;
+import com.stratio.crossdata.common.result.ErrorSQLResult;
+import com.stratio.crossdata.common.result.SQLResult;
+import com.stratio.crossdata.common.result.SuccessfulSQLResult;
 import com.stratio.crossdata.driver.JavaDriver;
+import com.stratio.crossdata.driver.config.DriverConf;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.StructType;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -29,11 +28,14 @@ import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import scala.concurrent.duration.Duration;
+import scala.concurrent.duration.Duration$;
+import scala.concurrent.duration.FiniteDuration;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class CrossdataInterpreter extends Interpreter {
 
@@ -41,7 +43,6 @@ public class CrossdataInterpreter extends Interpreter {
 
     private static final String CROSSDATA_SEEDS_PROPERTY = "crossdata.seeds";
     private static final String CROSSDATA_DEFAULT_LIMIT = "crossdata.defaultLimit";
-    private static final String CROSSDATA_RETRIES = "crossdata.retries";
     private static final String CROSSDATA_TIMEOUT_SEC = "crossdata.tiemoutSeconds";
 
 
@@ -53,8 +54,7 @@ public class CrossdataInterpreter extends Interpreter {
                 new InterpreterPropertyBuilder()
                         .add(CROSSDATA_SEEDS_PROPERTY, "127.0.0.1:13420", "The list of seeds.")
                         .add(CROSSDATA_DEFAULT_LIMIT, "1000", "Default limit")
-                                //.add(CROSSDATA_RETRIES, "1", "Number of retries.")
-                        .add(CROSSDATA_TIMEOUT_SEC, "100", "Query tiemout in seconds").build());
+                        .add(CROSSDATA_TIMEOUT_SEC, "100", "Query tiemout in seconds (0 means infinite timeout)").build());
     }
 
     public CrossdataInterpreter(Properties property) {
@@ -65,27 +65,28 @@ public class CrossdataInterpreter extends Interpreter {
     @Override
     public void open() {
         List<String> seeds = Arrays.asList(getProperty(CROSSDATA_SEEDS_PROPERTY).split(","));
-        driver = new JavaDriver(seeds, false);
+        driver = new JavaDriver(new DriverConf().setClusterContactPoint(seeds));
     }
 
     @Override
     public void close() {
-        // TODO add JavaDriver close => driver.close()
-
+        driver.stop();
     }
 
 
     @Override
     public InterpreterResult interpret(String sql, InterpreterContext context) {
 
-        SQLResult sqlResult = driver.syncQuery(new SQLCommand(sql, UUID.randomUUID(), false),
-                new Timeout(1000*Long.parseLong(getProperty(CROSSDATA_TIMEOUT_SEC))),
-                1); //Integer.parseInt(getProperty(CROSSDATA_RETRIES))
+        long secondsTimeout = Long.parseLong(getProperty(CROSSDATA_TIMEOUT_SEC));
 
-        if (sqlResult.hasError() && ErrorResult.class.isInstance(sqlResult)) {
-            return new InterpreterResult(InterpreterResult.Code.ERROR, ErrorResult.class.cast(sqlResult).message());
-        } else if (SuccessfulQueryResult.class.isInstance(sqlResult)) {
-            StructType schema = SuccessfulQueryResult.class.cast(sqlResult).schema();
+        Duration timeout = (secondsTimeout <= 0) ? Duration$.MODULE$.Inf() : new FiniteDuration(secondsTimeout, TimeUnit.SECONDS);
+
+        SQLResult sqlResult = driver.sql(sql, timeout);
+
+        if (sqlResult.hasError() && ErrorSQLResult.class.isInstance(sqlResult)) {
+            return new InterpreterResult(InterpreterResult.Code.ERROR, ErrorSQLResult.class.cast(sqlResult).message());
+        } else if (SuccessfulSQLResult.class.isInstance(sqlResult)) {
+            StructType schema = SuccessfulSQLResult.class.cast(sqlResult).schema();
             Row[] resultSet = sqlResult.resultSet();
             if (resultSet.length <= 0) {
                 return new InterpreterResult(InterpreterResult.Code.SUCCESS, "%text EMPTY result");

@@ -308,6 +308,10 @@
                 <artifactId>scala-maven-plugin</artifactId>
                 <configuration>
                     <recompileMode>modified-only</recompileMode>
+                    <args>
+                        <arg>-Xmax-classfile-name</arg>
+                        <arg>128</arg>
+                    </args>
                 </configuration>
             </plugin>
             <plugin>

@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.connector.cassandra.statements
 
-import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourcePrimaryKeySrtingProperty
+import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourcePrimaryKeyStringProperty
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 
@@ -44,9 +44,9 @@ case class CreateTableStatement(tableName: String,
   }
 
   lazy val primaryKeyString:String = {
-    require(options.contains(CassandraDataSourcePrimaryKeySrtingProperty),
-      s"$CassandraDataSourcePrimaryKeySrtingProperty required when use CREATE EXTERNAL TABLE command")
-    options.get(CassandraDataSourcePrimaryKeySrtingProperty).get
+    require(options.contains(CassandraDataSourcePrimaryKeyStringProperty),
+      s"$CassandraDataSourcePrimaryKeyStringProperty required when use CREATE EXTERNAL TABLE command")
+    options.get(CassandraDataSourcePrimaryKeyStringProperty).get
   }
 
 

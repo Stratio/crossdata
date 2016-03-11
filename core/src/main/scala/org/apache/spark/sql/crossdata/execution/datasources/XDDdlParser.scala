@@ -17,7 +17,6 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 
 import java.util.UUID
-
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
@@ -52,11 +51,13 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val START = Keyword("START")
   protected val STOP = Keyword("STOP")
   protected val IN = Keyword("IN")
+  protected val JAR = Keyword("JAR")
+
 
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable |
-      createView | createExternalTable | dropView | streamingSentences
+      createView | createExternalTable | dropView | addJar | streamingSentences
 
   // TODO move to StreamingDdlParser
 
@@ -64,6 +65,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropAllEphemeralQueries  | dropAllEphemeralTables |
       showEphemeralStatus | showEphemeralStatuses | startProcess | stopProcess |
       showEphemeralQueries | addEphemeralQuery | dropEphemeralQuery | dropEphemeralTable
+
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -107,6 +109,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
 
   }
+
+  protected lazy val addJar: Parser[LogicalPlan] =
+    ADD ~> JAR ~> restInput ^^ {
+      case jarPath =>
+        AddJar(jarPath.trim)
+    }
 
   /**
    * Streaming
@@ -208,7 +216,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
         }
 
     }
-
   }
 
 
