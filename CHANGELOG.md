@@ -4,6 +4,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 ## 1.2.0 (March 2016)
 * StreamSQL: Streaming capabilities from a SQL language including insert into select (Batch + Streaming)
+* Improved asynchronous driver API
 * Create external tables
 * Cancellable jobs
 * Zookeeper catalog
