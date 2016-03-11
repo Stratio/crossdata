@@ -20,7 +20,6 @@ import akka.actor.{ActorSystem, Props}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.stratio.crossdata.streaming.actors.EphemeralStatusActor._
 import com.stratio.crossdata.streaming.test.CommonValues
-import com.stratio.crossdata.test.BaseXDTest
 import org.apache.curator.test.TestingServer
 import org.apache.curator.utils.CloseableUtils
 import org.apache.spark.sql.crossdata.models.EphemeralExecutionStatus
@@ -28,8 +27,9 @@ import org.apache.spark.streaming.{Milliseconds, StreamingContext, StreamingCont
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest._
+import org.scalatest.concurrent.TimeLimitedTests
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.time.SpanSugar._
 
 @RunWith(classOf[JUnitRunner])
 class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
@@ -40,7 +40,7 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
   with CommonValues
   with BeforeAndAfter
   with ShouldMatchers
-  with BaseXDTest {
+  with TimeLimitedTests {
 
   def this() = this(ActorSystem("EphemeralStatusActor"))
 
@@ -49,6 +49,8 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
   var ssc: StreamingContext = _
   var zkTestServer: TestingServer = _
   var zookeeperConnection: String = _
+
+  val timeLimit = 2 minutes
 
   override def beforeAll: Unit = {
     zkTestServer = new TestingServer()

@@ -16,12 +16,16 @@
 
 package com.stratio.crossdata.streaming.test
 
-import com.stratio.crossdata.test.BaseXDTest
 import org.scalatest._
-import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.{TimeLimitedTests, Eventually}
+import org.scalatest.time.SpanSugar._
 
-trait BaseSparkStreamingXDTest extends BaseXDTest
+trait BaseSparkStreamingXDTest extends FunSuite
+  with Matchers
   with ShouldMatchers
   with BeforeAndAfterAll
   with BeforeAndAfter
   with Eventually
+  with TimeLimitedTests{
+  val timeLimit = 2 minutes
+}
