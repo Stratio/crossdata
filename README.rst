@@ -2,11 +2,6 @@
 Introduction
 ============
 
-|TravisIL|_
-
-.. |TravisIL| image:: https://api.travis-ci.org/Stratio/Crossdata.svg?branch=master
-.. _TravisIL: https://travis-ci.org/Stratio/Crossdata?branch=master
-
 |GitterIL|_
 
 .. |GitterIL| image:: https://badges.gitter.im/Stratio/Crossdata.svg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
