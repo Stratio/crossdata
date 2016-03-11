@@ -50,7 +50,7 @@ Main Crossdata's advantages over other options:
 Documentation
 =============
 
-For a complete documentation, please, visit https://stratio.atlassian.net/wiki/display/CROSSDATA1x0/Home.
+For a complete documentation, please, visit https://stratio.atlassian.net/wiki/display/CROSSDATA1x1/Home.
 
 ===========
 Get support
