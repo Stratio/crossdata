@@ -15,10 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-<<<<<<< HEAD
-
-=======
->>>>>>> feature/streaming-queries
 import java.util.UUID
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan

@@ -22,13 +22,10 @@ import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
-import org.apache.spark.sql.sources.RelationProvider
-import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
-import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
 import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
+
 import scala.reflect.io.File
 
 
