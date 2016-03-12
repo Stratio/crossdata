@@ -8,6 +8,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Create external tables
 * Cancellable jobs
 * Zookeeper catalog
+* CSV datasource added
 * Session identifiers in queries
 * Zeppelin interpreter added
 
