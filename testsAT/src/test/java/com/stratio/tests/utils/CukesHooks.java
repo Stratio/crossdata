@@ -99,7 +99,8 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
 
     @Override
     public void feature(Feature feature) {
-        // logger.info("Starting running feature {}", feature.getName());
+        commonspec.setResultsType("elasticsearch");
+         logger.info("Starting running feature {}", feature.getName());
         this.feature = feature;
         if(!ThreadProperty.get("Driver").equals("javaDriver")){
             commonspec.getLogger().info("Starting XdContext");

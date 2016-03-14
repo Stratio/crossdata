@@ -24,8 +24,8 @@ import org.apache.spark.sql.types.Decimal;
 import org.apache.spark.sql.types.StructField;
 import org.assertj.core.api.AbstractAssert;
 
-import com.stratio.crossdata.common.SQLResult;
-import com.stratio.crossdata.common.result.SuccessfulQueryResult;
+import com.stratio.crossdata.common.result.SQLResult;
+import com.stratio.crossdata.common.result.ErrorSQLResult;
 
 import scala.collection.JavaConverters;
 
@@ -61,21 +61,21 @@ public class SQLResultAssert extends AbstractAssert<SQLResultAssert, SQLResult>{
     }
 
     public SQLResultAssert isSuccesfullResult(){
-        if(!(actual instanceof SuccessfulQueryResult)){
+        if(!(actual instanceof ErrorSQLResult)){
             failWithMessage("Expected a successfull result but the obtained result is an ErrorResult");
         }
         return this;
     }
 
     public SQLResultAssert isErrorResult(){
-        if(!(actual instanceof SuccessfulQueryResult)){
+        if(!(actual instanceof SQLResult)){
             failWithMessage("Expected a ErrorResult but the obtained result is an SuccessfulQueryResult");
         }
         return this;
     }
 
     public SQLResultAssert assertSuccesfulMetadataResult(List<String> firstRow){
-        SuccessfulQueryResult result = (SuccessfulQueryResult)actual;
+        SQLResult result = actual;
         StructField[] actualStructField = result.schema().fields();
         if(actualStructField.length != firstRow.size()){
             failWithMessage("Expected number of columns to be <%s> but was <%s>", firstRow.size(), actualStructField
