@@ -54,6 +54,7 @@ class XDContext private (@transient val sc: SparkContext,
                 userConfig: Option[Config] = None) extends SQLContext(sc) with Logging  {
   self =>
 
+
   def this(sc: SparkContext) =
     this(sc, None)
 
@@ -154,6 +155,14 @@ class XDContext private (@transient val sc: SparkContext,
 
   override def sql(sqlText: String): DataFrame = {
     XDDataFrame(this, parseSql(sqlText))
+  }
+
+  /**
+    * Add JAR file from XD Driver to the context
+    * @param path The local path or hdfs path where SparkContext will take the JAR
+    */
+  def addJar(path: String) = {
+    this.sc.addJar(path)
   }
 
   /**

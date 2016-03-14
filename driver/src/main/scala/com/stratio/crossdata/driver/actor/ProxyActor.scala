@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.stratio.crossdata.driver.actor
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
-import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.{SecureCommand, SQLCommand}
+import com.stratio.crossdata.common.{AddJARCommand, SQLCommand, CommandEnvelope}
 import com.stratio.crossdata.driver.Driver
 import org.apache.log4j.Logger
+
+import scala.util.matching.Regex
 
 object ProxyActor {
   val ServerPath = "/user/crossdata-server"
@@ -36,14 +38,25 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
   lazy val logger = Logger.getLogger(classOf[ProxyActor])
 
+  private val catalogOpExp: Regex = """^\s*CREATE\s+TEMPORARY.+$""".r
+
   override def receive: Receive = {
-    case secureSQLCommand @ SecureCommand(cmd, _) =>
+
+    /* TODO: This is a dirty trick to keep temporary tables synchronized at each XDContext
+        it should be fixed as soon as Spark version is updated to 1.6 since it'll enable.
+        WARNING: This disables creation cancellation commands and exposes the system behaviour to client-side code.
+     */
+    case secureSQLCommand @ CommandEnvelope(sqlCommand @ SQLCommand(sql @ catalogOpExp(), _, _, _, _), _) =>
+      logger.info(s"Sending temporary catalog entry creation query to all servers: $sql")
+      clusterClientActor forward ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
+
+    case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
+      logger.info(s"Sending query: ${sqlCommand.sql}")
       clusterClientActor forward ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
-      cmd match {
-        case sqlCommand: SQLCommand => logger.info(s"Sending query: ${sqlCommand.query}")
-        case any => logger.info(s"Sending query: $any")
-      }
+    case secureSQLCommand @ CommandEnvelope(_: AddJARCommand, _) =>
+      logger.debug(s"Send Add Jar command to all servers")
+      clusterClientActor forward ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
 
     case SQLCommand =>
       logger.warn("Command message not securitized. Message won't be sent to the Crossdata cluster")
