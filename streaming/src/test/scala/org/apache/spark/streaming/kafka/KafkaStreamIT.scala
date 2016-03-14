@@ -38,8 +38,8 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
 
   after {
     if (ssc != null) {
-      ssc.stop(stopSparkContext = false, stopGracefully = false)
-      ssc.awaitTerminationOrTimeout(3000)
+      ssc.stop(stopSparkContext = true, stopGracefully = false)
+      ssc.awaitTerminationOrTimeout(6000)
       ssc = null
     }
   }
