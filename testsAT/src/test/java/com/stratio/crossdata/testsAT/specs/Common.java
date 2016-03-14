@@ -19,6 +19,7 @@ import com.stratio.specs.CommonG;
 import com.stratio.tests.utils.XDContextUtil;
 import com.stratio.tests.utils.XDContextUtils;
 import com.stratio.tests.utils.XDJavaDriver;
+//import com.stratio.tests.utils.XDJavaDriver;
 
 /**
  * Created by hdominguez on 13/10/15.

@@ -26,8 +26,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.stratio.crossdata.common.SQLCommand;
-import com.stratio.crossdata.common.SQLResult;
+import com.stratio.crossdata.common.result.SQLResult;
 import com.stratio.crossdata.driver.JavaDriver;
+import com.stratio.crossdata.driver.config.DriverConf;
 import com.stratio.crossdata.driver.metadata.FieldMetadata;
 import com.stratio.crossdata.driver.metadata.JavaTableName;
 import com.typesafe.config.Config;
@@ -42,12 +43,12 @@ import com.typesafe.config.ConfigValueType;
 
 public class XDJavaDriver {
 
-    private JavaDriver xdDriver,xdFlattendDriver;
+    private JavaDriver xdDriver;
     private List<FieldMetadata> descTables;
     private List<JavaTableName> tableList;
     private List<String> databases;
     private SQLResult result;
-    private List<String> hosts = Arrays.asList(System.getProperty("CROSSDATA_HOST","127.0.0.1:13420").split(","));
+    private List<String> seedNodes = Arrays.asList(System.getProperty("CROSSDATA_HOST","127.0.0.1:13420").split(","));
     public XDJavaDriver(){
    }
 
@@ -80,10 +81,10 @@ public class XDJavaDriver {
     }
 
     public void describeTables(String tableName){
-        if(xdFlattendDriver == null) {
-            xdDriver = new JavaDriver(hosts,true);
+        if(xdDriver == null) {
+            xdDriver = new JavaDriver(seedNodes);
         }
-        descTables = xdFlattendDriver.describeTable(tableName);
+        descTables = xdDriver.describeTable(tableName);
     }
 
     public void listTables(){
@@ -94,25 +95,26 @@ public class XDJavaDriver {
         tableList = xdDriver.listTables(dataBaseName);
     }
 
-    public void listDatabases(){
-        databases = xdDriver.listDatabases();
-    }
-
     public void executeSyncQuery(String sql){
         if(xdDriver == null) {
-            xdDriver = new JavaDriver(hosts,false);
+            xdDriver = new JavaDriver(seedNodes);
         }
-        result = xdDriver.syncQuery(new SQLCommand(sql, UUID.randomUUID(),false));
+        result = xdDriver.sql(sql);
 //        xdDriver.close();
 //        xdDriver = null;
     }
 
     public void executeflattenedSyncQuery(String sql){
         if(xdDriver == null) {
-            xdDriver = new JavaDriver(hosts,false);
+            DriverConf conf = new DriverConf();
+            conf.setFlattenTables(true);
+            conf.setClusterContactPoint(seedNodes);
+            xdDriver = new JavaDriver(conf);
+
         }
-        result = xdDriver.syncQuery(new SQLCommand(sql, UUID.randomUUID(),true));
-//        xdDriver.close();
-//        xdDriver = null;
+        result = xdDriver.sql(sql);
+        //        xdDriver.close();
+        //        xdDriver = null;
     }
-}
+
+ }

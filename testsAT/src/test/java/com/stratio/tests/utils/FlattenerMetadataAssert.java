@@ -15,21 +15,12 @@
  */
 package com.stratio.tests.utils;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.List;
 
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.types.Decimal;
-import org.apache.spark.sql.types.StructField;
 import org.assertj.core.api.AbstractAssert;
 
-import com.stratio.crossdata.common.SQLResult;
-import com.stratio.crossdata.common.result.SuccessfulQueryResult;
 import com.stratio.crossdata.driver.metadata.FieldMetadata;
-
 import cucumber.api.DataTable;
-import scala.collection.JavaConverters;
 
 /**
  * Created by hdominguez on 19/10/15.

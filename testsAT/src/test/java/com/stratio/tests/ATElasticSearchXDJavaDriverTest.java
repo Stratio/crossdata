@@ -59,7 +59,7 @@ import cucumber.api.CucumberOptions;
         "src/test/resources/features/Elasticsearch/Views.feature"})
 public class ATElasticSearchXDJavaDriverTest extends BaseTest {
 	private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
-    private String elasticSearchIP = System.getProperty("ES_NODES","172.17.0.3");
+    private String elasticSearchIP = System.getProperty("ES_NODE","172.17.0.3");
     Client client;
     private Settings settings = ImmutableSettings.settingsBuilder()
             .put("cluster.name", elasticSearchCluster).build();

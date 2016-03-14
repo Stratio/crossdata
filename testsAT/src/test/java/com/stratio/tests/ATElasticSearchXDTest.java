@@ -48,7 +48,7 @@ import com.stratio.tests.utils.ThreadProperty;
 import cucumber.api.CucumberOptions;
 
 //Indicar feature
-@CucumberOptions(features = { //"src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
+@CucumberOptions(features = { "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
@@ -62,7 +62,7 @@ import cucumber.api.CucumberOptions;
 })
 public class ATElasticSearchXDTest extends BaseTest {
     private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
-    private String elasticSearchIP = System.getProperty("ES_NODES","172.17.0.3");
+    private String elasticSearchIP = System.getProperty("ES_NODE","172.17.0.2");
     Client client;
     private Settings settings = ImmutableSettings.settingsBuilder()
             .put("cluster.name", elasticSearchCluster).build();
