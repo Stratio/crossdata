@@ -20,6 +20,9 @@ package org.apache.spark.sql.crossdata.catalog
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
+import org.apache.spark.sql.crossdata.daos.impl.TableTypesafeDAO
+import org.apache.spark.sql.crossdata.models.TableModel
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{TableTypesafeDAO, ViewTypesafeDAO}
 import org.apache.spark.sql.crossdata.models.{TableModel, ViewModel}
@@ -35,6 +38,7 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
 
   val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
   val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
+
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
     if (tableDAO.dao.count > 0) {
@@ -120,9 +124,7 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
 
   override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = {
     val viewId = createId
-
     viewDAO.dao.create(viewId, ViewModel(viewId, tableIdentifier.table, tableIdentifier.database, sqlText))
-
   }
 
   override protected def dropPersistedView(viewName: String, databaseName: Option[String]): Unit = {

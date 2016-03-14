@@ -32,13 +32,13 @@ private[sql] class TestXDContext(sc: SparkContext, catalogConfig: Config)
 
   def this() {
     this(new SparkContext("local[2]", "test-xd-context",
-      new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io" +
+      new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io" +
         ".LZ4CompressionCodec")), ConfigFactory.empty())
   }
 
   def this(catalogClass: Config) {
     this(new SparkContext("local[2]", "test-xd-context",
-      new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io" +
+      new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io" +
         ".LZ4CompressionCodec")), catalogClass)
   }
 

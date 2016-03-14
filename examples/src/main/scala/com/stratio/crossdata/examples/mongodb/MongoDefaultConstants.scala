@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.stratio.crossdata.examples.mongodb
 
-package org.apache.spark.sql.crossdata.models
-
-case class StreamingQueryModel(id: String,
-                               ephemeralTable: EphemeralTableModel,
-                               sql: String,
-                               window: Int = EphemeralOptionsModel.DefaultAtomicWindow,
-                               batchTables: Option[Seq[TableModel]] = None)
+trait MongoDefaultConstants {
+  val Database = "highschool"
+  val Collection = "students"
+  val MongoHost = "127.0.0.1"
+  val MongoPort = 27017
+  val MongoConnector = "mongodb"
+}

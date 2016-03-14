@@ -19,5 +19,5 @@ package org.apache.spark.sql.crossdata.models
 object EphemeralExecutionStatus extends Enumeration {
 
   type Status = Value
-  val Starting, Started, Stopping, Stopped, Error, ConfigurationError = Value
+  val NotStarted, Starting, Started, Stopping, Stopped, Error = Value
 }

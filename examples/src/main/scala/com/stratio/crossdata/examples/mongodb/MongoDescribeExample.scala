@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.examples
+package com.stratio.crossdata.examples.mongodb
+
 import com.mongodb.casbah.MongoClient
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 object MongoDescribeExample extends App with MongoDefaultConstants {
   val mongoClient = prepareEnvironment()

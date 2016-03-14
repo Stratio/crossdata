@@ -28,6 +28,7 @@ import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
 
 import scala.reflect.io.File
 
+
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with Logging {
 
@@ -65,7 +66,6 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
         val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
         sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
-
       }
       Row(tableId, ignoreTable)
     }
@@ -77,7 +77,6 @@ private[crossdata] case class DropTable(tableIdentifier: TableIdentifier)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-
     sqlContext.catalog.dropTable(tableIdentifier.toSeq)
     Seq.empty
   }
@@ -101,7 +100,9 @@ private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryP
     sqlContext.catalog.persistView(viewIdentifier, queryPlan, sql)
     Seq.empty
   }
+
 }
+
 
 private[crossdata] case class DropView(viewIdentifier: TableIdentifier)
   extends LogicalPlan with RunnableCommand {
@@ -116,7 +117,7 @@ private[crossdata] case class AddJar(jarPath: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    if ((jarPath.toLowerCase.startsWith("hdfs://")) || (File(jarPath).exists)) {
+    if (jarPath.toLowerCase.startsWith("hdfs://") || File(jarPath).exists) {
       sqlContext.sparkContext.addJar(jarPath)
       Seq.empty
     } else {
@@ -151,7 +152,6 @@ case class CreateExternalTable(
           sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
         } getOrElse( throw new RuntimeException(s"External table can't be created"))
 
-
       case _ =>
         sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")
     }
@@ -161,3 +161,4 @@ case class CreateExternalTable(
   }
 
 }
+

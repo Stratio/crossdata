@@ -157,7 +157,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   def eventsRec(st: State): Receive = {
 
     case JobFailed(e) =>
-      logger.error(e.getMessage)
+      logger.error(e.getMessage, e)
       sentenceToDeath(sender())
 
     case JobCompleted =>

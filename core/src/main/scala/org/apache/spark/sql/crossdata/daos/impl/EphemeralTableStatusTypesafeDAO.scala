@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.examples
 
-trait MongoDefaultConstants {
-  val Database = "highschool"
-  val Collection = "students"
-  val MongoHost = "127.0.0.1"
-  val MongoPort = 27017
-  val MongoConnector = "mongodb"
+package org.apache.spark.sql.crossdata.daos.impl
+
+import com.typesafe.config.Config
+import org.apache.spark.sql.crossdata.daos.EphemeralTableStatusDAO
+
+class EphemeralTableStatusTypesafeDAO (configuration: Config) extends EphemeralTableStatusDAO {
+
+  override val config = new TypesafeConfig(Option(configuration))
+
 }

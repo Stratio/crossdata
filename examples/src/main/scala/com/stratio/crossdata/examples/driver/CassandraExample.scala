@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.examples
+package com.stratio.crossdata.examples.driver
 
 import java.util
 
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.config.DriverConf
+import com.stratio.crossdata.examples.cassandra._
 
+/**
+ * Driver example - Cassandra
+ */
 
 sealed trait DefaultConstants {
   val ClusterName = "Test Cluster"
@@ -36,7 +40,7 @@ sealed trait DefaultConstants {
 
 object DriverExample extends App with DefaultConstants {
 
-  val (cluster, session) = CassandraExample.prepareEnvironment()
+  val (cluster, session) = prepareEnvironment()
 
   val host: java.util.List[String] = util.Arrays.asList("127.0.0.1:13420","127.0.0.1:13425")
   var driver: Option[Driver] = None
@@ -55,7 +59,7 @@ object DriverExample extends App with DefaultConstants {
 
   } finally {
     driver.foreach(_.stop())
-    CassandraExample.cleanEnvironment(cluster, session)
+    cleanEnvironment(cluster, session)
   }
 
 }

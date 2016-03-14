@@ -24,7 +24,8 @@ object DAOConstants {
   val TablesPath = s"$BaseZKPath/tables"
   val ViewsPath = s"$BaseZKPath/views"
   val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
-  val StreamingQueriesPath = s"$BaseZKPath/streamingqueries"
+  val EphemeralTableStatusPath = s"$BaseZKPath/ephemeraltablestatus"
+  val EphemeralQueriesPath = s"$BaseZKPath/ephemeralqueries"
 
   def createId: String = UUID.randomUUID.toString
 }
