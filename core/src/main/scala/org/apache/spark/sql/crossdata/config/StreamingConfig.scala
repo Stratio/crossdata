@@ -71,9 +71,10 @@ object StreamingConfig extends CoreConfig {
   }
 
   def extractConnection(options: Map[String, String], connection: String): Seq[String] = {
-    options(connection).split(",").map(_.split(":")).map {
-      case c if c.size == 2 => c(0) ++ c(1)
-    }.toSeq
+    options(connection).split(",").flatMap{
+      case c if c.split(":").length == 2 => c.split(":")
+    }
+
   }
 
 
