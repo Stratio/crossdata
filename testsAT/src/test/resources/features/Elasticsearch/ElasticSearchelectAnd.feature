@@ -37,5 +37,5 @@ Feature: ElasticSearch Select And
   Scenario: [ES NATIVE] SELECT * FROM tabletest WHERE (ident = 0 AND name='name_0') AND (money = 10.2 AND new = true);
     When I execute 'SELECT date FROM tabletest WHERE (ident = 0 AND name='name_0') AND (money = 10.2 AND new = true)'
     Then The result has to have '1' rows:
-     | date-timestamp  |
-     | 1999-11-30 00:00:00|
+      | date-timestamp  |
+      | 1999-11-30 00:00:00|
