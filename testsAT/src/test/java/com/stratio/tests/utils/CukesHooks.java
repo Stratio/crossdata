@@ -87,8 +87,6 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
         logger.info("Got to end of file");
         if(!ThreadProperty.get("Driver").equals("javaDriver")){
             commonspec.getXdContext().closeSparkContext();
-        }else{
-            commonspec.getXdDriver().close();
         }
     }
 
@@ -232,7 +230,7 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             sqlElasticSearch.append("CREATE TEMPORARY TABLE tabletest (ident LONG, name STRING, money ");
             sqlElasticSearch.append("DOUBLE, new BOOLEAN, date TIMESTAMP) USING com.stratio.crossdata.connector.elasticsearch ");
             sqlElasticSearch.append("OPTIONS (resource 'databasetest/tabletest', es.nodes '");
-            sqlElasticSearch.append(System.getProperty("ES_NODES", "127.0.0.1")).append("', es.port '");
+            sqlElasticSearch.append(System.getProperty("ES_NODE", "127.0.0.1")).append("', es.port '");
             sqlElasticSearch.append(System.getProperty("ES_PORT", "9200")).append("' , es.nativePort '");
             sqlElasticSearch.append(System.getProperty("ES_NATIVE_PORT", "9300")).append("' , es.cluster '");
             sqlElasticSearch.append(System.getProperty("ES_CLUSTER", "elasticsearch")).append("')");
