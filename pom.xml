@@ -96,6 +96,7 @@
         <module>driver</module>
         <module>server</module>
         <module>testsIT</module>
+        <module>dist</module>
     </modules>
 
     <properties>
