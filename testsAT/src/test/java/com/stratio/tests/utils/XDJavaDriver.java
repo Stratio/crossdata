@@ -117,9 +117,4 @@ public class XDJavaDriver {
         //        xdDriver = null;
     }
 
-    public void close(){
-
-        xdDriver.close();
-
-    }
-}
+ }
