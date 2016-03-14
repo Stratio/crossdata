@@ -79,8 +79,8 @@ object KafkaProducer {
 
   private[streaming] def getBrokerList(connection: Seq[ConnectionHostModel],
                                    defaultHost: String = DefaultHost,
-                                   defaultPort: String = DefaulProducerPort): String = {
-    val connectionString = connection.map(c => s"${c.host}:${c.producerPort}").mkString(",")
+                                   defaultPort: String = DefaultProducerPort): String = {
+    val connectionString = connection.map(c => s"${c.producerHost}:${c.producerPort}").mkString(",")
 
     if (connectionString.isEmpty) s"$defaultHost:$defaultPort" else connectionString
   }

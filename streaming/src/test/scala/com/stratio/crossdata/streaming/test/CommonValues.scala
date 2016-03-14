@@ -27,7 +27,8 @@ trait CommonValues {
   /**
    * Kafka Options
    */
-  val Host = "localhost"
+  val ConsumerHost = "localhost"
+  val ProducerHost = "localhost"
   val HostStream = "127.0.0.1"
   val ConsumerPort = "2181"
   val ProducerPort = "9042"
@@ -40,7 +41,7 @@ trait CommonValues {
   val additionalOptionsStream = Map("auto.offset.reset" -> "smallest", "batchSize" -> "100")
   val StorageLevel = "MEMORY_ONLY_SER"
   val StorageStreamLevel = "MEMORY_ONLY"
-  val connectionHostModel = ConnectionHostModel(Host, ConsumerPort, ProducerPort)
+  val connectionHostModel = ConnectionHostModel(ConsumerHost, ConsumerPort, ProducerHost, ProducerPort)
   val topicModel = TopicModel(TopicTest)
 
   val kafkaOptionsModel = KafkaOptionsModel(Seq(connectionHostModel),

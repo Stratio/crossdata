@@ -53,7 +53,6 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
       kafkaTestUtils = new KafkaTestUtils
       kafkaTestUtils.setup()
       zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress)
-      zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress)
       catalogConf = parseZookeeperCatalogConfig(zookeeperConf)
       xDContext = XDContext.getOrCreate(sc, parseCatalogConfig(catalogConf))
       zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(xDContext)
@@ -76,15 +75,9 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
     }
 
     if(ssc != null){
-      ssc.stop(stopSparkContext = true, stopGracefully = false)
-      ssc.awaitTerminationOrTimeout(6000)
+      ssc.stop()
+      ssc.awaitTerminationOrTimeout(4000)
       ssc = null
-    }
-
-    if (!ssc.sc.stopped.get()) {
-      sc.stop()
-      Thread.sleep(4000)
-      sc = null
     }
 
     if (kafkaTestUtils != null) {

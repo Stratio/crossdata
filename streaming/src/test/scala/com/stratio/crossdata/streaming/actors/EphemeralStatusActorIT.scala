@@ -71,8 +71,8 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
 
   after {
     if (ssc != null) {
-      ssc.stop(stopSparkContext = true, stopGracefully = false)
-      ssc.awaitTerminationOrTimeout(6000)
+      ssc.stop(stopSparkContext = false, stopGracefully = false)
+      ssc.awaitTerminationOrTimeout(1000)
       ssc = null
     }
   }

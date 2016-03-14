@@ -22,8 +22,8 @@ object KafkaConstants {
    * Default parameters
    */
   val DefaultPartition = 1
-  val DefaulConsumerPort = "2181"
-  val DefaulProducerPort = "9092"
+  val DefaultConsumerPort = "2181"
+  val DefaultProducerPort = "9092"
   val DefaultHost = "127.0.0.1"
   val DefaultSerializer = "kafka.serializer.StringEncoder"
 
