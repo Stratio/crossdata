@@ -41,9 +41,9 @@ class KafkaInput(options: KafkaOptionsModel) {
 
   private[streaming] def getConnection : (String, String) = {
     val connectionChain =
-      options.connection.map(connection => s"${connection.host}:${connection.consumerPort}").mkString(",")
+      options.connection.map(connection => s"${connection.consumerHost}:${connection.consumerPort}").mkString(",")
 
-    (ZookeeperConnectionKey, if(connectionChain.isEmpty) s"$DefaultHost:$DefaulConsumerPort" else connectionChain)
+    (ZookeeperConnectionKey, if(connectionChain.isEmpty) s"$DefaultHost:$DefaultConsumerPort" else connectionChain)
   }
 
   private[streaming] def getGroupId : (String, String) = (GroupIdKey, options.groupId)

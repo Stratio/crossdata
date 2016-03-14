@@ -35,10 +35,14 @@ object StreamingConfig extends CoreConfig {
 
     val finalOptions = getEphemeralTableOptions(ident, opts)
 
-    val connections = finalOptions(KafkaConnection)
-      .split(",").map(_.split(":")).map{
-      case c if c.size == 3 => ConnectionHostModel(c(0), c(1), c(2))
-    }.toSeq
+    val coonections = extractConnection(finalOptions, ZKConnection) ++ extractConnection(finalOptions, KafkaConnection)
+
+    val connections = Seq(
+      ConnectionHostModel(
+        coonections(0),
+        coonections(1),
+        coonections(2),
+        coonections(3)))
 
     val topics = finalOptions(KafkaTopic)
       .split(",").map(_.split(":")).map{
@@ -65,6 +69,13 @@ object StreamingConfig extends CoreConfig {
 
     EphemeralTableModel(ident, ephemeralOptions, userSchema)
   }
+
+  def extractConnection(options: Map[String, String], connection: String): Seq[String] = {
+    options(connection).split(",").map(_.split(":")).map {
+      case c if c.size == 2 => c(0) ++ c(1)
+    }.toSeq
+  }
+
 
   private def getEphemeralTableOptions(ephTable: String, opts : Map[String, String]): Map[String, String] = {
 

@@ -55,7 +55,7 @@ class StreamingConfigSpec extends BaseXDTest {
     options.sparkOptions should contain ("spark.cores.max", "2")
     options.sparkOptions should contain ("spark.stopGracefully", "true")
 
-    options.kafkaOptions.connection shouldBe Seq(ConnectionHostModel("localhost", "2181", "9092"))
+    options.kafkaOptions.connection shouldBe Seq(ConnectionHostModel("localhost", "2181", "localhost", "9092"))
     options.kafkaOptions.storageLevel shouldBe "MEMORY_AND_DISK_SER"
 
     // table options
@@ -79,8 +79,5 @@ class StreamingConfigSpec extends BaseXDTest {
     val wrongOptions = CompleteTableOptions + (StreamingConstants.SparkCoresMax -> "1")
     an [Exception] should be thrownBy StreamingConfig.createEphemeralTableModel(EphemeralTableName, wrongOptions)
   }
-
-
-
 
 }
