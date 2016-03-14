@@ -74,11 +74,10 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
     }
 
     if (ssc != null) {
-      ssc.stop()
-      ssc.awaitTerminationOrTimeout(4000)
+      ssc.stop(stopSparkContext = true, stopGracefully = false)
+      ssc.awaitTerminationOrTimeout(6000)
       ssc = null
     }
-
     if (kafkaTestUtils != null) {
       kafkaTestUtils.teardown()
       kafkaTestUtils = null

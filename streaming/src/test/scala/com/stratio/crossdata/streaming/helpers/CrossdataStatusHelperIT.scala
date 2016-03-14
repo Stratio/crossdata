@@ -54,6 +54,7 @@ class CrossdataStatusHelperIT extends BaseStreamingXDTest with CommonValues {
     result.isDefined should be(expected)
 
     ssc.stop(stopSparkContext = true, stopGracefully = true)
+    ssc.awaitTerminationOrTimeout(6000)
   }
 
   "CrossdataStatusHelperIT" should "create a QueryActor without errors" in {
