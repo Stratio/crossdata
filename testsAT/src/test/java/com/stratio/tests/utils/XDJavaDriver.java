@@ -43,7 +43,7 @@ import com.typesafe.config.ConfigValueType;
 
 public class XDJavaDriver {
 
-    private JavaDriver xdDriver,xdFlattendDriver;
+    private JavaDriver xdDriver;
     private List<FieldMetadata> descTables;
     private List<JavaTableName> tableList;
     private List<String> databases;
@@ -81,10 +81,10 @@ public class XDJavaDriver {
     }
 
     public void describeTables(String tableName){
-        if(xdFlattendDriver == null) {
+        if(xdDriver == null) {
             xdDriver = new JavaDriver(seedNodes);
         }
-        descTables = xdFlattendDriver.describeTable(tableName);
+        descTables = xdDriver.describeTable(tableName);
     }
 
     public void listTables(){
@@ -115,5 +115,11 @@ public class XDJavaDriver {
         result = xdDriver.sql(sql);
         //        xdDriver.close();
         //        xdDriver = null;
+    }
+
+    public void close(){
+
+        xdDriver.close();
+
     }
 }

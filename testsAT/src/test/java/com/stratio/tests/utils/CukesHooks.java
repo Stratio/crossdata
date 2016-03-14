@@ -87,6 +87,8 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
         logger.info("Got to end of file");
         if(!ThreadProperty.get("Driver").equals("javaDriver")){
             commonspec.getXdContext().closeSparkContext();
+        }else{
+            commonspec.getXdDriver().close();
         }
     }
 
