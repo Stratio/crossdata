@@ -32,13 +32,6 @@
     <packaging>jar</packaging>
     <url>http://stratio.github.io/crossdata/</url>
 
-    <repositories>
-        <repository>
-            <id>project-local</id>
-            <url>file://${basedir}/../server/target/</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
