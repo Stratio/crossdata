@@ -21,11 +21,11 @@ INIT_HOME=`cd "${DIR}/.." >/dev/null; pwd`
 NAME="stratio-crossdata"
 DESC="Description for stratio-crossdata"
 BASEDIR=/opt/sds/crossdata
-CONFDIR=/etc/sds/crossdata/server
+CONFDIR=/etc/sds/crossdata
 LOGFILE=/var/log/sds/crossdata/crossdata.log
 RUNFILE=$BASEDIR/bin/crossdata-server.sh
 pidDir=/var/run/sds
-serviceUser=stratio
+serviceUser=crossdata
 serviceGroup=stratio
 PIDFileName=crossdata
 
