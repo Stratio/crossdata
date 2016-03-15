@@ -26,7 +26,7 @@
     </parent>
 
     <artifactId>crossdata-examples</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.0-RC1</version>
     <packaging>jar</packaging>
     <name>Examples</name>
     <description>Examples using Crossdata with MongoDB and Cassandra</description>

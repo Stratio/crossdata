@@ -180,7 +180,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
         An akka association consist on the connection of a JVM to another to build remote connections upon.
         Thus, the reception of this event message means all remote clients within the addressed jvm are down.
 
-         More info at: http://doc.akka.io/docs/akka/snapshot/scala/remoting.html
+         More info at: http://doc.akka.io/docs/akka/2.3.11/scala/remoting.html
        */
       val newjobsmap = st.jobsById filter {
         case (JobId(requester, _), job) if requester.path.address == remoteAddress =>
