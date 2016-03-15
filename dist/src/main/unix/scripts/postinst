@@ -5,7 +5,7 @@ set -xe
 #DEB
 
 GROUP='stratio'
-USER='stratio'
+USER='crossdata'
 DIR_INSTALL='/opt/sds/crossdata'
 DIR_CONF='/etc/sds/crossdata'
 DIR_LOG='/var/log/sds/crossdata'
