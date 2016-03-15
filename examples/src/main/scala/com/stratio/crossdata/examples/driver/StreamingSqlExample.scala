@@ -15,10 +15,8 @@
  */
 package com.stratio.crossdata.examples.driver
 
-import java.util
-
-import com.stratio.crossdata.common.SQLCommand
 import com.stratio.crossdata.driver.Driver
+import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.examples.cassandra._
 
 
@@ -29,10 +27,7 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
 
   val (cluster, session) = prepareEnvironment()
 
-  val driver = {
-    val hosts = util.Arrays.asList("127.0.0.1:13420")
-    Driver.getOrCreate(hosts)
-  }
+  val driver = Driver.getOrCreate(new DriverConf().setClusterContactPoint("127.0.0.1:13420"))
 
   val importQuery =
     s"""|IMPORT TABLES
@@ -53,17 +48,17 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
 
   try{
     // Imports tables from Cassandra cluster
-    driver.syncQuery(SQLCommand(importQuery))
+    driver.sql(importQuery).waitForResult()
 
     // Creates the ephemeral table (streaming input) receiving data from Kafka
-    driver.syncQuery(SQLCommand(createEphemeralTable))
+    driver.sql(createEphemeralTable).waitForResult()
 
     // Adds a streaming query. It will be executed when the streaming process is running
-    driver.syncQuery(SQLCommand(s"SELECT count(*) FROM $EphemeralTableName WITH WINDOW 5 SECS AS outputTopic"))
+    driver.sql(s"SELECT count(*) FROM $EphemeralTableName WITH WINDOW 5 SECS AS outputTopic")
    
 
     // Starts the streaming process associated to the ephemeral table
-    driver.syncQuery(SQLCommand(s"START $EphemeralTableName"))
+    driver.sql(s"START $EphemeralTableName")
 
     // WARNING: Data could be added to Kafka by using a Kafka console producer
     // Example: kafka-console-producer.sh --broker-list localhost:9092 --topic <input-topic>
@@ -75,23 +70,23 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
 
     // Later, we can add a query to join batch and streaming sources, which output will be other Kafka topic
     // NOTE: In order to produce results, you should add ids matching the id's range of Cassandra table (1 to 10)
-    driver.syncQuery(SQLCommand(
+    driver.sql(
       s"""
          |SELECT name FROM $EphemeralTableName INNER JOIN $Catalog.$Table
          |ON $EphemeralTableName.id = $Table.id
          |WITH WINDOW 10 SECS AS joinTopic
-      """.stripMargin))
+      """.stripMargin)
 
     Thread.sleep(400 * 1000)
 
     // Stops the process. Once we want to stop receiving data, we can stop the process. The queries won't be deleted,
     // so if we restart the process the queries will be executed.
-    driver.syncQuery(SQLCommand(s"STOP $EphemeralTableName"))
+    driver.sql(s"STOP $EphemeralTableName").waitForResult()
 
   } finally {
-    driver.syncQuery(SQLCommand(s"DROP ALL EPHEMERAL QUERIES"))
-    driver.syncQuery(SQLCommand(s"DROP TABLE $Catalog.$Table"))
-    driver.close()
+    driver.sql(s"DROP ALL EPHEMERAL QUERIES").waitForResult()
+    driver.sql(s"DROP TABLE $Catalog.$Table").waitForResult()
+    driver.stop()
     cleanEnvironment(cluster, session)
   }
 

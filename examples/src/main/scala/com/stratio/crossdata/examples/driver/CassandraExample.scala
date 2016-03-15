@@ -15,8 +15,6 @@
  */
 package com.stratio.crossdata.examples.driver
 
-import java.util
-
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.examples.cassandra._
@@ -42,11 +40,15 @@ object DriverExample extends App with DefaultConstants {
 
   val (cluster, session) = prepareEnvironment()
 
-  val host: java.util.List[String] = util.Arrays.asList("127.0.0.1:13420","127.0.0.1:13425")
   var driver: Option[Driver] = None
 
+  val driverConf = new DriverConf().
+    setFlattenTables(true).
+    setTunnelTimeout(30).
+    setClusterContactPoint("127.0.0.1:13420", "127.0.0.1:13425")
+
   try {
-    val driverConf = new DriverConf().setFlattenTables(true).setTunnelTimeout(30).setClusterContactPoint(host)
+
     driver = Option(Driver.getOrCreate(driverConf))
 
     for {
