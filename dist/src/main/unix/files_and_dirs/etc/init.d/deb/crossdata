@@ -25,7 +25,7 @@ CONFDIR=/etc/sds/crossdata
 LOGFILE=/var/log/sds/crossdata/crossdata.log
 RUNFILE=$BASEDIR/bin/crossdata-server.sh
 pidDir=/var/run/sds
-serviceUser=stratio
+serviceUser=crossdata
 serviceGroup=stratio
 PIDFileName=crossdata
 
