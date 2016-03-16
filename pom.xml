@@ -91,12 +91,12 @@
         <module>cassandra</module>
         <module>mongodb</module>
         <module>elasticsearch</module>
-        <module>doc</module>
         <module>common</module>
-        <module>driver</module>
         <module>server</module>
+        <module>driver</module>
         <module>streaming</module>
         <module>testsIT</module>
+        <module>doc</module>
     </modules>
 
     <properties>
