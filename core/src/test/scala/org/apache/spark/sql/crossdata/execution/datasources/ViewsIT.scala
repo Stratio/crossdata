@@ -24,8 +24,6 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class ViewsIT extends SharedXDContextTest {
 
-
-
   "Create temp view" should "return a XDDataFrame when executing a SQL query" in {
 
     val sqlContext = _xdContext

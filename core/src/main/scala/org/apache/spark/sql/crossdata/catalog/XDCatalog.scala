@@ -15,19 +15,14 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.analysis.Catalog
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.plans.logical.Subquery
-import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.CrossdataVersion
-import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
-import org.apache.spark.sql.execution.datasources.LogicalRelation
-import org.apache.spark.sql.execution.datasources.ResolvedDataSource
+import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
+import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.types._
 import org.json4s.jackson.Serialization.write
 
@@ -39,7 +34,7 @@ import scala.util.parsing.json.JSON
  * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
  */
 abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
-                         xdContext: XDContext) extends Catalog with Logging with Serializable {
+                         xdContext: XDContext) extends Catalog with CatalogCommon with Serializable {
 
   // TODO We should use a limited cache
 
@@ -95,16 +90,25 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
           val table: LogicalPlan = createLogicalRelation(crossdataTable)
           registerTable(tableIdent, table)
           processAlias(tableIdent, table, alias)
+
         case None =>
           log.debug(s"Table Not Found: ${tableIdent.mkString(".")}")
-
           lookupView(table, database) match {
             case Some(sqlView) =>
               val viewPlan: LogicalPlan = xdContext.sql(sqlView).logicalPlan
               registerView(tableIdent, viewPlan)
               processAlias(tableIdent, viewPlan, alias)
+
             case None =>
-              sys.error(s"Table/View Not Found: ${tableIdent.mkString(".")}")
+              log.debug(s"View Not Found: ${tableIdent.mkString(".")}")
+              xdContext.streamingCatalog match {
+                // TODO PoC => handle exceptions
+                // TODO We should replace tableIdent.mkString with TableIdentifier
+                case Some(streamingCatalog) if streamingCatalog.existsEphemeralTable(tableIdent.mkString(".")) =>
+                  StreamingRelation(tableIdent.mkString("."))
+                case _ =>
+                  sys.error(s"Table/View Not Found: ${tableIdent.mkString(".")}")
+              }
           }
       }
     }
@@ -148,7 +152,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   protected[crossdata] def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
-    val resolved = ResolvedDataSource(xdContext, crossdataTable.userSpecifiedSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
+    val resolved = ResolvedDataSource(xdContext, crossdataTable.schema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
     LogicalRelation(resolved.relation)
   }
 
@@ -167,7 +171,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
       throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
     } else {
       logInfo(s"XDCatalog: Persisting table ${crossdataTable.tableName}")
-      persistTableMetadata(crossdataTable)
+      persistTableMetadata(crossdataTable.copy(schema = Option(table.schema)))
       val tableIdentifier = TableIdentifier(crossdataTable.tableName,crossdataTable.dbName).toSeq
       registerTable(tableIdentifier, table)
     }
@@ -245,7 +249,7 @@ object XDCatalog extends CrossdataSerializer {
   implicit def asXDCatalog(catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
 
 
-  case class CrossdataTable(tableName: String, dbName: Option[String],  userSpecifiedSchema: Option[StructType],
+  case class CrossdataTable(tableName: String, dbName: Option[String],  schema: Option[StructType],
                             datasource: String, partitionColumn: Array[String] = Array.empty,
                             opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)
 

@@ -144,7 +144,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
     try {
 
-      val tableSchema = serializeSchema(crossdataTable.userSpecifiedSchema.getOrElse(new StructType()))
+      val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(new StructType()))
       val tableOptions = serializeOptions(crossdataTable.opts)
       val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 

@@ -133,7 +133,8 @@ object CatalystToCrossdataAdapter {
 
 
     val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
-      val requestedColumns: Seq[Attribute] = columnExpressions(Requested) collect { case a: Attribute => a }
+      val requestedColumns: Seq[Attribute] =
+        columnExpressions.getOrElse(Requested, Seq.empty) collect { case a: Attribute => a }
       SimpleLogicalPlan(requestedColumns, filters.toArray, att2udf, att2itemAccess)
     } { case (groupingExpression, selectExpression) =>
       AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)

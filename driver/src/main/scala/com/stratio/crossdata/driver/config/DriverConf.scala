@@ -153,7 +153,7 @@ class DriverConf extends Logging {
       }
     }
 
-    logger.info(s"Cluster.hosts = ${finalConfigWithEnvVars.getAnyRef(DriverConfigHosts)}")
+    logger.debug(s"Cluster.hosts = ${finalConfigWithEnvVars.getAnyRef(DriverConfigHosts)}")
 
     ConfigFactory.load(finalConfigWithEnvVars)
   }

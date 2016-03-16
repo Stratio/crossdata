@@ -16,4 +16,8 @@
 
 package org.apache.spark.sql.crossdata.models
 
-case class ConnectionHostModel(host: String, port: String)
+// TODO add more options
+case class ConnectionHostModel(consumerHost: String, consumerPort: String, producerHost: String, producerPort: String) {
+
+  def toPrettyString : String = ModelUtils.modelToJsonString(this)
+}
