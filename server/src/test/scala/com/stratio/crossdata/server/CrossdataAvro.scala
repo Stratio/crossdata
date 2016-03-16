@@ -28,7 +28,7 @@ class CrossdataAvro extends SharedXDContextTest with ServerConfig {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataAvro])
 
-  "Crossdata" should "execute csv queries" in {
+  "Crossdata" should "execute avro queries" in {
 
     try{
       sql(s"CREATE TABLE test USING com.databricks.spark.avro OPTIONS (path '${Paths.get(getClass.getResource("/test.avro").toURI()).toString}')")
