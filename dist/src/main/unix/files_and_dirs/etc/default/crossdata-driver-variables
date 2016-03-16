@@ -6,3 +6,5 @@ DAEMON_OPTS="-l $LOGFILE"
 CROSSDATA_SHELL_CONF="/etc/sds/crossdata/shell"
 CROSSDATA_SHELL_HOME="/opt/sds/crossdata"
 CROSSDATA_LOGS="/var/log/sds/crossdata"
+
+

@@ -7,9 +7,9 @@ dist=0
 if [ -n "`echo $scriptdir | grep 'bin' | grep 'crossdata-dist' `" ]; then dist=1;fi
 
 # Read configuration variable file if it is present
-if [ -r /etc/sds/crossdata/shell ]; then
+if [ -r /etc/sds/crossdata ]; then
  if [ $dist -lt 1 ]; then
-    . /etc/sds/crossdata/shell/crossdata-env.sh
+    . /etc/sds/crossdata/server/crossdata-env.sh
  fi
 fi
 
@@ -31,12 +31,12 @@ PRGDIR=`dirname "${PRG}"`
 BASEDIR=`cd "${PRGDIR}/.." >/dev/null; pwd`
 
 
-if [ -z "${CROSSDATA_SHELL_CONF}" ]; then
-    CROSSDATA_SHELL_CONF="${BASEDIR}/conf"
+if [ -z "${CROSSDATA_CONF}" ]; then
+    CROSSDATA_CONF="${BASEDIR}/conf"
 fi
 
-if [ -f "${CROSSDATA_SHELL_CONF}/crossdata-env.sh" ]; then
-    source "${CROSSDATA_SHELL_CONF}/crossdata-env.sh"
+if [ -f "${CROSSDATA_CONF}/crossdata-env.sh" ]; then
+    source "${CROSSDATA_CONF}/crossdata-env.sh"
 fi
 
 
@@ -70,10 +70,10 @@ then
   REPO="${BASEDIR}"/@REPO@
 fi
 
-LIB=${CROSSDATA_SHELL_LIB}
-CLASSPATH=${CLASSPATH}:${CROSSDATA_SHELL_CONF}/:$(JARS=("$LIB"/*.jar); IFS=:; echo "${JARS[*]}")
+LIB=${CROSSDATA_LIB}
+CLASSPATH=${CLASSPATH}:${CROSSDATA_CONF}/:$(JARS=("$LIB"/*.jar); IFS=:; echo "${JARS[*]}")
 
-exec "${JAVACMD}" ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ \
+exec "${JAVACMD}" @EXTRA_JVM_ARGUMENTS@ \
   -classpath "${CLASSPATH}" \
   -Dapp.name="@APP_NAME@" \
   -Dapp.pid="$$" \
