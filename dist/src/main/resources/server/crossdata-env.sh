@@ -24,7 +24,7 @@ CROSSDATA_SERVER_USER="root"
 # CROSSDATA_SERVER_PID
 CROSSDATA_SERVER_PID="${CROSSDATA_HOME}/crossdata-server.pid"
 
-CROSSDATA_CONF="/etc/sds/crossdata"
+CROSSDATA_CONF="/etc/sds/crossdata/server"
 
 if [ -z "$CROSSDATA_JAVA_OPTS" ];then
         CROSSDATA_JAVA_OPTS="-Xmx2048m -Xms2048m"

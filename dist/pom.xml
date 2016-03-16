@@ -31,10 +31,14 @@
                         <configuration>
                             <target name="copy folders">
                                 <copy todir="target/appassembler/repo/shell">
-                                    <fileset dir="../driver/target/" includes="*.jar" />
+                                    <fileset dir="../driver/target/" includes="**/*-jar-with-dependencies.jar" />
+                                    <mapper type="flatten" />
+                                </copy>
+                                <copy todir="target/appassembler/shell">
+                                    <fileset dir="../driver/target/crossdata-shell-${project.parent.version}/bin"  />
                                 </copy>
                                 <copy todir="target/appassembler/repo/server">
-                                    <fileset dir="../server/target" includes="**/*.jar" />
+                                    <fileset dir="../server/target/" includes="**/*-jar-with-dependencies.jar" />
                                     <mapper type="flatten" />
                                 </copy>
                             </target>
@@ -43,13 +47,12 @@
                 </executions>
             </plugin>
 
-
-
             <!-- SERVER -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
                 <version>1.10</version>
+
                 <configuration>
                     <platforms>
                         <platform>unix</platform>
@@ -73,15 +76,9 @@
                             <mainClass>com.stratio.crossdata.server.CrossdataApplication</mainClass>
                             <name>server</name>
                         </program>
-                        <program>
-                            <mainClass>com.stratio.crossdata.driver.shell.BasicShell</mainClass>
-                            <name>shell</name>
-                        </program>
                     </programs>
                 </configuration>
-
                 <executions>
-
                     <execution>
                         <phase>package</phase>
                         <goals>
@@ -180,10 +177,6 @@
                                     </attributes>
                                 </mkdirs>
 
-                                <!--<copyDirectory>-->
-                                    <!--<from>src/main/templates/shell</from>-->
-                                    <!--<to>/opt/sds/crossdata/bin</to>-->
-                                <!--</copyDirectory>-->
                                 <copyDirectory>
                                     <from>${project.build.directory}/appassembler/repo/server</from>
                                     <to>/opt/sds/crossdata/lib</to>
@@ -191,6 +184,10 @@
                                 <copyDirectory>
                                     <from>${project.build.directory}/appassembler/repo/shell</from>
                                     <to>/opt/sds/crossdata/lib</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>${project.build.directory}/appassembler/shell</from>
+                                    <to>/opt/sds/crossdata/bin</to>
                                 </copyDirectory>
                                 <copyDirectory>
                                     <from>${project.build.directory}/crossdata-dist-${project.parent.version}/:/etc/sds/crossdata/shell</from>
