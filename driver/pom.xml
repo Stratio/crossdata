@@ -39,11 +39,6 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-server</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-cluster_${scala.binary.version}</artifactId>
             <version>${akka.version}</version>
@@ -130,15 +125,6 @@
 
         <profile>
             <id>package</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.stratio.crossdata</groupId>
-                    <artifactId>crossdata-server</artifactId>
-                    <version>${project.version}</version>
-                    <scope>system</scope>
-                    <systemPath>${project.basedir}/../server/target/crossdata-server-${project.version}-jar-with-dependencies.jar</systemPath>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
