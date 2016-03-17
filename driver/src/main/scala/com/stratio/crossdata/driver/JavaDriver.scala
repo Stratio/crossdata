@@ -49,7 +49,7 @@ class JavaDriver private(driverConf: DriverConf,
 
   private lazy val logger = LoggerFactory.getLogger(classOf[JavaDriver])
 
-  private val scalaDriver = Driver.getOrCreate(driverConf, auth)
+  private val scalaDriver = Driver.create(driverConf, auth)
 
   /**
    * Sync execution with defaults: timeout 10 sec, nr-retries 2
