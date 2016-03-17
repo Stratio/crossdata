@@ -17,9 +17,10 @@ package com.stratio.crossdata.connector.mongodb
 
 import com.mongodb.casbah.Imports.{MongoClient, MongoCollection}
 import com.mongodb.{MongoCredential, ServerAddress}
-import com.stratio.datasource.Config
+import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.util.Config
 import com.stratio.datasource.mongodb.reader.MongodbReadException
-import com.stratio.datasource.mongodb.{MongodbClientFactory, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
+import com.stratio.datasource.mongodb.config.{ MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 
 import scala.language.reflectiveCalls
 import scala.util.Try
@@ -74,13 +75,12 @@ object MongodbConnection {
 
     val ssloptions: Option[MongodbSSLOptions] = config.get[MongodbSSLOptions](SSLOptions)
 
-    val mongoClient: Try[MongoClient] = Try {
-      MongodbClientFactory.createClient(hosts,credentials,ssloptions, config.properties)
-    }.recover {
-      case throwable =>
-        throw MongodbReadException(throwable.getMessage, throwable)
-    }
-    mongoClient.get
-
+      val mongoClient: Try[MongoClient] = Try {
+         MongodbClientFactory.getClient(hosts, credentials, ssloptions, config.properties).clientConnection
+      }recover{
+        case throwable =>
+          throw MongodbReadException(throwable.getMessage, throwable)
+      }
+      mongoClient.get
   }
 }

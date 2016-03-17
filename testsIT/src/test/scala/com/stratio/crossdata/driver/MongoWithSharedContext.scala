@@ -19,7 +19,7 @@ import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
 import com.stratio.crossdata.server.CrossdataServer
 import com.stratio.crossdata.test.BaseXDTest
-import com.stratio.datasource.mongodb.MongodbConfig
+import com.stratio.datasource.mongodb.config.MongodbConfig
 import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterAll
 
