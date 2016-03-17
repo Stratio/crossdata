@@ -73,9 +73,13 @@ class DriverIT extends EndToEndTest {
   }
 
   "Crossdata Driver" should "be able to close the connection and start it again" in {
-    var driver = Driver.getOrCreate()
+    var driver = Driver.getOrCreate(); Driver.getOrCreate()
+    val newDriver = Driver.getOrCreate()
 
-    driver.sql( s"SHOW TABLES")
+    driver should be theSameInstanceAs newDriver
+
+
+    driver.sql(s"SHOW TABLES")
 
     driver.stop()
 
@@ -90,31 +94,31 @@ class DriverIT extends EndToEndTest {
   }
 
 
-  "Crossdata Driver" should "be able to execute ADD JAR Command of an existent file" in {
+  it should "be able to execute ADD JAR Command of an existent file" in {
     val file=File("/tmp/jar").createFile(false)
     val driver = Driver.getOrCreate()
     val result = driver.addJar(s"/tmp/jar").waitForResult()
 
-    driver.stop
-    file.delete
+    driver.stop()
+    file.delete()
 
     result.hasError should equal (false)
   }
 
-  "Crossdata Driver" should "be return an Error when execute ADD JAR Command of an un-existent file" in {
+  it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
 
     val driver = Driver.getOrCreate()
     val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
-    driver.stop
+    driver.stop()
 
     result.hasError should equal (true)
   }
 
-  "Crossdata Driver" should "be able to execute ADD JAR Command of any HDFS file" in {
+  it should "be able to execute ADD JAR Command of any HDFS file" in {
 
     val driver = Driver.getOrCreate()
     val result = driver.addJar(s"hdfs://repo/file.jar").waitForResult()
-    driver.stop
+    driver.stop()
 
     result.hasError should equal (false)
   }
