@@ -17,7 +17,7 @@ package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
-import com.stratio.datasource.mongodb.MongodbConfig
+import com.stratio.datasource.mongodb.config.MongodbConfig
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -30,7 +30,7 @@ class DriverDdlIT extends MongoWithSharedContext {
     val driver = Driver.getOrCreate()
 
     val mongoImportOptions = Map(
-      "host" -> s"$MongoHost:$MongoPort",
+      MongodbConfig.Host -> s"$MongoHost:$MongoPort",
       MongodbConfig.Database -> Database,
       MongodbConfig.Collection -> Collection
     )
