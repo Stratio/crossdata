@@ -135,4 +135,6 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
   override protected def dropAllPersistedViews(): Unit = {
     viewDAO.dao.deleteAll
   }
+  override def checkConnectivity:Boolean = true
+
 }

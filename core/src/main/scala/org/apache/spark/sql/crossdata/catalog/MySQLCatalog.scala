@@ -272,4 +272,8 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   override protected def dropAllPersistedViews(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
+
+  override def checkConnectivity:Boolean = {
+    connection!=null
+  }
 }

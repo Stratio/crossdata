@@ -17,7 +17,7 @@ package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
-import com.stratio.datasource.mongodb.MongodbConfig
+import com.stratio.datasource.mongodb.config.MongodbConfig
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 

@@ -222,7 +222,7 @@ class Driver private(driverConf: DriverConf,
   /**
    * Execute an ordered shutdown
    */
-  def stop() = Driver.clearActiveContext()
+  def stop() = Driver.clearActiveContext
 
   @deprecated("Close will be removed from public API. Use stop instead")
   def close() = stop()
@@ -267,13 +267,14 @@ object Driver {
     }
   }
 
-  def clearActiveContext() = {
+  def clearActiveContext = {
     DRIVER_CONSTRUCTOR_LOCK.synchronized {
       val system = activeDriver.get().system
       if (!system.isTerminated) system.shutdown()
       activeDriver.set(null)
     }
   }
+
 
   def getOrCreate(): Driver = getOrCreate(new DriverConf)
 

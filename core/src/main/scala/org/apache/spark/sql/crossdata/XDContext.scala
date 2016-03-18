@@ -49,7 +49,6 @@ class XDContext private (@transient val sc: SparkContext,
                 userConfig: Option[Config] = None) extends SQLContext(sc) with Logging  {
   self =>
 
-
   def this(sc: SparkContext) =
     this(sc, None)
 
@@ -206,6 +205,14 @@ class XDContext private (@transient val sc: SparkContext,
    */
   def importTables(datasource: String, opts: Map[String, String]): Unit = {
     ImportTablesUsingWithOptions(datasource, opts).run(this)
+  }
+
+  /**
+    * Check if there is Connection with the catalog
+    * @return if connection is possible
+    */
+  def checkCatalogConnection : Boolean={
+    catalog.checkConnectivity
   }
 
   XDContext.setLastInstantiatedContext(self)
