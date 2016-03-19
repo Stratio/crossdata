@@ -137,22 +137,31 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     )
   }
 
+  private def collectWithSpark: Array[Row] = sqlContext.synchronized {
+    /* TODO:
+    This synchronized area will block calls to collect whenever the job has to be executed by spark.
+     That call will block until the job is done in the spark cluster.
+     It is to be done to reproduce situations showing behaviours like the one described at
+      https://issues.apache.org/jira/browse/SPARK-13747
+     */
+    synchronized(super.collect)
+  }
+
   /**
    * @inheritdoc
    */
   override def collect(): Array[Row] = {
-    // If cache doesn't go through native
-    if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
-      super.collect()
-    } else {
+
+    sqlContext.cacheManager.lookupCachedData(this).map(_ => collectWithSpark) getOrElse {
       val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
       if(nativeQueryExecutor.isEmpty){
         logInfo(s"Spark Query: ${queryExecution.simpleString}")
       } else {
         logInfo(s"Native query: ${queryExecution.simpleString}")
       }
-      nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
+      nativeQueryExecutor.flatMap(executeNativeQuery) getOrElse collectWithSpark
     }
+
   }
 
   def flattenedCollect(): Array[Row] = {
@@ -276,7 +285,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
   @DeveloperApi
   def collect(executionType: ExecutionType): Array[Row] = executionType match {
     case Default => collect()
-    case Spark => super.collect()
+    case Spark => collectWithSpark
     case Native =>
       val result = findNativeQueryExecutor(queryExecution.optimizedPlan).flatMap(executeNativeQuery)
       if (result.isEmpty) throw new NativeExecutionException
