@@ -83,6 +83,16 @@ private[crossdata] case class DropTable(tableIdentifier: TableIdentifier)
 
 }
 
+private[crossdata] case object DropAllTables
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    sqlContext.catalog.dropAllTables()
+    Seq.empty
+  }
+
+}
+
 private[crossdata] case class CreateTempView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan)
   extends LogicalPlan with RunnableCommand {
 

@@ -152,6 +152,11 @@ class Driver private(driverConf: DriverConf,
     )
   }
 
+  def dropAllTables(): SQLResponse = {
+    sql(
+      s"""|DROP ALL TABLES""".stripMargin
+    )
+  }
 
   private def mkOptionsStatement(options: Map[String, String]): String = {
     val opt = options.map { case (k, v) => s"$k '$v'" } mkString ","
