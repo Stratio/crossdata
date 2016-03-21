@@ -15,8 +15,8 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import org.apache.spark.sql.catalyst.analysis.Catalog
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
+import org.apache.spark.sql.catalyst.analysis.{UnresolvedRelation, Catalog}
+import org.apache.spark.sql.catalyst.plans.logical.{Project, LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
@@ -53,6 +53,11 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
         true
       }
     }
+  }
+
+  def tableExistsInCatalog(tableIdentifier: Seq[String]): Boolean = {
+    val (table, database) = tableIdToTuple(tableIdentifier)
+    lookupTable(table, database).fold(false)(crossdataTable => true)
   }
 
   override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
@@ -177,9 +182,20 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     }
   }
 
-  final def persistView(tableIdentifier: TableIdentifier, plan: LogicalPlan, sqlText: String) = {
-    val tableIdent = tableIdentifier.toSeq
 
+
+  final def persistView(tableIdentifier: TableIdentifier, plan: LogicalPlan, sqlText: String) = {
+    def checkPlan(plan:LogicalPlan) {
+      plan collect {
+        case rel: UnresolvedRelation =>
+          if (!tableExistsInCatalog(rel.tableIdentifier)) throw new RuntimeException("Views only can be created with a previously persisted table")
+        case project:Project =>
+          checkPlan(project.child)
+        case _=>throw new RuntimeException("Views only can be created with a previously persisted table")
+      }
+    }
+    val tableIdent = tableIdentifier.toSeq
+    checkPlan(plan)
     if (tableExists(tableIdent)){
       logWarning(s"The view ${tableIdent mkString "."} already exists")
       throw new UnsupportedOperationException(s"The view $tableIdentifier already exists")
