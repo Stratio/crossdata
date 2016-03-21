@@ -191,6 +191,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   final def dropTable(tableIdentifier: Seq[String]): Unit = {
+    if (!tableExists(tableIdentifier)) throw new RuntimeException("Table can't be deleted because it doesn't exists")
     logInfo(s"XDCatalog: Deleting table ${tableIdentifier.mkString(".")}from catalog")
     val (table, catalog) = tableIdToTuple(tableIdentifier)
     unregisterTable(tableIdentifier)
@@ -204,6 +205,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   final def dropView(viewIdentifier: Seq[String]): Unit = {
+    if (!tableExists(viewIdentifier)) throw new RuntimeException("View can't be deleted because it doesn't exists")
     logInfo(s"XDCatalog: Deleting table ${viewIdentifier.mkString(".")}from catalog")
     val (view, catalog) = tableIdToTuple(viewIdentifier)
     unregisterTable(viewIdentifier)
