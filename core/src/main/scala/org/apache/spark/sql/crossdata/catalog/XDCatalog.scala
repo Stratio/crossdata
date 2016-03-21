@@ -55,10 +55,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     }
   }
 
-  def tableExistsInCatalog(tableIdentifier: Seq[String]): Boolean = {
-    val (table, database) = tableIdToTuple(tableIdentifier)
-    lookupTable(table, database).fold(false)(crossdataTable => true)
-  }
+  def tableExistsInCatalog(tableIdentifier: Seq[String]): Boolean = (lookupTable _ tupled tableIdToTuple(tableIdentifier)).fold(false)(crossdataTable=>true)
 
   override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
     def processDBIdentifier(dbName: String): String = if (conf.caseSensitiveAnalysis) dbName else dbName.toLowerCase
