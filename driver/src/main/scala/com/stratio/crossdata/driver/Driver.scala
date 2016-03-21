@@ -141,12 +141,22 @@ class Driver private(driverConf: DriverConf,
        """.stripMargin
     )
 
-  def dropTable(name: String, isTemporary: Boolean = false): SQLResponse =
+  def dropTable(name: String, isTemporary: Boolean = false): SQLResponse = {
+
+    if (isTemporary) throw new UnsupportedOperationException("Drop temporary table is not supported yet")
+
     sql(
       s"""|DROP ${if (isTemporary) "TEMPORARY" else ""}
           |TABLE $name
        """.stripMargin
     )
+  }
+
+  def dropAllTables(): SQLResponse = {
+    sql(
+      s"""|DROP ALL TABLES""".stripMargin
+    )
+  }
 
   private def mkOptionsStatement(options: Map[String, String]): String = {
     val opt = options.map { case (k, v) => s"$k '$v'" } mkString ","

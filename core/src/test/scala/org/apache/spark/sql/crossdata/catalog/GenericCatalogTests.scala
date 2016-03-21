@@ -17,6 +17,7 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
@@ -50,15 +51,24 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     df shouldBe a[XDDataFrame]
   }
 
-  it should s"drop view in $catalogName" in {
+  it should s"drop view" in {
 
     val viewIdentifier = TableIdentifier(ViewName, Option(Database))
-    xdContext.catalog.persistViewMetadata(viewIdentifier, sqlView)
+    val plan=new UnresolvedRelation(Seq(Database,TableName))
+    xdContext.catalog.persistView(viewIdentifier, plan, sqlView)
 
     xdContext.catalog.dropView(viewIdentifier.toSeq)
     xdContext.catalog.tableExists(viewIdentifier.toSeq) shouldBe false
   }
 
+
+  it should s"not drop view that not exists " in {
+    a[RuntimeException] shouldBe thrownBy {
+      val viewIdentifier = TableIdentifier(ViewName, Option(Database))
+      xdContext.catalog.dropView(viewIdentifier.toSeq)
+    }
+
+  }
 
   it should s"persist a table with catalog and partitionColumns with multiple subdocuments as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
@@ -160,6 +170,17 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     xdContext.catalog.dropTable(tableIdentifier1)
     val tables3 = xdContext.catalog.getTables(None)
     tables3.size shouldBe 0
+  }
+
+  it should "not drop tables that not exists" in {
+    xdContext.catalog.dropAllTables()
+
+    val crossdataTable1 = CrossdataTable(TableName, Some(Database), Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val tableIdentifier1 = Seq(Database, TableName)
+
+    a[RuntimeException] shouldBe thrownBy{
+      xdContext.catalog.dropTable(tableIdentifier1)
+    }
   }
 
   it should "check if tables map is correct with databaseName" in {
