@@ -16,7 +16,7 @@
 
 package com.stratio.crossdata.server.actors
 
-import java.util.concurrent.CancellationException
+import java.util.concurrent.{CancellationException, Executor}
 
 import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.common.utils.concurrent.Cancellable
@@ -24,11 +24,14 @@ import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.{SQLCommand, SQLReply}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
-import com.stratio.crossdata.server.actors.JobActor.Task
+import com.stratio.crossdata.server.actors.JobActor.{ProlificExecutor, Task}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
+
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
+
 
 object JobActor {
 
@@ -84,6 +87,11 @@ object JobActor {
   def props(xDContext: XDContext, command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration]): Props =
     Props(new JobActor(xDContext, Task(command, requester, timeout)))
 
+  /**
+    * Executor class which runs each command in a brand new thread each time
+    */
+  class ProlificExecutor extends Executor { override def execute(command: Runnable): Unit = new Thread(command) start }
+
 }
 
 class JobActor(
@@ -110,7 +118,8 @@ class JobActor(
 
       logger.debug(s"Starting Job under ${context.parent.path}")
 
-      import scala.concurrent.ExecutionContext.Implicits.global
+      implicit val _: ExecutionContext = ExecutionContext.fromExecutor(new ProlificExecutor)
+
       val runningTask = launchTask
       runningTask.future onComplete {
         case Success(queryRes) =>
