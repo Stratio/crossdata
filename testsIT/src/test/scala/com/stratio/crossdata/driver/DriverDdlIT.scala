@@ -64,4 +64,16 @@ class DriverDdlIT extends MongoWithSharedContext {
     driver.listTables() should not contain ("jsonTable3", None)
   }
 
+  it should "allow to drop all tables" in {
+    val driver = Driver.getOrCreate()
+
+    driver.sql(
+      s"CREATE TEMPORARY TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
+    ).waitForResult()
+
+    driver.dropAllTables().waitForResult()
+
+    driver.listTables() should not contain ("jsonTable3", None)
+  }
+
 }
