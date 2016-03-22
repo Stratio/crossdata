@@ -15,8 +15,11 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
+import java.lang.{RuntimeException, Runtime}
+
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.crossdata.XDDataFrame
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -40,21 +43,18 @@ class ViewsIT extends SharedXDContextTest {
   }
 
   // TODO When we can add views to Zookeeper catalog, Views' test should be moved to GenericCatalogTests in order to test the specific implementations.
-  "Create view" should "persist a view in the catalog" in {
-
+  "Create view" should "persist a view in the catalog only with persisted tables" in {
     val sqlContext = _xdContext
     import sqlContext.implicits._
 
-    val df  = sqlContext.sparkContext.parallelize(1 to 5).toDF
-    df.registerTempTable("person")
-    sql("CREATE VIEW persistedview AS SELECT * FROM person WHERE _1 < 3")
-
-    sqlContext.dropTempTable("persistedview")
-    val dataframe = xdContext.table("persistedview")
-
-    dataframe shouldBe a[DataFrame]
-    dataframe.collect() should have length 2
+    val df = sqlContext.sparkContext.parallelize(1 to 5).toDF
+    a[RuntimeException] shouldBe thrownBy {
+      df.registerTempTable("person")
+      sql("CREATE VIEW persistedview AS SELECT * FROM person WHERE _1 < 3")
+    }
 
   }
+
+
 
 }

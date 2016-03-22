@@ -30,7 +30,7 @@ class DriverDdlIT extends MongoWithSharedContext {
     val driver = Driver.getOrCreate()
 
     val mongoImportOptions = Map(
-      "host" -> s"$MongoHost:$MongoPort",
+      MongodbConfig.Host -> s"$MongoHost:$MongoPort",
       MongodbConfig.Database -> Database,
       MongodbConfig.Collection -> Collection
     )
@@ -60,6 +60,18 @@ class DriverDdlIT extends MongoWithSharedContext {
     ).waitForResult()
 
     driver.dropTable("jsonTable3").waitForResult()
+
+    driver.listTables() should not contain ("jsonTable3", None)
+  }
+
+  it should "allow to drop all tables" in {
+    val driver = Driver.getOrCreate()
+
+    driver.sql(
+      s"CREATE TEMPORARY TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
+    ).waitForResult()
+
+    driver.dropAllTables().waitForResult()
 
     driver.listTables() should not contain ("jsonTable3", None)
   }
