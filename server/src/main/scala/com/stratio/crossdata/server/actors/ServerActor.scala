@@ -191,7 +191,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       context.become(ready(st.copy(jobsById = newjobsmap)))
 
     case any =>
-      logger.error(s"Something is going wrong! Unknown message: $any")
+      logger.warn(s"Something is going wrong! Unknown message: $any")
   }
 
   private def sentenceToDeath(victim: ActorRef): Unit = completedJobTTL match {

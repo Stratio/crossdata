@@ -65,9 +65,7 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     //Check if the catalog is "on line"
     val ctx=xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started"))
-
-    if (!ctx.checkCatalogConnection)  throw new RuntimeException("Crossdata Server cannot be started because of there is not connection with the Catalog")
-
+    require(ctx.checkCatalogConnection,"Crossdata Server cannot be started because there isn't a connection with the Catalog")
 
     system = Some(ActorSystem(clusterName, config))
 
