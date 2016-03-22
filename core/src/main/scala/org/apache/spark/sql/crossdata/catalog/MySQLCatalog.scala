@@ -84,33 +84,39 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     val url = config.getString(Url)
 
     Class.forName(driver)
-    val jdbcConnection = DriverManager.getConnection(url, user, pass)
+    try {
+      val jdbcConnection = DriverManager.getConnection(url, user, pass)
 
-    // CREATE PERSISTENT METADATA TABLE
+      // CREATE PERSISTENT METADATA TABLE
 
-    jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA IF NOT EXISTS $db")
+      jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA IF NOT EXISTS $db")
 
 
-    jdbcConnection.createStatement().executeUpdate(
+      jdbcConnection.createStatement().executeUpdate(
         s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithTableMetadata (
-           |$DatabaseField VARCHAR(50),
-           |$TableNameField VARCHAR(50),
-           |$SchemaField TEXT,
-           |$DatasourceField TEXT,
-           |$PartitionColumnField TEXT,
-           |$OptionsField TEXT,
-           |$CrossdataVersionField TEXT,
-           |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+            |$DatabaseField VARCHAR(50),
+            |$TableNameField VARCHAR(50),
+            |$SchemaField TEXT,
+            |$DatasourceField TEXT,
+            |$PartitionColumnField TEXT,
+            |$OptionsField TEXT,
+            |$CrossdataVersionField TEXT,
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
-    jdbcConnection.createStatement().executeUpdate(
-      s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
-          |$DatabaseField VARCHAR(50),
-          |$TableNameField VARCHAR(50),
-          |$SqlViewField TEXT,
-          |$CrossdataVersionField VARCHAR(30),
-          |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
+            |$DatabaseField VARCHAR(50),
+            |$TableNameField VARCHAR(50),
+            |$SqlViewField TEXT,
+            |$CrossdataVersionField VARCHAR(30),
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
-    jdbcConnection
+      jdbcConnection
+    }catch{
+      case e:Exception =>
+        logError(e.getMessage)
+        null
+    }
   }
 
 
@@ -271,5 +277,9 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   override protected def dropAllPersistedViews(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
+  }
+
+  override def checkConnectivity:Boolean = {
+    connection!=null
   }
 }

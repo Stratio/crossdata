@@ -257,6 +257,12 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   protected def dropAllPersistedViews(): Unit
 
+
+  /**
+   * Check the connection to the set Catalog
+   */
+  def checkConnectivity: Boolean
+
 }
 
 object XDCatalog extends CrossdataSerializer {
