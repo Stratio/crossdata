@@ -122,12 +122,14 @@ class XDContext private (@transient val sc: SparkContext,
         PreWriteCheck(catalog)
       )
 
+      val preparationRules = Seq(PrepareAggregateAlias)
+
       override lazy val batches: Seq[Batch] = Seq(
         Batch("Substitution", fixedPoint,
           CTESubstitution ::
             WindowsSubstitution ::
             Nil : _*),
-        Batch("Preparation", fixedPoint, PrepareAggregateAlias),
+        Batch("Preparation", fixedPoint, preparationRules),
         Batch("Resolution", fixedPoint,
           ResolveRelations ::
             ResolveReferences ::

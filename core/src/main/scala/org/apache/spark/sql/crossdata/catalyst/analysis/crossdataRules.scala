@@ -50,8 +50,6 @@ object ResolveAggregateAlias extends Rule[LogicalPlan] {
       }
 
     groupingExpressions.exists {
-      case UnresolvedAttribute(Seq(aliasCandidate)) =>
-        aggregateExpressionsContainAliasReference(aliasCandidate)
       case PostponedAttribute(UnresolvedAttribute(Seq(aliasCandidate))) =>
         aggregateExpressionsContainAliasReference(aliasCandidate)
       case _ => false
@@ -79,7 +77,6 @@ object PrepareAggregateAlias extends Rule[LogicalPlan] {
       }
       a.copy(groupingExpressions = newGrouping)
   }
-
 
   private def groupingExpressionsContainUnresolvedAlias(groupingExpressions: Seq[Expression], aggregateExpressions: Seq[NamedExpression]): Boolean = {
     def aggregateExpressionsContainAliasReference(aliasCandidate: String) =
