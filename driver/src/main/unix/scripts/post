@@ -6,9 +6,9 @@ set -e
 
 GROUP='stratio'
 USER='stratio'
-DIR_INSTALL='/opt/sds/crossdata-shell'
-DIR_CONF='/etc/sds/crossdata-shell'
-DIR_LOG='/var/log/sds/crossdata-shell'
+DIR_INSTALL='/opt/sds/crossdata'
+DIR_CONF='/etc/sds/crossdata/shell'
+DIR_LOG='/var/log/sds/crossdata'
 
 
 # Add stratio group if it doesn't already exists
@@ -34,7 +34,7 @@ chown -R ${USER}:${GROUP} $DIR_LOG
 chmod -R 775 $DIR_INSTALL
 chmod 775 $DIR_LOG
 
-chmod 755 /opt/sds/crossdata-shell/bin/*
+chmod 755 /opt/sds/crossdata/bin/*
 touch /var/run/sds/crossdata-shell.pid
 
 exit 0
