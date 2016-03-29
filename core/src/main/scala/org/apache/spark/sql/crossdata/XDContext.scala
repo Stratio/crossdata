@@ -129,7 +129,7 @@ class XDContext private (@transient val sc: SparkContext,
           CTESubstitution ::
             WindowsSubstitution ::
             Nil : _*),
-        Batch("Preparation", fixedPoint, preparationRules),
+        Batch("Preparation", fixedPoint, preparationRules : _*),
         Batch("Resolution", fixedPoint,
           ResolveRelations ::
             ResolveReferences ::
