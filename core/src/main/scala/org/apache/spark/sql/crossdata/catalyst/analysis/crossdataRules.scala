@@ -88,7 +88,7 @@ object PrepareAggregateAlias extends Rule[LogicalPlan] {
       }
 
     groupingExpressions.exists {
-      case u@UnresolvedAttribute(Seq(aliasCandidate)) =>
+      case UnresolvedAttribute(Seq(aliasCandidate)) =>
         aggregateExpressionsContainAliasReference(aliasCandidate)
       case _ => false
     }
