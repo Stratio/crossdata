@@ -26,10 +26,10 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst._
-import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
+import org.apache.spark.sql.catalyst.analysis.{CleanupAliases, HiveTypeCoercion, Analyzer, FunctionRegistry}
 import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
-import org.apache.spark.sql.crossdata.catalyst.analysis.ResolveAggregateAlias
+import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
@@ -43,7 +43,8 @@ import org.apache.spark.{Logging, SparkContext}
 /**
  * CrossdataContext leverages the features of [[SQLContext]]
  * and adds some features of the Crossdata system.
- * @param sc A [[SparkContext]].
+  *
+  * @param sc A [[SparkContext]].
  */
 class XDContext private (@transient val sc: SparkContext,
                 userConfig: Option[Config] = None) extends SQLContext(sc) with Logging  {
@@ -120,6 +121,33 @@ class XDContext private (@transient val sc: SparkContext,
       override val extendedCheckRules = Seq(
         PreWriteCheck(catalog)
       )
+
+      val preparationRules = Seq(PrepareAggregateAlias)
+
+      override lazy val batches: Seq[Batch] = Seq(
+        Batch("Substitution", fixedPoint,
+          CTESubstitution ::
+            WindowsSubstitution ::
+            Nil : _*),
+        Batch("Preparation", fixedPoint, preparationRules : _*),
+        Batch("Resolution", fixedPoint,
+          ResolveRelations ::
+            ResolveReferences ::
+            ResolveGroupingAnalytics ::
+            ResolveSortReferences ::
+            ResolveGenerate ::
+            ResolveFunctions ::
+            ResolveAliases ::
+            ExtractWindowExpressions ::
+            GlobalAggregates ::
+            ResolveAggregateFunctions ::
+            HiveTypeCoercion.typeCoercionRules ++
+              extendedResolutionRules : _*),
+        Batch("Nondeterministic", Once,
+          PullOutNondeterministic),
+        Batch("Cleanup", fixedPoint,
+          CleanupAliases)
+      )
     }
 
   @transient
@@ -169,6 +197,7 @@ class XDContext private (@transient val sc: SparkContext,
 
   /**
     * Add JAR file from XD Driver to the context
+    *
     * @param path The local path or hdfs path where SparkContext will take the JAR
     */
   def addJar(path: String) = {
@@ -209,6 +238,7 @@ class XDContext private (@transient val sc: SparkContext,
 
   /**
     * Check if there is Connection with the catalog
+    *
     * @return if connection is possible
     */
   def checkCatalogConnection : Boolean={
