@@ -29,7 +29,7 @@ object ResolveAggregateAlias extends Rule[LogicalPlan] {
     case a@Aggregate(grouping, aggregateExp, child) if child.resolved && !a.resolved && groupingExpressionsContainAlias(grouping, aggregateExp) =>
       val newGrouping = grouping.map { groupExpression =>
         groupExpression transformUp {
-          case u@UnresolvedAttribute(Seq(aliasCandidate)) =>
+          case PostponedAttribute(u@UnresolvedAttribute(Seq(aliasCandidate))) =>
             aggregateExp.collectFirst {
               case Alias(resolvedAttribute, aliasName) if aliasName == aliasCandidate =>
                 resolvedAttribute
@@ -50,7 +50,9 @@ object ResolveAggregateAlias extends Rule[LogicalPlan] {
       }
 
     groupingExpressions.exists {
-      case u@UnresolvedAttribute(Seq(aliasCandidate)) =>
+      case UnresolvedAttribute(Seq(aliasCandidate)) =>
+        aggregateExpressionsContainAliasReference(aliasCandidate)
+      case PostponedAttribute(UnresolvedAttribute(Seq(aliasCandidate))) =>
         aggregateExpressionsContainAliasReference(aliasCandidate)
       case _ => false
     }
@@ -58,5 +60,41 @@ object ResolveAggregateAlias extends Rule[LogicalPlan] {
 
   // Catalyst config cannot be read, so the most restrictive resolver is used
   val resolver: Resolver = caseSensitiveResolution
+
+}
+
+object PrepareAggregateAlias extends Rule[LogicalPlan] {
+
+  override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
+
+    case a@Aggregate(grouping, aggregateExp, child) if !child.resolved && !a.resolved && groupingExpressionsContainUnresolvedAlias(grouping, aggregateExp) =>
+      val newGrouping = grouping.map { groupExpression =>
+        groupExpression transformUp {
+          case u@UnresolvedAttribute(Seq(aliasCandidate)) =>
+            aggregateExp.collectFirst {
+              case UnresolvedAlias(Alias(unresolvedAttr, aliasName)) if aliasName == aliasCandidate =>
+                PostponedAttribute(u)
+            }.getOrElse(u)
+        }
+      }
+      a.copy(groupingExpressions = newGrouping)
+  }
+
+
+  private def groupingExpressionsContainUnresolvedAlias(groupingExpressions: Seq[Expression], aggregateExpressions: Seq[NamedExpression]): Boolean = {
+    def aggregateExpressionsContainAliasReference(aliasCandidate: String) =
+      aggregateExpressions.exists {
+        case UnresolvedAlias(Alias(unresolvedAttribute, aliasName)) if aliasName == aliasCandidate =>
+          true
+        case _ =>
+          false
+      }
+
+    groupingExpressions.exists {
+      case u@UnresolvedAttribute(Seq(aliasCandidate)) =>
+        aggregateExpressionsContainAliasReference(aliasCandidate)
+      case _ => false
+    }
+  }
 
 }
