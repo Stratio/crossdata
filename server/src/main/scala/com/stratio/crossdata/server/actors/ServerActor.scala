@@ -148,8 +148,6 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
         // If it can't run here it should be executed somewhere else
         mediator ! Publish(managementTopic, DelegateCommand(sc, self))
       }
-    case other:CommandEnvelope =>
-      other.cmd
 
   }
 
