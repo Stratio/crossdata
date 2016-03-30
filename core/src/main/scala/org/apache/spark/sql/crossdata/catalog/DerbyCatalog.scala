@@ -54,12 +54,11 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   import DerbyCatalog._
   import XDCatalog._
 
-
   private val db = "CROSSDATA"
   private val tableWithTableMetadata = "xdtables"
   private val tableWithViewMetadata = "xdviews"
 
-  lazy val connection: Connection = {
+  @transient lazy val connection: Connection = {
 
     val driver = "org.apache.derby.jdbc.EmbeddedDriver"
     val url = "jdbc:derby:sampledb/crossdata;create=true"
