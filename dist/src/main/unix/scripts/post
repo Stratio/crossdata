@@ -38,6 +38,7 @@ chown -R ${USER}:${GROUP} /var/run/sds
 
 chmod -R 775 $DIR_INSTALL
 chmod 775 $DIR_LOG
+chmod -R 640 $DIR_CONF
 
 chmod 755 /etc/init.d/crossdata
 chmod 755 /opt/sds/crossdata/bin/*

@@ -43,6 +43,10 @@ case "$1" in
 
   chmod -R 775 $DIR_INSTALL
   chmod 775 $DIR_LOG
+  chmod 755 /etc/init.d/crossdata
+  chmod 755 /opt/sds/crossdata/bin/*
+
+  chmod -R 640 $DIR_CONF
 
   touch /var/run/sds/crossdata.pid
 
