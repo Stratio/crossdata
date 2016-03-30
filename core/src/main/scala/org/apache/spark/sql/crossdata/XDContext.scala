@@ -79,7 +79,6 @@ class XDContext private (@transient val sc: SparkContext,
 
     import XDContext.{CaseSensitive, DerbyClass}
 
-
     val catalogClass = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
       catalogConfig.getString(XDContext.ClassConfigKey)
     else DerbyClass
@@ -94,6 +93,7 @@ class XDContext private (@transient val sc: SparkContext,
       new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
   }
 
+  @transient
   protected[crossdata] lazy val streamingCatalog: Option[XDStreamingCatalog] = {
     if (xdConfig.hasPath(StreamingCatalogClassConfigKey)) {
       val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
@@ -152,7 +152,6 @@ class XDContext private (@transient val sc: SparkContext,
 
   @transient
   class XDPlanner extends SparkPlanner with XDStrategies {
-
     override def strategies: Seq[Strategy] = Seq(XDDDLStrategy, ExtendedDataSourceStrategy) ++ super.strategies
   }
 
@@ -274,7 +273,7 @@ object XDContext extends CoreConfig {
   val CatalogClassConfigKey : String = s"$CatalogConfigKey.$ClassConfigKey"
   val StreamingCatalogClassConfigKey : String = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
 
-  private val INSTANTIATION_LOCK = new Object()
+  @transient private val INSTANTIATION_LOCK = new Object()
 
   /**
    * Reference to the last created SQLContext.

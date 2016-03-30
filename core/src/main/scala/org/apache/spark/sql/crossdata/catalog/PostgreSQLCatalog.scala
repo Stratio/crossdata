@@ -67,7 +67,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
   private val table = config.getString(Table)
   private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
 
-  lazy val connection: Connection = {
+  @transient lazy val connection: Connection = {
 
     val driver = config.getString(Driver)
     val user = config.getString(User)

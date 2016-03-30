@@ -39,8 +39,8 @@ import scala.util.{Try, Success}
 class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) {
 
-  val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
-  val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
+  @transient val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
+  @transient val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
 
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
