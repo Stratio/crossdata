@@ -83,7 +83,7 @@ class MongoQueryProcessorSpec extends BaseXDTest {
     filters.get(ColumnAge) shouldBe a [DBObject]
 
     val inListValues = filters.get(ColumnAge).asInstanceOf[DBObject].get(QueryOperators.IN)
-    inListValues shouldBe a [Array[Any]]
+    inListValues should matchPattern { case _: Array[_] => }
     inListValues.asInstanceOf[Array[Any]] should have size 2
     inListValues.asInstanceOf[Array[Any]] should contain allOf (ValueAge, ValueAge2)
 
