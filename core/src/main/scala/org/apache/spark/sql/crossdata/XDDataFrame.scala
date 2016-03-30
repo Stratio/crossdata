@@ -194,7 +194,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         }
       }
 
-      require(firstLevelNames.isEmpty || firstLevelNames.size == rows.headOption.map(_.length).getOrElse(0))
+      require(firstLevelNames.isEmpty ||rows.isEmpty || firstLevelNames.size == rows.headOption.map(_.length).getOrElse(0))
       val thisLevelNames = firstLevelNames.map {
         case (nameseq, true) => (nameseq.headOption.getOrElse(""), true)
         case (nameseq, false) => (nameseq.init mkString ".", false)
