@@ -23,7 +23,7 @@ import akka.cluster.Cluster
 import akka.contrib.pattern.ClusterReceptionistExtension
 import akka.routing.{DefaultResizer, RoundRobinPool}
 import com.stratio.crossdata.server.actors.ServerActor
-import com.stratio.crossdata.server.config.ServerConfig
+import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
 import org.apache.commons.daemon.Daemon
 import org.apache.commons.daemon.DaemonContext
 import org.apache.log4j.Logger
@@ -69,14 +69,17 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     system = Some(ActorSystem(clusterName, config))
 
+    val serverActorConfig = ServerActorConfig(completedJobTTL, retryNoAttempts, retryCountWindow)
+
     system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
       val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
       val serverActor = actorSystem.actorOf(
         RoundRobinPool(minServerActorInstances, Some(resizer)).props(
           Props(classOf[ServerActor],
-                Cluster(actorSystem),
-                xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")))),
-                actorName)
+            Cluster(actorSystem),
+            xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")),
+            serverActorConfig)),
+        actorName)
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
     }
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")

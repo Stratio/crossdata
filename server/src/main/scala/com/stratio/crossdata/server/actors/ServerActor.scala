@@ -30,7 +30,7 @@ import com.stratio.crossdata.common._
 import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob}
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
-import com.stratio.crossdata.server.config.ServerConfig
+import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.types.StructType
@@ -43,7 +43,8 @@ object ServerActor {
 
   val managementTopic: String = "jobsManagement"
 
-  def props(cluster: Cluster, xdContext: XDContext): Props = Props(new ServerActor(cluster, xdContext))
+  def props(cluster: Cluster, xdContext: XDContext, config: ServerActorConfig): Props =
+    Props(new ServerActor(cluster, xdContext, config))
 
   protected case class JobId(requester: ActorRef, queryId: UUID)
 
@@ -58,12 +59,12 @@ object ServerActor {
 
 }
 
-class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with ServerConfig {
+class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorConfig) extends Actor {
 
   import ServerActor._
   import ServerActor.ManagementMessages._
 
-  override lazy val logger = Logger.getLogger(classOf[ServerActor])
+  lazy val logger = Logger.getLogger(classOf[ServerActor])
 
   lazy val mediator = DistributedPubSubExtension(context.system).mediator
 
@@ -150,7 +151,6 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
     case other:CommandEnvelope =>
       other.cmd
 
-
   }
 
   // Manages events from the `JobActor` which runs the task
@@ -194,7 +194,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
       logger.warn(s"Something is going wrong! Unknown message: $any")
   }
 
-  private def sentenceToDeath(victim: ActorRef): Unit = completedJobTTL match {
+  private def sentenceToDeath(victim: ActorRef): Unit = config.completedJobTTL match {
     case finite: FiniteDuration =>
       context.system.scheduler.scheduleOnce(finite, self, FinishJob(victim))(context.dispatcher)
     case _ => // Reprieve by infinite limit
@@ -206,7 +206,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext) extends Actor with Ser
   }
 
   //TODO: Use number of tries and timeout configuration parameters
-  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(config.retryNoAttempts, config.retryCountWindow) {
     case _ => Restart //Crashed job gets restarted (or not, depending on `retryNoAttempts` and `retryCountWindow`)
   }
 
