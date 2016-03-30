@@ -46,7 +46,15 @@ case "$1" in
   chmod 755 /etc/init.d/crossdata
   chmod 755 /opt/sds/crossdata/bin/*
 
-  chmod -R 640 $DIR_CONF
+  chmod 775 $DIR_CONF
+  chmod 775 $DIR_CONF/shell
+  chmod 775 $DIR_CONF/server
+
+  chmod 640 $DIR_CONF/shell/*
+  chmod 640 $DIR_CONF/server/*
+
+  chmod 775 $DIR_CONF/shell/crossdata-env.sh
+  chmod 775 $DIR_CONF/server/crossdata-env.sh
 
   touch /var/run/sds/crossdata.pid
 
