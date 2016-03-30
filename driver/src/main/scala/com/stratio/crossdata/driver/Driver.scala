@@ -217,7 +217,7 @@ class Driver private(driverConf: DriverConf,
   /**
    * Execute an ordered shutdown
    */
-  def stop() = Driver.clearActiveContext()
+  def stop() = Driver.clearActiveContext(this)
 
   @deprecated("Close will be removed from public API. Use stop instead")
   def close() = stop()
@@ -270,6 +270,13 @@ object Driver {
     }
   }
 
+  def clearActiveContext(driver:Driver) = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      val system = driver.system
+      if (!system.isTerminated) system.shutdown()
+    }
+  }
+
   def getOrCreate(): Driver = getOrCreate(new DriverConf)
 
   def getOrCreate(driverConf: DriverConf): Driver =
@@ -297,6 +304,9 @@ object Driver {
       }
       activeDriver.get()
     }
+
+  private[crossdata] def create(driverConf: DriverConf, authentication: Authentication): Driver =
+    new Driver(driverConf, authentication)
 
   private[driver] def generateDefaultAuth = new Authentication("crossdata", "stratio")
 
