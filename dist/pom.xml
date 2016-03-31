@@ -7,12 +7,12 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>parent</artifactId>
-        <version>1.2.0-RC3-SNAPSHOT</version>
+        <version>1.2.0-RC4-SNAPSHOT</version>
     </parent>
 
 
     <artifactId>dist</artifactId>
-    <version>1.2.0-RC3-SNAPSHOT</version>
+    <version>1.2.0-RC4-SNAPSHOT</version>
 
 
     <profiles>
