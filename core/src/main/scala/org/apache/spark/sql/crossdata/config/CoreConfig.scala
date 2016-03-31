@@ -18,8 +18,9 @@ package org.apache.spark.sql.crossdata.config
 
 import java.io.File
 
-import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.{Config, ConfigFactory}
+import org.apache.log4j.Logger
+import org.apache.spark.Logging
 
 
 object CoreConfig {
@@ -31,7 +32,7 @@ object CoreConfig {
   val CatalogConfigKey = "catalog"
 }
 
-trait CoreConfig extends SparkLoggerComponent {
+trait CoreConfig extends Logging {
 
   import CoreConfig._
 
