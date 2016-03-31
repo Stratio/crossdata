@@ -15,14 +15,14 @@
  */
 package com.stratio.crossdata.launcher
 
-import org.apache.spark.Logging
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.launcher.SparkLauncher
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
-class SparkJob(sparkLauncher: SparkLauncher)(implicit executionContext: ExecutionContext) extends Logging{
+class SparkJob(sparkLauncher: SparkLauncher)(implicit executionContext: ExecutionContext) extends SparkLoggerComponent{
 
   def submit(): Unit =
     Future[(Int, Process)] {

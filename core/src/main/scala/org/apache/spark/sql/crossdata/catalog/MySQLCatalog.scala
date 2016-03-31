@@ -15,23 +15,12 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import java.sql.Connection
-import java.sql.DriverManager
-import java.sql.ResultSet
+import java.sql.{Connection, DriverManager, ResultSet}
 
-import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.getOptions
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.getPartitionColumn
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.getUserSpecifiedSchema
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.serializeOptions
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.serializePartitionColumn
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.serializeSchema
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.{XDContext, catalog}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, getOptions, getPartitionColumn, getUserSpecifiedSchema, serializeOptions, serializePartitionColumn, serializeSchema}
 import org.apache.spark.sql.types._
 
 import scala.annotation.tailrec
@@ -65,10 +54,9 @@ object MySQLCatalog {
  * @param conf An implementation of the [[CatalystConf]].
  */
 class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends XDCatalog(conf, xdContext) with Logging {
+  extends XDCatalog(conf, xdContext) with SparkLoggerComponent {
 
   import MySQLCatalog._
-
   import org.apache.spark.sql.crossdata._
 
   private val config = XDContext.catalogConfig

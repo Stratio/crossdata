@@ -15,13 +15,10 @@
  */
 package org.elasticsearch.spark.sql
 
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
 import com.stratio.crossdata.connector.elasticsearch.ElasticSearchQueryProcessor
-import org.apache.spark.Logging
-
-import org.apache.spark.sql.catalyst.plans.logical.{Project, UnaryNode, LeafNode, LogicalPlan}
-
-import org.apache.spark.sql.catalyst.plans.logical.{Filter, Limit}
+import org.apache.spark.sql.catalyst.plans.logical.{Filter, LeafNode, Limit, LogicalPlan, Project, UnaryNode}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, SQLContext}
 
@@ -35,7 +32,7 @@ import org.apache.spark.sql.{Row, SQLContext}
  * @param userSchema Spark User Defined Schema
  */
 class ElasticSearchXDRelation(parameters: Map[String, String], sqlContext: SQLContext, userSchema: Option[StructType] = None)
-  extends ElasticsearchRelation(parameters, sqlContext, userSchema) with NativeScan with Logging {
+  extends ElasticsearchRelation(parameters, sqlContext, userSchema) with NativeScan with SparkLoggerComponent {
 
   /**
    * Build and Execute a NativeScan for the [[LogicalPlan]] provided.
