@@ -17,8 +17,8 @@ package com.stratio.crossdata.launcher
 
 import java.util.UUID
 
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.Config
-import org.apache.spark.Logging
 import org.apache.spark.launcher.SparkLauncher
 import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
@@ -30,7 +30,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext
 import scala.util.{Properties, Try}
 
-object SparkJobLauncher extends Logging with CrossdataSerializer{
+object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer{
 
   def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String)
                           (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {

@@ -15,9 +15,9 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import org.apache.spark.Logging
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 
-trait CatalogCommon extends Logging {
+trait CatalogCommon extends SparkLoggerComponent {
 
   protected def notFound(resource: String) = {
     val message = s"$resource not found"
