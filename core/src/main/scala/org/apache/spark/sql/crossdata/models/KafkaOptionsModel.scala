@@ -16,7 +16,7 @@
 
 package org.apache.spark.sql.crossdata.models
 
-case class KafkaOptionsModel(connection: Seq[ConnectionHostModel],
+case class KafkaOptionsModel(connection: ConnectionHostModel,
                              topics: Seq[TopicModel],
                              groupId: String,
                              partitionOutput: Option[String] = None,

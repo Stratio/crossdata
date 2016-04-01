@@ -13,15 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.models
 
-import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+case class ConnectionModel(host: String, port: Int){
 
-trait CatalogCommon extends SparkLoggerComponent {
-
-  protected def notFound(resource: String) = {
-    val message = s"$resource not found"
-    logWarning(message)
-    throw new RuntimeException(message)
-  }
+  def toPrettyString : String = ModelUtils.modelToJsonString(this)
 }

@@ -15,8 +15,8 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
-import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
@@ -30,7 +30,7 @@ import scala.reflect.io.File
 
 
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
-  extends LogicalPlan with RunnableCommand with Logging {
+  extends LogicalPlan with RunnableCommand with SparkLoggerComponent {
 
   // The result of IMPORT TABLE has only tableIdentifier so far.
   override val output: Seq[Attribute] = {
