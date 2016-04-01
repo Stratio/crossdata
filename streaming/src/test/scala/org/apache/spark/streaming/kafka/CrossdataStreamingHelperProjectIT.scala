@@ -83,9 +83,10 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
       kafkaTestUtils = null
     }
   }
-/*
+
   test("Crossdata streaming must save into the kafka output the sql results with project") {
-    val expectedResult = List("a", "c")
+    deletePath(checkpointDirectoryProject)
+    val expectedResult = Array("a", "c")
     val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
     val kafkaStreamModelZk = kafkaStreamModelProject.copy(connection = Seq(connectionHostModel.copy(
       producerPort = producerPortKafka,
@@ -100,7 +101,7 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
     zookeeperStreamingCatalog.getEphemeralTable(TableNameProject) match {
       case Some(ephemeralTable) =>
         ssc = CrossdataStreamingHelper.createContext(ephemeralTable, sparkConf, zookeeperConf, catalogConf)
-        val valuesToSent = Array( """{"name": "a", "age": 30}""", """{"name": "c", "age": 30}""")
+        val valuesToSent = Array( """{"name": "a"}""", """{"name": "c"}""")
         kafkaTestUtils.createTopic(TopicTestProject)
         kafkaTestUtils.sendMessages(TopicTestProject, valuesToSent)
         val resultList = new mutable.MutableList[String]()
@@ -122,5 +123,5 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
       case None => throw new Exception("Ephemeral table not created")
     }
   }
-  */
+
 }

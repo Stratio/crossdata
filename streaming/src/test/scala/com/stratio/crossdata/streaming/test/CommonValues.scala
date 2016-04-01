@@ -15,12 +15,16 @@
  */
 package com.stratio.crossdata.streaming.test
 
+import java.io.File
+import java.nio.file.{Paths, Files}
+
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
+import org.apache.commons.io.FileUtils
 import org.apache.spark.sql.crossdata.XDContext._
 import org.apache.spark.sql.crossdata.models._
 
 import scala.language.postfixOps
-import scala.util.Random
+import scala.util.{Failure, Success, Try, Random}
 
 trait CommonValues {
 
@@ -136,6 +140,7 @@ trait CommonValues {
     additionalOptionsStream,
     StorageStreamLevel
   )
+  val checkpointDirectorySelect = s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableNameSelect"
   val ephemeralOptionsStreamKafkaSelect = EphemeralOptionsModel(
     kafkaStreamModelSelect,
     EphemeralOptionsModel.DefaultAtomicWindow,
@@ -163,6 +168,7 @@ trait CommonValues {
     additionalOptionsStream,
     StorageStreamLevel
   )
+  val checkpointDirectoryProject = s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableNameProject"
   val ephemeralOptionsStreamKafkaProject = EphemeralOptionsModel(
     kafkaStreamModelProject,
     EphemeralOptionsModel.DefaultAtomicWindow,
@@ -183,5 +189,14 @@ trait CommonValues {
       zookeeperConf.map { case (key, value) =>
         s"$StreamingConfigKey.$CatalogConfigKey.$ZookeeperPrefixName.$key" -> value
       }
+  }
+
+  def deletePath(path: String): Unit = {
+    if (Files.exists(Paths.get(path))) {
+      Try(FileUtils.deleteDirectory(new File(path))) match {
+        case Success(_) => logger.info(s"Path deleted: $path")
+        case Failure(e) => logger.error(s"Cannot delete: $path", e)
+      }
+    }
   }
 }

@@ -47,7 +47,7 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
   override def afterAll : Unit = {
     kafkaTestUtils.teardown()
   }
-/*
+
   test("Kafka input stream with kafkaOptionsModel from Map of values") {
     ssc = new StreamingContext(sc, Milliseconds(1000))
     val valuesToSent = Map("a" -> 5, "b" -> 3, "c" -> 10)
@@ -100,5 +100,5 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
       assert(valuesToSent === result)
     }
   }
-  */
+
 }
