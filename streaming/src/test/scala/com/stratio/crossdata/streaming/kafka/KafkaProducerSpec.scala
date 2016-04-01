@@ -30,7 +30,7 @@ class KafkaProducerSpec extends BaseStreamingXDTest with CommonValues {
 
   "KafkaProducer" should "return a correct key" in {
     val result = KafkaProducer.getKey(connectionHostModel)
-    val expected = """ConnectionHostModel(localhost,2181,localhost,9042)"""
+    val expected = """ConnectionHostModel([ConnectionModel(localhost,2181)],[ConnectionModel(localhost,9042)])"""
 
     result should be(expected)
   }

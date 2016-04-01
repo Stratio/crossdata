@@ -55,7 +55,7 @@ object KafkaProducer {
   }
 
   private[streaming] def getKey(connection: ConnectionHostModel): String =
-    s"${connection.zkConnection.map(_.toString).mkString(".")}.${connection.kafkaConnection.map(_.toString).mkString(".")}"
+    s"ConnectionHostModel([${connection.zkConnection.map(_.toString).mkString(",")}],[${connection.kafkaConnection.map(_.toString).mkString(",")}])"
 
   private[streaming] def getInstance(key: String, options: KafkaOptionsModel): Producer[String, String] =
     producers.getOrElse(key, {
