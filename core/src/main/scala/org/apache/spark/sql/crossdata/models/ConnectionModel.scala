@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.spark.sql.crossdata.models
 
-// TODO add more options
-case class ConnectionHostModel(zkConnection: Seq[ConnectionModel], kafkaConnection: Seq[ConnectionModel]){
+case class ConnectionModel(host: String, port: Int){
 
   def toPrettyString : String = ModelUtils.modelToJsonString(this)
 }
