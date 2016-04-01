@@ -35,14 +35,7 @@ object StreamingConfig extends CoreConfig {
 
     val finalOptions = getEphemeralTableOptions(ident, opts)
 
-    val coonections = extractConnection(finalOptions, ZKConnection) ++ extractConnection(finalOptions, KafkaConnection)
-
-    val connections = Seq(
-      ConnectionHostModel(
-        coonections(0),
-        coonections(1),
-        coonections(2),
-        coonections(3)))
+    val connectionsModel = ConnectionHostModel(extractConnection(finalOptions, ZKConnection), extractConnection(finalOptions, KafkaConnection))
 
     val topics = finalOptions(KafkaTopic)
       .split(",").map(_.split(":")).map{
@@ -53,7 +46,7 @@ object StreamingConfig extends CoreConfig {
     val partition = finalOptions.get(KafkaPartition)
     val kafkaAdditionalOptions = finalOptions.filter{case (k, v) => k.startsWith(KafkaAdditionalOptionsKey)}
     val storageLevel = finalOptions(ReceiverStorageLevel)
-    val kafkaOptions = KafkaOptionsModel(connections, topics, groupId, partition, kafkaAdditionalOptions, storageLevel)
+    val kafkaOptions = KafkaOptionsModel(connectionsModel, topics, groupId, partition, kafkaAdditionalOptions, storageLevel)
     val minW = finalOptions(AtomicWindow).toInt
     val maxW = finalOptions(MaxWindow).toInt
     val outFormat = finalOptions(OutputFormat) match {
@@ -70,11 +63,13 @@ object StreamingConfig extends CoreConfig {
     EphemeralTableModel(ident, ephemeralOptions, userSchema)
   }
 
-  def extractConnection(options: Map[String, String], connection: String): Seq[String] = {
-    options(connection).split(",").flatMap{
-      case c if c.split(":").length == 2 => c.split(":")
+  def extractConnection(options: Map[String, String], connection: String): Seq[ConnectionModel] = {
+    options(connection).split(",").map {
+      case c if c.split(":").length == 2 => {
+        val host_port = c.split(":")
+        ConnectionModel(host_port(0), host_port(1).toInt)
+      }
     }
-
   }
 
 
