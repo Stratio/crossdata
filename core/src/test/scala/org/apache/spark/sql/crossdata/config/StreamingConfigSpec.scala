@@ -16,7 +16,7 @@
 package org.apache.spark.sql.crossdata.config
 
 import com.stratio.crossdata.test.BaseXDTest
-import org.apache.spark.sql.crossdata.models.{ConnectionHostModel, TopicModel, EphemeralOutputFormat}
+import org.apache.spark.sql.crossdata.models.{ConnectionModel, ConnectionHostModel, TopicModel, EphemeralOutputFormat}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -55,7 +55,9 @@ class StreamingConfigSpec extends BaseXDTest {
     options.sparkOptions should contain ("spark.cores.max", "2")
     options.sparkOptions should contain ("spark.stopGracefully", "true")
 
-    options.kafkaOptions.connection shouldBe Seq(ConnectionHostModel("localhost", "2181", "localhost", "9092"))
+    options.kafkaOptions.connection shouldBe ConnectionHostModel(
+      Seq(ConnectionModel("localhost", 2181)),
+      Seq(ConnectionModel("localhost", 9092)))
     options.kafkaOptions.storageLevel shouldBe "MEMORY_AND_DISK_SER"
 
     // table options

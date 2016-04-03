@@ -17,7 +17,7 @@
 package org.apache.spark.sql.crossdata.models
 
 // TODO add more options
-case class ConnectionHostModel(consumerHost: String, consumerPort: String, producerHost: String, producerPort: String) {
+case class ConnectionHostModel(zkConnection: Seq[ConnectionModel], kafkaConnection: Seq[ConnectionModel]){
 
   def toPrettyString : String = ModelUtils.modelToJsonString(this)
 }

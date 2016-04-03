@@ -25,6 +25,7 @@ import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
 import kafka.serializer.StringDecoder
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.ZookeeperStreamingCatalog
+import org.apache.spark.sql.crossdata.models.{ConnectionModel, ConnectionHostModel}
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
@@ -91,14 +92,20 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
 
     deletePath(checkpointDirectorySelect)
     val expectedResult = Array("a", "c")
+
+    val consumerHostZK = kafkaTestUtils.zkAddress.split(":").last
+    val consumerPortZK = connectionHostModel.zkConnection.head.port
+
+    val producerHostKafka = connectionHostModel.kafkaConnection.head.host
     val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
-    val kafkaStreamModelZk = kafkaStreamModelSelect.copy(connection = Seq(connectionHostModel.copy(
-      producerPort = producerPortKafka,
-      consumerPort = kafkaTestUtils.zkAddress.split(":").last
-    )))
+
+    val kafkaStreamModelZk = kafkaStreamModelSelect.copy(
+      connection = connectionHostModel.copy(
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK)),
+        kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
+
     val ephemeralTableKafka = ephemeralTableModelStreamKafkaOptionsSelect.copy(
-      options = ephemeralOptionsStreamKafkaSelect.copy(kafkaOptions = kafkaStreamModelZk
-      ))
+      options = ephemeralOptionsStreamKafkaSelect.copy(kafkaOptions = kafkaStreamModelZk))
 
     zookeeperStreamingCatalog.createEphemeralQuery(querySelectModel)
     zookeeperStreamingCatalog.createEphemeralTable(ephemeralTableKafka)

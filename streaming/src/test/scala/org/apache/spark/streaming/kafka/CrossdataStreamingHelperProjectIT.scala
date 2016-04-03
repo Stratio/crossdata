@@ -23,6 +23,7 @@ import com.stratio.crossdata.streaming.test.{BaseSparkStreamingXDTest, CommonVal
 import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.ZookeeperStreamingCatalog
+import org.apache.spark.sql.crossdata.models.{ConnectionModel, ConnectionHostModel}
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
@@ -87,11 +88,18 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
   test("Crossdata streaming must save into the kafka output the sql results with project") {
     deletePath(checkpointDirectoryProject)
     val expectedResult = Array("a", "c")
+
+    val consumerHostZK = kafkaTestUtils.zkAddress.split(":").last
+    val consumerPortZK = connectionHostModel.zkConnection.head.port
+
+    val producerHostKafka = connectionHostModel.kafkaConnection.head.host
     val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
-    val kafkaStreamModelZk = kafkaStreamModelProject.copy(connection = Seq(connectionHostModel.copy(
-      producerPort = producerPortKafka,
-      consumerPort = kafkaTestUtils.zkAddress.split(":").last
-    )))
+
+    val kafkaStreamModelZk = kafkaStreamModelSelect.copy(
+      connection = connectionHostModel.copy(
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK)),
+        kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
+
     val ephemeralTableKafka = ephemeralTableModelStreamKafkaOptionsProject.copy(
       options = ephemeralOptionsStreamKafkaProject.copy(kafkaOptions = kafkaStreamModelZk
       ))

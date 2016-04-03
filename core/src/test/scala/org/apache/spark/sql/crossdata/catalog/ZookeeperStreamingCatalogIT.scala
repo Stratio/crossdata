@@ -162,7 +162,7 @@ sealed trait ZookeeperStreamingDefaultTestConstants {
   // Ephemeral table
   val EphemeralTableName = "epheTable"
   val KafkaOptions = KafkaOptionsModel(
-    Seq(ConnectionHostModel("zkHost", "2020", "kafkaHost", "2125")),
+    ConnectionHostModel(Seq(ConnectionModel("zkHost", 2020)), Seq(ConnectionModel("kafkaHost", 2125))),
     Seq(TopicModel("topic", 1)),
     "groupId", None,
     Map("key" -> "value"),

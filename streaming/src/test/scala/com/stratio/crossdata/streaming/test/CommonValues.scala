@@ -45,17 +45,19 @@ trait CommonValues {
   val additionalOptionsStream = Map("auto.offset.reset" -> "smallest", "batchSize" -> "100")
   val StorageLevel = "MEMORY_ONLY_SER"
   val StorageStreamLevel = "MEMORY_ONLY"
-  val connectionHostModel = ConnectionHostModel(ConsumerHost, ConsumerPort, ProducerHost, ProducerPort)
+  val connectionHostModel = ConnectionHostModel(
+    Seq(ConnectionModel(ConsumerHost, ConsumerPort.toInt)),
+    Seq(ConnectionModel(ProducerHost, ProducerPort.toInt)))
   val topicModel = TopicModel(TopicTest)
 
-  val kafkaOptionsModel = KafkaOptionsModel(Seq(connectionHostModel),
+  val kafkaOptionsModel = KafkaOptionsModel(connectionHostModel,
     Seq(topicModel),
     GroupId,
     PartitionOutputEmpty,
     additionalOptionsEmpty,
     StorageLevel
   )
-  val kafkaOptionsModelEmptyConnection = KafkaOptionsModel(Seq(),
+  val kafkaOptionsModelEmptyConnection = KafkaOptionsModel(ConnectionHostModel(Seq(), Seq()),
     Seq(topicModel),
     GroupId,
     PartitionOutputEmpty,
@@ -63,14 +65,14 @@ trait CommonValues {
     StorageLevel
   )
 
-  val kafkaOptionsModelEmptyTopics = KafkaOptionsModel(Seq(connectionHostModel),
+  val kafkaOptionsModelEmptyTopics = KafkaOptionsModel(connectionHostModel,
     Seq(),
     s"$GroupId-${Random.nextInt(10000)}",
     PartitionOutputEmpty,
     additionalOptionsEmpty,
     StorageLevel
   )
-  val kafkaStreamModel = KafkaOptionsModel(Seq(connectionHostModel),
+  val kafkaStreamModel = KafkaOptionsModel(connectionHostModel,
     Seq(topicModel),
     GroupId,
     PartitionOutputEmpty,
@@ -133,7 +135,7 @@ trait CommonValues {
   val SqlSelect = s"select * from $TableNameSelect"
   val querySelectModel = EphemeralQueryModel(TableNameSelect, SqlSelect, AliasNameSelect)
   val topicModelSelect = TopicModel(TopicTestSelect)
-  val kafkaStreamModelSelect = KafkaOptionsModel(Seq(connectionHostModel),
+  val kafkaStreamModelSelect = KafkaOptionsModel(connectionHostModel,
     Seq(topicModelSelect),
     GroupId,
     PartitionOutputEmpty,
@@ -161,7 +163,7 @@ trait CommonValues {
   val SqlProjected = s"select name from $TableNameProject"
   val queryProjectedModel = EphemeralQueryModel(TableNameProject, SqlProjected, AliasNameProject)
   val topicModelProject = TopicModel(TopicTestProject)
-  val kafkaStreamModelProject = KafkaOptionsModel(Seq(connectionHostModel),
+  val kafkaStreamModelProject = KafkaOptionsModel(connectionHostModel,
     Seq(topicModelProject),
     GroupId,
     PartitionOutputEmpty,

@@ -15,11 +15,11 @@
  */
 package org.apache.spark.sql.crossdata.test
 
-import org.apache.spark.Logging
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 
 import scala.util.Try
 
-trait SharedXDContextWithDataTest extends SharedXDContextTest with Logging {
+trait SharedXDContextWithDataTest extends SharedXDContextTest with SparkLoggerComponent {
 
   import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest._
 
