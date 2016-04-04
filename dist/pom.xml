@@ -10,10 +10,8 @@
         <version>1.2.0-RC4-SNAPSHOT</version>
     </parent>
 
-
     <artifactId>dist</artifactId>
     <version>1.2.0-RC4-SNAPSHOT</version>
-
 
     <profiles>
         <profile>
