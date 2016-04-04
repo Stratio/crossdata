@@ -49,6 +49,7 @@ class DriverIT extends EndToEndTest {
 
     // TODO how to process metadata ops?
     val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
+    driver.importTables("", Map()).waitForResult()
     result shouldBe an[SuccessfulSQLResult]
     result.hasError should be(false)
     val rows = result.resultSet
