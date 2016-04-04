@@ -10,10 +10,8 @@
         <version>1.2.0-RC4-SNAPSHOT</version>
     </parent>
 
-
     <artifactId>dist</artifactId>
     <version>1.2.0-RC4-SNAPSHOT</version>
-
 
     <profiles>
         <profile>
@@ -28,6 +26,12 @@
                 <dependency>
                     <groupId>com.stratio.crossdata</groupId>
                     <artifactId>crossdata-server</artifactId>
+                    <version>${project.parent.version}</version>
+                    <classifier>jar-with-dependencies</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>com.stratio.crossdata</groupId>
+                    <artifactId>crossdata-streaming</artifactId>
                     <version>${project.parent.version}</version>
                     <classifier>jar-with-dependencies</classifier>
                 </dependency>
@@ -145,6 +149,14 @@
                                     </attributes>
                                 </mkdirs>
                                 <mkdirs>
+                                    <path>/var/sds/crossdata</path>
+                                    <attributes>
+                                        <user>crossdata</user>
+                                        <group>stratio</group>
+                                        <mode>0775</mode>
+                                    </attributes>
+                                </mkdirs>
+                                <mkdirs>
                                     <path>/opt/sds</path>
                                     <attributes>
                                         <user>root</user>
@@ -162,6 +174,12 @@
                                 <copyDirectory>
                                     <from>
                                         ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/com/stratio/crossdata/crossdata-driver/${project.parent.version}
+                                    </from>
+                                    <to>/opt/sds/crossdata/lib</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>
+                                        ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/com/stratio/crossdata/crossdata-streaming/${project.parent.version}
                                     </from>
                                     <to>/opt/sds/crossdata/lib</to>
                                 </copyDirectory>
