@@ -55,12 +55,12 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
     kafkaTestUtils.createTopic(TopicTest)
     kafkaTestUtils.sendMessages(TopicTest, valuesToSent)
 
-    val consumerHostZK = kafkaTestUtils.zkAddress.split(":").last
-    val consumerPortZK = kafkaStreamModel.connection.zkConnection.head.port
+    val consumerHostZK = kafkaStreamModelSelect.connection.zkConnection.head.host
+    val consumerPortZK = kafkaTestUtils.zkAddress.split(":").last
 
     val kafkaStreamModelZk = kafkaStreamModelSelect.copy(
       connection = connectionHostModel.copy(
-        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK))))
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK.toInt))))
 
     val input = new KafkaInput(kafkaStreamModelZk)
     val stream = input.createStream(ssc)
@@ -87,12 +87,12 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
     kafkaTestUtils.createTopic(TopicTestProject)
     kafkaTestUtils.sendMessages(TopicTestProject, valuesToSent)
 
-    val consumerHostZK = kafkaTestUtils.zkAddress.split(":").last
-    val consumerPortZK = kafkaStreamModelProject.connection.zkConnection.head.port
+    val consumerHostZK = kafkaStreamModelSelect.connection.zkConnection.head.host
+    val consumerPortZK = kafkaTestUtils.zkAddress.split(":").last
 
     val kafkaStreamModelZk = kafkaStreamModelSelect.copy(
       connection = connectionHostModel.copy(
-        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK))))
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK.toInt))))
 
     val input = new KafkaInput(kafkaStreamModelZk)
     val stream = input.createStream(ssc)

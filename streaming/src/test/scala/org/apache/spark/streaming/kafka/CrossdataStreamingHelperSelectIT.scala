@@ -93,15 +93,15 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
     deletePath(checkpointDirectorySelect)
     val expectedResult = Array("a", "c")
 
-    val consumerHostZK = kafkaTestUtils.zkAddress.split(":").head
-    val consumerPortZK = connectionHostModel.zkConnection.head.port
+    val consumerHostZK = kafkaStreamModelSelect.connection.zkConnection.head.host
+    val consumerPortZK = kafkaTestUtils.zkAddress.split(":").last
 
-    val producerHostKafka = connectionHostModel.kafkaConnection.head.host
+    val producerHostKafka = kafkaStreamModelSelect.connection.kafkaConnection.head.host
     val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
 
     val kafkaStreamModelZk = kafkaStreamModelSelect.copy(
       connection = connectionHostModel.copy(
-        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK)),
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK.toInt)),
         kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
 
     val ephemeralTableKafka = ephemeralTableModelStreamKafkaOptionsSelect.copy(
