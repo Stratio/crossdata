@@ -150,6 +150,14 @@
                                     </attributes>
                                 </mkdirs>
                                 <mkdirs>
+                                    <path>/var/sds/crossdata</path>
+                                    <attributes>
+                                        <user>crossdata</user>
+                                        <group>stratio</group>
+                                        <mode>0775</mode>
+                                    </attributes>
+                                </mkdirs>
+                                <mkdirs>
                                     <path>/opt/sds</path>
                                     <attributes>
                                         <user>root</user>
