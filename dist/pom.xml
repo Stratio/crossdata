@@ -10,10 +10,8 @@
         <version>1.2.0-RC4-SNAPSHOT</version>
     </parent>
 
-
     <artifactId>dist</artifactId>
     <version>1.2.0-RC4-SNAPSHOT</version>
-
 
     <profiles>
         <profile>
@@ -181,6 +179,18 @@
                                 <copyDirectory>
                                     <from>
                                         ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/com/stratio/crossdata/crossdata-streaming/${project.parent.version}
+                                    </from>
+                                    <to>/opt/sds/crossdata/lib</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>
+                                        ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/org/apache/spark/spark-streaming_${scala.binary.version}/${spark.version}
+                                    </from>
+                                    <to>/opt/sds/crossdata/lib</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>
+                                        ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/org/apache/spark/spark-streaming-kafka_${scala.binary.version}/${spark.version}
                                     </from>
                                     <to>/opt/sds/crossdata/lib</to>
                                 </copyDirectory>
