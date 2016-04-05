@@ -33,7 +33,6 @@
                     <groupId>com.stratio.crossdata</groupId>
                     <artifactId>crossdata-streaming</artifactId>
                     <version>${project.parent.version}</version>
-                    <classifier>jar-with-dependencies</classifier>
                 </dependency>
             </dependencies>
             <build>
@@ -180,6 +179,18 @@
                                 <copyDirectory>
                                     <from>
                                         ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/com/stratio/crossdata/crossdata-streaming/${project.parent.version}
+                                    </from>
+                                    <to>/opt/sds/crossdata/lib</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>
+                                        ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/org/apache/spark/spark-streaming_${scala.binary.version}/${spark.version}
+                                    </from>
+                                    <to>/opt/sds/crossdata/lib</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>
+                                        ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/org/apache/spark/spark-streaming-kafka_${scala.binary.version}/${spark.version}
                                     </from>
                                     <to>/opt/sds/crossdata/lib</to>
                                 </copyDirectory>
