@@ -115,6 +115,7 @@
         <derby.version>10.12.1.1</derby.version>
         <jackson4s.version>3.2.11</jackson4s.version>
         <mockito.version>1.10.19</mockito.version>
+        <curator.version>2.9.0</curator.version>
         <common.utils.version>0.5.0</common.utils.version>
         <guava.version>18.0</guava.version>
         <!-- Scala version and cross build properties -->
