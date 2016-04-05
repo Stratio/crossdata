@@ -50,17 +50,22 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
   }
 
   test("Kafka input stream with kafkaOptionsModel from Map of values") {
-    ssc = new StreamingContext(sc, Milliseconds(1000))
     val valuesToSent = Map("a" -> 5, "b" -> 3, "c" -> 10)
+    ssc = new StreamingContext(sc, Milliseconds(1000))
+
     kafkaTestUtils.createTopic(TopicTest)
     kafkaTestUtils.sendMessages(TopicTest, valuesToSent)
 
     val consumerHostZK = kafkaStreamModelSelect.connection.zkConnection.head.host
     val consumerPortZK = kafkaTestUtils.zkAddress.split(":").last
 
+    val producerHostKafka = kafkaStreamModelSelect.connection.kafkaConnection.head.host
+    val producerPortKafka = kafkaStreamModelSelect.connection.kafkaConnection.head.port
+
     val kafkaStreamModelZk = kafkaStreamModelSelect.copy(
       connection = connectionHostModel.copy(
-        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK.toInt))))
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK.toInt)),
+        kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
 
     val input = new KafkaInput(kafkaStreamModelZk)
     val stream = input.createStream(ssc)
@@ -90,9 +95,13 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
     val consumerHostZK = kafkaStreamModelSelect.connection.zkConnection.head.host
     val consumerPortZK = kafkaTestUtils.zkAddress.split(":").last
 
+    val producerHostKafka = kafkaStreamModelSelect.connection.kafkaConnection.head.host
+    val producerPortKafka = kafkaStreamModelSelect.connection.kafkaConnection.head.port
+
     val kafkaStreamModelZk = kafkaStreamModelSelect.copy(
       connection = connectionHostModel.copy(
-        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK.toInt))))
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK.toInt)),
+        kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
 
     val input = new KafkaInput(kafkaStreamModelZk)
     val stream = input.createStream(ssc)
