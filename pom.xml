@@ -180,6 +180,11 @@
                 <version>${jackson4s.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.json4s</groupId>
+                <artifactId>json4s-jackson_${scala.binary.version}</artifactId>
+                <version>${jackson4s.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.stratio.common</groupId>
                 <artifactId>common-utils_${scala.binary.version}</artifactId>
                 <version>${common.utils.version}</version>
