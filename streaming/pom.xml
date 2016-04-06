@@ -30,10 +30,6 @@
             <artifactId>crossdata-mongodb</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.stratio.crossdata.connector</groupId>
-            <artifactId>crossdata-elasticsearch</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-streaming_${scala.binary.version}</artifactId>
         </dependency>
