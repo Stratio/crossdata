@@ -16,7 +16,7 @@
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>tests</artifactId>
 
-    <version>1.2.0-RC5-SNAPSHOT</version>
+    <version>1.2.0</version>
 
     <build>
         <plugins>
