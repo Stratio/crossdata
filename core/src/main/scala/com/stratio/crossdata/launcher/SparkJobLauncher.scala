@@ -17,20 +17,20 @@ package com.stratio.crossdata.launcher
 
 import java.util.UUID
 
+import com.google.common.io.BaseEncoding
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigRenderOptions}
 import org.apache.spark.launcher.SparkLauncher
 import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
 import org.apache.spark.sql.crossdata.config.{CoreConfig, StreamingConstants}
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
-import org.json4s.jackson.Serialization._
 
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext
 import scala.util.{Properties, Try}
 
-object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer{
+object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
 
   def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String)
                           (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
@@ -40,11 +40,11 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer{
         throw new RuntimeException("You must set the $SPARK_HOME path in configuration or environment")
       )
 
-    val catalogPropertiesMapString = typeSafeConfigToMapString(crossdataConfig, Option(CoreConfig.CatalogConfigKey))
-    val zooKeeperPropertiesMapString = typeSafeConfigToMapString(streamingConfig, Option(ZooKeeperStreamingCatalogPath))
     val eTable = streamingCatalog.getEphemeralTable(ephemeralTableName).getOrElse(notFound(ephemeralTableName))
     val appName = s"${eTable.name}_${UUID.randomUUID()}"
-    val appArgs = Seq(eTable.name, write(zooKeeperPropertiesMapString), write(catalogPropertiesMapString))
+    val zkConfigEncoded: String = encode(render(streamingConfig, ZooKeeperStreamingCatalogPath))
+    val catalogConfigEncoded: String = encode(render(crossdataConfig, CoreConfig.CatalogConfigKey))
+    val appArgs = Seq(eTable.name, zkConfigEncoded, catalogConfigEncoded)
     val master = streamingConfig.getString(SparkMasterKey)
     val jar = streamingConfig.getString(AppJarKey)
     val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq).getOrElse(Seq.empty)
@@ -85,11 +85,14 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer{
     typeSafeConfigToMapString(streamingConfig, Option(SparkConfPath))
 
 
-  private def typeSafeConfigToMapString(config: Config, path: Option[String]= None): Map[String, String] = {
+  private def typeSafeConfigToMapString(config: Config, path: Option[String] = None): Map[String, String] = {
     val conf = path.map(config.getConfig).getOrElse(config)
-    conf.entrySet().toSeq.map( e =>
-      (s"${path.fold("")(_+".")+ e.getKey}", conf.getAnyRef(e.getKey).toString)
+    conf.entrySet().toSeq.map(e =>
+      (s"${path.fold("")(_ + ".") + e.getKey}", conf.getAnyRef(e.getKey).toString)
     ).toMap
   }
 
+  private def render(config: Config, path: String): String = config.getConfig(path).atPath(path).root.render(ConfigRenderOptions.concise)
+
+  private def encode(value: String): String = BaseEncoding.base64().encode(value.getBytes)
 }
