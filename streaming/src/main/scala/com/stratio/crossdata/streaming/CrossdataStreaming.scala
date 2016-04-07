@@ -32,7 +32,7 @@ class CrossdataStreaming(ephemeralTableName: String,
 
   private val zookeeperCatalogConfig = streamingCatalogConfig.collect {
     case (key, value) if key.startsWith(ZooKeeperStreamingCatalogPath) =>
-      (key.substring("catalog.".length), value)
+      (key.substring(s"$ZooKeeperStreamingCatalogPath.".length), value)
   }
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperCatalogConfig)

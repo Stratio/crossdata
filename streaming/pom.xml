@@ -5,7 +5,7 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>com.stratio.crossdata</groupId>
-        <version>1.2.0-RC4-SNAPSHOT</version>
+        <version>1.2.1-RC1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,10 +28,6 @@
         <dependency>
             <groupId>com.stratio.crossdata.connector</groupId>
             <artifactId>crossdata-mongodb</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.stratio.crossdata.connector</groupId>
-            <artifactId>crossdata-elasticsearch</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
