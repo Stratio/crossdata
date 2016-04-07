@@ -12,6 +12,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Cancellable jobs
 * Zookeeper catalog
 * CSV datasource added
+* Avro datasource added
 * Session identifiers in queries
 * Zeppelin interpreter added
 

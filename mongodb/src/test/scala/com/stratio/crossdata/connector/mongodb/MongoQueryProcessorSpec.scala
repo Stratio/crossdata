@@ -20,7 +20,7 @@ import java.util.regex.Pattern
 
 import com.mongodb.{DBObject, QueryOperators}
 import com.stratio.crossdata.test.BaseXDTest
-import com.stratio.datasource.mongodb.{MongodbConfig, MongodbConfigBuilder}
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import org.apache.spark.sql.sources._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

@@ -141,12 +141,22 @@ class Driver private(driverConf: DriverConf,
        """.stripMargin
     )
 
-  def dropTable(name: String, isTemporary: Boolean = false): SQLResponse =
+  def dropTable(name: String, isTemporary: Boolean = false): SQLResponse = {
+
+    if (isTemporary) throw new UnsupportedOperationException("Drop temporary table is not supported yet")
+
     sql(
       s"""|DROP ${if (isTemporary) "TEMPORARY" else ""}
           |TABLE $name
        """.stripMargin
     )
+  }
+
+  def dropAllTables(): SQLResponse = {
+    sql(
+      s"""|DROP ALL TABLES""".stripMargin
+    )
+  }
 
   private def mkOptionsStatement(options: Map[String, String]): String = {
     val opt = options.map { case (k, v) => s"$k '$v'" } mkString ","
@@ -217,7 +227,7 @@ class Driver private(driverConf: DriverConf,
   /**
    * Execute an ordered shutdown
    */
-  def stop() = Driver.clearActiveContext()
+  def stop() = Driver.clearActiveContext
 
   @deprecated("Close will be removed from public API. Use stop instead")
   def close() = stop()
@@ -262,13 +272,14 @@ object Driver {
     }
   }
 
-  def clearActiveContext() = {
+  def clearActiveContext = {
     DRIVER_CONSTRUCTOR_LOCK.synchronized {
       val system = activeDriver.get().system
       if (!system.isTerminated) system.shutdown()
       activeDriver.set(null)
     }
   }
+
 
   def getOrCreate(): Driver = getOrCreate(new DriverConf)
 

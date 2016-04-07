@@ -15,11 +15,11 @@
  */
 package com.stratio.crossdata.connector.mongodb
 
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
-import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.MongodbRelation
-import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, LeafNode, UnaryNode, Limit, Filter, Project}
+import com.stratio.datasource.util.Config
+import org.apache.spark.sql.catalyst.plans.logical.{Filter, LeafNode, Limit, LogicalPlan, Project, UnaryNode}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, SQLContext}
 
@@ -37,7 +37,7 @@ import org.apache.spark.sql.{Row, SQLContext}
 case class MongodbXDRelation(config: Config,
                              schemaProvided: Option[StructType] = None)(
                             @transient sqlContext: SQLContext)
-  extends MongodbRelation(config, schemaProvided)(sqlContext) with NativeScan with Logging{
+  extends MongodbRelation(config, schemaProvided)(sqlContext) with NativeScan with SparkLoggerComponent{
 
 
   override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
