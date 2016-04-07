@@ -56,6 +56,7 @@ object StreamingConstants {
   val ZooKeeperStreamingCatalogPath = "catalog.zookeeper"
   val SparkHomeKey = "sparkHome"
   val AppJarKey = "appJar"
+  val ClusterDeployKey = "deploy.cluster.enabled"
   val SparkMasterKey = "spark.master"
   val ExternalJarsKey = "jars"
   val SparkCoresMax = "spark.cores.max"
