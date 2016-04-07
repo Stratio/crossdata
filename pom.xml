@@ -116,7 +116,7 @@
         <mariadb.version>1.2.3</mariadb.version>
         <postgresql.version>9.2-1003-jdbc4</postgresql.version>
         <derby.version>10.10.1.1</derby.version>
-        <jackson4s.version>3.2.11</jackson4s.version>
+        <jackson4s.version>3.2.10</jackson4s.version>
         <mockito.version>1.10.19</mockito.version>
         <curator.version>2.9.0</curator.version>
         <common.utils.version>0.5.0</common.utils.version>
@@ -176,6 +176,11 @@
                 <groupId>com.stratio.crossdata</groupId>
                 <artifactId>crossdata-common_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json4s</groupId>
+                <artifactId>json4s-core_${scala.binary.version}</artifactId>
+                <version>${jackson4s.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.json4s</groupId>
