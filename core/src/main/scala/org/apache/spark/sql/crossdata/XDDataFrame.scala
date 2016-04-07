@@ -158,11 +158,15 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
   def flattenedCollect(): Array[Row] = {
 
     def flattenProjectedColumns(exp: Expression, prev: List[String] = Nil): (List[String], Boolean) = exp match {
-      case GetStructField(child, field, _) =>
+      case GetStructField(child, field, _)  =>
+        flattenProjectedColumns(child, field.name :: prev)
+      case GetArrayStructFields(child, field,_,_,_)=>
         flattenProjectedColumns(child, field.name :: prev)
       case AttributeReference(name, _, _, _) =>
         (name :: prev, false)
       case Alias(child @ GetStructField(_, StructField(fname, _, _, _), _), name) if fname == name =>
+        flattenProjectedColumns(child)
+      case Alias(child @ GetArrayStructFields(childArray, field,_,_,_), name) =>
         flattenProjectedColumns(child)
       case Alias(child, name) =>
         List(name) -> true
@@ -190,7 +194,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
         }
       }
 
-      require(firstLevelNames.isEmpty || firstLevelNames.size == rows.headOption.map(_.length).getOrElse(0))
+      require(firstLevelNames.isEmpty ||rows.isEmpty || firstLevelNames.size == rows.headOption.map(_.length).getOrElse(0))
       val thisLevelNames = firstLevelNames.map {
         case (nameseq, true) => (nameseq.headOption.getOrElse(""), true)
         case (nameseq, false) => (nameseq.init mkString ".", false)

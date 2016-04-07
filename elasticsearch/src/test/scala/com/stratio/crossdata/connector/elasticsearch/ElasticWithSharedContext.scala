@@ -21,11 +21,10 @@ import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.mappings.MappingDefinition
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.ConfigFactory
-import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
-import org.apache.spark.sql.types.TimestampType
 import org.elasticsearch.common.joda.time.DateTime
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.scalatest.Suite
@@ -33,7 +32,7 @@ import org.scalatest.Suite
 import scala.util.Try
 
 
-trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticSearchDefaultConstants with Logging {
+trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticSearchDefaultConstants with SparkLoggerComponent {
   this: Suite =>
 
   override type ClientParams = ElasticClient

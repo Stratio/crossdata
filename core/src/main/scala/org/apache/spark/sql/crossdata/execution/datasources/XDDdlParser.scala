@@ -63,7 +63,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val streamingSentences: Parser[LogicalPlan] =
     describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropAllEphemeralQueries  | dropAllEphemeralTables |
       showEphemeralStatus | showEphemeralStatuses | startProcess | stopProcess |
-      showEphemeralQueries | addEphemeralQuery | dropEphemeralQuery | dropEphemeralTable
+      showEphemeralQueries | addEphemeralQuery | dropEphemeralQuery | dropEphemeralTable | dropAllTables
 
 
   protected lazy val importStart: Parser[LogicalPlan] =
@@ -77,6 +77,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
       case tableId =>
         DropTable(tableId)
     }
+
+  protected lazy val dropAllTables: Parser[LogicalPlan] = {
+    (DROP ~ ALL ~ TABLES) ^^ {
+      case op => DropAllTables
+    }
+  }
 
 
   protected lazy val dropView: Parser[LogicalPlan] =

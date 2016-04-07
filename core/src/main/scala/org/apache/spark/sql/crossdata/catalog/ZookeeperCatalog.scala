@@ -17,16 +17,19 @@
 
 package org.apache.spark.sql.crossdata.catalog
 
+import java.net.{Socket, InetSocketAddress, InetAddress}
+
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
-import org.apache.spark.sql.crossdata.daos.impl.TableTypesafeDAO
-import org.apache.spark.sql.crossdata.models.TableModel
-import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{TableTypesafeDAO, ViewTypesafeDAO}
 import org.apache.spark.sql.crossdata.models.{TableModel, ViewModel}
 import org.apache.spark.sql.types.StructType
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.{Try, Success}
 
 /**
   * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.XDCatalog]] with persistence using Zookeeper.
@@ -36,8 +39,8 @@ import org.apache.spark.sql.types.StructType
 class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) {
 
-  val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
-  val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
+  @transient val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
+  @transient val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
 
 
   override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
@@ -135,4 +138,17 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
   override protected def dropAllPersistedViews(): Unit = {
     viewDAO.dao.deleteAll
   }
+  override def checkConnectivity:Boolean = {
+    //TODO this method must be changed when Stratio Commons provide a status connection of Zookeeper
+    val value=XDContext.catalogConfig.getString("zookeeper.connectionString")
+    val address=value.split(":")
+    try {
+      new Socket(address(0), address(1).toInt)
+      true
+    }catch{
+      case e:Exception=>false
+    }
+
+  }
+
 }

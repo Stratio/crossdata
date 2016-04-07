@@ -15,14 +15,10 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import java.sql.Connection
-import java.sql.DriverManager
-import java.sql.ResultSet
+import java.sql.{Connection, DriverManager, ResultSet}
 
-import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.TableIdentifier
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.types.StructType
 
@@ -56,7 +52,7 @@ object PostgreSQLCatalog {
   * @param conf An implementation of the [[CatalystConf]].
   */
 class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends XDCatalog(conf, xdContext) with Logging {
+  extends XDCatalog(conf, xdContext) with SparkLoggerComponent {
 
   import PostgreSQLCatalog._
   import XDCatalog._
@@ -67,7 +63,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
   private val table = config.getString(Table)
   private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
 
-  lazy val connection: Connection = {
+  @transient lazy val connection: Connection = {
 
     val driver = config.getString(Driver)
     val user = config.getString(User)
@@ -75,32 +71,39 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     val url = config.getString(Url)
 
     Class.forName(driver)
-    val jdbcConnection = DriverManager.getConnection(url, user, pass)
+    try{
+      val jdbcConnection = DriverManager.getConnection(url, user, pass)
 
-    // CREATE PERSISTENT METADATA TABLE
-    if(!schemaExists(db, jdbcConnection))
-      jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
+      // CREATE PERSISTENT METADATA TABLE
+      if(!schemaExists(db, jdbcConnection))
+        jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
 
-    jdbcConnection.createStatement().executeUpdate(
-      s"""|CREATE TABLE IF NOT EXISTS $db.$table (
-          |$DatabaseField VARCHAR(50),
-          |$TableNameField VARCHAR(50),
-          |$SchemaField TEXT,
-          |$DatasourceField TEXT,
-          |$PartitionColumnField TEXT,
-          |$OptionsField TEXT,
-          |$CrossdataVersionField TEXT,
-          |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE IF NOT EXISTS $db.$table (
+            |$DatabaseField VARCHAR(50),
+            |$TableNameField VARCHAR(50),
+            |$SchemaField TEXT,
+            |$DatasourceField TEXT,
+            |$PartitionColumnField TEXT,
+            |$OptionsField TEXT,
+            |$CrossdataVersionField TEXT,
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
-    jdbcConnection.createStatement().executeUpdate(
-      s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
-          |$DatabaseField VARCHAR(50),
-          |$TableNameField VARCHAR(50),
-          |$SqlViewField TEXT,
-          |$CrossdataVersionField VARCHAR(30),
-          |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
+            |$DatabaseField VARCHAR(50),
+            |$TableNameField VARCHAR(50),
+            |$SqlViewField TEXT,
+            |$CrossdataVersionField VARCHAR(30),
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
-    jdbcConnection
+      jdbcConnection
+    }catch{
+      case e:Exception =>
+        logError(e.getMessage)
+        null
+    }
+
   }
 
 
@@ -267,5 +270,9 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
 
   override protected def dropAllPersistedViews(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
+  }
+
+  override def checkConnectivity:Boolean = {
+    connection!=null
   }
 }

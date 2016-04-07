@@ -18,10 +18,11 @@ package com.stratio.crossdata.connector.mongodb
 import com.mongodb.DBCollection
 import com.mongodb.casbah.Imports.DBObject
 import com.mongodb.casbah.MongoDB
+
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
-import com.stratio.datasource.Config._
-import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConfig, MongodbConfigBuilder, MongodbCredentials, MongodbRelation, MongodbSSLOptions}
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
+import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbRelation}
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
 import org.apache.spark.sql.types.StructType
@@ -30,7 +31,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 /**
  * Allows creation of MongoDB based tables using
  * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
- * Required options are detailed in [[com.stratio.datasource.mongodb.MongodbConfig]]
+ * Required options are detailed in [[com.stratio.datasource.mongodb.config.MongodbConfig]]
  */
 class DefaultSource extends ProviderDS with TableInventory with DataSourceRegister with TableManipulation{
 
@@ -145,48 +146,6 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
       .apply(parseParameters(options + (Database -> database) + (Collection -> collection)))
       .build()
     Table(collection, Some(database), Some(new MongodbRelation(collectionConfig)(context).schema))
-  }
-
-
-  private def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
-
-    // required properties
-    /** We will assume hosts are provided like 'host:port,host2:port2,...' */
-    val properties: Map[String, Any] = parameters.updated(Host, parameters.getOrElse(Host, notFound[String](Host)).split(",").toList)
-    if (!parameters.contains(Database)) notFound(Database)
-    if (!parameters.contains(Collection)) notFound(Collection)
-
-    //optional parseable properties
-    val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
-
-    val finalMap = (properties /: optionalProperties){
-      /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
-      case (properties,Credentials) =>
-        parameters.get(Credentials).map{ credentialInput =>
-          val credentials = credentialInput.split(";").map(_.split(",")).toList
-            .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
-          properties + (Credentials -> credentials)
-        } getOrElse properties
-
-      /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
-      case (properties,SSLOptions) =>
-        parameters.get(SSLOptions).map{ ssloptionsInput =>
-
-          val ssloption = ssloptionsInput.split(",")
-          val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
-          properties + (SSLOptions -> ssloptions)
-        } getOrElse properties
-
-      /** We will assume fields are provided like 'user,database,password...' */
-      case (properties, UpdateFields) => {
-        parameters.get(UpdateFields).map{ updateInputs =>
-          val updateFields = updateInputs.split(",")
-          properties + (UpdateFields -> updateFields)
-        } getOrElse properties
-      }
-    }
-
-    finalMap
   }
 
   override def createExternalTable(context: SQLContext,

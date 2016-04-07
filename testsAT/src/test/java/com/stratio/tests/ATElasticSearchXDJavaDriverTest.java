@@ -46,7 +46,8 @@ import com.stratio.tests.utils.ThreadProperty;
 import cucumber.api.CucumberOptions;
 
 //Indicar feature
-@CucumberOptions(features = { "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
+@CucumberOptions(features = {
+        "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
@@ -56,10 +57,11 @@ import cucumber.api.CucumberOptions;
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
         "src/test/resources/features/Udaf/Group_concat.feature",
         "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
-        "src/test/resources/features/Elasticsearch/Views.feature"})
+        "src/test/resources/features/Elasticsearch/Views.feature"
+})
 public class ATElasticSearchXDJavaDriverTest extends BaseTest {
 	private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
-    private String elasticSearchIP = System.getProperty("ES_NODE","172.17.0.3");
+    private String elasticSearchIP = System.getProperty("ES_NODE","172.17.0.2");
     Client client;
     private Settings settings = ImmutableSettings.settingsBuilder()
             .put("cluster.name", elasticSearchCluster).build();

@@ -26,10 +26,10 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst._
-import org.apache.spark.sql.catalyst.analysis.{Analyzer, FunctionRegistry}
+import org.apache.spark.sql.catalyst.analysis.{CleanupAliases, HiveTypeCoercion, Analyzer, FunctionRegistry}
 import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
-import org.apache.spark.sql.crossdata.catalyst.analysis.ResolveAggregateAlias
+import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
@@ -43,12 +43,12 @@ import org.apache.spark.{Logging, SparkContext}
 /**
  * CrossdataContext leverages the features of [[SQLContext]]
  * and adds some features of the Crossdata system.
- * @param sc A [[SparkContext]].
+  *
+  * @param sc A [[SparkContext]].
  */
 class XDContext private (@transient val sc: SparkContext,
                 userConfig: Option[Config] = None) extends SQLContext(sc) with Logging  {
   self =>
-
 
   def this(sc: SparkContext) =
     this(sc, None)
@@ -79,7 +79,6 @@ class XDContext private (@transient val sc: SparkContext,
 
     import XDContext.{CaseSensitive, DerbyClass}
 
-
     val catalogClass = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
       catalogConfig.getString(XDContext.ClassConfigKey)
     else DerbyClass
@@ -94,6 +93,7 @@ class XDContext private (@transient val sc: SparkContext,
       new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
   }
 
+  @transient
   protected[crossdata] lazy val streamingCatalog: Option[XDStreamingCatalog] = {
     if (xdConfig.hasPath(StreamingCatalogClassConfigKey)) {
       val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
@@ -121,11 +121,37 @@ class XDContext private (@transient val sc: SparkContext,
       override val extendedCheckRules = Seq(
         PreWriteCheck(catalog)
       )
+
+      val preparationRules = Seq(PrepareAggregateAlias)
+
+      override lazy val batches: Seq[Batch] = Seq(
+        Batch("Substitution", fixedPoint,
+          CTESubstitution ::
+            WindowsSubstitution ::
+            Nil : _*),
+        Batch("Preparation", fixedPoint, preparationRules : _*),
+        Batch("Resolution", fixedPoint,
+          ResolveRelations ::
+            ResolveReferences ::
+            ResolveGroupingAnalytics ::
+            ResolveSortReferences ::
+            ResolveGenerate ::
+            ResolveFunctions ::
+            ResolveAliases ::
+            ExtractWindowExpressions ::
+            GlobalAggregates ::
+            ResolveAggregateFunctions ::
+            HiveTypeCoercion.typeCoercionRules ++
+              extendedResolutionRules : _*),
+        Batch("Nondeterministic", Once,
+          PullOutNondeterministic),
+        Batch("Cleanup", fixedPoint,
+          CleanupAliases)
+      )
     }
 
   @transient
   class XDPlanner extends SparkPlanner with XDStrategies {
-
     override def strategies: Seq[Strategy] = Seq(XDDDLStrategy, ExtendedDataSourceStrategy) ++ super.strategies
   }
 
@@ -170,6 +196,7 @@ class XDContext private (@transient val sc: SparkContext,
 
   /**
     * Add JAR file from XD Driver to the context
+    *
     * @param path The local path or hdfs path where SparkContext will take the JAR
     */
   def addJar(path: String) = {
@@ -208,6 +235,15 @@ class XDContext private (@transient val sc: SparkContext,
     ImportTablesUsingWithOptions(datasource, opts).run(this)
   }
 
+  /**
+    * Check if there is Connection with the catalog
+    *
+    * @return if connection is possible
+    */
+  def checkCatalogConnection : Boolean={
+    catalog.checkConnectivity
+  }
+
   XDContext.setLastInstantiatedContext(self)
 }
 
@@ -237,7 +273,7 @@ object XDContext extends CoreConfig {
   val CatalogClassConfigKey : String = s"$CatalogConfigKey.$ClassConfigKey"
   val StreamingCatalogClassConfigKey : String = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
 
-  private val INSTANTIATION_LOCK = new Object()
+  @transient private val INSTANTIATION_LOCK = new Object()
 
   /**
    * Reference to the last created SQLContext.
