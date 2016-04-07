@@ -20,7 +20,7 @@ import java.util.regex.Pattern
 
 import com.mongodb.{DBObject, QueryOperators}
 import com.stratio.crossdata.test.BaseXDTest
-import com.stratio.datasource.mongodb.{MongodbConfig, MongodbConfigBuilder}
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import org.apache.spark.sql.sources._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -83,9 +83,9 @@ class MongoQueryProcessorSpec extends BaseXDTest {
     filters.get(ColumnAge) shouldBe a [DBObject]
 
     val inListValues = filters.get(ColumnAge).asInstanceOf[DBObject].get(QueryOperators.IN)
-    inListValues shouldBe a [Array[Any]]
-    inListValues.asInstanceOf[Array[Object]] should have size 2
-    inListValues.asInstanceOf[Array[Object]] should contain allOf (ValueAge, ValueAge2)
+    inListValues should matchPattern { case _: Array[_] => }
+    inListValues.asInstanceOf[Array[Any]] should have size 2
+    inListValues.asInstanceOf[Array[Any]] should contain allOf (ValueAge, ValueAge2)
 
   }
 

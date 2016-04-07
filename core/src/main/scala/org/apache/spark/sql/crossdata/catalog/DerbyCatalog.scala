@@ -15,15 +15,10 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import java.sql.Connection
-import java.sql.DriverManager
-import java.sql.ResultSet
+import java.sql.{Connection, DriverManager, ResultSet}
 
-import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
-import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.CrossdataVersion
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.types.StructType
 
@@ -49,17 +44,16 @@ object DerbyCatalog {
  * @param conf An implementation of the [[CatalystConf]].
  */
 class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends XDCatalog(conf, xdContext) with Logging {
+  extends XDCatalog(conf, xdContext) with SparkLoggerComponent {
 
   import DerbyCatalog._
   import XDCatalog._
-
 
   private val db = "CROSSDATA"
   private val tableWithTableMetadata = "xdtables"
   private val tableWithViewMetadata = "xdviews"
 
-  lazy val connection: Connection = {
+  @transient lazy val connection: Connection = {
 
     val driver = "org.apache.derby.jdbc.EmbeddedDriver"
     val url = "jdbc:derby:sampledb/crossdata;create=true"
@@ -262,4 +256,6 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   override protected def dropAllPersistedViews(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
+
+  override def checkConnectivity:Boolean = true
 }

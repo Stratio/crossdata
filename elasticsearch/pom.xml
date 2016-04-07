@@ -33,7 +33,7 @@
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
-        <elastic.datasource.version>2.1.2</elastic.datasource.version>
+        <elastic.datasource.version>2.1.3</elastic.datasource.version>
         <elastic4s.version>1.7.4</elastic4s.version>
     </properties>
     <dependencies>

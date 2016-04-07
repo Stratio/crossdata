@@ -15,12 +15,11 @@
  */
 package com.stratio.crossdata.connector.cassandra
 
-import com.datastax.driver.core.Session
-import com.datastax.driver.core.Cluster
+import com.datastax.driver.core.{Cluster, Session}
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.ConfigFactory
-import org.apache.spark.Logging
-import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
+import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.scalatest.Suite
 
 import scala.collection.immutable.ListMap
@@ -28,7 +27,7 @@ import scala.util.Try
 
 trait CassandraWithSharedContext extends SharedXDContextWithDataTest
   with CassandraDefaultTestConstants
-  with Logging {
+  with SparkLoggerComponent {
 
   this: Suite =>
 

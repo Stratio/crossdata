@@ -10,13 +10,13 @@
     </parent>
     <properties>
         <stratio-test-bdd.version>0.2.0-SNAPSHOT</stratio-test-bdd.version>
-        <crossdata.version>1.2.0-RC1</crossdata.version>
+        <crossdata.version>1.3.0-SNAPSHOT</crossdata.version>
         <assertj-core.version>1.7.0</assertj-core.version>
     </properties>
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>tests</artifactId>
 
-    <version>1.3.0-SNAPSHOT}</version>
+    <version>1.3.0-SNAPSHOT</version>
 
     <build>
         <plugins>

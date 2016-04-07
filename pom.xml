@@ -97,6 +97,7 @@
         <module>server</module>
         <module>streaming</module>
         <module>testsIT</module>
+        <module>dist</module>
     </modules>
 
     <properties>
@@ -114,7 +115,7 @@
         <outputFileName>stratio-crossdata</outputFileName>
         <mariadb.version>1.2.3</mariadb.version>
         <postgresql.version>9.2-1003-jdbc4</postgresql.version>
-        <derby.version>10.12.1.1</derby.version>
+        <derby.version>10.10.1.1</derby.version>
         <jackson4s.version>3.2.10</jackson4s.version>
         <common.utils.version>0.5.0</common.utils.version>
         <guava.version>18.0</guava.version>

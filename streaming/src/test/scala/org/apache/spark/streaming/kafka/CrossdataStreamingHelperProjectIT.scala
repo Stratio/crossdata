@@ -83,7 +83,7 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
       kafkaTestUtils = null
     }
   }
-
+/*
   test("Crossdata streaming must save into the kafka output the sql results with project") {
     val expectedResult = List("a", "c")
     val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
@@ -122,4 +122,5 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
       case None => throw new Exception("Ephemeral table not created")
     }
   }
+  */
 }

@@ -17,26 +17,19 @@ package com.stratio.crossdata.connector.mongodb
 
 import java.util.regex.Pattern
 
-import com.mongodb.DBObject
-import com.mongodb.QueryBuilder
+import com.mongodb.{DBObject, QueryBuilder}
 import com.mongodb.casbah.Imports._
-import com.stratio.datasource.Config
-import com.stratio.datasource.mongodb.MongodbConfig
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.datasource.mongodb.MongodbRelation._
+import com.stratio.datasource.mongodb.config.MongodbConfig
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
-import org.apache.spark.Logging
-import org.apache.spark.sql.Row
+import com.stratio.datasource.util.Config
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.plans.logical.{Limit => LogicalLimit}
-import org.apache.spark.sql.sources
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.ProjectReport
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.BaseLogicalPlan
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.FilterReport
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
-import org.apache.spark.sql.sources.{Filter => SourceFilter}
+import org.apache.spark.sql.catalyst.plans.logical.{Limit => LogicalLimit, LogicalPlan}
+import org.apache.spark.sql.{Row, sources}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, ProjectReport, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
 
 object MongoQueryProcessor {
@@ -155,7 +148,7 @@ object MongoQueryProcessor {
 
 
 // TODO logs, doc, tests
-class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) extends Logging {
+class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) extends SparkLoggerComponent {
 
   import MongoQueryProcessor._
 

@@ -118,7 +118,7 @@ class JobActor(
 
       logger.debug(s"Starting Job under ${context.parent.path}")
 
-      implicit val _: ExecutionContext = ExecutionContext.fromExecutor(new ProlificExecutor)
+      import context.dispatcher
 
       val runningTask = launchTask
       runningTask.future onComplete {
@@ -160,7 +160,9 @@ class JobActor(
   }
 
   private def launchTask: Cancellable[SQLReply] = {
-    import scala.concurrent.ExecutionContext.Implicits.global
+
+    implicit val _: ExecutionContext = ExecutionContext.fromExecutor(new ProlificExecutor)
+
     Cancellable {
       val df = xdContext.sql(command.sql)
       val rows = if (command.flattenResults)

@@ -60,12 +60,7 @@ class KafkaInputSpec extends BaseStreamingXDTest with CommonValues {
 
   "KafkaInput" should "return a exception topics" in {
     val input = new KafkaInput(kafkaOptionsModelEmptyTopics)
-    val topics = Try(input.getTopics) match {
-      case Failure(ex) => ex
-    }
-    val expected = true
-
-    topics.isInstanceOf[IllegalStateException] should be(expected)
+    an[IllegalStateException] should be thrownBy input.getTopics
   }
 
   "KafkaInput" should "return a correct storageLevel" in {

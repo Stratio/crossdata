@@ -54,8 +54,8 @@ object KafkaProducer {
     KafkaProducer.getInstance(getKey(options.connection), options)
   }
 
-  private[streaming] def getKey(connection: Seq[ConnectionHostModel]): String =
-    connection.map(_.toString).mkString(".")
+  private[streaming] def getKey(connection: ConnectionHostModel): String =
+    s"ConnectionHostModel([${connection.zkConnection.map(_.toString).mkString(",")}],[${connection.kafkaConnection.map(_.toString).mkString(",")}])"
 
   private[streaming] def getInstance(key: String, options: KafkaOptionsModel): Producer[String, String] =
     producers.getOrElse(key, {
@@ -77,12 +77,15 @@ object KafkaProducer {
     new Producer[String, String](producerConfig)
   }
 
-  private[streaming] def getBrokerList(connection: Seq[ConnectionHostModel],
+  private[streaming] def getBrokerList(connection: ConnectionHostModel,
                                    defaultHost: String = DefaultHost,
                                    defaultPort: String = DefaultProducerPort): String = {
-    val connectionString = connection.map(c => s"${c.producerHost}:${c.producerPort}").mkString(",")
 
-    if (connectionString.isEmpty) s"$defaultHost:$defaultPort" else connectionString
+    val connectionStr = (
+      for (kafkaConnection <- connection.kafkaConnection) yield (s"${kafkaConnection.host}:${kafkaConnection.port}")
+      ).mkString(",")
+
+    if (connectionStr.isEmpty) s"$defaultHost:$defaultPort" else connectionStr
   }
 
   private[streaming] def deleteProducers(): Unit = {

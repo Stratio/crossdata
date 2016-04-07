@@ -16,19 +16,18 @@
 package com.stratio.crossdata.connector.mongodb
 
 
-import com.mongodb.BasicDBObject
-import com.mongodb.QueryBuilder
+import com.mongodb.{BasicDBObject, QueryBuilder}
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.ConfigFactory
-import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.scalatest.Suite
 
 import scala.util.Try
 
-trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefaultConstants with Logging {
+trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefaultConstants with SparkLoggerComponent {
   this: Suite =>
 
   override type ClientParams = MongoClient
