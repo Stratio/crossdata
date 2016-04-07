@@ -99,13 +99,11 @@
                                 <requires>bash</requires>
                             </rpm>
                             <excludeDirectoryAttributes>
-                                <dir>/etc</dir>
                                 <dir>/etc/default</dir>
                                 <dir>/etc/init.d</dir>
                                 <dir>/var</dir>
-                                <dir>/var/run</dir>
-                                <dir>/var/log</dir>
                                 <dir>/opt</dir>
+                                <dir>/etc</dir>
                             </excludeDirectoryAttributes>
                             <defaults>
                                 <directoryAttributes>
@@ -138,9 +136,22 @@
                                 </mkdirs>
                                 <mkdirs>
                                     <path>/var/log/sds/crossdata</path>
+                                    <attributes>
+                                        <user>crossdata</user>
+                                        <group>stratio</group>
+                                        <mode>0775</mode>
+                                    </attributes>
                                 </mkdirs>
                                 <mkdirs>
                                     <path>/var/run/sds</path>
+                                    <attributes>
+                                        <user>root</user>
+                                        <group>stratio</group>
+                                        <mode>0775</mode>
+                                    </attributes>
+                                </mkdirs>
+                                <mkdirs>
+                                    <path>/var/sds</path>
                                     <attributes>
                                         <user>root</user>
                                         <group>stratio</group>
