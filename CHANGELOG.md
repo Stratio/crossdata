@@ -15,6 +15,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Avro datasource added
 * Session identifiers in queries
 * Zeppelin interpreter added
+* Resolution of conflictive names with aliases preference
 
 ## 1.1.0 (February 2016)
 * Flattener of subdocuments for relational interfaces 
