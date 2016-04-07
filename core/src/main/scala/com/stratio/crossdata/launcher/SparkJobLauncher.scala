@@ -32,6 +32,8 @@ import scala.util.{Properties, Try}
 
 object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
 
+  val DefaultClusterDeployModeEnabled = true
+
   def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String)
                           (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
     val streamingConfig = crossdataConfig.getConfig(StreamingConfPath)
@@ -49,8 +51,8 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
     val jar = streamingConfig.getString(AppJarKey)
     val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq).getOrElse(Seq.empty)
     val sparkConfig: Map[String, String] = sparkConf(streamingConfig)
-
-    getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, sparkConfig, jars)(executionContext)
+    val clusterDeployModeEnabled = Try(streamingConfig.getBoolean(ClusterDeployKey)).getOrElse(DefaultClusterDeployModeEnabled)
+    getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, clusterDeployModeEnabled, sparkConfig, jars)(executionContext)
   }
 
   def launchJob(sparkJob: SparkJob): Unit = {
@@ -63,6 +65,7 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
                      appName: String,
                      master: String,
                      jar: String,
+                     clusterDeployModeEnabled: Boolean,
                      sparkConf: Map[String, String] = Map.empty,
                      externalJars: Seq[String] = Seq.empty
                       )(executionContext: ExecutionContext): SparkJob = {
@@ -73,7 +76,11 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
       .setMainClass(appMain)
       .addAppArgs(appArgs: _*)
       .setMaster(master)
-      .setDeployMode("cluster")
+
+    if (clusterDeployModeEnabled) {
+      sparkLauncher.addSparkArg("--deploy-mode", "cluster")
+    }
+
     externalJars.foreach(sparkLauncher.addJar)
     sparkConf.map({ case (key, value) => sparkLauncher.setConf(key, value) })
     new SparkJob(sparkLauncher)(executionContext)
