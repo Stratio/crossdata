@@ -102,6 +102,8 @@
                                 <dir>/etc/default</dir>
                                 <dir>/etc/init.d</dir>
                                 <dir>/var</dir>
+                                <dir>/var/log</dir>
+                                <dir>/var/run</dir>
                                 <dir>/opt</dir>
                                 <dir>/etc</dir>
                             </excludeDirectoryAttributes>
@@ -247,16 +249,16 @@
                                             </path>
                                             <toFile>/etc/default/crossdata-driver-variables</toFile>
                                             <attributes>
-                                                <user>crossdata</user>
-                                                <group>stratio</group>
+                                                <user>root</user>
+                                                <group>root</group>
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
                                             <toFile>/etc/default/crossdata-variables</toFile>
                                             <attributes>
-                                                <user>crossdata</user>
-                                                <group>stratio</group>
+                                                <user>root</user>
+                                                <group>root</group>
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
@@ -283,8 +285,17 @@
                                             <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
                                             <toFile>/etc/default/crossdata-variables</toFile>
                                             <attributes>
-                                                <user>crossdata</user>
-                                                <group>stratio</group>
+                                                <user>root</user>
+                                                <group>root</group>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/default/crossdata-driver-variables
+                                            </path>
+                                            <toFile>/etc/default/crossdata-driver-variables</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
