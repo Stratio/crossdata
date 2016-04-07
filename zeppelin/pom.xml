@@ -57,7 +57,7 @@
 
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-interpreter_${scala.binary.version}</artifactId>
+      <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
 
