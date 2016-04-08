@@ -33,6 +33,7 @@
                     <groupId>com.stratio.crossdata</groupId>
                     <artifactId>crossdata-streaming</artifactId>
                     <version>${project.parent.version}</version>
+                    <classifier>jar-with-dependencies</classifier>
                 </dependency>
             </dependencies>
             <build>
