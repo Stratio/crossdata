@@ -3,7 +3,7 @@
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
 ## 1.2.1 (April 2016)
-* Deploy parameter for Spark-Submit configuration added
+* Deploy mode parameter for Spark-Submit configuration added
 * Bux fixing in package creation
 
 ## 1.2.0 (March 2016)
