@@ -23,7 +23,7 @@ Crossdata will detect it and the query will be directly redirected to the datast
  Moreover, a query builder is included to assist in the creation of SQL-like and several methods to get information related to metadata.
 
 - **Improved and extended SparkContext**:
-    - *One context, multiple datasources*: CrossdataContext is able to manage the access efficiently to all datasources,
+    - *One context, multiple datasources*: XDContext is able to manage the access efficiently to all datasources,
      making optimizations and leveraging the characteristics of every datastore.
     - *Persistent metadata store*: Our metadata store let to persist the tables and other metadata information that the user wants to use frequently,
      avoiding to register all the table and metadata everytime that a context is started.

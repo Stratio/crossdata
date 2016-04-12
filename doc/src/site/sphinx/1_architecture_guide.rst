@@ -3,7 +3,7 @@ Architecture guide
 ==================
 
 Crossdata is a framework that aims to optimize and leverages the features of Apache Spark and take advantage of the
-benefits of a P2P architecture. CrossdataContext is an extension of the SQLContext of Spark and contains a bunch of
+benefits of a P2P architecture. XDContext is an extension of the SQLContext of Spark and contains a bunch of
 improvements with the goal of speeding up your queries and add features required by developers and the community. In
 addition, Crossdata tries to unify the access and management of different datastores, that is, Crossdata is the
 perfect tool when you want to perform operational and analytic queries using only one framework.
