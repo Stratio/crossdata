@@ -41,7 +41,7 @@ import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
 /**
- * CrossdataContext leverages the features of [[SQLContext]]
+ * XDContext leverages the features of [[SQLContext]]
  * and adds some features of the Crossdata system.
   *
   * @param sc A [[SparkContext]].

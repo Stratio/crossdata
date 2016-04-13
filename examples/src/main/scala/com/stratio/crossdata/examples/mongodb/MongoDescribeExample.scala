@@ -21,10 +21,10 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object MongoDescribeExample extends App with MongoDefaultConstants {
   val mongoClient = prepareEnvironment()
-  withCrossdataContext { xdContext =>
+  withXDContext { xdContext =>
     xdContext.sql(s"DESCRIBE highschool.studentsTestDataTypes").show()
   }
-  private def withCrossdataContext(commands: XDContext => Unit) = {
+  private def withXDContext(commands: XDContext => Unit) = {
     val sparkConf = new SparkConf().
       setAppName("MongoExample").
       setMaster("local[4]")

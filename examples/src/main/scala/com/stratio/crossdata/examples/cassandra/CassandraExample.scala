@@ -23,7 +23,7 @@ object CassandraExample extends App with CassandraDefaultConstants {
 
   val (cluster, session) = prepareEnvironment()
 
-  withCrossdataContext { xdContext =>
+  withXDContext { xdContext =>
 
     xdContext.sql(
       s"""|CREATE TEMPORARY TABLE $Table
@@ -49,7 +49,7 @@ object CassandraExample extends App with CassandraDefaultConstants {
 
   cleanEnvironment(cluster, session)
 
-  private def withCrossdataContext(commands: XDContext => Unit) = {
+  private def withXDContext(commands: XDContext => Unit) = {
 
     val sparkConf = new SparkConf().
       setAppName("CassandraExample").

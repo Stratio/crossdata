@@ -91,7 +91,6 @@
         <module>cassandra</module>
         <module>mongodb</module>
         <module>elasticsearch</module>
-        <module>doc</module>
         <module>common</module>
         <module>driver</module>
         <module>server</module>
