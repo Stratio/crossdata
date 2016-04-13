@@ -21,6 +21,7 @@ import com.google.common.io.BaseEncoding
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.{Config, ConfigRenderOptions}
 import org.apache.spark.launcher.SparkLauncher
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
 import org.apache.spark.sql.crossdata.config.{CoreConfig, StreamingConstants}
@@ -32,7 +33,9 @@ import scala.util.{Properties, Try}
 
 object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
 
-  def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String)
+  val DefaultClusterDeployModeEnabled = true
+
+  def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String, xdContext: XDContext)
                           (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
     val streamingConfig = crossdataConfig.getConfig(StreamingConfPath)
     val sparkHome =
@@ -49,8 +52,12 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
     val jar = streamingConfig.getString(AppJarKey)
     val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq).getOrElse(Seq.empty)
     val sparkConfig: Map[String, String] = sparkConf(streamingConfig)
+    val clusterDeployModeEnabled = Try(streamingConfig.getBoolean(ClusterDeployKey)).getOrElse(DefaultClusterDeployModeEnabled)
 
-    getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, sparkConfig, jars)(executionContext)
+    if (master.toLowerCase.contains("mesos"))
+      xdContext.addJar(jar)
+
+    getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, clusterDeployModeEnabled, sparkConfig, jars)(executionContext)
   }
 
   def launchJob(sparkJob: SparkJob): Unit = {
@@ -63,6 +70,7 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
                      appName: String,
                      master: String,
                      jar: String,
+                     clusterDeployModeEnabled: Boolean,
                      sparkConf: Map[String, String] = Map.empty,
                      externalJars: Seq[String] = Seq.empty
                       )(executionContext: ExecutionContext): SparkJob = {
@@ -73,7 +81,11 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
       .setMainClass(appMain)
       .addAppArgs(appArgs: _*)
       .setMaster(master)
-      .setDeployMode("cluster")
+
+    if (clusterDeployModeEnabled) {
+      sparkLauncher.addSparkArg("--deploy-mode", "cluster")
+    }
+
     externalJars.foreach(sparkLauncher.addJar)
     sparkConf.map({ case (key, value) => sparkLauncher.setConf(key, value) })
     new SparkJob(sparkLauncher)(executionContext)

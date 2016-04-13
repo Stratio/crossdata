@@ -28,7 +28,7 @@
 
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>parent</artifactId>
-    <version>1.2.1-RC1-SNAPSHOT</version>
+    <version>1.2.1-RC2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Stratio Crossdata Parent</name>
     <description>Stratio Crossdata reactor</description>
@@ -91,13 +91,13 @@
         <module>cassandra</module>
         <module>mongodb</module>
         <module>elasticsearch</module>
-        <module>doc</module>
         <module>common</module>
         <module>driver</module>
         <module>server</module>
         <module>streaming</module>
         <module>testsIT</module>
         <module>dist</module>
+        <module>spark-crossdata</module>
     </modules>
 
     <properties>

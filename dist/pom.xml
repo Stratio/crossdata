@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>parent</artifactId>
-        <version>1.2.1-RC1-SNAPSHOT</version>
+        <version>1.2.1-RC2-SNAPSHOT</version>
     </parent>
 
     <artifactId>dist</artifactId>
-    <version>1.2.1-RC1-SNAPSHOT</version>
+    <version>1.2.1-RC2-SNAPSHOT</version>
 
     <profiles>
         <profile>
@@ -102,6 +102,8 @@
                                 <dir>/etc/default</dir>
                                 <dir>/etc/init.d</dir>
                                 <dir>/var</dir>
+                                <dir>/var/log</dir>
+                                <dir>/var/run</dir>
                                 <dir>/opt</dir>
                                 <dir>/etc</dir>
                             </excludeDirectoryAttributes>
@@ -247,16 +249,16 @@
                                             </path>
                                             <toFile>/etc/default/crossdata-driver-variables</toFile>
                                             <attributes>
-                                                <user>crossdata</user>
-                                                <group>stratio</group>
+                                                <user>root</user>
+                                                <group>root</group>
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
                                             <toFile>/etc/default/crossdata-variables</toFile>
                                             <attributes>
-                                                <user>crossdata</user>
-                                                <group>stratio</group>
+                                                <user>root</user>
+                                                <group>root</group>
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
@@ -283,8 +285,17 @@
                                             <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
                                             <toFile>/etc/default/crossdata-variables</toFile>
                                             <attributes>
-                                                <user>crossdata</user>
-                                                <group>stratio</group>
+                                                <user>root</user>
+                                                <group>root</group>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/default/crossdata-driver-variables
+                                            </path>
+                                            <toFile>/etc/default/crossdata-driver-variables</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
@@ -300,6 +311,15 @@
                             </execution>
                         </executions>
                     </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+
                 </plugins>
             </build>
         </profile>

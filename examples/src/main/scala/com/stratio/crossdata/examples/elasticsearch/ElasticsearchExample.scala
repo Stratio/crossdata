@@ -36,7 +36,7 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
 
   val client = prepareEnvironment()
 
-  withCrossdataContext { xdContext =>
+  withXDContext { xdContext =>
 
     xdContext.sql(
       s"""|CREATE TEMPORARY TABLE $Type
@@ -64,7 +64,7 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
 
   cleanEnvironment(client)
 
-  private def withCrossdataContext(commands: XDContext => Unit) = {
+  private def withXDContext(commands: XDContext => Unit) = {
 
     val sparkConf = new SparkConf().
       setAppName("ElasticsearchExample").

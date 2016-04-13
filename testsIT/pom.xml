@@ -23,7 +23,7 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>com.stratio.crossdata</groupId>
-        <version>1.2.1-RC1-SNAPSHOT</version>
+        <version>1.2.1-RC2-SNAPSHOT</version>
     </parent>
 
     <artifactId>crossdata-testsIT</artifactId>
@@ -54,4 +54,17 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

@@ -214,7 +214,7 @@ private[crossdata] case class StartProcess(tableIdentifier: String) extends Logi
     )
 
 
-    val sparkJob = SparkJobLauncher.getSparkStreamingJob(XDContext.xdConfig, streamCatalog, tableIdentifier)
+    val sparkJob = SparkJobLauncher.getSparkStreamingJob(XDContext.xdConfig, streamCatalog, tableIdentifier,xdContext)
 
     sparkJob match {
       case Failure(exception) =>

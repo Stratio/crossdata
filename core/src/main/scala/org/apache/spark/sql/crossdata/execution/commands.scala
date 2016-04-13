@@ -35,11 +35,11 @@ private[crossdata] case class PersistDataSourceTable(
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val crossdataContext = sqlContext.asInstanceOf[XDContext]
+    val xdContext = sqlContext.asInstanceOf[XDContext]
     val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, userSpecifiedSchema, provider, Array.empty[String], options)
-    val tableExist = crossdataContext.catalog.tableExists(tableIdent.toSeq)
+    val tableExist = xdContext.catalog.tableExists(tableIdent.toSeq)
 
-    if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable, crossdataContext.catalog.createLogicalRelation(crossdataTable))
+    if (!tableExist) xdContext.catalog.persistTable(crossdataTable, xdContext.catalog.createLogicalRelation(crossdataTable))
 
     if (tableExist && !allowExisting)
       throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
@@ -60,12 +60,12 @@ case class PersistSelectAsTable(
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val crossdataContext = sqlContext.asInstanceOf[XDContext]
+    val xdContext = sqlContext.asInstanceOf[XDContext]
 
     // TODO REFACTOR HIVE CODE ***************
     var createMetastoreTable = false
     var existingSchema = None: Option[StructType]
-    if (crossdataContext.catalog.tableExists(tableIdent.toSeq)) {
+    if (xdContext.catalog.tableExists(tableIdent.toSeq)) {
       // Check if we need to throw an exception or just return.
       mode match {
         case SaveMode.ErrorIfExists =>
@@ -107,7 +107,7 @@ case class PersistSelectAsTable(
               throw new AnalysisException(s"Saving data in ${o.toString} is not supported.")
           }
         case SaveMode.Overwrite =>
-          crossdataContext.catalog.dropTable(tableIdent.toSeq)
+          xdContext.catalog.dropTable(tableIdent.toSeq)
           createMetastoreTable = true
       }
     } else {
@@ -115,7 +115,7 @@ case class PersistSelectAsTable(
       createMetastoreTable = true
     }
 
-    val data = DataFrame(crossdataContext, query)
+    val data = DataFrame(xdContext, query)
     val df = existingSchema match {
       // If we are inserting into an existing table, just use the existing schema.
       case Some(schema) => sqlContext.internalCreateDataFrame(data.queryExecution.toRdd, schema)
@@ -127,7 +127,7 @@ case class PersistSelectAsTable(
     if (createMetastoreTable) {
       val resolved = ResolvedDataSource(sqlContext, provider, partitionColumns, mode, options, df)
       val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Some(resolved.relation.schema), provider, Array.empty[String], options)
-      crossdataContext.catalog.persistTable(crossdataTable, LogicalRelation(resolved.relation))
+      xdContext.catalog.persistTable(crossdataTable, LogicalRelation(resolved.relation))
     }
 
 
