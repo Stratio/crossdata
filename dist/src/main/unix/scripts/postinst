@@ -11,6 +11,18 @@ DIR_CONF='/etc/sds/crossdata'
 DIR_LOG='/var/log/sds/crossdata'
 DIR_CHECKPOINT='/var/sds/crossdata'
 
+# change ownership of the parents directories
+chown root:stratio /etc/sds
+chown root:stratio /opt/sds
+chown root:stratio /var/log/sds
+chown root:stratio /var/run/sds
+chown root:stratio /var/sds
+chmod 775 /etc/sds
+chmod 775 /opt/sds
+chmod 775 /var/log/sds
+chmod 775 /var/sds
+chmod 775 /var/run/sds
+
 chmod 755 /etc/init.d/crossdata
 chmod 755 /opt/sds/crossdata/bin
 chmod +x /opt/sds/crossdata/bin/*

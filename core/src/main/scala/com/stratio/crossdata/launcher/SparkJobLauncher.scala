@@ -21,6 +21,7 @@ import com.google.common.io.BaseEncoding
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.{Config, ConfigRenderOptions}
 import org.apache.spark.launcher.SparkLauncher
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
 import org.apache.spark.sql.crossdata.config.{CoreConfig, StreamingConstants}
@@ -34,7 +35,7 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
 
   val DefaultClusterDeployModeEnabled = true
 
-  def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String)
+  def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String, xdContext: XDContext)
                           (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
     val streamingConfig = crossdataConfig.getConfig(StreamingConfPath)
     val sparkHome =
@@ -52,6 +53,10 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
     val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq).getOrElse(Seq.empty)
     val sparkConfig: Map[String, String] = sparkConf(streamingConfig)
     val clusterDeployModeEnabled = Try(streamingConfig.getBoolean(ClusterDeployKey)).getOrElse(DefaultClusterDeployModeEnabled)
+
+    if (master.toLowerCase.contains("mesos"))
+      xdContext.addJar(jar)
+
     getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, clusterDeployModeEnabled, sparkConfig, jars)(executionContext)
   }
 
