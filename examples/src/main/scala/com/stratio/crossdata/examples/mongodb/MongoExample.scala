@@ -24,7 +24,7 @@ object MongoExample extends App with MongoDefaultConstants {
 
   val mongoClient = prepareEnvironment()
 
-  withCrossdataContext { xdContext =>
+  withXDContext { xdContext =>
 
     xdContext.sql(
       s"""|CREATE TEMPORARY TABLE $Collection
@@ -65,7 +65,7 @@ object MongoExample extends App with MongoDefaultConstants {
 
   cleanEnvironment(mongoClient)
 
-  private def withCrossdataContext(commands: XDContext => Unit) = {
+  private def withXDContext(commands: XDContext => Unit) = {
 
     val sparkConf = new SparkConf().
       setAppName("MongoExample").
