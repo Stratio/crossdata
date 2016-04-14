@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>parent</artifactId>
-        <version>1.2.0-RC4-SNAPSHOT</version>
+        <version>1.2.2-RC1-SNAPSHOT</version>
     </parent>
 
     <artifactId>dist</artifactId>
-    <version>1.2.0-RC4-SNAPSHOT</version>
+    <version>1.2.2-RC1-SNAPSHOT</version>
 
     <profiles>
         <profile>
@@ -100,13 +100,13 @@
                                 <requires>bash</requires>
                             </rpm>
                             <excludeDirectoryAttributes>
-                                <dir>/etc</dir>
                                 <dir>/etc/default</dir>
                                 <dir>/etc/init.d</dir>
                                 <dir>/var</dir>
-                                <dir>/var/run</dir>
                                 <dir>/var/log</dir>
+                                <dir>/var/run</dir>
                                 <dir>/opt</dir>
+                                <dir>/etc</dir>
                             </excludeDirectoryAttributes>
                             <defaults>
                                 <directoryAttributes>
@@ -139,9 +139,22 @@
                                 </mkdirs>
                                 <mkdirs>
                                     <path>/var/log/sds/crossdata</path>
+                                    <attributes>
+                                        <user>crossdata</user>
+                                        <group>stratio</group>
+                                        <mode>0775</mode>
+                                    </attributes>
                                 </mkdirs>
                                 <mkdirs>
                                     <path>/var/run/sds</path>
+                                    <attributes>
+                                        <user>root</user>
+                                        <group>stratio</group>
+                                        <mode>0775</mode>
+                                    </attributes>
+                                </mkdirs>
+                                <mkdirs>
+                                    <path>/var/sds</path>
                                     <attributes>
                                         <user>root</user>
                                         <group>stratio</group>
@@ -180,6 +193,18 @@
                                 <copyDirectory>
                                     <from>
                                         ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/com/stratio/crossdata/crossdata-streaming/${project.parent.version}
+                                    </from>
+                                    <to>/opt/sds/crossdata/lib</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>
+                                        ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/org/apache/spark/spark-streaming_${scala.binary.version}/${spark.version}
+                                    </from>
+                                    <to>/opt/sds/crossdata/lib</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>
+                                        ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/org/apache/spark/spark-streaming-kafka_${scala.binary.version}/${spark.version}
                                     </from>
                                     <to>/opt/sds/crossdata/lib</to>
                                 </copyDirectory>
@@ -225,16 +250,16 @@
                                             </path>
                                             <toFile>/etc/default/crossdata-driver-variables</toFile>
                                             <attributes>
-                                                <user>crossdata</user>
-                                                <group>stratio</group>
+                                                <user>root</user>
+                                                <group>root</group>
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
                                             <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
                                             <toFile>/etc/default/crossdata-variables</toFile>
                                             <attributes>
-                                                <user>crossdata</user>
-                                                <group>stratio</group>
+                                                <user>root</user>
+                                                <group>root</group>
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
@@ -261,8 +286,17 @@
                                             <path>src/main/unix/files_and_dirs/etc/default/crossdata-variables</path>
                                             <toFile>/etc/default/crossdata-variables</toFile>
                                             <attributes>
-                                                <user>crossdata</user>
-                                                <group>stratio</group>
+                                                <user>root</user>
+                                                <group>root</group>
+                                            </attributes>
+                                        </copyFile>
+                                        <copyFile>
+                                            <path>src/main/unix/files_and_dirs/etc/default/crossdata-driver-variables
+                                            </path>
+                                            <toFile>/etc/default/crossdata-driver-variables</toFile>
+                                            <attributes>
+                                                <user>root</user>
+                                                <group>root</group>
                                             </attributes>
                                         </copyFile>
                                         <copyFile>
@@ -278,6 +312,15 @@
                             </execution>
                         </executions>
                     </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+
                 </plugins>
             </build>
         </profile>

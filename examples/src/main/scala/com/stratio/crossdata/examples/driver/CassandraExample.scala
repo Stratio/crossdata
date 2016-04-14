@@ -54,7 +54,7 @@ object DriverExample extends App with DefaultConstants {
     for {
       xdDriver <- driver
     } {
-      xdDriver.importTables(SourceProvider, CassandraOptions)
+      xdDriver.importTables(SourceProvider, CassandraOptions).waitForResult()
       xdDriver.listTables().foreach(println(_))
       xdDriver.show(s"SELECT * FROM $Catalog.$Table")
     }
