@@ -15,14 +15,15 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import org.apache.spark.sql.catalyst.analysis.{UnresolvedRelation, Catalog}
-import org.apache.spark.sql.catalyst.plans.logical.{Project, LogicalPlan, Subquery}
+import org.apache.spark.sql.catalyst.analysis.{Catalog, UnresolvedRelation}
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Project, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
+import org.apache.spark.sql.sources.{HadoopFsRelationProvider, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types._
 import org.json4s.jackson.Serialization.write
 
@@ -154,7 +155,22 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   protected[crossdata] def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
-    val resolved = ResolvedDataSource(xdContext, crossdataTable.schema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
+
+    /** Although table schema is inferred and persisted in XDCatalog, the schema can't be specified in some cases because
+    the source does not implement SchemaRelationProvider (e.g. JDBC) */
+
+    val tableSchema = ResolvedDataSource.lookupDataSource(crossdataTable.datasource).newInstance() match {
+      case _: SchemaRelationProvider | _: HadoopFsRelationProvider =>
+        crossdataTable.schema
+      case _: RelationProvider =>
+        None
+      case other =>
+        val msg = s"Unexpected datasource: $other"
+        logError(msg)
+        throw new RuntimeException(msg)
+    }
+
+    val resolved = ResolvedDataSource(xdContext, tableSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
     LogicalRelation(resolved.relation)
   }
 
