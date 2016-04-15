@@ -20,25 +20,26 @@ package org.apache.spark.sql.cassandra
 import java.io.IOException
 
 import com.datastax.driver.core.Metadata
-import com.datastax.spark.connector.{ColumnName, ColumnRef, FunctionCallRef, SomeColumns, _}
 import com.datastax.spark.connector.cql.{CassandraConnector, CassandraConnectorConf, Schema}
 import com.datastax.spark.connector.rdd.{CassandraRDD, ReadConf}
 import com.datastax.spark.connector.util.NameTools
 import com.datastax.spark.connector.util.Quote.quote
 import com.datastax.spark.connector.writer.{SqlRowWriter, WriteConf}
+import com.datastax.spark.connector.{ColumnName, ColumnRef, FunctionCallRef, SomeColumns, _}
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import com.stratio.crossdata.connector.{NativeFunctionExecutor, NativeScan}
 import com.stratio.crossdata.connector.cassandra.CassandraQueryProcessor
+import com.stratio.crossdata.connector.{NativeFunctionExecutor, NativeScan}
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.cassandra.DataTypeConverter.toStructField
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
-import org.apache.spark.sql.catalyst.expressions.{Alias, AttributeReference, Count, GenericRowWithSchema, Literal}
+import org.apache.spark.sql.catalyst.expressions.aggregate.Count
+import org.apache.spark.sql.catalyst.expressions.{Alias, AttributeReference, GenericRowWithSchema, Literal}
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.execution.{EvaluateNativeUDF, NativeUDF}
-import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
 import org.apache.spark.sql.sources.{BaseRelation, Filter, InsertableRelation, PrunedFilteredScan}
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
 
 
 /**
@@ -92,7 +93,7 @@ class CassandraXDSourceRelation(
   def isAggregateSupported(aggregateLogicalPlan: Aggregate): Boolean = aggregateLogicalPlan match {
     case Aggregate(Nil, aggregateExpressions, _) if aggregateExpressions.length == 1 =>
       aggregateExpressions.head match {
-        case Alias(Count(Literal(1, _)), _) => true
+        case Alias(Count(Literal(1, _) :: Nil), _) => false // TODO Keep it unless Cassandra implement the count efficiently
         case _ => false
       }
     case _ => false

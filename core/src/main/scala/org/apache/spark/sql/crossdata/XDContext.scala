@@ -25,8 +25,8 @@ import java.util.concurrent.atomic.AtomicReference
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst._
-import org.apache.spark.sql.catalyst.analysis.{CleanupAliases, HiveTypeCoercion, Analyzer, FunctionRegistry}
+import org.apache.spark.sql.catalyst.{TableIdentifier, SimpleCatalystConf, CatalystConf}
+import org.apache.spark.sql.catalyst.analysis.{ComputeCurrentTime, DistinctAggregationRewriter, ResolveUpCast, CleanupAliases, HiveTypeCoercion, Analyzer, FunctionRegistry}
 import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
@@ -34,6 +34,7 @@ import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
+import org.apache.spark.sql.{execution => sparkexecution}
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
@@ -126,14 +127,15 @@ class XDContext private (@transient val sc: SparkContext,
 
       override lazy val batches: Seq[Batch] = Seq(
         Batch("Substitution", fixedPoint,
-          CTESubstitution ::
-            WindowsSubstitution ::
-            Nil : _*),
+          CTESubstitution,
+          WindowsSubstitution),
         Batch("Preparation", fixedPoint, preparationRules : _*),
         Batch("Resolution", fixedPoint,
           ResolveRelations ::
             ResolveReferences ::
             ResolveGroupingAnalytics ::
+            ResolvePivot ::
+            ResolveUpCast ::
             ResolveSortReferences ::
             ResolveGenerate ::
             ResolveFunctions ::
@@ -141,22 +143,26 @@ class XDContext private (@transient val sc: SparkContext,
             ExtractWindowExpressions ::
             GlobalAggregates ::
             ResolveAggregateFunctions ::
+            DistinctAggregationRewriter(conf) ::
             HiveTypeCoercion.typeCoercionRules ++
               extendedResolutionRules : _*),
         Batch("Nondeterministic", Once,
-          PullOutNondeterministic),
+          PullOutNondeterministic,
+          ComputeCurrentTime),
+        Batch("UDF", Once,
+          HandleNullInputsForUDF),
         Batch("Cleanup", fixedPoint,
           CleanupAliases)
       )
     }
 
   @transient
-  class XDPlanner extends SparkPlanner with XDStrategies {
+  class XDPlanner extends sparkexecution.SparkPlanner(this) with XDStrategies {
     override def strategies: Seq[Strategy] = Seq(XDDDLStrategy, ExtendedDataSourceStrategy) ++ super.strategies
   }
 
   @transient
-  override protected[sql] val planner: SparkPlanner = new XDPlanner
+  override protected[sql] val planner: sparkexecution.SparkPlanner = new XDPlanner
 
   @transient
   protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_), this)
@@ -199,8 +205,9 @@ class XDContext private (@transient val sc: SparkContext,
     *
     * @param path The local path or hdfs path where SparkContext will take the JAR
     */
-  def addJar(path: String) = {
-    this.sc.addJar(path)
+  override def addJar(path: String) = {
+    // TODO Add to current Classpath
+    super.addJar(path)
   }
 
   /**
@@ -212,7 +219,7 @@ class XDContext private (@transient val sc: SparkContext,
    */
   def dropTable(tableIdentifier: TableIdentifier): Unit = {
     cacheManager.tryUncacheQuery(table(tableIdentifier.unquotedString))
-    catalog.dropTable(tableIdentifier.toSeq)
+    catalog.dropTable(tableIdentifier)
   }
 
   /**

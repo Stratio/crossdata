@@ -21,7 +21,8 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{SQLLikeQueryProcessorUtils, SQLLikeUDFQueryProcessorUtils}
 import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.{CassandraAttributeRole, ClusteringKey, Function, Indexed, NonIndexed, PartitionKey, Unknown}
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
-import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Count, Expression, Literal, NamedExpression}
+import org.apache.spark.sql.catalyst.expressions.aggregate.Count
+import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Expression, Literal, NamedExpression}
 import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Limit, LogicalPlan}
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
 import org.apache.spark.sql.crossdata.execution.NativeUDF
@@ -89,7 +90,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     def buildAggregationExpression(names: Expression): String = {
       names match {
         case Alias(child, _) => buildAggregationExpression(child)
-        case Count(child) => s"count(${buildAggregationExpression(child)})"
+        case Count(childs) => s"count(${childs.map(buildAggregationExpression).mkString(",")})"
         case Literal(1, _) => "*"
       }
     }

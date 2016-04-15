@@ -22,6 +22,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.expressions.aggregate.Count
 import org.apache.spark.sql.catalyst.plans.logical.Aggregate
 import org.apache.spark.sql.catalyst.plans.logical.LeafNode
 import org.apache.spark.sql.catalyst.plans.logical.Limit
@@ -33,6 +34,7 @@ import org.apache.spark.sql.crossdata.ExecutionType.Native
 import org.apache.spark.sql.crossdata.ExecutionType.Spark
 import org.apache.spark.sql.crossdata.XDDataFrame.findNativeQueryExecutor
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
+import org.apache.spark.sql.execution.QueryExecution
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types.ArrayType
 import org.apache.spark.sql.types.StructField
@@ -41,34 +43,6 @@ import org.apache.spark.sql.types.StructType
 import scala.collection.mutable.BufferLike
 import scala.collection.{mutable, immutable, GenTraversableOnce}
 import scala.collection.generic.CanBuildFrom
-
-//TODO: Move to a common library
-private[crossdata] object WithTrackerFlatMapSeq {
-  implicit def seq2superflatmapseq[T](s: Seq[T]): WithTrackerFlatMapSeq[T] = new WithTrackerFlatMapSeq(s)
-}
-
-//TODO: Move to a common library
-private[crossdata] class WithTrackerFlatMapSeq[T] private(val s: Seq[T])
-  extends scala.collection.immutable.Seq[T] {
-  override def length: Int = s.length
-  override def apply(idx: Int): T = s(idx)
-  override def iterator: Iterator[T] = s.iterator
-
-
-  def withTrackerFlatMap[B, That](
-                               f: (T, Option[Int]) => GenTraversableOnce[B]
-                             )(implicit bf: CanBuildFrom[immutable.Seq[T], B, That]): That = {
-    def builder : mutable.Builder[B, That] = bf(repr)
-    val b = builder
-    val builderAsBufferLike = b match {
-      case bufferl: BufferLike[_, _] => Some(bufferl)
-      case _ => None
-    }
-    for (x <- this) b ++= f(x, builderAsBufferLike.map(_.length)).seq
-    b.result
-  }
-
-}
 
 private[sql] object XDDataFrame {
 
@@ -123,7 +97,7 @@ private[sql] object XDDataFrame {
  * Extends a [[DataFrame]] to provide native access to datasources when performing Spark actions.
  */
 class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
-                               @transient override val queryExecution: SQLContext#QueryExecution)
+                               @transient override val queryExecution: QueryExecution)
   extends DataFrame(sqlContext, queryExecution) with SparkLoggerComponent {
 
   def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = {
@@ -158,13 +132,13 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
   def flattenedCollect(): Array[Row] = {
 
     def flattenProjectedColumns(exp: Expression, prev: List[String] = Nil): (List[String], Boolean) = exp match {
-      case GetStructField(child, field, _)  =>
-        flattenProjectedColumns(child, field.name :: prev)
+      case GetStructField(child, _, Some(fieldName))  =>
+        flattenProjectedColumns(child, fieldName :: prev)
       case GetArrayStructFields(child, field,_,_,_)=>
         flattenProjectedColumns(child, field.name :: prev)
       case AttributeReference(name, _, _, _) =>
         (name :: prev, false)
-      case Alias(child @ GetStructField(_, StructField(fname, _, _, _), _), name) if fname == name =>
+      case Alias(child @ GetStructField(_, _, Some(fname)), name) if fname == name =>
         flattenProjectedColumns(child)
       case Alias(child @ GetArrayStructFields(childArray, field,_,_,_), name) =>
         flattenProjectedColumns(child)
@@ -331,4 +305,35 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       case a@Project(seq, _) if seq.collectFirst { case Alias(b: GetStructField, _) => a }.isDefined => a
     } isDefined
   }
+
+
+
+  //TODO: Move to a common library
+  private[crossdata] object WithTrackerFlatMapSeq {
+    implicit def seq2superflatmapseq[T](s: Seq[T]): WithTrackerFlatMapSeq[T] = new WithTrackerFlatMapSeq(s)
+  }
+
+  //TODO: Move to a common library
+  private[crossdata] class WithTrackerFlatMapSeq[T] private(val s: Seq[T])
+    extends scala.collection.immutable.Seq[T] {
+    override def length: Int = s.length
+    override def apply(idx: Int): T = s(idx)
+    override def iterator: Iterator[T] = s.iterator
+
+
+    def withTrackerFlatMap[B, That](
+                                     f: (T, Option[Int]) => GenTraversableOnce[B]
+                                     )(implicit bf: CanBuildFrom[immutable.Seq[T], B, That]): That = {
+      def builder : mutable.Builder[B, That] = bf(repr)
+      val b = builder
+      val builderAsBufferLike = b match {
+        case bufferl: BufferLike[_, _] => Some(bufferl)
+        case _ => None
+      }
+      for (x <- this) b ++= f(x, builderAsBufferLike.map(_.length)).seq
+      b.result
+    }
+
+  }
+
 }
