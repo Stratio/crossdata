@@ -103,6 +103,22 @@ public class CrossdataSpecs extends BaseSpec {
         }
     }
 
+    @Then(value = "The spark result has to have '(.*?)' rows-function:$")
+    public void assertResultfGroupConcat(String rows, DataTable table) {
+        if (ThreadProperty.get("Driver").equals("context")) {
+            commonspec.getLogger().info("The result obtained is: ");
+            commonspec.getXdContext().showDataframe();
+            asserThat(commonspec.getXdContext().getXDDataFrame()).hasLength(Integer.parseInt(rows));
+            asserThat(commonspec.getXdContext().getXDDataFrame()).equalsMetadata(table.raw().get(0));
+            asserThat(commonspec.getXdContext().getXDDataFrame()).equalsResultsSparkIgnoringRowOrder(table.raw());
+            commonspec.getXdContext().clearXDF();
+        } else {
+            asserThat(commonspec.getXdDriver().getResult()).hasLength(Integer.parseInt(rows));
+            asserThat(commonspec.getXdDriver().getResult()).assertSuccesfulMetadataResult(table.raw().get(0));
+            asserThat(commonspec.getXdDriver().getResult()).equalsSQLResults(table.raw());
+        }
+    }
+
     @Then(value = "The result has to have '(.*?)' rows$")
     public void assertResultLengh(String rows, DataTable table) {
         if (ThreadProperty.get("Driver").equals("context")) {
