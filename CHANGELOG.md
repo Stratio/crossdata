@@ -2,6 +2,9 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
+## 1.3.0 (upcoming)
+* Enabled Scala cross builds for Scala 2.10 and Scala 2.11.
+
 ## 1.2.0 (March 2016)
 * StreamSQL: Streaming capabilities from a SQL language including insert into select (Batch + Streaming)
 * Improved asynchronous driver API
