@@ -79,11 +79,18 @@ public class ATCassandraXDTest extends BaseTest {
 		ThreadProperty.set("SourceProvider", sourceProvider);
 		ThreadProperty.set("Connector", connector);
 		ThreadProperty.set("Driver", "context");
+		try {
+			cassandra.disconnect();
+		} catch (DBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
 	@AfterClass(groups = {"basic"})
 	public void cleanUp() {
+		cassandra.connect();
 		cassandra.dropKeyspace(catalog);
 		try {
 			cassandra.disconnect();
@@ -95,7 +102,7 @@ public class ATCassandraXDTest extends BaseTest {
 	}
 
 	@Test(enabled = true, groups = {"basic"})
-	public void ATCassandraXD() throws Exception {
+	public void ATCassandraXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
 
