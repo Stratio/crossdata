@@ -17,7 +17,7 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
+import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
@@ -54,9 +54,9 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
   it should s"drop view" in {
 
     val viewIdentifier = TableIdentifier(ViewName, Option(Database))
-    val plan=new UnresolvedRelation(viewIdentifier)
+    val plan = new LocalRelation(Seq.empty)
     xdContext.catalog.persistView(viewIdentifier, plan, sqlView)
-
+    xdContext.catalog.tableExists(viewIdentifier) shouldBe true
     xdContext.catalog.dropView(viewIdentifier)
     xdContext.catalog.tableExists(viewIdentifier) shouldBe false
   }
