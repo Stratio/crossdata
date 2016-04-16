@@ -184,7 +184,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
       plan collect {
         case UnresolvedRelation(tIdent, _) => tIdent
       } foreach { tIdent =>
-        if (tableExistsInPersistedCatalog(tIdent)) {
+        if (!tableExistsInPersistedCatalog(tIdent)) {
           throw new RuntimeException("Views only can be created with a previously persisted table")
         }
       }
