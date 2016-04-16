@@ -276,8 +276,8 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
    * @inheritdoc
    */
   override def count(): Long = {
-    val aggregateExpr = Seq(Alias(Count(Literal(1)), "count")())
-    XDDataFrame(sqlContext, Aggregate(Seq(), aggregateExpr, logicalPlan)).collect().head.getLong(0)
+    val aggregateExpr = Seq(Alias(Count(Literal(1)).toAggregateExpression(), "count")())
+    XDDataFrame(sqlContext, Aggregate(Seq.empty, aggregateExpr, logicalPlan)).collect().head.getLong(0)
   }
 
 
