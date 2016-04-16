@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.catalog
 import org.apache.spark.sql.catalyst.analysis.{Catalog, UnresolvedRelation}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier, util}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{ViewIdentifier, CrossdataTable}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
@@ -130,14 +130,23 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
   }
 
+  /**
+   * Get the table name of TableIdentifier for temporary tables.
+   */
+  override protected def getTableName(tableIdent: TableIdentifier): String =
+    if (conf.caseSensitiveAnalysis) {
+      tableIdent.unquotedString
+    } else {
+      tableIdent.unquotedString.toLowerCase
+    }
+  
+
   override def registerTable(tableIdentifier: TableIdentifier, plan: LogicalPlan): Unit =
     tables.put(getTableName(tableIdentifier), plan)
 
 
   override def unregisterTable(tableIdentifier: TableIdentifier): Unit =
     tables remove getTableName(tableIdentifier)
-
-
 
 
   override def unregisterAllTables(): Unit =
