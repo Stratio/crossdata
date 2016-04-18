@@ -799,7 +799,7 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
         for(int i = 0; i < actualRows.length; i++){
             Row actualRow = actualRows[i];
             for(int x = 0; x < actualRow.size(); x++){
-                String[] columnExpected = firstRow.get(x).split("-");
+               // String[] columnExpected = firstRow.get(x).replace("00:00:00", " ").split("-");
                 String[] actualSparkRowsString = cleanArray(actualRow.get(x).toString().split("(?<!\\\\),"));
                 String[] expectedResultRowsString = cleanArray(table.get(i + 1).get(x).split("(?<!\\\\),"));
                 if(actualSparkRowsString.length != expectedResultRowsString.length){
