@@ -60,6 +60,11 @@
             <groupId>com.stratio.common</groupId>
             <artifactId>common-utils_${scala.binary.version}</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-common_${scala.binary.version}</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>

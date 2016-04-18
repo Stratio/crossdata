@@ -15,10 +15,13 @@
  */
 package com.stratio.crossdata.launcher
 
+import java.io.File
+import java.nio.file.Path
 import java.util.UUID
 
 import com.google.common.io.BaseEncoding
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import com.stratio.crossdata.common.HdfsUtils
 import com.typesafe.config.{Config, ConfigRenderOptions}
 import org.apache.spark.launcher.SparkLauncher
 import org.apache.spark.sql.crossdata.XDContext
@@ -51,8 +54,19 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
     val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq).getOrElse(Seq.empty)
     val sparkConfig: Map[String, String] = sparkConf(streamingConfig)
 
-    if (master.toLowerCase.contains("mesos"))
-      xdContext.addJar(jar)
+    if (master.toLowerCase.contains("mesos")) {
+      // Send Jar to HDFS
+      val hdfsConf = crossdataConfig.getConfig(HdfsConf)
+      val user=hdfsConf.getString("hadoopUserName")
+      val hdfsUtil = HdfsUtils(hdfsConf)
+      val destPath = s"/user/$user/streamingJar/"
+      val jarName = new File(jar).getName
+      if (!hdfsUtil.fileExist(s"$destPath/$jarName")) {
+        hdfsUtil.write(jar, destPath)
+      }
+      val hdfsPath=s"hdfs://${hdfsConf.getString("hdfsMaster")}/$destPath/$jarName"
+      xdContext.addJar(hdfsPath)
+    }
 
     getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, sparkConfig, jars)(executionContext)
   }
