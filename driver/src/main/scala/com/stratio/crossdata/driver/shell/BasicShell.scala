@@ -25,6 +25,7 @@ import jline.console.{ConsoleReader, UserInterruptException}
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
+import scala.util.{Failure, Try}
 
 object BasicShell extends App {
 
@@ -36,39 +37,26 @@ object BasicShell extends App {
 
   private def createHistoryDirectory(historyPath: String): Boolean = {
     val historyPathFile = new File(historyPath)
-    if(!historyPathFile.exists){
-      historyPathFile.mkdirs()
-    } else {
-      false
-    }
+    !historyPathFile.exists && historyPathFile.mkdirs
   }
 
   createHistoryDirectory(HistoryPath)
 
 
-  private def getLine(reader: ConsoleReader): Option[String] = {
-    try {
-      Option(reader.readLine)
-    } catch {
-      case  uie: UserInterruptException => {
+  private def getLine(reader: ConsoleReader): Option[String] =
+    Try(reader.readLine).recoverWith {
+      case uie: UserInterruptException =>
         close(reader)
-        None
-      }
-    }
-  }
+        Failure(uie)
+    } toOption
 
-  private def checkEnd(line: Option[String]): Boolean = {
-    if (line.isEmpty) {
-      true
-    } else {
+
+  private def checkEnd(line: Option[String]): Boolean =
+    line.isEmpty || {
       val trimmedLine = line.get
-      if (trimmedLine.equalsIgnoreCase("exit") || trimmedLine.equalsIgnoreCase("quit")) {
-        true
-      } else {
-        false
-      }
+      trimmedLine.equalsIgnoreCase("exit") || trimmedLine.equalsIgnoreCase("quit")
     }
-  }
+
 
   private def close(console: ConsoleReader): Unit = {
     logger.info("Saving history...")
