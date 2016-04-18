@@ -257,8 +257,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     case Spark => super.collect()
     case Native =>
       val result = findNativeQueryExecutor(queryExecution.optimizedPlan).flatMap(executeNativeQuery)
-      if (result.isEmpty) throw new NativeExecutionException
-      result.get
+      result.getOrElse(throw new NativeExecutionException)
   }
 
 
