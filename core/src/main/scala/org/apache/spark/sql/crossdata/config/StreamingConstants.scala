@@ -20,6 +20,7 @@ object StreamingConstants {
 
   val MainClass = "com.stratio.crossdata.streaming.CrossdataStreamingApplication"
   val StreamingConfPath = "streaming"
+  val HdfsConf="hdfs"
   val SparkConfPath = "spark"
 
   /**
