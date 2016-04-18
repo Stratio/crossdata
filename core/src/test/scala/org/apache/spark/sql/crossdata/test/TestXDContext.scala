@@ -27,7 +27,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
  * A special [[SQLContext]] prepared for testing.
  */
-private[sql] class TestXDContext(sc: SparkContext, catalogConfig: Config)
+private[sql] class TestXDContext private(sc: SparkContext, catalogConfig: Config)
   extends XDContext(sc, catalogConfig) {
 
   def this() {

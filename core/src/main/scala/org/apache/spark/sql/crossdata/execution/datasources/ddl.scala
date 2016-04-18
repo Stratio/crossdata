@@ -28,6 +28,12 @@ import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
 
 import scala.reflect.io.File
 
+object DDLUtils {
+
+  def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
+    tableIdentifier.database.toSeq :+ tableIdentifier.table
+
+}
 
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with SparkLoggerComponent {
@@ -67,7 +73,8 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
         val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
         sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
       }
-      Row(tableId, ignoreTable)
+      val tableSeq = DDLUtils.tableIdentifierToSeq(tableId)
+      Row(tableSeq, ignoreTable)
     }
 
   }
