@@ -18,24 +18,24 @@ package com.stratio.crossdata.connector.cassandra
 
 import com.datastax.driver.core.ResultSet
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import com.stratio.crossdata.connector.{SQLLikeQueryProcessorUtils, SQLLikeUDFQueryProcessorUtils}
 import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.{CassandraAttributeRole, ClusteringKey, Function, Indexed, NonIndexed, PartitionKey, Unknown}
+import com.stratio.crossdata.connector.{SQLLikeQueryProcessorUtils, SQLLikeUDFQueryProcessorUtils}
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
 import org.apache.spark.sql.catalyst.expressions.aggregate.Count
 import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Expression, Literal, NamedExpression}
 import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Limit, LogicalPlan}
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
 import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter._
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
+import org.apache.spark.sql.{Row, sources}
 
 object CassandraQueryProcessor extends SQLLikeQueryProcessorUtils with SQLLikeUDFQueryProcessorUtils {
 
   val DefaultLimit = 10000
   type ColumnName = String
 
-  case class CassandraQueryProcessorContext(val udfs: Map[String, NativeUDF]) extends SQLLikeUDFQueryProcessorUtils.ContextWithUDFs
+  case class CassandraQueryProcessorContext(udfs: Map[String, NativeUDF]) extends SQLLikeUDFQueryProcessorUtils.ContextWithUDFs
   override type ProcessingContext = CassandraQueryProcessorContext
 
   case class CassandraPlan(basePlan: BaseLogicalPlan, limit: Option[Int]){
@@ -46,12 +46,11 @@ object CassandraQueryProcessor extends SQLLikeQueryProcessorUtils with SQLLikeUD
 
   def apply(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) = new CassandraQueryProcessor(cassandraRelation, logicalPlan)
 
-  def buildNativeQuery(
-                        tableQN: String,
-                        requiredColumns: Seq[String],
-                        filters: Array[SourceFilter],
-                        limit: Int,
-                        udfs: Map[String, NativeUDF] = Map.empty): String = {
+  def buildNativeQuery(tableQN: String,
+                       requiredColumns: Seq[String],
+                       filters: Array[SourceFilter],
+                       limit: Int,
+                       udfs: Map[String, NativeUDF] = Map.empty): String = {
 
     implicit val procCtx = CassandraQueryProcessorContext(udfs)
 
@@ -157,7 +156,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   private[this] def checkNativeFilters(filters: Array[SourceFilter],
                                        udfs: Map[Attribute, NativeUDF]): Boolean = {
 
-    val udfNames = udfs.keys.map(_.toString).toSet
+    val udfNames = udfs.keys.map(_.toString()).toSet
 
     val groupedFilters = filters.groupBy {
       case sources.EqualTo(attribute, _) => attributeRole(attribute, udfNames)
@@ -226,7 +225,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     else cassandraRelation.tableDef.columnByName(columnName) match {
       case x if x.isPartitionKeyColumn => PartitionKey
       case x if x.isClusteringColumn => ClusteringKey
-      case x if x.isIndexedColumn => Indexed
+      case x if cassandraRelation.tableDef.isIndexed(x) => Indexed
       case _ => NonIndexed
     }
 
