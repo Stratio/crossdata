@@ -185,7 +185,7 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             }                  break;
         case "Mongo":
             StringBuilder sqlMongo = new StringBuilder();
-            sqlMongo.append("CREATE TEMPORARY TABLE tabletest(ident INT, name STRING, money ");
+            sqlMongo.append("CREATE TABLE tabletest(ident INT, name STRING, money ");
             sqlMongo.append("DOUBLE, new BOOLEAN, date DATE) USING ");
             sqlMongo.append("com.stratio.crossdata.connector.mongodb OPTIONS (host '");
             sqlMongo.append(System.getProperty("MONGO_HOST", "127.0.0.1"));
@@ -236,7 +236,7 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             break;
         case "ElasticSearch":
             StringBuilder sqlElasticSearch= new StringBuilder();
-            sqlElasticSearch.append("CREATE TEMPORARY TABLE tabletest (ident LONG, name STRING, money ");
+            sqlElasticSearch.append("CREATE TABLE tabletest (ident LONG, name STRING, money ");
             sqlElasticSearch.append("DOUBLE, new BOOLEAN, date TIMESTAMP) USING com.stratio.crossdata.connector.elasticsearch ");
             sqlElasticSearch.append("OPTIONS (resource 'databasetest/tabletest', es.nodes '");
             sqlElasticSearch.append(System.getProperty("ES_NODE", "127.0.0.1")).append("', es.port '");
