@@ -29,7 +29,7 @@ Feature: UDAF - GROUP CONCAT
     When I execute 'SELECT group_concat(date) FROM tabletest'
     Then The spark result has to have '1' rows-function:
       | _c0-string                    |
-      | 1999-11-30 00:00:00, 2001-01-01 00:00:00, 2002-02-02 00:00:00, 2003-03-03 00:00:00, 2004-04-04 00:00:00, 2005-05-05 00:00:00, 2006-06-06 00:00:00, 2007-07-07 00:00:00, 2008-08-08 00:00:00, 2009-09-09 00:00:00 |
+      | 2000-01-01, 2001-01-01, 2002-01-01, 2003-01-01, 2004-01-01, 2005-01-01, 2006-01-01, 2007-01-01, 2008-01-01, 2009-01-01 |
 
   Scenario: [CROSSDATA-178] SELECT group_concat(ident) FROM tabletest;
     When I execute 'SELECT group_concat(ident) FROM tabletest WHERE ident < 3'
