@@ -25,6 +25,8 @@ import scala.util.{Failure, Success, Try}
 class SparkJob(sparkLauncher: SparkLauncher)(implicit executionContext: ExecutionContext) extends SparkLoggerComponent{
 
   def submit(): Unit =
+
+
     Future[(Int, Process)] {
       val sparkProcess = sparkLauncher.launch()
       (sparkProcess.waitFor(), sparkProcess)
@@ -47,5 +49,6 @@ class SparkJob(sparkLauncher: SparkLauncher)(implicit executionContext: Executio
         logError(exception.getMessage)
         throw exception
     }
+
 
 }

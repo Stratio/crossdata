@@ -21,6 +21,7 @@ import com.google.common.io.BaseEncoding
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.{Config, ConfigRenderOptions}
 import org.apache.spark.launcher.SparkLauncher
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
 import org.apache.spark.sql.crossdata.config.{CoreConfig, StreamingConstants}
@@ -32,7 +33,7 @@ import scala.util.{Properties, Try}
 
 object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
 
-  def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String)
+  def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String, xdContext:XDContext)
                           (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
     val streamingConfig = crossdataConfig.getConfig(StreamingConfPath)
     val sparkHome =
@@ -50,11 +51,10 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
     val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq).getOrElse(Seq.empty)
     val sparkConfig: Map[String, String] = sparkConf(streamingConfig)
 
-    getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, sparkConfig, jars)(executionContext)
-  }
+    if (master.toLowerCase.contains("mesos"))
+      xdContext.addJar(jar)
 
-  def launchJob(sparkJob: SparkJob): Unit = {
-    sparkJob.submit()
+    getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, sparkConfig, jars)(executionContext)
   }
 
   private def getJob(sparkHome: String,
@@ -74,6 +74,7 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
       .addAppArgs(appArgs: _*)
       .setMaster(master)
       .setDeployMode("cluster")
+
     externalJars.foreach(sparkLauncher.addJar)
     sparkConf.map({ case (key, value) => sparkLauncher.setConf(key, value) })
     new SparkJob(sparkLauncher)(executionContext)
