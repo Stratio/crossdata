@@ -90,7 +90,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     def buildAggregationExpression(names: Expression): String = {
       names match {
         case Alias(child, _) => buildAggregationExpression(child)
-        case Count(childs) => s"count(${childs.map(buildAggregationExpression).mkString(",")})"
+        case Count(children) => s"count(${children.map(buildAggregationExpression).mkString(",")})"
         case Literal(1, _) => "*"
       }
     }
