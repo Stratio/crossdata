@@ -16,12 +16,18 @@
 
 package com.stratio.crossdata.driver.actor
 
+import java.util.UUID
+
 import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
-import com.stratio.crossdata.common.{AddJARCommand, SQLCommand, CommandEnvelope}
+import com.stratio.crossdata.common.result.SQLResult
+import com.stratio.crossdata.common._
 import com.stratio.crossdata.driver.Driver
+import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
 import org.apache.log4j.Logger
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, Promise}
 import scala.util.matching.Regex
 
 object ProxyActor {
@@ -32,6 +38,8 @@ object ProxyActor {
   def props(clusterClientActor: ActorRef, driver: Driver): Props =
     Props(new ProxyActor(clusterClientActor, driver))
 
+  case class PromisesByIds(promises: Map[UUID, Promise[SQLResult]])
+
 }
 
 class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
@@ -40,7 +48,35 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
   private val catalogOpExp: Regex = """^\s*CREATE\s+TEMPORARY.+$""".r
 
-  override def receive: Receive = {
+  override def receive: Receive = initial
+
+  private val initial: Receive = {
+    case any =>
+      logger.debug("Initial state. Changing to start state.")
+      context.become(start(PromisesByIds(Map.empty)))
+      self ! any
+  }
+
+  def start(promisesByIds: PromisesByIds): Receive = {
+
+    /*
+      Previous step to process the message where promise is stored.
+    */
+    case (message: CommandEnvelope, promise: Promise[Any]) =>
+      logger.debug("Sending message to the Crossdata cluster")
+      val id = message match {
+        case m @ CommandEnvelope(cmd: SQLCommand, _) => cmd.queryId
+        case _ => message.cmd.requestId
+      }
+      context.become(
+        start(
+          promisesByIds.copy(
+            promisesByIds.promises + (id -> Promise[SQLResult]()))))
+      self ! message
+
+    case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
+      logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
+      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
     /* TODO: This is a dirty trick to keep temporary tables synchronized at each XDContext
         it should be fixed as soon as Spark version is updated to 1.6 since it'll enable.
@@ -48,21 +84,36 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
      */
     case secureSQLCommand @ CommandEnvelope(sqlCommand @ SQLCommand(sql @ catalogOpExp(), _, _, _, _), _) =>
       logger.info(s"Sending temporary catalog entry creation query to all servers: $sql")
-      clusterClientActor forward ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
+      clusterClientActor ! ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
 
-    case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
-      logger.info(s"Sending query: ${sqlCommand.sql}")
-      clusterClientActor forward ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
+    case secureSQLCommand @ CommandEnvelope(sqlCommand: AddJARCommand, _) =>
+      logger.info(s"Send Add Jar command to all servers")
+      clusterClientActor ! ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
 
-    case secureSQLCommand @ CommandEnvelope(_: AddJARCommand, _) =>
-      logger.debug(s"Send Add Jar command to all servers")
-      clusterClientActor forward ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
+      /*
+      Message received from a Crossdata Server.
+       */
+    case reply: ServerReply =>
+      logger.info(s"Sever reply received from Crossdata Server: $sender with ID=${reply.requestId}")
+      promisesByIds.promises.get(reply.requestId) match {
+        case Some(p) =>
+          context.become(start(promisesByIds.copy(promisesByIds.promises - reply.requestId)))
+          reply match {
+            case reply @ SQLReply(_, result) =>
+              logger.info(s"Successful SQL execution: ${result}")
+              Future {
+                p.success(result)
+              }
+          }
+        case None => logger.warn(s"Unexpected response: $reply")
+      }
 
-    case SQLCommand =>
-      logger.warn("Command message not securitized. Message won't be sent to the Crossdata cluster")
+    case sqlCommand: SQLCommand =>
+      logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
 
     case any =>
       logger.warn(s"Unknown message: $any. Message won't be sent to the Crossdata cluster")
+
   }
 }
 

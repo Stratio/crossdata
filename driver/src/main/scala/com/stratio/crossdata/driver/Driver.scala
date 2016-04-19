@@ -19,10 +19,8 @@ import java.util.concurrent.atomic.AtomicReference
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.contrib.pattern.ClusterClient
-import akka.pattern.ask
-import com.stratio.crossdata.common.result.{ErrorSQLResult, SQLResponse, SQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common._
-
+import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.FieldMetadata
@@ -33,7 +31,7 @@ import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.reflect.ClassTag
@@ -44,6 +42,61 @@ import scala.reflect.ClassTag
  * the JavaDriver.scala has to be updated according to those changes.
  * =======================================================================================
  */
+
+object Driver {
+
+  private val DRIVER_CONSTRUCTOR_LOCK = new Object()
+
+  private val activeDriver: AtomicReference[Driver] =
+    new AtomicReference[Driver](null)
+
+
+  private[driver] def setActiveDriver(driver: Driver) = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      activeDriver.set(driver)
+    }
+  }
+
+  def clearActiveContext = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      val system = activeDriver.get().system
+      if (!system.isTerminated) system.shutdown()
+      activeDriver.set(null)
+    }
+  }
+
+
+  def getOrCreate(): Driver = getOrCreate(new DriverConf)
+
+  def getOrCreate(driverConf: DriverConf): Driver =
+    getOrCreate(driverConf, Driver.generateDefaultAuth)
+
+  def getOrCreate(user: String, password: String): Driver =
+    getOrCreate(user, password, new DriverConf)
+
+  def getOrCreate(user: String, password: String, driverConf: DriverConf): Driver =
+    getOrCreate(driverConf, Authentication(user, password))
+
+  def getOrCreate(seedNodes: java.util.List[String]): Driver =
+    getOrCreate(seedNodes, new DriverConf)
+
+  def getOrCreate(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
+    getOrCreate(driverConf.setClusterContactPoint(seedNodes))
+
+  /**
+    * Used by JavaDriver
+    */
+  private[crossdata] def getOrCreate(driverConf: DriverConf, authentication: Authentication): Driver =
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if (activeDriver.get() == null) {
+        setActiveDriver(new Driver(driverConf, authentication))
+      }
+      activeDriver.get()
+    }
+
+  private[driver] def generateDefaultAuth = new Authentication("crossdata", "stratio")
+
+}
 
 class Driver private(driverConf: DriverConf,
                      auth: Authentication = Driver.generateDefaultAuth) {
@@ -88,7 +141,8 @@ class Driver private(driverConf: DriverConf,
    * > import SQLResponse._
    * > val sqlResult: SQLResult = driver.sql("SELECT * FROM t")
    * > val rows: Array[Row] = driver.sql("SELECT * FROM t").resultSet
-   * @param query The SQL Command.
+    *
+    * @param query The SQL Command.
    * @return A SQLResponse with the id and the result set.
    */
   def sql(query: String): SQLResponse = {
@@ -97,13 +151,13 @@ class Driver private(driverConf: DriverConf,
     //Preparse query to know if it is an special command sent from the shell or other driver user that is not a query
     val Pattern="""(\s*add)(\s+jar\s+)(.*)""".r
     query match {
-      case Pattern(add,jar,path)=>addJar(path.trim)
-      case _=>
+      case Pattern(add,jar,path) => addJar(path.trim)
+      case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
         val secureCommand = CommandEnvelope(sqlCommand, driverSession)
         new SQLResponse(sqlCommand.requestId, askCommand[SQLReply](proxyActor, secureCommand).map(_.sqlResult)) {
           // TODO cancel sync => 5 secs
-          override def cancelCommand() = askCommand(proxyActor, CancelCommand(sqlCommand.requestId))
+          override def cancelCommand() = askCommand(proxyActor, CommandEnvelope(CancelCommand(sqlCommand.requestId), driverSession))
         }
     }
   }
@@ -111,6 +165,7 @@ class Driver private(driverConf: DriverConf,
 
   /**
     * Add Jar to the XD Context
+    *
     * @param path The path of the JAR
     * @return A SQLResponse with the id and the result set.
     */
@@ -166,8 +221,12 @@ class Driver private(driverConf: DriverConf,
 
   // TODO remove infinite duration
   // TODO remove askPattern
-  private def askCommand[T <: ServerReply : ClassTag](remoteActor: ActorRef, message: Any, timeout: FiniteDuration = 1 day): Future[T] = {
-    remoteActor.ask(message)(timeout).mapTo[T]
+  private def askCommand[T <: ServerReply : ClassTag](remoteActor: ActorRef,
+                                                      message: CommandEnvelope,
+                                                      timeout: FiniteDuration = 1 day): Future[T] = {
+    val promise = Promise[T]()
+    proxyActor ! (message, promise)
+    promise.future
   }
 
 
@@ -255,60 +314,5 @@ class Driver private(driverConf: DriverConf,
       throw new RuntimeException(message)
     // TODO manage exceptions
   }
-
-}
-
-object Driver {
-
-  private val DRIVER_CONSTRUCTOR_LOCK = new Object()
-
-  private val activeDriver: AtomicReference[Driver] =
-    new AtomicReference[Driver](null)
-
-
-  private[driver] def setActiveDriver(driver: Driver) = {
-    DRIVER_CONSTRUCTOR_LOCK.synchronized {
-      activeDriver.set(driver)
-    }
-  }
-
-  def clearActiveContext = {
-    DRIVER_CONSTRUCTOR_LOCK.synchronized {
-      val system = activeDriver.get().system
-      if (!system.isTerminated) system.shutdown()
-      activeDriver.set(null)
-    }
-  }
-
-
-  def getOrCreate(): Driver = getOrCreate(new DriverConf)
-
-  def getOrCreate(driverConf: DriverConf): Driver =
-    getOrCreate(driverConf, Driver.generateDefaultAuth)
-
-  def getOrCreate(user: String, password: String): Driver =
-    getOrCreate(user, password, new DriverConf)
-
-  def getOrCreate(user: String, password: String, driverConf: DriverConf): Driver =
-    getOrCreate(driverConf, Authentication(user, password))
-
-  def getOrCreate(seedNodes: java.util.List[String]): Driver =
-    getOrCreate(seedNodes, new DriverConf)
-
-  def getOrCreate(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
-    getOrCreate(driverConf.setClusterContactPoint(seedNodes))
-
-  /**
-   * Used by JavaDriver
-   */
-  private[crossdata] def getOrCreate(driverConf: DriverConf, authentication: Authentication): Driver =
-    DRIVER_CONSTRUCTOR_LOCK.synchronized {
-      if (activeDriver.get() == null) {
-        setActiveDriver(new Driver(driverConf, authentication))
-      }
-      activeDriver.get()
-    }
-
-  private[driver] def generateDefaultAuth = new Authentication("crossdata", "stratio")
 
 }
