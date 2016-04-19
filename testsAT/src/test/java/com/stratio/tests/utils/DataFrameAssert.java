@@ -17,6 +17,7 @@ package com.stratio.tests.utils;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.spark.sql.crossdata.ExecutionType;
@@ -789,5 +790,43 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
             }
         }
         return this;
+    }
+
+    public DataFrameAssert equalsResultsSparkIgnoringRowOrder(List<List<String>> table){
+        Row[] actualRows = actual.collect(ExecutionType.Spark());
+        List<String> firstRow = table.get(0);
+        boolean isEquals = false;
+        for(int i = 0; i < actualRows.length; i++){
+            Row actualRow = actualRows[i];
+            for(int x = 0; x < actualRow.size(); x++){
+               // String[] columnExpected = firstRow.get(x).replace("00:00:00", " ").split("-");
+                String[] actualSparkRowsString = cleanArray(actualRow.get(x).toString().split("(?<!\\\\),"));
+                String[] expectedResultRowsString = cleanArray(table.get(i + 1).get(x).split("(?<!\\\\),"));
+                if(actualSparkRowsString.length != expectedResultRowsString.length){
+                    failWithMessage("Expected lengthd for row <%s> to be <%s> but was <%s>", i,
+                            expectedResultRowsString.length,
+                            actualSparkRowsString.length);
+                }
+                Arrays.sort(actualSparkRowsString);
+                Arrays.sort(expectedResultRowsString);
+                for(int j = 0; j < actualSparkRowsString.length; j++){
+                    if(!actualSparkRowsString[j].equals(expectedResultRowsString[j])){
+                        failWithMessage("The elements are not equals.\n Expected result:\n <%s> \n Obtained result:\n"
+                                + " <%s>", Arrays.toString(expectedResultRowsString),  Arrays.toString
+                                (actualSparkRowsString));
+                    }
+                }
+
+            }
+        }
+        return this;
+    }
+
+    private String[] cleanArray (String[] cleaned){
+        String[] trimmedArray = new String[cleaned.length];
+        for (int i = 0; i < cleaned.length; i++)
+            trimmedArray[i] = cleaned[i].trim();
+        return trimmedArray;
+
     }
 }

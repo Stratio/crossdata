@@ -84,7 +84,7 @@ public class XDContextUtils {
         }
 
         public void dropTables(){
-            xdContext.dropAllTables();
+           xdContext.dropAllTables();
         }
 
         public XDDataFrame getXDDataFrame(){

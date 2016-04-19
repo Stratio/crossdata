@@ -86,6 +86,7 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
     public void eof() {
         logger.info("Got to end of file");
         if(!ThreadProperty.get("Driver").equals("javaDriver")){
+            commonspec.getXdContext().getXDContext().dropAllTables();
             commonspec.getXdContext().closeSparkContext();
         }
     }
@@ -108,13 +109,19 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             commonspec.getXdContext().setSparkContext();
             commonspec.getXdContext().setXDContext();
         }
+//        if(ThreadProperty.get("Driver").equals("javaDriver")){
+//            commonspec.getXdDriver().executeSyncQuery("DROP ALL TABLES");
+//        }else {
+//            commonspec.getXdContext().executeQuery("DROP ALL TABLES");
+//        }
         System.out.println(ThreadProperty.get("Connector"));
         switch(ThreadProperty.get("Connector")){
         case "Cassandra":
-            StringBuilder sql = new StringBuilder("CREATE TEMPORARY TABLE tabletest USING com.stratio.crossdata"
+            StringBuilder sql = new StringBuilder("CREATE TABLE tabletest USING com.stratio.crossdata"
                     + ".connector.cassandra OPTIONS ");
-            sql.append("(table 'tabletest',keyspace 'databasetest',cluster '").append(System.getProperty("CASSANDRA_HOST",
-                    "127.0.0.1"));
+            sql.append("(table 'tabletest',keyspace 'databasetest',cluster '").append(System.getProperty
+                    ("CASSANDRA_CLUSTER",
+                    "Test Cluster"));
             sql.append("',pushdown \"true\",").append("spark_cassandra_connection_host '").append(System.getProperty
                     ("CASSANDRA_HOST", "127.0.0.1")).append("')");
             if(ThreadProperty.get("Driver").equals("javaDriver")){
@@ -124,40 +131,41 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             }
             sql =  new StringBuilder();
             sql.append("CREATE TEMPORARY TABLE tab1 USING com.stratio.crossdata.connector.cassandra OPTIONS ");
-            sql.append("(table 'tab1',keyspace 'databasetest',cluster '").append(System.getProperty("CASSANDRA_HOST",
-                    "127.0.0.1"));
-            sql.append("',pushdown \"true\",spark_cassandra_connection_host '");
-            sql.append( System.getProperty("CASSANDRA_HOST", "127.0.0.1")).append("')");
+            sql.append("(table 'tab1',keyspace 'databasetest',cluster '").append(System.getProperty("CASSANDRA_CLUSTER",
+                    "Test Cluster"));
+            sql.append("',pushdown \"true\",").append("spark_cassandra_connection_host '").append(System.getProperty
+                    ("CASSANDRA_HOST", "127.0.0.1")).append("')");
             if(ThreadProperty.get("Driver").equals("javaDriver")){
                 commonspec.getXdDriver().executeSyncQuery(sql.toString());
             }else {
                 commonspec.getXdContext().executeQuery(sql.toString());
             }            sql =  new StringBuilder();
             sql.append("CREATE TEMPORARY TABLE tab2 USING com.stratio.crossdata.connector.cassandra OPTIONS ");
-            sql.append("(table 'tab2',keyspace 'databasetest',cluster '").append(System.getProperty("CASSANDRA_HOST",
-                    "127.0.0.1"));
-            sql.append("',pushdown \"true\",spark_cassandra_connection_host '");
-            sql.append( System.getProperty("CASSANDRA_HOST", "127.0.0.1")).append("')");
+            sql.append("(table 'tab2',keyspace 'databasetest',cluster '").append(System.getProperty
+                    ("CASSANDRA_CLUSTER",
+                    "Test Cluster"));
+            sql.append("',pushdown \"true\",").append("spark_cassandra_connection_host '").append(System.getProperty
+                    ("CASSANDRA_HOST", "127.0.0.1")).append("')");
             if(ThreadProperty.get("Driver").equals("javaDriver")){
                 commonspec.getXdDriver().executeSyncQuery(sql.toString());
             }else {
                 commonspec.getXdContext().executeQuery(sql.toString());
             }            sql =  new StringBuilder();
             sql.append("CREATE TEMPORARY TABLE tab3 USING com.stratio.crossdata.connector.cassandra OPTIONS ");
-            sql.append("(table 'tab3',keyspace 'databasetest',cluster '").append(System.getProperty("CASSANDRA_HOST",
-                    "127.0.0.1"));
-            sql.append("',pushdown \"true\",spark_cassandra_connection_host '");
-            sql.append( System.getProperty("CASSANDRA_HOST", "127.0.0.1")).append("')");
+            sql.append("(table 'tab3',keyspace 'databasetest',cluster '").append(System.getProperty("CASSANDRA_CLUSTER",
+                    "Test Cluster"));
+            sql.append("',pushdown \"true\",").append("spark_cassandra_connection_host '").append(System.getProperty
+                    ("CASSANDRA_HOST", "127.0.0.1")).append("')");
             if(ThreadProperty.get("Driver").equals("javaDriver")){
                 commonspec.getXdDriver().executeSyncQuery(sql.toString());
             }else {
                 commonspec.getXdContext().executeQuery(sql.toString());
             }            sql =  new StringBuilder();
             sql.append("CREATE TEMPORARY TABLE tab4 USING com.stratio.crossdata.connector.cassandra OPTIONS ");
-            sql.append("(table 'tab4',keyspace 'databasetest',cluster '").append(System.getProperty("CASSANDRA_HOST",
-                    "127.0.0.1"));
-            sql.append("',pushdown \"true\",spark_cassandra_connection_host '");
-            sql.append( System.getProperty("CASSANDRA_HOST", "127.0.0.1")).append("')");
+            sql.append("(table 'tab4',keyspace 'databasetest',cluster '").append(System.getProperty("CASSANDRA_CLUSTER",
+                    "Test Cluster"));
+            sql.append("',pushdown \"true\",").append("spark_cassandra_connection_host '").append(System.getProperty
+                    ("CASSANDRA_HOST", "127.0.0.1")).append("')");
             if(ThreadProperty.get("Driver").equals("javaDriver")){
                 commonspec.getXdDriver().executeSyncQuery(sql.toString());
             }else {
@@ -165,10 +173,11 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             }
             sql =  new StringBuilder();
             sql.append("CREATE TEMPORARY TABLE sample_times USING com.stratio.crossdata.connector.cassandra OPTIONS ");
-            sql.append("(table 'sample_times',keyspace 'databasetest',cluster '").append(System.getProperty("CASSANDRA_HOST",
-                    "127.0.0.1"));
-            sql.append("',pushdown \"true\",spark_cassandra_connection_host '");
-            sql.append( System.getProperty("CASSANDRA_HOST", "127.0.0.1")).append("')");
+            sql.append("(table 'sample_times',keyspace 'databasetest',cluster '").append(
+                    System.getProperty("CASSANDRA_CLUSTER",
+                            "Test Cluster"));
+            sql.append("',pushdown \"true\",").append("spark_cassandra_connection_host '").append(System.getProperty
+                    ("CASSANDRA_HOST", "127.0.0.1")).append("')");
             if(ThreadProperty.get("Driver").equals("javaDriver")){
                 commonspec.getXdDriver().executeSyncQuery(sql.toString());
             }else {
@@ -176,7 +185,7 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             }                  break;
         case "Mongo":
             StringBuilder sqlMongo = new StringBuilder();
-            sqlMongo.append("CREATE TEMPORARY TABLE tabletest(ident INT, name STRING, money ");
+            sqlMongo.append("CREATE TABLE tabletest(ident INT, name STRING, money ");
             sqlMongo.append("DOUBLE, new BOOLEAN, date DATE) USING ");
             sqlMongo.append("com.stratio.crossdata.connector.mongodb OPTIONS (host '");
             sqlMongo.append(System.getProperty("MONGO_HOST", "127.0.0.1"));
@@ -227,7 +236,7 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
             break;
         case "ElasticSearch":
             StringBuilder sqlElasticSearch= new StringBuilder();
-            sqlElasticSearch.append("CREATE TEMPORARY TABLE tabletest (ident LONG, name STRING, money ");
+            sqlElasticSearch.append("CREATE TABLE tabletest (ident LONG, name STRING, money ");
             sqlElasticSearch.append("DOUBLE, new BOOLEAN, date TIMESTAMP) USING com.stratio.crossdata.connector.elasticsearch ");
             sqlElasticSearch.append("OPTIONS (resource 'databasetest/tabletest', es.nodes '");
             sqlElasticSearch.append(System.getProperty("ES_NODE", "127.0.0.1")).append("', es.port '");

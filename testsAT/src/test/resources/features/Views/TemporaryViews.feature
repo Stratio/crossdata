@@ -3,6 +3,7 @@ Feature: VIEWS
   Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest AS SELECT * FROM tabletest;
     When I execute 'CREATE TEMPORARY VIEW viewTest AS SELECT * FROM tabletest'
     Then I execute 'SELECT * FROM viewTest'
+    Then an exception 'IS NOT' thrown
     And The result has to have '10' rows ignoring the order:
       |ident-integer|date-timestamp     |money-double |name-string| new-boolean |
       |    5        |2005-05-05 00:00:00| 15.2        |name_5     |true         |
@@ -19,6 +20,7 @@ Feature: VIEWS
   Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest AS SELECT ident FROM tabletest;
     When I execute 'CREATE TEMPORARY VIEW viewTest1 AS SELECT ident FROM tabletest'
     Then I execute 'SELECT * FROM viewTest1'
+    Then an exception 'IS NOT' thrown
     And The result has to have '10' rows ignoring the order:
       |ident-integer|
       |    5        |
@@ -35,6 +37,7 @@ Feature: VIEWS
   Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest2 AS SELECT ident as identificador FROM tabletest;
     When I execute 'CREATE TEMPORARY VIEW viewTest2 AS SELECT ident as identificador FROM tabletest'
     Then I execute 'SELECT * FROM viewTest2'
+    Then an exception 'IS NOT' thrown
     And The result has to have '10' rows ignoring the order:
       |identificador-integer|
       |    5                |
@@ -51,6 +54,7 @@ Feature: VIEWS
   Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest3 AS SELECT name as nombre FROM tabletest;
     When I execute 'CREATE TEMPORARY VIEW viewTest3 AS SELECT name as nombre FROM tabletest'
     Then I execute 'SELECT * FROM viewTest3'
+    Then an exception 'IS NOT' thrown
     And The result has to have '10' rows ignoring the order:
       | nombre-string   |
       | name_0        |
@@ -68,6 +72,7 @@ Feature: VIEWS
   Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest3 AS SELECT name as nombre FROM tabletest;
     When I execute 'CREATE TEMPORARY VIEW viewTest33 AS SELECT name as nombre FROM tabletest'
     Then I execute 'SELECT nombre as fullname FROM viewTest33'
+    Then an exception 'IS NOT' thrown
     And The result has to have '10' rows ignoring the order:
       | fullname-string   |
       | name_0        |
@@ -84,6 +89,7 @@ Feature: VIEWS
   Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest4 AS SELECT ident, name FROM tabletest;
     When I execute 'CREATE TEMPORARY VIEW viewTest4 AS SELECT ident, name FROM tabletest'
     Then I execute 'SELECT * FROM viewTest4'
+    Then an exception 'IS NOT' thrown
     And The result has to have '10' rows ignoring the order:
       | ident-integer | name-string   |
       |    0          | name_0        |
@@ -96,3 +102,12 @@ Feature: VIEWS
       |    7          | name_7        |
       |    8          | name_8        |
       |    9          | name_9        |
+
+  Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest4 AS SELECT ident, name FROM tab1;
+    When I execute 'CREATE TEMPORARY VIEW viewTest5 AS SELECT name FROM tab1'
+    Then an exception 'IS NOT' thrown
+    Then I execute 'SELECT * FROM viewTest5'
+    Then an exception 'IS NOT' thrown
+    And The result has to have '1' rows ignoring the order:
+      | name-string   |
+      | name_0        |
