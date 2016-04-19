@@ -101,9 +101,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
           reply match {
             case reply @ SQLReply(_, result) =>
               logger.info(s"Successful SQL execution: ${result}")
-              Future {
-                p.success(result)
-              }
+              p.success(result)
           }
         case None => logger.warn(s"Unexpected response: $reply")
       }
