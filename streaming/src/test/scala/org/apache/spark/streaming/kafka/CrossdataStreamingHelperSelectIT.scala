@@ -22,8 +22,10 @@ import com.stratio.crossdata.streaming.helpers.CrossdataStreamingHelper
 import com.stratio.crossdata.streaming.helpers.CrossdataStreamingHelper._
 import com.stratio.crossdata.streaming.test.{BaseSparkStreamingXDTest, CommonValues}
 import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
+import kafka.serializer.StringDecoder
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.ZookeeperStreamingCatalog
+import org.apache.spark.sql.crossdata.models.{ConnectionModel, ConnectionHostModel}
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
@@ -75,8 +77,8 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
     }
 
     if(ssc != null){
-      ssc.stop()
-      ssc.awaitTerminationOrTimeout(4000)
+      ssc.stop(stopSparkContext = true, stopGracefully = false)
+      ssc.awaitTerminationOrTimeout(6000)
       ssc = null
     }
 
@@ -85,45 +87,52 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
       kafkaTestUtils = null
     }
   }
-/*
+
   test("Crossdata streaming must save into the kafka output the sql results") {
 
-    val expectedResult = List("b,a", "d,c", "a,b", "c,d")
-    val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
-    val kafkaStreamModelZk = kafkaStreamModel.copy(connection = Seq(connectionHostModel.copy(
-      producerPort = producerPortKafka,
-      consumerPort = kafkaTestUtils.zkAddress.split(":").last
-    )))
-    val ephemeralTableKafka = ephemeralTableModelStreamKafkaOptions.copy(
-      options = ephemeralOptionsStreamKafka.copy(kafkaOptions = kafkaStreamModelZk
-      ))
+    deletePath(checkpointDirectorySelect)
+    val expectedResult = Array("a", "c")
 
-    zookeeperStreamingCatalog.createEphemeralQuery(queryModel)
+    val consumerHostZK = kafkaStreamModelSelect.connection.zkConnection.head.host
+    val consumerPortZK = kafkaTestUtils.zkAddress.split(":").last
+
+    val producerHostKafka = kafkaStreamModelSelect.connection.kafkaConnection.head.host
+    val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
+
+    val kafkaStreamModelZk = kafkaStreamModelSelect.copy(
+      connection = connectionHostModel.copy(
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK.toInt)),
+        kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
+
+    val ephemeralTableKafka = ephemeralTableModelStreamKafkaOptionsSelect.copy(
+      options = ephemeralOptionsStreamKafkaSelect.copy(kafkaOptions = kafkaStreamModelZk))
+
+    zookeeperStreamingCatalog.createEphemeralQuery(querySelectModel)
     zookeeperStreamingCatalog.createEphemeralTable(ephemeralTableKafka)
-    zookeeperStreamingCatalog.getEphemeralTable(TableName) match {
+    zookeeperStreamingCatalog.getEphemeralTable(TableNameSelect) match {
       case Some(ephemeralTable) =>
         ssc = CrossdataStreamingHelper.createContext(ephemeralTable, sparkConf, zookeeperConf, catalogConf)
-        val valuesToSent = Array( """{"name": "a", "age": "b"}""", """{"name": "c", "age": "d"}""")
-        kafkaTestUtils.createTopic(TopicTest)
-        kafkaTestUtils.sendMessages(TopicTest, valuesToSent)
+        val valuesToSent = Array( """{"name": "a"}""", """{"name": "c"}""")
+        kafkaTestUtils.createTopic(TopicTestSelect)
+        kafkaTestUtils.sendMessages(TopicTestSelect, valuesToSent)
         val resultList = new mutable.MutableList[String]()
 
         ssc.start()
 
         eventually(timeout(20000 milliseconds), interval(7000 milliseconds)) {
-          val topicCountMap = Map(AliasName -> 1)
+          val topicCountMap = Map(AliasNameSelect -> 1)
           val consumerMap = consumer.createMessageStreams(topicCountMap)
-          val streams = consumerMap.get(AliasName).get
+          val streams = consumerMap.get(AliasNameSelect).get
           for (stream <- streams) {
             val it = stream.iterator()
-            while (it.hasNext() && resultList.size < 2) {
-              resultList.+=(new String(it.next().message()))
+            while (it.hasNext() && resultList.size < 1) {
+              synchronized(resultList.+=(new String(it.next().message())))
             }
           }
           assert(resultList.forall(elem => expectedResult.contains(elem)))
         }
+
       case None => throw new Exception("Ephemeral table not created")
     }
   }
-  */
 }
