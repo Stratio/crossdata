@@ -52,26 +52,35 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
     val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq).getOrElse(Seq.empty)
     val sparkConfig: Map[String, String] = sparkConf(streamingConfig)
     if (master.toLowerCase.contains("mesos")) {
-      // Send Jar to HDFS
-      val hdfsConf = crossdataConfig.getConfig(HdfsConf)
-      val user = hdfsConf.getString("hadoopUserName")
-      val hdfsMaster= hdfsConf.getString("hdfsMaster")
-      val destPath = s"/user/$user/streamingJar/"
-
-      val hdfsUtil = HdfsUtils(hdfsConf)
-
-      val jarName = new File(jar).getName
-      if (!hdfsUtil.fileExist(s"$destPath/$jarName")) {
-        hdfsUtil.write(jar, destPath)
-      }
-      val hdfsPath = s"hdfs://$hdfsMaster/$destPath/$jarName"
-
+      val hdfsPath = getHdfsPath(crossdataConfig,jar)
       getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, hdfsPath, sparkConfig, jars)(executionContext)
 
     }else {
       getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, sparkConfig, jars)(executionContext)
     }
-    getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, sparkConfig, jars)(executionContext)
+
+  }
+
+  /**
+    * This method return the HDFS path of the streaming jar and if not exists previously it writes the jar in HDFS
+    * @param crossdataConfig The config
+    * @param jar The local path of the streaming jar
+    * @return a String with the HDFS path
+    */
+  private def getHdfsPath(crossdataConfig:Config, jar:String):String={
+    val hdfsConf = crossdataConfig.getConfig(HdfsConf)
+    val user = hdfsConf.getString("hadoopUserName")
+    val hdfsMaster= hdfsConf.getString("hdfsMaster")
+    val destPath = s"/user/$user/streamingJar/"
+
+    val hdfsUtil = HdfsUtils(hdfsConf)
+
+    //send to HDFS if not exists
+    val jarName = new File(jar).getName
+    if (!hdfsUtil.fileExist(s"$destPath/$jarName")) {
+      hdfsUtil.write(jar, destPath)
+    }
+    s"hdfs://$hdfsMaster/$destPath/$jarName"
   }
 
   def launchJob(sparkJob: SparkJob): Unit = {
