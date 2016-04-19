@@ -41,7 +41,7 @@ class CassandraAggregationIT extends CassandraWithSharedContext {
   it should "not execute natively a (SELECT count(*) AS alias FROM _)" in {
     assumeEnvironmentIsUpAndRunning
     the[CrossdataException] thrownBy {
-      sql(s"SELECT count(*) as agg FROM $Table ")
+      sql(s"SELECT count(*) as agg FROM $Table").collect(Native)
     } should have message nativeErrorMessage
   }
 

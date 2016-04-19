@@ -169,8 +169,7 @@ class XDContext private (@transient val sc: SparkContext,
 
   @transient
   override protected[sql] lazy val functionRegistry: FunctionRegistry =
-    new XDFunctionRegistry(FunctionRegistry.builtin, functionInventoryServices)
-
+    new XDFunctionRegistry(FunctionRegistry.builtin.copy(), functionInventoryServices)
 
   private def functionInventoryLoader = {
     val loader = Utils.getContextOrSparkClassLoader
