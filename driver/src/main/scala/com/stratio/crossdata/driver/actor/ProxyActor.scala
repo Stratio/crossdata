@@ -65,6 +65,9 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       context.become(start(promisesByIds.copy(promisesByIds.promises + (message.cmd.requestId -> promise))))
       self ! message
 
+      /*
+        Process messages from the Crossdata Driver.
+       */
     case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
       clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
@@ -81,9 +84,12 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       logger.info(s"Send Add Jar command to all servers")
       clusterClientActor ! ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
 
-      /*
+    case sqlCommand: SQLCommand =>
+      logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
+
+    /*
       Message received from a Crossdata Server.
-       */
+     */
     case reply: ServerReply =>
       logger.info(s"Sever reply received from Crossdata Server: $sender with ID=${reply.requestId}")
       promisesByIds.promises.get(reply.requestId) match {
@@ -101,9 +107,6 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
           }
         case None => logger.warn(s"Unexpected response: $reply")
       }
-
-    case sqlCommand: SQLCommand =>
-      logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
 
     case any =>
       logger.warn(s"Unknown message: $any. Message won't be sent to the Crossdata cluster")
