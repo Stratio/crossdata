@@ -48,17 +48,17 @@ import com.stratio.tests.utils.ThreadProperty;
 import cucumber.api.CucumberOptions;
 
 //Indicar feature
-@CucumberOptions(features = { "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
-        "src/test/resources/features/Udaf/Group_concat.feature",
-        "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
-        "src/test/resources/features/Elasticsearch/Views.feature"
+@CucumberOptions(features = { "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature"//,
+//          "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
+//        "src/test/resources/features/Udaf/Group_concat.feature",
+//        "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
+//        "src/test/resources/features/Elasticsearch/Views.feature"
 })
 public class ATElasticSearchXDTest extends BaseTest {
     private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");

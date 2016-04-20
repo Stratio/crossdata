@@ -130,6 +130,7 @@ object ElasticSearchRowConverter {
   def toDate(value: Any): Date = {
     value match {
       case value: String => new SQLDate(DateTime.parse(value).getMillis)
+      case value: Date => value
     }
   }
 }
