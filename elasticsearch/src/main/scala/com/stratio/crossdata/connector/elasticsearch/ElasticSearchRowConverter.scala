@@ -17,6 +17,7 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import java.sql.Timestamp
 import java.sql.{Date => SQLDate}
+import java.text.SimpleDateFormat
 import java.util.Date
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.Attribute
@@ -123,6 +124,10 @@ object ElasticSearchRowConverter {
 
   private def toTimestamp(value: Any): Timestamp = {
     value match {
+      case value : String =>
+        val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS")
+        val parsedDate = dateFormat.parse(value)
+        new java.sql.Timestamp(parsedDate.getTime)
       case value: java.util.Date => new Timestamp(value.getTime)
     }
   }
@@ -130,7 +135,6 @@ object ElasticSearchRowConverter {
   def toDate(value: Any): Date = {
     value match {
       case value: String => new SQLDate(DateTime.parse(value).getMillis)
-      case value: Date => value
     }
   }
 }
