@@ -31,10 +31,9 @@ import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration._
+import scala.concurrent.{Future, Promise}
 import scala.language.postfixOps
-import scala.reflect.ClassTag
 
 /*
  * ======================================== NOTE ========================================
@@ -155,9 +154,13 @@ class Driver private(driverConf: DriverConf,
       case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
         val secureCommand = CommandEnvelope(sqlCommand, driverSession)
-        new SQLResponse(sqlCommand.requestId, askCommand[SQLReply](proxyActor, secureCommand).map(_.sqlResult)) {
+        val futureReply = askCommand(proxyActor, secureCommand).map{
+          case SQLReply(_, sqlResult) => sqlResult
+          case reply => throw new RuntimeException(s"SQLResult expected. Received: $reply")
+        }
+        new SQLResponse(sqlCommand.requestId, futureReply) {
           // TODO cancel sync => 5 secs
-          override def cancelCommand() = askCommand(proxyActor, CommandEnvelope(CancelCommand(sqlCommand.requestId), driverSession))
+          override def cancelCommand(): Unit = askCommand(proxyActor, CommandEnvelope(CancelQueryExecution(sqlCommand.queryId), driverSession))
         }
     }
   }
@@ -172,7 +175,11 @@ class Driver private(driverConf: DriverConf,
   def addJar(path: String): SQLResponse = {
     val addJarCommand = new AddJARCommand(path)
     val secureCommand = CommandEnvelope(addJarCommand, driverSession)
-    new SQLResponse(addJarCommand.requestId, askCommand[SQLReply](proxyActor, secureCommand).map(_.sqlResult))
+    val futureReply = askCommand(proxyActor, secureCommand).map{
+      case SQLReply(_, sqlResult) => sqlResult
+      case reply => throw new RuntimeException(s"SQLResult expected. Received: $reply")
+    }
+    new SQLResponse(addJarCommand.requestId, futureReply)
   }
 
 
@@ -221,10 +228,10 @@ class Driver private(driverConf: DriverConf,
 
   // TODO remove infinite duration
   // TODO remove askPattern
-  private def askCommand[T <: ServerReply : ClassTag](remoteActor: ActorRef,
-                                                      message: CommandEnvelope,
-                                                      timeout: FiniteDuration = 1 day): Future[T] = {
-    val promise = Promise[T]()
+  private def askCommand(remoteActor: ActorRef,
+                         message: CommandEnvelope,
+                         timeout: FiniteDuration = 1 day): Future[ServerReply] = {
+    val promise = Promise[ServerReply]()
     proxyActor ! (message, promise)
     promise.future
   }

@@ -20,14 +20,12 @@ import java.util.UUID
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
-import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
 import org.apache.log4j.Logger
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.Promise
 import scala.util.matching.Regex
 
 object ProxyActor {
@@ -38,7 +36,7 @@ object ProxyActor {
   def props(clusterClientActor: ActorRef, driver: Driver): Props =
     Props(new ProxyActor(clusterClientActor, driver))
 
-  case class PromisesByIds(promises: Map[UUID, Promise[SQLResult]])
+  case class PromisesByIds(promises: Map[UUID, Promise[ServerReply]])
 
 }
 
@@ -62,16 +60,9 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
     /*
       Previous step to process the message where promise is stored.
     */
-    case (message: CommandEnvelope, promise: Promise[Any]) =>
+    case (message: CommandEnvelope, promise: Promise[ServerReply]) =>
       logger.debug("Sending message to the Crossdata cluster")
-      val id = message match {
-        case m @ CommandEnvelope(cmd: SQLCommand, _) => cmd.queryId
-        case _ => message.cmd.requestId
-      }
-      context.become(
-        start(
-          promisesByIds.copy(
-            promisesByIds.promises + (id -> Promise[SQLResult]()))))
+      context.become(start(promisesByIds.copy(promisesByIds.promises + (message.cmd.requestId -> promise))))
       self ! message
 
     case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
@@ -82,7 +73,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
         it should be fixed as soon as Spark version is updated to 1.6 since it'll enable.
         WARNING: This disables creation cancellation commands and exposes the system behaviour to client-side code.
      */
-    case secureSQLCommand @ CommandEnvelope(sqlCommand @ SQLCommand(sql @ catalogOpExp(), _, _, _, _), _) =>
+    case secureSQLCommand @ CommandEnvelope(sqlCommand @ SQLCommand(sql @ catalogOpExp(), _, _, _), _) =>
       logger.info(s"Sending temporary catalog entry creation query to all servers: $sql")
       clusterClientActor ! ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
 
@@ -101,7 +92,12 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
           reply match {
             case reply @ SQLReply(_, result) =>
               logger.info(s"Successful SQL execution: ${result}")
-              p.success(result)
+              p.success(reply)
+            case reply @ QueryCancelledReply(id) =>
+              logger.info(s"Query $id cancelled")
+              p.success(reply)
+            case _ =>
+              p.failure(new RuntimeException(s"Unkown message: $reply"))
           }
         case None => logger.warn(s"Unexpected response: $reply")
       }

@@ -95,7 +95,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
     * @param st
     */
   private def executeAccepted(cmd: CommandEnvelope)(st: State): Unit = cmd match {
-    case CommandEnvelope(sqlCommand @ SQLCommand(query, requestId, queryId, withColnames, timeout), session @ Session(id, requester)) =>
+    case CommandEnvelope(sqlCommand @ SQLCommand(query, queryId, withColnames, timeout), session @ Session(id, requester)) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
       val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
