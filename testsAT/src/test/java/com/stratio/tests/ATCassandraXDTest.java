@@ -41,7 +41,9 @@ import cucumber.api.CucumberOptions;
 		"src/test/resources/features/Udaf/Group_concat.feature",
 		"src/test/resources/features/Views/TemporaryViews.feature",
 		"src/test/resources/features/Views/Views.feature",
-		"src/test/resources/features/Views/DropViews.feature"
+		"src/test/resources/features/Views/DropViews.feature",
+        "src/test/resources/features/Catalog/DropPersistedTables.feature"
+
 })
 public class ATCassandraXDTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()
