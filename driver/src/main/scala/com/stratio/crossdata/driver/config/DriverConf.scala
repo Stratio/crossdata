@@ -89,7 +89,11 @@ class DriverConf extends Logging {
   private[crossdata] def getClusterContactPoint: List[String] = {
     val hosts = finalSettings.getStringList(DriverConfigHosts).toList
     val clusterName = finalSettings.getString(DriverClusterName)
-    hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
+    val ssl= finalSettings.getBoolean(SSLEnabled)
+    if (ssl)
+      hosts map (host => s"akka.ssl.tcp://$clusterName@$host$ActorsPath")
+    else
+      hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
   }
 
   private[crossdata] def getFlattenTables: Boolean =
@@ -170,5 +174,6 @@ object DriverConf {
   val DriverConfigHosts = "config.cluster.hosts"
   val DriverFlattenTables = "config.flatten-tables"
   val DriverClusterName = "config.cluster.name"
+  val SSLEnabled = "akka.remote.netty.ssl.enable-ssl"
   val AkkaClusterRecepcionistTunnelTimeout = "akka.contrib.cluster.receptionist.response-tunnel-receive-timeout"
 }
