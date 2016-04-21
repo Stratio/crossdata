@@ -23,6 +23,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.Logging
 
 import scala.collection.JavaConversions._
+import scala.util.Try
 
 class DriverConf extends Logging {
 
@@ -89,7 +90,7 @@ class DriverConf extends Logging {
   private[crossdata] def getClusterContactPoint: List[String] = {
     val hosts = finalSettings.getStringList(DriverConfigHosts).toList
     val clusterName = finalSettings.getString(DriverClusterName)
-    val ssl= finalSettings.getBoolean(SSLEnabled)
+    val ssl= Try(finalSettings.getBoolean(SSLEnabled)).getOrElse(false)
     if (ssl)
       hosts map (host => s"akka.ssl.tcp://$clusterName@$host$ActorsPath")
     else
