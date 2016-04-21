@@ -9,7 +9,7 @@ To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apach
 
 ## Getting Started
 
-# install zeppelin
+# Install Zeppelin
 
 TODO
 
