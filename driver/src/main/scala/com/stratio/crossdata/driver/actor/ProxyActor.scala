@@ -20,6 +20,7 @@ import java.util.UUID
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
+import akka.remote.transport.ThrottlerTransportAdapter.Direction.Receive
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
@@ -55,19 +56,17 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       self ! any
   }
 
-  def start(promisesByIds: PromisesByIds): Receive = {
 
-    /*
-      Previous step to process the message where promise is stored.
-    */
+  // Previous step to process the message where promise is stored.
+  def storePromise(promisesByIds: PromisesByIds): Receive = {
     case (message: CommandEnvelope, promise: Promise[ServerReply]) =>
       logger.debug("Sending message to the Crossdata cluster")
       context.become(start(promisesByIds.copy(promisesByIds.promises + (message.cmd.requestId -> promise))))
       self ! message
+  }
 
-      /*
-        Process messages from the Crossdata Driver.
-       */
+  // Process messages from the Crossdata Driver.
+  def sendToServer(promisesByIds: PromisesByIds): Receive = {
     case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
       clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
@@ -86,10 +85,11 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
     case sqlCommand: SQLCommand =>
       logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
+  }
 
-    /*
-      Message received from a Crossdata Server.
-     */
+
+  // Message received from a Crossdata Server.
+  def receiveFromServer(promisesByIds: PromisesByIds): Receive = {
     case reply: ServerReply =>
       logger.info(s"Sever reply received from Crossdata Server: $sender with ID=${reply.requestId}")
       promisesByIds.promises.get(reply.requestId) match {
@@ -103,14 +103,19 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
               logger.info(s"Query $id cancelled")
               p.success(reply)
             case _ =>
-              p.failure(new RuntimeException(s"Unkown message: $reply"))
+              p.failure(new RuntimeException(s"Unknown message: $reply"))
           }
         case None => logger.warn(s"Unexpected response: $reply")
       }
+  }
 
-    case any =>
-      logger.warn(s"Unknown message: $any. Message won't be sent to the Crossdata cluster")
-
+  def start(promisesByIds: PromisesByIds): Receive = {
+    storePromise(promisesByIds) orElse
+    sendToServer(promisesByIds) orElse
+    receiveFromServer(promisesByIds) orElse {
+      case any =>
+        logger.warn(s"Unknown message: $any. Message won't be sent to the Crossdata cluster")
+    }
   }
 }
 
