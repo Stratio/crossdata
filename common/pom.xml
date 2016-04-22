@@ -26,7 +26,7 @@
         <version>1.3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>crossdata-common_2.10</artifactId>
+    <artifactId>crossdata-common_${scala.binary.version}</artifactId>
     <name>Common</name>
     <packaging>jar</packaging>
     <description>Common structures for communication between driver and server</description>

@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>crossdata-streaming_2.10</artifactId>
+    <artifactId>crossdata-streaming_${scala.binary.version}</artifactId>
     <packaging>jar</packaging>
     <name>Streaming</name>
     <description>Crossdata Streaming</description>

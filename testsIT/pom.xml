@@ -26,7 +26,7 @@
         <version>1.3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>crossdata-testsIT_2.10</artifactId>
+    <artifactId>crossdata-testsIT_${scala.binary.version}</artifactId>
     <name>TestsIT</name>
     <description>Integration tests for Crossdata</description>
     <packaging>jar</packaging>
