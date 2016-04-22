@@ -17,6 +17,8 @@ package com.stratio.crossdata.connector.elasticsearch
 
 
 
+import java.util.UUID
+
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
@@ -107,8 +109,8 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
 
 trait ElasticSearchDefaultConstants {
   private lazy val config = ConfigFactory.load()
-  val Index = "highschool"
-  val Type = "students"
+  val Index = s"highschool${UUID.randomUUID.toString.replaceAll("-", "")}"
+  val Type = s"students${UUID.randomUUID.toString.replaceAll("-", "")}"
   val ElasticHost: String = Try(config.getStringList("elasticsearch.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
   val ElasticRestPort = 9200
   val ElasticNativePort = 9300
