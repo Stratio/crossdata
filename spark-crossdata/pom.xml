@@ -4,13 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.stratio.crossdata</groupId>
-        <artifactId>parent</artifactId>
-        <version>1.2.2-RC1-SNAPSHOT</version>
-    </parent>
-
-    <artifactId>Spark-Crossdata</artifactId>
+    <groupId>com.stratio.crossdata</groupId>
+    <artifactId>Crossdata</artifactId>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
     <description>Spark package with Crossdata</description>
     <url>http://stratio.github.io/crossdata/</url>
@@ -19,18 +15,22 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata.connector</groupId>
             <artifactId>crossdata-cassandra</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata.connector</groupId>
             <artifactId>crossdata-elasticsearch</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata.connector</groupId>
             <artifactId>crossdata-mongodb</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
