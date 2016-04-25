@@ -359,13 +359,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <reuseForks>false</reuseForks>
-                    <properties>
-                        <property>
-                            <name>listener</name>
-                            <value></value>
-                        </property>
-                    </properties>
+                    <reuseForks>true</reuseForks>
                 </configuration>
             </plugin>
             <plugin>
