@@ -11,6 +11,7 @@ DIR_CONF='/etc/sds/crossdata'
 DIR_LOG='/var/log/sds/crossdata'
 DIR_CHECKPOINT='/var/sds/crossdata'
 
+
 chmod 755 /etc/init.d/crossdata
 chmod 755 /opt/sds/crossdata/bin
 chmod +x /opt/sds/crossdata/bin/*
