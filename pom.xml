@@ -97,7 +97,6 @@
         <module>streaming</module>
         <module>testsIT</module>
         <module>dist</module>
-        <module>spark-crossdata</module>
     </modules>
 
     <properties>
