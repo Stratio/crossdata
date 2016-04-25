@@ -23,12 +23,12 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>parent</artifactId>
-        <version>0.5.0</version>
+        <version>0.7.0</version>
     </parent>
 
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>parent</artifactId>
-    <version>1.2.1-RC2-SNAPSHOT</version>
+    <version>1.2.2-RC1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Stratio Crossdata Parent</name>
     <description>Stratio Crossdata reactor</description>
@@ -97,7 +97,6 @@
         <module>streaming</module>
         <module>testsIT</module>
         <module>dist</module>
-        <module>spark-crossdata</module>
     </modules>
 
     <properties>
@@ -342,8 +341,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <forkCount>1</forkCount>
-                    <reuseForks>false</reuseForks>
-                    <argLine>-Xmx1024m</argLine>
+                    <reuseForks>true</reuseForks>
                 </configuration>
             </plugin>
             <plugin>
