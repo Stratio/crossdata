@@ -128,7 +128,7 @@ object ElasticSearchRowConverter {
       val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS")
       val parsedDate = dateFormat.parse(value)
       new java.sql.Timestamp(parsedDate.getTime)
-     case value: java.util.Date => new Timestamp(value.getTime)		       
+     case value: java.util.Date => new Timestamp(value.getTime)
 
      case _ => sys.error(s"Unsupported datatype conversion [${value.getClass}},Timestamp]")
     }
