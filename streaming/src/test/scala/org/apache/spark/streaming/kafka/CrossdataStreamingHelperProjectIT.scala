@@ -23,6 +23,7 @@ import com.stratio.crossdata.streaming.test.{BaseSparkStreamingXDTest, CommonVal
 import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.ZookeeperStreamingCatalog
+import org.apache.spark.sql.crossdata.models.{ConnectionModel, ConnectionHostModel}
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
@@ -83,14 +84,22 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
       kafkaTestUtils = null
     }
   }
-/*
+
   test("Crossdata streaming must save into the kafka output the sql results with project") {
-    val expectedResult = List("a", "c")
+    deletePath(checkpointDirectoryProject)
+    val expectedResult = Array("a", "c")
+
+    val consumerHostZK = connectionHostModel.zkConnection.head.host
+    val consumerPortZK = kafkaTestUtils.zkAddress.split(":").last.toInt
+
+    val producerHostKafka = connectionHostModel.kafkaConnection.head.host
     val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
-    val kafkaStreamModelZk = kafkaStreamModelProject.copy(connection = Seq(connectionHostModel.copy(
-      producerPort = producerPortKafka,
-      consumerPort = kafkaTestUtils.zkAddress.split(":").last
-    )))
+
+    val kafkaStreamModelZk = kafkaStreamModelProject.copy(
+      connection = connectionHostModel.copy(
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK)),
+        kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
+
     val ephemeralTableKafka = ephemeralTableModelStreamKafkaOptionsProject.copy(
       options = ephemeralOptionsStreamKafkaProject.copy(kafkaOptions = kafkaStreamModelZk
       ))
@@ -100,7 +109,7 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
     zookeeperStreamingCatalog.getEphemeralTable(TableNameProject) match {
       case Some(ephemeralTable) =>
         ssc = CrossdataStreamingHelper.createContext(ephemeralTable, sparkConf, zookeeperConf, catalogConf)
-        val valuesToSent = Array( """{"name": "a", "age": 30}""", """{"name": "c", "age": 30}""")
+        val valuesToSent = Array( """{"name": "a"}""", """{"name": "c"}""")
         kafkaTestUtils.createTopic(TopicTestProject)
         kafkaTestUtils.sendMessages(TopicTestProject, valuesToSent)
         val resultList = new mutable.MutableList[String]()
@@ -122,5 +131,5 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
       case None => throw new Exception("Ephemeral table not created")
     }
   }
-  */
+
 }
