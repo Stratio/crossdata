@@ -73,8 +73,9 @@ public class XDContextUtils {
             return xdContext;
         }
 
-        public void executeQuery(String query){
-            df = (XDDataFrame)xdContext.sql(query);
+        public void executeQuery(String query)
+        {
+                df = (XDDataFrame)xdContext.sql(query);
         }
 
         public void importTables(String datasource, HashMap<String,String> options){
