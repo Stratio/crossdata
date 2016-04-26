@@ -19,7 +19,6 @@
 <aspectj>
 	<aspects>
 		<aspect name="com.stratio.cucumber.aspects.ReplacementAspect" />
-        <aspect name="com.stratio.cucumber.aspects.AssertAspect" />
         <aspect name="com.stratio.cucumber.aspects.AssertJAspect" />
 	</aspects>
     <weaver
