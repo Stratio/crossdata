@@ -27,8 +27,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
@@ -60,7 +58,6 @@ import cucumber.api.CucumberOptions;
         "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
         "src/test/resources/features/Elasticsearch/Views.feature",
        "src/test/resources/features/Views/DropViews.feature"
-
 })
 public class ATElasticSearchXDTest extends BaseTest {
     private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");

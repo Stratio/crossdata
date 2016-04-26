@@ -107,11 +107,11 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
   }
 
 
-  override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
+  override def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement.setString(1, databaseName.getOrElse(""))
-    preparedStatement.setString(2, tableName)
+    preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
+    preparedStatement.setString(2, tableIdentifier.table)
     val resultSet = preparedStatement.executeQuery()
 
     if (!resultSet.isBeforeFirst) {
@@ -198,8 +198,8 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     connection.setAutoCommit(true)
   }
 
-  override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
+  override def dropPersistedTable(tableIdentifier: TableIdentifier): Unit = {
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
   }
 
   override def dropAllPersistedTables(): Unit =
@@ -211,8 +211,8 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     result.isBeforeFirst
   }
 
-  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = {
-    val resultSet = selectMetadata(tableWithViewMetadata, TableIdentifier(tableName, databaseName))
+  override protected def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
+    val resultSet = selectMetadata(tableWithViewMetadata, viewIdentifier)
     if (!resultSet.isBeforeFirst) {
       None
     } else {
@@ -263,9 +263,9 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
 
   }
 
-  override protected def dropPersistedView(viewName: String, databaseName: Option[String]): Unit = {
+  override protected def dropPersistedView(viewIdentifier: ViewIdentifier): Unit = {
     connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='$viewName' AND db='${databaseName.getOrElse("")}'")
+      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
   }
 
   override protected def dropAllPersistedViews(): Unit = {

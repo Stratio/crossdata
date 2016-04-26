@@ -26,8 +26,15 @@ import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
 import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
 
+import scala.language.implicitConversions
 import scala.reflect.io.File
 
+object DDLUtils {
+
+  implicit def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
+    tableIdentifier.database.toSeq :+ tableIdentifier.table
+
+}
 
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with SparkLoggerComponent {
@@ -42,9 +49,9 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    def tableExists(tableId: Seq[String]): Boolean = {
+    def tableExists(tableId: TableIdentifier): Boolean = {
       val doExist = sqlContext.catalog.tableExists(tableId)
-      if (doExist) log.warn(s"IMPORT TABLE omitted already registered table: ${tableId mkString "."}")
+      if (doExist) log.warn(s"IMPORT TABLE omitted already registered table: ${tableId.unquotedString}")
       doExist
     }
 
@@ -57,17 +64,18 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
 
     for {
       table: TableInventory.Table <- tables
-      tableId = TableIdentifier(table.tableName, table.database).toSeq
+      tableId = TableIdentifier(table.tableName, table.database)
       if inventoryRelation.exclusionFilter(table)
     } yield {
       val ignoreTable = tableExists(tableId)
       if (!ignoreTable) {
-        logInfo(s"Importing table ${tableId mkString "."}")
+        logInfo(s"Importing table ${tableId.unquotedString}")
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
         val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
         sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
       }
-      Row(tableId, ignoreTable)
+      val tableSeq = DDLUtils.tableIdentifierToSeq(tableId)
+      Row(tableSeq, ignoreTable)
     }
 
   }
@@ -77,7 +85,7 @@ private[crossdata] case class DropTable(tableIdentifier: TableIdentifier)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.dropTable(tableIdentifier.toSeq)
+    sqlContext.catalog.dropTable(tableIdentifier)
     Seq.empty
   }
 
@@ -93,17 +101,17 @@ private[crossdata] case object DropAllTables
 
 }
 
-private[crossdata] case class CreateTempView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan)
+private[crossdata] case class CreateTempView(viewIdentifier: ViewIdentifier, queryPlan: LogicalPlan)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.registerView(viewIdentifier.toSeq, queryPlan)
+    sqlContext.catalog.registerView(viewIdentifier, queryPlan)
     Seq.empty
   }
 
 }
 
-private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan, sql: String)
+private[crossdata] case class CreateView(viewIdentifier: ViewIdentifier, queryPlan: LogicalPlan, sql: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
@@ -114,11 +122,11 @@ private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryP
 }
 
 
-private[crossdata] case class DropView(viewIdentifier: TableIdentifier)
+private[crossdata] case class DropView(viewIdentifier: ViewIdentifier)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.dropView(viewIdentifier.toSeq)
+    sqlContext.catalog.dropView(viewIdentifier)
     Seq.empty
   }
 }
@@ -150,7 +158,7 @@ case class CreateExternalTable(
 
     resolved match {
 
-      case _ if sqlContext.catalog.tableExists(tableIdent.toSeq) =>
+      case _ if sqlContext.catalog.tableExists(tableIdent) =>
         throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
 
       case tableManipulation: TableManipulation =>

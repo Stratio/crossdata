@@ -19,6 +19,7 @@ import com.stratio.crossdata.connector.NativeScan
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.expressions.aggregate.Count
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.XDDataFrame._
 import org.apache.spark.sql.execution.datasources.LogicalRelation
