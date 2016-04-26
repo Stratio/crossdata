@@ -32,6 +32,7 @@ import com.stratio.cucumber.testng.ICucumberFormatter;
 import com.stratio.cucumber.testng.ICucumberReporter;
 import com.stratio.crossdata.testsAT.specs.BaseSpec;
 import com.stratio.crossdata.testsAT.specs.Common;
+import com.stratio.tests.*;
 
 public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumberFormatter {
 
