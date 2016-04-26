@@ -92,9 +92,9 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   }
 
 
-  override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
+  override def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
 
-    val resultSet = selectMetadata(tableWithTableMetadata, TableIdentifier(tableName, databaseName))
+    val resultSet = selectMetadata(tableWithTableMetadata, tableIdentifier)
 
     if (!resultSet.next) {
       None
@@ -180,9 +180,10 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       connection.setAutoCommit(true)
     }
 
-  override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit = {
+  override def dropPersistedTable(tableIdentifier: TableIdentifier): Unit = {
+
     connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
+      s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
   }
 
   override def dropAllPersistedTables(): Unit = {
@@ -198,9 +199,9 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   }
 
-  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = {
+  override protected def lookupView(tableIdentifier: TableIdentifier): Option[String] = {
 
-    val resultSet = selectMetadata(tableWithViewMetadata, TableIdentifier(tableName, databaseName))
+    val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
 
     if (!resultSet.next)
       None
@@ -248,14 +249,14 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   }
 
-  override protected def dropPersistedView(viewName: String, databaseName: Option[String]): Unit = {
+  override protected def dropPersistedView(viewIdentifier: ViewIdentifier): Unit = {
     connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='$viewName' AND db='${databaseName.getOrElse("")}'")
+      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
   }
 
   override protected def dropAllPersistedViews(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
 
-  override def checkConnectivity:Boolean = true
+  override def checkConnectivity: Boolean = true
 }

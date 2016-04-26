@@ -19,8 +19,8 @@ import java.sql.{Connection, DriverManager, ResultSet}
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.{XDContext, catalog}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, getOptions, getPartitionColumn, getUserSpecifiedSchema, serializeOptions, serializePartitionColumn, serializeSchema}
 import org.apache.spark.sql.types._
 
 import scala.annotation.tailrec
@@ -108,9 +108,9 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   }
 
 
-  override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
+  override def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
 
-    val resultSet = selectMetadata(tableWithTableMetadata,TableIdentifier(tableName, databaseName))
+    val resultSet = selectMetadata(tableWithTableMetadata, tableIdentifier)
 
     if (!resultSet.isBeforeFirst) {
       None
@@ -197,8 +197,8 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       connection.setAutoCommit(true)
     }
 
-  override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='$tableName' AND db='${databaseName.getOrElse("")}'")
+  override def dropPersistedTable(tableIdentifier: TableIdentifier): Unit =
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
 
 
   override def dropAllPersistedTables(): Unit = {
@@ -207,8 +207,8 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   }
 
 
-  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = {
-    val resultSet = selectMetadata(tableWithViewMetadata, TableIdentifier(tableName, databaseName))
+  override protected def lookupView(tableIdentifier: TableIdentifier): Option[String] = {
+    val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
     if (!resultSet.isBeforeFirst) {
       None
     } else {
@@ -258,9 +258,9 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   }
 
-  override protected def dropPersistedView(viewName: String, databaseName: Option[String]): Unit = {
+  override protected def dropPersistedView(viewIdentifier: ViewIdentifier): Unit = {
     connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='$viewName' AND db='${databaseName.getOrElse("")}'")
+      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
   }
 
   override protected def dropAllPersistedViews(): Unit = {

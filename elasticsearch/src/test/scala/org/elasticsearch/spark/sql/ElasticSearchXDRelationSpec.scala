@@ -69,12 +69,12 @@ class ElasticSearchXDRelationSpec extends BaseXDTest with MockitoSugar {
     result should be (true)
   }
 
-  def buildElasticSearchRelation(): ElasticSearchXDRelation = {
+  def buildElasticSearchRelation(): ElasticsearchXDRelation = {
     val parameters: Map[String, String] = mock[Map[String, String]]
     val sqlContext: SQLContext = mock[SQLContext]
     val schemaProvided: Option[StructType] = None
 
-    new ElasticSearchXDRelation(parameters, sqlContext, schemaProvided)
+    new ElasticsearchXDRelation(parameters, sqlContext, schemaProvided)
   }
 
 }
