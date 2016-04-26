@@ -26,11 +26,12 @@ import org.apache.spark.sql.execution.datasources.ResolvedDataSource
 import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
 import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
 
+import scala.language.implicitConversions
 import scala.reflect.io.File
 
 object DDLUtils {
 
-  def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
+  implicit def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
     tableIdentifier.database.toSeq :+ tableIdentifier.table
 
 }

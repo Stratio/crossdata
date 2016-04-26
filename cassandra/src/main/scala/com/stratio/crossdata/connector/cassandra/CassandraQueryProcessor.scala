@@ -156,7 +156,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
   private[this] def checkNativeFilters(filters: Array[SourceFilter],
                                        udfs: Map[Attribute, NativeUDF]): Boolean = {
 
-    val udfNames = udfs.keys.map(_.toString()).toSet
+    val udfNames = udfs.keys.map(_.toString).toSet
 
     val groupedFilters = filters.groupBy {
       case sources.EqualTo(attribute, _) => attributeRole(attribute, udfNames)
