@@ -21,7 +21,7 @@ ITSERVICES:
       image: stratio/elasticsearch:1.7.1
       sleep: 5
       env:
-        - CLUSTER_NAME=bddmaster
+        - CLUSTER_NAME=%%JUID
   - CASSANDRA:
       image: stratio/cassandra-lucene-index:2.2.5.3
       sleep: 10
@@ -38,7 +38,7 @@ ITPARAMETERS: >
     -Dcassandra.hosts.0=%%CASSANDRA
     -Dmongo.hosts.0=%%MONGODB
     -Delasticsearch.hosts.0=%%ELASTICSEARCH
-    -Delasticsearch.cluster=xdmas
+    -Delasticsearch.cluster=%%JUID
     -Dspark.master=spark://%%SPARK:7077
     -Dhdfs.namenode=hdfs://%%HADOOP:9000
     -Dcatalog.zookeeper.connectionString=%%ZOOKEEPER:2181
