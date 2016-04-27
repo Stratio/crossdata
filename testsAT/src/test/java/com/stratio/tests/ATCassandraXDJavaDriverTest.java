@@ -34,14 +34,14 @@ import cucumber.api.CucumberOptions;
 //Indicar feature
 @CucumberOptions(features = {
 		"src/test/resources/features/Cassandra/CassandraSelectSimple.feature",
-//		"src/test/resources/features/Cassandra/CassandraSelectLimit.feature",
-//		"src/test/resources/features/Cassandra/CassandraSelectEqualsFilter.feature",
-//		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature",
-//		"src/test/resources/features/Cassandra/CassandraPureNativeAggregation.feature",
-//		"src/test/resources/features/Udaf/Group_concat.feature",
-//		"src/test/resources/features/Views/TemporaryViews.feature",
-//		"src/test/resources/features/Views/Views.feature",
-//		"src/test/resources/features/Views/DropViews.feature"
+		"src/test/resources/features/Cassandra/CassandraSelectLimit.feature",
+		"src/test/resources/features/Cassandra/CassandraSelectEqualsFilter.feature",
+		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature",
+		"src/test/resources/features/Cassandra/CassandraPureNativeAggregation.feature",
+		"src/test/resources/features/Udaf/Group_concat.feature",
+		"src/test/resources/features/Views/TemporaryViews.feature",
+		"src/test/resources/features/Views/Views.feature",
+		"src/test/resources/features/Views/DropViews.feature"
 
 		})
 public class ATCassandraXDJavaDriverTest extends BaseTest {

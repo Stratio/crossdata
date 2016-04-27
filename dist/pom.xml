@@ -54,14 +54,12 @@
                             <copyConfigurationDirectory>true</copyConfigurationDirectory>
                             <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
                             <filterConfigurationDirectory>true</filterConfigurationDirectory>
-                            <assembleDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}
-                            </assembleDirectory>
+                            <assembleDirectory>${project.build.directory}/crossdata-dist-${project.parent.version}</assembleDirectory>
                             <extraJvmArguments>$CROSSDATA_JAVA_OPTS</extraJvmArguments>
                             <licenseHeaderFile>src/main/include/LICENSE</licenseHeaderFile>
                             <binFolder>bin</binFolder>
                             <repositoryName>lib</repositoryName>
-                            <unixScriptTemplate>${project.basedir}/src/main/templates/server-script.sh
-                            </unixScriptTemplate>
+                            <unixScriptTemplate>${project.basedir}/src/main/templates/server-script.sh</unixScriptTemplate>
                             <programs>
                                 <program>
                                     <mainClass>com.stratio.crossdata.server.CrossdataApplication</mainClass>
@@ -181,7 +179,7 @@
                                     <from>
                                         ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/com/stratio/crossdata/crossdata-streaming_${scala.binary.version}/${project.parent.version}
                                     </from>
-                                    <to>/opt/sds/crossdata/lib</to>
+                                    <to>/opt/sds/crossdata/appjar</to>
                                 </copyDirectory>
                                 <copyDirectory>
                                     <from>../driver/target/${scala.binary.version}/crossdata-shell-${project.parent.version}/bin</from>
