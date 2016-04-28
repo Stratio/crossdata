@@ -38,6 +38,9 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
                     crossdataCatalogConf: Map[String, String]): StreamingContext = {
     val sparkStreamingWindow = ephemeralTable.options.atomicWindow
     val sparkContext = SparkContext.getOrCreate(sparkConf)
+
+    val countdowns = collection.mutable.Map[String, Int]()
+
     val streamingContext = new StreamingContext(sparkContext, Seconds(sparkStreamingWindow))
 
     streamingContext.checkpoint(ephemeralTable.options.checkpointDirectory)
@@ -51,9 +54,18 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
         val ephemeralQueries = CrossdataStatusHelper.queriesFromEphemeralTable(zookeeperConf, ephemeralTable.name)
 
         if (ephemeralQueries.nonEmpty) {
-          ephemeralQueries.foreach(ephemeralQuery =>
-            executeQuery(rdd, ephemeralQuery, ephemeralTable, kafkaOptions, zookeeperConf, crossdataCatalogConf)
-          )
+          ephemeralQueries.foreach( ephemeralQuery => {
+            val alias = ephemeralQuery.alias
+            if(!countdowns.contains(alias)){
+              countdowns.put(alias, (ephemeralQuery.window / sparkStreamingWindow))
+            } else {
+              countdowns.put(alias, countdowns.get(alias).getOrElse(0)-1)
+            }
+            if(countdowns.get(alias).getOrElse(-1) == 0){
+              countdowns.put(alias, (ephemeralQuery.window / sparkStreamingWindow))
+              executeQuery(rdd, ephemeralQuery, ephemeralTable, kafkaOptions, zookeeperConf, crossdataCatalogConf)
+            }
+          })
         }
       }
     }
