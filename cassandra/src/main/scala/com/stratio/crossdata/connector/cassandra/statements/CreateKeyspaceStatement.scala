@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.connector.cassandra.statements
 
-import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourceKeyspaceNameProperty
+
 import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourceKeyspaceReplicationStringProperty
 
 case class CreateKeyspaceStatement(options: Map[String, String]) {

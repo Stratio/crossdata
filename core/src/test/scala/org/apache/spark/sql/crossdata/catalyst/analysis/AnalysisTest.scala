@@ -19,7 +19,7 @@
 package org.apache.spark.sql.crossdata.catalyst.analysis
 
 import com.stratio.crossdata.test.BaseXDTest
-import org.apache.spark.sql.catalyst.SimpleCatalystConf
+import org.apache.spark.sql.catalyst.{TableIdentifier, SimpleCatalystConf}
 import org.apache.spark.sql.catalyst.analysis.Analyzer
 import org.apache.spark.sql.catalyst.analysis.EmptyFunctionRegistry
 import org.apache.spark.sql.catalyst.analysis.SimpleCatalog
@@ -40,7 +40,7 @@ trait AnalysisTest extends BaseXDTest{
   val caseSensitiveAnalyzer = {
     val caseSensitiveConf = new SimpleCatalystConf(true)
     val caseSensitiveCatalog = new SimpleCatalog(caseSensitiveConf)
-    caseSensitiveCatalog.registerTable(Seq("table"), testRelation)
+    caseSensitiveCatalog.registerTable(TableIdentifier("table"), testRelation)
 
     new Analyzer(caseSensitiveCatalog, EmptyFunctionRegistry, caseSensitiveConf) {
       override val extendedResolutionRules = ResolveAggregateAlias :: Nil

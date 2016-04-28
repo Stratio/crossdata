@@ -18,37 +18,32 @@
 
 package org.apache.spark.sql.crossdata.test
 
-import com.typesafe.config.{ConfigFactory, Config}
+import com.typesafe.config.{Config, ConfigFactory}
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.{SQLConf, SQLContext}
 
 
 /**
  * A special [[SQLContext]] prepared for testing.
  */
-private[sql] class TestXDContext(sc: SparkContext, catalogConfig: Config)
-  extends XDContext(sc, catalogConfig) { self =>
+private[sql] class TestXDContext private(sc: SparkContext, catalogConfig: Config)
+  extends XDContext(sc, catalogConfig) {
 
   def this() {
-    this(new SparkContext("local[2]", "test-xd-context",
-      new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io" +
-        ".LZ4CompressionCodec")), ConfigFactory.empty())
+    this(new SparkContext(
+      "local[2]",
+      "test-xd-context",
+      new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.sql.shuffle.partitions", "3")
+    ), ConfigFactory.empty())
   }
 
-  def this(catalogClass: Config) {
-    this(new SparkContext("local[2]", "test-xd-context",
-      new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io" +
-        ".LZ4CompressionCodec")), catalogClass)
-  }
-
-  // Use fewer partitions to speed up testing
-  protected[sql] override def createSession(): SQLSession = new this.SQLSession()
-
-  protected[sql] class SQLSession extends super.SQLSession {
-    protected[sql] override lazy val conf: SQLConf = new SQLConf {
-      override def numShufflePartitions: Int = 3
-    }
+  def this(catalogConfig: Config) {
+    this(new SparkContext(
+      "local[2]",
+      "test-xd-context",
+      new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.sql.shuffle.partitions", "3")
+    ), catalogConfig)
   }
 
 }
