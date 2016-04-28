@@ -17,7 +17,7 @@ package com.stratio.crossdata.driver
 
 import java.util.concurrent.atomic.AtomicReference
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterClient
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
@@ -31,7 +31,6 @@ import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
 import scala.language.postfixOps
 
@@ -153,14 +152,14 @@ class Driver private(driverConf: DriverConf,
       case Pattern(add,jar,path) => addJar(path.trim)
       case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
-        val secureCommand = CommandEnvelope(sqlCommand, driverSession)
-        val futureReply = askCommand(proxyActor, secureCommand).map{
+        val futureReply = askCommand(CommandEnvelope(sqlCommand, driverSession)).map{
           case SQLReply(_, sqlResult) => sqlResult
-          case reply => throw new RuntimeException(s"SQLResult expected. Received: $reply")
+          case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
         }
         new SQLResponse(sqlCommand.requestId, futureReply) {
           // TODO cancel sync => 5 secs
-          override def cancelCommand(): Unit = askCommand(proxyActor, CommandEnvelope(CancelQueryExecution(sqlCommand.queryId), driverSession))
+          override def cancelCommand(): Unit =
+            askCommand(CommandEnvelope(CancelQueryExecution(sqlCommand.queryId), driverSession))
         }
     }
   }
@@ -173,11 +172,10 @@ class Driver private(driverConf: DriverConf,
     * @return A SQLResponse with the id and the result set.
     */
   def addJar(path: String): SQLResponse = {
-    val addJarCommand = new AddJARCommand(path)
-    val secureCommand = CommandEnvelope(addJarCommand, driverSession)
-    val futureReply = askCommand(proxyActor, secureCommand).map{
+    val addJarCommand = AddJARCommand(path)
+    val futureReply = askCommand(CommandEnvelope(addJarCommand, driverSession)).map{
       case SQLReply(_, sqlResult) => sqlResult
-      case reply => throw new RuntimeException(s"SQLResult expected. Received: $reply")
+      case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
     }
     new SQLResponse(addJarCommand.requestId, futureReply)
   }
@@ -226,13 +224,9 @@ class Driver private(driverConf: DriverConf,
   }
 
 
-  // TODO remove infinite duration
-  // TODO remove askPattern
-  private def askCommand(remoteActor: ActorRef,
-                         message: CommandEnvelope,
-                         timeout: FiniteDuration = 1 day): Future[ServerReply] = {
+  private def askCommand(commandEnvelope: CommandEnvelope): Future[ServerReply] = {
     val promise = Promise[ServerReply]()
-    proxyActor ! (message, promise)
+    proxyActor ! (commandEnvelope, promise)
     promise.future
   }
 

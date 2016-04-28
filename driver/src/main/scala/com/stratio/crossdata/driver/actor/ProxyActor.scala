@@ -20,7 +20,6 @@ import java.util.UUID
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
-import akka.remote.transport.ThrottlerTransportAdapter.Direction.Receive
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
@@ -67,17 +66,18 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
   // Process messages from the Crossdata Driver.
   def sendToServer(promisesByIds: PromisesByIds): Receive = {
-    case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
-      logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
-      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
-    /* TODO: This is a dirty trick to keep temporary tables synchronized at each XDContext
-        it should be fixed as soon as Spark version is updated to 1.6 since it'll enable.
-        WARNING: This disables creation cancellation commands and exposes the system behaviour to client-side code.
-     */
+    /** TODO: This is a dirty trick to keep temporary tables synchronized at each XDContext
+    it should be fixed as soon as Spark version is updated to 1.6 since it'll enable.
+    WARNING: This disables creation cancellation commands and exposes the system behaviour to client-side code.
+    */
     case secureSQLCommand @ CommandEnvelope(sqlCommand @ SQLCommand(sql @ catalogOpExp(), _, _, _), _) =>
       logger.info(s"Sending temporary catalog entry creation query to all servers: $sql")
       clusterClientActor ! ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
+
+    case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
+      logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
+      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
     case secureSQLCommand @ CommandEnvelope(sqlCommand: AddJARCommand, _) =>
       logger.info(s"Send Add Jar command to all servers")
