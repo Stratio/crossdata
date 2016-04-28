@@ -15,72 +15,60 @@
  */
 package com.stratio.crossdata.connector.mongodb
 
-import com.mongodb.casbah.Imports.{MongoClient, MongoCollection}
+import com.mongodb.casbah.Imports._
 import com.mongodb.{MongoCredential, ServerAddress}
+import com.stratio.datasource.mongodb.client.MongodbClientActor.ClientResponse
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 import com.stratio.datasource.util.Config
-import com.stratio.datasource.mongodb.reader.MongodbReadException
-import com.stratio.datasource.mongodb.config.{ MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 
 import scala.language.reflectiveCalls
-import scala.util.Try
 
 
 object MongodbConnection {
 
   import MongodbConfig._
 
-  // TODO avoid openning a connection per query
+  // TODO refactor datasource
+  def withClientDo[T](config: Config)(code: MongoClient => T): T = {
 
-  def withClientDo[T](hosts: List[String])(code: MongoClient => T): T = {
+    val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
 
-    val mongoClient: Try[MongoClient] = Try {
-      MongoClient(hosts.map(new ServerAddress(_)))
-    }.recover {
-      case throwable =>
-        throw MongodbReadException(throwable.getMessage, throwable)
+    val clientResponse = openClient(config)
+
+    val mongoClientOpt = Option(clientResponse.clientConnection)
+    val mongoClientKey = clientResponse.key
+    val mongoClient = mongoClientOpt.getOrElse(throw new RuntimeException("Error while getting mongo client"))
+
+    try {
+      code(mongoClient)
+    } finally {
+      MongodbClientFactory.setFreeConnectionByKey(mongoClientKey, connectionsTime)
+      MongodbClientFactory.closeByKey(mongoClientKey)
     }
 
-    try{
-      code(mongoClient.get)
-    } finally{
-      mongoClient.foreach(_.close())
-    }
   }
-
 
   def withCollectionDo[T](config: Config)(code: MongoCollection => T): T = {
-
     val databaseName: String = config(MongodbConfig.Database)
     val collectionName: String = config(MongodbConfig.Collection)
-    var client: Option[MongoClient] = None
-    try{
-      client = Some(openClient(config))
-      code(client.get(databaseName)(collectionName))
-    } finally{
-      client.foreach(_.close())
+
+    withClientDo[T](config) { mClient =>
+      code(mClient(databaseName)(collectionName))
     }
   }
 
-
-  private def openClient(config: Config): MongoClient = {
+  private def openClient(config: Config): ClientResponse = {
 
     val hosts: List[ServerAddress] = config[List[String]](Host).map(add => new ServerAddress(add))
-
-    val credentials: List[MongoCredential] =
-    config.getOrElse[List[MongodbCredentials]](Credentials, DefaultCredentials).map{
-      case MongodbCredentials(user,database,password) =>
-        MongoCredential.createCredential(user,database,password)
+    val credentials = config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, MongodbConfig.DefaultCredentials).map {
+      case MongodbCredentials(user, database, password) =>
+        MongoCredential.createCredential(user, database, password)
     }
+    val sslOptions = config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
+    val clientOptions = config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))
 
-    val ssloptions: Option[MongodbSSLOptions] = config.get[MongodbSSLOptions](SSLOptions)
-
-      val mongoClient: Try[MongoClient] = Try {
-         MongodbClientFactory.getClient(hosts, credentials, ssloptions, config.properties).clientConnection
-      }recover{
-        case throwable =>
-          throw MongodbReadException(throwable.getMessage, throwable)
-      }
-      mongoClient.get
+    MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
   }
+
 }
