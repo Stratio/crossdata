@@ -17,20 +17,19 @@ package com.stratio.crossdata.server
 
 import java.io.File
 
-import akka.actor.ActorSystem
-import akka.actor.Props
+import akka.actor.{ActorSystem, Props}
 import akka.cluster.Cluster
 import akka.contrib.pattern.ClusterReceptionistExtension
+import akka.http.scaladsl.Http
 import akka.routing.{DefaultResizer, RoundRobinPool}
+import akka.stream.ActorMaterializer
 import com.stratio.crossdata.server.actors.ServerActor
 import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
-import org.apache.commons.daemon.Daemon
-import org.apache.commons.daemon.DaemonContext
+import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
 
@@ -81,7 +80,14 @@ class CrossdataServer extends Daemon with ServerConfig {
             serverActorConfig)),
         actorName)
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
+
+      implicit val httpSystem = system.getOrElse(ActorSystem(clusterName, config))
+      implicit val materializer = ActorMaterializer()
+      val httpServerActor=new CrossdataHttpServer(config,serverActor, httpSystem)
+      val host=config.getString(ServerConfig.Host)
+      Http().bindAndHandle(httpServerActor.route, host, 13422)
     }
+
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
   }
 

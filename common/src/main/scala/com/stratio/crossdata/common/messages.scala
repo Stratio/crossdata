@@ -81,3 +81,5 @@ private[crossdata] trait ServerReply {
 private[crossdata] case class QueryCancelledReply(requestId: UUID) extends ServerReply
 
 private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
+
+private[crossdata] case class HdfsMessage(requestId: UUID, hdfsRoute:String) extends ServerReply

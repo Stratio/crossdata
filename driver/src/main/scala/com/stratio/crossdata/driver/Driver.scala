@@ -45,7 +45,7 @@ import scala.reflect.ClassTag
  * =======================================================================================
  */
 
-class Driver private(driverConf: DriverConf,
+class Driver private(val driverConf: DriverConf,
                      auth: Authentication = Driver.generateDefaultAuth) {
 
 

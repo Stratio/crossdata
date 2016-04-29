@@ -17,34 +17,35 @@ package com.stratio.crossdata.server.actors
 
 import java.util.UUID
 
-import akka.cluster.ClusterEvent.InitialStateAsSnapshot
-import akka.contrib.pattern.DistributedPubSubExtension
 import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
-import akka.contrib.pattern.DistributedPubSubMediator.{Publish, SubscribeAck, Subscribe}
+import akka.cluster.ClusterEvent.InitialStateAsSnapshot
+import akka.contrib.pattern.DistributedPubSubExtension
+import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import akka.remote.DisassociatedEvent
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common._
-import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob}
-import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand}
+import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
+import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
-import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
+import com.stratio.crossdata.server.config.ServerActorConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.types.StructType
 
 import scala.concurrent.duration.FiniteDuration
-import scala.reflect.io.File
+
 
 
 object ServerActor {
-
   val managementTopic: String = "jobsManagement"
+  val addJarTopic: String = "newJAR"
+
 
   def props(cluster: Cluster, xdContext: XDContext, config: ServerActorConfig): Props =
     Props(new ServerActor(cluster, xdContext, config))
+
 
   protected case class JobId(requester: ActorRef, queryId: UUID)
 
@@ -61,8 +62,8 @@ object ServerActor {
 
 class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorConfig) extends Actor {
 
-  import ServerActor._
   import ServerActor.ManagementMessages._
+  import ServerActor._
 
   lazy val logger = Logger.getLogger(classOf[ServerActor])
 
@@ -73,6 +74,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
 
     // Subscribe to the management distributed topic
     mediator ! Subscribe(managementTopic, self)
+    mediator ! Subscribe(addJarTopic, self)
 
     // Subscribe to disassociation events in the cluster
     cluster.subscribe(self, InitialStateAsSnapshot, classOf[DisassociatedEvent])
@@ -80,13 +82,21 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
   }
 
   // Actor behaviours
-
+  var pendingTopics=Set(managementTopic,addJarTopic)
   override def receive: Actor.Receive = initial
 
-  private val initial: Receive = {
+  private def initial(): Receive = {
     case SubscribeAck(Subscribe(managementTopic, None, self)) =>
-      context.become(ready(State(Map.empty)))
+      pendingTopics-=managementTopic
+      checkSubscriptions()
+
+    case SubscribeAck(Subscribe(addJarTopic, None, self)) =>
+      pendingTopics-=addJarTopic
+      checkSubscriptions()
   }
+
+  private def checkSubscriptions()= if (pendingTopics.isEmpty) context.become(ready(State(Map.empty)))
+
 
   /**
     * If a `cmd` is passed to this method is because it has already been checked that this server can run it.
@@ -106,7 +116,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
       logger.debug(s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
       //TODO  Maybe include job controller if it is necessary as in sql command
-      if (addJarCommand.path.toLowerCase.startsWith("hdfs://") || File(addJarCommand.path).exists) {
+      if (addJarCommand.path.toLowerCase.startsWith("hdfs://")) {
         xdContext.addJar(addJarCommand.path)
         sender ! SQLReply(addJarCommand.requestId,SuccessfulSQLResult(Array.empty, new StructType()))
       } else {
@@ -124,9 +134,10 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
     case DelegateCommand(_, broadcaster) if broadcaster == self => //Discards from this server broadcast delegated-commands
 
     case DelegateCommand(cmd, broadcaster) if broadcaster != self =>
-      cmd match { // Inner pattern matching for future delegated command validations
-        case sc @ CommandEnvelope(CancelQueryExecution(queryId), Session(_, requester)) =>
-          st.jobsById.get(JobId(requester, queryId)) foreach(_ => executeAccepted(sc)(st))
+      cmd match {
+        // Inner pattern matching for future delegated command validations
+        case sc@CommandEnvelope(CancelQueryExecution(queryId), Session(_, requester)) =>
+          st.jobsById.get(JobId(requester, queryId)) foreach (_ => executeAccepted(sc)(st))
         /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
             servers through the topic. */
       }
@@ -207,6 +218,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(config.retryNoAttempts, config.retryCountWindow) {
     case _ => Restart //Crashed job gets restarted (or not, depending on `retryNoAttempts` and `retryCountWindow`)
   }
+
 
 
 }

@@ -16,9 +16,9 @@
 
 package com.stratio.crossdata.driver.actor
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{ActorSystem, Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
-import com.stratio.crossdata.common.{AddJARCommand, SQLCommand, CommandEnvelope}
+import com.stratio.crossdata.common.{HdfsMessage, AddJARCommand, SQLCommand, CommandEnvelope}
 import com.stratio.crossdata.driver.Driver
 import org.apache.log4j.Logger
 
@@ -55,11 +55,12 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       clusterClientActor forward ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
     case secureSQLCommand @ CommandEnvelope(_: AddJARCommand, _) =>
-      logger.debug(s"Send Add Jar command to all servers")
-      clusterClientActor forward ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
+      implicit val system = ActorSystem()
+      val clientActor =system.actorOf(Props(new ClientHTTPActor(driver.driverConf)), "client")
+      clientActor forward secureSQLCommand
 
     case SQLCommand =>
-      logger.warn("Command message not securitized. Message won't be sent to the Crossdata cluster")
+      logger.warn("Command message not secured. Message won't be sent to the Crossdata cluster")
 
     case any =>
       logger.warn(s"Unknown message: $any. Message won't be sent to the Crossdata cluster")
