@@ -60,12 +60,8 @@ trait SharedXDContextTest extends XDTestUtils {
   protected override def beforeAll(): Unit = {
     if (_ctx == null) {
 
-      // HEAD
-      _ctx = TestXDContext(jarPathList, filePathList)
-
-      // UPSTREAM
-      _ctx = catalogConfig.fold(new TestXDContext()) { cConfig =>
-        new TestXDContext(cConfig)
+      _ctx = catalogConfig.fold(TestXDContext(jarPathList, filePathList)) { cConfig =>
+        TestXDContext(jarPathList, filePathList, cConfig)
       }
     }
     // Ensure we have initialized the context before calling parent code

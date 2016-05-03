@@ -27,7 +27,7 @@ import scala.util.Try
 
 object TestXDContext {
 
-  def buildSparkContext(externalJars: Option[Seq[String]], externalFiles: Seq[String]): TestXDContext = {
+  def buildSparkContext(externalJars: Option[Seq[String]], externalFiles: Seq[String], cConfig: Config = ConfigFactory.empty()): TestXDContext = {
     val defaultSparkConf = new SparkConf().set("spark.sql.testkey", "true").set("spark.io.compression.codec", "org.apache.spark.io.LZ4CompressionCodec")
     val externalMaster = Try(ConfigFactory.load().getString("spark.master"))
 
@@ -39,7 +39,7 @@ object TestXDContext {
 
     val sparkContext = new SparkContext(sparkMaster, "test-xdcontext", sparkConf)
     externalFiles.foreach(sparkContext.addFile)
-    new TestXDContext(sparkContext)
+    new TestXDContext(sparkContext, cConfig)
   }
 
   def apply (jarPath: String) :TestXDContext =
@@ -48,6 +48,9 @@ object TestXDContext {
 
   def apply (jarPathList: Seq[String], filePathList: Seq[String]) :TestXDContext =
     buildSparkContext(Some(jarPathList), filePathList)
+
+  def apply (jarPathList: Seq[String], filePathList: Seq[String], cConfig: Config) :TestXDContext =
+    buildSparkContext(Some(jarPathList), filePathList, cConfig)
 
   def apply (jarPathList: Seq[String]) :TestXDContext =
     buildSparkContext(Some(jarPathList), Seq.empty)
@@ -78,10 +81,6 @@ private[sql] class TestXDContext private(sc: SparkContext, catalogConfig: Config
       "test-xd-context",
       new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.sql.shuffle.partitions", "3")
     ), catalogConfig)
-  }
-
-  def this(sparkContext: SparkContext) {
-    this(sparkContext, ConfigFactory.empty())
   }
 
 }
