@@ -10,7 +10,7 @@
         <version>1.3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>dist</artifactId>
+    <artifactId>dist_${scala.binary.version}</artifactId>
     <version>1.3.0-SNAPSHOT</version>
 
     <profiles>
