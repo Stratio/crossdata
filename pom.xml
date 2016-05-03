@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>parent</artifactId>
-        <version>0.7.0</version>
+        <version>0.7.1</version>
     </parent>
 
     <groupId>com.stratio.crossdata</groupId>
@@ -100,9 +100,6 @@
     </modules>
 
     <properties>
-        <scala.binary.underscore.version>2-10</scala.binary.underscore.version>
-        <scala.binary.version>2.10</scala.binary.version>
-        <scala.version>2.10.4</scala.version>
         <spark.version>1.6.1</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
         <easymock.version>3.4</easymock.version>
@@ -122,6 +119,7 @@
         <common.utils.version>0.5.0</common.utils.version>
         <guava.version>18.0</guava.version>
         <!-- Scala version and cross build properties -->
+        <scala.binary.underscore.version>2-10</scala.binary.underscore.version>
         <scala.binary.version>2.10</scala.binary.version>
         <scala.version>2.10.4</scala.version>
         <scala_2.10.version>2.10.4</scala_2.10.version>
@@ -361,8 +359,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <reportsDirectory>${project.build.directory}/failsafe-reports</reportsDirectory>
-                    <forkCount>1</forkCount>
-                    <reuseForks>true</reuseForks>
+                    <reuseForks>false</reuseForks>
                 </configuration>
             </plugin>
             <plugin>
