@@ -16,11 +16,12 @@
 package org.apache.spark.sql.crossdata.test
 
 import org.apache.spark.sql.crossdata.CrossdataVersion
+import org.apache.spark.sql.crossdata.ScalaBinaryVersion
 
 trait CoreWithSharedContext extends SharedXDContextTest{
   override def jarPathList: Seq[String] =
     // TODO include snapshot within the version
-    Seq(s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-tests.jar")
+    Seq(s"core/target/crossdata-core_$ScalaBinaryVersion-$CrossdataVersion-jar-with-dependencies.jar", s"core/target/crossdata-core_$ScalaBinaryVersion-$CrossdataVersion-tests.jar")
 
 /*  /**
    * List of files required to execute ITs

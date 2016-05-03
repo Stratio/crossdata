@@ -24,7 +24,7 @@ import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.mappings.MappingDefinition
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.ConfigFactory
-import org.apache.spark.sql.crossdata.CrossdataVersion
+import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.elasticsearch.common.joda.time.DateTime
@@ -38,7 +38,7 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
   this: Suite =>
 
   override def jarPathList: Seq[String] =
-    Seq(s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar", s"elasticsearch/target/crossdata-elasticsearch-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
+    Seq(s"core/target/crossdata-core_$ScalaBinaryVersion-$CrossdataVersion-jar-with-dependencies.jar", s"elasticsearch/target/crossdata-elasticsearch_$ScalaBinaryVersion-$CrossdataVersion-jar-with-dependencies.jar")
 
   override type ClientParams = ElasticClient
   override val provider: String = SourceProvider

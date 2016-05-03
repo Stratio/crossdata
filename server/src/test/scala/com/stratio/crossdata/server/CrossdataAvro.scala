@@ -17,7 +17,6 @@ package com.stratio.crossdata.server
 
 import java.nio.file.Paths
 
-import _root_.com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata._
@@ -28,8 +27,6 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class CrossdataAvro extends CoreWithSharedContext with ServerConfig {
 
-  override def jarPathList: Seq[String] =
-    Seq(s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataAvro])
 

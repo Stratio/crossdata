@@ -33,7 +33,6 @@
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
-        <scala.binary.version>2.10</scala.binary.version>
         <crossdata.version>${project.version}</crossdata.version>
     </properties>
 
