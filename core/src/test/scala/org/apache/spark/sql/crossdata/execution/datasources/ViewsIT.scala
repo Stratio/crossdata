@@ -15,16 +15,8 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import java.lang.{RuntimeException, Runtime}
-
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.crossdata.XDDataFrame
-
 import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
-
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
-
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -36,12 +28,9 @@ class ViewsIT extends CoreWithSharedContext {
     val sqlContext = _xdContext
     import sqlContext.implicits._
 
-
     val df  = sqlContext.sparkContext.parallelize(1 to 5).toDF
-
     df.registerTempTable("person")
     sql("CREATE TEMPORARY VIEW vn AS SELECT * FROM person WHERE _1 < 3")
-
 
     val dataframe = xdContext.sql("SELECT * FROM vn")
 
@@ -53,7 +42,6 @@ class ViewsIT extends CoreWithSharedContext {
   "Create view" should "persist a view in the catalog only with persisted tables" in {
     val sqlContext = _xdContext
     import sqlContext.implicits._
-
 
     val df = sqlContext.sparkContext.parallelize(1 to 5).toDF
     a [RuntimeException] shouldBe thrownBy {

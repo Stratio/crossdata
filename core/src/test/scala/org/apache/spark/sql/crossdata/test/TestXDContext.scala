@@ -61,7 +61,6 @@ object TestXDContext {
 /**
  * A special [[SQLContext]] prepared for testing.
  */
-
 private[sql] class TestXDContext private(sc: SparkContext, catalogConfig: Config)
   extends XDContext(sc, catalogConfig) {
 

@@ -17,11 +17,6 @@ package org.apache.spark.sql.crossdata.catalog
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
-
-import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
-import org.apache.spark.sql.crossdata.{catalog, XDContext}
-import org.apache.spark.sql.types._
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata._
@@ -140,7 +135,6 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
   }
 
-
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
     try {
 
@@ -185,7 +179,6 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     } finally {
       connection.setAutoCommit(true)
     }
-
 
   override def dropPersistedTable(tableIdentifier: TableIdentifier): Unit = {
 

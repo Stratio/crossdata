@@ -167,7 +167,6 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
   wrongImportTablesSentences.take(1) foreach { sentence =>
     it should s"not import tables for sentences lacking mandatory options: $sentence" in {
       assumeEnvironmentIsUpAndRunning
-
       an[Exception] shouldBe thrownBy(xdContext.sql(sentence))
     }
   }

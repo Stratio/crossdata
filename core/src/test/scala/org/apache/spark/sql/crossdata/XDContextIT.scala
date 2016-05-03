@@ -19,7 +19,7 @@ import java.nio.file.Paths
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.execution.PersistDataSourceTable
-import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
+import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.execution.ExecutedCommand
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
@@ -50,17 +50,14 @@ class XDContextIT extends CoreWithSharedContext {
     df.registerTempTable("records")
 
     val dataframe = xdContext.sql("SELECT * FROM records")
-
     dataframe shouldBe a[XDDataFrame]
   }
 
 
   it must "plan a PersistDataSource when creating a table " in {
-
     val dataframe = xdContext.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/core-reference.conf").toURI()).toString}')")
     val sparkPlan = dataframe.queryExecution.sparkPlan
     xdContext.catalog.dropTable(TableIdentifier("jsonTable", None))
-
     sparkPlan should matchPattern { case ExecutedCommand(_: PersistDataSourceTable) => }
 
   }

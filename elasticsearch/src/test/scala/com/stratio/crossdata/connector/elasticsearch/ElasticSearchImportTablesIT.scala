@@ -70,7 +70,6 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     //Expectations
     xdContext.tableNames() should contain (s"$Index.$Type")
     xdContext.table(s"$Index.$Type").schema should have length 8
-
   }
 
   it should "infer schema after import One table from an Index" in {

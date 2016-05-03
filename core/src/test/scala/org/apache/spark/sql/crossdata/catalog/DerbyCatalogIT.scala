@@ -16,18 +16,13 @@
 
 package org.apache.spark.sql.crossdata.catalog
 
-import org.apache.spark.sql.crossdata._
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
-class DerbyCatalogIT extends SharedXDContextTest with CatalogConstants with GenericCatalogTests {
+class DerbyCatalogIT extends GenericCatalogTests {
 
   override val catalogName = "Derby"
-
-  override def jarPathList: Seq[String] =
-    Seq(s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
 
 }

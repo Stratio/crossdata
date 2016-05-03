@@ -19,20 +19,17 @@ import java.util.UUID
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.models.EphemeralExecutionStatus
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class StreamingDdlIT extends SharedXDContextTest with StreamingDDLTestConstants{
+class StreamingDdlIT extends CoreWithSharedContext with StreamingDDLTestConstants{
 
-  override def jarPathList: Seq[String] =
-    Seq(s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
 
   override val catalogConfig: Option[Config] = {
     val zkResourceConfig =

@@ -21,16 +21,16 @@ import _root_.com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata._
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.{CoreWithSharedContext, SharedXDContextTest}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class CrossdataAvro extends SharedXDContextTest with ServerConfig {
+class CrossdataAvro extends CoreWithSharedContext with ServerConfig {
 
   override def jarPathList: Seq[String] =
     Seq(s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
-  
+
   override lazy val logger = Logger.getLogger(classOf[CrossdataAvro])
 
   "Crossdata" should "execute avro queries" in {

@@ -17,20 +17,15 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
-import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class ZookeeperCatalogIT extends SharedXDContextTest with CatalogConstants with GenericCatalogTests
+class ZookeeperCatalogIT extends GenericCatalogTests
 with ZookeeperDefaultTestConstants{
-
-  override def jarPathList: Seq[String] =
-    Seq(s"core/target/crossdata-core-$CrossdataVersion-SNAPSHOT-jar-with-dependencies.jar")
 
   override val catalogName = "Zookeeper"
 

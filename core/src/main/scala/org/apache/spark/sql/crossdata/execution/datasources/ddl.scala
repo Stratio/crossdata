@@ -56,7 +56,6 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
     }
 
     // Get a reference to the inventory relation.
-
     val resolved = ResolvedDataSource.lookupDataSource(datasource).newInstance()
     val inventoryRelation = resolved.asInstanceOf[TableInventory]
 

@@ -30,7 +30,6 @@ class XDFunctionRegistryIT extends CoreWithSharedContext {
   "XD Function registry" should "throw an analysis exception when a native udf cannot be resolved" in {
 
     try {
-
       xdContext.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/core-reference.conf").toURI()).toString}')")
 
       val missingUDFName = "missingFunction"

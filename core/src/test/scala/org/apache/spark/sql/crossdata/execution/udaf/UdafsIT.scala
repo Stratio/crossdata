@@ -16,19 +16,10 @@
 package org.apache.spark.sql.crossdata.execution.udaf
 
 import org.apache.spark.sql.Row
-
 import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
-
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
-import org.apache.spark.sql.types.IntegerType
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.sql.types.StructField
-import org.apache.spark.sql.types.StructType
-
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
 
 @RunWith(classOf[JUnitRunner])
 class UdafsIT extends CoreWithSharedContext {

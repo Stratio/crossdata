@@ -140,7 +140,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     } else {
       tableIdent.unquotedString.toLowerCase
     }
-
+  
 
   override def registerTable(tableIdentifier: TableIdentifier, plan: LogicalPlan): Unit =
     tables.put(getTableName(tableIdentifier), plan)
@@ -281,7 +281,7 @@ object XDCatalog extends CrossdataSerializer {
   implicit def asXDCatalog(catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
 
   type ViewIdentifier = TableIdentifier
-
+  
   case class CrossdataTable(tableName: String, dbName: Option[String],  schema: Option[StructType],
                             datasource: String, partitionColumn: Array[String] = Array.empty,
                             opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)

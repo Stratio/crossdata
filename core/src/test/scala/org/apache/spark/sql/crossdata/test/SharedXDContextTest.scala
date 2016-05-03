@@ -43,7 +43,6 @@ trait SharedXDContextTest extends XDTestUtils {
    * The [[TestXDContext]] to use for all tests in this suite.
    */
 
-
   protected def xdContext: TestXDContext = _ctx
 
   protected override def _xdContext: XDContext = _ctx
@@ -68,7 +67,6 @@ trait SharedXDContextTest extends XDTestUtils {
       _ctx = catalogConfig.fold(new TestXDContext()) { cConfig =>
         new TestXDContext(cConfig)
       }
-
     }
     // Ensure we have initialized the context before calling parent code
     super.beforeAll()
