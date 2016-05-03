@@ -21,12 +21,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>parent</artifactId>
+        <artifactId>parent_${scala.binary.version}</artifactId>
         <groupId>com.stratio.crossdata</groupId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>1.3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>crossdata-driver</artifactId>
+    <artifactId>crossdata-driver_${scala.binary.version}</artifactId>
     <name>Driver</name>
     <description>Driver for Crossdata in order to communicate with the Crossdata Servers</description>
     <packaging>jar</packaging>
@@ -35,7 +35,7 @@
     <dependencies>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-common</artifactId>
+            <artifactId>crossdata-common_${scala.binary.version}</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -54,21 +54,21 @@
             <version>${akka.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>2.13</version>
         </dependency>
 
         <!--TEST-->
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-server</artifactId>
+            <artifactId>crossdata-server_${scala.binary.version}</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-core</artifactId>
+            <artifactId>crossdata-core_${scala.binary.version}</artifactId>
             <version>${project.parent.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -90,8 +90,8 @@
                             <minimizeJar>true</minimizeJar>
                             <artifactSet>
                                 <includes>
-                                    <include>com.stratio.crossdata:crossdata-common</include>
-                                    <include>com.stratio.crossdata:crossdata-driver</include>
+                                    <include>com.stratio.crossdata:crossdata-common_${scala.binary.version}</include>
+                                    <include>com.stratio.crossdata:crossdata-driver_${scala.binary.version}</include>
                                     <include>org.apache.spark:spark-catalyst_${scala.binary.version}</include>
                                     <include>com.typesafe.akka:akka-actor_${scala.binary.version}</include>
                                     <include>com.typesafe.akka:akka-cluster_${scala.binary.version}</include>
@@ -109,6 +109,131 @@
                                     <include>org.scala-lang:scala-reflect</include>
                                     <include>org.scala-lang:scala-compiler</include>
                                     <include>org.scala-lang:scalap</include>
+                                </includes>
+                            </artifactSet>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>package</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>appassembler-maven-plugin</artifactId>
+                        <version>1.8</version>
+                        <configuration>
+                            <configurationSourceDirectory>${project.basedir}/src/main/dist/config
+                            </configurationSourceDirectory>
+                            <configurationDirectory>conf</configurationDirectory>
+                            <copyConfigurationDirectory>true</copyConfigurationDirectory>
+                            <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+                            <assembleDirectory>${project.build.directory}/crossdata-shell-${project.parent.version}
+                            </assembleDirectory>
+                            <extraJvmArguments>-Xms512m</extraJvmArguments>
+                            <repositoryLayout>flat</repositoryLayout>
+                            <generateRepository>true</generateRepository>
+                            <licenseHeaderFile>src/main/dist/include/LICENSE</licenseHeaderFile>
+                            <repositoryName>lib</repositoryName>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>Assembler-Script</id>
+                                <phase>package</phase>
+                                <configuration>
+                                    <unixScriptTemplate>${project.basedir}/src/main/dist/template/unix-script.sh
+                                    </unixScriptTemplate>
+                                    <programs>
+                                        <program>
+                                            <mainClass>com.stratio.crossdata.driver.shell.BasicShell</mainClass>
+                                            <id>crossdata-shell</id>
+                                            <platforms>
+                                                <platform>unix</platform>
+                                            </platforms>
+                                            <jvmSettings>
+                                                <systemProperties>
+                                                    <systemProperty>log4j.configuration=driver-log.properties
+                                                    </systemProperty>
+                                                </systemProperties>
+                                            </jvmSettings>
+                                        </program>
+                                    </programs>
+                                </configuration>
+                                <goals>
+                                    <goal>assemble</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>2.6</version>
+                        <executions>
+                            <execution>
+                                <id>copy-resources</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/crossdata-shell-${project.parent.version}
+                                    </outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${project.basedir}/src/main/dist/include</directory>
+                         
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>2.4.1</version>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+                            <minimizeJar>true</minimizeJar>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.stratio.crossdata:crossdata-common_${scala.binary.version}</include>
+                                    <include>com.stratio.crossdata:crossdata-driver_${scala.binary.version}</include>
+                                    <include>org.apache.spark:spark-catalyst_${scala.binary.version}</include>
+                                    <include>com.typesafe.akka:akka-actor_${scala.binary.version}</include>
+                                    <include>com.typesafe.akka:akka-cluster_${scala.binary.version}</include>
+                                    <include>com.typesafe.akka:akka-contrib_${scala.binary.version}</include>
+                                    <include>com.typesafe.akka:akka-remote_${scala.binary.version}</include>
+                                    <include>com.typesafe.akka:akka-slf4j_${scala.binary.version}</include>
+                                    <include>com.google.guava:guava</include>
+                                    <include>io.netty:netty-all</include>
+                                    <include>io.netty:netty</include>
+                                    <include>com.google.protobuf:protobuf-java</include>
+                                    <include>org.slf4j:slf4j-api</include>
+                                    <include>org.slf4j:slf4j-log4j12</include>
+                                    <include>log4j:log4j:jar</include>
+                                    <include>org.scala-lang:scala-library</include>
+                                    <include>org.scala-lang:scala-reflect</include>
+                                    <include>org.scala-lang:scala-compiler</include>
+                                    <include>org.scala-lang:scalap</include>
+                                    <include>jline:jline</include>
                                 </includes>
                             </artifactSet>
                         </configuration>

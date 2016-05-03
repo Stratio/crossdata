@@ -16,13 +16,26 @@
 package com.stratio.crossdata.connector.elasticsearch
 
 import java.sql.Timestamp
-import java.util.Date
 import java.sql.{Date => SQLDate}
+import java.text.SimpleDateFormat
+import java.util.Date
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.DataType
+import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.IntegerType
+import org.apache.spark.sql.types.LongType
+import org.apache.spark.sql.types.DecimalType
+import org.apache.spark.sql.types.TimestampType
+import org.apache.spark.sql.types.NullType
+import org.apache.spark.sql.types.DoubleType
+import org.apache.spark.sql.types.BooleanType
+import org.apache.spark.sql.types.DateType
+import org.apache.spark.sql.types.Decimal
 import org.elasticsearch.common.joda.time.DateTime
-import org.elasticsearch.search.{SearchHit, SearchHitField}
+import org.elasticsearch.search.SearchHit
+import org.elasticsearch.search.SearchHitField
 
 object ElasticSearchRowConverter {
 
@@ -58,7 +71,7 @@ object ElasticSearchRowConverter {
 
 
   protected def enforceCorrectType(value: Any, desiredType: DataType): Any = {
-      //TODO check if value==null
+      // TODO check if value==null
       Option(desiredType).map {
         case StringType => value.toString
         case _ if value == "" => null // guard the non string type
@@ -111,7 +124,12 @@ object ElasticSearchRowConverter {
 
   private def toTimestamp(value: Any): Timestamp = {
     value match {
+      case value : String =>
+        val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS")
+        val parsedDate = dateFormat.parse(value)
+        new java.sql.Timestamp(parsedDate.getTime)
       case value: java.util.Date => new Timestamp(value.getTime)
+      case _ => sys.error(s"Unsupported datatype conversion [${value.getClass}},Timestamp]")
     }
   }
 

@@ -15,23 +15,29 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import com.stratio.crossdata.connector.TableInventory
-import org.apache.spark.Logging
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import org.apache.spark.sql.crossdata.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
-import org.apache.spark.sql.sources.RelationProvider
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.execution.datasources.ResolvedDataSource
+import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
 import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
 
+import scala.language.implicitConversions
+import scala.reflect.io.File
 
+object DDLUtils {
 
-private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
-  extends LogicalPlan with RunnableCommand with Logging {
+  implicit def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
+    tableIdentifier.database.toSeq :+ tableIdentifier.table
+
+}
+
+private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
+  extends LogicalPlan with RunnableCommand with SparkLoggerComponent {
 
   // The result of IMPORT TABLE has only tableIdentifier so far.
   override val output: Seq[Attribute] = {
@@ -43,79 +49,135 @@ private [crossdata] case class ImportTablesUsingWithOptions(datasource: String, 
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    def tableExists(tableId: Seq[String]): Boolean = {
+    def tableExists(tableId: TableIdentifier): Boolean = {
       val doExist = sqlContext.catalog.tableExists(tableId)
-      if (doExist) log.warn(s"IMPORT TABLE omitted already registered table: ${tableId mkString "."}")
+      if (doExist) log.warn(s"IMPORT TABLE omitted already registered table: ${tableId.unquotedString}")
       doExist
     }
 
-    def persistTable(t: TableInventory.Table, tableInventory: TableInventory, relationProvider: RelationProvider) = {
-      val connectorOpts = tableInventory.generateConnectorOpts(t, opts)
-      import XDCatalog._
-      sqlContext.catalog.persistTable(
-        CrossdataTable(t.tableName, t.database, t.schema, datasource, Array.empty[String], connectorOpts),
-        LogicalRelation(relationProvider.createRelation(sqlContext, connectorOpts))
-      )
-    }
+    // Get a reference to the inventory relation.
 
-    //Get a reference to the inventory relation.
     val resolved = ResolvedDataSource.lookupDataSource(datasource).newInstance()
-
     val inventoryRelation = resolved.asInstanceOf[TableInventory]
-    val relationProvider = resolved.asInstanceOf[RelationProvider]
 
-    //Obtains the list of tables and persist it (if persistence implemented)
+    // Obtains the list of tables and persist it (if persistence implemented)
     val tables = inventoryRelation.listTables(sqlContext, opts)
-
 
     for {
       table: TableInventory.Table <- tables
-      tableId = TableIdentifier(table.tableName, table.database).toSeq
+      tableId = TableIdentifier(table.tableName, table.database)
       if inventoryRelation.exclusionFilter(table)
     } yield {
       val ignoreTable = tableExists(tableId)
       if (!ignoreTable) {
-        logInfo(s"Importing table ${tableId mkString "."}")
-        persistTable(table, inventoryRelation, relationProvider)
+        logInfo(s"Importing table ${tableId.unquotedString}")
+        val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
+        val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
+        sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
       }
-      Row(tableId, ignoreTable)
+      val tableSeq = DDLUtils.tableIdentifierToSeq(tableId)
+      Row(tableSeq, ignoreTable)
     }
 
   }
 }
 
-private [crossdata] case class DropTable(tableIdentifier: TableIdentifier)
+private[crossdata] case class DropTable(tableIdentifier: TableIdentifier)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    import XDCatalog._
-    sqlContext.catalog.dropTable(tableIdentifier.toSeq)
+    sqlContext.catalog.dropTable(tableIdentifier)
+    Seq.empty
+  }
+
+}
+
+private[crossdata] case object DropAllTables
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    sqlContext.catalog.dropAllTables()
+    Seq.empty
+  }
+
+}
+
+private[crossdata] case class CreateTempView(viewIdentifier: ViewIdentifier, queryPlan: LogicalPlan)
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    sqlContext.catalog.registerView(viewIdentifier, queryPlan)
+    Seq.empty
+  }
+
+}
+
+private[crossdata] case class CreateView(viewIdentifier: ViewIdentifier, queryPlan: LogicalPlan, sql: String)
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    sqlContext.catalog.persistView(viewIdentifier, queryPlan, sql)
     Seq.empty
   }
 
 }
 
 
-private [crossdata] case class CreateTempView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan)
+private[crossdata] case class DropView(viewIdentifier: ViewIdentifier)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    import XDCatalog._
-    sqlContext.catalog.registerView(viewIdentifier.toSeq, queryPlan)
+    sqlContext.catalog.dropView(viewIdentifier)
     Seq.empty
   }
-
 }
 
-
-private [crossdata] case class CreateView(viewIdentifier: TableIdentifier, query: String)
+private[crossdata] case class AddJar(jarPath: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    throw new AnalysisException("Only temporary views are supported. Use CREATE TEMPORARY VIEW")
+    if (jarPath.toLowerCase.startsWith("hdfs://") || File(jarPath).exists) {
+      sqlContext.sparkContext.addJar(jarPath)
+      Seq.empty
+    } else {
+      sys.error("File doesn't exists or is not a hdfs file")
+    }
   }
 }
 
+case class CreateExternalTable(
+                                tableIdent: TableIdentifier,
+                                userSpecifiedSchema: StructType,
+                                provider: String,
+                                options: Map[String, String],
+                                allowExisting: Boolean = false) extends LogicalPlan with RunnableCommand {
 
 
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
+
+    resolved match {
+
+      case _ if sqlContext.catalog.tableExists(tableIdent) =>
+        throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
+
+      case tableManipulation: TableManipulation =>
+
+        val tableInventory = tableManipulation.createExternalTable(sqlContext, tableIdent.table, tableIdent.database, userSpecifiedSchema, options)
+        tableInventory.map{ tableInventory =>
+          val optionsWithTable = tableManipulation.generateConnectorOpts(tableInventory, options)
+          val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
+          sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
+        } getOrElse( throw new RuntimeException(s"External table can't be created"))
+
+      case _ =>
+        sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")
+    }
+
+    Seq.empty
+
+  }
+
+}
 

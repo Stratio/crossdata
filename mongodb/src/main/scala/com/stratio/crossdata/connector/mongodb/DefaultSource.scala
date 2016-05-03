@@ -16,25 +16,41 @@
 package com.stratio.crossdata.connector.mongodb
 
 import com.mongodb.DBCollection
+import com.mongodb.casbah.Imports.DBObject
 import com.mongodb.casbah.MongoDB
 
-import com.stratio.crossdata.connector.TableInventory
 import com.stratio.crossdata.connector.TableInventory.Table
-import com.stratio.datasource.Config._
-import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions, MongodbConfig, MongodbRelation}
+import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
+import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbRelation}
 import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.sources.{DataSourceRegister, BaseRelation}
+import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 /**
  * Allows creation of MongoDB based tables using
  * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
- * Required options are detailed in [[com.stratio.datasource.mongodb.MongodbConfig]]
+ * Required options are detailed in [[com.stratio.datasource.mongodb.config.MongodbConfig]]
  */
-class DefaultSource extends ProviderDS with TableInventory with DataSourceRegister {
+class DefaultSource extends ProviderDS with TableInventory with DataSourceRegister with TableManipulation{
 
   import MongodbConfig._
+
+  /**
+    * if the collection is capped
+    */
+  val MongoCollectionPropertyCapped:String= "capped"
+
+  /**
+    * collection size
+    */
+  val MongoCollectionPropertySize:String= "size"
+
+  /**
+    * max number of documents
+    */
+  val MongoCollectionPropertyMax:String= "max"
 
   override def shortName(): String = "mongodb"
 
@@ -132,46 +148,39 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
     Table(collection, Some(database), Some(new MongodbRelation(collectionConfig)(context).schema))
   }
 
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   databaseName: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String]): Option[Table] = {
 
-  private def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
+    val database: String = options.get(Database).orElse(databaseName).
+      getOrElse(throw new RuntimeException(s"$Database required when use CREATE EXTERNAL TABLE command"))
 
-    // required properties
-    /** We will assume hosts are provided like 'host:port,host2:port2,...' */
-    val properties: Map[String, Any] = parameters.updated(Host, parameters.getOrElse(Host, notFound[String](Host)).split(",").toList)
-    if (!parameters.contains(Database)) notFound(Database)
-    if (!parameters.contains(Collection)) notFound(Collection)
+    val collection: String = options.getOrElse(Collection, tableName)
 
-    //optional parseable properties
-    val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
-
-    val finalMap = (properties /: optionalProperties){
-      /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
-      case (properties,Credentials) =>
-        parameters.get(Credentials).map{ credentialInput =>
-          val credentials = credentialInput.split(";").map(_.split(",")).toList
-            .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
-          properties + (Credentials -> credentials)
-        } getOrElse properties
-
-      /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
-      case (properties,SSLOptions) =>
-        parameters.get(SSLOptions).map{ ssloptionsInput =>
-
-          val ssloption = ssloptionsInput.split(",")
-          val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
-          properties + (SSLOptions -> ssloptions)
-        } getOrElse properties
-
-      /** We will assume fields are provided like 'user,database,password...' */
-      case (properties, UpdateFields) => {
-        parameters.get(UpdateFields).map{ updateInputs =>
-          val updateFields = updateInputs.split(",")
-          properties + (UpdateFields -> updateFields)
-        } getOrElse properties
-      }
+    val mongoOptions = DBObject()
+    options.map {
+      case (MongoCollectionPropertyCapped, value) => mongoOptions.put(MongoCollectionPropertyCapped, value)
+      case (MongoCollectionPropertySize, value) => mongoOptions.put(MongoCollectionPropertySize, value.toInt)
+      case (MongoCollectionPropertyMax, value) => mongoOptions.put(MongoCollectionPropertyMax, value.toInt)
+      case _ =>
     }
 
-    finalMap
-  }
+    val hosts: List[String] = options(Host).split(",").toList
 
+    try {
+
+      MongodbConnection.withClientDo(hosts) { mongoClient =>
+        mongoClient.getDB(database).createCollection(collection, mongoOptions)
+      }
+      Option(Table(collection, Option(database), Option(schema)))
+    } catch {
+      case e: IllegalArgumentException =>
+        throw e
+      case e: Exception =>
+        sys.error(e.getMessage)
+        None
+    }
+  }
 }

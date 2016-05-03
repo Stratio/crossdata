@@ -54,7 +54,8 @@ import cucumber.api.CucumberOptions;
 
 @CucumberOptions(features = { "src/test/resources/features/Catalog/PersistentCatalogMySQL.feature",
 		"src/test/resources/features/Catalog/PersistentCatalogMySQLDropTable.feature",
-		"src/test/resources/features/Catalog/PersistentCatalogMySQLImportTables.feature"
+		"src/test/resources/features/Catalog/PersistentCatalogMySQLImportTables.feature",
+		"src/test/resources/features/Catalog/PersistentCatalogMySQLImportTablesUsingApi.feature"
 	})
 public class ATPersistentCatalogXDTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()
@@ -73,8 +74,8 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 	private String host = System.getProperty("CASSANDRA_HOST", "127.0.0.1");
 	private String sourceProvider = System.getProperty("SOURCE_PROVIDER",
 			"com.stratio.crossdata.sql.sources.cassandra");
-	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearch");
-	private String elasticSearchIP = System.getProperty("ELASTICSEARCH_HOST","172.17.0.3");
+	private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
+	private String elasticSearchIP = System.getProperty("ES_NODES","172.17.0.3");
 	private Client client;
 	private Settings settings = ImmutableSettings.settingsBuilder()
 			.put("cluster.name", elasticSearchCluster).build();
@@ -82,7 +83,7 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 	public ATPersistentCatalogXDTest() {
 	}
 
-	@BeforeClass
+	@BeforeClass(enabled = false)
 	public void setUp() {
 		ThreadProperty.set("Connector", "Persistence MYSQL");
 		logger.info("Connecting to Cassandra Cluster");
@@ -170,10 +171,11 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
+		ThreadProperty.set("Driver", "context");
 		client.close();
 	}
 
-	@AfterClass
+	@AfterClass(enabled = false)
 	public void cleanUp() {
         MongoClient mongoClient = null;
         try {
@@ -191,7 +193,7 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 		client.close();
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void ATPersistentCatalogXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}

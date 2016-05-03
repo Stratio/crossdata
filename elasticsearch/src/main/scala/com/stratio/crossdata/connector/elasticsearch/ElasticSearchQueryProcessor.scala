@@ -17,20 +17,21 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.elasticsearch.ElasticSearchConnectionUtils._
-import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, SimpleLogicalPlan}
+import org.apache.spark.sql.{Row, sources}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, ProjectReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{Row, sources}
 import org.elasticsearch.action.search.SearchResponse
 
 object ElasticSearchQueryProcessor {
 
-  def apply(logicalPlan: LogicalPlan, parameters: Map[String, String], schemaProvided: Option[StructType] = None) = new ElasticSearchQueryProcessor(logicalPlan, parameters, schemaProvided)
+  def apply(logicalPlan: LogicalPlan, parameters: Map[String, String], schemaProvided: Option[StructType] = None)
+                                          = new ElasticSearchQueryProcessor(logicalPlan, parameters, schemaProvided)
 }
 
 /**
@@ -40,7 +41,8 @@ object ElasticSearchQueryProcessor {
  * @param parameters ElasticSearch Configuration Parameters
  * @param schemaProvided Spark used defined schema
  */
-class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String], val schemaProvided: Option[StructType] = None) extends Logging {
+class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String],
+                                  val schemaProvided: Option[StructType] = None) extends SparkLoggerComponent {
 
   type Limit = Option[Int]
 
@@ -51,7 +53,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
   def execute(): Option[Array[Row]] = {
     validatedNativePlan.map { case (baseLogicalPlan, limit) =>
       val requiredColumns = baseLogicalPlan match {
-        case SimpleLogicalPlan(projects, _, _) =>
+        case SimpleLogicalPlan(projects, _, _, _) =>
           projects
       }
 
@@ -60,9 +62,13 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       val (esIndex, esType) = extractIndexAndType(parameters).get
 
       val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
-      val resp: SearchResponse = buildClient(parameters).execute(finalQuery).await
-
-      ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
+      val esClient = buildClient(parameters)
+      try {
+        val resp: SearchResponse = esClient.execute(finalQuery).await
+        ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
+      }finally {
+        esClient.close()
+      }
     }
   }
 
@@ -120,8 +126,10 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
         case PhysicalOperation(projectList, filterList, _) =>
           CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-            case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
-            case (basePlan, _) => Some(basePlan)
+            case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
+              None
+            case (basePlan, _, _) =>
+              Some(basePlan)
           }
       }
     }

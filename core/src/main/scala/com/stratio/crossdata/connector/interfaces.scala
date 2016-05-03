@@ -17,11 +17,11 @@ package com.stratio.crossdata.connector
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.sources.{DataSourceRegister, Filter}
 import org.apache.spark.sql.types.{DataType, StructType}
-import org.apache.spark.sql.{Row, SQLContext}
 
 
 /**
@@ -49,15 +49,10 @@ sealed trait PushDownable {
   def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean
 }
 
-/**
- * Interface including data source operations for listing and describing tables
- * at a data source.
- *
- */
-@DeveloperApi
-trait TableInventory {
 
-  import TableInventory._
+sealed trait GenerateConnectorOptions {
+
+  import TableInventory.Table
 
   /**
    *
@@ -67,6 +62,16 @@ trait TableInventory {
    *         to a low-level option map.
    */
   def generateConnectorOpts(item: Table, userOpts: Map[String, String] = Map.empty): Map[String, String]
+}
+/**
+ * Interface including data source operations for listing and describing tables
+ * at a data source.
+ *
+ */
+@DeveloperApi
+trait TableInventory extends GenerateConnectorOptions{
+
+  import TableInventory.Table
 
   /**
    * Overriding this function allows tables import filtering. e.g: Avoiding system tables.
@@ -95,7 +100,7 @@ object TableInventory {
 
 /* Interface for providing lists and UDF discovery services */
 trait FunctionInventory extends DataSourceRegister{
-  import FunctionInventory._
+  import FunctionInventory.UDF
 
   //Get builtin functions manifest
   def nativeBuiltinFunctions: Seq[UDF]
@@ -113,4 +118,19 @@ object FunctionInventory {
  */
 trait NativeFunctionExecutor {
   def buildScan(requiredColumns: Array[String], filters: Array[Filter], udfs: Map[String, NativeUDF]): RDD[Row]
+}
+
+/**
+  * Interface including data source operations for Table manipulation like
+  * CREATE/DROP EXTERNAL TABLE
+  *
+  */
+trait TableManipulation extends GenerateConnectorOptions{
+
+
+  def createExternalTable(context: SQLContext,
+                          tableName: String,
+                          databaseName: Option[String],
+                          schema: StructType,
+                          options: Map[String, String]): Option[TableInventory.Table]
 }

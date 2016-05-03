@@ -15,16 +15,23 @@
  */
 package com.stratio.crossdata.server
 
-import akka.actor.{ActorSystem, Props}
+import java.io.File
+
+import akka.actor.ActorSystem
+import akka.actor.Props
 import akka.cluster.Cluster
 import akka.contrib.pattern.ClusterReceptionistExtension
-import akka.routing.RoundRobinPool
+import akka.routing.{DefaultResizer, RoundRobinPool}
 import com.stratio.crossdata.server.actors.ServerActor
-import com.stratio.crossdata.server.config.ServerConfig
-import org.apache.commons.daemon.{Daemon, DaemonContext}
+import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
+import org.apache.commons.daemon.Daemon
+import org.apache.commons.daemon.DaemonContext
 import org.apache.log4j.Logger
+import org.apache.spark.sql.crossdata
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+
 import scala.collection.JavaConversions._
 
 
@@ -45,24 +52,47 @@ class CrossdataServer extends Daemon with ServerConfig {
       .filterKeys(_.startsWith("config.spark"))
       .map(e => (e._1.replace("config.", ""), e._2))
 
+    val metricsPath = Option(sparkParams.get("spark.metrics.conf"))
+
+    val filteredSparkParams = metricsPath.fold(sparkParams)(m => checkMetricsFile(sparkParams, m.get))
+
     xdContext = {
-      val sparkContext = new SparkContext(new SparkConf().setAll(sparkParams))
+      val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
       Some(new XDContext(sparkContext))
     }
 
     require(xdContext.isDefined, "Crossdata context must be started")
 
+    //Check if the catalog is "on line"
+    val ctx=xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started"))
+    require(ctx.checkCatalogConnection,"Crossdata Server cannot be started because there isn't a connection with the Catalog")
+
     system = Some(ActorSystem(clusterName, config))
 
+    val serverActorConfig = ServerActorConfig(completedJobTTL, retryNoAttempts, retryCountWindow)
+
     system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
-      // TODO resizer
+      val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
       val serverActor = actorSystem.actorOf(
-        RoundRobinPool(serverActorInstances).props(
-          Props(classOf[ServerActor], Cluster(actorSystem), xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")))),
+        RoundRobinPool(minServerActorInstances, Some(resizer)).props(
+          Props(classOf[ServerActor],
+            Cluster(actorSystem),
+            xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")),
+            serverActorConfig)),
         actorName)
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
     }
-    logger.info("Crossdata Server started --- v1.1.0")
+    logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
+  }
+
+  def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
+    val metricsFile = new File(metricsPath)
+    if(!metricsFile.exists){
+      logger.warn(s"Metrics configuration file not found: ${metricsFile.getPath}")
+      params - "spark.metrics.conf"
+    } else {
+      params
+    }
   }
 
   override def stop(): Unit = {

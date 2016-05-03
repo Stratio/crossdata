@@ -17,17 +17,17 @@ package org.apache.spark.sql.crossdata
 
 import java.nio.file.Paths
 
+import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.execution.PersistDataSourceTable
 import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.apache.spark.sql.execution.ExecutedCommand
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class XDContextIT extends CoreWithSharedContext {
-
 
   "A DefaultCatalog" should "be case sensitive" in {
     val xdCatalog = xdContext.catalog
@@ -39,7 +39,7 @@ class XDContextIT extends CoreWithSharedContext {
     val df: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
     df.registerTempTable("records")
 
-    val result: Array[Row] = sql("SELECT * FROM records").collect()
+    val result: Array[Row] = xdContext.sql("SELECT * FROM records").collect()
 
     result should have length 5
   }
@@ -49,17 +49,49 @@ class XDContextIT extends CoreWithSharedContext {
     val df: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
     df.registerTempTable("records")
 
-    val dataframe = sql("SELECT * FROM records")
+    val dataframe = xdContext.sql("SELECT * FROM records")
+
     dataframe shouldBe a[XDDataFrame]
   }
 
 
   it must "plan a PersistDataSource when creating a table " in {
 
-    val dataframe = sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/catalog-reference.conf").toURI()).toString}')")
+    val dataframe = xdContext.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/core-reference.conf").toURI()).toString}')")
     val sparkPlan = dataframe.queryExecution.sparkPlan
-    xdContext.catalog.dropTable(Seq("","jsonTable"))
+    xdContext.catalog.dropTable(TableIdentifier("jsonTable", None))
+
     sparkPlan should matchPattern { case ExecutedCommand(_: PersistDataSourceTable) => }
+
+  }
+
+  it must "plan a query with conflicted column names between two tables resolving by alias preference" in {
+
+    val t1: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((1 to 5)
+      .map(i => Row(s"val_$i", i))), StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
+    t1.registerTempTable("t1")
+
+    val t2: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((4 to 8)
+      .map(i => Row(s"val_$i", i))), StructType(Array(StructField("name", StringType), StructField("value", IntegerType))))
+    t2.registerTempTable("t2")
+
+    val dataFrame = xdContext.sql("SELECT t1.id, t2.name as name, t1.value as total FROM t1 INNER JOIN t2 ON t1.id = t2.name GROUP BY id, name, total")
+
+    dataFrame.show
+
+    dataFrame.collect should have length 2
+
+  }
+
+  it must "plan a query with aliased attributes in the group by clause" in {
+
+    val t1: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((1 to 5)
+      .map(i => Row(s"val_$i", i))), StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
+    t1.registerTempTable("t3")
+
+    val dataFrame = xdContext.sql("SELECT id as id, value as product FROM t3 GROUP BY id, product")
+
+    dataFrame.collect should have length 5
 
   }
 

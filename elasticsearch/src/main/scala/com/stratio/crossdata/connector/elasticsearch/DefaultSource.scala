@@ -20,58 +20,69 @@ Modifications and adaptations - Copyright (C) 2015 Stratio (http://stratio.com)
 */
 package com.stratio.crossdata.connector.elasticsearch
 
-import com.stratio.crossdata.connector.TableInventory
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.IndexType
+import com.sksamuel.elastic4s.mappings._
 import com.stratio.crossdata.connector.TableInventory.Table
-import org.apache.spark.sql.{DataFrame, SaveMode, SQLContext}
-import org.apache.spark.sql.sources._
-import org.apache.spark.sql.types.StructType
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
-import org.elasticsearch.hadoop.{EsHadoopIllegalArgumentException, EsHadoopIllegalStateException}
+import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
+import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
+import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, DataSourceRegister, RelationProvider, SchemaRelationProvider}
+import org.apache.spark.sql.types.{BooleanType, DateType, DoubleType, FloatType, IntegerType, LongType, StringType, StructType}
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions
-import org.elasticsearch.spark.sql.ElasticSearchXDRelation
-import org.apache.spark.sql.SaveMode.Append
-import org.apache.spark.sql.SaveMode.ErrorIfExists
-import org.apache.spark.sql.SaveMode.Ignore
-import org.apache.spark.sql.SaveMode.Overwrite
+import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
+import org.elasticsearch.hadoop.util.Version
+import org.elasticsearch.hadoop.{EsHadoopIllegalArgumentException, EsHadoopIllegalStateException}
+import org.elasticsearch.spark.sql.ElasticsearchXDRelation
 
 
-object DefaultSource{
-  val DATA_SOURCE_PUSH_DOWN: String = "es.internal.spark.sql.pushdown"
-  val DATA_SOURCE_PUSH_DOWN_STRICT: String = "es.internal.spark.sql.pushdown.strict"
+object DefaultSource {
+  val DataSourcePushDown: String = "es.internal.spark.sql.pushdown"
+  val DataSourcePushDownStrict: String = "es.internal.spark.sql.pushdown.strict"
   val ElasticNativePort = "es.nativePort"
   val ElasticCluster = "es.cluster"
   val ElasticIndex = "es.index"
 }
 
 /**
- * This class is used by Spark to create a new  [[ElasticSearchXDRelation]]
+ * This class is used by Spark to create a new  [[ElasticsearchXDRelation]]
  */
-class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider with TableInventory with DataSourceRegister {
+class DefaultSource extends RelationProvider with SchemaRelationProvider
+                                              with CreatableRelationProvider
+                                              with TableInventory
+                                              with DataSourceRegister
+                                              with TableManipulation  {
 
   import DefaultSource._
+
+  Version.logVersion()
 
   override def shortName(): String = "elasticsearch"
 
   override def createRelation(@transient sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = {
-    new ElasticSearchXDRelation(params(parameters), sqlContext)
+    new ElasticsearchXDRelation(params(parameters), sqlContext)
   }
 
   override def createRelation(@transient sqlContext: SQLContext, parameters: Map[String, String], schema: StructType): BaseRelation = {
-    new ElasticSearchXDRelation(params(parameters), sqlContext, Some(schema))
+    new ElasticsearchXDRelation(params(parameters), sqlContext, Some(schema))
   }
 
-  override def createRelation(@transient sqlContext: SQLContext, mode: SaveMode, parameters: Map[String, String], data: DataFrame): BaseRelation = {
-    val relation = new ElasticSearchXDRelation(params(parameters), sqlContext, Some(data.schema))
+  override def createRelation(@transient sqlContext: SQLContext, mode: SaveMode, parameters: Map[String, String],
+                              data: DataFrame): BaseRelation = {
+
+    val relation = new ElasticsearchXDRelation(params(parameters), sqlContext, Some(data.schema))
     mode match {
-      case Append => relation.insert(data, false)
-      case Overwrite => relation.insert(data, true)
-      case ErrorIfExists => {
-        if (relation.isEmpty()) relation.insert(data, false)
+      case Append =>
+        relation.insert(data, overwrite = false)
+      case Overwrite =>
+        relation.insert(data, overwrite = true)
+      case ErrorIfExists =>
+        if (relation.isEmpty()) relation.insert(data, overwrite = false)
         else throw new EsHadoopIllegalStateException(s"Index ${relation.cfg.getResourceWrite} already exists")
-      }
-      case Ignore => if (relation.isEmpty()) {
-        relation.insert(data, false)
-      }
+      case Ignore =>
+        if (relation.isEmpty()) {
+          relation.insert(data, overwrite = false)
+        }
     }
     relation
   }
@@ -82,16 +93,19 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
    * @return the validated map.
    */
   private def params(parameters: Map[String, String]) = {
-    // . seems to be problematic when specifying the options
+
+    // '.' seems to be problematic when specifying the options
     val params = parameters.map { case (k, v) => (k.replace('_', '.'), v) }.map { case (k, v) =>
       if (k.startsWith("es.")) (k, v)
-      else if (k == "path") ("es.resource", v)
-      else if (k == "pushdown") (DATA_SOURCE_PUSH_DOWN, v)
-      else if (k == "strict") (DATA_SOURCE_PUSH_DOWN_STRICT, v)
+      else if (k == "path") (ConfigurationOptions.ES_RESOURCE, v)
+      else if (k == "pushdown") (DataSourcePushDown, v)
+      else if (k == "strict") (DataSourcePushDownStrict, v)
       else ("es." + k, v)
     }
-    //TODO Validate required parameters
 
+    // validate path
+    params.getOrElse(ConfigurationOptions.ES_RESOURCE_READ,
+      params.getOrElse(ConfigurationOptions.ES_RESOURCE, throw new EsHadoopIllegalArgumentException("resource must be specified for Elasticsearch resources.")))
 
     params
   }
@@ -113,6 +127,42 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     }
 
     ElasticSearchConnectionUtils.listTypes(params(options))
+  }
+
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   databaseName: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String]): Option[Table] = {
+
+    val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).orElse(databaseName.map((_, tableName))).
+      getOrElse(throw new RuntimeException(s"$ES_RESOURCE is required when running CREATE EXTERNAL TABLE"))
+
+
+    val elasticSchema = schema.map { field =>
+      field.dataType match {
+        case IntegerType => new IntegerFieldDefinition(field.name)
+        case StringType => new StringFieldDefinition(field.name)
+        case DateType => new DateFieldDefinition(field.name)
+        case BooleanType => new BooleanFieldDefinition(field.name)
+        case DoubleType => new DoubleFieldDefinition(field.name)
+        case LongType => new StringFieldDefinition(field.name)
+        case FloatType => new FloatFieldDefinition(field.name)
+      }
+    }
+
+    val indexType = IndexType(index, typeName)
+    try {
+      val client = ElasticSearchConnectionUtils.buildClient(options)
+      client.execute {
+        put.mapping(indexType) as elasticSchema
+      }
+      Option(Table(typeName, Option(index), Option(schema)))
+    } catch {
+      case e: Exception =>
+        sys.error(e.getMessage)
+        None
+    }
   }
 
 }

@@ -21,20 +21,20 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.stratio</groupId>
-        <artifactId>parent</artifactId>
+        <artifactId>parent_${scala.binary.version}</artifactId>
         <version>0.5.0</version>
     </parent>
 
-    <artifactId>crossdata-examples</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <artifactId>crossdata-examples_${scala.binary.version}</artifactId>
+    <version>1.3.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Examples</name>
     <description>Examples using Crossdata with MongoDB and Cassandra</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
-        <crossdata.version>1.1.0-SNAPSHOT</crossdata.version>
         <scala.binary.version>2.10</scala.binary.version>
+        <crossdata.version>${project.version}</crossdata.version>
     </properties>
 
     <dependencies>

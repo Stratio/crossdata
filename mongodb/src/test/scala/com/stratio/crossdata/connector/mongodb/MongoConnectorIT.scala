@@ -63,7 +63,7 @@ class MongoConnectorIT extends MongoWithSharedContext {
 
   it should "execute natively an In filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result = sql(s"SELECT * FROM $Collection WHERE id IN ('1','5','9')").collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE id IN (1,5,9)").collect(Native)
     result should have length 3
   }
 

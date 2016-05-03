@@ -1,18 +1,19 @@
 Feature: MongoSelectSimple
+
   Scenario: [CROSSDATA-74 : MONGO NATIVE] SELECT * FROM tabletest;
     When I execute 'SELECT * FROM tabletest'
     Then The result has to have '10' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
-      |    0          | name_0        | 10.2          |  true         | 1999-11-30 |
-      |    1          | name_1        | 11.2          |  true         | 2001-01-01 |
-      |    2          | name_2        | 12.2          |  true         | 2002-02-02 |
-      |    3          | name_3        | 13.2          |  true         | 2003-03-03 |
-      |    4          | name_4        | 14.2          |  true         | 2004-04-04 |
-      |    5          | name_5        | 15.2          |  true         | 2005-05-05 |
-      |    6          | name_6        | 16.2          |  true         | 2006-06-06 |
-      |    7          | name_7        | 17.2          |  true         | 2007-07-07 |
-      |    8          | name_8        | 18.2          |  true         | 2008-08-08 |
-      |    9          | name_9        | 19.2          |  true         | 2009-09-09 |
+      |    0          | name_0        | 10.2          |  true         | 2000-1-1 |
+      |    1          | name_1        | 11.2          |  true         | 2001-1-1|
+      |    2          | name_2        | 12.2          |  true         | 2002-1-1 |
+      |    3          | name_3        | 13.2          |  true         | 2003-1-1 |
+      |    4          | name_4        | 14.2          |  true         | 2004-1-1 |
+      |    5          | name_5        | 15.2          |  true         | 2005-1-1 |
+      |    6          | name_6        | 16.2          |  true         | 2006-1-1 |
+      |    7          | name_7        | 17.2          |  true         | 2007-1-1 |
+      |    8          | name_8        | 18.2          |  true         | 2008-1-1 |
+      |    9          | name_9        | 19.2          |  true         | 2009-1-1 |
 
   Scenario: [MONGO NATIVE] SELECT ident FROM tabletest;
     When I execute 'SELECT ident FROM tabletest'
@@ -168,13 +169,93 @@ Feature: MongoSelectSimple
     When I execute 'SELECT ident,name,money,new,date FROM tabletest'
     Then The result has to have '10' rows:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-date  |
-      |    0          | name_0        | 10.2          |  true         | 1999-11-30 |
-      |    1          | name_1        | 11.2          |  true         | 2001-01-01 |
-      |    2          | name_2        | 12.2          |  true         | 2002-02-02 |
-      |    3          | name_3        | 13.2          |  true         | 2003-03-03 |
-      |    4          | name_4        | 14.2          |  true         | 2004-04-04 |
-      |    5          | name_5        | 15.2          |  true         | 2005-05-05 |
-      |    6          | name_6        | 16.2          |  true         | 2006-06-06 |
-      |    7          | name_7        | 17.2          |  true         | 2007-07-07 |
-      |    8          | name_8        | 18.2          |  true         | 2008-08-08 |
-      |    9          | name_9        | 19.2          |  true         | 2009-09-09 |
+      |    0          | name_0        | 10.2          |  true         | 2000-1-1 |
+      |    1          | name_1        | 11.2          |  true         | 2001-1-1|
+      |    2          | name_2        | 12.2          |  true         | 2002-1-1 |
+      |    3          | name_3        | 13.2          |  true         | 2003-1-1 |
+      |    4          | name_4        | 14.2          |  true         | 2004-1-1 |
+      |    5          | name_5        | 15.2          |  true         | 2005-1-1 |
+      |    6          | name_6        | 16.2          |  true         | 2006-1-1 |
+      |    7          | name_7        | 17.2          |  true         | 2007-1-1 |
+      |    8          | name_8        | 18.2          |  true         | 2008-1-1 |
+      |    9          | name_9        | 19.2          |  true         | 2009-1-1 |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT * FROM tablearray;
+    When I execute 'SELECT * FROM tablearray'
+    Then The result has to have '10' rows:
+      | ident-integer | names-array<string>   |
+      |    0          | names_00,names_10,names_20,names_30,names_40   |
+      |    1          | names_01,names_11,names_21,names_31,names_41   |
+      |    2          | names_02,names_12,names_22,names_32,names_42   |
+      |    3          | names_03,names_13,names_23,names_33,names_43   |
+      |    4          | names_04,names_14,names_24,names_34,names_44   |
+      |    5          | names_05,names_15,names_25,names_35,names_45   |
+      |    6          | names_06,names_16,names_26,names_36,names_46   |
+      |    7          | names_07,names_17,names_27,names_37,names_47   |
+      |    8          | names_08,names_18,names_28,names_38,names_48   |
+      |    9          | names_09,names_19,names_29,names_39,names_49   |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT ident, names FROM tablearray;
+    When I execute 'SELECT ident, names FROM tablearray'
+    Then The result has to have '10' rows:
+      | ident-integer | names-array<string>   |
+      |    0          | names_00,names_10,names_20,names_30,names_40   |
+      |    1          | names_01,names_11,names_21,names_31,names_41   |
+      |    2          | names_02,names_12,names_22,names_32,names_42   |
+      |    3          | names_03,names_13,names_23,names_33,names_43   |
+      |    4          | names_04,names_14,names_24,names_34,names_44   |
+      |    5          | names_05,names_15,names_25,names_35,names_45   |
+      |    6          | names_06,names_16,names_26,names_36,names_46   |
+      |    7          | names_07,names_17,names_27,names_37,names_47   |
+      |    8          | names_08,names_18,names_28,names_38,names_48   |
+      |    9          | names_09,names_19,names_29,names_39,names_49   |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT names FROM tablearray;
+    When I execute 'SELECT  names FROM tablearray'
+    Then The result has to have '10' rows:
+      | names-array<string>   |
+      | names_00,names_10,names_20,names_30,names_40   |
+      | names_01,names_11,names_21,names_31,names_41   |
+      | names_02,names_12,names_22,names_32,names_42   |
+      | names_03,names_13,names_23,names_33,names_43   |
+      | names_04,names_14,names_24,names_34,names_44   |
+      | names_05,names_15,names_25,names_35,names_45   |
+      | names_06,names_16,names_26,names_36,names_46   |
+      | names_07,names_17,names_27,names_37,names_47   |
+      | names_08,names_18,names_28,names_38,names_48   |
+      | names_09,names_19,names_29,names_39,names_49   |
+
+  Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT names as array FROM tablearray;
+    When I execute 'SELECT  names as array FROM tablearray'
+    Then The result has to have '10' rows:
+      | array-array<string>   |
+      | names_00,names_10,names_20,names_30,names_40   |
+      | names_01,names_11,names_21,names_31,names_41   |
+      | names_02,names_12,names_22,names_32,names_42   |
+      | names_03,names_13,names_23,names_33,names_43   |
+      | names_04,names_14,names_24,names_34,names_44   |
+      | names_05,names_15,names_25,names_35,names_45   |
+      | names_06,names_16,names_26,names_36,names_46   |
+      | names_07,names_17,names_27,names_37,names_47   |
+      | names_08,names_18,names_28,names_38,names_48   |
+      | names_09,names_19,names_29,names_39,names_49   |
+
+  Scenario: [CROSSDATA-257] SELECT * FROM composetable;
+    When I execute 'SELECT * FROM composetable'
+    Then The flattened result has to have '2' rows:
+      | ident-integer | person.name-string | person.daughter.name-string | person.daughter.age-integer |
+      | 0             | Hugo               | Juan                        | 12                   |
+      | 0             | Hugo               | Pepe                        | 13                   |
+
+  Scenario: [CROSSDATA-257] SELECT * FROM composetable;
+    When I execute 'SELECT ident, person.name, person.daughter[0].name FROM composetable'
+    Then The flattened result has to have '1' rows:
+      | ident-integer | person.name-string | _c2-string     |
+      | 0             | Hugo               | Juan           |
+
+  Scenario:[CROSSDATA-282] SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias
+    When I execute 'SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias'
+    Then The spark result has to have '1' rows:
+      | alias-boolean | count-long |
+      |true           | 10            |
+

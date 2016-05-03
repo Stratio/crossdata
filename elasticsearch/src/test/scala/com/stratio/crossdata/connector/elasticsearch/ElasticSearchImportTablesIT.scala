@@ -69,7 +69,8 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
     //Expectations
     xdContext.tableNames() should contain (s"$Index.$Type")
-    xdContext.table(s"$Index.$Type").schema should have length 6
+    xdContext.table(s"$Index.$Type").schema should have length 8
+
   }
 
   it should "infer schema after import One table from an Index" in {
@@ -154,10 +155,38 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
       //Expectations
       sql("SHOW TABLES").count should be > 1l
+      xdContext.tableNames().length should be > 1
 
     }finally {
       cleanTestData(client, "index_test")
     }
+  }
+
+  it should "Fail when mess an attribute" in {
+    assumeEnvironmentIsUpAndRunning
+    xdContext.dropAllTables()
+
+    val client = ElasticSearchConnectionUtils.buildClient(connectionOptions)
+
+    client.execute { index into Index -> "NewMapping" fields {
+      "name" -> "luis"
+    }}
+
+    val importQuery =
+      s"""
+         |IMPORT TABLES
+         |USING $SourceProvider
+         |OPTIONS (
+         |es.nodes '$ElasticHost',
+         |es.port '$ElasticRestPort',
+         |es.nativePort '$ElasticNativePort',
+         |es.resource '$Index/$Type'
+         |)
+      """.stripMargin
+
+    //Experimentation
+    an [RuntimeException] should be thrownBy sql(importQuery)
+
   }
 
   lazy val connectionOptions: Map[String, String] = Map(

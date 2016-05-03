@@ -16,19 +16,19 @@
 package com.stratio.crossdata.connector.cassandra
 
 import com.datastax.driver.core.{Cluster, Session}
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.ConfigFactory
-import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.CrossdataVersion
-import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
+import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.scalatest.Suite
 
-
+import scala.collection.immutable.ListMap
 import scala.util.Try
 
 trait CassandraWithSharedContext extends SharedXDContextWithDataTest
   with CassandraDefaultTestConstants
-  with Logging {
+  with SparkLoggerComponent {
 
   this: Suite =>
 
@@ -48,24 +48,46 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
   abstract override def saveTestData: Unit = {
     val session = client.get._2
 
-    session.execute(s"CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
-    session.execute(s"CREATE TABLE $Catalog.$Table (id int, age int,comment text, enrolled boolean, name text, PRIMARY KEY ((id), age, comment))")
-    session.execute( s"""
-                        |CREATE CUSTOM INDEX student_index ON $Catalog.$Table (name)
-                        |USING 'com.stratio.cassandra.lucene.Index'
-                        |WITH OPTIONS = {
-                        | 'refresh_seconds' : '1',
-                        | 'schema' : '{ fields : {comment  : {type : "text", analyzer : "english"}} }'
-                        |}
-      """.stripMargin.replaceAll("\n", " "))
+    def stringifySchema(schema: Map[String, String]): String = schema.map(p => s"${p._1} ${p._2}").mkString(", ")
 
-    for (a <- 1 to 10) {
-      session.execute("INSERT INTO " + Catalog + "." + Table + " (id, age, comment, enrolled) VALUES " +
-        "(" + a + ", " + (10 + a) + ", 'Comment " + a + "', " + (a % 2 == 0) + ")")
+    session.execute(
+      s"""CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}
+         |AND durable_writes = true;""".stripMargin.replaceAll("\n", " "))
+    session.execute(
+      s"""CREATE TABLE $Catalog.$Table (${stringifySchema(schema)},
+         |PRIMARY KEY (${pk.mkString(", ")}))""".stripMargin.replaceAll("\n", " "))
+
+    if(indexedColumn.nonEmpty){
+      session.execute(s"""
+                         |CREATE CUSTOM INDEX student_index ON $Catalog.$Table (name)
+                         |USING 'com.stratio.cassandra.lucene.Index'
+                         |WITH OPTIONS = {
+                         | 'refresh_seconds' : '1',
+                         | 'schema' : '{ fields : {comment  : {type : "text", analyzer : "english"}} }'
+                         |}
+      """.stripMargin.replaceAll("\n", " "))
     }
 
-    //This crates a new table in the keyspace which will not be initially registered at the Spark
-    session.execute(s"CREATE TABLE $Catalog.$UnregisteredTable (id int, age int, comment text, name text, PRIMARY KEY ((id), age, comment))")
+    /*for (a <- 1 to 10) {
+      session.execute("INSERT INTO " + Catalog + "." + Table + s" (${schema.map(p => p._1).mkString(", ")}) VALUES " +
+        "(" + a + ", " + (10 + a) + ", 'Comment " + a + "', " + (a % 2 == 0) + ", 'Name " + a + "')")
+    }*/
+
+    def insertRow(row: List[Any]): Unit = {
+      session.execute(
+        s"""INSERT INTO $Catalog.$Table(${schema.map(p => p._1).mkString(", ")})
+           | VALUES (${row.mkString(", ")})""".stripMargin.replaceAll("\n", ""))
+    }
+
+    testData.foreach(insertRow(_))
+
+    //This creates a new table in the keyspace which will not be initially registered at the Spark
+    if(UnregisteredTable.nonEmpty){
+      session.execute(
+        s"""CREATE TABLE $Catalog.$UnregisteredTable (${stringifySchema(schema)},
+            |PRIMARY KEY (${pk.mkString(", ")}))""".stripMargin.replaceAll("\n", " "))
+    }
+
     super.saveTestData
   }
 
@@ -96,6 +118,14 @@ sealed trait CassandraDefaultTestConstants {
   val Table = "students"
   val TypesTable = "datatypestablename"
   val UnregisteredTable = "teachers"
+  val schema = ListMap("id" -> "int", "age" -> "int", "comment" -> "text", "enrolled" -> "boolean", "name" -> "text")
+  val pk = "(id)" :: "age" :: "comment" :: Nil
+  val indexedColumn = "name"
+
+  val testData = (for (a <- 1 to 10) yield {
+    a :: (10 + a) :: s"'Comment $a'" :: (a % 2 == 0) :: s"'Name $a'" :: Nil
+  }).toList
+
   val CassandraHost: String = {
     Try(ConfigFactory.load().getStringList("cassandra.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
   }

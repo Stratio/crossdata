@@ -22,6 +22,9 @@ import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 import org.testng.annotations.Test;
 import cucumber.api.CucumberOptions;
+
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.stratio.tests.utils.BaseTest;
 import com.stratio.cucumber.testng.CucumberRunner;
@@ -33,7 +36,8 @@ import com.mongodb.MongoClient;
 import com.stratio.tests.utils.ThreadProperty;
 
 
-@CucumberOptions(features = { "src/test/resources/features/Mongo/MongoSelectSimple.feature",
+@CucumberOptions(features = {
+       "src/test/resources/features/Mongo/MongoSelectSimple.feature",
         "src/test/resources/features/Mongo/MongoSelectLimit.feature",
         "src/test/resources/features/Mongo/MongoSelectEqualsFilter.feature",
         "src/test/resources/features/Mongo/MongoSelectLessFilter.feature",
@@ -43,7 +47,9 @@ import com.stratio.tests.utils.ThreadProperty;
         "src/test/resources/features/Mongo/MongoSelectINFilter.feature",
         "src/test/resources/features/Mongo/MongoSelectAnd.feature",
         "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature",
-          "src/test/resources/features/Udaf/Group_concat.feature"
+       "src/test/resources/features/Mongo/Group_concat.feature",
+        "src/test/resources/features/Mongo/TemporaryViews.feature",
+        "src/test/resources/features/Mongo/Views.feature"
 })
 
 public class ATEMongoDBXDTest extends BaseTest{
@@ -54,7 +60,7 @@ public class ATEMongoDBXDTest extends BaseTest{
     private String mongoPortString = System.getProperty("MONGO_PORT", "27017");
     private int mongoPort = Integer.parseInt(mongoPortString);
     private String dataBase = "databasetest";
-    @BeforeClass
+    @BeforeClass(groups = {"basic"})
     public void setUp() throws UnknownHostException{
         MongoClient mongoClient = new MongoClient(mongoHost, mongoPort);
         mongoClient.dropDatabase(dataBase);
@@ -64,34 +70,67 @@ public class ATEMongoDBXDTest extends BaseTest{
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
         format.setTimeZone(TimeZone.getTimeZone("CET"));
         for(int i = 0; i < 10; i++){
-            Date parsedDate = null;
-            String fecha = i + "/" + i + "/200" + i;
-            try {
-                parsedDate = format.parse(fecha);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            String fecha = "200" + i + "-01-01";
             BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
                 .add("ident", i)
                 .add("name", "name_" + i)
                 .add("money", 10.2 + i)
                 .add("new", true)
-                .add("date", new java.sql.Date(parsedDate.getTime()));
+               //.add("date", new java.sql.Date(parsedDate.getTime()));
+                .add("date", java.sql.Date.valueOf(fecha));
             tabletest.insert(documentBuilder.get());
         }
+        //Table2
+        DBCollection tablearray  = db.getCollection("tablearray");
+        for(int i = 0; i < 10; i++){
+            BasicDBList names = new BasicDBList();
+            for(int x = 0; x < 5; x++){
+                names.add(x, "names_" + x + i);
+            }
+            BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
+                    .add("ident", i).append("names", names);
+            tablearray.insert(documentBuilder.get());
+        }
+        DBCollection tableSubField = db.getCollection("tablesubfield");
+        for(int i = 0; i < 10; i++){
+            //Creamos el subdocumento
+            BasicDBObject subDocumentBuilder = new BasicDBObject();
+            subDocumentBuilder.put("name", "name_"+i);
+            BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
+                    .add("ident", i).append("person", subDocumentBuilder);
+            tableSubField.insert(documentBuilder.get());
+        }
+        //Table4
+        DBCollection composetable = db.getCollection("composetable");
+        BasicDBList daughter = new BasicDBList();
+        BasicDBObject subDocumentBuilder = new BasicDBObject();
+        subDocumentBuilder.put("name", "Juan");
+        subDocumentBuilder.put("age", 12);
+        daughter.add(0,subDocumentBuilder);
+        BasicDBObject subDocumentBuilder2 = new BasicDBObject();
+        subDocumentBuilder2.put("name", "Pepe");
+        subDocumentBuilder2.put("age", 13);
+        daughter.add(1,subDocumentBuilder2);
+        BasicDBObject subDocumentPerson = new BasicDBObject();
+        subDocumentPerson.put("name", "Hugo");
+        subDocumentPerson.append("daughter",daughter);
+        BasicDBObjectBuilder documentBuilder = BasicDBObjectBuilder.start()
+                .add("ident", 0).append("person", subDocumentPerson);
+        composetable.insert(documentBuilder.get());
+        ////
         mongoClient.close();
         String connector = "Mongo";
         ThreadProperty.set("Host", "127.0.0.1");
         ThreadProperty.set("Connector", connector);
-
+        ThreadProperty.set("Driver", "context");
     }
-    @AfterClass
+    @AfterClass(groups = {"basic"})
     public void cleanUp() throws UnknownHostException{
         MongoClient mongoClient = new MongoClient(mongoHost, mongoPort);
         mongoClient.dropDatabase(dataBase);
     }
 
-    @Test(enabled = true)
+    @Test(enabled = true, groups = {"basic"})
     public void ATMongoDBXDTest() throws Exception{
         new CucumberRunner(this.getClass()).runCukes();
     }

@@ -15,15 +15,16 @@
  */
 package org.apache.spark.sql.crossdata.execution
 
-import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.EliminateSubQueries
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.{CrossdataTable, XDContext}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.{HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{AnalysisException, DataFrame, Row, SQLContext, SaveMode}
 
 private[crossdata] case class PersistDataSourceTable(
                                    tableIdent: TableIdentifier,
@@ -36,7 +37,7 @@ private[crossdata] case class PersistDataSourceTable(
 
     val crossdataContext = sqlContext.asInstanceOf[XDContext]
     val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, userSpecifiedSchema, provider, Array.empty[String], options)
-    val tableExist = crossdataContext.catalog.tableExists(tableIdent.toSeq)
+    val tableExist = crossdataContext.catalog.tableExists(tableIdent)
 
     if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable, crossdataContext.catalog.createLogicalRelation(crossdataTable))
 
@@ -64,7 +65,7 @@ case class PersistSelectAsTable(
     // TODO REFACTOR HIVE CODE ***************
     var createMetastoreTable = false
     var existingSchema = None: Option[StructType]
-    if (crossdataContext.catalog.tableExists(tableIdent.toSeq)) {
+    if (crossdataContext.catalog.tableExists(tableIdent)) {
       // Check if we need to throw an exception or just return.
       mode match {
         case SaveMode.ErrorIfExists =>
@@ -81,7 +82,7 @@ case class PersistSelectAsTable(
           val resolved = ResolvedDataSource(
             sqlContext, Some(query.schema.asNullable), partitionColumns, provider, options)
           val createdRelation = LogicalRelation(resolved.relation)
-          EliminateSubQueries(sqlContext.catalog.lookupRelation(tableIdent.toSeq)) match {
+          EliminateSubQueries(sqlContext.catalog.lookupRelation(tableIdent)) match {
             case l @ LogicalRelation(_: InsertableRelation | _: HadoopFsRelation, _) =>
               if (l.relation != createdRelation.relation) {
                 val errorDescription =
@@ -106,7 +107,7 @@ case class PersistSelectAsTable(
               throw new AnalysisException(s"Saving data in ${o.toString} is not supported.")
           }
         case SaveMode.Overwrite =>
-          crossdataContext.catalog.dropTable(tableIdent.toSeq)
+          crossdataContext.catalog.dropTable(tableIdent)
           createMetastoreTable = true
       }
     } else {

@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.crossdata.connector.mongodb
 
-import org.apache.log4j.Logger
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.ExecutionType
+import org.apache.spark.sql.crossdata.test.SharedXDContextTypesTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class MongoFilterIT extends MongoWithSharedContext {
-
+class MongoFilterIT extends MongoDataTypesCollection {
 
   "MongoConnector" should "supports NOT BETWEEN by spark" in {
     assumeEnvironmentIsUpAndRunning
@@ -59,7 +57,7 @@ class MongoFilterIT extends MongoWithSharedContext {
   it should "supports filter DATE greater than" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date > '1970'").collect(ExecutionType.Spark)
+    val sparkRow = sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE date > '1970'").collect(ExecutionType.Spark)
     sparkRow.length should be (10)
 
   }
@@ -67,14 +65,14 @@ class MongoFilterIT extends MongoWithSharedContext {
   it should "supports filter DATE equals to" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date = '1970-01-02'").collect(ExecutionType.Spark)
+    val sparkRow = sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE date = '1970-01-02'").collect(ExecutionType.Spark)
     sparkRow.length should be (1)
   }
 
   it should "supports filter DATE BETWEEN two dates" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date BETWEEN '1970' AND '1971'").collect(ExecutionType.Spark)
+    val sparkRow = sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE date BETWEEN '1970' AND '1971'").collect(ExecutionType.Spark)
     sparkRow.length should be (10)
 
   }
@@ -82,7 +80,7 @@ class MongoFilterIT extends MongoWithSharedContext {
   it should "supports filter DATE NOT BETWEEN two dates" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT date FROM $DataTypesCollection WHERE date NOT BETWEEN '1970-01-02' AND '1971'").collect(ExecutionType.Spark)
+    val sparkRow = sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE date NOT BETWEEN '1970-01-02' AND '1971'").collect(ExecutionType.Spark)
     sparkRow.length should be (1)
 
   }
@@ -90,29 +88,73 @@ class MongoFilterIT extends MongoWithSharedContext {
   it should "supports filter TIMESTAMP greater than" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp > '1970'").collect(ExecutionType.Spark)
+    val sparkRow = sql(s"SELECT timestamp FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp > '1970'").collect(ExecutionType.Spark)
     sparkRow.length should be (10)
   }
 
-   //TODO fix broken test
   it should "supports filter TIMESTAMP equals to" in {
     assumeEnvironmentIsUpAndRunning
 
-    lazy val logger = Logger.getLogger(classOf[MongoFilterIT])
-    val timestamp = sql(s"SELECT timestamp FROM $DataTypesCollection").collect(ExecutionType.Native)
-    timestamp.foreach(logger.error(_))
-
-    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp = '1970-01-02 00:0:0.002'").collect(ExecutionType.Native)
+    val sparkRow = sql(s"SELECT timestamp FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp = '1970-01-02 00:0:0.002'").collect(ExecutionType.Native)
     sparkRow.head(0) should be (java.sql.Timestamp.valueOf("1970-01-02 00:00:00.002"))
 
   }
 
+  /** See PromoteStrings*/
+  it should "supports filter TIMESTAMP less or equals to" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT timestamp FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp <= '1970-01-01 00:00:00.001'").collect(ExecutionType.Native)
+    sparkRow.size should be > 0
+    sparkRow.head(0) should be (java.sql.Timestamp.valueOf("1970-01-01 00:00:00.001"))
+
+  }
+
+
   it should "supports filter TIMESTAMP BETWEEN two times" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT timestamp FROM $DataTypesCollection WHERE timestamp BETWEEN '1970' AND '1971'").collect(ExecutionType.Spark)
+    val sparkRow = sql(s"SELECT timestamp FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp BETWEEN '1970' AND '1971'").collect(ExecutionType.Spark)
     sparkRow.length should be (10)
 
   }
 
+
+  it should "supports Native filter DATE LESS OR EQUALS THAN " in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp <= '1970-01-02 00:0:0.002'").collect(ExecutionType.Native)
+    sparkRow.length should be (2)
+  }
+
+  it should "supports Native filter DATE GREATER OR EQUALS THAN " in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE date >= '1970-01-02'").collect(ExecutionType.Native)
+    sparkRow.length should be (9)
+  }
+
+  it should "supports Native filter DATE LESS THAN " in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE date < '1970-01-02'").collect(ExecutionType.Native)
+    sparkRow.length should be (1)
+  }
+
+  it should "supports Native filter DATE GREATER THAN " in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT timestamp FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp > '1970-01-02'").collect(ExecutionType.Native)
+    sparkRow.length should be (9)
+  }
+
+
+  it should "execute Spark UDFs by Spark" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val sparkRow = sql(s"SELECT substring(name,0,2) FROM $Collection LIMIT 2").collect(ExecutionType.Default)
+    sparkRow.length should be (2)
+    sparkRow(0).getString(0) should have length 2
+    sparkRow(1).getString(0) should have length 2
+  }
 }

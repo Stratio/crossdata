@@ -21,22 +21,18 @@ package com.stratio.crossdata.connector.cassandra
 import java.util.Collection
 
 import com.datastax.driver.core.{KeyspaceMetadata, TableMetadata}
-import com.datastax.spark.connector.cql._
-import com.datastax.spark.connector.rdd.ReadConf
-import com.datastax.spark.connector.util.ConfigParameter
-import com.datastax.spark.connector.writer.WriteConf
+import com.datastax.spark.connector.cql.CassandraConnector
 import com.stratio.crossdata.connector.FunctionInventory.UDF
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.cassandra.DefaultSource._
-import com.stratio.crossdata.connector.{FunctionInventory, TableInventory}
+import com.stratio.crossdata.connector.cassandra.statements.{CreateKeyspaceStatement, CreateTableStatement}
+import com.stratio.crossdata.connector.{FunctionInventory, TableInventory, TableManipulation}
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.cassandra.{DefaultSource => CassandraConnectorDS, _}
+import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
+import org.apache.spark.sql.cassandra.{CassandraXDSourceRelation, DefaultSource => CassandraConnectorDS}
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.types.{DataTypes, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
-
-import scala.collection.mutable
 
 
 
@@ -59,7 +55,9 @@ import scala.collection.mutable
  *       spark_cassandra_connection_timeout_ms "1000"
  *      )
  */
-class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory with DataSourceRegister {
+class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory with DataSourceRegister with TableManipulation {
+
+  import CassandraConnectorDS._
 
   override def shortName(): String = "cassandra"
 
@@ -81,7 +79,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
   override def createRelation(sqlContext: SQLContext,
                               parameters: Map[String, String]): BaseRelation = {
 
-    val (tableRef, options) = tableRefAndOptions(parameters)
+    val (tableRef, options) = TableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options)
   }
 
@@ -93,7 +91,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
                               parameters: Map[String, String],
                               schema: StructType): BaseRelation = {
 
-    val (tableRef, options) = tableRefAndOptions(parameters)
+    val (tableRef, options) = TableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options, Option(schema))
   }
 
@@ -106,7 +104,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
                               parameters: Map[String, String],
                               data: DataFrame): BaseRelation = {
 
-    val (tableRef, options) = tableRefAndOptions(parameters)
+    val (tableRef, options) = TableRefAndOptions(parameters)
     val table = CassandraXDSourceRelation(tableRef, sqlContext, options)
 
     mode match {
@@ -116,7 +114,11 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
         if (table.buildScan().isEmpty()) {
           table.insert(data, overwrite = false)
         } else {
-          throw new UnsupportedOperationException("'Writing to a non-empty Cassandra Table is not allowed.'")
+          throw new UnsupportedOperationException(
+            s"""'SaveMode is set to ErrorIfExists and Table
+               |${tableRef.keyspace + "." + tableRef.table} already exists and contains data.
+               |Perhaps you meant to set the DataFrame write mode to Append?
+               |Example: df.write.format.options.mode(SaveMode.Append).save()" '""".stripMargin)
         }
       case Ignore =>
         if (table.buildScan().isEmpty()) {
@@ -139,6 +141,34 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   }
 
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   databaseName: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String]): Option[Table] = {
+    val keyspace: String = options.get(CassandraDataSourceKeyspaceNameProperty).orElse(databaseName).
+      getOrElse(throw new RuntimeException(s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command"))
+
+    val table: String = options.getOrElse(CassandraDataSourceTableNameProperty, tableName)
+
+    try {
+      buildCassandraConnector(context, options).withSessionDo { s =>
+        if (s.getCluster.getMetadata.getKeyspace(keyspace) == null) {
+          val createKeyspace = new CreateKeyspaceStatement(options)
+          s.execute(createKeyspace.toString())
+        }
+        val stm = new CreateTableStatement(table, schema, options)
+        s.execute(stm.toString())
+      }
+      Option(Table(table, Option(keyspace), Option(schema)))
+    } catch {
+      case e: IllegalArgumentException =>
+        throw e
+      case e: Exception =>
+        sys.error(e.getMessage)
+        None
+    }
+  }
 
   //-----------MetadataInventory-----------------
 
@@ -172,7 +202,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     val (clusterName, host) = (conParams zip conParams.tail) head
 
     val cfg: SparkConf = context.sparkContext.getConf.clone()
-    for (ConfigParameter(prop, _, _, _) <- DefaultSource.confProperties;
+    for (prop <- CassandraConnectorDS.confProperties;
          clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop")) cfg.set(prop, clusterLevelValue)
     cfg.set("spark.cassandra.connection.host", host)
 
@@ -205,58 +235,13 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
   ) ++ opts.filterKeys(Set(CassandraConnectionHostProperty, CassandraDataSourceClusterNameProperty).contains(_))
 
   //------------MetadataInventory-----------------
-
 }
 
 object DefaultSource {
-  val CassandraDataSourceTableNameProperty = "table"
-  val CassandraDataSourceKeyspaceNameProperty = "keyspace"
-  val CassandraDataSourceClusterNameProperty = "cluster"
-  val CassandraDataSourceUserDefinedSchemaNameProperty = "schema"
-  val CassandraDataSourcePushdownEnableProperty = "pushdown"
+
   val CassandraConnectionHostProperty = "spark_cassandra_connection_host"
-  val CassandraDataSourceProviderPackageName = DefaultSource.getClass.getPackage.getName
-  val CassandraDataSourceProviderClassName = CassandraDataSourceProviderPackageName + ".DefaultSource"
+  val CassandraDataSourcePrimaryKeyStringProperty ="primary_key_string"
+  val CassandraDataSourceKeyspaceReplicationStringProperty ="with_replication"
 
-
-  /** Parse parameters into CassandraDataSourceOptions and TableRef object */
-  def tableRefAndOptions(parameters: Map[String, String]): (TableRef, CassandraSourceOptions) = {
-    val tableName = parameters(CassandraDataSourceTableNameProperty)
-    val keyspaceName = parameters(CassandraDataSourceKeyspaceNameProperty)
-    val clusterName = parameters.get(CassandraDataSourceClusterNameProperty)
-    val pushdown: Boolean = parameters.getOrElse(CassandraDataSourcePushdownEnableProperty, "true").toBoolean
-    val cassandraConfs = buildConfMap(parameters)
-
-    (TableRef(tableName, keyspaceName, clusterName), CassandraSourceOptions(pushdown, cassandraConfs))
-  }
-
-  val confProperties = ReadConf.Properties ++
-    WriteConf.Properties ++
-    CassandraConnectorConf.Properties ++
-    CassandraSourceRelation.Properties
-
-  // Dot is not allowed in Options key for Spark SQL parsers, so convert . to _
-  // Map converted property to origin property name
-  // TODO check SPARK 1.4 it may be fixed
-  private val propertiesMap: Map[String, String] = {
-    confProperties.map { case ConfigParameter(prop, _, _, _) => (prop.replace(".", "_"), prop)} toMap
-  }
-
-  /** Construct a map stores Cassandra Conf settings from options */
-  def buildConfMap(parameters: Map[String, String]): Map[String, String] = {
-    val confMap = mutable.Map.empty[String, String]
-    for (convertedProp <- propertiesMap.keySet) {
-      val setting = parameters.get(convertedProp)
-      if (setting.nonEmpty) {
-        confMap += propertiesMap(convertedProp) -> setting.get
-      }
-    }
-    confMap.toMap
-  }
-
-  /** Check whether the provider is Cassandra datasource or not */
-  def cassandraSource(provider: String): Boolean = {
-    provider == CassandraDataSourceProviderPackageName || provider == CassandraDataSourceProviderClassName
-  }
 }
 

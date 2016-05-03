@@ -17,17 +17,18 @@ package com.stratio.crossdata.connector.mongodb
 
 import java.util.regex.Pattern
 
-import com.mongodb.casbah.Imports._
 import com.mongodb.{DBObject, QueryBuilder}
-import com.stratio.datasource.Config
-import com.stratio.datasource.mongodb.MongodbConfig
-import com.stratio.datasource.mongodb.schema.MongodbRowConverter
-import org.apache.spark.Logging
+import com.mongodb.casbah.Imports._
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import com.stratio.datasource.mongodb.MongodbRelation._
+import com.stratio.datasource.mongodb.config.MongodbConfig
+import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
+import com.stratio.datasource.util.Config
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
-import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.catalyst.plans.logical.{Limit => LogicalLimit, LogicalPlan}
 import org.apache.spark.sql.{Row, sources}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, ProjectReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
 
@@ -37,45 +38,68 @@ object MongoQueryProcessor {
   type ColumnName = String
   type Limit = Option[Int]
 
-  def apply(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) = new MongoQueryProcessor(logicalPlan, config, schemaProvided)
-
-  def buildNativeQuery(requiredColums: Seq[ColumnName], filters: Array[SourceFilter], config: Config): (DBObject, DBObject) = {
-    (filtersToDBObject(filters)(config), selectFields(requiredColums))
+  case class MongoPlan(basePlan: BaseLogicalPlan, limit: Limit){
+    def projects: Seq[NamedExpression] = basePlan.projects
+    def filters: Array[SourceFilter] = basePlan.filters
   }
 
-  def filtersToDBObject(sFilters: Array[SourceFilter], parentFilterIsNot: Boolean = false)(implicit config: Config): DBObject = {
+  def apply(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) = new MongoQueryProcessor(logicalPlan, config, schemaProvided)
+
+  def buildNativeQuery(
+                        requiredColums: Seq[ColumnName],
+                        filters: Array[SourceFilter],
+                        config: Config,
+                        name2randomAccess: Map[String, GetArrayItem] = Map.empty
+                      ): (DBObject, DBObject) = {
+    (filtersToDBObject(filters, name2randomAccess)(config), selectFields(requiredColums))
+  }
+
+  def filtersToDBObject(
+                         sFilters: Array[SourceFilter],
+                         name2randomAccess: Map[String, GetArrayItem],
+                         parentFilterIsNot: Boolean = false
+                       )(implicit config: Config): DBObject = {
+
+    def attstr2left(att: String): String =
+      name2randomAccess.get(att).map {
+        case GetArrayItem(att: AttributeReference, ordinal) =>
+          s"${att.name}.${ordinal.toString}"
+      } getOrElse att
+
     val queryBuilder: QueryBuilder = QueryBuilder.start
 
     if (parentFilterIsNot) queryBuilder.not()
     sFilters.foreach {
       case sources.EqualTo(attribute, value) =>
-        queryBuilder.put(attribute).is(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).is(correctIdValue(attribute, value))
       case sources.GreaterThan(attribute, value) =>
-        queryBuilder.put(attribute).greaterThan(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).greaterThan(correctIdValue(attribute, value))
       case sources.GreaterThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).greaterThanEquals(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).greaterThanEquals(correctIdValue(attribute, value))
       case sources.In(attribute, values) =>
-        queryBuilder.put(attribute).in(values.map(value => correctIdValue(attribute, value)))
+        queryBuilder.put(attstr2left(attribute)).in(values.map(value => correctIdValue(attribute, value)))
       case sources.LessThan(attribute, value) =>
-        queryBuilder.put(attribute).lessThan(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).lessThan(correctIdValue(attribute, value))
       case sources.LessThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).lessThanEquals(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).lessThanEquals(correctIdValue(attribute, value))
       case sources.IsNull(attribute) =>
-        queryBuilder.put(attribute).is(null)
+        queryBuilder.put(attstr2left(attribute)).is(null)
       case sources.IsNotNull(attribute) =>
-        queryBuilder.put(attribute).notEquals(null)
+        queryBuilder.put(attstr2left(attribute)).notEquals(null)
       case sources.And(leftFilter, rightFilter) if !parentFilterIsNot =>
-        queryBuilder.and(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
+        queryBuilder.and(filtersToDBObject(Array(leftFilter), name2randomAccess),
+          filtersToDBObject(Array(rightFilter),name2randomAccess))
       case sources.Or(leftFilter, rightFilter) if !parentFilterIsNot =>
-        queryBuilder.or(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
+        queryBuilder.or(filtersToDBObject(Array(leftFilter),name2randomAccess),
+          filtersToDBObject(Array(rightFilter), name2randomAccess))
       case sources.StringStartsWith(attribute, value) if !parentFilterIsNot =>
-        queryBuilder.put(attribute).regex(Pattern.compile("^" + value + ".*$"))
+        queryBuilder.put(attstr2left(attribute)).regex(Pattern.compile("^" + value + ".*$"))
       case sources.StringEndsWith(attribute, value) if !parentFilterIsNot =>
-        queryBuilder.put(attribute).regex(Pattern.compile("^.*" + value + "$"))
+        queryBuilder.put(attstr2left(attribute)).regex(Pattern.compile("^.*" + value + "$"))
       case sources.StringContains(attribute, value) if !parentFilterIsNot =>
-        queryBuilder.put(attribute).regex(Pattern.compile(".*" + value + ".*"))
+        queryBuilder.put(attstr2left(attribute)).regex(Pattern.compile(".*" + value + ".*"))
       case sources.Not(filter) =>
-        filtersToDBObject(Array(filter), true)
+        filtersToDBObject(Array(filter), name2randomAccess, true)
     }
 
     queryBuilder.get
@@ -104,18 +128,27 @@ object MongoQueryProcessor {
    * @param fields Required fields
    * @return A mongodb object that represents required fields.
    */
-  private def selectFields(fields: Seq[String]): DBObject =
-    MongoDBObject(
-      if (fields.isEmpty) List()
-      else fields.toList.filterNot(_ == "_id").map(_ -> 1) ::: {
-        List("_id" -> fields.find(_ == "_id").fold(0)(_ => 1))
-      })
+  private def selectFields(fields: Seq[ColumnName]): DBObject =
+    {
+      MongoDBObject(
+        fields.toList.filterNot(_ == "_id").map(_ -> 1) ::: {
+          List("_id" -> fields.find(_ == "_id").fold(0)(_ => 1))
+        })
+      /*
+        For random accesses to array columns elements, a performance improvement is doable
+        by querying MongoDB in a way that would only select a size-1 slice of the accessed array thanks to
+        the "$slice" operator. However this operator can only be used once for each column in a projection
+        which implies that several accesses (e.g: SELECT arraystring[0] as first, arraystring[3] as fourth FROM MONGO_T)
+        would require to implement an smart "$slice" use selecting the minimum slice containing all requested elements.
+        That requires way too much effort when the performance boost is taken into consideration.
+       */
+    }
 
 }
 
 
 // TODO logs, doc, tests
-class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) extends Logging {
+class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) extends SparkLoggerComponent {
 
   import MongoQueryProcessor._
 
@@ -126,11 +159,18 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
       None
     } else {
       try {
-        validatedNativePlan.map { case (requiredColumns, filters, limit) =>
+        validatedNativePlan.map { case MongoPlan(bs: SimpleLogicalPlan, limit) =>
           if (limit.exists(_ == 0)) {
             Array.empty[Row]
           } else {
-            val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(requiredColumns, filters, config)
+            val name2randomAccess = bs.collectionRandomAccesses.map {
+              case (k, v) => s"${k.name}[${v.right}]" -> v
+            }
+            val (mongoFilters, mongoRequiredColumns) = buildNativeQuery(
+              bs.projects.map(_.name), bs.filters,
+              config,
+              name2randomAccess
+            )
             val resultSet = MongodbConnection.withCollectionDo(config) { collection =>
               logDebug(s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
               val cursor = collection.find(mongoFilters, mongoRequiredColumns)
@@ -138,7 +178,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
               cursor.close()
               result
             }
-            sparkResultFromMongodb(requiredColumns, schemaProvided.get, resultSet)
+            sparkResultFromMongodb(bs.projects, bs.collectionRandomAccesses, schemaProvided.get, resultSet)
           }
         }
       } catch {
@@ -150,24 +190,26 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
   }
 
 
-  def validatedNativePlan: Option[(Seq[ColumnName], Array[SourceFilter], Limit)] = {
-    lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
+  def validatedNativePlan: Option[_] = {// TODO
+    lazy val limit: Option[Int] = logicalPlan.collectFirst { case LogicalLimit(Literal(num: Int, _), _) => num }
 
-    def findProjectsFilters(lplan: LogicalPlan): Option[(Seq[ColumnName], Array[SourceFilter])] = lplan match {
+    def findBasePlan(lplan: LogicalPlan): Option[BaseLogicalPlan] = lplan match {
 
-      case Limit(_, child) =>
-        findProjectsFilters(child)
+      case LogicalLimit(_, child) =>
+        findBasePlan(child)
 
       case PhysicalOperation(projectList, filterList, _) =>
         CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-          case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
-          case (SimpleLogicalPlan(projects, filters, _), _) => Some(projects.map(_.name), filters) //TODOOOO
+          case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
+            None
+          case (basePlan: SimpleLogicalPlan, _, _) =>
+            Some(basePlan)
           case _ => ??? // TODO
         }
 
     }
 
-    findProjectsFilters(logicalPlan).collect{ case (p, f) if checkNativeFilters(f) => (p,f,limit)}
+    findBasePlan(logicalPlan).collect{ case bp if checkNativeFilters(bp.filters) => MongoPlan(bp, limit) }
   }
 
 
@@ -191,10 +233,21 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan, config: Config, schemaProvid
 
   }
 
-  private[this] def sparkResultFromMongodb(requiredColumns: Seq[ColumnName], schema: StructType, resultSet: Array[DBObject]): Array[Row] = {
-    import com.stratio.datasource.mongodb.MongodbRelation._
-    MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns.toArray), resultSet)
+  private[this] def sparkResultFromMongodb(
+                                            requiredColumns: Seq[Attribute],
+                                            indexAccesses: Map[Attribute, GetArrayItem],
+                                            schema: StructType,
+                                            resultSet: Array[DBObject]
+                                          ): Array[Row] = {
+    asRow(
+      pruneSchema(
+        schema,
+        requiredColumns.map(r => r.name -> indexAccesses.get(r).map(_.right.toString().toInt)).toArray
+      ),
+      resultSet
+    )
   }
+
 
 }
 

@@ -15,9 +15,16 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import org.apache.spark.sql.AnalysisException
+import java.lang.{RuntimeException, Runtime}
+
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.crossdata.XDDataFrame
+
 import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
+
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -29,30 +36,33 @@ class ViewsIT extends CoreWithSharedContext {
     val sqlContext = _xdContext
     import sqlContext.implicits._
 
-    val df  = xdContext.sparkContext.parallelize(1 to 5).toDF
+
+    val df  = sqlContext.sparkContext.parallelize(1 to 5).toDF
 
     df.registerTempTable("person")
-
     sql("CREATE TEMPORARY VIEW vn AS SELECT * FROM person WHERE _1 < 3")
 
-    val dataframe = sql("SELECT * FROM vn")
+
+    val dataframe = xdContext.sql("SELECT * FROM vn")
+
     dataframe shouldBe a[XDDataFrame]
     dataframe.collect() should have length 2
   }
 
-  "Create view" should "return an analysis exception" in {
-
+  // TODO When we can add views to Zookeeper catalog, Views' test should be moved to GenericCatalogTests in order to test the specific implementations.
+  "Create view" should "persist a view in the catalog only with persisted tables" in {
     val sqlContext = _xdContext
     import sqlContext.implicits._
 
-    val df  = xdContext.sparkContext.parallelize(1 to 5).toDF
 
-    df.registerTempTable("person")
-
-    an [AnalysisException] should be thrownBy sql("CREATE VIEW vn AS SELECT * FROM person WHERE _1 < 3")
-
+    val df = sqlContext.sparkContext.parallelize(1 to 5).toDF
+    a [RuntimeException] shouldBe thrownBy {
+      df.registerTempTable("person")
+      sql("CREATE VIEW persistedview AS SELECT * FROM person WHERE _1 < 3")
+    }
 
   }
+
 
 
 }

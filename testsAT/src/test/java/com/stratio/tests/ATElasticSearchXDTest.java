@@ -27,8 +27,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
@@ -55,18 +53,22 @@ import cucumber.api.CucumberOptions;
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
           "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature"
+          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
+        "src/test/resources/features/Udaf/Group_concat.feature",
+        "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
+        "src/test/resources/features/Elasticsearch/Views.feature",
+       "src/test/resources/features/Views/DropViews.feature"
 })
 public class ATElasticSearchXDTest extends BaseTest {
-	private String elasticSearchCluster = System.getProperty("ELASTICSEARHC_CLUSTERNAME", "elasticsearch");
-    private String elasticSearchIP = System.getProperty("ELASTICSEARCH_HOST","172.17.0.3");
+    private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
+    private String elasticSearchIP = System.getProperty("ES_NODE","172.17.0.2");
     Client client;
     private Settings settings = ImmutableSettings.settingsBuilder()
             .put("cluster.name", elasticSearchCluster).build();
     public ATElasticSearchXDTest() {
 	}
 
-	@BeforeClass
+	@BeforeClass(groups = {"basic"})
 	public void setUp() {
         String connector = "ElasticSearch";
         ThreadProperty.set("Connector", connector);
@@ -102,7 +104,7 @@ public class ATElasticSearchXDTest extends BaseTest {
                                                     .field("name", lineArray[1])
                                                     .field("money", Double.parseDouble(lineArray[2]))
                                                     .field("new", new Boolean(lineArray[3]))
-                                                    .field("date", new java.sql.Date(parsed.getTime()))
+                                                    .field("date", new java.sql.Timestamp(parsed.getTime()))
                                                     .endObject()
                                     );
                             bulkRequest.add(res);
@@ -117,16 +119,16 @@ public class ATElasticSearchXDTest extends BaseTest {
             e.printStackTrace();
         }
         client.close();
+        ThreadProperty.set("Driver", "context");
     }
 
-	@AfterClass
+	@AfterClass(groups = {"basic"})
 	public void cleanUp() {
         try {
             client = new TransportClient(settings)
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
           //  DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest("databasetest"))
           //          .actionGet();
-
            // System.out.println(response.toString());
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -134,8 +136,8 @@ public class ATElasticSearchXDTest extends BaseTest {
         client.close();
 	}
 
-	@Test(enabled = true)
-	public void ATElasticSearchXDTest() throws Exception {
+    @Test(enabled = true, groups = {"basic"})
+    public void ATElasticSearchXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
 

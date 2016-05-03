@@ -15,14 +15,34 @@
  */
 package org.apache.spark.sql.crossdata
 
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.sql._
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.crossdata.ExecutionType._
+import org.apache.spark.sql.catalyst.expressions.aggregate.Count
+import org.apache.spark.sql.catalyst.plans.logical.Aggregate
+import org.apache.spark.sql.catalyst.plans.logical.LeafNode
+import org.apache.spark.sql.catalyst.plans.logical.Limit
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.Project
+import org.apache.spark.sql.crossdata.ExecutionType.Default
+import org.apache.spark.sql.crossdata.ExecutionType.ExecutionType
+import org.apache.spark.sql.crossdata.ExecutionType.Native
+import org.apache.spark.sql.crossdata.ExecutionType.Spark
+import org.apache.spark.sql.crossdata.XDDataFrame.findNativeQueryExecutor
 import org.apache.spark.sql.crossdata.exceptions.NativeExecutionException
+import org.apache.spark.sql.execution.QueryExecution
 import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.types.ArrayType
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
+
+import scala.collection.mutable.BufferLike
+import scala.collection.{mutable, immutable, GenTraversableOnce}
+import scala.collection.generic.CanBuildFrom
 
 private[sql] object XDDataFrame {
 
@@ -56,7 +76,9 @@ private[sql] object XDDataFrame {
       val nativeExecutors: Seq[NativeScan] = leafs.map { case LogicalRelation(ns: NativeScan, _) => ns }
 
       nativeExecutors match {
-        case Seq(head) => Some(head)
+        case seq if seq.length == 1 =>
+          nativeExecutors.headOption
+
         case _ =>
           if (nativeExecutors.sliding(2).forall { tuple =>
             tuple.head.getClass == tuple.head.getClass
@@ -75,8 +97,8 @@ private[sql] object XDDataFrame {
  * Extends a [[DataFrame]] to provide native access to datasources when performing Spark actions.
  */
 class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
-                               @transient override val queryExecution: SQLContext#QueryExecution)
-  extends DataFrame(sqlContext, queryExecution) {
+                               @transient override val queryExecution: QueryExecution)
+  extends DataFrame(sqlContext, queryExecution) with SparkLoggerComponent {
 
   def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = {
     this(sqlContext, {
@@ -89,19 +111,138 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     )
   }
 
-  import XDDataFrame._
-
   /**
    * @inheritdoc
    */
   override def collect(): Array[Row] = {
-    // if cache don't go through native
+    // If cache doesn't go through native
     if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
       super.collect()
     } else {
       val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
+      if(nativeQueryExecutor.isEmpty){
+        logInfo(s"Spark Query: ${queryExecution.simpleString}")
+      } else {
+        logInfo(s"Native query: ${queryExecution.simpleString}")
+      }
       nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
+  }
+
+  def flattenedCollect(): Array[Row] = {
+
+    def flattenProjectedColumns(exp: Expression, prev: List[String] = Nil): (List[String], Boolean) = exp match {
+      case GetStructField(child, _, Some(fieldName))  =>
+        flattenProjectedColumns(child, fieldName :: prev)
+      case GetArrayStructFields(child, field,_,_,_)=>
+        flattenProjectedColumns(child, field.name :: prev)
+      case AttributeReference(name, _, _, _) =>
+        (name :: prev, false)
+      case Alias(child @ GetStructField(_, _, Some(fname)), name) if fname == name =>
+        flattenProjectedColumns(child)
+      case Alias(child @ GetArrayStructFields(childArray, field,_,_,_), name) =>
+        flattenProjectedColumns(child)
+      case Alias(child, name) =>
+        List(name) -> true
+      case _ => prev -> false
+    }
+
+    def flatRows(
+                  rows: Seq[Row],
+                  firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
+                  ): Seq[Row] = {
+
+      def baseName(parentName: String): String = parentName.headOption.map(_ => s"$parentName.").getOrElse("")
+
+      def flatRow(
+                   row: GenericRowWithSchema,
+                   parentsNamesAndAlias: Seq[(String, Boolean)] = Seq.empty): Array[(StructField, Any)] = {
+        (row.schema.fields zip row.values zipAll(parentsNamesAndAlias, null, "" -> false)) flatMap {
+          case (null, _) => Seq.empty
+          case ((StructField(_, t, nable, mdata), vobject), (name, true)) =>
+            Seq((StructField(name, t, nable, mdata), vobject))
+          case ((StructField(name, StructType(_), _, _), col: GenericRowWithSchema), (parentName, false)) =>
+            flatRow(col, Seq.fill(col.schema.size)(s"${baseName(parentName)}$name" -> false))
+          case ((StructField(name, dtype, nullable, meta), vobject), (parentName, false)) =>
+            Seq((StructField(s"${baseName(parentName)}$name", dtype, nullable, meta), vobject))
+        }
+      }
+
+      require(firstLevelNames.isEmpty ||rows.isEmpty || firstLevelNames.size == rows.headOption.map(_.length).getOrElse(0))
+      val thisLevelNames = firstLevelNames.map {
+        case (nameseq, true) => (nameseq.headOption.getOrElse(""), true)
+        case (nameseq, false) => (nameseq.init mkString ".", false)
+      }
+
+      rows map {
+        case row: GenericRowWithSchema =>
+          val newFieldsArray = flatRow(row, thisLevelNames)
+          val horizontallyFlattened: Row = new GenericRowWithSchema(
+            newFieldsArray.map(_._2), StructType(newFieldsArray.map(_._1)))
+          horizontallyFlattened
+        case row: Row =>
+          row
+      }
+    }
+
+    def verticallyFlatRowArrays(row: GenericRowWithSchema)(limit: Int): Seq[GenericRowWithSchema] = {
+
+      def cartesian[T](ls: Seq[Seq[T]]): Seq[Seq[T]] = (ls :\ Seq(Seq.empty[T])) {
+        case (cur: Seq[T], prev) => for(x <- prev; y <- cur) yield y +: x
+      }
+
+      val newSchema = StructType(
+        row.schema map {
+          case StructField(name, ArrayType(etype, _), nullable, meta) =>
+            StructField(name, etype, true)
+          case other => other
+        }
+      )
+
+      val elementsWithIndex = row.values zipWithIndex
+
+      val arrayColumnValues: Seq[Seq[(Int, _)]] = elementsWithIndex collect {
+        case (res: Seq[_], idx) => res map(idx -> _)
+      }
+
+      cartesian(arrayColumnValues).take(limit) map { case replacements: Seq[(Int, _) @unchecked] =>
+        val idx2newVal: Map[Int, Any] = replacements.toMap
+        val values = elementsWithIndex map { case (prevVal, idx: Int) =>
+          idx2newVal.getOrElse(idx, prevVal)
+        }
+        new GenericRowWithSchema(values, newSchema)
+      }
+    }
+
+    import WithTrackerFlatMapSeq._
+
+    def iterativeFlatten(
+                          rows: Seq[Row],
+                          firstLevelNames: Seq[(Seq[String], Boolean)] = Seq.empty
+                        )(limit: Int = Int.MaxValue): Seq[Row] =
+      flatRows(rows, firstLevelNames) withTrackerFlatMap {
+        case (_, Some(currentSize)) if(currentSize >= limit) => Seq()
+        case (row: GenericRowWithSchema, currentSize) =>
+          row.schema collectFirst {
+            case StructField(_, _: ArrayType, _, _) =>
+              val newLimit = limit-currentSize.getOrElse(0)
+              iterativeFlatten(verticallyFlatRowArrays(row)(newLimit))(newLimit)
+          } getOrElse Seq(row)
+        case (row: Row, _) => Seq(row)
+      }
+
+    def processProjection(plist: Seq[NamedExpression], child: LogicalPlan, limit: Int = Int.MaxValue): Array[Row] = {
+      val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
+      iterativeFlatten(collect(), fullyAnnotatedRequestedColumns)(limit) toArray
+    }
+
+    queryExecution.optimizedPlan match {
+      case Limit(lexp, Project(plist, child)) => processProjection(plist, child, lexp.toString().toInt)
+      case Project(plist, child) => processProjection(plist, child)
+      case Limit(lexp, _) => iterativeFlatten(collect())(lexp.toString().toInt) toArray
+      case _ => iterativeFlatten(collect())() toArray
+    }
+
   }
 
   /**
@@ -116,8 +257,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     case Spark => super.collect()
     case Native =>
       val result = findNativeQueryExecutor(queryExecution.optimizedPlan).flatMap(executeNativeQuery)
-      if (result.isEmpty) throw new NativeExecutionException
-      result.get
+      result.getOrElse(throw new NativeExecutionException)
   }
 
 
@@ -135,8 +275,8 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
    * @inheritdoc
    */
   override def count(): Long = {
-    val aggregateExpr = Seq(Alias(Count(Literal(1)), "count")())
-    XDDataFrame(sqlContext, Aggregate(Seq(), aggregateExpr, logicalPlan)).collect().head.getLong(0)
+    val aggregateExpr = Seq(Alias(Count(Literal(1)).toAggregateExpression(), "count")())
+    XDDataFrame(sqlContext, Aggregate(Seq.empty, aggregateExpr, logicalPlan)).collect().head.getLong(0)
   }
 
 
@@ -164,4 +304,35 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       case a@Project(seq, _) if seq.collectFirst { case Alias(b: GetStructField, _) => a }.isDefined => a
     } isDefined
   }
+
+
+
+  //TODO: Move to a common library
+  private[crossdata] object WithTrackerFlatMapSeq {
+    implicit def seq2superflatmapseq[T](s: Seq[T]): WithTrackerFlatMapSeq[T] = new WithTrackerFlatMapSeq(s)
+  }
+
+  //TODO: Move to a common library
+  private[crossdata] class WithTrackerFlatMapSeq[T] private(val s: Seq[T])
+    extends scala.collection.immutable.Seq[T] {
+    override def length: Int = s.length
+    override def apply(idx: Int): T = s(idx)
+    override def iterator: Iterator[T] = s.iterator
+
+
+    def withTrackerFlatMap[B, That](
+                                     f: (T, Option[Int]) => GenTraversableOnce[B]
+                                     )(implicit bf: CanBuildFrom[immutable.Seq[T], B, That]): That = {
+      def builder : mutable.Builder[B, That] = bf(repr)
+      val b = builder
+      val builderAsBufferLike = b match {
+        case bufferl: BufferLike[_, _] => Some(bufferl)
+        case _ => None
+      }
+      for (x <- this) b ++= f(x, builderAsBufferLike.map(_.length)).seq
+      b.result
+    }
+
+  }
+
 }

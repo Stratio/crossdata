@@ -32,11 +32,18 @@ import com.stratio.tests.utils.ThreadProperty;
 import cucumber.api.CucumberOptions;
 
 //Indicar feature
-@CucumberOptions(features = { "src/test/resources/features/Cassandra/CassandraSelectSimple.feature",
+@CucumberOptions(features = {
+		"src/test/resources/features/Cassandra/CassandraSelectSimple.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectLimit.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectEqualsFilter.feature",
 		"src/test/resources/features/Cassandra/CassandraSelectUDF.feature",
-		"src/test/resources/features/Cassandra/CassandraPureNativeAggregation.feature"
+		"src/test/resources/features/Cassandra/CassandraPureNativeAggregation.feature",
+		"src/test/resources/features/Udaf/Group_concat.feature",
+		"src/test/resources/features/Views/TemporaryViews.feature",
+		"src/test/resources/features/Views/Views.feature",
+		"src/test/resources/features/Views/DropViews.feature",
+        "src/test/resources/features/Catalog/DropPersistedTables.feature"
+
 })
 public class ATCassandraXDTest extends BaseTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass()
@@ -53,7 +60,7 @@ public class ATCassandraXDTest extends BaseTest {
 	public ATCassandraXDTest() {
 	}
 
-	@BeforeClass
+	@BeforeClass(groups = {"basic"})
 	public void setUp() {
 		logger.info("Connecting to Cassandra Cluster");
 		cassandra.connect();
@@ -73,11 +80,19 @@ public class ATCassandraXDTest extends BaseTest {
 		ThreadProperty.set("Host", host);
 		ThreadProperty.set("SourceProvider", sourceProvider);
 		ThreadProperty.set("Connector", connector);
+		ThreadProperty.set("Driver", "context");
+		try {
+			cassandra.disconnect();
+		} catch (DBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
-	@AfterClass
+	@AfterClass(groups = {"basic"})
 	public void cleanUp() {
+		cassandra.connect();
 		cassandra.dropKeyspace(catalog);
 		try {
 			cassandra.disconnect();
@@ -88,8 +103,8 @@ public class ATCassandraXDTest extends BaseTest {
 
 	}
 
-	@Test(enabled = true)
-	public void ATCassandraXD() throws Exception {
+	@Test(enabled = true, groups = {"basic"})
+	public void ATCassandraXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
 

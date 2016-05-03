@@ -17,25 +17,25 @@ package com.stratio.crossdata.connector.cassandra
 
 
 import com.datastax.driver.core.ResultSet
-import com.stratio.crossdata.connector.{SQLLikeUDFQueryProcessorUtils, SQLLikeQueryProcessorUtils}
-import org.apache.spark.Logging
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.{CassandraAttributeRole, ClusteringKey, Function, Indexed, NonIndexed, PartitionKey, Unknown}
+import com.stratio.crossdata.connector.{SQLLikeQueryProcessorUtils, SQLLikeUDFQueryProcessorUtils}
 import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelation}
-import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.catalyst.expressions.aggregate.Count
+import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Expression, Literal, NamedExpression}
+import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Limit, LogicalPlan}
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, AggregationLogicalPlan, BaseLogicalPlan, SimpleLogicalPlan}
 import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.{Row, sources}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter._
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
-
-import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole._
+import org.apache.spark.sql.{Row, sources}
 
 object CassandraQueryProcessor extends SQLLikeQueryProcessorUtils with SQLLikeUDFQueryProcessorUtils {
 
   val DefaultLimit = 10000
   type ColumnName = String
 
-  case class CassandraQueryProcessorContext(val udfs: Map[String, NativeUDF]) extends SQLLikeUDFQueryProcessorUtils.ContextWithUDFs
+  case class CassandraQueryProcessorContext(udfs: Map[String, NativeUDF]) extends SQLLikeUDFQueryProcessorUtils.ContextWithUDFs
   override type ProcessingContext = CassandraQueryProcessorContext
 
   case class CassandraPlan(basePlan: BaseLogicalPlan, limit: Option[Int]){
@@ -46,12 +46,11 @@ object CassandraQueryProcessor extends SQLLikeQueryProcessorUtils with SQLLikeUD
 
   def apply(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) = new CassandraQueryProcessor(cassandraRelation, logicalPlan)
 
-  def buildNativeQuery(
-                        tableQN: String,
-                        requiredColumns: Seq[String],
-                        filters: Array[SourceFilter],
-                        limit: Int,
-                        udfs: Map[String, NativeUDF] = Map.empty): String = {
+  def buildNativeQuery(tableQN: String,
+                       requiredColumns: Seq[String],
+                       filters: Array[SourceFilter],
+                       limit: Int,
+                       udfs: Map[String, NativeUDF] = Map.empty): String = {
 
     implicit val procCtx = CassandraQueryProcessorContext(udfs)
 
@@ -76,7 +75,7 @@ object CassandraQueryProcessor extends SQLLikeQueryProcessorUtils with SQLLikeUD
 }
 
 // TODO logs, doc, tests
-class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) extends Logging {
+class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) extends SparkLoggerComponent {
 
   import CassandraQueryProcessor._
 
@@ -90,7 +89,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     def buildAggregationExpression(names: Expression): String = {
       names match {
         case Alias(child, _) => buildAggregationExpression(child)
-        case Count(child) => s"count(${buildAggregationExpression(child)})"
+        case Count(children) => s"count(${children.map(buildAggregationExpression).mkString(",")})"
         case Literal(1, _) => "*"
       }
     }
@@ -101,10 +100,10 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
           Array.empty[Row]
         } else {
           val projectsString: Seq[String] = cassandraPlan.basePlan match {
-            case SimpleLogicalPlan(projects, _, _) =>
+            case SimpleLogicalPlan(projects, _, _, _) =>
               projects.map(_.toString())
 
-            case AggregationLogicalPlan(projects, groupingExpression, _, _) =>
+            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) =>
               require(groupingExpression.isEmpty)
               projects.map(buildAggregationExpression)
           }
@@ -144,8 +143,10 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
         case ExtendedPhysicalOperation(projectList, filterList, _) =>
           CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-            case (_, FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty => None
-            case (basePlan, _) => Some(basePlan)
+            case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
+              None
+            case (basePlan, _, _) =>
+              Some(basePlan)
           }
       }
     }
@@ -224,7 +225,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     else cassandraRelation.tableDef.columnByName(columnName) match {
       case x if x.isPartitionKeyColumn => PartitionKey
       case x if x.isClusteringColumn => ClusteringKey
-      case x if x.isIndexedColumn => Indexed
+      case x if cassandraRelation.tableDef.isIndexed(x) => Indexed
       case _ => NonIndexed
     }
 

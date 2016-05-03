@@ -18,6 +18,7 @@
 
 package org.apache.spark.sql.crossdata.test
 
+import com.typesafe.config.Config
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
 import org.apache.spark.sql.{ColumnName, DataFrame}
 
@@ -36,9 +37,13 @@ trait SharedXDContextTest extends XDTestUtils {
    */
   private var _ctx: org.apache.spark.sql.crossdata.test.TestXDContext = null
 
+  val catalogConfig : Option[Config] = None
+
   /**
    * The [[TestXDContext]] to use for all tests in this suite.
    */
+
+
   protected def xdContext: TestXDContext = _ctx
 
   protected override def _xdContext: XDContext = _ctx
@@ -55,7 +60,15 @@ trait SharedXDContextTest extends XDTestUtils {
    */
   protected override def beforeAll(): Unit = {
     if (_ctx == null) {
+
+      // HEAD
       _ctx = TestXDContext(jarPathList, filePathList)
+
+      // UPSTREAM
+      _ctx = catalogConfig.fold(new TestXDContext()) { cConfig =>
+        new TestXDContext(cConfig)
+      }
+
     }
     // Ensure we have initialized the context before calling parent code
     super.beforeAll()
@@ -87,4 +100,5 @@ trait SharedXDContextTest extends XDTestUtils {
   }
 
   implicit def dataFrameToXDFrame(dataFrame: DataFrame): XDDataFrame = new XDDataFrame(dataFrame.sqlContext, dataFrame.queryExecution.logical)
+
 }

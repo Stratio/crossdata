@@ -15,8 +15,8 @@
  */
 package org.apache.spark.sql.crossdata
 
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.FunctionInventory
-import org.apache.spark.Logging
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.catalyst.analysis.FunctionRegistry
 import org.apache.spark.sql.catalyst.analysis.FunctionRegistry.FunctionBuilder
@@ -25,9 +25,9 @@ import org.apache.spark.sql.catalyst.expressions.{Expression, ExpressionInfo}
 import scala.util.Try
 
 private[crossdata] class XDFunctionRegistry(sparkFunctionRegistry: FunctionRegistry, functionInventoryServices: Seq[FunctionInventory])
-  extends FunctionRegistry with Logging {
+  extends FunctionRegistry with SparkLoggerComponent {
 
-  import FunctionInventory._
+  import FunctionInventory.qualifyUDF
 
   @throws[AnalysisException]("If function does not exist")
   override def lookupFunction(name: String, children: Seq[Expression]): Expression =

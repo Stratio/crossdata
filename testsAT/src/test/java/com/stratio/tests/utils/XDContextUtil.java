@@ -15,12 +15,13 @@
  */
 package com.stratio.tests.utils;
 
-/**
- * Created by hdominguez on 13/10/15.
- */
+import com.stratio.crossdata.driver.JavaDriver;
+
 public class XDContextUtil {
+
     private static XDContextUtil instance = new XDContextUtil();
     private final XDContextUtils cUtils = new XDContextUtils();
+    private final XDJavaDriver xdDriver = new XDJavaDriver();
 
     private XDContextUtil() {
     }
@@ -31,6 +32,10 @@ public class XDContextUtil {
 
     public XDContextUtils getXdContext() {
         return cUtils;
+    }
+
+    public XDJavaDriver getXdDriver() {
+        return xdDriver;
     }
 
 }
