@@ -25,11 +25,10 @@ import scala.concurrent.duration.FiniteDuration
 
 // Driver -> Server messages
 private[crossdata] trait Command {
-  val requestId: UUID
+  private[crossdata] val requestId = UUID.randomUUID()
 }
 
 private[crossdata] case class SQLCommand private(sql: String,
-                                                 override val requestId: UUID = UUID.randomUUID(),
                                                  queryId: UUID = UUID.randomUUID(),
                                                  flattenResults: Boolean = false,
                                                  timeout: Option[FiniteDuration] = None
@@ -47,7 +46,6 @@ private[crossdata] case class SQLCommand private(sql: String,
 }
 
 case class AddJARCommand(path: String,
-                          override val requestId: UUID = UUID.randomUUID(),
                           timeout: Option[FiniteDuration] = None
                         ) extends Command {
   def this(
@@ -64,11 +62,9 @@ case class AddJARCommand(path: String,
 
 trait ControlCommand extends Command
 
-private[crossdata] case class CancelQueryExecution(override val requestId: UUID) extends ControlCommand
+private[crossdata] case class GetJobStatus() extends ControlCommand
 
-private[crossdata] case class GetJobStatus(override val requestId: UUID) extends ControlCommand
-
-private[crossdata] case class CancelCommand(override val requestId: UUID) extends ControlCommand
+private[crossdata] case class CancelQueryExecution(queryId: UUID) extends ControlCommand
 
 private[crossdata] case class CommandEnvelope(cmd: Command, session: Session)
 

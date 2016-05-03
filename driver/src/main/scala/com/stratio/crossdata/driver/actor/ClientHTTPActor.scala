@@ -18,15 +18,18 @@ package com.stratio.crossdata.driver.actor
 import java.io.File
 import java.util.UUID
 
-import akka.actor.{Props, Actor, ActorLogging}
+import akka.actor.{ActorRef, Actor, ActorLogging, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.stream.scaladsl.{FileIO, ImplicitMaterializer, Source}
 import akka.util.ByteString
+import com.stratio.crossdata.common.result.{SuccessfulSQLResult, SQLResponse}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.{HdfsMessage, AddJARCommand, CommandEnvelope}
+import com.stratio.crossdata.common.{SQLReply, AddJARCommand, CommandEnvelope}
 import com.stratio.crossdata.driver.config.DriverConf
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.StructType
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -42,7 +45,8 @@ with ActorLogging {
   import akka.pattern.pipe
   import context.dispatcher
   val http = Http(context.system)
-
+  var originalClient:ActorRef=self
+  var originalRequester=UUID.randomUUID()
 
   override def preStart() = {
   }
@@ -78,13 +82,17 @@ with ActorLogging {
   def receive = {
     case HttpResponse(StatusCodes.OK, headers, entity, _) =>
       entity.toStrict(5 seconds).map(_.data.decodeString("UTF-8")).foreach{ str =>
-        
+
       }
+      val res:Array[Row]=Array()
+      originalClient ! SQLReply(originalRequester,SuccessfulSQLResult(Array.empty, new StructType()))
       log.info("Got response, body: " + entity.dataBytes.runFold(ByteString(""))(_ ++ _))
     case HttpResponse(code, _, _, _) =>
       log.info("Request failed, response code: " + code)
 
-    case secureSQLCommand @ CommandEnvelope(_: AddJARCommand, session:Session) =>
+    case secureSQLCommand @ CommandEnvelope(addjarcommand: AddJARCommand, session:Session) =>
+      originalClient=sender()
+      originalRequester=addjarcommand.requestId
       sendJarToHTTPServer(secureSQLCommand.cmd.asInstanceOf[AddJARCommand].path)
   }
 
