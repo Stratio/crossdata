@@ -95,7 +95,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
     * @param st
     */
   private def executeAccepted(cmd: CommandEnvelope)(st: State): Unit = cmd match {
-    case CommandEnvelope(sqlCommand @ SQLCommand(query, requestId, queryId, withColnames, timeout), session @ Session(id, requester)) =>
+    case CommandEnvelope(sqlCommand @ SQLCommand(query, queryId, withColnames, timeout), session @ Session(id, requester)) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
       val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
@@ -108,7 +108,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
       //TODO  Maybe include job controller if it is necessary as in sql command
       if (addJarCommand.path.toLowerCase.startsWith("hdfs://") || File(addJarCommand.path).exists) {
         xdContext.addJar(addJarCommand.path)
-        sender ! SQLReply(addJarCommand.requestId,SuccessfulSQLResult(Array.empty, new StructType()))
+        sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
       } else {
         sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exists or is not a hdfs file", Some(new Exception("File doesn't exists or is not a hdfs file"))))
       }
