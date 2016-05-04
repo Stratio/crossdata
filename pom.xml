@@ -100,7 +100,7 @@
     </modules>
 
     <properties>
-        <scala.binary.underscore.version>2-10</scala.binary.underscore.version>
+        <scala.binary.package.version>scala210</scala.binary.package.version>
         <scala.binary.version>2.10</scala.binary.version>
         <scala.version>2.10.4</scala.version>
         <spark.version>1.6.1</spark.version>
@@ -446,7 +446,7 @@
             <properties>
                 <scala.version>${scala_2.10.version}</scala.version>
                 <scala.binary.version>2.10</scala.binary.version>
-                <scala.binary.underscore.version>2-10</scala.binary.underscore.version>
+                <scala.binary.package.version>scala210</scala.binary.package.version>
             </properties>
         </profile>
 
@@ -460,7 +460,7 @@
             <properties>
                 <scala.version>${scala_2.11.version}</scala.version>
                 <scala.binary.version>2.11</scala.binary.version>
-                <scala.binary.underscore.version>2-11</scala.binary.underscore.version>
+                <scala.binary.package.version>scala211</scala.binary.package.version>
             </properties>
         </profile>
 
