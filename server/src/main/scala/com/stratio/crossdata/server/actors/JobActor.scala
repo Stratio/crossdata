@@ -110,7 +110,6 @@ class JobActor(
   override def receive: Receive = receive(State(None))
 
 
-
   private def receive(st: State): Receive = {
 
     // Commands
@@ -169,8 +168,7 @@ class JobActor(
         df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
       else df.collect()
 
-
-      SQLReply(command.queryId, SuccessfulSQLResult(rows, df.schema))
+      SQLReply(command.requestId, SuccessfulSQLResult(rows, df.schema))
     }
   }
 
