@@ -16,6 +16,7 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 import java.util.UUID
+
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
@@ -34,6 +35,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val EXTERNAL = Keyword("EXTERNAL")
   protected val ADD =Keyword("ADD")
   protected val JAR = Keyword("JAR")
+  protected val INSERT = Keyword("INSERT")
+  protected val INTO = Keyword("INTO")
+  protected val VALUES = Keyword("VALUES")
   //Streaming keywords
   protected val EPHEMERAL = Keyword("EPHEMERAL")
   protected val SHOW = Keyword("SHOW")
@@ -56,7 +60,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable |
-      createView | createExternalTable | dropView | addJar | streamingSentences
+      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable
 
   // TODO move to StreamingDdlParser
 
@@ -83,6 +87,19 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
       case op => DropAllTables
     }
   }
+
+  import lexical.Token
+  protected lazy val tableValues: Parser[Seq[String]] = "(" ~> repsep(token, ",") <~ ")"
+
+
+  def token: Parser[String] =
+    elem("token", _.isInstanceOf[Token]) ^^ (_.chars)
+
+  protected lazy val insertIntoTable: Parser[LogicalPlan] =
+    INSERT ~> INTO ~> tableIdentifier ~ (VALUES ~> tableValues)  ^^ {
+      case tableId ~ tableValues =>
+        InsertIntoTable(tableId, tableValues)
+    }
 
 
   protected lazy val dropView: Parser[LogicalPlan] =

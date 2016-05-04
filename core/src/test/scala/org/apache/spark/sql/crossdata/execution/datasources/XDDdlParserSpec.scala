@@ -19,6 +19,7 @@ import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.datasources.{CreateTableUsing, DescribeCommand, RefreshTable}
+import org.apache.spark.sql.types.StructType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
@@ -104,6 +105,14 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = "DROP TABLE dbId.tableId"
     parser.parse(sentence) shouldBe DropTable( TableIdentifier("tableId", Some("dbId")))
+
+  }
+
+  it should "successfully parse a INSERT TABLE with qualified table name and VALUES provided into InsertTable RunnableCommand" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( 12, 12.01, 'proof', true)"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"), List("12", "12.01", "proof", "true"))
 
   }
 

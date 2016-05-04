@@ -81,8 +81,7 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
   }
 }
 
-private[crossdata] case class DropTable(tableIdentifier: TableIdentifier)
-  extends LogicalPlan with RunnableCommand {
+private[crossdata] case class DropTable(tableIdentifier: TableIdentifier) extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     sqlContext.catalog.dropTable(tableIdentifier)
@@ -91,8 +90,7 @@ private[crossdata] case class DropTable(tableIdentifier: TableIdentifier)
 
 }
 
-private[crossdata] case object DropAllTables
-  extends LogicalPlan with RunnableCommand {
+private[crossdata] case object DropAllTables extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     sqlContext.catalog.dropAllTables()
@@ -101,8 +99,16 @@ private[crossdata] case object DropAllTables
 
 }
 
+private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, values: Seq[String])
+  extends RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    Seq.empty
+  }
+}
+
 private[crossdata] case class CreateTempView(viewIdentifier: ViewIdentifier, queryPlan: LogicalPlan)
-  extends LogicalPlan with RunnableCommand {
+  extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     sqlContext.catalog.registerView(viewIdentifier, queryPlan)
