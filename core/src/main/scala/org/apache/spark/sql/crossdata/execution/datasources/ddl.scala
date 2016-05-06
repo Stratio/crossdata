@@ -15,24 +15,49 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
+import com.sun.org.apache.xalan.internal.xsltc.compiler.util.IntType
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, LogicalPlan}
+import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.ResolvedDataSource
-import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
-import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
+import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
+import org.apache.spark.sql.sources.{BaseRelation, InsertableRelation}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{AnalysisException, DataFrame, Row, SQLContext}
 
 import scala.language.implicitConversions
 import scala.reflect.io.File
+import scala.util.{Failure, Success, Try}
 
 object DDLUtils {
 
   implicit def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
     tableIdentifier.database.toSeq :+ tableIdentifier.table
+
+  def convertSparkDatatypeToScala(value: String, sparkDataType: DataType): Try[Any] = {
+    sparkDataType match {
+      case _: ByteType => Try{value.toByte}
+      case _: ShortType => Try{value.toShort}
+      case _: IntegerType => Try{value.toInt}
+      case _: LongType => Try{value.toLong}
+      case _: FloatType => Try{value.toFloat}
+      case _: DoubleType => Try{value.toDouble}
+      case _: DecimalType => Try{BigDecimal(value)}
+      case _: StringType => Try{value.toString}
+      case _: BooleanType => Try{value.toBoolean}
+      case _: DateType => Try{new SimpleDateFormat().parse(value)}
+      case _: TimestampType => Try{Timestamp.valueOf(value)}
+      case _ => Failure(new RuntimeException("Invalid Spark DataType"))
+    }
+  }
 
 }
 
@@ -102,8 +127,36 @@ private[crossdata] case object DropAllTables extends RunnableCommand {
 private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, values: Seq[String])
   extends RunnableCommand {
 
+  override def output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Rows", IntType, nullable = false))
+    )
+    schema.toAttributes
+  }
+
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    Seq.empty
+
+    sqlContext.catalog.lookupRelation(tableIdentifier) match {
+      case LogicalRelation( insertableRelation: InsertableRelation, _) =>
+        val tableSchema = insertableRelation.schema
+        if(tableSchema.fields.length != values.length) sys.error("Invalid length of parameters")
+
+        val valuesConverted = tableSchema.fields zip values map {
+          case(schemaCol, value) =>
+            DDLUtils.convertSparkDatatypeToScala(value, schemaCol.dataType) map {
+              case Success(converted) => converted
+              case Failure(exception) => throw exception
+            }
+        }
+
+        val dataframe = sqlContext.asInstanceOf[XDContext].createDataFrame(Seq(Row(valuesConverted)),tableSchema)
+        insertableRelation.insert(dataframe, overwrite = false)
+
+      case _ =>
+        sys.error("The Datasource does not support INSERT INTO table VALUES command")
+    }
+
+    Row(1) :: Nil
   }
 }
 
