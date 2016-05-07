@@ -4,7 +4,7 @@ CROSSBUILD:
 
 ITSERVICES:
   - SPARK:
-      image: stratio/spark:1.5.2
+      image: stratio/spark:1.6.1
       env:
         - SPARK_MODE=master
   - ZOOKEEPER:
@@ -13,7 +13,7 @@ ITSERVICES:
       image: stratio/mongo:3.0.4
       sleep: 10
   - SPARK:
-      image: stratio/spark:1.5.2
+      image: stratio/spark:1.6.1
       env:
         - SPARK_MODE=slave
         - SPARK_MASTER_HOST=%%SPARK#0
