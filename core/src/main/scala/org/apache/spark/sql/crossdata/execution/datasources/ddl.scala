@@ -129,7 +129,7 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
   override def output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("Rows", IntType, nullable = false))
+      Seq(StructField("Rows", IntegerType, nullable = false))
     )
     schema.toAttributes
   }
