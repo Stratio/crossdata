@@ -24,73 +24,76 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
 
+import scala.util.Success
+
 @RunWith(classOf[JUnitRunner])
 class DdlSpec extends BaseXDTest with MockitoSugar{
 
 
   "Ddl" should  """successfully convert from ByteType to Byte""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("4", ByteType) shouldBe (4 : Byte)
+    DDLUtils.convertSparkDatatypeToScala("4", ByteType) shouldBe Success(4 : Byte)
 
   }
 
   "Ddl" should  """successfully convert from ShortType to Short""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("6", ShortType) shouldBe (6 : Short)
+    DDLUtils.convertSparkDatatypeToScala("6", ShortType) shouldBe Success(6 : Short)
 
   }
 
   "Ddl" should  """successfully convert from IntegerType to Integer""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("25", IntegerType) shouldBe (25 : Int)
+    DDLUtils.convertSparkDatatypeToScala("25", IntegerType) shouldBe Success(25 : Int)
 
   }
 
   "Ddl" should  """successfully convert from LongType to Long""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("-127", LongType) shouldBe (-127 : Long)
+    DDLUtils.convertSparkDatatypeToScala("-127", LongType) shouldBe Success(-127 : Long)
 
   }
 
   "Ddl" should  """successfully convert from FloatType to Float""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("-1.01", FloatType) shouldBe (-1.01f : Float)
+    DDLUtils.convertSparkDatatypeToScala("-1.01", FloatType) shouldBe Success(-1.01f : Float)
 
   }
 
   "Ddl" should  """successfully convert from DoubleType to Double""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("3.75", DoubleType) shouldBe (3.75 : Double)
+    DDLUtils.convertSparkDatatypeToScala("3.75", DoubleType) shouldBe Success(3.75 : Double)
 
   }
 
   "Ddl" should  """successfully convert from DecimalType to BigDecimal""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("-106.75", DecimalType.SYSTEM_DEFAULT) shouldBe BigDecimal(-106.75)
+    DDLUtils.convertSparkDatatypeToScala("-106.75", DecimalType.SYSTEM_DEFAULT) shouldBe Success(BigDecimal(-106.75))
 
   }
 
   "Ddl" should  """successfully convert from StringType to String""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("abcde", StringType) shouldBe "abcde"
+    DDLUtils.convertSparkDatatypeToScala("abcde", StringType) shouldBe Success("abcde")
 
   }
 
   "Ddl" should  """successfully convert from BooleanType to Boolean""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("false", BooleanType) shouldBe (false : Boolean)
+    DDLUtils.convertSparkDatatypeToScala("false", BooleanType) shouldBe Success(false : Boolean)
 
   }
 
   "Ddl" should  """successfully convert from DateType to Date""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("2010-01-02", DateType) shouldBe new SimpleDateFormat().parse("2010-01-02")
+    val date = new SimpleDateFormat("yyyy-MM-dd").parse("2010-01-02")
+    DDLUtils.convertSparkDatatypeToScala(new SimpleDateFormat().format(date), DateType) shouldBe Success(date)
 
   }
 
   "Ddl" should  """successfully convert from TimestampType to Timestamp""" in {
 
-    DDLUtils.convertSparkDatatypeToScala("1988-08-11 11:12:13", TimestampType) shouldBe Timestamp.valueOf("1988-08-11 11:12:13")
+    DDLUtils.convertSparkDatatypeToScala("1988-08-11 11:12:13", TimestampType) shouldBe Success(Timestamp.valueOf("1988-08-11 11:12:13"))
 
   }
 
