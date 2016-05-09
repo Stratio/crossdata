@@ -118,6 +118,9 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
       //TODO  Maybe include job controller if it is necessary as in sql command
       if (addJarCommand.path.toLowerCase.startsWith("hdfs://")) {
         xdContext.addJar(addJarCommand.path)
+        //add to runtime
+
+
         sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
       } else {
         sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exists or is not a hdfs file", Some(new Exception("File doesn't exists or is not a hdfs file"))))

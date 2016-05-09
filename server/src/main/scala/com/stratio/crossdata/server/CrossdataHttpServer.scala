@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope}
 import com.stratio.crossdata.utils.HdfsUtils
 import com.typesafe.config.Config
+import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
 
 import scala.concurrent.Future
@@ -37,6 +38,7 @@ class CrossdataHttpServer(config:Config, serverActor:ActorRef, httpSystem:ActorS
 
   implicit val system=httpSystem
   implicit val materializer = ActorMaterializer()
+  lazy val logger = Logger.getLogger(classOf[CrossdataHttpServer])
   import scala.concurrent.ExecutionContext.Implicits.global
 
   val addJarTopic: String = "newJAR"
@@ -54,21 +56,21 @@ class CrossdataHttpServer(config:Config, serverActor:ActorRef, httpSystem:ActorS
               // stream into a file as the chunks of it arrives and return a future file to where it got stored
               val file=new java.io.File(s"/tmp/${part.filename.getOrElse("uploadFile")}")
               path=file.getAbsolutePath
-              println("Uploading file...")
+              logger.info("Uploading file...")
               part.entity.dataBytes.runWith(FileIO.toFile(file)).map(_ =>
                 (part.name -> file))
 
           }.runFold(Map.empty[String, Any])((map, tuple) => map + tuple)
 
           val done = allPartsF.map { allParts =>
-            println("Recieved file")
+            logger.info("Recieved file")
           }
           // when processing have finished create a response for the user
           onSuccess(allPartsF) { allParts =>
             complete {
               val hdfsConfig=XDContext.xdConfig.getConfig("hdfs")
               //Send a broadcast message to all servers
-              val hdfsPath=getHdfsPath(hdfsConfig,path)
+              val hdfsPath=writeJarToHdfs(hdfsConfig,path)
               mediator ! Publish(addJarTopic, CommandEnvelope(AddJARCommand(hdfsPath),new Session("HttpServer",serverActor)))
               hdfsPath
             }
@@ -77,7 +79,7 @@ class CrossdataHttpServer(config:Config, serverActor:ActorRef, httpSystem:ActorS
     }~
       complete("Welcome to Crossdata HTTP Server")
 
-  private def getHdfsPath(hdfsConfig:Config, jar:String):String={
+  private def writeJarToHdfs(hdfsConfig:Config, jar:String):String={
     val user = hdfsConfig.getString("hadoopUserName")
     val hdfsMaster= hdfsConfig.getString("hdfsMaster")
     val destPath = s"/user/$user/externalJars/"

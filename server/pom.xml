@@ -78,12 +78,12 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-stream-experimental_${scala.binary.version}</artifactId>
-            <version>2.0.3</version>
+            <version>${akka.http.stream.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-http-experimental_${scala.binary.version}</artifactId>
-            <version>2.0.3</version>
+            <version>${akka.http.stream.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
