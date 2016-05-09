@@ -25,14 +25,15 @@ import java.util.concurrent.atomic.AtomicReference
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst._
-import org.apache.spark.sql.catalyst.analysis.{CleanupAliases, HiveTypeCoercion, Analyzer, FunctionRegistry}
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, FunctionRegistry, HiveTypeCoercion}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
+import org.apache.spark.sql.crossdata.security.{Credentials, SecurityManager}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
@@ -47,7 +48,8 @@ import org.apache.spark.{Logging, SparkContext}
   * @param sc A [[SparkContext]].
  */
 class XDContext private (@transient val sc: SparkContext,
-                userConfig: Option[Config] = None) extends SQLContext(sc) with Logging  {
+                userConfig: Option[Config] = None,
+                credentials: Credentials = Credentials()) extends SQLContext(sc) with Logging  {
   self =>
 
   def this(sc: SparkContext) =
@@ -65,14 +67,13 @@ class XDContext private (@transient val sc: SparkContext,
      Config should be changed by a map and implicitly converted into `Config` whenever one of its
      methods is called.
      */
-  import XDContext.{catalogConfig, config, xdConfig}
+  import XDContext.{catalogConfig, config, securityConfig, xdConfig}
 
   xdConfig = userConfig.fold(config) { userConf =>
     userConf.withFallback(config)
   }
 
   catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
-
 
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {
@@ -107,6 +108,21 @@ class XDContext private (@transient val sc: SparkContext,
     }
   }
 
+  @transient
+  protected[crossdata] lazy val securityManager = {
+
+    import XDContext.DefaultSecurityManager
+
+    val securityClass = if (securityConfig.hasPath(XDContext.ClassConfigKey))
+      catalogConfig.getString(XDContext.ClassConfigKey)
+    else DefaultSecurityManager
+
+    val securityManager = Class.forName(securityClass)
+
+    val constr: Constructor[_] = securityManager.getConstructor(classOf[Credentials])
+
+    constr.newInstance().asInstanceOf[SecurityManager]
+  }
 
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
@@ -262,13 +278,16 @@ object XDContext extends CoreConfig {
 
   var xdConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
   var catalogConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
+  var securityConfig: Config = _
 
   val CaseSensitive = "caseSensitive"
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
+  val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
   val JDBCClass = "org.apache.spark.sql.crossdata.catalog.JDBCCatalog"
   val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog"
   val CatalogConfigKey = "catalog"
   val StreamingConfigKey = "streaming"
+  val SecurityConfigKey = "security"
   val ClassConfigKey = "class"
   val CatalogClassConfigKey : String = s"$CatalogConfigKey.$ClassConfigKey"
   val StreamingCatalogClassConfigKey : String = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
