@@ -21,17 +21,18 @@ import java.text.SimpleDateFormat
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
 import com.sun.org.apache.xalan.internal.xsltc.compiler.util.IntType
+import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, LogicalPlan}
+import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, LogicalPlan, Subquery}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
-import org.apache.spark.sql.sources.{BaseRelation, InsertableRelation}
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.{AnalysisException, DataFrame, Row, SQLContext}
+import org.apache.spark.sql.execution.datasources._
+import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, HadoopFsRelationProvider, InsertableRelation}
+import org.apache.spark.sql.types.{StructType, _}
+import org.apache.spark.sql._
 
 import scala.language.implicitConversions
 import scala.reflect.io.File
@@ -44,20 +45,21 @@ object DDLUtils {
 
   def convertSparkDatatypeToScala(value: String, sparkDataType: DataType): Try[Any] = {
     sparkDataType match {
-      case _: ByteType => Try{value.toByte}
-      case _: ShortType => Try{value.toShort}
-      case _: IntegerType => Try{value.toInt}
-      case _: LongType => Try{value.toLong}
-      case _: FloatType => Try{value.toFloat}
-      case _: DoubleType => Try{value.toDouble}
-      case _: DecimalType => Try{BigDecimal(value)}
-      case _: StringType => Try{value.toString}
-      case _: BooleanType => Try{value.toBoolean}
-      case _: DateType => Try{new SimpleDateFormat().parse(value)}
-      case _: TimestampType => Try{Timestamp.valueOf(value)}
+      case _: ByteType => Try(value.toByte)
+      case _: ShortType => Try(value.toShort)
+      case _: IntegerType => Try(value.toInt)
+      case _: LongType => Try(value.toLong)
+      case _: FloatType => Try(value.toFloat)
+      case _: DoubleType => Try(value.toDouble)
+      case _: DecimalType => Try(BigDecimal(value))
+      case _: StringType => Try(value.toString)
+      case _: BooleanType => Try(value.toBoolean)
+      case _: DateType => Try(new SimpleDateFormat().parse(value))
+      case _: TimestampType => Try(Timestamp.valueOf(value))
       case _ => Failure(new RuntimeException("Invalid Spark DataType"))
     }
   }
+
 
 }
 
@@ -136,21 +138,38 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
+    val lookup = sqlContext.catalog.lookupRelation(tableIdentifier)
+
     sqlContext.catalog.lookupRelation(tableIdentifier) match {
-      case LogicalRelation( insertableRelation: InsertableRelation, _) =>
-        val tableSchema = insertableRelation.schema
+
+      case Subquery(_, LogicalRelation(relation : BaseRelation, _ )) =>
+        val tableSchema = relation.schema
         if(tableSchema.fields.length != values.length) sys.error("Invalid length of parameters")
 
         val valuesConverted = tableSchema.fields zip values map {
           case(schemaCol, value) =>
-            DDLUtils.convertSparkDatatypeToScala(value, schemaCol.dataType) map {
+            DDLUtils.convertSparkDatatypeToScala(value, schemaCol.dataType) match {
               case Success(converted) => converted
               case Failure(exception) => throw exception
             }
         }
 
-        val dataframe = sqlContext.asInstanceOf[XDContext].createDataFrame(Seq(Row(valuesConverted)),tableSchema)
-        insertableRelation.insert(dataframe, overwrite = false)
+        val dataframe = sqlContext.asInstanceOf[XDContext].createDataFrame(Seq(Row.fromSeq(valuesConverted)),tableSchema)
+
+        relation match {
+          case insertableRelation : InsertableRelation =>
+            insertableRelation.insert(dataframe, overwrite = false)
+
+          case hadoopFsRelation: HadoopFsRelation =>
+            sqlContext.executePlan(
+              InsertIntoHadoopFsRelation(
+                hadoopFsRelation,
+                dataframe.logicalPlan,
+                mode = SaveMode.Append)).toRdd
+
+          case _ =>
+            sys.error("The Datasource does not support INSERT INTO table VALUES command")
+        }
 
       case _ =>
         sys.error("The Datasource does not support INSERT INTO table VALUES command")

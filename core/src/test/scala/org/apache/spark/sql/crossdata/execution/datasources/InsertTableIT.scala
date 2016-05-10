@@ -15,9 +15,10 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.{SharedXDContextTest, TestXDContext}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -25,12 +26,29 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class InsertTableIT extends SharedXDContextTest {
 
-  private val path = "/foo.json"
+  private val jsonPath = "src/test/resources/foo.json"
 
-  it should "insert a row using INSERT INTO table VALUES" in {
-    val foo = _xdContext.read.json(path)
-    foo.printSchema()
+  protected override def beforeAll(): Unit = {
+
+    // Ensure we have initialized the context before calling parent code
+    super.beforeAll()
   }
 
+
+  /*it should "insert a row using INSERT INTO table VALUES in CSV" in {
+    val foo = _xdContext
+      .read
+      .format("com.databricks.spark.csv")
+      .option("header","true")
+      .option("inferSchema","true")
+      .load(csvPath)
+    foo.printSchema()
+  }*/
+
+  it should "insert a row using INSERT INTO table VALUES in JSON" in {
+    val foo = _xdContext.read.json(jsonPath)
+    foo.registerTempTable("fooJson")
+    _xdContext.sql("INSERT INTO fooJson VALUES ('foo2',20)") should be (Row(1)::Nil)
+  }
 
 }
