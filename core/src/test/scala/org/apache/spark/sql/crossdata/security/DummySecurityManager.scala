@@ -15,21 +15,16 @@
  */
 package org.apache.spark.sql.crossdata.security
 
-class DefaultSecurityManager(override val credentials: Credentials) extends SecurityManager(credentials) {
+object DummySecurityManager {
+  val UniqueReply = "Authorized"
+}
 
-  val user = credentials.user match {
-    case Some(u) => Some(u)
-    case other => None
-  }
-  val sessionId = credentials.sessionId match {
-    case Some(s) => Some(s)
-    case other => None
-  }
+class DummySecurityManager(override val credentials: Credentials) extends SecurityManager(credentials) {
+
+  import org.apache.spark.sql.crossdata.security.DummySecurityManager._
 
   override def authorize(resource: Any): AuthorizationReply = {
-    val info = s"${user.fold(""){u => s"User '$u', "}}${sessionId.fold(""){s => s"SessionId, '$s'}"}}Access to: '$resource'"
-    logInfo(info)
-    new AuthorizationReply(true, Some(info))
+    new AuthorizationReply(true, Some(UniqueReply))
   }
 
 }
