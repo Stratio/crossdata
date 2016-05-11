@@ -28,7 +28,7 @@ class DefaultSecurityManager(override val credentials: Credentials) extends Secu
   new AuthorizationReply(true)
 
   override def authorize(resource: Any): AuthorizationReply = {
-    val info = s"${user.fold(){u => s"User '$u', "}}${sessionId.fold(){s => s"SessionId, '$s'}"}}Access to: '$resource'"
+    val info = s"${user.fold(""){u => s"User '$u', "}}${sessionId.fold(""){s => s"SessionId, '$s'}"}}Access to: '$resource'"
     logInfo(info)
     new AuthorizationReply(true, Some(info))
   }

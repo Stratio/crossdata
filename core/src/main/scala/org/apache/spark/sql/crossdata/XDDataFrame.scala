@@ -17,6 +17,7 @@ package org.apache.spark.sql.crossdata
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
+import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
@@ -41,7 +42,7 @@ import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 
 import scala.collection.mutable.BufferLike
-import scala.collection.{mutable, immutable, GenTraversableOnce}
+import scala.collection.{GenTraversableOnce, immutable, mutable}
 import scala.collection.generic.CanBuildFrom
 
 private[sql] object XDDataFrame {
@@ -102,6 +103,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
 
   def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = {
     this(sqlContext, {
+      sqlContext.asInstanceOf[XDContext].securityManager.authorize(logicalPlan.toJSON)
       val qe = sqlContext.executePlan(logicalPlan)
       if (sqlContext.conf.dataFrameEagerAnalysis) {
         qe.assertAnalyzed() // This should force analysis and throw errors if there are any

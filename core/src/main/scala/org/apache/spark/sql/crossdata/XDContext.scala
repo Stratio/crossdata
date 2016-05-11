@@ -27,7 +27,7 @@ import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
-import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
+import org.apache.spark.sql.crossdata.XDContext.{SecurityClassConfigKey, StreamingCatalogClassConfigKey}
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
@@ -69,7 +69,7 @@ class XDContext private (@transient val sc: SparkContext,
      Config should be changed by a map and implicitly converted into `Config` whenever one of its
      methods is called.
      */
-  import XDContext.{catalogConfig, config, xdConfig, securityConfig}
+  import XDContext.{catalogConfig, config, xdConfig}
 
   xdConfig = userConfig.fold(config) { userConf =>
     userConf.withFallback(config)
@@ -115,15 +115,15 @@ class XDContext private (@transient val sc: SparkContext,
 
     import XDContext.DefaultSecurityManager
 
-    val securityClass = if (securityConfig.hasPath(XDContext.ClassConfigKey))
-      catalogConfig.getString(XDContext.ClassConfigKey)
+    val securityClass = if (xdConfig.hasPath(SecurityClassConfigKey))
+      xdConfig.getString(SecurityClassConfigKey)
     else DefaultSecurityManager
 
-    val securityManager = Class.forName(securityClass)
+    val securityManagerClass = Class.forName(securityClass)
 
-    val constr: Constructor[_] = securityManager.getConstructor(classOf[Credentials])
+    val constr: Constructor[_] = securityManagerClass.getConstructor(classOf[Credentials])
 
-    constr.newInstance().asInstanceOf[SecurityManager]
+    constr.newInstance(credentials).asInstanceOf[SecurityManager]
   }
 
   @transient
@@ -285,7 +285,6 @@ object XDContext extends CoreConfig {
 
   var xdConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
   var catalogConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
-  var securityConfig: Config = _
 
   val CaseSensitive = "caseSensitive"
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
@@ -295,9 +294,11 @@ object XDContext extends CoreConfig {
   val CatalogConfigKey = "catalog"
   val StreamingConfigKey = "streaming"
   val SecurityConfigKey = "security"
+  val SecurityManagerConfigKey = "manager"
   val ClassConfigKey = "class"
-  val CatalogClassConfigKey : String = s"$CatalogConfigKey.$ClassConfigKey"
-  val StreamingCatalogClassConfigKey : String = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
+  val CatalogClassConfigKey = s"$CatalogConfigKey.$ClassConfigKey"
+  val StreamingCatalogClassConfigKey = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
+  val SecurityClassConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
 
   @transient private val INSTANTIATION_LOCK = new Object()
 
