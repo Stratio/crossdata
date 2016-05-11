@@ -293,7 +293,14 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
 
     val containsSubfields = notSupportedProject(queryExecution.optimizedPlan)
     val planSupported = !containsSubfields && queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
-    if(planSupported) provider.buildScan(queryExecution.optimizedPlan) else None
+    if(planSupported) {
+      // TODO handle failed executions which are currently wrapped within the option, so these jobs will appear duplicated
+      // TODO the plan should notice the native execution
+      withNewExecutionId{
+        provider.buildScan(queryExecution.optimizedPlan)
+      }
+    } else
+      None
 
   }
 
