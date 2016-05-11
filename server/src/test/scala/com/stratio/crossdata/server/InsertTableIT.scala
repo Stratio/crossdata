@@ -13,20 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.execution.datasources
+package com.stratio.crossdata.server
 
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
-import org.apache.spark.sql.crossdata.test.{SharedXDContextTest, TestXDContext}
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class InsertTableIT extends SharedXDContextTest {
-
-  private val jsonPath = "hdfs://localhost:54310/foo.json"
 
   protected override def beforeAll(): Unit = {
 
@@ -35,7 +31,9 @@ class InsertTableIT extends SharedXDContextTest {
   }
 
   it should "insert a row using INSERT INTO table VALUES in JSON" in {
-    val foo = _xdContext.read.json(jsonPath)
+
+    val options = Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students")
+    val foo = _xdContext.read.schema(StructType(Seq(StructField("name", StringType), StructField("value", IntegerType)))).format("mongodb").options(options).load()
     foo.registerTempTable("fooJson")
     _xdContext.sql("INSERT INTO fooJson VALUES ('foo2',20)") should be (Row(1)::Nil)
   }
