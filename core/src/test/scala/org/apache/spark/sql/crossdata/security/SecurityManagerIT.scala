@@ -15,21 +15,16 @@
  */
 package org.apache.spark.sql.crossdata.security
 
-class DefaultSecurityManager(override val credentials: Credentials) extends SecurityManager(credentials) {
+import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 
-  val user = credentials.user match {
-    case Some(u) => Some(u)
-    case other => None
-  }
-  val sessionId = credentials.sessionId match {
-    case Some(s) => Some(s)
-    case other => None
+class SecurityManagerIT extends SharedXDContextTest {
+
+  "A Dummy Security Manager" should "authorize all the operations" in {
+    val securityManager = xdContext.securityManager
+    val reply = securityManager.authorize("Tricky operation")
+    assert(reply.authorizated === true)
+    assert(reply.info === Some(DummySecurityManager.UniqueReply))
   }
 
-  override def authorize(resource: Any): AuthorizationReply = {
-    val info = s"${user.fold(""){u => s"User '$u', "}}${sessionId.fold(""){s => s"SessionId, '$s'}"}}Access to: '$resource'"
-    logInfo(info)
-    new AuthorizationReply(true, Some(info))
-  }
 
 }
