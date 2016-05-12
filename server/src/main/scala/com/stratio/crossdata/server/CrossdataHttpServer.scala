@@ -28,20 +28,20 @@ import akka.stream.scaladsl.FileIO
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope}
 import com.stratio.crossdata.utils.HdfsUtils
+import com.stratio.crossdata.server.actors.ServerActor
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
 
 import scala.concurrent.Future
 
-class CrossdataHttpServer(config:Config, serverActor:ActorRef, httpSystem:ActorSystem) {
+class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) {
 
-  implicit val system=httpSystem
+  import ServerActor._
+
+  implicit val executionContext = system.dispatcher
   implicit val materializer = ActorMaterializer()
   lazy val logger = Logger.getLogger(classOf[CrossdataHttpServer])
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  val addJarTopic: String = "newJAR"
   lazy val mediator = DistributedPubSubExtension(system).mediator
 
   def route =
@@ -49,39 +49,40 @@ class CrossdataHttpServer(config:Config, serverActor:ActorRef, httpSystem:ActorS
       entity(as[Multipart.FormData]) {
         formData =>
           // collect all parts of the multipart as it arrives into a map
-          var path=""
+          var path = ""
           val allPartsF: Future[Map[String, Any]] = formData.parts.mapAsync[(String, Any)](1) {
 
             case part: BodyPart if part.name == "fileChunk" =>
               // stream into a file as the chunks of it arrives and return a future file to where it got stored
-              val file=new java.io.File(s"/tmp/${part.filename.getOrElse("uploadFile")}")
-              path=file.getAbsolutePath
+              val file = new java.io.File(s"/tmp/${part.filename.getOrElse("uploadFile")}")
+              path = file.getAbsolutePath
               logger.info("Uploading file...")
-              part.entity.dataBytes.runWith(FileIO.toFile(file)).map(_ =>
-                (part.name -> file))
+              // TODO map is not used
+              part.entity.dataBytes.runWith(FileIO.toFile(file)).map(_ => part.name -> file)
 
           }.runFold(Map.empty[String, Any])((map, tuple) => map + tuple)
 
-          val done = allPartsF.map { allParts =>
-            logger.info("Recieved file")
+          val done = allPartsF.onSuccess{
+            case _ => logger.info("Recieved file")
           }
+
           // when processing have finished create a response for the user
           onSuccess(allPartsF) { allParts =>
             complete {
-              val hdfsConfig=XDContext.xdConfig.getConfig("hdfs")
+              val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
               //Send a broadcast message to all servers
-              val hdfsPath=writeJarToHdfs(hdfsConfig,path)
-              mediator ! Publish(addJarTopic, CommandEnvelope(AddJARCommand(hdfsPath),new Session("HttpServer",serverActor)))
+              val hdfsPath = writeJarToHdfs(hdfsConfig, path)
+              mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath), new Session("HttpServer", serverActor)))
               hdfsPath
             }
           }
       }
-    }~
+    } ~
       complete("Welcome to Crossdata HTTP Server")
 
-  private def writeJarToHdfs(hdfsConfig:Config, jar:String):String={
+  private def writeJarToHdfs(hdfsConfig: Config, jar: String): String = {
     val user = hdfsConfig.getString("hadoopUserName")
-    val hdfsMaster= hdfsConfig.getString("hdfsMaster")
+    val hdfsMaster = hdfsConfig.getString("hdfsMaster")
     val destPath = s"/user/$user/externalJars/"
 
     val hdfsUtil = HdfsUtils(hdfsConfig)
@@ -93,7 +94,5 @@ class CrossdataHttpServer(config:Config, serverActor:ActorRef, httpSystem:ActorS
     }
     s"hdfs://$hdfsMaster/$destPath/$jarName"
   }
-
-
 
 }

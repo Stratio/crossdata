@@ -23,7 +23,6 @@ import org.scalatest.junit.JUnitRunner
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.reflect.io.File
 
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
@@ -93,6 +92,7 @@ class DriverIT extends EndToEndTest {
 
   }
 
+  // TODO move to examples??
   /* TODO check this tests with HDFS
   it should "be able to execute ADD JAR Command of an existent file" in {
     val file=File("/tmp/jar").createFile(false)

@@ -77,11 +77,6 @@
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-stream-experimental_${scala.binary.version}</artifactId>
-            <version>${akka.http.stream.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-http-experimental_${scala.binary.version}</artifactId>
             <version>${akka.http.stream.version}</version>
         </dependency>

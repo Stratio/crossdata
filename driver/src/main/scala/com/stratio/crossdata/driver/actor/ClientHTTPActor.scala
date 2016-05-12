@@ -18,43 +18,41 @@ package com.stratio.crossdata.driver.actor
 import java.io.File
 import java.util.UUID
 
-import akka.actor.{ActorRef, Actor, ActorLogging, Props}
+import akka.actor.{PoisonPill, Actor, ActorLogging, ActorRef, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
+import akka.pattern.pipe
 import akka.stream.scaladsl.{FileIO, ImplicitMaterializer, Source}
-import akka.util.ByteString
-import com.stratio.crossdata.common.result.{SuccessfulSQLResult, SQLResponse}
+import com.stratio.crossdata.common.result.SuccessfulSQLResult
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.{SQLReply, AddJARCommand, CommandEnvelope}
+import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope, SQLReply}
 import com.stratio.crossdata.driver.config.DriverConf
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 object ClientHTTPActor {
-  def props(config:DriverConf):Props = Props(new ClientHTTPActor(config))
+  def props(config: DriverConf): Props = Props(new ClientHTTPActor(config))
 }
 
-class ClientHTTPActor(config:DriverConf) extends Actor
+class ClientHTTPActor(config: DriverConf) extends Actor
 with ImplicitMaterializer
 with ActorLogging {
-  import akka.pattern.pipe
+
+
   import context.dispatcher
+
   val http = Http(context.system)
-  var originalClient:ActorRef=self
-  var originalRequester=UUID.randomUUID()
 
-  override def preStart() = {
-  }
-
-  def sendJarToHTTPServer(path:String): Unit ={
-    val host=config.getCrossdataServerHost.split(':').head
-    val r=createRequest(s"http://$host:13422/upload", new File(path))
+  def sendJarToHTTPServer(path: String): Unit = {
+    val host = config.getCrossdataServerHost.split(':').head
+    val r = createRequest(s"http://$host:13422/upload", new File(path))
     r onComplete {
+      // TODO pipeTo proxyActor??
       case Success(req) => http.singleRequest(req).pipeTo(self)
       case Failure(f) => log.error("File Error:" + f.getMessage)
     }
@@ -62,7 +60,7 @@ with ActorLogging {
 
   def createEntity(file: File): Future[RequestEntity] = {
     require(file.exists())
-    val fileIO=FileIO.fromFile(file)
+    val fileIO = FileIO.fromFile(file)
     val formData =
       Multipart.FormData(
         Source.single(
@@ -79,23 +77,37 @@ with ActorLogging {
     } yield HttpRequest(HttpMethods.POST, uri = target, entity = e)
 
 
-  def receive = {
-    case HttpResponse(StatusCodes.OK, headers, entity, _) =>
-      entity.toStrict(5 seconds).map(_.data.decodeString("UTF-8")).foreach{ str =>
+  override def receive: Actor.Receive = initial
 
-      }
-      val res:Array[Row]=Array()
-      originalClient ! SQLReply(originalRequester,SuccessfulSQLResult(Array.empty, new StructType()))
-      log.info("Got response, body: " + entity.dataBytes.runFold(ByteString(""))(_ ++ _))
-    case HttpResponse(code, _, _, _) =>
-      log.info("Request failed, response code: " + code)
-
-    case secureSQLCommand @ CommandEnvelope(addjarcommand: AddJARCommand, session:Session) =>
-      originalClient=sender()
-      originalRequester=addjarcommand.requestId
+  def initial: Receive = {
+    case secureSQLCommand@CommandEnvelope(addjarcommand: AddJARCommand, session: Session) =>
       sendJarToHTTPServer(secureSQLCommand.cmd.asInstanceOf[AddJARCommand].path)
+      context.become(waitingResponse(sender(), addjarcommand.requestId))
+
+    case other =>
+      log.error(s"Unexpected message $other")
   }
 
+  def waitingResponse(proxyActor: ActorRef, requester: UUID): Receive = {
+    case HttpResponse(StatusCodes.OK, headers, entity, _) =>
+      entity.toStrict(5 seconds).map(_.data.decodeString("UTF-8")).recover {
+        case errorDecoding =>
+          log.error(errorDecoding, s"Error decoding response ${errorDecoding.getMessage}")
+          s"Cannot get the response: cause ${errorDecoding.getMessage}"
+      } onSuccess {
+        case response =>
+          proxyActor ! SQLReply(requester,SuccessfulSQLResult(Array(Row(response)), StructType(StructField("filepath", StringType) :: Nil)))
+          log.info("Got response, body: " + response)
+          // TODO pfperez (how to kill)
+          self ! PoisonPill
+      }
+
+    case HttpResponse(code, _, _, _) =>
+      log.info("Request failed, response code: " + code)
+      // TODO pfperez (how to kill)
+      self ! PoisonPill
+
+  }
+
+
 }
-
-

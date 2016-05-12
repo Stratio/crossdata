@@ -18,10 +18,9 @@ package com.stratio.crossdata.driver.actor
 
 import java.util.UUID
 
-import akka.actor.{ActorSystem, Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
 import com.stratio.crossdata.common._
-
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
 import org.apache.log4j.Logger
@@ -80,11 +79,9 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
       clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(_: AddJARCommand, _) =>
-      implicit val system = ActorSystem()
-      val clientActor =system.actorOf(Props(new ClientHTTPActor(driver.driverConf)), "client")
+    case secureSQLCommand @ CommandEnvelope(aCmd: AddJARCommand, _) =>
+      val clientActor = context.system.actorOf(Props(new ClientHTTPActor(driver.driverConf)), "clienthttp"+aCmd.requestId)
       clientActor forward secureSQLCommand
-
 
     case sqlCommand: SQLCommand =>
       logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
