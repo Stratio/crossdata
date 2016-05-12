@@ -27,7 +27,7 @@ import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, FunctionRegistry, HiveTypeCoercion}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, StreamingCatalogClassConfigKey}
+import org.apache.spark.sql.crossdata.XDContext._
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
@@ -121,11 +121,37 @@ class XDContext private (@transient val sc: SparkContext,
       xdConfig.getBoolean(SecurityAuditConfigKey)
     else false
 
+    val userConfig = if (xdConfig.hasPath(SecurityUserConfigKey))
+      Some(xdConfig.getString(SecurityUserConfigKey))
+    else None
+
+    val passwordConfig = if (xdConfig.hasPath(SecurityPasswordConfigKey))
+      Some(xdConfig.getString(SecurityPasswordConfigKey))
+    else None
+
+    val sessionIdConfig = if (xdConfig.hasPath(SecuritySessionConfigKey))
+      Some(xdConfig.getString(SecuritySessionConfigKey))
+    else None
+
     val securityManagerClass = Class.forName(securityClass)
 
     val constr: Constructor[_] = securityManagerClass.getConstructor(classOf[Credentials], classOf[Boolean])
 
-    constr.newInstance(credentials, audit).asInstanceOf[SecurityManager]
+    val fallbackCredentials = credentials.copy(
+      user = userConfig match {
+        case Some(u) => Some(u)
+        case _ => credentials.user
+      },
+      password = passwordConfig match {
+        case Some(p) => Some(p)
+        case _ => credentials.password
+      },
+      sessionId = sessionIdConfig match {
+        case Some(s) => Some(s)
+        case _ => credentials.sessionId
+      })
+
+    constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
   }
 
   @transient
@@ -294,10 +320,17 @@ object XDContext extends CoreConfig {
   val SecurityManagerConfigKey = "manager"
   val ClassConfigKey = "class"
   val AuditConfigKey = "audit"
+  val UserConfigKey = "user"
+  val PasswordConfigKey = "password"
+  val SessionConfigKey = "session"
   val CatalogClassConfigKey = s"$CatalogConfigKey.$ClassConfigKey"
   val StreamingCatalogClassConfigKey = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
   val SecurityClassConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
   val SecurityAuditConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$AuditConfigKey"
+  val SecurityUserConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$UserConfigKey"
+  val SecurityPasswordConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$PasswordConfigKey"
+  val SecuritySessionConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$SessionConfigKey"
+
 
   @transient private val INSTANTIATION_LOCK = new Object()
 

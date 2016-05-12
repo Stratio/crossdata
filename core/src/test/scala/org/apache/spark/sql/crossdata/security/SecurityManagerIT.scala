@@ -26,5 +26,12 @@ class SecurityManagerIT extends SharedXDContextTest {
     assert(reply.info === Some(DummySecurityManager.UniqueReply))
   }
 
+  "Credentials of the configuration file" should "override the ones of the XDContext constructor" in {
+    val securityManager = xdContext.securityManager
+    assert(securityManager.credentials.user === Some("tester"))
+    assert(securityManager.credentials.password === Some("secret"))
+    assert(securityManager.credentials.sessionId === Some("1234"))
+  }
+
 
 }
