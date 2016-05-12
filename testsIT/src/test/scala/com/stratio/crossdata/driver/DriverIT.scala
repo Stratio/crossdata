@@ -23,6 +23,7 @@ import org.scalatest.junit.JUnitRunner
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.reflect.io.File
 
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
@@ -93,7 +94,7 @@ class DriverIT extends EndToEndTest {
   }
 
   // TODO move to examples??
-  /* TODO check this tests with HDFS
+  // TODO check this tests with HDFS
   it should "be able to execute ADD JAR Command of an existent file" in {
     val file=File("/tmp/jar").createFile(false)
     val driver = Driver.getOrCreate()
@@ -105,22 +106,22 @@ class DriverIT extends EndToEndTest {
     result.hasError should equal (false)
   }
 
-  it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
+//  it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
+//
+//    val driver = Driver.getOrCreate()
+//    val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
+//    driver.stop()
+//
+//    result.hasError should equal (true)
+//  }
+//
+//  it should "be able to execute ADD JAR Command of any HDFS file" in {
+//
+//    val driver = Driver.getOrCreate()
+//    val result = driver.addJar(s"hdfs://repo/file.jar").waitForResult()
+//    driver.stop()
+//
+//    result.hasError should equal (false)
+//  }
 
-    val driver = Driver.getOrCreate()
-    val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
-    driver.stop()
-
-    result.hasError should equal (true)
-  }
-
-  it should "be able to execute ADD JAR Command of any HDFS file" in {
-
-    val driver = Driver.getOrCreate()
-    val result = driver.addJar(s"hdfs://repo/file.jar").waitForResult()
-    driver.stop()
-
-    result.hasError should equal (false)
-  }
-*/
 }
