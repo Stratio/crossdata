@@ -138,17 +138,17 @@ class XDContext private (@transient val sc: SparkContext,
     val constr: Constructor[_] = securityManagerClass.getConstructor(classOf[Credentials], classOf[Boolean])
 
     val fallbackCredentials = credentials.copy(
-      user = userConfig match {
+      user = credentials.user match {
         case Some(u) => Some(u)
-        case _ => credentials.user
+        case _ => userConfig
       },
-      password = passwordConfig match {
+      password = credentials.password match {
         case Some(p) => Some(p)
-        case _ => credentials.password
+        case _ => passwordConfig
       },
-      sessionId = sessionIdConfig match {
+      sessionId = credentials.sessionId match {
         case Some(s) => Some(s)
-        case _ => credentials.sessionId
+        case _ => sessionIdConfig
       })
 
     constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
