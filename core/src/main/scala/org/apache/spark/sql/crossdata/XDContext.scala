@@ -27,7 +27,7 @@ import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, FunctionRegistry, HiveTypeCoercion}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext.{SecurityClassConfigKey, StreamingCatalogClassConfigKey}
+import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, StreamingCatalogClassConfigKey}
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
@@ -117,11 +117,15 @@ class XDContext private (@transient val sc: SparkContext,
       xdConfig.getString(SecurityClassConfigKey)
     else DefaultSecurityManager
 
+    val audit: java.lang.Boolean = if (xdConfig.hasPath(SecurityAuditConfigKey))
+      xdConfig.getBoolean(SecurityAuditConfigKey)
+    else false
+
     val securityManagerClass = Class.forName(securityClass)
 
-    val constr: Constructor[_] = securityManagerClass.getConstructor(classOf[Credentials])
+    val constr: Constructor[_] = securityManagerClass.getConstructor(classOf[Credentials], classOf[Boolean])
 
-    constr.newInstance(credentials).asInstanceOf[SecurityManager]
+    constr.newInstance(credentials, audit).asInstanceOf[SecurityManager]
   }
 
   @transient
@@ -289,9 +293,11 @@ object XDContext extends CoreConfig {
   val SecurityConfigKey = "security"
   val SecurityManagerConfigKey = "manager"
   val ClassConfigKey = "class"
+  val AuditConfigKey = "audit"
   val CatalogClassConfigKey = s"$CatalogConfigKey.$ClassConfigKey"
   val StreamingCatalogClassConfigKey = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
   val SecurityClassConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
+  val SecurityAuditConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$AuditConfigKey"
 
   @transient private val INSTANTIATION_LOCK = new Object()
 

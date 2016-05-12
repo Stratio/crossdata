@@ -19,7 +19,7 @@ import org.apache.spark.Logging
 
 
 
-abstract class SecurityManager(val credentials: Credentials) extends Logging {
+abstract class SecurityManager(val credentials: Credentials, val audit: Boolean) extends Logging {
 
   def authorize(resource: Any): AuthorizationReply
 
