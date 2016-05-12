@@ -97,7 +97,7 @@ object Driver {
 
 }
 
-class Driver private( val driverConf: DriverConf,
+class Driver private(private[crossdata] val driverConf: DriverConf,
                      auth: Authentication = Driver.generateDefaultAuth) {
 
 
