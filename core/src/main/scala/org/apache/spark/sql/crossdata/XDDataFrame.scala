@@ -17,6 +17,7 @@ package org.apache.spark.sql.crossdata
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
+import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
@@ -41,7 +42,7 @@ import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 
 import scala.collection.mutable.BufferLike
-import scala.collection.{mutable, immutable, GenTraversableOnce}
+import scala.collection.{GenTraversableOnce, immutable, mutable}
 import scala.collection.generic.CanBuildFrom
 
 private[sql] object XDDataFrame {
@@ -115,6 +116,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
    * @inheritdoc
    */
   override def collect(): Array[Row] = {
+    sqlContext.asInstanceOf[XDContext].securityManager.authorize(logicalPlan.toJSON)
     // If cache doesn't go through native
     if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
       super.collect()
@@ -247,6 +249,8 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
 
   /**
    * Collect using an specific [[ExecutionType]]. Only for testing purpose so far.
+   * When using the Security Manager, this method has to be invoked with the parameter [[ExecutionType.Default]]
+   * in order to ensure that the workflow of the execution reaches the point where the authorization is called.
    *
    * @param executionType one of the [[ExecutionType]]
    * @return the query result
