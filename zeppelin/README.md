@@ -11,8 +11,11 @@ To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apach
 
 # Install Zeppelin
 
-TODO
+https://github.com/apache/incubator-zeppelin => master
 
+git checkout 4c269e6d860320e2612eb6b77785c6d1ff3ef106
+
+mvn clean install -DskipTests
 
 #### Crossdata Interpreter
 
