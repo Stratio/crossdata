@@ -25,14 +25,15 @@ import java.util.concurrent.atomic.AtomicReference
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst._
-import org.apache.spark.sql.catalyst.analysis.{CleanupAliases, HiveTypeCoercion, Analyzer, FunctionRegistry}
-import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, FunctionRegistry, HiveTypeCoercion}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
+import org.apache.spark.sql.crossdata.security.{Credentials, SecurityManager}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
@@ -47,7 +48,8 @@ import org.apache.spark.{Logging, SparkContext}
   * @param sc A [[SparkContext]].
  */
 class XDContext private (@transient val sc: SparkContext,
-                userConfig: Option[Config] = None) extends SQLContext(sc) with Logging  {
+                userConfig: Option[Config] = None,
+                credentials: Credentials = Credentials()) extends SQLContext(sc) with Logging  {
   self =>
 
   def this(sc: SparkContext) =
@@ -72,7 +74,6 @@ class XDContext private (@transient val sc: SparkContext,
   }
 
   catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
-
 
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {
@@ -107,6 +108,51 @@ class XDContext private (@transient val sc: SparkContext,
     }
   }
 
+  @transient
+  protected[crossdata] lazy val securityManager = {
+
+    import XDContext.DefaultSecurityManager
+
+    val securityClass = if (xdConfig.hasPath(SecurityClassConfigKey))
+      xdConfig.getString(SecurityClassConfigKey)
+    else DefaultSecurityManager
+
+    val audit: java.lang.Boolean = if (xdConfig.hasPath(SecurityAuditConfigKey))
+      xdConfig.getBoolean(SecurityAuditConfigKey)
+    else false
+
+    val userConfig = if (xdConfig.hasPath(SecurityUserConfigKey))
+      Some(xdConfig.getString(SecurityUserConfigKey))
+    else None
+
+    val passwordConfig = if (xdConfig.hasPath(SecurityPasswordConfigKey))
+      Some(xdConfig.getString(SecurityPasswordConfigKey))
+    else None
+
+    val sessionIdConfig = if (xdConfig.hasPath(SecuritySessionConfigKey))
+      Some(xdConfig.getString(SecuritySessionConfigKey))
+    else None
+
+    val securityManagerClass = Class.forName(securityClass)
+
+    val constr: Constructor[_] = securityManagerClass.getConstructor(classOf[Credentials], classOf[Boolean])
+
+    val fallbackCredentials = credentials.copy(
+      user = credentials.user match {
+        case Some(u) => Some(u)
+        case _ => userConfig
+      },
+      password = credentials.password match {
+        case Some(p) => Some(p)
+        case _ => passwordConfig
+      },
+      sessionId = credentials.sessionId match {
+        case Some(s) => Some(s)
+        case _ => sessionIdConfig
+      })
+
+    constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
+  }
 
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
@@ -265,13 +311,26 @@ object XDContext extends CoreConfig {
 
   val CaseSensitive = "caseSensitive"
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
+  val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
   val JDBCClass = "org.apache.spark.sql.crossdata.catalog.JDBCCatalog"
   val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog"
   val CatalogConfigKey = "catalog"
   val StreamingConfigKey = "streaming"
+  val SecurityConfigKey = "security"
+  val SecurityManagerConfigKey = "manager"
   val ClassConfigKey = "class"
-  val CatalogClassConfigKey : String = s"$CatalogConfigKey.$ClassConfigKey"
-  val StreamingCatalogClassConfigKey : String = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
+  val AuditConfigKey = "audit"
+  val UserConfigKey = "user"
+  val PasswordConfigKey = "password"
+  val SessionConfigKey = "session"
+  val CatalogClassConfigKey = s"$CatalogConfigKey.$ClassConfigKey"
+  val StreamingCatalogClassConfigKey = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
+  val SecurityClassConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
+  val SecurityAuditConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$AuditConfigKey"
+  val SecurityUserConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$UserConfigKey"
+  val SecurityPasswordConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$PasswordConfigKey"
+  val SecuritySessionConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$SessionConfigKey"
+
 
   @transient private val INSTANTIATION_LOCK = new Object()
 
