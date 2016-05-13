@@ -16,7 +16,7 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.catalyst.analysis.{Catalog, UnresolvedRelation}
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Project, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier, util}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
@@ -171,6 +171,9 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
         val msg = s"Unexpected datasource: $other"
         logError(msg)
         throw new RuntimeException(msg)
+    }
+
+    val resolved = ResolvedDataSource(xdContext, tableSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
     }
 
     val resolved = ResolvedDataSource(xdContext, tableSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
