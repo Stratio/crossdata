@@ -112,7 +112,16 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( 12, 12.01, 'proof', true)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List("12", "12.01", "proof", "true"))
+      InsertIntoTable( TableIdentifier("tableId"), List(List("12", "12.01", "proof", "true")))
+
+  }
+
+  it should "successfully parse a INSERT TABLE with qualified table name and more than one VALUES provided into InsertTable RunnableCommand" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( 12, 12.01, 'proof', true), ( 2, 1.01, 'pof', true), ( 256, 0.01, 'pr', false)"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List("12", "12.01", "proof", "true"),List("2", "1.01", "pof", "true"),List("256", "0.01", "pr", "false")))
 
   }
 

@@ -60,6 +60,7 @@ object DDLUtils {
     }
   }
 
+  type RowValues = Seq[String]
 
 }
 
@@ -126,8 +127,10 @@ private[crossdata] case object DropAllTables extends RunnableCommand {
 
 }
 
-private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, values: Seq[String])
+private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues])
   extends RunnableCommand {
+
+
 
   override def output: Seq[Attribute] = {
     val schema = StructType(
@@ -143,41 +146,52 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
     sqlContext.catalog.lookupRelation(tableIdentifier) match {
 
       case Subquery(_, LogicalRelation(relation : BaseRelation, _ )) =>
-        val tableSchema = relation.schema
-        if(tableSchema.fields.length != values.length) sys.error("Invalid length of parameters")
-
-        val valuesConverted = tableSchema.fields zip values map {
-          case(schemaCol, value) =>
-            DDLUtils.convertSparkDatatypeToScala(value, schemaCol.dataType) match {
-              case Success(converted) => converted
-              case Failure(exception) => throw exception
-            }
-        }
-
-        val dataframe = sqlContext.asInstanceOf[XDContext].createDataFrame(Seq(Row.fromSeq(valuesConverted)),tableSchema)
 
         relation match {
-          case insertableRelation : InsertableRelation =>
+          case insertableRelation: InsertableRelation =>
+            val dataframe = convertRows(sqlContext, parsedRows, relation.schema)
             insertableRelation.insert(dataframe, overwrite = false)
 
           case hadoopFsRelation: HadoopFsRelation =>
             sys.error("Operation not supported")
-            //TODO: Available from Spark 2.0
-            /*sqlContext.executePlan(
-              InsertIntoHadoopFsRelation(
-                hadoopFsRelation,
-                dataframe.logicalPlan,
-                mode = SaveMode.Append)).toRdd*/
+          //TODO: Available from Spark 2.0
+          /*val dataframe = convertRows(sqlContext, parsedRows, relation.schema)
+            sqlContext.executePlan(
+            InsertIntoHadoopFsRelation(
+              hadoopFsRelation,
+              dataframe.logicalPlan,
+              mode = SaveMode.Append)).toRdd*/
 
           case _ =>
             sys.error("The Datasource does not support INSERT INTO table VALUES command")
         }
 
+
       case _ =>
         sys.error("The Datasource does not support INSERT INTO table VALUES command")
     }
 
-    Row(1) :: Nil
+    Row(parsedRows.length) :: Nil
+  }
+
+  private def convertRows(sqlContext: SQLContext, rows: Seq[DDLUtils.RowValues], tableSchema: StructType): DataFrame = {
+
+    val parsedRowsConverted: Seq[Row] = parsedRows map { values =>
+
+      if (tableSchema.fields.length != values.length) sys.error("Invalid length of parameters")
+
+      val valuesConverted = tableSchema.fields zip values map {
+        case (schemaCol, value) =>
+          DDLUtils.convertSparkDatatypeToScala(value, schemaCol.dataType) match {
+            case Success(converted) => converted
+            case Failure(exception) => throw exception
+          }
+      }
+      Row.fromSeq(valuesConverted)
+    }
+
+    val dataframe = sqlContext.asInstanceOf[XDContext].createDataFrame(parsedRowsConverted, tableSchema)
+    dataframe
   }
 }
 
