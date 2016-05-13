@@ -16,13 +16,12 @@
 package com.stratio.crossdata.server
 
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class InsertTableIT extends SharedXDContextTest {
+class InsertTableIT extends MongoWithSharedContext {
 
   protected override def beforeAll(): Unit = {
 
@@ -31,11 +30,7 @@ class InsertTableIT extends SharedXDContextTest {
   }
 
   it should "insert a row using INSERT INTO table VALUES in JSON" in {
-
-    val options = Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students")
-    val foo = _xdContext.read.schema(StructType(Seq(StructField("name", StringType), StructField("value", IntegerType)))).format("mongodb").options(options).load()
-    foo.registerTempTable("fooJson")
-    _xdContext.sql("INSERT INTO fooJson VALUES ('foo2',20)") should be (Row(1)::Nil)
+    _xdContext.sql(s"INSERT INTO $Collection VALUES (200, 25, 'proof description', true, 'pepe', false)").collect() should be (Row(1)::Nil)
   }
 
 }

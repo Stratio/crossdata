@@ -131,7 +131,7 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
   override def output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("Rows", IntegerType, nullable = false))
+      Seq(StructField("Number of insertions", IntegerType, nullable = false))
     )
     schema.toAttributes
   }
@@ -161,11 +161,13 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
             insertableRelation.insert(dataframe, overwrite = false)
 
           case hadoopFsRelation: HadoopFsRelation =>
-            sqlContext.executePlan(
+            sys.error("Operation not supported")
+            //TODO: Available from Spark 2.0
+            /*sqlContext.executePlan(
               InsertIntoHadoopFsRelation(
                 hadoopFsRelation,
                 dataframe.logicalPlan,
-                mode = SaveMode.Append)).toRdd
+                mode = SaveMode.Append)).toRdd*/
 
           case _ =>
             sys.error("The Datasource does not support INSERT INTO table VALUES command")
