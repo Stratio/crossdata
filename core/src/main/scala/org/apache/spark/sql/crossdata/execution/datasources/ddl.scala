@@ -127,10 +127,10 @@ private[crossdata] case object DropAllTables extends RunnableCommand {
 
 }
 
-private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues])
+private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, schemaFromUser: Seq[String], parsedRows: Seq[DDLUtils.RowValues])
   extends RunnableCommand {
 
-
+  def this(tableIdentifier: TableIdentifier,parsedRows: Seq[DDLUtils.RowValues]) = this(tableIdentifier, Nil, parsedRows)
 
   override def output: Seq[Attribute] = {
     val schema = StructType(
@@ -193,6 +193,10 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
     val dataframe = sqlContext.asInstanceOf[XDContext].createDataFrame(parsedRowsConverted, tableSchema)
     dataframe
   }
+}
+
+private[crossdata] object InsertIntoTable {
+  def apply(tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues]) = new InsertIntoTable(tableIdentifier, parsedRows)
 }
 
 private[crossdata] case class CreateTempView(viewIdentifier: ViewIdentifier, queryPlan: LogicalPlan)

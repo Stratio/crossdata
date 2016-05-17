@@ -96,9 +96,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     elem("token", _.isInstanceOf[Token]) ^^ (_.chars)
 
   protected lazy val insertIntoTable: Parser[LogicalPlan] =
-    INSERT ~> INTO ~> tableIdentifier ~ (VALUES ~> repsep(tableValues,","))  ^^ {
-      case tableId ~ tableValues =>
-        InsertIntoTable(tableId, tableValues)
+    INSERT ~> INTO ~> tableIdentifier ~ tableValues.? ~ (VALUES ~> repsep(tableValues,","))  ^^ {
+      case tableId ~ schemaValues~ tableValues =>
+        if(schemaValues.isDefined)
+          InsertIntoTable(tableId, schemaValues.get, tableValues)
+        else
+          InsertIntoTable(tableId, tableValues)
     }
 
 
