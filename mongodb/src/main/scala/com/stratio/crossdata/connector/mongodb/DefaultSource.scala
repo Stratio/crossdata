@@ -21,7 +21,7 @@ import com.mongodb.casbah.MongoDB
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
 import com.stratio.datasource.mongodb.config.{MongodbConfigBuilder, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
-import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbRelation}
+import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConnection, MongodbRelation}
 import com.stratio.datasource.util.Config._
 import com.stratio.datasource.util.{Config, ConfigBuilder}
 import org.apache.spark.sql.SaveMode._

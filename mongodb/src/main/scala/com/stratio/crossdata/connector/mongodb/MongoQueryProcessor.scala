@@ -20,6 +20,7 @@ import java.util.regex.Pattern
 import com.mongodb.{DBObject, QueryBuilder}
 import com.mongodb.casbah.Imports._
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import com.stratio.datasource.mongodb.MongodbConnection
 import com.stratio.datasource.mongodb.MongodbRelation._
 import com.stratio.datasource.mongodb.config.MongodbConfig
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
