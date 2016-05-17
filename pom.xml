@@ -315,6 +315,8 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <directory>${project.basedir}/target/${scala.binary.version}</directory>
         <outputDirectory>${project.build.directory}/classes</outputDirectory>
         <testOutputDirectory>${project.build.directory}/test-classes</testOutputDirectory>
