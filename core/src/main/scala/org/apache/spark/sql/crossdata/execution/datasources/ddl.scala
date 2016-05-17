@@ -127,10 +127,10 @@ private[crossdata] case object DropAllTables extends RunnableCommand {
 
 }
 
-private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, schemaFromUser: Seq[String], parsedRows: Seq[DDLUtils.RowValues])
+private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, schemaFromUser: Option[Seq[String]], parsedRows: Seq[DDLUtils.RowValues])
   extends RunnableCommand {
 
-  def this(tableIdentifier: TableIdentifier,parsedRows: Seq[DDLUtils.RowValues]) = this(tableIdentifier, Nil, parsedRows)
+  def this(tableIdentifier: TableIdentifier,parsedRows: Seq[DDLUtils.RowValues]) = this(tableIdentifier, None, parsedRows)
 
   override def output: Seq[Attribute] = {
     val schema = StructType(
@@ -139,23 +139,30 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
     schema.toAttributes
   }
 
-  override def run(sqlContext: SQLContext): Seq[Row] = {
+  def extractSchema(schemaFromUser: Seq[String], tableSchema: StructType): StructType = {
+    val fields = schemaFromUser map {column =>
+      tableSchema(tableSchema.fieldIndex(column))
+    }
+    StructType(fields)
+  }
 
-    val lookup = sqlContext.catalog.lookupRelation(tableIdentifier)
+  override def run(sqlContext: SQLContext): Seq[Row] = {
 
     sqlContext.catalog.lookupRelation(tableIdentifier) match {
 
       case Subquery(_, LogicalRelation(relation : BaseRelation, _ )) =>
 
+        val schema = if(schemaFromUser.isDefined) extractSchema(schemaFromUser.get, relation.schema) else relation.schema
+
         relation match {
           case insertableRelation: InsertableRelation =>
-            val dataframe = convertRows(sqlContext, parsedRows, relation.schema)
+            val dataframe = convertRows(sqlContext, parsedRows, schema)
             insertableRelation.insert(dataframe, overwrite = false)
 
           case hadoopFsRelation: HadoopFsRelation =>
             sys.error("Operation not supported")
           //TODO: Available from Spark 2.0
-          /*val dataframe = convertRows(sqlContext, parsedRows, relation.schema)
+          /*val dataframe = convertRows(sqlContext, parsedRows, schema)
             sqlContext.executePlan(
             InsertIntoHadoopFsRelation(
               hadoopFsRelation,
