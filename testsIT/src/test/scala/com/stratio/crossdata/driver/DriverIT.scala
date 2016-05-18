@@ -59,6 +59,7 @@ class DriverIT extends EndToEndTest {
   }
 
   it should "get a list of tables" in {
+    assumeCrossdataUpAndRunning
     val driver = Driver.getOrCreate()
 
     driver.sql(
@@ -73,6 +74,7 @@ class DriverIT extends EndToEndTest {
   }
 
   "Crossdata Driver" should "be able to close the connection and start it again" in {
+    assumeCrossdataUpAndRunning
     var driver = Driver.getOrCreate(); Driver.getOrCreate()
     val newDriver = Driver.getOrCreate()
 
@@ -96,9 +98,11 @@ class DriverIT extends EndToEndTest {
   // TODO move to examples??
   // TODO check this tests with HDFS
   it should "be able to execute ADD JAR Command of an existent file" in {
-    val file=File("/tmp/jar").createFile(false)
+    assumeCrossdataUpAndRunning
+    
+    val file=File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
     val driver = Driver.getOrCreate()
-    val result = driver.addJar(s"/home/jjlopez/Stratio/workspaceJDBC/JDBCPackage/CrossdataJDBC_v1.2.0-SNAPSHOT.tar.gz").waitForResult()
+    val result = driver.addJar(file.path).waitForResult()
 
     driver.stop()
     file.delete()
