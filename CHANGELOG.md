@@ -14,6 +14,11 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Native jobs available in SparkUI
 * Improved native access to MongoDB
 
+## 1.2.2 (May 2016)
+* Upgrade spark-mongodb to 0.11.2
+* Security Manager added
+* Deploying uber-jars in Maven
+
 ## 1.2.0 (March 2016)
 * StreamSQL: Streaming capabilities from a SQL language including insert into select (Batch + Streaming)
 * Improved asynchronous driver API
