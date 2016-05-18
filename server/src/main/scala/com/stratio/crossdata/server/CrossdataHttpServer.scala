@@ -18,8 +18,8 @@ package com.stratio.crossdata.server
 import java.io.File
 
 import akka.actor.{ActorRef, ActorSystem}
-import akka.contrib.pattern.ClusterClient.Publish
 import akka.contrib.pattern.DistributedPubSubExtension
+import akka.contrib.pattern.DistributedPubSubMediator.Publish
 import akka.http.scaladsl.model.Multipart
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directives._
