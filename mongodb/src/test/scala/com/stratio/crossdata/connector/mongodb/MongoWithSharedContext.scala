@@ -16,11 +16,12 @@
 package com.stratio.crossdata.connector.mongodb
 
 
-import com.mongodb.{BasicDBObject, QueryBuilder}
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.{BasicDBObject, QueryBuilder}
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.ConfigFactory
+import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.scalatest.Suite
@@ -29,6 +30,9 @@ import scala.util.Try
 
 trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefaultConstants with SparkLoggerComponent {
   this: Suite =>
+
+  override def jarPathList: Seq[String] =
+    Seq(s"core/target/crossdata-core_$ScalaBinaryVersion-$CrossdataVersion-jar-with-dependencies.jar", s"mongodb/target/crossdata-mongodb_$ScalaBinaryVersion-$CrossdataVersion-jar-with-dependencies.jar")
 
   override type ClientParams = MongoClient
   override val provider: String = SourceProvider

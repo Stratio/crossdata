@@ -20,7 +20,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources.TableScan
 import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
@@ -29,7 +29,7 @@ import org.scalatest.Inside
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDDataFrameIT extends SharedXDContextTest with Inside {
+class XDDataFrameIT extends CoreWithSharedContext with Inside {
 
   lazy val sparkRows = xdContext.createDataFrame(xdContext.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).collect()
   lazy val nativeRows = Array(Row(2l))

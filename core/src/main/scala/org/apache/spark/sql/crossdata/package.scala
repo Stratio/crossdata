@@ -20,5 +20,5 @@ import scala.io.Source
 package object crossdata {
 
   lazy val CrossdataVersion = Source.fromInputStream(getClass.getResourceAsStream("/crossdata.version")).mkString
-
+  lazy val ScalaBinaryVersion = Source.fromInputStream(getClass.getResourceAsStream("/scalabinary.version")).mkString
 }

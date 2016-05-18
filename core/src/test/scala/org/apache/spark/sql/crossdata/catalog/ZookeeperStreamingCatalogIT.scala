@@ -18,14 +18,14 @@ package org.apache.spark.sql.crossdata.catalog
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.models._
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConstants with ZookeeperStreamingDefaultTestConstants {
+class ZookeeperStreamingCatalogIT extends CoreWithSharedContext with ZookeeperStreamingDefaultTestConstants {
 
   override val catalogConfig: Option[Config] = {
     val zkResourceConfig =

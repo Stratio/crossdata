@@ -21,14 +21,14 @@ import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.models.EphemeralExecutionStatus
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class StreamingDdlIT extends SharedXDContextTest with StreamingDDLTestConstants{
+class StreamingDdlIT extends CoreWithSharedContext with StreamingDDLTestConstants{
 
 
   override val catalogConfig: Option[Config] = {

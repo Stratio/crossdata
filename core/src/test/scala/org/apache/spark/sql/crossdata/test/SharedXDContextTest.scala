@@ -47,13 +47,21 @@ trait SharedXDContextTest extends XDTestUtils {
 
   protected override def _xdContext: XDContext = _ctx
 
+  protected def jarPathList: Seq[String]
+
+  /**
+   * List of files required to execute ITs
+   */
+  protected def filePathList: Seq[String] = Seq()
+
   /**
    * Initialize the [[TestXDContext]].
    */
   protected override def beforeAll(): Unit = {
     if (_ctx == null) {
-      _ctx = catalogConfig.fold(new TestXDContext()) { cConfig =>
-        new TestXDContext(cConfig)
+
+      _ctx = catalogConfig.fold(TestXDContext(jarPathList, filePathList)) { cConfig =>
+        TestXDContext(jarPathList, filePathList, cConfig)
       }
     }
     // Ensure we have initialized the context before calling parent code

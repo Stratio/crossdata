@@ -19,7 +19,7 @@ import java.nio.file.Paths
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.execution.PersistDataSourceTable
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.apache.spark.sql.execution.ExecutedCommand
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
@@ -27,7 +27,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDContextIT extends SharedXDContextTest {
+class XDContextIT extends CoreWithSharedContext {
 
   "A DefaultCatalog" should "be case sensitive" in {
     val xdCatalog = xdContext.catalog

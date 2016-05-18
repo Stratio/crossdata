@@ -15,17 +15,13 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import java.lang.{RuntimeException, Runtime}
-
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.crossdata.XDDataFrame
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ViewsIT extends SharedXDContextTest {
+class ViewsIT extends CoreWithSharedContext {
 
   "Create temp view" should "return a XDDataFrame when executing a SQL query" in {
 
@@ -48,7 +44,7 @@ class ViewsIT extends SharedXDContextTest {
     import sqlContext.implicits._
 
     val df = sqlContext.sparkContext.parallelize(1 to 5).toDF
-    a[RuntimeException] shouldBe thrownBy {
+    a [RuntimeException] shouldBe thrownBy {
       df.registerTempTable("person")
       sql("CREATE VIEW persistedview AS SELECT * FROM person WHERE _1 < 3")
     }

@@ -19,12 +19,12 @@ import java.nio.file.Paths
 
 import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata.test.CoreWithSharedContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDFunctionRegistryIT extends SharedXDContextTest {
+class XDFunctionRegistryIT extends CoreWithSharedContext {
 
   "XD Function registry" should "throw an analysis exception when a native udf cannot be resolved" in {
 

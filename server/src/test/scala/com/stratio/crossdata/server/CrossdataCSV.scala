@@ -19,12 +19,13 @@ import java.nio.file.Paths
 
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import org.apache.spark.sql.crossdata._
+import org.apache.spark.sql.crossdata.test.{CoreWithSharedContext, SharedXDContextTest}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class CrossdataCSV extends SharedXDContextTest with ServerConfig {
+class CrossdataCSV extends CoreWithSharedContext with ServerConfig {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataCSV])
 
