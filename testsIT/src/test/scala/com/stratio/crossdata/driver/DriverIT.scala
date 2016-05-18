@@ -60,6 +60,7 @@ class DriverIT extends EndToEndTest {
   }
 
   it should "get a list of tables" in {
+    assumeCrossdataUpAndRunning
     val driver = Driver.getOrCreate()
 
     driver.sql(
@@ -74,6 +75,7 @@ class DriverIT extends EndToEndTest {
   }
 
   "Crossdata Driver" should "be able to close the connection and start it again" in {
+    assumeCrossdataUpAndRunning
     var driver = Driver.getOrCreate(); Driver.getOrCreate()
     val newDriver = Driver.getOrCreate()
 
@@ -94,35 +96,38 @@ class DriverIT extends EndToEndTest {
 
   }
 
+//  // TODO move to examples??
+//  // TODO check this tests with HDFS
+//  it should "be able to execute ADD JAR Command of an existent file" in {
+//    assumeCrossdataUpAndRunning
+//
+//    val file=File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
+//    val driver = Driver.getOrCreate()
+//    val result = driver.addJar(file.path).waitForResult()
+//
+//    driver.stop()
+//    file.delete()
+//
+//    result.hasError should equal (false)
+//  }
 
-  it should "be able to execute ADD JAR Command of an existent file" in {
-    val file=File("/tmp/jar").createFile(false)
-    val driver = Driver.getOrCreate()
-    val result = driver.addJar(s"/tmp/jar").waitForResult()
-
-    driver.stop()
-    file.delete()
-
-    result.hasError should equal (false)
-  }
-
-  it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
-
-    val driver = Driver.getOrCreate()
-    val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
-    driver.stop()
-
-    result.hasError should equal (true)
-  }
-
-  it should "be able to execute ADD JAR Command of any HDFS file" in {
-
-    val driver = Driver.getOrCreate()
-    val result = driver.addJar(s"hdfs://repo/file.jar").waitForResult()
-    driver.stop()
-
-    result.hasError should equal (false)
-  }
+//  it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
+//
+//    val driver = Driver.getOrCreate()
+//    val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
+//    driver.stop()
+//
+//    result.hasError should equal (true)
+//  }
+//
+//  it should "be able to execute ADD JAR Command of any HDFS file" in {
+//
+//    val driver = Driver.getOrCreate()
+//    val result = driver.addJar(s"hdfs://repo/file.jar").waitForResult()
+//    driver.stop()
+//
+//    result.hasError should equal (false)
+//  }
 
 
   it should "indicates that the cluster is alive when there is a server up" in {

@@ -4,6 +4,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 ## 1.3.0 (upcoming)
 * Enabled Scala cross builds for Scala 2.10 and Scala 2.11.
+* Upgrade spark-mongodb to 0.11.2
 
 ## 1.2.0 (March 2016)
 * StreamSQL: Streaming capabilities from a SQL language including insert into select (Batch + Streaming)

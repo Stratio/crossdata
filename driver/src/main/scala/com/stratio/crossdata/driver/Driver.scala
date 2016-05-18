@@ -45,6 +45,7 @@ import scala.util.Try
  * =======================================================================================
  */
 
+
 object Driver {
 
   private val DRIVER_CONSTRUCTOR_LOCK = new Object()
@@ -100,7 +101,7 @@ object Driver {
 
 }
 
-class Driver private(driverConf: DriverConf,
+class Driver private(private[crossdata] val driverConf: DriverConf,
                      auth: Authentication = Driver.generateDefaultAuth) {
 
 

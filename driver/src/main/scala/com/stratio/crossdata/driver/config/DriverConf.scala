@@ -97,6 +97,11 @@ class DriverConf extends Logging {
       hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
   }
 
+  private[crossdata] def getCrossdataServerHost: String = {
+    val hosts = finalSettings.getStringList(DriverConfigHosts).toList
+    hosts.head
+  }
+
   private[crossdata] def getFlattenTables: Boolean =
     finalSettings.getBoolean(DriverFlattenTables)
 
