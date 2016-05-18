@@ -17,20 +17,19 @@ package com.stratio.crossdata.server.actors
 
 import java.util.UUID
 
-import akka.cluster.ClusterEvent.InitialStateAsSnapshot
-import akka.contrib.pattern.DistributedPubSubExtension
 import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
-import akka.contrib.pattern.DistributedPubSubMediator.{Publish, SubscribeAck, Subscribe}
+import akka.cluster.ClusterEvent.InitialStateAsSnapshot
+import akka.contrib.pattern.DistributedPubSubExtension
+import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import akka.remote.DisassociatedEvent
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common._
-import com.stratio.crossdata.server.actors.JobActor.Commands.{StartJob, CancelJob}
-import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand}
+import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
+import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
-import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
+import com.stratio.crossdata.server.config.ServerActorConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.types.StructType
@@ -61,8 +60,8 @@ object ServerActor {
 
 class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorConfig) extends Actor {
 
-  import ServerActor._
   import ServerActor.ManagementMessages._
+  import ServerActor._
 
   lazy val logger = Logger.getLogger(classOf[ServerActor])
 
@@ -148,6 +147,8 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, config: ServerActorCon
         // If it can't run here it should be executed somewhere else
         mediator ! Publish(managementTopic, DelegateCommand(sc, self))
       }
+    case clusterStateCommand @ ClusterStateCommand() =>
+      sender ! ClusterStateReply(clusterStateCommand.requestId, cluster.state)
 
   }
 

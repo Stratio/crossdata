@@ -21,6 +21,7 @@ import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.reflect.io.File
@@ -122,5 +123,30 @@ class DriverIT extends EndToEndTest {
 
     result.hasError should equal (false)
   }
+
+
+  it should "indicates that the cluster is alive when there is a server up" in {
+    val driver = Driver.getOrCreate()
+
+    driver.isClusterAlive(6 seconds) shouldBe true
+  }
+
+  it should "return the addresses of servers up and running" in {
+    val driver = Driver.getOrCreate()
+
+    val addresses = Await.result(driver.serversUp(), 6 seconds)
+
+    addresses should have length 1
+    addresses.head.host shouldBe Some("127.0.0.1")
+  }
+
+  it should "return the current cluster state" in {
+    val driver = Driver.getOrCreate()
+
+    val clusterState = Await.result(driver.clusterState(), 6 seconds)
+
+    clusterState.getLeader.host shouldBe Some("127.0.0.1")
+  }
+
 
 }
