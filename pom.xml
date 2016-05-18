@@ -106,7 +106,6 @@
         <scalatest.version>2.2.5</scalatest.version>
         <easymock.version>3.4</easymock.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
-        <config.version>1.2.1</config.version>
         <akka.version>2.3.11</akka.version>
         <slf4j.version>1.7.7</slf4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

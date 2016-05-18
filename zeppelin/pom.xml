@@ -27,7 +27,7 @@
 
   <artifactId>zeppelin-crossdata</artifactId>
   <packaging>jar</packaging>
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   <name>Zeppelin: Crossdata</name>
   <description>Zeppelin interpreter for Crossdata</description>
   <url>https://github.com/Stratio/Crossdata</url>
