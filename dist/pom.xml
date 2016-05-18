@@ -6,12 +6,12 @@
 
     <parent>
         <groupId>com.stratio.crossdata</groupId>
-        <artifactId>parent_${scala.binary.version}</artifactId>
+        <artifactId>parent_2.10</artifactId>
         <version>1.3.0-SNAPSHOT</version>
     </parent>
 
-
-    <artifactId>dist_${scala.binary.version}</artifactId>
+    <artifactId>dist_2.10</artifactId>
+    <name>Dist</name>
     <version>1.3.0-SNAPSHOT</version>
 
     <profiles>
@@ -39,6 +39,26 @@
             </dependencies>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>1.10</version>
+                        <executions>
+                            <execution>
+                                <id>parse-scala-version</id>
+                                <goals>
+                                    <goal>regex-property</goal>
+                                </goals>
+                                <configuration>
+                                    <name>scala.binary.package.version</name>
+                                    <value>${scala.binary.version}</value>
+                                    <regex>(.*)[\._](.*)</regex>
+                                    <replacement>$1$2</replacement>
+                                    <failIfNoMatch>true</failIfNoMatch>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>appassembler-maven-plugin</artifactId>
@@ -85,7 +105,7 @@
                         <extensions>true</extensions>
                         <inherited>false</inherited>
                         <configuration>
-                            <outputFileName>stratio-crossdata-${scala.binary.package.version}</outputFileName>
+                            <outputFileName>stratio-crossdata-scala${scala.binary.package.version}</outputFileName>
                             <contact>
                                 <![CDATA[Stratio Crossdata<crossdata@stratio.com>]]>
                             </contact>
