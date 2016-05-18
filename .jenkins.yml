@@ -29,6 +29,8 @@ ITSERVICES:
         - MAX_HEAP=256M
   - HADOOP:
       image: stratio/hadoop:2.7.2
+      env:
+        - MASTER_NODE=true
   - KAFKA:
       image: stratio/kafka:0.8.2.1
       env:
@@ -41,6 +43,7 @@ ITPARAMETERS: >
     -Delasticsearch.cluster=%%JUID
     -Dspark.master=spark://%%SPARK:7077
     -Dhdfs.namenode=hdfs://%%HADOOP:9000
+    -Dcrossdata-core.hdfs.hdfsMaster=%%HADOOP
     -Dcatalog.zookeeper.connectionString=%%ZOOKEEPER:2181
     -Dstreaming.catalog.zookeeper.connectionString=%%ZOOKEEPER:2181
     -Dstreaming.receiver.kafka.connection=%%KAFKA:9092

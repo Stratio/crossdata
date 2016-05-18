@@ -15,16 +15,22 @@
  */
 package com.stratio.crossdata.driver.actor
 
+
 import java.util.UUID
 
 import akka.actor.{Actor, ActorRef, Props}
+import akka.pattern.pipe
 import akka.contrib.pattern.ClusterClient
 import com.stratio.crossdata.common._
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
+import com.stratio.crossdata.driver.util.HttpClient
 import org.apache.log4j.Logger
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
-import scala.concurrent.Promise
+import scala.concurrent.{Future, Promise}
 import scala.util.matching.Regex
 
 object ProxyActor {
@@ -44,6 +50,8 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
   lazy val logger = Logger.getLogger(classOf[ProxyActor])
 
   private val catalogOpExp: Regex = """^\s*CREATE\s+TEMPORARY.+$""".r
+
+  private val httpClient = HttpClient(driver.driverConf, context.system)
 
   override def receive: Receive = initial
 
@@ -78,13 +86,28 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
       clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(sqlCommand: AddJARCommand, _) =>
-      logger.info(s"Send Add Jar command to all servers")
-      clusterClientActor ! ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
+    case secureSQLCommand @ CommandEnvelope(aCmd @ AddJARCommand(path, _), _) =>
+      import context.dispatcher
+      val shipmentResponse: Future[SQLReply] = httpClient.sendJarToHTTPServer(path) map { response =>
+        SQLReply(
+          aCmd.requestId,
+          SuccessfulSQLResult(Array(Row(response)), StructType(StructField("filepath", StringType) :: Nil))
+        )
+      } recover {
+        case failureCause =>
+          val msg = s"Error trying to send JAR through HTTP: ${failureCause.getMessage}"
+          logger.error(msg)
+          SQLReply(
+            aCmd.requestId,
+            ErrorSQLResult(msg)
+          )
+      }
+      shipmentResponse pipeTo sender
 
     case sqlCommand: SQLCommand =>
       logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
   }
+
 
 
   // Message received from a Crossdata Server.
