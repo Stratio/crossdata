@@ -18,11 +18,12 @@ package com.stratio.crossdata.connector.mongodb
 import com.mongodb.DBCollection
 import com.mongodb.casbah.Imports.DBObject
 import com.mongodb.casbah.MongoDB
-
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
-import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
-import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbRelation}
+import com.stratio.datasource.mongodb.config.{MongodbConfigBuilder, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
+import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConnection, MongodbRelation}
+import com.stratio.datasource.util.Config._
+import com.stratio.datasource.util.{Config, ConfigBuilder}
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
 import org.apache.spark.sql.types.StructType
@@ -114,9 +115,7 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
       if (!options.contains(opName)) sys.error( s"""Option "$opName" is mandatory for IMPORT TABLES""")
     }
 
-
-    val hosts: List[String] = options(Host).split(",").toList
-    MongodbConnection.withClientDo(hosts) { mongoClient =>
+    MongodbConnection.withClientDo(parseParametersWithoutValidation(options)) { mongoClient =>
 
       def extractAllDatabases: Seq[MongoDB] =
         mongoClient.getDatabaseNames().map(mongoClient.getDB)
@@ -167,20 +166,68 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
       case _ =>
     }
 
-    val hosts: List[String] = options(Host).split(",").toList
-
     try {
-
-      MongodbConnection.withClientDo(hosts) { mongoClient =>
+      MongodbConnection.withClientDo(parseParametersWithoutValidation(options)) { mongoClient =>
         mongoClient.getDB(database).createCollection(collection, mongoOptions)
       }
       Option(Table(collection, Option(database), Option(schema)))
     } catch {
-      case e: IllegalArgumentException =>
-        throw e
       case e: Exception =>
         sys.error(e.getMessage)
         None
     }
   }
+
+
+  // TODO refactor datasource -> avoid duplicated method
+  def parseParametersWithoutValidation(parameters : Map[String,String]): Config = {
+
+    // required properties
+    /** We will assume hosts are provided like 'host:port,host2:port2,...' */
+    val properties: Map[String, Any] = parameters.updated(Host, parameters.getOrElse(Host, notFound[String](Host)).split(",").toList)
+
+    //optional parseable properties
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
+
+    val finalProperties = (properties /: optionalProperties){
+      /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
+      case (properties,Credentials) =>
+        parameters.get(Credentials).map{ credentialInput =>
+          val credentials = credentialInput.split(";").map(_.split(",")).toList
+            .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
+          properties + (Credentials -> credentials)
+        } getOrElse properties
+
+      /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
+      case (properties,SSLOptions) =>
+        parameters.get(SSLOptions).map{ ssloptionsInput =>
+
+          val ssloption = ssloptionsInput.split(",")
+          val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
+          properties + (SSLOptions -> ssloptions)
+        } getOrElse properties
+
+      /** We will assume fields are provided like 'user,database,password...' */
+      case (properties, UpdateFields) =>
+        parameters.get(UpdateFields).map{ updateInputs =>
+          val updateFields = updateInputs.split(",")
+          properties + (UpdateFields -> updateFields)
+        } getOrElse properties
+    }
+
+    MongodbConnectorConfigBuilder(finalProperties).build()
+  }
+
+  // TODO refactor datasource -> avoid duplicated config builder
+  case class MongodbConnectorConfigBuilder(props: Map[Property, Any] = Map()) extends {
+
+    override val properties = Map() ++ props
+
+  } with ConfigBuilder[MongodbConnectorConfigBuilder](properties) {
+
+    val requiredProperties: List[Property] = MongodbConfig.Host :: Nil
+
+    def apply(props: Map[Property, Any]) = MongodbConnectorConfigBuilder(props)
+  }
+
 }
