@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.server
+package com.stratio.crossdata.connector.mongodb
 
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class InsertTableIT extends MongoWithSharedContext {
-
-  protected override def beforeAll(): Unit = {
-
-    // Ensure we have initialized the context before calling parent code
-    super.beforeAll()
-  }
+class MongoInsertTableIT extends MongoWithSharedContext {
 
   it should "insert a row using INSERT INTO table VALUES in JSON" in {
     _xdContext.sql(s"INSERT INTO $Collection VALUES (200, 25, 'proof description', true, 'pepe', false )").collect() should be (Row(1)::Nil)
