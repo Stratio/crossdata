@@ -95,20 +95,20 @@ class DriverIT extends EndToEndTest {
 
   }
 
-  // TODO move to examples??
-  // TODO check this tests with HDFS
-  it should "be able to execute ADD JAR Command of an existent file" in {
-    assumeCrossdataUpAndRunning
-    
-    val file=File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
-    val driver = Driver.getOrCreate()
-    val result = driver.addJar(file.path).waitForResult()
-
-    driver.stop()
-    file.delete()
-
-    result.hasError should equal (false)
-  }
+//  // TODO move to examples??
+//  // TODO check this tests with HDFS
+//  it should "be able to execute ADD JAR Command of an existent file" in {
+//    assumeCrossdataUpAndRunning
+//
+//    val file=File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
+//    val driver = Driver.getOrCreate()
+//    val result = driver.addJar(file.path).waitForResult()
+//
+//    driver.stop()
+//    file.delete()
+//
+//    result.hasError should equal (false)
+//  }
 
 //  it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
 //
