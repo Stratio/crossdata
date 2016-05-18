@@ -93,10 +93,10 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
           aCmd.requestId,
           SuccessfulSQLResult(Array(Row(response)), StructType(StructField("filepath", StringType) :: Nil))
         )
-      } recover  {
+      } recover {
         case failureCause =>
           val msg = s"Error trying to send JAR through HTTP: ${failureCause.getMessage}"
-          logger.error("Error trying to send JAR through HTTP")
+          logger.error(msg)
           SQLReply(
             aCmd.requestId,
             ErrorSQLResult(msg)
