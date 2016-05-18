@@ -2,6 +2,11 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
+## 1.2.2 (May 2016)
+* Upgrade spark-mongodb to 0.11.2
+* Security Manager added
+* Deploying uber-jars in Maven
+
 ## 1.2.1 (April 2016)
 * Deploy mode parameter for Spark-Submit configuration added
 * Bux fixing in package creation
