@@ -150,7 +150,7 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
       case Subquery(_, LogicalRelation(relation : BaseRelation, _ )) =>
 
-        val schema = if(schemaFromUser.isDefined) extractSchema(schemaFromUser.get, relation.schema) else relation.schema
+        val schema = schemaFromUser map (extractSchema(_,relation.schema)) getOrElse (relation.schema)
 
         relation match {
           case insertableRelation: InsertableRelation =>

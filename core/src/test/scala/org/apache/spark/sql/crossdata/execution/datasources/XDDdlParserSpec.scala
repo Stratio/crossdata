@@ -129,8 +129,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId(Column1, Column2, Column3, Column4) VALUES ( 256, 0.01, 'pr', false)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), Some(List("Column1", "Column2", "Column3", "Column4")),
-        List(List("256", "0.01", "pr", "false")))
+      InsertIntoTable( TableIdentifier("tableId"), List(List("256", "0.01", "pr", "false")), Some(List("Column1", "Column2", "Column3", "Column4")))
 
   }
 
@@ -138,8 +137,9 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId(Column1, Column2, Column3, Column4) VALUES ( 12, 12.01, 'proof', true), ( 2, 1.01, 'pof', true), ( 256, 0.01, 'pr', false)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), Some(List("Column1", "Column2", "Column3", "Column4")),
-        List(List("12", "12.01", "proof", "true"),List("2", "1.01", "pof", "true"),List("256", "0.01", "pr", "false")))
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List("12", "12.01", "proof", "true"),List("2", "1.01", "pof", "true"),List("256", "0.01", "pr", "false")),
+        Some(List("Column1", "Column2", "Column3", "Column4")),)
 
   }
 
