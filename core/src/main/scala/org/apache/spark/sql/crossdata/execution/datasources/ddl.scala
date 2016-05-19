@@ -15,24 +15,20 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import java.sql.Timestamp
-import java.text.SimpleDateFormat
+import java.sql.{Date, Timestamp}
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.IntType
-import org.apache.hadoop.fs.Path
+import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, LogicalPlan, Subquery}
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources._
-import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, HadoopFsRelationProvider, InsertableRelation}
+import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.{StructType, _}
-import org.apache.spark.sql._
 
 import scala.language.implicitConversions
 import scala.reflect.io.File
@@ -56,7 +52,7 @@ object DDLUtils {
       case _: DecimalType => Try(BigDecimal(value))
       case _: StringType => Try(value.toString)
       case _: BooleanType => Try(value.toBoolean)
-      case _: DateType => Try(new SimpleDateFormat().parse(value))
+      case _: DateType => Try(Date.valueOf(value))
       case _: TimestampType => Try(Timestamp.valueOf(value))
       case _ => Failure(new RuntimeException("Invalid Spark DataType"))
     }

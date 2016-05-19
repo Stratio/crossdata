@@ -139,7 +139,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
     parser.parse(sentence) shouldBe
       InsertIntoTable( TableIdentifier("tableId"),
         List(List("12", "12.01", "proof", "true"),List("2", "1.01", "pof", "true"),List("256", "0.01", "pr", "false")),
-        Some(List("Column1", "Column2", "Column3", "Column4")),)
+        Some(List("Column1", "Column2", "Column3", "Column4")))
 
   }
 
