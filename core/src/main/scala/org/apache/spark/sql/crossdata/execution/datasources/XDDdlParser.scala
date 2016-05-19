@@ -93,7 +93,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val arrayValues: Parser[String] = {
     "[" ~> repsep(token, ",") <~ "]" ^^ {
-      case value => "[" + (value mkString ",") + "]"
+      case value => value.map(v => s"'$v'") mkString ("[", ",", "]")
     }
   }
 

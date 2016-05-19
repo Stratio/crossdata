@@ -147,7 +147,15 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( [1,2], 12, 12.01, 'proof', [false,true], true, ["proof array", "proof2"])"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List(List("[1,2]","12", "12.01", "proof", "[false,true]", "true", "[proof array,proof2]")))
+      InsertIntoTable( TableIdentifier("tableId"), List(List("['1','2']","12", "12.01", "proof", "['false','true']", "true", "['proof array','proof2']")))
+
+  }
+
+  it should "successfully parse a INSERT TABLE using arrays with Strings with comma provided in VALUES" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( [1,2], 12, 12.01, 'proof', [false,true], true, ["proof, array", "proof2"])"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"), List(List("['1','2']","12", "12.01", "proof", "['false','true']", "true", "['proof, array','proof2']")))
 
   }
 
