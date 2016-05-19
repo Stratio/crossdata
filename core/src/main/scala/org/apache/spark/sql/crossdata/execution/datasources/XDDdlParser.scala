@@ -100,7 +100,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val insertIntoTable: Parser[LogicalPlan] =
     INSERT ~> INTO ~> tableIdentifier ~ tableValues.? ~ (VALUES ~> repsep(tableValues,","))  ^^ {
-      case tableId ~ schemaValues~ tableValues =>
+      case tableId ~ schemaValues ~ tableValues =>
         if(schemaValues.isDefined)
           InsertIntoTable(tableId, schemaValues, tableValues)
         else
