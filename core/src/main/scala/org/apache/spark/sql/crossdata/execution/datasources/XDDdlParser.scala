@@ -88,12 +88,15 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
   }
 
-  import lexical.Token
+
   protected lazy val tableValues: Parser[Seq[String]] = "(" ~> repsep(token, ",") <~ ")"
 
 
-  def token: Parser[String] =
+  def token: Parser[String] = {
+    import lexical.Token
     elem("token", _.isInstanceOf[Token]) ^^ (_.chars)
+  }
+
 
   protected lazy val insertIntoTable: Parser[LogicalPlan] =
     INSERT ~> INTO ~> tableIdentifier ~ tableValues.? ~ (VALUES ~> repsep(tableValues,","))  ^^ {
