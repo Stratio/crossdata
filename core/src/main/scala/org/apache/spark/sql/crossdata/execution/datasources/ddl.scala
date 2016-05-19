@@ -40,6 +40,8 @@ import scala.util.{Failure, Success, Try}
 
 object DDLUtils {
 
+  type RowValues = Seq[String]
+
   implicit def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
     tableIdentifier.database.toSeq :+ tableIdentifier.table
 
@@ -59,8 +61,6 @@ object DDLUtils {
       case _ => Failure(new RuntimeException("Invalid Spark DataType"))
     }
   }
-
-  type RowValues = Seq[String]
 
 }
 
@@ -127,10 +127,8 @@ private[crossdata] case object DropAllTables extends RunnableCommand {
 
 }
 
-private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, schemaFromUser: Option[Seq[String]], parsedRows: Seq[DDLUtils.RowValues])
+private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues], schemaFromUser: Option[Seq[String]] = None)
   extends RunnableCommand {
-
-  def this(tableIdentifier: TableIdentifier,parsedRows: Seq[DDLUtils.RowValues]) = this(tableIdentifier, None, parsedRows)
 
   override def output: Seq[Attribute] = {
     val schema = StructType(
