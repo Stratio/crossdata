@@ -54,7 +54,19 @@ object DDLUtils {
       case _: BooleanType => Try(value.toBoolean)
       case _: DateType => Try(Date.valueOf(value))
       case _: TimestampType => Try(Timestamp.valueOf(value))
+
+      case ArrayType(elementType:DataType, withNulls:Boolean) => {
+        val valuesWithoutBrackets = value.substring(2, value.length - 2)
+        arraysOfTryToTryOfSeq(valuesWithoutBrackets.split("','") map { value => convertSparkDatatypeToScala(value, elementType) })
+      }
+
       case _ => Failure(new RuntimeException("Invalid Spark DataType"))
+    }
+  }
+
+  private def arraysOfTryToTryOfSeq[T](tries: Array[Try[T]]):Try[Seq[T]] = {
+    Try {
+      tries map ( _.get )
     }
   }
 

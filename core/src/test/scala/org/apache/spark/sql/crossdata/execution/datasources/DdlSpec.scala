@@ -96,5 +96,14 @@ class DdlSpec extends BaseXDTest with MockitoSugar{
 
   }
 
+  "Ddl" should  "successfully convert from ArrayType to Array" in {
+
+    DDLUtils.convertSparkDatatypeToScala("['1','2','3']", ArrayType(IntegerType,true)) shouldBe Success(Seq(1,2,3))
+
+    DDLUtils.convertSparkDatatypeToScala("['proof one','proof, two','proof three']",
+      ArrayType(StringType,true)) shouldBe Success(Seq("proof one", "proof, two","proof three"))
+
+  }
+
 
 }
