@@ -310,8 +310,10 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
    */
   def serversUp(): Future[Seq[Address]] = {
     import collection.JavaConverters._
-    clusterState().map{ cState =>
-      cState.getMembers.asScala.filter( _.status == MemberStatus.Up).map(_.address).toSeq
+    clusterState().map { cState =>
+      cState.getMembers.asScala.collect {
+        case member if member.status == MemberStatus.Up => member.address
+      }.toSeq
     }
   }
 
