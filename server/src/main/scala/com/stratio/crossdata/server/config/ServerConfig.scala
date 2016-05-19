@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,6 +41,9 @@ object ServerConfig {
 
   // Job management settings
   val FinishedJobTTL = "config.jobs.finished.ttl_ms"
+
+  // Host
+  val Host="akka.remote.netty.tcp.hostname"
 
 }
 

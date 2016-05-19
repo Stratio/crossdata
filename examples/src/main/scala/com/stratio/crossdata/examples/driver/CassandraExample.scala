@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,7 +43,7 @@ object DriverExample extends App with DefaultConstants {
   var driver: Option[Driver] = None
 
   val driverConf = new DriverConf().
-    setFlattenTables(true).
+    setFlattenTables(false).
     setTunnelTimeout(30).
     setClusterContactPoint("127.0.0.1:13420", "127.0.0.1:13425")
 

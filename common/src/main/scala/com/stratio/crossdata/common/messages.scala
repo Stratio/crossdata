@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.crossdata.common
 
 import java.util.UUID
@@ -77,3 +76,5 @@ private[crossdata] trait ServerReply {
 private[crossdata] case class QueryCancelledReply(requestId: UUID) extends ServerReply
 
 private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
+
+private[crossdata] case class AddHdfsFileReply(requestId: UUID, hdfsRoute:String) extends ServerReply

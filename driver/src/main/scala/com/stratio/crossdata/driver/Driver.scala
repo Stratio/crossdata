@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,6 +40,7 @@ import scala.language.postfixOps
  * the JavaDriver.scala has to be updated according to those changes.
  * =======================================================================================
  */
+
 
 object Driver {
 
@@ -96,7 +97,7 @@ object Driver {
 
 }
 
-class Driver private(driverConf: DriverConf,
+class Driver private(private[crossdata] val driverConf: DriverConf,
                      auth: Authentication = Driver.generateDefaultAuth) {
 
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,22 +17,23 @@ package com.stratio.crossdata.server
 
 import java.io.File
 
-import akka.actor.ActorSystem
-import akka.actor.Props
+import akka.actor.{ActorSystem, Props}
 import akka.cluster.Cluster
 import akka.contrib.pattern.ClusterReceptionistExtension
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
+import akka.stream.ActorMaterializer
 import com.stratio.crossdata.server.actors.ServerActor
 import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
-import org.apache.commons.daemon.Daemon
-import org.apache.commons.daemon.DaemonContext
+import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
+import scala.concurrent.Future
 
 
 class CrossdataServer extends Daemon with ServerConfig {
@@ -41,6 +42,7 @@ class CrossdataServer extends Daemon with ServerConfig {
 
   var system: Option[ActorSystem] = None
   var xdContext: Option[XDContext] = None
+  var bindingFuture: Option[Future[ServerBinding]] = None
 
   override def init(p1: DaemonContext): Unit = ()
 
@@ -81,7 +83,15 @@ class CrossdataServer extends Daemon with ServerConfig {
             serverActorConfig)),
         actorName)
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
+
+      implicit val httpSystem = actorSystem
+      implicit val materializer = ActorMaterializer()
+      val httpServerActor = new CrossdataHttpServer(config, serverActor, actorSystem)
+      val host = config.getString(ServerConfig.Host)
+      // TODO RestPort should be configurable
+      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, 13422))
     }
+
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
   }
 
@@ -97,7 +107,14 @@ class CrossdataServer extends Daemon with ServerConfig {
 
   override def stop(): Unit = {
     xdContext.foreach(_.sc.stop())
-    system.foreach(_.shutdown())
+
+    system.foreach { actSystem =>
+      implicit val exContext = actSystem.dispatcher
+      bindingFuture.foreach { bFuture =>
+        bFuture.flatMap(_.unbind()).onComplete(_ => actSystem.shutdown())
+      }
+    }
+
     logger.info("Crossdata Server stopped")
   }
 

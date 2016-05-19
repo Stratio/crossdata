@@ -229,18 +229,21 @@
       </plugin>
     </plugins>
   </build>
-  <profile>
-    <id>scala-2.10</id>
-    <properties>
-      <scala.version>${scala_2.10.version}</scala.version>
-      <scala.binary.version>2.10</scala.binary.version>
-    </properties>
-  </profile>
-  <profile>
-    <id>scala-2.11</id>
-    <properties>
-      <scala.version>${scala_2.11.version}</scala.version>
-      <scala.binary.version>2.11</scala.binary.version>
-    </properties>
-  </profile>
+  <profiles>
+    <profile>
+      <id>scala-2.10</id>
+      <properties>
+        <scala.version>${scala_2.10.version}</scala.version>
+        <scala.binary.version>2.10</scala.binary.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>scala-2.11</id>
+      <properties>
+        <scala.version>${scala_2.11.version}</scala.version>
+        <scala.binary.version>2.11</scala.binary.version>
+      </properties>
+    </profile>
+  </profiles>
+
 </project>

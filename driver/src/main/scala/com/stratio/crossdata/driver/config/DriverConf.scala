@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -95,6 +95,11 @@ class DriverConf extends Logging {
       hosts map (host => s"akka.ssl.tcp://$clusterName@$host$ActorsPath")
     else
       hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
+  }
+
+  private[crossdata] def getCrossdataServerHost: String = {
+    val hosts = finalSettings.getStringList(DriverConfigHosts).toList
+    hosts.head
   }
 
   private[crossdata] def getFlattenTables: Boolean =
