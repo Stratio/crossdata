@@ -89,7 +89,13 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   }
 
 
-  protected lazy val tableValues: Parser[Seq[String]] = "(" ~> repsep(token, ",") <~ ")"
+  protected lazy val tableValues: Parser[Seq[String]] = "(" ~> repsep(arrayValues | token, ",") <~ ")"
+
+  protected lazy val arrayValues: Parser[String] = {
+    "[" ~> repsep(token, ",") <~ "]" ^^ {
+      case value => "[" + (value mkString ",") + "]"
+    }
+  }
 
 
   def token: Parser[String] = {

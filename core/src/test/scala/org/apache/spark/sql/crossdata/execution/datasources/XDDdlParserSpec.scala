@@ -143,6 +143,14 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
   }
 
+  it should "successfully parse a INSERT TABLE using arrays provided in VALUES" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( [1,2], 12, 12.01, 'proof', [false,true], true, ["proof array", "proof2"])"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"), List(List("[1,2]","12", "12.01", "proof", "[false,true]", "true", "[proof array,proof2]")))
+
+  }
+
   it should "successfully parse a CREATE VIEW into a CreateView RunnableCommand" in {
 
     val sentence = "CREATE VIEW vn AS SELECT * FROM tn"
