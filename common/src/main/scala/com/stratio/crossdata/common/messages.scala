@@ -17,6 +17,7 @@ package com.stratio.crossdata.common
 
 import java.util.UUID
 
+import akka.cluster.ClusterEvent.CurrentClusterState
 import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.common.security.Session
 
@@ -45,19 +46,16 @@ private[crossdata] case class SQLCommand private(sql: String,
 }
 
 case class AddJARCommand(path: String,
-                          timeout: Option[FiniteDuration] = None
-                        ) extends Command {
-  def this(
-            jarpath: String,
-            timeout: FiniteDuration
-          ) = this(path=jarpath,  timeout=Option(timeout))
+                         timeout: Option[FiniteDuration] = None) extends Command {
 
-  def this(
-            jarpath: String
-          ) = this(path=jarpath)
+  def this(jarpath: String, timeout: FiniteDuration) =
+    this(path = jarpath, timeout = Option(timeout))
+
+  def this(jarpath: String) = this(path = jarpath)
 
 }
 
+case class ClusterStateCommand() extends Command
 
 trait ControlCommand extends Command
 
@@ -77,4 +75,8 @@ private[crossdata] case class QueryCancelledReply(requestId: UUID) extends Serve
 
 private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
 
-private[crossdata] case class AddHdfsFileReply(requestId: UUID, hdfsRoute:String) extends ServerReply
+
+private[crossdata] case class ClusterStateReply(requestId: UUID, clusterState: CurrentClusterState) extends ServerReply
+
+private[crossdata] case class AddHdfsFileReply(requestId: UUID, hdfsRoute: String) extends ServerReply
+
