@@ -86,7 +86,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
       clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(aCmd @ AddJARCommand(path, _), _) =>
+    case secureSQLCommand @ CommandEnvelope(aCmd @ AddJARCommand(path, _, _), _) =>
       import context.dispatcher
       val shipmentResponse: Future[SQLReply] = httpClient.sendJarToHTTPServer(path) map { response =>
         SQLReply(

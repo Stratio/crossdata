@@ -72,7 +72,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
               val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
               //Send a broadcast message to all servers
               val hdfsPath = writeJarToHdfs(hdfsConfig, path)
-              mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath), new Session("HttpServer", serverActor)))
+              mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath,hdfsConfig=Option(hdfsConfig)), new Session("HttpServer", serverActor)))
               hdfsPath
             }
           }
@@ -83,6 +83,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
   private def writeJarToHdfs(hdfsConfig: Config, jar: String): String = {
     val user = hdfsConfig.getString("hadoopUserName")
     val hdfsMaster = hdfsConfig.getString("hdfsMaster")
+    val hdfsPort = hdfsConfig.getString("hdfsPort")
     val destPath = s"/user/$user/externalJars/"
 
     val hdfsUtil = HdfsUtils(hdfsConfig)
@@ -92,7 +93,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
     if (!hdfsUtil.fileExist(s"$destPath/$jarName")) {
       hdfsUtil.write(jar, destPath)
     }
-    s"hdfs://$hdfsMaster/$destPath/$jarName"
+    s"hdfs://$hdfsMaster:$hdfsPort/$destPath/$jarName"
   }
 
 }

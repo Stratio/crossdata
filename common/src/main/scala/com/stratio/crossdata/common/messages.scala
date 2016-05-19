@@ -19,6 +19,7 @@ import java.util.UUID
 
 import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.common.security.Session
+import com.typesafe.config.Config
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -44,8 +45,8 @@ private[crossdata] case class SQLCommand private(sql: String,
 
 }
 
-case class AddJARCommand(path: String,
-                          timeout: Option[FiniteDuration] = None
+case class AddJARCommand(path: String, hdfsConfig:Option[Config]=None,
+                         timeout: Option[FiniteDuration] = None
                         ) extends Command {
   def this(
             jarpath: String,
@@ -56,6 +57,10 @@ case class AddJARCommand(path: String,
             jarpath: String
           ) = this(path=jarpath)
 
+  def this(
+            jarpath: String,
+            hdfsConf:Config
+          ) = this(path=jarpath, hdfsConfig=Option(hdfsConf))
 }
 
 
