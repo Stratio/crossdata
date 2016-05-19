@@ -15,7 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import java.sql.Timestamp
+import java.sql.{Date, Timestamp}
 import java.text.SimpleDateFormat
 
 import com.stratio.crossdata.test.BaseXDTest
@@ -86,8 +86,7 @@ class DdlSpec extends BaseXDTest with MockitoSugar{
 
   "Ddl" should  "successfully convert from DateType to Date" in {
 
-    val date = new SimpleDateFormat("yyyy-MM-dd").parse("2010-01-02")
-    DDLUtils.convertSparkDatatypeToScala(new SimpleDateFormat().format(date), DateType) shouldBe Success(date)
+    DDLUtils.convertSparkDatatypeToScala("2015-01-01", DateType) shouldBe Success(Date.valueOf("2015-01-01"))
 
   }
 
