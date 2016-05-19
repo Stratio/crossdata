@@ -22,15 +22,15 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class CassandraInsertTableIT extends CassandraWithSharedContext {
 
-  it should "insert a row using INSERT INTO table VALUES in JSON" in {
+  it should "insert a row using INSERT INTO table VALUES in Cassandra" in {
     _xdContext.sql(s"INSERT INTO $Table VALUES (200, 25, 'proof description', true, 'pepe')").collect() should be (Row(1)::Nil)
   }
 
-  it should "insert a row using INSERT INTO table(schema) VALUES in JSON" in {
+  it should "insert a row using INSERT INTO table(schema) VALUES in Cassandra" in {
     _xdContext.sql(s"INSERT INTO $Table(id,age,comment) VALUES ( 201, 25, 'pepe')").collect() should be (Row(1)::Nil)
   }
 
-  it should "insert multiple rows using INSERT INTO table VALUES in JSON" in {
+  it should "insert multiple rows using INSERT INTO table VALUES in Cassandra" in {
     val query = s"""|INSERT INTO $Table VALUES
         |(202, 25, 'proof description', true, 'pepe123'),
         |(203, 1, 'other description', false, 'pepe23'),
@@ -40,7 +40,7 @@ class CassandraInsertTableIT extends CassandraWithSharedContext {
     rows should be (Row(3)::Nil)
   }
 
-  it should "insert multiple rows using INSERT INTO table(schema) VALUES in JSON" in {
+  it should "insert multiple rows using INSERT INTO table(schema) VALUES in Cassandra" in {
     _xdContext.sql(s"INSERT INTO $Table(id,age,comment, enrolled) VALUES ( 205,252, 'pepe2', true),( 206,1, 'asd', false)").collect() should be (Row(2)::Nil)
   }
 
