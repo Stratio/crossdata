@@ -20,28 +20,36 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class MongoInsertTableIT extends MongoWithSharedContext {
+class MongoInsertTableIT extends MongoInsertCollection {
 
   it should "insert a row using INSERT INTO table VALUES in MongoDb" in {
-    _xdContext.sql(s"INSERT INTO $Collection VALUES (200, 25, 'proof description', true, 'pepe', false )").collect() should be (Row(1)::Nil)
+    _xdContext.sql(s"INSERT INTO $Collection VALUES (20, 25, 'proof description', true, 'Eve', false,['proof'])").collect() should be (Row(1)::Nil)
   }
 
   it should "insert a row using INSERT INTO table(schema) VALUES in MongoDb" in {
-    _xdContext.sql(s"INSERT INTO $Collection(age,name, enrolled) VALUES ( 25, 'pepe', true)").collect() should be (Row(1)::Nil)
+    _xdContext.sql(s"INSERT INTO $Collection(age,name, enrolled) VALUES ( 25, 'Peter', true)").collect() should be (Row(1)::Nil)
   }
 
   it should "insert multiple rows using INSERT INTO table VALUES in MongoDb" in {
     val query = s"""|INSERT INTO $Collection VALUES
-        |(200, 25, 'proof description', true, 'pepe123', false ),
-        |(15, 1, 'other description', false, 'pepe23', true ),
-        |(6, 33, 'other fun description', false, 'pepe123', false )
+        |(21, 25, 'proof description', true, 'John', false, [4,5] ),
+        |(22, 1, 'other description', false, 'James', true, [1,2,3] ),
+        |(23, 33, 'other fun description', false, 'July', false, [true,true] )
        """.stripMargin
     val rows: Array[Row] = _xdContext.sql(query).collect()
     rows should be (Row(3)::Nil)
   }
 
   it should "insert multiple rows using INSERT INTO table(schema) VALUES in MongoDb" in {
-    _xdContext.sql(s"INSERT INTO $Collection(age,name, enrolled) VALUES ( 252, 'pepe2', true),( 1, 'asd', false)").collect() should be (Row(2)::Nil)
+    _xdContext.sql(s"INSERT INTO $Collection(age,name, enrolled) VALUES ( 50, 'Samantha', true),( 1, 'Charlie', false)").collect() should be (Row(2)::Nil)
+  }
+
+  it should "insert rows using INSERT INTO table(schema) VALUES with Arrays in MongoDb" in {
+    val query = s"""|INSERT INTO $Collection (age,name, enrolled, array_test) VALUES
+                    |( 55, 'Jules', true, [true, false]),
+                    |( 12, 'Martha', false, ['test1,t', 'test2'])
+       """.stripMargin
+    _xdContext.sql(query).collect() should be (Row(2)::Nil)
   }
 
 }
