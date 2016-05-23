@@ -104,6 +104,10 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       }
       shipmentResponse pipeTo sender
 
+    case CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
+      logger.debug(s"Send cluster state with requestID=${clusterStateCommand.requestId}")
+      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, clusterStateCommand, localAffinity = false)
+
     case sqlCommand: SQLCommand =>
       logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
   }
@@ -121,8 +125,12 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
             case reply @ SQLReply(_, result) =>
               logger.info(s"Successful SQL execution: ${result}")
               p.success(reply)
+            // TODO review query cancelation
             case reply @ QueryCancelledReply(id) =>
               logger.info(s"Query $id cancelled")
+              p.success(reply)
+            case reply @ ClusterStateReply(_, clusterState) =>
+              logger.debug(s"Cluster snapshot received $clusterState")
               p.success(reply)
             case _ =>
               p.failure(new RuntimeException(s"Unknown message: $reply"))

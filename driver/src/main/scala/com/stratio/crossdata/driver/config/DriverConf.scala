@@ -109,13 +109,12 @@ class DriverConf extends Logging {
   private val typesafeConf: Config = {
 
     val defaultConfig = ConfigFactory.load(DriverConfigDefault).getConfig(ParentConfigName)
-    val envConfigFile = Option(System.getProperties.getProperty(DriverConfigFile))
-    val configFile = envConfigFile.getOrElse(defaultConfig.getString(DriverConfigFile))
-    val configResource = defaultConfig.getString(DriverConfigResource)
 
     //Get the driver-application.conf properties if exists in resources
     val configWithResource: Config = {
-      val resource = DriverConf.getClass.getClassLoader.getResource(DriverConfigResource)
+
+      val configResource = defaultConfig.getString(DriverConfigResource)
+      val resource = DriverConf.getClass.getClassLoader.getResource(configResource)
       Option(resource).fold {
         logger.warn("User resource (" + configResource + ") haven't been found")
         val file = new File(configResource)
@@ -127,13 +126,19 @@ class DriverConf extends Logging {
           defaultConfig
         }
       } { resTemp =>
-        val userConfig = ConfigFactory.parseResources(DriverConfigResource).getConfig(ParentConfigName)
+        val userConfig = ConfigFactory.parseResources(configResource).getConfig(ParentConfigName)
         userConfig.withFallback(defaultConfig)
       }
     }
 
     //Get the user external driver-application.conf properties if exists
     val finalConfig: Config = {
+
+      val configFile = {
+        val envConfigFile = Option(System.getProperties.getProperty(DriverConfigFile))
+        envConfigFile.getOrElse(defaultConfig.getString(DriverConfigFile))
+      }
+
       if (configFile.isEmpty) {
         configWithResource
       } else {

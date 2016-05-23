@@ -25,8 +25,10 @@ import java.util.concurrent.atomic.AtomicReference
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst.{TableIdentifier, SimpleCatalystConf, CatalystConf}
-import org.apache.spark.sql.catalyst.analysis.{ComputeCurrentTime, DistinctAggregationRewriter, ResolveUpCast, CleanupAliases, HiveTypeCoercion, Analyzer, FunctionRegistry}
+import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
+import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
@@ -34,10 +36,10 @@ import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
-import org.apache.spark.sql.{execution => sparkexecution}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext, Strategy, execution => sparkexecution}
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
-import org.apache.spark.sql.{DataFrame, SQLContext, Strategy}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
@@ -237,18 +239,23 @@ class XDContext private (@transient val sc: SparkContext,
    * @param datasource
    * @param opts
    */
-  def importTables(datasource: String, opts: Map[String, String]): Unit = {
+  def importTables(datasource: String, opts: Map[String, String]): Unit =
     ImportTablesUsingWithOptions(datasource, opts).run(this)
-  }
+
 
   /**
     * Check if there is Connection with the catalog
     *
     * @return if connection is possible
     */
-  def checkCatalogConnection : Boolean={
+  def checkCatalogConnection : Boolean=
     catalog.checkConnectivity
-  }
+
+
+
+  def createDataFrame(rows: Seq[Row], schema: StructType): DataFrame =
+    DataFrame(self, LocalRelation.fromExternalRows(schema.toAttributes, rows))
+
 
   XDContext.setLastInstantiatedContext(self)
 }
