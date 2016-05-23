@@ -169,9 +169,9 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
   it should "successfully parse a INSERT TABLE using maps with strings provided in VALUES" in {
 
-    val sentence = """INSERT INTO tableId VALUES ( (x -> 1, y -> 2), 12, 12.01, 'proof', (x1 -> "proof,comma", x2 -> "proof2"), true)"""
+    val sentence = """INSERT INTO tableId VALUES ( (x -> 1, y -> 2, z -> 3), 12, 12.01, 'proof', (x1 -> "proof,comma", x2 -> "proof2"), true)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List(List("('x'->'1','y'->'2')","12", "12.01", "proof", "('x1'->'proof,comma','x2'->'proof2')", "true")))
+      InsertIntoTable( TableIdentifier("tableId"), List(List("('x'->'1','y'->'2','z'->'3')","12", "12.01", "proof", "('x1'->'proof,comma','x2'->'proof2')", "true")))
 
   }
 

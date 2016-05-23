@@ -19,7 +19,7 @@ import java.sql.{Date, Timestamp}
 import java.text.SimpleDateFormat
 
 import com.stratio.crossdata.test.BaseXDTest
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.types.{MapType, _}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
@@ -102,6 +102,18 @@ class DdlSpec extends BaseXDTest with MockitoSugar{
 
     DDLUtils.convertSparkDatatypeToScala("['proof one','proof, two','proof three']",
       ArrayType(StringType,true)) shouldBe Success(Seq("proof one", "proof, two","proof three"))
+
+  }
+
+  "Ddl" should  "successfully convert from MapType to Map" in {
+
+    DDLUtils.convertSparkDatatypeToScala("('x'->'1','y'->'2')", MapType(StringType,IntegerType,true)) shouldBe Success(Map(("x",1),("y",2)))
+
+    DDLUtils.convertSparkDatatypeToScala("('x1'->'proof,comma','x2'->'proof2')",
+      MapType(StringType,StringType,true)) shouldBe Success(Map(("x1","proof,comma"),("x2","proof2")))
+
+    DDLUtils.convertSparkDatatypeToScala("('x'->'1','y'->'2','z'->'3')",
+      MapType(StringType,StringType,true)) shouldBe Success(Map(("x","1"),("y","2"),("z","3")))
 
   }
 

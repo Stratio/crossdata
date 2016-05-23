@@ -30,6 +30,7 @@ import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.{StructType, _}
 
+import scala.annotation.tailrec
 import scala.language.implicitConversions
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
@@ -57,17 +58,40 @@ object DDLUtils {
 
       case ArrayType(elementType:DataType, withNulls:Boolean) => {
         val valuesWithoutBrackets = value.substring(2, value.length - 2)
-        arraysOfTryToTryOfSeq(valuesWithoutBrackets.split("','") map { value => convertSparkDatatypeToScala(value, elementType) })
+        seqOfTryToTryOfSeq(valuesWithoutBrackets.split("','") map { value => convertSparkDatatypeToScala(value, elementType) })
+      }
+
+      case MapType(keyType:DataType, valueType:DataType, withNulls:Boolean) => {
+
+        val pairs = (value.substring(2, value.length - 2) ) split ("','")
+        val convertedTuples = pairs map {pair => pair.split("'->'")} map {
+          keyValue => (convertSparkDatatypeToScala(keyValue(0), keyType).get, convertSparkDatatypeToScala(keyValue(1),valueType).get)
+        }
+
+        Try(generateMapFromTuples(convertedTuples))
       }
 
       case _ => Failure(new RuntimeException("Invalid Spark DataType"))
     }
   }
 
-  private def arraysOfTryToTryOfSeq[T](tries: Array[Try[T]]):Try[Seq[T]] = {
-    Try {
-      tries map ( _.get )
+
+  private def generateMapFromTuples(tuples: Seq[(Any,Any)]): Map[Any,Any] = {
+
+    @tailrec
+    def helper(tuples: Seq[(Any,Any)], accum: Map[Any,Any]): Map[Any,Any] = {
+      if(tuples.isEmpty) accum
+      else helper(tuples.tail, accum + (tuples.head))
     }
+
+    helper(tuples, Map())
+  }
+
+
+  private def seqOfTryToTryOfSeq[T](tries: Seq[Try[T]]):Try[Seq[T]] = {
+    Try (
+      tries map ( _.get )
+    )
   }
 
 }
