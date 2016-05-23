@@ -27,8 +27,8 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.FileIO
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope}
+import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.utils.HdfsUtils
-import com.stratio.crossdata.server.actors.ServerActor
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
@@ -37,7 +37,7 @@ import scala.concurrent.Future
 
 class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) {
 
-  import ServerActor._
+  import ResourceManagerActor._
 
   implicit val executionContext = system.dispatcher
   implicit val materializer = ActorMaterializer()
@@ -62,7 +62,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
           }.runFold(Map.empty[String, Any])((map, tuple) => map + tuple)
 
-          val done = allPartsF.onSuccess{
+          val done = allPartsF.onSuccess {
             case _ => logger.info("Recieved file")
           }
 
@@ -72,7 +72,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
               val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
               //Send a broadcast message to all servers
               val hdfsPath = writeJarToHdfs(hdfsConfig, path)
-              mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath,hdfsConfig=Option(hdfsConfig)), new Session("HttpServer", serverActor)))
+              mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), new Session("HttpServer", serverActor)))
               hdfsPath
             }
           }

@@ -17,7 +17,7 @@ package com.stratio.crossdata.server.actors
 
 import java.io.{File, InputStream}
 import java.lang.reflect.Method
-import java.net.{URLClassLoader, URL}
+import java.net.{URL, URLClassLoader}
 import java.util.UUID
 
 import akka.actor.SupervisorStrategy.Restart
@@ -28,24 +28,19 @@ import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import akka.remote.DisassociatedEvent
 import com.google.common.io.Files
-import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
-import com.stratio.crossdata.server.config.{ServerConfig, ServerActorConfig}
-import com.stratio.crossdata.utils.HdfsUtils
+import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.types.StructType
 
 import scala.concurrent.duration.FiniteDuration
 
 
 object ServerActor {
   val ManagementTopic: String = "jobsManagement"
-  val AddJarTopic: String = "newJAR"
-
 
   def props(cluster: Cluster, xdContext: XDContext, config: ServerActorConfig): Props =
     Props(new ServerActor(cluster, xdContext, config))
@@ -67,7 +62,7 @@ object ServerActor {
 
 }
 
-class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: ServerActorConfig) extends Actor with ServerConfig{
+class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: ServerActorConfig) extends Actor with ServerConfig {
 
   import ServerActor.ManagementMessages._
   import ServerActor._
@@ -81,7 +76,6 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
 
     // Subscribe to the management distributed topic
     mediator ! Subscribe(ManagementTopic, self)
-    mediator ! Subscribe(AddJarTopic, self)
 
     // Subscribe to disassociation events in the cluster
     cluster.subscribe(self, InitialStateAsSnapshot, classOf[DisassociatedEvent])
@@ -90,15 +84,11 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
 
   // Actor behaviours
 
-  override def receive: Actor.Receive = initial(Set(ManagementTopic, AddJarTopic))
+  override def receive: Actor.Receive = initial(Set(ManagementTopic))
 
   private def initial(pendingTopics: Set[String]): Receive = {
     case SubscribeAck(Subscribe(ManagementTopic, None, self)) =>
       val newPendingTopics = pendingTopics - ManagementTopic
-      checkSubscriptions(newPendingTopics)
-
-    case SubscribeAck(Subscribe(AddJarTopic, None, self)) =>
-      val newPendingTopics = pendingTopics - AddJarTopic
       checkSubscriptions(newPendingTopics)
   }
 
@@ -109,11 +99,11 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
       context.become(initial(pendingTopics))
 
   /**
-   * If a `cmd` is passed to this method is because it has already been checked that this server can run it.
-   *
-   * @param cmd
-   * @param st
-   */
+    * If a `cmd` is passed to this method is because it has already been checked that this server can run it.
+    *
+    * @param cmd
+    * @param st
+    */
   private def executeAccepted(cmd: CommandEnvelope)(st: State): Unit = cmd match {
     case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, requester)) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
@@ -122,34 +112,16 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
       jobActor ! StartJob
       context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
 
-    case CommandEnvelope(addJarCommand: AddJARCommand, session@Session(id, requester)) =>
-      logger.debug(s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
-      logger.debug(s"Session identifier $session")
-      //TODO  Maybe include job controller if it is necessary as in sql command
-      if (addJarCommand.path.toLowerCase.startsWith("hdfs://")) {
-        xdContext.addJar(addJarCommand.path)
-        //add to runtime
-        val fileHdfsPath=addJarCommand.path
-        val hdfsIS:InputStream=HdfsUtils(addJarCommand.hdfsConfig.get).getFile(fileHdfsPath)
-        val file:File=createFile(hdfsIS,s"${config.getString(ServerConfig.repoJars)}/${fileHdfsPath.split("/").last}")
-        addToClasspath(file)
-
-        // TODO proxyActor could wait for multiple request (WRITE_CONCERN??)
-        sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
-      } else {
-        sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exists or is not a hdfs file", Some(new Exception("File doesn't exists or is not a hdfs file"))))
-      }
-
     case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, requester)) =>
       st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
   }
 
-  private def addToClasspath(file : File) : Unit = {
+  private def addToClasspath(file: File): Unit = {
     if (file.exists) {
-      val method : Method = classOf[URLClassLoader].getDeclaredMethod("addURL", classOf[URL])
-
+      val method: Method = classOf[URLClassLoader].getDeclaredMethod("addURL", classOf[URL])
       method.setAccessible(true)
       method.invoke(ClassLoader.getSystemClassLoader, file.toURI.toURL)
+      method.setAccessible(false)
     } else {
       logger.warn(s"The file ${file.getName} not exists.")
     }
@@ -164,6 +136,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
     Files.write(arrayBuffer, targetFile)
     targetFile
   }
+
   // Receive functions:
 
   // Broadcast messages treatment
@@ -197,7 +170,6 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
         // If it can't run here it should be executed somewhere else
         mediator ! Publish(ManagementTopic, DelegateCommand(sc, self))
       }
-
   }
 
   // Manages events from the `JobActor` which runs the task

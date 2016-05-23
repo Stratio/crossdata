@@ -24,7 +24,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
 import akka.stream.ActorMaterializer
-import com.stratio.crossdata.server.actors.ServerActor
+import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
@@ -82,7 +82,9 @@ class CrossdataServer extends Daemon with ServerConfig {
             xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")),
             serverActorConfig)),
         actorName)
+      val broadcastActor=actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem),xdContext.get))
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
+      ClusterReceptionistExtension(actorSystem).registerService(broadcastActor)
 
       implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()
