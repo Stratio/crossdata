@@ -170,6 +170,11 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
         // If it can't run here it should be executed somewhere else
         mediator ! Publish(ManagementTopic, DelegateCommand(sc, self))
       }
+
+    case clusterStateCommand @ ClusterStateCommand() =>
+      sender ! ClusterStateReply(clusterStateCommand.requestId, cluster.state)
+
+
   }
 
   // Manages events from the `JobActor` which runs the task

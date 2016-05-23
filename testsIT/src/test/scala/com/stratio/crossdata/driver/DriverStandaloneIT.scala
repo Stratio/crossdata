@@ -45,4 +45,9 @@ class DriverStandaloneIT extends BaseXDTest {
     a[TimeoutException] should be thrownBy Await.result(future, 2 seconds)
   }
 
+  it should "indicates that the cluster is not alive when there is no server" in {
+    val driver = Driver.getOrCreate()
+    driver.isClusterAlive(1 second) shouldBe false
+  }
+
 }
