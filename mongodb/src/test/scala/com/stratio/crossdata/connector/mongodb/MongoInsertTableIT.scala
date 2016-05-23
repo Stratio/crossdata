@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 class MongoInsertTableIT extends MongoInsertCollection {
 
   it should "insert a row using INSERT INTO table VALUES in MongoDb" in {
-    _xdContext.sql(s"INSERT INTO $Collection VALUES (20, 25, 'proof description', true, 'Eve', false,['proof'])").collect() should be (Row(1)::Nil)
+    _xdContext.sql(s"INSERT INTO $Collection VALUES (20, 25, 'proof description', true, 'Eve', false,['proof'], (a->2))").collect() should be (Row(1)::Nil)
   }
 
   it should "insert a row using INSERT INTO table(schema) VALUES in MongoDb" in {
@@ -32,9 +32,9 @@ class MongoInsertTableIT extends MongoInsertCollection {
 
   it should "insert multiple rows using INSERT INTO table VALUES in MongoDb" in {
     val query = s"""|INSERT INTO $Collection VALUES
-        |(21, 25, 'proof description', true, 'John', false, [4,5] ),
-        |(22, 1, 'other description', false, 'James', true, [1,2,3] ),
-        |(23, 33, 'other fun description', false, 'July', false, [true,true] )
+        |(21, 25, 'proof description', true, 'John', false, [4,5], (x -> 1) ),
+        |(22, 1, 'other description', false, 'James', true, [1,2,3], (key -> value)),
+        |(23, 33, 'other fun description', false, 'July', false, [true,true], (z->1, a-> 2) )
        """.stripMargin
     val rows: Array[Row] = _xdContext.sql(query).collect()
     rows should be (Row(3)::Nil)
@@ -51,5 +51,21 @@ class MongoInsertTableIT extends MongoInsertCollection {
        """.stripMargin
     _xdContext.sql(query).collect() should be (Row(2)::Nil)
   }
+
+  it should "insert rows using INSERT INTO table(schema) VALUES with Map in MongoDb" in {
+    val query = s"""|INSERT INTO $Collection (age,name, enrolled, map_test) VALUES
+                    |( 12, 'Albert', true, (x->1, y->2, z->3) ),
+                    |( 20, 'Alfred', false, (xa->1, ya->2, za->3,d -> 5) )
+       """.stripMargin
+    _xdContext.sql(query).collect() should be (Row(2)::Nil)
+  }
+
+  /*it should "insert rows using INSERT INTO table(schema) VALUES with Map and Arrays in MongoDb" in {
+    val query = s"""|INSERT INTO $Collection (age,name, enrolled, map_test) VALUES
+                    |( 1, 'Nikolai', true, (x->[1,2], y->2, z->3) ),
+                    |( 14, 'Ludwig', false, (xa->1, ya->[5, 7, 8], za->3,d -> 5) )
+       """.stripMargin
+    _xdContext.sql(query).collect() should be (Row(2)::Nil)
+  }*/
 
 }
