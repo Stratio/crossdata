@@ -44,7 +44,7 @@ class CassandraInsertTableIT extends CassandraInsertCollection {
     _xdContext.sql(s"INSERT INTO $Table(id, age, name, enrolled) VALUES ( 25, 50, 'Samantha', true),( 26, 1, 'Charlie', false)").collect() should be (Row(2)::Nil)
   }
 
-  it should "insert rows using INSERT INTO table(schema) VALUES with Arrays in MongoDb" in {
+  it should "insert rows using INSERT INTO table(schema) VALUES with Arrays in Cassandra" in {
     val query = s"""|INSERT INTO $Table (id, age, name, enrolled, array_test) VALUES
                     |(27, 55, 'Jules', true, [true, false]),
                     |(28, 12, 'Martha', false, ['test1,t', 'test2'])
@@ -52,7 +52,7 @@ class CassandraInsertTableIT extends CassandraInsertCollection {
     _xdContext.sql(query).collect() should be (Row(2)::Nil)
   }
 
-  it should "insert rows using INSERT INTO table(schema) VALUES with Map in MongoDb" in {
+  it should "insert rows using INSERT INTO table(schema) VALUES with Map in Cassandra" in {
     val query = s"""|INSERT INTO $Table (id, age, name, enrolled, map_test) VALUES
                     |( 29, 12, 'Albert', true, (x->1, y->2, z->3) ),
                     |( 30, 20, 'Alfred', false, (xa->1, ya->2, za->3,d -> 5) )
