@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicReference
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
@@ -49,7 +48,7 @@ import org.apache.spark.{Logging, SparkContext}
   *
   * @param sc A [[SparkContext]].
  */
-class XDContext private (@transient val sc: SparkContext,
+class XDContext protected (@transient val sc: SparkContext,
                 userConfig: Option[Config] = None) extends SQLContext(sc) with Logging  {
   self =>
 
@@ -300,7 +299,9 @@ object XDContext extends CoreConfig {
    */
   def getOrCreate(sparkContext: SparkContext, userConfig: Option[Config] = None): XDContext = {
     INSTANTIATION_LOCK.synchronized {
-      Option(lastInstantiatedContext.get()).getOrElse(new XDContext(sparkContext, userConfig))
+      Option(lastInstantiatedContext.get()).filter(
+        _.getClass == classOf[XDContext]
+      ).getOrElse(new XDContext(sparkContext, userConfig))
     }
     lastInstantiatedContext.get()
   }
