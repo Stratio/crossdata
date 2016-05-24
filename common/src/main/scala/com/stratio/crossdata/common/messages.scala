@@ -17,8 +17,10 @@ package com.stratio.crossdata.common
 
 import java.util.UUID
 
+import akka.cluster.ClusterEvent.CurrentClusterState
 import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.common.security.Session
+import com.typesafe.config.Config
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -31,33 +33,38 @@ private[crossdata] case class SQLCommand private(sql: String,
                                                  queryId: UUID = UUID.randomUUID(),
                                                  flattenResults: Boolean = false,
                                                  timeout: Option[FiniteDuration] = None
-                                                  ) extends Command {
+                                                ) extends Command {
 
   def this(query: String,
            retrieveColNames: Boolean,
            timeoutDuration: FiniteDuration
-            ) = this(sql = query, flattenResults = retrieveColNames, timeout = Option(timeoutDuration))
+          ) = this(sql = query, flattenResults = retrieveColNames, timeout = Option(timeoutDuration))
 
   def this(query: String,
            retrieveColNames: Boolean
-            ) = this(sql = query, flattenResults = retrieveColNames, timeout = None)
+          ) = this(sql = query, flattenResults = retrieveColNames, timeout = None)
 
 }
 
-case class AddJARCommand(path: String,
-                          timeout: Option[FiniteDuration] = None
+
+case class AddJARCommand(path: String, hdfsConfig: Option[Config] = None,
+                         timeout: Option[FiniteDuration] = None
                         ) extends Command {
   def this(
             jarpath: String,
             timeout: FiniteDuration
-          ) = this(path=jarpath,  timeout=Option(timeout))
+          ) = this(path = jarpath, timeout = Option(timeout))
+
+
+  def this(jarpath: String) = this(path = jarpath)
 
   def this(
-            jarpath: String
-          ) = this(path=jarpath)
-
+            jarpath: String,
+            hdfsConf: Config
+          ) = this(path = jarpath, hdfsConfig = Option(hdfsConf))
 }
 
+case class ClusterStateCommand() extends Command
 
 trait ControlCommand extends Command
 
@@ -77,4 +84,8 @@ private[crossdata] case class QueryCancelledReply(requestId: UUID) extends Serve
 
 private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
 
-private[crossdata] case class AddHdfsFileReply(requestId: UUID, hdfsRoute:String) extends ServerReply
+
+private[crossdata] case class ClusterStateReply(requestId: UUID, clusterState: CurrentClusterState) extends ServerReply
+
+private[crossdata] case class AddHdfsFileReply(requestId: UUID, hdfsRoute: String) extends ServerReply
+

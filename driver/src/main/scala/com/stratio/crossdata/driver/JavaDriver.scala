@@ -17,7 +17,6 @@ package com.stratio.crossdata.driver
 
 import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.driver.config.DriverConf
-
 import com.stratio.crossdata.driver.metadata.{FieldMetadata, JavaTableName}
 import com.stratio.crossdata.driver.session.Authentication
 import org.slf4j.LoggerFactory
@@ -89,6 +88,15 @@ class JavaDriver private(driverConf: DriverConf,
 
   def show(sqlText: String): Unit =
     scalaDriver.show(sqlText)
+
+  /**
+   * Indicates if the cluster is alive or not
+   *
+   * @since 1.3
+   * @return whether at least one member of the cluster is alive or not
+   */
+  def isClusterAlive(): Boolean =
+    scalaDriver.isClusterAlive()
 
   def stop(): Unit = {
     scalaDriver.stop()
