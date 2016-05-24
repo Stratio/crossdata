@@ -82,9 +82,9 @@ class CrossdataServer extends Daemon with ServerConfig {
             xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")),
             serverActorConfig)),
         actorName)
-      val broadcastActor=actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem),xdContext.get))
+      val resourceManagerActor=actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem),xdContext.get))
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
-      ClusterReceptionistExtension(actorSystem).registerService(broadcastActor)
+      ClusterReceptionistExtension(actorSystem).registerService(resourceManagerActor)
 
       implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()
