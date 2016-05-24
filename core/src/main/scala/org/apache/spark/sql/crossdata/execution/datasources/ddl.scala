@@ -37,7 +37,7 @@ import scala.util.{Failure, Success, Try}
 
 object DDLUtils {
 
-  type RowValues = Seq[String]
+  type RowValues = Seq[Any]
 
   implicit def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
     tableIdentifier.database.toSeq :+ tableIdentifier.table
@@ -219,7 +219,7 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
       val valuesConverted = tableSchema.fields zip values map {
         case (schemaCol, value) =>
-          DDLUtils.convertSparkDatatypeToScala(value, schemaCol.dataType) match {
+          DDLUtils.convertSparkDatatypeToScala(value.toString, schemaCol.dataType) match { //TODO:UNAIIIIII
             case Success(converted) => converted
             case Failure(exception) => throw exception
           }

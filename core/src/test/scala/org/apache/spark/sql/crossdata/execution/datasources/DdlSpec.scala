@@ -98,32 +98,35 @@ class DdlSpec extends BaseXDTest with MockitoSugar{
 
   "Ddl" should  "successfully convert from ArrayType to Array" in {
 
-    DDLUtils.convertSparkDatatypeToScala("['1','2','3']", ArrayType(IntegerType,true)) shouldBe Success(Seq(1,2,3))
+    DDLUtils.convertSparkDatatypeToScala("['1','2','3']", ArrayType(IntegerType)) shouldBe Success(Seq(1,2,3))
 
     DDLUtils.convertSparkDatatypeToScala("['proof one','proof, two','proof three']",
-      ArrayType(StringType,true)) shouldBe Success(Seq("proof one", "proof, two","proof three"))
+      ArrayType(StringType)) shouldBe Success(Seq("proof one", "proof, two","proof three"))
+
+    DDLUtils.convertSparkDatatypeToScala("['proof']",
+      ArrayType(StringType)) shouldBe Success(Seq("proof"))
 
   }
 
   "Ddl" should  "successfully convert from MapType to Map" in {
 
-    DDLUtils.convertSparkDatatypeToScala("('x'->'1','y'->'2')", MapType(StringType,IntegerType,true)) shouldBe Success(Map(("x",1),("y",2)))
+    DDLUtils.convertSparkDatatypeToScala("('x'->'1','y'->'2')", MapType(StringType,IntegerType)) shouldBe Success(Map(("x",1),("y",2)))
 
     DDLUtils.convertSparkDatatypeToScala("('x1'->'proof,comma','x2'->'proof2')",
-      MapType(StringType,StringType,true)) shouldBe Success(Map("x1" -> "proof,comma","x2" -> "proof2"))
+      MapType(StringType,StringType)) shouldBe Success(Map("x1" -> "proof,comma","x2" -> "proof2"))
 
     DDLUtils.convertSparkDatatypeToScala("('x'->'1','y'->'2','z'->'3')",
-      MapType(StringType,StringType,true)) shouldBe Success(Map("x"->"1","y"->"2","z"->"3"))
+      MapType(StringType,StringType)) shouldBe Success(Map("x"->"1","y"->"2","z"->"3"))
 
   }
 
   "Ddl" should  "successfully convert from MapType with ArrayType and viceversa" in {
 
     DDLUtils.convertSparkDatatypeToScala("['('x'->'1','y'->'2')','('z'->'3')']",
-      ArrayType(MapType(StringType,StringType),true)) shouldBe Success(Seq( Map("x" -> "1", "y"->"2" ), Map( "z"  -> "3")))
+      ArrayType(MapType(StringType,StringType))) shouldBe Success(Seq( Map("x" -> "1", "y"->"2" ), Map( "z"  -> "3")))
 
     DDLUtils.convertSparkDatatypeToScala("('x'->'['3','4']','y'->'['5','6']')",
-      MapType(StringType, ArrayType(StringType,true),true)) shouldBe Success(Map( "x" ->Seq("3","4"), "y" -> Seq("5","6") ))
+      MapType(StringType, ArrayType(StringType))) shouldBe Success(Map( "x" ->Seq("3","4"), "y" -> Seq("5","6") ))
 
 
   }

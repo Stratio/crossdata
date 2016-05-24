@@ -147,7 +147,8 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( [1,2], 12, 12.01, 'proof', [false,true], true, ["proof array", "proof2"])"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List(List("['1','2']","12", "12.01", "proof", "['false','true']", "true", "['proof array','proof2']")))
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List(List("1","2"),"12", "12.01", "proof", List("false","true"), "true", List("proof array","proof2"))))
 
   }
 
@@ -155,7 +156,8 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( [1,2], 12, 12.01, 'proof', [false,true], true, ["proof, array", "proof2"])"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List(List("['1','2']","12", "12.01", "proof", "['false','true']", "true", "['proof, array','proof2']")))
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List(List("1","2"),"12", "12.01", "proof", List("false","true"), "true", List("proof, array","proof2"))))
 
   }
 
@@ -163,7 +165,8 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( (x -> 1, y -> 2), 12, 12.01, 'proof', (x1 -> false, x2 -> true), true)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List(List("('x'->'1','y'->'2')","12", "12.01", "proof", "('x1'->'false','x2'->'true')", "true")))
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List(Map("x"->"1","y"->"2"),"12", "12.01", "proof", Map("x1"->"false","x2"->"true"), "true")))
 
   }
 
@@ -171,7 +174,8 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( (x -> 1, y -> 2, z -> 3), 12, 12.01, 'proof', (x1 -> "proof,comma", x2 -> "proof2"), true)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List(List("('x'->'1','y'->'2','z'->'3')","12", "12.01", "proof", "('x1'->'proof,comma','x2'->'proof2')", "true")))
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List(Map("x"->"1","y"->"2","z"->"3"),"12", "12.01", "proof", Map("x1"->"proof,comma","x2"->"proof2"), "true")))
 
   }
 
@@ -179,7 +183,8 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( [(x->1, y->2), (z->3)], (x -> [3,4], y -> [5,6]) )"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List(List("['('x'->'1','y'->'2')','('z'->'3')']","('x'->'['3','4']','y'->'['5','6']')")))
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List( List(Map("x"->"1","y"->"2"), Map("z"->"3")), Map("x" -> List("3","4"), "y" -> List("5","6")) )))
 
   }
 
