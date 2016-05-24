@@ -38,7 +38,9 @@ trait MongoInsertCollection extends MongoWithSharedContext {
           "enrolled" -> (a % 2 == 0),
           "name" -> s"Name $a",
           "array_test" -> Seq(a toString, a+1 toString, a+2 toString),
-          "map_test" -> Map(("x",a),("y",a+2),("c",a+3))
+          "map_test" -> Map(("x",a),("y",a+2),("c",a+3)),
+          "array_map" -> Seq( Map("x" -> a), Map("y" -> (a+1)) ),
+          "map_array" -> Map("x" -> Seq(1,2), "y" -> Seq(2,3))
         )
       }
       collection.update(QueryBuilder.start("id").greaterThan(4).get, MongoDBObject(("$set", MongoDBObject(("optionalField", true)))), multi = true)
@@ -48,7 +50,8 @@ trait MongoInsertCollection extends MongoWithSharedContext {
 
   override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
     str2sparkTableDesc(s"""|CREATE TEMPORARY TABLE $Collection (id BIGINT, age INT, description STRING, enrolled BOOLEAN,
-                           |name STRING, optionalField BOOLEAN, array_test ARRAY<STRING>, map_test MAP<STRING,STRING> )""".stripMargin)
+                           |name STRING, optionalField BOOLEAN, array_test ARRAY<STRING>, map_test MAP<STRING,STRING>,
+                           |array_map ARRAY<MAP<STRING,STRING>>, map_array MAP<STRING, ARRAY<STRING>>)""".stripMargin)
 
 
   override val Collection = "studentsInsertTest"

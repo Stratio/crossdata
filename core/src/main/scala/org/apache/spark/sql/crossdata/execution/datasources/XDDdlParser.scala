@@ -92,13 +92,13 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val tableValues: Parser[Seq[String]] = "(" ~> repsep(mapValues | arrayValues | token, ",") <~ ")"
 
   protected lazy val arrayValues: Parser[String] = {
-    "[" ~> repsep(token, ",") <~ "]" ^^ {
+    "[" ~> repsep(mapValues | token, ",") <~ "]" ^^ {
       case value => value.map(v => s"'$v'") mkString ("[", ",", "]")
     }
   }
 
   protected lazy val tokenMap: Parser[String] = {
-    (token <~ "-" <~ ">") ~ token ^^ {
+    (token <~ "-" <~ ">") ~ (arrayValues | token) ^^ {
       case key ~ value => "'" + key + "'->'" + value +"'"
     }
   }

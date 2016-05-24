@@ -23,7 +23,13 @@ import org.scalatest.junit.JUnitRunner
 class MongoInsertTableIT extends MongoInsertCollection {
 
   it should "insert a row using INSERT INTO table VALUES in MongoDb" in {
-    _xdContext.sql(s"INSERT INTO $Collection VALUES (20, 25, 'proof description', true, 'Eve', false,['proof'], (a->2))").collect() should be (Row(1)::Nil)
+
+    val query =
+      s"""|INSERT INTO $Collection VALUES (20, 25, 'proof description', true, 'Eve', false,
+          |['proof'], (a->2), [ (x -> 1, y-> 1), (z -> 1) ], ( x->[1,2], y-> [3,4] ) )""".stripMargin
+
+    _xdContext.sql(query).collect() should be (Row(1)::Nil)
+
   }
 
   it should "insert a row using INSERT INTO table(schema) VALUES in MongoDb" in {
