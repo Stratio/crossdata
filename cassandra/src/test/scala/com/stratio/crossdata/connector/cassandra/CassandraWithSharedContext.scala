@@ -33,7 +33,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
 
   override type ClientParams = (Cluster, Session)
   override val provider: String = SourceProvider
-  override val defaultOptions = Map(
+  override def defaultOptions = Map(
     "table"    -> Table,
     "keyspace" -> Catalog,
     "cluster"  -> ClusterName,
@@ -72,7 +72,15 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
     def insertRow(row: List[Any]): Unit = {
       session.execute(
         s"""INSERT INTO $Catalog.$Table(${schema.map(p => p._1).mkString(", ")})
-           | VALUES (${row.mkString(", ")})""".stripMargin.replaceAll("\n", ""))
+           | VALUES (${parseRow(row)})""".stripMargin.replaceAll("\n", ""))
+    }
+
+    def parseRow(row: List[Any]): String = {
+      row map {
+        case map : Map[_,_] => map map { case (key,value) => s"'$key' : '$value'" } mkString ("{", ", ", "}")
+        case list : Seq[_] => list mkString ("['", "', '", "']")
+        case other => other
+      } mkString ", "
     }
 
     testData.foreach(insertRow(_))

@@ -53,9 +53,5 @@ trait MongoInsertCollection extends MongoWithSharedContext {
 
   override val Collection = "studentsInsertTest"
 
-  override val defaultOptions = Map(
-    "host" -> s"$MongoHost:$MongoPort",
-    "database" -> s"$Database",
-    "collection" -> s"$Collection"
-  )
+  override def defaultOptions = super.defaultOptions + ("collection" -> s"$Collection")
 }
