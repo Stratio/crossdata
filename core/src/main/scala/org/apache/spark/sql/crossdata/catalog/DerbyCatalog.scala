@@ -36,13 +36,17 @@ object DerbyCatalog {
   val CrossdataVersionField = "crossdataVersion"
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
+  //App values
+  val JarPath="jarPath"
+  val AppAlias="alias"
+  val AppClass="class"
 }
 
 /**
- * Default implementation of the [[catalog.XDCatalog]] with persistence using
- * Derby.
- * @param conf An implementation of the [[CatalystConf]].
- */
+  * Default implementation of the [[catalog.XDCatalog]] with persistence using
+  * Derby.
+  * @param conf An implementation of the [[CatalystConf]].
+  */
 class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
   extends XDCatalog(conf, xdContext) with SparkLoggerComponent {
 
@@ -52,6 +56,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   private val db = "CROSSDATA"
   private val tableWithTableMetadata = "xdtables"
   private val tableWithViewMetadata = "xdviews"
+  private val tableWithAppJars = "appJars"
 
   @transient lazy val connection: Connection = {
 
@@ -63,20 +68,20 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     // CREATE PERSISTENT METADATA TABLE
 
-    if(!schemaExists(db, jdbcConnection)) {
+    if (!schemaExists(db, jdbcConnection)) {
       jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
 
 
       jdbcConnection.createStatement().executeUpdate(
         s"""|CREATE TABLE $db.$tableWithTableMetadata (
-           |$DatabaseField VARCHAR(50),
-           |$TableNameField VARCHAR(50),
-           |$SchemaField LONG VARCHAR,
-           |$DatasourceField LONG VARCHAR,
-           |$PartitionColumnField LONG VARCHAR,
-           |$OptionsField LONG VARCHAR,
-           |$CrossdataVersionField LONG VARCHAR,
-           |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+            |$DatabaseField VARCHAR(50),
+            |$TableNameField VARCHAR(50),
+            |$SchemaField LONG VARCHAR,
+            |$DatasourceField LONG VARCHAR,
+            |$PartitionColumnField LONG VARCHAR,
+            |$OptionsField LONG VARCHAR,
+            |$CrossdataVersionField LONG VARCHAR,
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
       jdbcConnection.createStatement().executeUpdate(
         s"""|CREATE TABLE $db.$tableWithViewMetadata (
@@ -86,6 +91,12 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
             |$CrossdataVersionField VARCHAR(30),
             |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE $db.$tableWithAppJars (
+            |$JarPath VARCHAR(100),
+            |$AppAlias VARCHAR(50),
+            |$AppClass VARCHAR(100)
+            |PRIMARY KEY ($AppAlias))""".stripMargin)
     }
 
     jdbcConnection
@@ -111,6 +122,26 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       Some(
         CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource,
           getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
+      )
+    }
+  }
+
+  override def lookupApp(alias: String): Option[CrossdataApp] = {
+
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
+    preparedStatement.setString(1, alias)
+    val resultSet=preparedStatement.execute()
+
+    if (!resultSet.next) {
+      None
+    } else {
+
+      val jar = resultSet.getString(JarPath)
+      val alias= resultSet.getString(AppAlias)
+      val clss = resultSet.getString(AppClass)
+
+      Some(
+        CrossdataApp(jar,alias,clss)
       )
     }
   }
@@ -191,7 +222,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
 
-  private def schemaExists(schema: String, connection: Connection) : Boolean= {
+  private def schemaExists(schema: String, connection: Connection): Boolean = {
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$db'")
     val resultSet = preparedStatement.executeQuery()
 
@@ -240,6 +271,39 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       connection.setAutoCommit(true)
     }
 
+
+  override protected[crossdata] def persistAppMetadata(crossdataApp: CrossdataApp): Unit =
+    try {
+      connection.setAutoCommit(false)
+
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
+      preparedStatement.setString(1, alias)
+      val resultSet=preparedStatement.execute()
+
+      if (!resultSet.next()) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $db.$tableWithAppJars (
+              | $JarPath, $AppAlias, $AppClass
+              |) VALUES (?,?,?)
+         """.stripMargin)
+        prepped.setString(1, crossdataApp.jar)
+        prepped.setString(2, crossdataApp.appAlias)
+        prepped.setString(3, crossdataApp.appClass)
+        prepped.execute()
+      } else {
+        val prepped = connection.prepareStatement(
+          s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, SET $AppClass
+              |WHERE $AppAlias='$alias'
+         """.stripMargin)
+        prepped.setString(1, crossdataApp.jar)
+        prepped.setString(2, crossdataApp.appClass)
+        prepped.execute()
+      }
+      connection.commit()
+    } finally {
+      connection.setAutoCommit(true)
+    }
+
   private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
@@ -259,4 +323,6 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   }
 
   override def checkConnectivity: Boolean = true
+
+
 }

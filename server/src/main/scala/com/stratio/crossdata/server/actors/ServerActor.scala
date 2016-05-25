@@ -28,13 +28,16 @@ import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import akka.remote.DisassociatedEvent
 import com.google.common.io.Files
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
+import com.stratio.crossdata.utils.HdfsUtils
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.types.StructType
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -112,6 +115,24 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
       jobActor ! StartJob
       context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
 
+    case CommandEnvelope(addJarCommand: AddJARCommand, session@Session(id, requester)) =>
+      logger.debug(s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
+      logger.debug(s"Session identifier $session")
+      //TODO  Maybe include job controller if it is necessary as in sql command
+      if (addJarCommand.path.toLowerCase.startsWith("hdfs://")) {
+        xdContext.addJar(addJarCommand.path)
+        //add to runtime
+        val hdfsIS: InputStream = HdfsUtils(addJarCommand.hdfsConfig.get).getFile(addJarCommand.path)
+        val file: File = createFile(hdfsIS, config.getString(ServerConfig.repoJars))
+        addToClasspath(file)
+        sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
+      } else {
+        sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exists or is not a hdfs file", Some(new Exception("File doesn't exists or is not a hdfs file"))))
+      }
+
+    case CommandEnvelope(addAppCommand@AddAppCommand(path, clss, alias), session@Session(id, requester)) =>
+      xdContext.addApp(path, clss, alias)
+
     case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, requester)) =>
       st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
   }
@@ -173,7 +194,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
         mediator ! Publish(ManagementTopic, DelegateCommand(sc, self))
       }
 
-    case clusterStateCommand @ ClusterStateCommand() =>
+    case clusterStateCommand@ClusterStateCommand() =>
       sender ! ClusterStateReply(clusterStateCommand.requestId, cluster.state)
 
 

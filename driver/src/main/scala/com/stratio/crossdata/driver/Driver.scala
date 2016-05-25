@@ -133,8 +133,6 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     system.actorOf(ProxyActor.props(clusterClientActor, this), ProxyActor.DefaultName)
   }
 
-  lazy val mediator=DistributedPubSubExtension(system).mediator
-
   /**
    * Executes a SQL sentence.
    * In order to work in an asynchronous way:

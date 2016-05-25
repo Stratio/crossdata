@@ -207,8 +207,11 @@ class XDContext private (@transient val sc: SparkContext,
     * @param path The local path or hdfs path where SparkContext will take the JAR
     */
   override def addJar(path: String) = {
-    // TODO Add to current Classpath
-    super.addJar(path)
+       super.addJar(path)
+  }
+
+  def addApp(path: String, clss: String, alias: String): Unit ={
+    catalog.addApp(path,clss,alias)
   }
 
   /**

@@ -32,6 +32,7 @@ object MySQLCatalog {
   val Database = "jdbc.db.name"
   val TableWithTableMetadata = "jdbc.db.table"
   val TableWithViewMetadata = "jdbc.db.view"
+  val TableWithAppMetadata = "jdbc.db.app"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
   // CatalogFields
@@ -45,6 +46,11 @@ object MySQLCatalog {
 
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
+
+  //App values
+  val JarPath="jarPath"
+  val AppAlias="alias"
+  val AppClass="class"
 }
 
 /**
@@ -63,6 +69,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   private val db = config.getString(Database)
   private val tableWithTableMetadata = config.getString(TableWithTableMetadata)
   private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
+  private val tableWithAppJars = config.getString(TableWithAppMetadata)
 
   @transient lazy val connection: Connection = {
 
@@ -98,6 +105,13 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
             |$SqlViewField TEXT,
             |$CrossdataVersionField VARCHAR(30),
             |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE $db.$tableWithAppJars (
+            |$JarPath VARCHAR(100),
+            |$AppAlias VARCHAR(50),
+            |$AppClass VARCHAR(100)
+            |PRIMARY KEY ($AppAlias))""".stripMargin)
 
       jdbcConnection
     }catch{
@@ -266,6 +280,59 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   override protected def dropAllPersistedViews(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
+
+  override protected[crossdata] def persistAppMetadata(crossdataApp: CrossdataApp): Unit =
+    try {
+      connection.setAutoCommit(false)
+
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
+      preparedStatement.setString(1, alias)
+      val resultSet=preparedStatement.execute()
+
+      if (!resultSet.next()) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $db.$tableWithAppJars (
+              | $JarPath, $AppAlias, $AppClass
+              |) VALUES (?,?,?)
+         """.stripMargin)
+        prepped.setString(1, crossdataApp.jar)
+        prepped.setString(2, crossdataApp.appAlias)
+        prepped.setString(3, crossdataApp.appClass)
+        prepped.execute()
+      } else {
+        val prepped = connection.prepareStatement(
+          s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, SET $AppClass
+              |WHERE $AppAlias='$alias'
+         """.stripMargin)
+        prepped.setString(1, crossdataApp.jar)
+        prepped.setString(2, crossdataApp.appClass)
+        prepped.execute()
+      }
+      connection.commit()
+    } finally {
+      connection.setAutoCommit(true)
+    }
+
+  override def lookupApp(alias: String): Option[CrossdataApp] = {
+
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
+    preparedStatement.setString(1, alias)
+    val resultSet=preparedStatement.execute()
+
+    if (!resultSet.next) {
+      None
+    } else {
+
+      val jar = resultSet.getString(JarPath)
+      val alias= resultSet.getString(AppAlias)
+      val clss = resultSet.getString(AppClass)
+
+      Some(
+        CrossdataApp(jar,alias,clss)
+      )
+    }
+  }
+
 
   override def checkConnectivity:Boolean = {
     connection!=null
