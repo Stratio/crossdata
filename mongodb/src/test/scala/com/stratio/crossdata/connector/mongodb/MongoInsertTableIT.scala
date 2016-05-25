@@ -38,9 +38,9 @@ class MongoInsertTableIT extends MongoInsertCollection {
 
   it should "insert multiple rows using INSERT INTO table VALUES in MongoDb" in {
     val query = s"""|INSERT INTO $Collection VALUES
-        |(21, 25, 'proof description', true, 'John', false, [4,5], (x -> 1) ),
-        |(22, 1, 'other description', false, 'James', true, [1,2,3], (key -> value)),
-        |(23, 33, 'other fun description', false, 'July', false, [true,true], (z->1, a-> 2) )
+        |(21, 25, 'proof description', true, 'John', false, [4,5], (x -> 1), [ (z -> 1) ], ( x->[1,2] ) ),
+        |(22, 1, 'other description', false, 'James', true, [1,2,3], (key -> value), [ (a -> 1) ], ( x->[1,a] )),
+        |(23, 33, 'other fun description', false, 'July', false, [true,true], (z->1, a-> 2), [ (za -> 12) ], ( x->[1,2] ) )
        """.stripMargin
     val rows: Array[Row] = _xdContext.sql(query).collect()
     rows should be (Row(3)::Nil)
@@ -76,8 +76,8 @@ class MongoInsertTableIT extends MongoInsertCollection {
 
   it should "insert rows using INSERT INTO table(schema) VALUES with Map of Array in MongoDb" in {
     val query = s"""|INSERT INTO $Collection (age,name, enrolled, map_array) VALUES
-                    |( 1, 'Nikolai', true, ( x->[1], y-> [3,4] ) ),
-                    |( 14, 'Ludwig', false, ( x->[1,2], y-> [3] ) )
+                    |( 13, 'Svletiana', true, ( x->[1], y-> [3,4] ) ),
+                    |( 17, 'Wolfang', false, ( x->[1,2], y-> [3] ) )
        """.stripMargin
     _xdContext.sql(query).collect() should be (Row(2)::Nil)
   }
