@@ -55,12 +55,13 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val START = Keyword("START")
   protected val STOP = Keyword("STOP")
   protected val IN = Keyword("IN")
+  protected val APP = Keyword("APP")
 
 
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable |
-      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable
+      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp
 
   // TODO move to StreamingDdlParser
 
@@ -142,6 +143,13 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
         AddJar(jarPath.trim)
     }
 
+  protected lazy val addApp: Parser[LogicalPlan] =
+    ADD ~ APP ~> ident ~ (AS ~> ident).? ~> WITH ~> className ^^ {
+      case jarPath ~ alias ~ className =>
+        AddApp(xDContext,jarPath.toString, className.toString,Option(alias.toString))
+      case jarPath ~ className =>
+        AddApp(xDContext,jarPath.toString,className.toString)
+    }
   /**
    * Streaming
    */

@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference
 import akka.actor.{ActorSystem, Address}
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.cluster.MemberStatus
-import akka.contrib.pattern.ClusterClient
+import akka.contrib.pattern.{DistributedPubSubExtension, ClusterClient}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.driver.actor.ProxyActor
@@ -133,6 +133,7 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     system.actorOf(ProxyActor.props(clusterClientActor, this), ProxyActor.DefaultName)
   }
 
+  lazy val mediator=DistributedPubSubExtension(system).mediator
 
   /**
    * Executes a SQL sentence.
@@ -152,9 +153,17 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
     //TODO remove this part when servers broadcast bus was realized
     //Preparse query to know if it is an special command sent from the shell or other driver user that is not a query
-    val Pattern="""(\s*add)(\s+jar\s+)(.*)""".r
+    val addJarPattern="""(\s*add)(\s+jar\s+)(.*)""".r
+    val addAppWithAliasPattern="""(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(\S*)""".r
+    val addAppPattern="""(\s*add)(\s+app\s+)(.*)(\s+with\s+)(\S*)""".r
     query match {
-      case Pattern(add,jar,path) => addJar(path.trim)
+      case addJarPattern(add,jar,path) => addJar(path.trim)
+      case addAppWithAliasPattern(add,app,path,as,alias,wth,clss)=>
+        addJar(path)
+        addApp(path,clss,Option(alias))
+      case addAppPattern(add,app,path,wth,clss)=>
+        addJar(path)
+        addApp(path,clss)
       case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
         val futureReply = askCommand(securitizeCommand(sqlCommand)).map{
@@ -183,6 +192,22 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
       case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
     }
     new SQLResponse(addJarCommand.requestId, futureReply)
+  }
+
+  /**
+    *
+    * @param path The path of the JAR
+    * @param clss The main class
+    * @param alias The alias of the JAR
+    * @return A SQLResponse with the id and the result set.
+    */
+  def addApp(path: String, clss:String, alias:Option[String]=None): SQLResponse = {
+    val addAppCommand = AddAppCommand(path,alias.getOrElse(path),clss)
+    val futureReply = askCommand(securitizeCommand(addAppCommand)).map{
+      case SQLReply(_, sqlResult) => sqlResult
+      case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
+    }
+    new SQLResponse(addAppCommand.requestId, futureReply)
   }
 
 

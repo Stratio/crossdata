@@ -159,8 +159,10 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
     case sc@CommandEnvelope(_: SQLCommand, _) =>
       executeAccepted(sc)(st)
 
-    // TODO broadcastMessage
     case sc@CommandEnvelope(_: AddJARCommand, _) =>
+      executeAccepted(sc)(st)
+
+    case sc@CommandEnvelope(_: AddAppCommand, _) =>
       executeAccepted(sc)(st)
 
     case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, requester)) =>

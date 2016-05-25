@@ -88,21 +88,11 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
     case secureSQLCommand @ CommandEnvelope(aCmd @ AddJARCommand(path, _, _), _) =>
       import context.dispatcher
-      val shipmentResponse: Future[SQLReply] = httpClient.sendJarToHTTPServer(path) map { response =>
-        SQLReply(
-          aCmd.requestId,
-          SuccessfulSQLResult(Array(Row(response)), StructType(StructField("filepath", StringType) :: Nil))
-        )
-      } recover {
-        case failureCause =>
-          val msg = s"Error trying to send JAR through HTTP: ${failureCause.getMessage}"
-          logger.error(msg)
-          SQLReply(
-            aCmd.requestId,
-            ErrorSQLResult(msg)
-          )
-      }
+      val shipmentResponse: Future[SQLReply] = sendJarToServers(aCmd,path)
       shipmentResponse pipeTo sender
+
+    case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss), _) =>
+      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath,secureSQLCommand, localAffinity=false)
 
     case CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
       logger.debug(s"Send cluster state with requestID=${clusterStateCommand.requestId}")
@@ -113,6 +103,22 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
   }
 
 
+  def sendJarToServers(aCmd:Command,path:String): Future[SQLReply] ={
+    httpClient.sendJarToHTTPServer(path) map { response =>
+      SQLReply(
+        aCmd.requestId,
+        SuccessfulSQLResult(Array(Row(response)), StructType(StructField("filepath", StringType) :: Nil))
+      )
+    } recover {
+      case failureCause =>
+        val msg = s"Error trying to send JAR through HTTP: ${failureCause.getMessage}"
+        logger.error(msg)
+        SQLReply(
+          aCmd.requestId,
+          ErrorSQLResult(msg)
+        )
+    }
+  }
 
   // Message received from a Crossdata Server.
   def receiveFromServer(promisesByIds: PromisesByIds): Receive = {

@@ -64,6 +64,32 @@ case class AddJARCommand(path: String, hdfsConfig: Option[Config] = None,
           ) = this(path = jarpath, hdfsConfig = Option(hdfsConf))
 }
 
+case class AddAppCommand(path: String,alias:String,clss:String, hdfsConfig: Option[Config] = None,
+                         timeout: Option[FiniteDuration] = None
+                        ) extends Command {
+  def this(
+            jarpath: String,
+            alias:String,
+            clss:String,
+            timeout: FiniteDuration
+          ) = this(path = jarpath, alias,clss, timeout = Option(timeout))
+
+  def this(
+            jarpath: String,
+            alias:String,
+            clss:String,
+            hdfsconf:Config,
+            timeout: FiniteDuration
+          ) = this(path = jarpath, alias,clss, hdfsConfig=Option(hdfsconf),timeout = Option(timeout))
+
+  def this(
+            jarpath: String,
+            alias:String,
+            clss:String
+          )= this(jarpath, alias,clss)
+
+
+}
 case class ClusterStateCommand() extends Command
 
 trait ControlCommand extends Command

@@ -243,6 +243,23 @@ private[crossdata] case class AddJar(jarPath: String)
   }
 }
 
+private[crossdata] case class AddApp(xdContext:XDContext, jarPath: String, className:String,alias:Option[String]=None)
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    if (jarPath.toLowerCase.startsWith("hdfs://") || File(jarPath).exists) {
+      sqlContext.sparkContext.addJar(jarPath)
+      Seq.empty
+    } else if (File(jarPath).exists){
+      xdContext.addJar(jarPath)
+      Seq.empty
+
+    } else {
+      sys.error("File doesn't exists or is not a hdfs file")
+    }
+  }
+}
+
 case class CreateExternalTable(
                                 tableIdent: TableIdentifier,
                                 userSpecifiedSchema: StructType,
