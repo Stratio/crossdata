@@ -42,51 +42,40 @@ object DDLUtils {
   implicit def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
     tableIdentifier.database.toSeq :+ tableIdentifier.table
 
-  def convertSparkDatatypeToScala(value: String, sparkDataType: DataType): Try[Any] = {
-    sparkDataType match {
-      case _: ByteType => Try(value.toByte)
-      case _: ShortType => Try(value.toShort)
-      case _: IntegerType => Try(value.toInt)
-      case _: LongType => Try(value.toLong)
-      case _: FloatType => Try(value.toFloat)
-      case _: DoubleType => Try(value.toDouble)
-      case _: DecimalType => Try(BigDecimal(value))
-      case _: StringType => Try(value.toString)
-      case _: BooleanType => Try(value.toBoolean)
-      case _: DateType => Try(Date.valueOf(value))
-      case _: TimestampType => Try(Timestamp.valueOf(value))
+  def convertSparkDatatypeToScala(value: Any, sparkDataType: DataType): Try[Any] = {
 
-      case ArrayType(elementType:DataType, withNulls:Boolean) => {
-        val valuesWithoutBrackets = value.substring(2, value.length - 2)
-        seqOfTryToTryOfSeq(valuesWithoutBrackets.split("','") map { value => convertSparkDatatypeToScala(value, elementType) })
-      }
+    (value, sparkDataType) match {
+      case (value:String, _: ByteType) => Try(value.toByte)
+      case (value:String, _: ShortType) => Try(value.toShort)
+      case (value:String, _: IntegerType) => Try(value.toInt)
+      case (value:String, _: LongType) => Try(value.toLong)
+      case (value:String, _: FloatType) => Try(value.toFloat)
+      case (value:String, _: DoubleType) => Try(value.toDouble)
+      case (value:String, _: DecimalType) => Try(BigDecimal(value))
+      case (value:String, _: StringType) => Try(value)
+      case (value:String, _: BooleanType) => Try(value.toBoolean)
+      case (value:String, _: DateType) => Try(Date.valueOf(value))
+      case (value:String, _: TimestampType) => Try(Timestamp.valueOf(value))
 
-      case MapType(keyType:DataType, valueType:DataType, withNulls:Boolean) => {
+      case (seq: Seq[_], ArrayType(elementType, withNulls)) =>
+        seqOfTryToTryOfSeq(seq map {seqValue => convertSparkDatatypeToScala(seqValue, elementType)})
 
-        val pairs = (value.substring(2, value.length - 2) ) split ("','")
-        val convertedTuples = pairs map {pair => pair.split("'->'")} map {
-          keyValue => (convertSparkDatatypeToScala(keyValue(0), keyType).get, convertSparkDatatypeToScala(keyValue(1),valueType).get)
-        }
+      case (_, ArrayType(elementType, withNulls)) =>
+        Failure(new RuntimeException("Invalid array passed as argument"))
 
-        Try(generateMapFromTuples(convertedTuples))
-      }
+      case (mapParsed: Map[_,_], MapType(keyType, valueType, withNulls)) =>
+        Try(
+          mapParsed map {
+            case (key, value) => (convertSparkDatatypeToScala(key, keyType).get, convertSparkDatatypeToScala(value, valueType).get)
+          }
+        )
 
-      case _ => Failure(new RuntimeException("Invalid Spark DataType"))
+      case (_, MapType(keyType, valueType, withNulls)) =>
+        Failure(new RuntimeException("Invalid map passed as argument"))
+
+      case _ => Failure(new RuntimeException("Impossible to parse value as Spark DataType provided"))
     }
   }
-
-
-  private def generateMapFromTuples(tuples: Seq[(Any,Any)]): Map[Any,Any] = {
-
-    @tailrec
-    def helper(tuples: Seq[(Any,Any)], accum: Map[Any,Any]): Map[Any,Any] = {
-      if(tuples.isEmpty) accum
-      else helper(tuples.tail, accum + (tuples.head))
-    }
-
-    helper(tuples, Map())
-  }
-
 
   private def seqOfTryToTryOfSeq[T](tries: Seq[Try[T]]):Try[Seq[T]] = {
     Try (
@@ -219,7 +208,7 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
       val valuesConverted = tableSchema.fields zip values map {
         case (schemaCol, value) =>
-          DDLUtils.convertSparkDatatypeToScala(value.toString, schemaCol.dataType) match { //TODO:UNAIIIIII
+          DDLUtils.convertSparkDatatypeToScala(value, schemaCol.dataType) match {
             case Success(converted) => converted
             case Failure(exception) => throw exception
           }
