@@ -22,7 +22,7 @@ class ElasticInsertTableIT extends ElasticInsertCollection {
 
   it should "insert a row using INSERT INTO table VALUES in ElasticSearch" in {
     val query = s"""|INSERT INTO $Type VALUES (20, 25, 'proof description', true, 'Eve', false, '2015-01-01' ,
-                      |1200.00, 1463646640046, ['proof'], (a->2))""".stripMargin
+                      |1200.00, 1463646640046, ['proof'], (a->2), [ (x -> 1, y-> 1), (z -> 1) ], ( x->[1,2], y-> [3,4] ))""".stripMargin
 
     _xdContext.sql(query).collect() should be (Row(1)::Nil)
   }
@@ -33,9 +33,9 @@ class ElasticInsertTableIT extends ElasticInsertCollection {
 
   it should "insert multiple rows using INSERT INTO table VALUES in ElasticSearch" in {
     val query = s"""|INSERT INTO $Type VALUES
-                    |(21, 25, 'proof description', true, 'John', false, '2015-01-01' , 1200.00, 1463626640046, [4,5], (x -> 1)) ,
-                    |(22, 1, 'other description', false, 'James', true, '2015-01-05' , 1400.00, 1461646640046, [1,2,3], (key -> value)) ,
-                    |(23, 33, 'other fun description', false, 'July', false, '2015-01-08' , 1400.00, 1463046640046, [true,true], (z->1, a-> 2) )
+                    |(21, 25, 'proof description', true, 'John', false, '2015-01-01' , 1200.00, 1463626640046, [4,5], (x -> 1), [ (z -> 1) ], ( x->[1,2] )) ,
+                    |(22, 1, 'other description', false, 'James', true, '2015-01-05' , 1400.00, 1461646640046, [1,2,3], (key -> value), [ (a -> 1) ], ( x->[1,a] )) ,
+                    |(23, 33, 'other fun description', false, 'July', false, '2015-01-08' , 1400.00, 1463046640046, [true,true], (z->1, a-> 2), [ (za -> 12) ], ( x->[1,2] ))
        """.stripMargin
     val rows: Array[Row] = _xdContext.sql(query).collect()
     rows should be (Row(3)::Nil)
@@ -62,12 +62,20 @@ class ElasticInsertTableIT extends ElasticInsertCollection {
     _xdContext.sql(query).collect() should be (Row(2)::Nil)
   }
 
-  /*it should "insert rows using INSERT INTO table(schema) VALUES with Map and Arrays in MongoDb" in {
-    val query = s"""|INSERT INTO $Collection (age,name, enrolled, map_test) VALUES
-                    |( 1, 'Nikolai', true, (x->[1,2], y->2, z->3) ),
-                    |( 14, 'Ludwig', false, (xa->1, ya->[5, 7, 8], za->3,d -> 5) )
+  it should "insert rows using INSERT INTO table(schema) VALUES with Array of Maps in ElasticSearch" in {
+    val query = s"""|INSERT INTO $Type (age,name, enrolled, array_map) VALUES
+                    |( 1, 'Nikolai', true, [(x -> 3), (z -> 1)] ),
+                    |( 14, 'Ludwig', false, [(x -> 1, y-> 1), (z -> 1)] )
        """.stripMargin
     _xdContext.sql(query).collect() should be (Row(2)::Nil)
-  }*/
+  }
+
+  it should "insert rows using INSERT INTO table(schema) VALUES with Map of Array in ElasticSearch" in {
+    val query = s"""|INSERT INTO $Type (age,name, enrolled, map_array) VALUES
+                    |( 13, 'Svletiana', true, ( x->[1], y-> [3,4] ) ),
+                    |( 17, 'Wolfang', false, ( x->[1,2], y-> [3] ) )
+       """.stripMargin
+    _xdContext.sql(query).collect() should be (Row(2)::Nil)
+  }
 
 }

@@ -46,7 +46,9 @@ trait ElasticInsertCollection extends ElasticWithSharedContext {
         "salary" -> a * 1000.5,
         "ageInMilis" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").getMillis,
         "array_test" -> List(a, a+1, a+2),
-        "map_test" -> Map("x" -> a, "y" -> (a+1))
+        "map_test" -> Map("x" -> a, "y" -> (a+1)),
+        "array_map" -> Seq( Map("x" -> a), Map("y" -> (a+1)) ),
+        "map_array" -> Map("x" -> Seq(1,2), "y" -> Seq(2,3))
         )
     }.await
     client.get.execute {
@@ -57,7 +59,8 @@ trait ElasticInsertCollection extends ElasticWithSharedContext {
   override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
     str2sparkTableDesc(s"""|CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN,
                            |name STRING, optionalField BOOLEAN, birthday DATE, salary DOUBLE, ageInMilis LONG,
-                           |array_test ARRAY<STRING>, map_test MAP<STRING,STRING>)""".stripMargin)
+                           |array_test ARRAY<STRING>, map_test MAP<STRING,STRING>,
+                           |array_map ARRAY<MAP<STRING,STRING>>, map_array MAP<STRING, ARRAY<STRING>>)""".stripMargin)
 
 
   override def typeMapping(): MappingDefinition ={
