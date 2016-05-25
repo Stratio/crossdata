@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 class CassandraInsertTableIT extends CassandraInsertCollection {
 
   it should "insert a row using INSERT INTO table VALUES in Cassandra" in {
-    _xdContext.sql(s"INSERT INTO $Table VALUES (20, 25, ['proof'], 'proof description',  true, (a->2), 'Eve')").collect() should be (Row(1)::Nil)
+    _xdContext.sql(s"INSERT INTO $Table VALUES (20, 25, [(x -> 3)], ['proof'], 'proof description', true, (x->[1]), (a->2), 'Eve' )").collect() should be (Row(1)::Nil)
   }
 
   it should "insert a row using INSERT INTO table(schema) VALUES in Cassandra" in {
@@ -32,9 +32,9 @@ class CassandraInsertTableIT extends CassandraInsertCollection {
 
   it should "insert multiple rows using INSERT INTO table VALUES in Cassandra" in {
     val query = s"""|INSERT INTO $Table VALUES
-                    |(22, 25, [4,5], 'proof description', true, (x -> 1), 'John'  ),
-                    |(23, 1, [1,2,3], 'other description', false, (key -> value), 'James'),
-                    |(24, 33, [true,true], 'other fun description', false, (z->1, a-> 2), 'July' )
+                    |(22, 25, [(x -> 1)], [4,5], 'proof description', true, (x->[1,5]), (x -> 1), 'John' ),
+                    |(23, 1, [(x -> 7, y->8)], [1,2,3], 'other description', false, (x->[1]), (key -> value), 'James' ),
+                    |(24, 33, [(x -> 3)], [true,true], 'other fun description', false, (x->[1,9]), (z->1, a-> 2), 'July' )
        """.stripMargin
     val rows: Array[Row] = _xdContext.sql(query).collect()
     rows should be (Row(3)::Nil)
@@ -60,12 +60,20 @@ class CassandraInsertTableIT extends CassandraInsertCollection {
     _xdContext.sql(query).collect() should be (Row(2)::Nil)
   }
 
-  /*it should "insert rows using INSERT INTO table(schema) VALUES with Map and Arrays in MongoDb" in {
-    val query = s"""|INSERT INTO $Collection (age,name, enrolled, map_test) VALUES
-                    |( 1, 'Nikolai', true, (x->[1,2], y->2, z->3) ),
-                    |( 14, 'Ludwig', false, (xa->1, ya->[5, 7, 8], za->3,d -> 5) )
+  it should "insert rows using INSERT INTO table(schema) VALUES with Array of Maps in Cassandra" in {
+    val query = s"""|INSERT INTO $Table (id, age,name, enrolled, array_map) VALUES
+                    |(31, 1, 'Nikolai', true, [(x -> 3), (z -> 1)] ),
+                    |(32, 14, 'Ludwig', false, [(x -> 1, y-> 1), (z -> 1)] )
        """.stripMargin
     _xdContext.sql(query).collect() should be (Row(2)::Nil)
-  }*/
+  }
+
+  it should "insert rows using INSERT INTO table(schema) VALUES with Map of Array in Cassandra" in {
+    val query = s"""|INSERT INTO $Table (id, age,name, enrolled, map_array) VALUES
+                    |(33, 13, 'Svletana', true, ( x->[1], y-> [3,4] ) ),
+                    |(34, 17, 'Wolfang', false, ( x->[1,2], y-> [3] ) )
+       """.stripMargin
+    _xdContext.sql(query).collect() should be (Row(2)::Nil)
+  }
 
 }

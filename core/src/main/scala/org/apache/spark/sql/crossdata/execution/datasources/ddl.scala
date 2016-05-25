@@ -60,8 +60,8 @@ object DDLUtils {
       case (seq: Seq[_], ArrayType(elementType, withNulls)) =>
         seqOfTryToTryOfSeq(seq map {seqValue => convertSparkDatatypeToScala(seqValue, elementType)})
 
-      case (_, ArrayType(elementType, withNulls)) =>
-        Failure(new RuntimeException("Invalid array passed as argument"))
+      case (invalidSeq, ArrayType(elementType, withNulls)) =>
+        Failure(new RuntimeException("Invalid array passed as argument:" + invalidSeq.toString))
 
       case (mapParsed: Map[_,_], MapType(keyType, valueType, withNulls)) =>
         Try(
@@ -70,10 +70,10 @@ object DDLUtils {
           }
         )
 
-      case (_, MapType(keyType, valueType, withNulls)) =>
-        Failure(new RuntimeException("Invalid map passed as argument"))
+      case (invalidMap, MapType(keyType, valueType, withNulls)) =>
+        Failure(new RuntimeException("Invalid map passed as argument:" + invalidMap.toString))
 
-      case _ => Failure(new RuntimeException("Impossible to parse value as Spark DataType provided"))
+      case unparsed => Failure(new RuntimeException("Impossible to parse value as Spark DataType provided:" + unparsed.toString))
     }
   }
 

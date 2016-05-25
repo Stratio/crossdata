@@ -76,11 +76,16 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
     }
 
     def parseRow(row: List[Any]): String = {
-      row map {
-        case map : Map[_,_] => map map { case (key,value) => s"'$key' : '$value'" } mkString ("{", ", ", "}")
-        case list : Seq[_] => list mkString ("['", "', '", "']")
-        case other => other
-      } mkString ", "
+      row map {col => parseElement(col)} mkString ", "
+    }
+
+    def parseElement(element: Any): String = {
+      element match {
+        case map : Map[_,_] => map map { case (key,value) => s"${parseElement(key)} : ${parseElement(value)}" } mkString ("{", ", ", "}")
+        case list : Seq[_] => list map {listElement => parseElement(listElement)} mkString ("[", ", ", "]")
+        case string: String => s"'$string'"
+        case other => other.toString
+      }
     }
 
     testData.foreach(insertRow(_))
