@@ -172,10 +172,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
         logError(msg)
         throw new RuntimeException(msg)
     }
-
-    val resolved = ResolvedDataSource(xdContext, tableSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
-    }
-
+    
     val resolved = ResolvedDataSource(xdContext, tableSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
     LogicalRelation(resolved.relation)
   }
