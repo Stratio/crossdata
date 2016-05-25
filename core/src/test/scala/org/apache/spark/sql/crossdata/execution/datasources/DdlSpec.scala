@@ -137,5 +137,4 @@ class DdlSpec extends BaseXDTest with MockitoSugar{
 
   }
 
-
 }
