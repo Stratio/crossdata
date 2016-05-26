@@ -132,7 +132,7 @@ sealed trait CassandraDefaultTestConstants {
   val indexedColumn = "name"
 
   val testData = (for (a <- 1 to 10) yield {
-    a :: (10 + a) :: s"'Comment $a'" :: (a % 2 == 0) :: s"'Name $a'" :: Nil
+    a :: (10 + a) :: s"Comment $a" :: (a % 2 == 0) :: s"Name $a" :: Nil
   }).toList
 
   val CassandraHost: String = {

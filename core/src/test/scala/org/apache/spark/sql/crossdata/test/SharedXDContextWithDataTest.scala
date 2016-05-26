@@ -73,7 +73,7 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest with SparkLoggerCo
       sparkRegisterTableSQL.foreach { case SparkTable(s, opts) => sql(Sentence(s, provider, opts).toString) }
       client.isDefined
     } recover { case e: Throwable =>
-      logError(e.getMessage)
+      logError(e.getMessage, e)
       false
     } get
   }
