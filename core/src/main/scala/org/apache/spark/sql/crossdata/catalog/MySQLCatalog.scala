@@ -110,7 +110,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         s"""|CREATE TABLE $db.$tableWithAppJars (
             |$JarPath VARCHAR(100),
             |$AppAlias VARCHAR(50),
-            |$AppClass VARCHAR(100)
+            |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
 
       jdbcConnection
@@ -301,7 +301,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         prepped.execute()
       } else {
         val prepped = connection.prepareStatement(
-          s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, SET $AppClass
+          s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, $AppClass=?
               |WHERE $AppAlias='${crossdataApp.appAlias}'
          """.stripMargin)
         prepped.setString(1, crossdataApp.jar)

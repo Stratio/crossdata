@@ -108,7 +108,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
         s"""|CREATE TABLE $db.$tableWithAppJars (
             |$JarPath VARCHAR(100),
             |$AppAlias VARCHAR(50),
-            |$AppClass VARCHAR(100)
+            |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
 
 
@@ -307,7 +307,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
         prepped.execute()
       } else {
         val prepped = connection.prepareStatement(
-          s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, SET $AppClass
+          s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, $AppClass=?
               |WHERE $AppAlias='${crossdataApp.appAlias}'
          """.stripMargin)
         prepped.setString(1, crossdataApp.jar)

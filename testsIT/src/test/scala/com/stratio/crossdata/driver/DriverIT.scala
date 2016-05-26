@@ -29,73 +29,73 @@ import scala.reflect.io.File
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
 
-//  "Crossdata" should "return an ErrorResult when running an unparseable query" in {
-//
-//    assumeCrossdataUpAndRunning()
-//    val driver = Driver.getOrCreate()
-//
-//    val result = driver.sql("select select").waitForResult(10 seconds)
-//    result shouldBe an[ErrorSQLResult]
-//    result.asInstanceOf[ErrorSQLResult].cause.isDefined shouldBe (true)
-//    result.asInstanceOf[ErrorSQLResult].cause.get shouldBe a[Exception]
-//    result.asInstanceOf[ErrorSQLResult].cause.get.getMessage should include regex "cannot resolve .*"
-//  }
-//
-//  it should "return a SuccessfulQueryResult when executing a select *" in {
-//    assumeCrossdataUpAndRunning()
-//    val driver = Driver.getOrCreate()
-//
-//    driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
-//
-//
-//    // TODO how to process metadata ops?
-//    val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
-//    result shouldBe an[SuccessfulSQLResult]
-//    result.hasError should be(false)
-//    val rows = result.resultSet
-//    rows should have length 2
-//    rows(0) should have length 2
-//
-//    crossdataServer.flatMap(_.xdContext).foreach(_.dropTempTable("jsonTable"))
-//  }
-//
-//  it should "get a list of tables" in {
-//    assumeCrossdataUpAndRunning
-//    val driver = Driver.getOrCreate()
-//
-//    driver.sql(
-//      s"CREATE TABLE db.jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
-//    ).waitForResult()
-//
-//    driver.sql(
-//      s"CREATE TABLE jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
-//    ).waitForResult()
-//
-//    driver.listTables() should contain allOf(("jsonTable2", Some("db")), ("jsonTable2", None))
-//  }
-//
-//  "Crossdata Driver" should "be able to close the connection and start it again" in {
-//    assumeCrossdataUpAndRunning
-//    var driver = Driver.getOrCreate();
-//    Driver.getOrCreate()
-//    val newDriver = Driver.getOrCreate()
-//
-//    driver should be theSameInstanceAs newDriver
-//
-//
-//    driver.sql(s"SHOW TABLES")
-//
-//    driver.stop()
-//
-//    Thread.sleep(6000)
-//
-//    driver = Driver.getOrCreate()
-//
-//    val result = driver.sql(s"SHOW TABLES")
-//
-//    result.hasError should equal(false)
-//
-//  }
+  "Crossdata" should "return an ErrorResult when running an unparseable query" in {
+
+    assumeCrossdataUpAndRunning()
+    val driver = Driver.getOrCreate()
+
+    val result = driver.sql("select select").waitForResult(10 seconds)
+    result shouldBe an[ErrorSQLResult]
+    result.asInstanceOf[ErrorSQLResult].cause.isDefined shouldBe (true)
+    result.asInstanceOf[ErrorSQLResult].cause.get shouldBe a[Exception]
+    result.asInstanceOf[ErrorSQLResult].cause.get.getMessage should include regex "cannot resolve .*"
+  }
+
+  it should "return a SuccessfulQueryResult when executing a select *" in {
+    assumeCrossdataUpAndRunning()
+    val driver = Driver.getOrCreate()
+
+    driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
+
+
+    // TODO how to process metadata ops?
+    val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
+    result shouldBe an[SuccessfulSQLResult]
+    result.hasError should be(false)
+    val rows = result.resultSet
+    rows should have length 2
+    rows(0) should have length 2
+
+    crossdataServer.flatMap(_.xdContext).foreach(_.dropTempTable("jsonTable"))
+  }
+
+  it should "get a list of tables" in {
+    assumeCrossdataUpAndRunning
+    val driver = Driver.getOrCreate()
+
+    driver.sql(
+      s"CREATE TABLE db.jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
+    ).waitForResult()
+
+    driver.sql(
+      s"CREATE TABLE jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
+    ).waitForResult()
+
+    driver.listTables() should contain allOf(("jsonTable2", Some("db")), ("jsonTable2", None))
+  }
+
+  "Crossdata Driver" should "be able to close the connection and start it again" in {
+    assumeCrossdataUpAndRunning
+    var driver = Driver.getOrCreate();
+    Driver.getOrCreate()
+    val newDriver = Driver.getOrCreate()
+
+    driver should be theSameInstanceAs newDriver
+
+
+    driver.sql(s"SHOW TABLES")
+
+    driver.stop()
+
+    Thread.sleep(6000)
+
+    driver = Driver.getOrCreate()
+
+    val result = driver.sql(s"SHOW TABLES")
+
+    result.hasError should equal(false)
+
+  }
 
 
   //    // TODO move to examples??
@@ -132,41 +132,43 @@ class DriverIT extends EndToEndTest {
   //  }
 
 
-//  it should "indicates that the cluster is alive when there is a server up" in {
-//    val driver = Driver.getOrCreate()
-//
-//    driver.isClusterAlive(6 seconds) shouldBe true
-//  }
-//
-//  it should "return the addresses of servers up and running" in {
-//    val driver = Driver.getOrCreate()
-//
-//    val addresses = Await.result(driver.serversUp(), 6 seconds)
-//
-//    addresses should have length 1
-//    addresses.head.host shouldBe Some("127.0.0.1")
-//  }
-//
-//  it should "return the current cluster state" in {
-//    val driver = Driver.getOrCreate()
-//
-//    val clusterState = Await.result(driver.clusterState(), 6 seconds)
-//
-//    clusterState.getLeader.host shouldBe Some("127.0.0.1")
-//  }
+  it should "indicates that the cluster is alive when there is a server up" in {
+    val driver = Driver.getOrCreate()
+
+    driver.isClusterAlive(6 seconds) shouldBe true
+  }
+
+  it should "return the addresses of servers up and running" in {
+    val driver = Driver.getOrCreate()
+
+    val addresses = Await.result(driver.serversUp(), 6 seconds)
+
+    addresses should have length 1
+    addresses.head.host shouldBe Some("127.0.0.1")
+  }
+
+  it should "return the current cluster state" in {
+    val driver = Driver.getOrCreate()
+
+    val clusterState = Await.result(driver.clusterState(), 6 seconds)
+
+    clusterState.getLeader.host shouldBe Some("127.0.0.1")
+  }
 
 
-      it should "be able to execute ADD APP Command of an existent file" in {
-        assumeCrossdataUpAndRunning
-
-        val file=File(s"/tmp/addAppFile_${System.currentTimeMillis()}.jar").createFile(false)
-        val driver = Driver.getOrCreate()
-        val result = driver.addAppCommand(file.path,"com.a.test.main", Some("testApp")).waitForResult()
-
-        driver.stop()
-        file.delete()
-
-        result.hasError should equal (false)
-      }
+//      it should "be able to execute ADD APP Command of an existent file" in {
+//        assumeCrossdataUpAndRunning
+//
+//        val file=File(s"/tmp/addAppFile_${System.currentTimeMillis()}.jar").createFile(false)
+//        val driver = Driver.getOrCreate()
+//        val result = driver.addAppCommand(file.path,"com.a.test.main", Some("testApp")).waitForResult()
+//
+//        driver.stop()
+//        file.delete()
+//
+//        result.hasError should equal (false)
+//
+//
+//      }
 
 }
