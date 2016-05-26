@@ -158,10 +158,10 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
       case addJarPattern(add,jar,path) => addJar(path.trim)
       case addAppWithAliasPattern(add,app,path,as,alias,wth,clss)=>
         addJar(path)
-        addApp(path,clss,Option(alias))
+        addApp(path,clss,alias)
       case addAppPattern(add,app,path,wth,clss)=>
         addJar(path)
-        addApp(path,clss)
+        addApp(path,clss,path)
       case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
         val futureReply = askCommand(securitizeCommand(sqlCommand)).map{
@@ -192,15 +192,20 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     new SQLResponse(addJarCommand.requestId, futureReply)
   }
 
+  def addAppCommand(path: String, clss:String, alias:Option[String]=None):SQLResponse ={
+    val result=addJar(path).waitForResult()
+    val hdfsPath=result.resultSet(0).getString(0)
+    addApp(hdfsPath,clss,alias.getOrElse(path))
+  }
+
   /**
-    *
     * @param path The path of the JAR
     * @param clss The main class
     * @param alias The alias of the JAR
     * @return A SQLResponse with the id and the result set.
     */
-  def addApp(path: String, clss:String, alias:Option[String]=None): SQLResponse = {
-    val addAppCommand = AddAppCommand(path,alias.getOrElse(path),clss)
+  private def addApp(path: String, clss:String, alias:String): SQLResponse = {
+    val addAppCommand = AddAppCommand(path,alias,clss)
     val futureReply = askCommand(securitizeCommand(addAppCommand)).map{
       case SQLReply(_, sqlResult) => sqlResult
       case other => throw new RuntimeException(s"SQLReply expected. Received: $other")

@@ -281,13 +281,13 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
 
-  override protected[crossdata] def persistAppMetadata(crossdataApp: CrossdataApp): Unit =
+  override def persistAppMetadata(crossdataApp: CrossdataApp): Unit =
     try {
       connection.setAutoCommit(false)
 
       val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
-      preparedStatement.setString(1, alias)
-      val resultSet=preparedStatement.execute()
+      preparedStatement.setString(1, crossdataApp.appAlias)
+      val resultSet=preparedStatement.executeQuery()
 
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
@@ -302,7 +302,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       } else {
         val prepped = connection.prepareStatement(
           s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, SET $AppClass
-              |WHERE $AppAlias='$alias'
+              |WHERE $AppAlias='${crossdataApp.appAlias}'
          """.stripMargin)
         prepped.setString(1, crossdataApp.jar)
         prepped.setString(2, crossdataApp.appClass)
@@ -317,7 +317,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
     preparedStatement.setString(1, alias)
-    val resultSet=preparedStatement.execute()
+    val resultSet=preparedStatement.executeQuery()
 
     if (!resultSet.next) {
       None

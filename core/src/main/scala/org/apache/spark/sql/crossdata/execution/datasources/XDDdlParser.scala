@@ -23,6 +23,7 @@ import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.datasources.DDLParser
 import org.apache.spark.sql.types._
 
+import scala.Option
 import scala.language.implicitConversions
 
 
@@ -144,11 +145,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
 
   protected lazy val addApp: Parser[LogicalPlan] =
-    ADD ~ APP ~> ident ~ (AS ~> ident).? ~> WITH ~> className ^^ {
-      case jarPath ~ alias ~ className =>
-        AddApp(xDContext,jarPath.toString, className.toString,Option(alias.toString))
-      case jarPath ~ className =>
-        AddApp(xDContext,jarPath.toString,className.toString)
+    (ADD ~> APP ~> ident) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
+      case jarPath ~ xxx ~ cname =>
+        AddApp(xDContext, jarPath.toString, cname, xxx)
     }
   /**
    * Streaming

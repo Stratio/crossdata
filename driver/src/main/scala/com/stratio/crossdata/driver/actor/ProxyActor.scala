@@ -91,7 +91,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       val shipmentResponse: Future[SQLReply] = sendJarToServers(aCmd,path)
       shipmentResponse pipeTo sender
 
-    case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss), _) =>
+    case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss, _), _) =>
       clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath,secureSQLCommand, localAffinity=false)
 
     case CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
@@ -104,6 +104,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
 
   def sendJarToServers(aCmd:Command,path:String): Future[SQLReply] ={
+    import scala.concurrent.ExecutionContext.Implicits.global
     httpClient.sendJarToHTTPServer(path) map { response =>
       SQLReply(
         aCmd.requestId,

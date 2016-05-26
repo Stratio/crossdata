@@ -37,9 +37,9 @@ object DerbyCatalog {
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
   //App values
-  val JarPath="jarPath"
-  val AppAlias="alias"
-  val AppClass="class"
+  val JarPath = "jarPath"
+  val AppAlias = "alias"
+  val AppClass = "class"
 }
 
 /**
@@ -95,7 +95,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         s"""|CREATE TABLE $db.$tableWithAppJars (
             |$JarPath VARCHAR(100),
             |$AppAlias VARCHAR(50),
-            |$AppClass VARCHAR(100)
+            |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
     }
 
@@ -130,18 +130,18 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
     preparedStatement.setString(1, alias)
-    val resultSet=preparedStatement.execute()
+    val resultSet: ResultSet = preparedStatement.executeQuery()
 
     if (!resultSet.next) {
       None
     } else {
 
       val jar = resultSet.getString(JarPath)
-      val alias= resultSet.getString(AppAlias)
+      val alias = resultSet.getString(AppAlias)
       val clss = resultSet.getString(AppClass)
 
       Some(
-        CrossdataApp(jar,alias,clss)
+        CrossdataApp(jar, alias, clss)
       )
     }
   }
@@ -272,13 +272,13 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     }
 
 
-  override protected[crossdata] def persistAppMetadata(crossdataApp: CrossdataApp): Unit =
+  override def persistAppMetadata(crossdataApp: CrossdataApp): Unit =
     try {
       connection.setAutoCommit(false)
 
       val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
-      preparedStatement.setString(1, alias)
-      val resultSet=preparedStatement.execute()
+      preparedStatement.setString(1, crossdataApp.appAlias)
+      val resultSet = preparedStatement.executeQuery()
 
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
@@ -292,8 +292,8 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         prepped.execute()
       } else {
         val prepped = connection.prepareStatement(
-          s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, SET $AppClass
-              |WHERE $AppAlias='$alias'
+          s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, $AppClass=?
+              |WHERE $AppAlias='${crossdataApp.appAlias}'
          """.stripMargin)
         prepped.setString(1, crossdataApp.jar)
         prepped.setString(2, crossdataApp.appClass)

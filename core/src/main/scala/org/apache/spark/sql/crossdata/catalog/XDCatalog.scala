@@ -274,9 +274,9 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     */
   def checkConnectivity: Boolean
 
-  protected def lookupApp(alias: String): Option[CrossdataApp]
+  def lookupApp(alias: String): Option[CrossdataApp]
 
-  protected def persistAppMetadata(crossdataApp: CrossdataApp): Unit
+  def persistAppMetadata(crossdataApp: CrossdataApp): Unit
 
 }
 
