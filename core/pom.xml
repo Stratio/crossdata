@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>parent_2.11</artifactId>
-        <version>1.3.0-RC2</version>
+        <version>1.3.0-RC3-SNAPSHOT</version>
     </parent>
 
     <artifactId>crossdata-core_2.11</artifactId>
