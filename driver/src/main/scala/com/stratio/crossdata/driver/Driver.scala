@@ -157,11 +157,13 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     query match {
       case addJarPattern(add,jar,path) => addJar(path.trim)
       case addAppWithAliasPattern(add,app,path,as,alias,wth,clss)=>
-        addJar(path)
-        addApp(path,clss,alias)
+        val res=addJar(path).waitForResult()
+        val hdfspath=res.resultSet(0).getString(0)
+        addApp(hdfspath,clss,alias)
       case addAppPattern(add,app,path,wth,clss)=>
-        addJar(path)
-        addApp(path,clss,path)
+        val res=addJar(path).waitForResult()
+        val hdfspath=res.resultSet(0).getString(0)
+        addApp(hdfspath,clss,path)
       case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
         val futureReply = askCommand(securitizeCommand(sqlCommand)).map{
