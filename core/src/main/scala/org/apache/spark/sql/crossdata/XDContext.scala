@@ -76,7 +76,6 @@ class XDContext protected (@transient val sc: SparkContext,
 
   catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
 
-
   @transient
   override protected[sql] lazy val catalog: XDCatalogWithPersistence = {
 
@@ -96,7 +95,9 @@ class XDContext protected (@transient val sc: SparkContext,
 
     val externalCatalog = constr.newInstance(conf, self).asInstanceOf[PersistentCatalog]
 
-    new CatalogChain(new HashmapCatalog(conf, self), externalCatalog)
+    val secondaryCatalogs = externalCatalog :: streamingCatalog.toList
+
+    new CatalogChain(new HashmapCatalog(conf, self), secondaryCatalogs:_*)
 
   }
 
@@ -113,7 +114,6 @@ class XDContext protected (@transient val sc: SparkContext,
       None
     }
   }
-
 
   @transient
   override protected[sql] lazy val analyzer: Analyzer =

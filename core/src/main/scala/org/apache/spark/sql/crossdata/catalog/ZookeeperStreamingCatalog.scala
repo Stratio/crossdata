@@ -15,13 +15,15 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.daos.impl._
 import org.apache.spark.sql.crossdata.models._
 
 import scala.util.Try
 
-class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
+class ZookeeperStreamingCatalog(override val xdContext: XDContext
+                               ) extends XDStreamingCatalog(xdContext) {
 
   private[spark] val streamingConfig = XDContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
   private[spark] val ephemeralTableDAO =
@@ -120,4 +122,9 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   override protected[crossdata] def dropAllEphemeralStatus(): Unit =
     ephemeralTableStatusDAO.dao.deleteAll
 
+  /**
+    * Check the connection to the set Catalog
+    */
+  override def checkConnectivity:Boolean = true //TODO: Provide a proper connectivity check
+  override val conf: CatalystConf = SimpleCatalystConf(true)
 }

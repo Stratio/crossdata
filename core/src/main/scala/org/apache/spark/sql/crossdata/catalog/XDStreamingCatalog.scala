@@ -15,14 +15,42 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.ViewIdentifier
+import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.models._
 
 /**
  * CrossdataStreamingCatalog aims to provide a mechanism to persist the
  * Streaming metadata executions.
  */
-abstract class XDStreamingCatalog(xdContext: XDContext) extends CatalogCommon with Serializable {
+abstract class XDStreamingCatalog(override val xdContext: XDContext) extends XDCatalog
+  with CatalogCommon with Serializable {
+
+
+  /** XDCatalog methods.
+    *
+    * All state changing XDCatalog operations have neutral implementations since
+    * this catalog should only be modified by Stream catalog operations
+    *
+   */
+  override def registerView(viewIdentifier: ViewIdentifier, plan: LogicalPlan): Unit = ()
+  override def unregisterAllViews(): Unit = ()
+  override def unregisterView(viewIdentifier: ViewIdentifier): Unit = ()
+  override def unregisterAllTables(): Unit = ()
+  override def unregisterTable(tableIdent: TableIdentifier): Unit = ()
+  override def registerTable(tableIdent: TableIdentifier, plan: LogicalPlan): Unit = ()
+  override def refreshTable(tableIdent: TableIdentifier): Unit = ()
+
+  // Ephemeral tables will not be taken into account when listing all registered or persisted tables
+  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = Seq.empty
+
+  override def tableExists(tableIdent: TableIdentifier): Boolean = existsEphemeralTable(getTableName(tableIdent))
+
+  override def lookupRelation(tableIdent: TableIdentifier, alias: Option[String]): LogicalPlan =
+    StreamingRelation(getTableName(tableIdent))
 
   /**
    * Ephemeral Table Functions

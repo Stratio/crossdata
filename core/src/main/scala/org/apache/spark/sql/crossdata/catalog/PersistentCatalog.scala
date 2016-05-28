@@ -56,16 +56,9 @@ abstract class PersistentCatalog(val conf: CatalystConf = new SimpleCatalystConf
             case Some(sqlView) =>
               val viewPlan: LogicalPlan = xdContext.sql(sqlView).logicalPlan
               processAlias(relationIdentifier, viewPlan, alias)
-
             case None =>
               log.debug(s"View Not Found: ${relationIdentifier.unquotedString}")
-              xdContext.streamingCatalog match {
-                // TODO PoC => handle exceptions
-                case Some(streamingCatalog) if streamingCatalog.existsEphemeralTable(getTableName(relationIdentifier)) =>
-                  StreamingRelation(getTableName(relationIdentifier))
-                case _ =>
-                  sys.error(s"Table/View Not Found: ${relationIdentifier.unquotedString}")
-              }
+              sys.error(s"Table/View Not Found: ${relationIdentifier.unquotedString}")
           }
       }
 
