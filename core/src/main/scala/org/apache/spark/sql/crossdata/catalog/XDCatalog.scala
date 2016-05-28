@@ -54,7 +54,7 @@ trait XDCatalog extends Catalog with CatalogCommon {
         logError(msg)
         throw new RuntimeException(msg)
     }
-
+    
     val resolved = ResolvedDataSource(xdContext, tableSchema, crossdataTable.partitionColumn, crossdataTable.datasource, crossdataTable.opts)
     LogicalRelation(resolved.relation)
   }

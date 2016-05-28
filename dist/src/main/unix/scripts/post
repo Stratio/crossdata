@@ -11,6 +11,7 @@ DIR_CONF='/etc/sds/crossdata'
 DIR_LOG='/var/log/sds/crossdata'
 DIR_CHECKPOINT='/var/sds/crossdata'
 
+
 # Add stratio group if it doesn't already exists
 if ! getent group $GROUP >/dev/null 2>&1; then
 groupadd ${GROUP}
@@ -32,6 +33,19 @@ if [ ! -d "$DIR_LOG" ]; then
 mkdir $DIR_CHECKPOINT
 fi
 
+
+# change ownership of the parents directories
+chown root:stratio /etc/sds
+chown root:stratio /opt/sds
+chown root:stratio /var/log/sds
+chown root:stratio /var/run/sds
+chown root:stratio /var/sds
+chmod 775 /etc/sds
+chmod 775 /opt/sds
+chmod 775 /var/log/sds
+chmod 775 /var/sds
+chmod 775 /var/run/sds
+
 chown root:root /etc/init.d/crossdata
 
 chown -R ${USER}:${GROUP} $DIR_INSTALL
@@ -39,15 +53,14 @@ chown -R ${USER}:${GROUP} $DIR_INSTALL
 chown -R ${USER}:${GROUP} $DIR_CONF
 chown -R ${USER}:${GROUP} $DIR_LOG
 chown -R ${USER}:${GROUP} $DIR_CHECKPOINT
-chown -R ${USER}:${GROUP} /var/run/sds
 
-chmod -R 775 $DIR_INSTALL
-chmod 775 $DIR_LOG
-chmod 775 $DIR_CHECKPOINT
+chmod -R 755 $DIR_INSTALL
+chmod 755 $DIR_LOG
+chmod 755 $DIR_CHECKPOINT
 
-chmod 775 $DIR_CONF
-chmod 775 $DIR_CONF/shell
-chmod 775 $DIR_CONF/server
+chmod 755 $DIR_CONF
+chmod 755 $DIR_CONF/shell
+chmod 755 $DIR_CONF/server
 
 chmod 640 $DIR_CONF/shell/*
 chmod 640 $DIR_CONF/server/*
