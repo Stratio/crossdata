@@ -90,9 +90,9 @@ class CatalogChain(
 
 
   override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] =
-    (Map.empty[String, Boolean] /: (catalogs.view map (_.getTables(databaseName)))) {
-      case (res, entry: (String, Boolean) @ unchecked) if !res.get(entry._1).getOrElse(false) =>
-        res + entry
+    (Map.empty[String, Boolean] /: (catalogs flatMap (_.getTables(databaseName)))) {
+      case (res, entry: (String, Boolean) @ unchecked) =>
+        if(res.get(entry._1).getOrElse(true)) res + entry else res
     } toSeq
 
   override def refreshTable(tableIdent: TableIdentifier): Unit = ()

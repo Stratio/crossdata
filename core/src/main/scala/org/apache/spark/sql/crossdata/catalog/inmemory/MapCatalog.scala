@@ -28,7 +28,7 @@ trait MapCatalog extends XDCatalog {
     val dbName = databaseName.map(normalizeDBIdentifier)
     (tables ++ views).toSeq collect {
       case (k,_) if dbName.map(_ == k.split("\\.")(0)).getOrElse(true) =>
-        k.split("\\.")(0) + "." + k.split("\\.")(1) -> true
+        k.split("\\.").take(2).mkString(".") -> true
     }
   }
 
