@@ -21,8 +21,6 @@ import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
-class DerbyCatalogIT extends SharedXDContextTest with CatalogConstants with GenericCatalogTests {
-
-  override val catalogName = "Derby"
-
-}
+class DerbyCatalogIT extends {
+  val catalogName = "Derby"
+} with SharedXDContextTest with CatalogConstants with GenericCatalogTests
