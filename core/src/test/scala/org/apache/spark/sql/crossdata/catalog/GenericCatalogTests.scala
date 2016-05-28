@@ -190,7 +190,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     xdContext.catalog.unregisterAllTables()
-    xdContext.catalog.tables.size shouldBe 0
+    xdContext.catalog.asInstanceOf[CatalogChain].catalogs.head.getTables(None).size shouldBe 0
     val tables = xdContext.catalog.getTables(Some(Database))
     tables.size shouldBe 1
   }
@@ -204,7 +204,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     xdContext.catalog.unregisterAllTables()
-    xdContext.catalog.tables.size shouldBe 0
+    xdContext.catalog.asInstanceOf[CatalogChain].catalogs.head.getTables(None).size shouldBe 0
     val tables = xdContext.catalog.getTables(None)
     tables.size shouldBe 1
   }

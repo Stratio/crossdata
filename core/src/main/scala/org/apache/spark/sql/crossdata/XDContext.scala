@@ -26,10 +26,11 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, Catalog, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata.XDContext.StreamingCatalogClassConfigKey
-import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
+import org.apache.spark.sql.crossdata.catalog._
+import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
@@ -77,22 +78,26 @@ class XDContext protected (@transient val sc: SparkContext,
 
 
   @transient
-  override protected[sql] lazy val catalog: XDCatalog = {
+  override protected[sql] lazy val catalog: XDCatalogWithPersistence = {
 
     import XDContext.{CaseSensitive, DerbyClass}
 
-    val catalogClass = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
+    val externalCatalogName = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
       catalogConfig.getString(XDContext.ClassConfigKey)
     else DerbyClass
 
-    val xdCatalog = Class.forName(catalogClass)
+    val externalCatalogClass = Class.forName(externalCatalogName)
 
     val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
 
-    val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf], classOf[XDContext])
+    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[CatalystConf], classOf[XDContext])
 
-    constr.newInstance(
-      new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
+    val conf = new SimpleCatalystConf(caseSensitive)
+
+    val externalCatalog = constr.newInstance(conf, self).asInstanceOf[PersistentCatalog]
+
+    new CatalogChain(new HashmapCatalog(conf, self), externalCatalog)
+
   }
 
   @transient

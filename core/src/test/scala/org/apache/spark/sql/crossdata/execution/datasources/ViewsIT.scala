@@ -15,11 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
-import java.lang.{RuntimeException, Runtime}
-
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.crossdata.XDDataFrame
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

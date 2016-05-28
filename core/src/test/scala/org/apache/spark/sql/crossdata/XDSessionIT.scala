@@ -31,6 +31,11 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class XDSessionIT extends XDTestUtils {
 
+  /* TODO:
+    Re-factor [[SharedXDContextTest]] so it would be possible to  use the suite template with different XDContent
+    implementations (sub-clases). That way, this replicated code could be removed.
+   */
+
   val sparkCtx = new SparkContext(
     "local[2]",
     "test-xd-context",

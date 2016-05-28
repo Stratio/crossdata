@@ -20,19 +20,21 @@ import java.net.Socket
 
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.XDCatalog._
+import org.apache.spark.sql.crossdata.catalog.PersistentCatalog._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{TableTypesafeDAO, ViewTypesafeDAO}
 import org.apache.spark.sql.crossdata.models.{TableModel, ViewModel}
 import org.apache.spark.sql.types.StructType
 
 /**
-  * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.XDCatalog]] with persistence using Zookeeper.
+  * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.PersistentCatalog]] with persistence using Zookeeper.
   * Using the common Stratio components for access and manage Zookeeper connections with Apache Curator.
+ *
   * @param conf An implementation of the [[CatalystConf]].
   */
 class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends XDCatalog(conf, xdContext) {
+  extends PersistentCatalog(conf, xdContext) {
 
   @transient val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
   @transient val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
@@ -63,7 +65,8 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
     }
   }
 
-  override def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
+
+  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
     if (tableDAO.dao.count > 0) {
       tableDAO.dao.getAll()
         .flatMap(tableModel => {
@@ -93,19 +96,21 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
         crossdataTable.opts))
   }
 
-  override def dropPersistedTable(tableIdentifier: TableIdentifier): Unit =
+
+  override def dropTable(tableIdentifier: ViewIdentifier): Unit =
     tableDAO.dao.getAll().filter {
       tableModel => tableIdentifier.table == tableModel.name && tableIdentifier.database == tableModel.database
     } foreach { tableModel =>
       tableDAO.dao.delete(tableModel.id)
     }
 
-  override def dropAllPersistedTables(): Unit = {
+
+  override def dropAllTables(): Unit = {
     tableDAO.dao.deleteAll
     viewDAO.dao.getAll.foreach(view=>viewDAO.dao.delete(view.id))
   }
 
-  override protected def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
+  override protected[crossdata] def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
     if (viewDAO.dao.count > 0) {
       val findView = viewDAO.dao.getAll()
         .find(viewModel => viewModel.name == viewIdentifier.table && viewModel.database == viewIdentifier.database)
@@ -128,17 +133,17 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
     viewDAO.dao.create(viewId, ViewModel(viewId, tableIdentifier.table, tableIdentifier.database, sqlText))
   }
 
-  override protected def dropPersistedView(viewIdentifier: ViewIdentifier): Unit = {
+
+  override def dropView(viewIdentifier: ViewIdentifier): Unit =
     viewDAO.dao.getAll().filter {
       view => view.name == viewIdentifier.table && view.database == viewIdentifier.database
     } foreach { selectedView =>
       viewDAO.dao.delete(selectedView.id)
     }
-  }
 
-  override protected def dropAllPersistedViews(): Unit = {
-    viewDAO.dao.deleteAll
-  }
+
+  override def dropAllViews(): Unit = viewDAO.dao.deleteAll
+
   override def checkConnectivity:Boolean = {
     //TODO this method must be changed when Stratio Commons provide a status connection of Zookeeper
     val value=XDContext.catalogConfig.getString("zookeeper.connectionString")

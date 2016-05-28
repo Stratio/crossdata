@@ -20,6 +20,7 @@ import java.sql.{Connection, DriverManager, ResultSet}
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.types.StructType
 
 import scala.annotation.tailrec
@@ -39,15 +40,16 @@ object DerbyCatalog {
 }
 
 /**
- * Default implementation of the [[catalog.XDCatalog]] with persistence using
+ * Default implementation of the [[catalog.PersistentCatalog]] with persistence using
  * Derby.
+ *
  * @param conf An implementation of the [[CatalystConf]].
  */
 class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends XDCatalog(conf, xdContext) with SparkLoggerComponent {
+  extends PersistentCatalog(conf, xdContext) with SparkLoggerComponent {
 
   import DerbyCatalog._
-  import XDCatalog._
+  import PersistentCatalog._
 
   private val db = "CROSSDATA"
   private val tableWithTableMetadata = "xdtables"
@@ -115,26 +117,6 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     }
   }
 
-  override def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
-    @tailrec
-    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[String] = Set()): Set[String] = {
-      if (next) {
-        val database = resultset.getString(DatabaseField)
-        val table = resultset.getString(TableNameField)
-        val tableId = if (database.trim.isEmpty) table else s"$database.$table"
-        getSequenceAux(resultset, resultset.next(), set + tableId)
-      } else {
-        set
-      }
-    }
-
-    val statement = connection.createStatement
-    val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
-    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
-
-    getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
-  }
-
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
     try {
 
@@ -180,16 +162,26 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       connection.setAutoCommit(true)
     }
 
-  override def dropPersistedTable(tableIdentifier: TableIdentifier): Unit = {
 
+
+  override def dropTable(tableIdentifier: ViewIdentifier): Unit =
     connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
-  }
+      s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'"
+    )
 
-  override def dropAllPersistedTables(): Unit = {
+  override def dropView(viewIdentifier: ViewIdentifier): Unit =
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
+
+
+  override def dropAllViews(): Unit =
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
+
+  override def dropAllTables(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata")
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
+
 
   private def schemaExists(schema: String, connection: Connection) : Boolean= {
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$db'")
@@ -199,7 +191,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   }
 
-  override protected def lookupView(tableIdentifier: TableIdentifier): Option[String] = {
+  override protected[crossdata] def lookupView(tableIdentifier: TableIdentifier): Option[String] = {
 
     val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
 
@@ -249,14 +241,26 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   }
 
-  override protected def dropPersistedView(viewIdentifier: ViewIdentifier): Unit = {
-    connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
-  }
-
-  override protected def dropAllPersistedViews(): Unit = {
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
-  }
 
   override def checkConnectivity: Boolean = true
+
+  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
+    @tailrec
+    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[String] = Set()): Set[String] = {
+      if (next) {
+        val database = resultset.getString(DatabaseField)
+        val table = resultset.getString(TableNameField)
+        val tableId = if (database.trim.isEmpty) table else s"$database.$table"
+        getSequenceAux(resultset, resultset.next(), set + tableId)
+      } else {
+        set
+      }
+    }
+
+    val statement = connection.createStatement
+    val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
+    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
+
+    getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
+  }
 }

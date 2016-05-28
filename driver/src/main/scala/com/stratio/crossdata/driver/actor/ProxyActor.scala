@@ -65,7 +65,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
   // Previous step to process the message where promise is stored.
   def storePromise(promisesByIds: PromisesByIds): Receive = {
-    case (message: CommandEnvelope, promise: Promise[ServerReply]) =>
+    case (message: CommandEnvelope, promise: Promise[ServerReply @unchecked]) =>
       logger.debug("Sending message to the Crossdata cluster")
       context.become(start(promisesByIds.copy(promisesByIds.promises + (message.cmd.requestId -> promise))))
       self ! message
