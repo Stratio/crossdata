@@ -29,11 +29,14 @@ import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, DataSourceRegister, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.{BooleanType, DateType, DoubleType, FloatType, IntegerType, LongType, StringType, StructType}
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 import org.elasticsearch.hadoop.util.Version
 import org.elasticsearch.hadoop.{EsHadoopIllegalArgumentException, EsHadoopIllegalStateException}
 import org.elasticsearch.spark.sql.ElasticsearchXDRelation
+
+import scala.util.Try
 
 
 object DefaultSource {
@@ -162,6 +165,22 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
       case e: Exception =>
         sys.error(e.getMessage)
         None
+    }
+  }
+
+  override def dropExternalTable(context: SQLContext,
+                                 tableName: String,
+                                 databaseName: Option[String],
+                                 options: Map[String, String]): Try[Unit] = {
+
+    //TODO: ELASTIC DOES NOT SUPPORT DELETE MAPPING IN THE NEW IMPLEMENTATIONS:
+    //https://www.elastic.co/guide/en/elasticsearch/reference/2.1/indices-delete-mapping.html#indices-delete-mapping
+
+    val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).orElse(databaseName.map((_, tableName))).
+      getOrElse(throw new RuntimeException(s"$ES_RESOURCE is required when running DROP EXTERNAL TABLE"))
+
+    Try {
+      ElasticSearchConnectionUtils.buildClient(options).client.admin().indices().prepareDeleteMapping(index).setType(typeName).get(TimeValue.timeValueSeconds(5))
     }
   }
 
