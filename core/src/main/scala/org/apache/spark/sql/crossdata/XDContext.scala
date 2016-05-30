@@ -109,7 +109,6 @@ class XDContext protected (@transient val sc: SparkContext,
       val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)
       val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[XDContext])
-
       Option(constr.newInstance(self).asInstanceOf[XDStreamingCatalog])
     } else {
       logError("Empty streaming catalog")
@@ -332,6 +331,7 @@ object XDContext extends CoreConfig {
   val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
   val JDBCClass = "org.apache.spark.sql.crossdata.catalog.JDBCCatalog"
   val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog"
+  val ZookeeperStreamingClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperStreamingCatalog"
   val CatalogConfigKey = "catalog"
   val StreamingConfigKey = "streaming"
   val SecurityConfigKey = "security"
