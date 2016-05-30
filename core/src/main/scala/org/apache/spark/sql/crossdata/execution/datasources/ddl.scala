@@ -114,6 +114,15 @@ private[crossdata] case class DropTable(tableIdentifier: TableIdentifier) extend
 
 }
 
+private[crossdata] case class DropExternalTable(tableIdentifier: TableIdentifier) extends RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    sqlContext.catalog.dropTable(tableIdentifier)
+    Seq.empty
+  }
+
+}
+
 private[crossdata] case object DropAllTables extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
