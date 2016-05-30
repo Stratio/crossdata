@@ -20,14 +20,16 @@ import com.mongodb.casbah.Imports.DBObject
 import com.mongodb.casbah.MongoDB
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
-import com.stratio.datasource.mongodb.config.{MongodbConfigBuilder, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
-import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConnection, MongodbRelation}
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions}
+import com.stratio.datasource.mongodb.{MongodbConnection, MongodbRelation, DefaultSource => ProviderDS}
 import com.stratio.datasource.util.Config._
 import com.stratio.datasource.util.{Config, ConfigBuilder}
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+
+import scala.util.Try
 
 /**
  * Allows creation of MongoDB based tables using
@@ -175,6 +177,22 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
       case e: Exception =>
         sys.error(e.getMessage)
         None
+    }
+  }
+
+  override def dropExternalTable(context: SQLContext,
+                                 tableName: String,
+                                 databaseName: Option[String],
+                                 options: Map[String, String]): Try[Unit] = {
+
+    val database: String = options.get(Database).orElse(databaseName).
+      getOrElse(throw new RuntimeException(s"$Database required when use DROP EXTERNAL TABLE command"))
+
+    val collection: String = options.getOrElse(Collection, tableName)
+    Try {
+      MongodbConnection.withClientDo(parseParametersWithoutValidation(options)){ mongoClient =>
+        mongoClient.getDB(database).getCollection(collection).drop()
+      }
     }
   }
 

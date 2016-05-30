@@ -15,10 +15,15 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
+import java.util.concurrent.TimeUnit
+
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.daos.impl._
 import org.apache.spark.sql.crossdata.models._
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.util.Try
 
 class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
@@ -31,14 +36,18 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   private[spark] val ephemeralTableStatusDAO =
     new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
 
+  private def futurize[P](operation : => P): P =
+    Await.result(Future(operation), 10 seconds)
+
+
   /**
    * Ephemeral Table Functions
    */
   override def existsEphemeralTable(tableIdentifier: String): Boolean =
-    ephemeralTableDAO.dao.exists(tableIdentifier)
+    futurize(ephemeralTableDAO.dao.exists(tableIdentifier))
 
   override def getEphemeralTable(tableIdentifier: String): Option[EphemeralTableModel] =
-    ephemeralTableDAO.dao.get(tableIdentifier)
+    futurize(ephemeralTableDAO.dao.get(tableIdentifier))
 
   override def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel] =
     if(!existsEphemeralTable(ephemeralTable.name)){

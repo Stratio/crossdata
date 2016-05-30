@@ -23,6 +23,8 @@ import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.sources.{DataSourceRegister, Filter}
 import org.apache.spark.sql.types.{DataType, StructType}
 
+import scala.util.Try
+
 
 /**
  * A BaseRelation that can execute the whole logical plan without running the query
@@ -133,4 +135,9 @@ trait TableManipulation extends GenerateConnectorOptions{
                           databaseName: Option[String],
                           schema: StructType,
                           options: Map[String, String]): Option[TableInventory.Table]
+
+  def dropExternalTable(context: SQLContext,
+                        tableName: String,
+                        databaseName: Option[String],
+                        options: Map[String, String]): Try[Unit]
 }
