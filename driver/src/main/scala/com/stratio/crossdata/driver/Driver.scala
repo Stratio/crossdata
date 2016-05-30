@@ -17,7 +17,9 @@ package com.stratio.crossdata.driver
 
 import java.util.concurrent.atomic.AtomicReference
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Address}
+import akka.cluster.ClusterEvent.CurrentClusterState
+import akka.cluster.MemberStatus
 import akka.contrib.pattern.ClusterClient
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
@@ -31,8 +33,10 @@ import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future, Promise}
 import scala.language.postfixOps
+import scala.util.Try
 
 /*
  * ======================================== NOTE ========================================
@@ -40,6 +44,7 @@ import scala.language.postfixOps
  * the JavaDriver.scala has to be updated according to those changes.
  * =======================================================================================
  */
+
 
 object Driver {
 
@@ -96,7 +101,7 @@ object Driver {
 
 }
 
-class Driver private(driverConf: DriverConf,
+class Driver private(private[crossdata] val driverConf: DriverConf,
                      auth: Authentication = Driver.generateDefaultAuth) {
 
 
@@ -152,14 +157,14 @@ class Driver private(driverConf: DriverConf,
       case Pattern(add,jar,path) => addJar(path.trim)
       case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
-        val futureReply = askCommand(CommandEnvelope(sqlCommand, driverSession)).map{
+        val futureReply = askCommand(securitizeCommand(sqlCommand)).map{
           case SQLReply(_, sqlResult) => sqlResult
           case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
         }
         new SQLResponse(sqlCommand.requestId, futureReply) {
           // TODO cancel sync => 5 secs
           override def cancelCommand(): Unit =
-            askCommand(CommandEnvelope(CancelQueryExecution(sqlCommand.queryId), driverSession))
+            askCommand(securitizeCommand(CancelQueryExecution(sqlCommand.queryId)))
         }
     }
   }
@@ -173,7 +178,7 @@ class Driver private(driverConf: DriverConf,
     */
   def addJar(path: String): SQLResponse = {
     val addJarCommand = AddJARCommand(path)
-    val futureReply = askCommand(CommandEnvelope(addJarCommand, driverSession)).map{
+    val futureReply = askCommand(securitizeCommand(addJarCommand)).map{
       case SQLReply(_, sqlResult) => sqlResult
       case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
     }
@@ -284,6 +289,44 @@ class Driver private(driverConf: DriverConf,
 
   def show(query: String) = sql(query).waitForResult().prettyResult.foreach(println)
 
+
+  /**
+   * Gets the server/cluster state
+   *
+   * @since 1.3
+   * @return Current snapshot state of the cluster
+   */
+  def clusterState(): Future[CurrentClusterState] = {
+    val promise = Promise[ServerReply]()
+    proxyActor ! (securitizeCommand(ClusterStateCommand()), promise)
+    promise.future.mapTo[ClusterStateReply].map(_.clusterState)
+  }
+
+  /**
+   * Gets the addresses of servers up and running
+   *
+   * @since 1.3
+   * @return A sequence with members of the cluster ready to serve requests
+   */
+  def serversUp(): Future[Seq[Address]] = {
+    import collection.JavaConverters._
+    clusterState().map { cState =>
+      cState.getMembers.asScala.collect {
+        case member if member.status == MemberStatus.Up => member.address
+      }.toSeq
+    }
+  }
+
+  /**
+   * Indicates if the cluster is alive or not
+   *
+   * @since 1.3
+   * @return whether at least one member of the cluster is alive or not
+   */
+  def isClusterAlive(atMost: Duration = 3 seconds): Boolean =
+    Try(Await.result(serversUp(), atMost)).map(_.nonEmpty).getOrElse(false)
+
+
   /**
    * Execute an ordered shutdown
    */
@@ -293,7 +336,7 @@ class Driver private(driverConf: DriverConf,
   def close() = stop()
 
 
-  private def securitizeCommand(command: SQLCommand): CommandEnvelope =
+  private def securitizeCommand(command: Command): CommandEnvelope =
     new CommandEnvelope(command, driverSession)
 
 

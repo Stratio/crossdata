@@ -17,6 +17,7 @@ package org.apache.spark.sql.crossdata
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
+import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
@@ -28,6 +29,7 @@ import org.apache.spark.sql.catalyst.plans.logical.LeafNode
 import org.apache.spark.sql.catalyst.plans.logical.Limit
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.plans.logical.Project
+import org.apache.spark.sql.catalyst.trees.TreeNode
 import org.apache.spark.sql.crossdata.ExecutionType.Default
 import org.apache.spark.sql.crossdata.ExecutionType.ExecutionType
 import org.apache.spark.sql.crossdata.ExecutionType.Native
@@ -39,9 +41,12 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types.ArrayType
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
+import org.json4s.JsonAST.{JInt, JObject, JString, JValue}
+import org.json4s.jsonwritable
+import sun.reflect.generics.tree.BaseType
 
 import scala.collection.mutable.BufferLike
-import scala.collection.{mutable, immutable, GenTraversableOnce}
+import scala.collection.{GenTraversableOnce, immutable, mutable}
 import scala.collection.generic.CanBuildFrom
 
 private[sql] object XDDataFrame {
@@ -115,6 +120,7 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
    * @inheritdoc
    */
   override def collect(): Array[Row] = {
+    sqlContext.asInstanceOf[XDContext].securityManager.authorize(logicalPlan)
     // If cache doesn't go through native
     if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
       super.collect()
@@ -247,6 +253,8 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
 
   /**
    * Collect using an specific [[ExecutionType]]. Only for testing purpose so far.
+   * When using the Security Manager, this method has to be invoked with the parameter [[ExecutionType.Default]]
+   * in order to ensure that the workflow of the execution reaches the point where the authorization is called.
    *
    * @param executionType one of the [[ExecutionType]]
    * @return the query result
@@ -291,7 +299,14 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
 
     val containsSubfields = notSupportedProject(queryExecution.optimizedPlan)
     val planSupported = !containsSubfields && queryExecution.optimizedPlan.map(lp => lp).forall(provider.isSupported(_, queryExecution.optimizedPlan))
-    if(planSupported) provider.buildScan(queryExecution.optimizedPlan) else None
+    if(planSupported) {
+      // TODO handle failed executions which are currently wrapped within the option, so these jobs will appear duplicated
+      // TODO the plan should notice the native execution
+      withNewExecutionId{
+        provider.buildScan(queryExecution.optimizedPlan)
+      }
+    } else
+      None
 
   }
 

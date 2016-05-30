@@ -42,6 +42,14 @@ object ServerConfig {
   // Job management settings
   val FinishedJobTTL = "config.jobs.finished.ttl_ms"
 
+  // Host
+  val Host="akka.remote.netty.tcp.hostname"
+
+  // Jars Repo
+  val repoJars="config.externalJarsRepo"
+
+  // Http Server Port
+  val httpServerPort="config.HttpServerPort"
 }
 
 trait ServerConfig extends NumberActorConfig {
