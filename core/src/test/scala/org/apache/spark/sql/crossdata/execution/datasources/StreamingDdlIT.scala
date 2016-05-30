@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.execution.datasources
+/*package org.apache.spark.sql.crossdata.execution.datasources
 
 import java.util.UUID
 
@@ -390,3 +390,4 @@ class StreamingDdlIT extends SharedXDContextTest with StreamingDDLTestConstants{
     super.afterAll()
   }
 }
+*/
