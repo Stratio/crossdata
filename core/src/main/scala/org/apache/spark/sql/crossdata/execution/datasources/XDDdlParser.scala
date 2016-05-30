@@ -57,6 +57,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val STOP = Keyword("STOP")
   protected val IN = Keyword("IN")
   protected val APP = Keyword("APP")
+  protected val EXECUTE = Keyword("EXECUTE")
 
 
   override protected lazy val ddl: Parser[LogicalPlan] =
@@ -148,6 +149,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     (ADD ~> APP ~> ident) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
       case jarPath ~ xxx ~ cname =>
         AddApp(xDContext, jarPath.toString, cname, xxx)
+    }
+
+  protected lazy val executeApp: Parser[LogicalPlan] =
+    EXECUTE ~> ident ~> tableValues ^^ {
+      case appName ~ arguments =>
+        ExecuteApp(xDContext, appName, arguments)
     }
   /**
    * Streaming

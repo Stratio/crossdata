@@ -259,6 +259,15 @@ private[crossdata] case class AddApp(xdContext:XDContext, jarPath: String, class
   }
 }
 
+private[crossdata] case class ExecuteApp(xdContext:XDContext,appName:String, arguments:Seq[String])
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+   xdContext.executeApp(appName,arguments)
+    Seq.empty
+  }
+}
+
 case class CreateExternalTable(
                                 tableIdent: TableIdentifier,
                                 userSpecifiedSchema: StructType,

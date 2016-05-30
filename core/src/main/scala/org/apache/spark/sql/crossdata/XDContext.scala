@@ -45,13 +45,13 @@ import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
 /**
- * CrossdataContext leverages the features of [[SQLContext]]
- * and adds some features of the Crossdata system.
+  * CrossdataContext leverages the features of [[SQLContext]]
+  * and adds some features of the Crossdata system.
   *
   * @param sc A [[SparkContext]].
- */
-class XDContext private (@transient val sc: SparkContext,
-                userConfig: Option[Config] = None) extends SQLContext(sc) with Logging  {
+  */
+class XDContext private(@transient val sc: SparkContext,
+                        userConfig: Option[Config] = None) extends SQLContext(sc) with Logging {
   self =>
 
   def this(sc: SparkContext) =
@@ -69,6 +69,7 @@ class XDContext private (@transient val sc: SparkContext,
      Config should be changed by a map and implicitly converted into `Config` whenever one of its
      methods is called.
      */
+
   import XDContext.{catalogConfig, config, xdConfig}
 
   xdConfig = userConfig.fold(config) { userConf =>
@@ -132,7 +133,7 @@ class XDContext private (@transient val sc: SparkContext,
         Batch("Substitution", fixedPoint,
           CTESubstitution,
           WindowsSubstitution),
-        Batch("Preparation", fixedPoint, preparationRules : _*),
+        Batch("Preparation", fixedPoint, preparationRules: _*),
         Batch("Resolution", fixedPoint,
           ResolveRelations ::
             ResolveReferences ::
@@ -148,7 +149,7 @@ class XDContext private (@transient val sc: SparkContext,
             ResolveAggregateFunctions ::
             DistinctAggregationRewriter(conf) ::
             HiveTypeCoercion.typeCoercionRules ++
-              extendedResolutionRules : _*),
+              extendedResolutionRules: _*),
         Batch("Nondeterministic", Once,
           PullOutNondeterministic,
           ComputeCurrentTime),
@@ -208,41 +209,46 @@ class XDContext private (@transient val sc: SparkContext,
     * @param path The local path or hdfs path where SparkContext will take the JAR
     */
   override def addJar(path: String) = {
-       super.addJar(path)
+    super.addJar(path)
   }
 
-  def addApp(path: String, clss: String, alias: String): Unit ={
-    catalog.persistAppMetadata(CrossdataApp(path,alias,clss))
+  def addApp(path: String, clss: String, alias: String): Unit = {
+    catalog.persistAppMetadata(CrossdataApp(path, alias, clss))
+  }
+
+  def executeApp(appName: String, arguments: Seq[String]): Unit = {
+    val crossdataApp=catalog.lookupApp(appName).getOrElse(sys.error(s"There is not any app called $appName"))
+    
   }
 
   /**
-   * Drops the table in the persistent catalog.
-   * It applies only to metadata, so data do not be deleted.
-   *
-   * @param tableIdentifier the table to be dropped.
-   *
-   */
+    * Drops the table in the persistent catalog.
+    * It applies only to metadata, so data do not be deleted.
+    *
+    * @param tableIdentifier the table to be dropped.
+    *
+    */
   def dropTable(tableIdentifier: TableIdentifier): Unit = {
     cacheManager.tryUncacheQuery(table(tableIdentifier.unquotedString))
     catalog.dropTable(tableIdentifier)
   }
 
   /**
-   * Drops all tables in the persistent catalog.
-   * It applies only to metadata, so data do not be deleted.
-   *
-   */
+    * Drops all tables in the persistent catalog.
+    * It applies only to metadata, so data do not be deleted.
+    *
+    */
   def dropAllTables(): Unit = {
     cacheManager.clearCache()
     catalog.dropAllTables()
   }
 
   /**
-   * Imports tables from a DataSource in the persistent catalog.
-   *
-   * @param datasource
-   * @param opts
-   */
+    * Imports tables from a DataSource in the persistent catalog.
+    *
+    * @param datasource
+    * @param opts
+    */
   def importTables(datasource: String, opts: Map[String, String]): Unit =
     ImportTablesUsingWithOptions(datasource, opts).run(this)
 
@@ -252,9 +258,8 @@ class XDContext private (@transient val sc: SparkContext,
     *
     * @return if connection is possible
     */
-  def checkCatalogConnection : Boolean=
+  def checkCatalogConnection: Boolean =
     catalog.checkConnectivity
-
 
 
   def createDataFrame(rows: Seq[Row], schema: StructType): DataFrame =
@@ -265,9 +270,9 @@ class XDContext private (@transient val sc: SparkContext,
 }
 
 /**
- * This XDContext object contains utility functions to create a singleton XDContext instance,
- * or to get the last created XDContext instance.
- */
+  * This XDContext object contains utility functions to create a singleton XDContext instance,
+  * or to get the last created XDContext instance.
+  */
 object XDContext extends CoreConfig {
 
   /* TODO: Remove the config attributes from the companion object!!!
@@ -277,7 +282,8 @@ object XDContext extends CoreConfig {
   //This is definitely NOT right and will only work as long a single instance of XDContext exits
   override lazy val logger = Logger.getLogger(classOf[XDContext])
 
-  var xdConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
+  var xdConfig: Config = _
+  //This is definitely NOT right and will only work as long a single instance of XDContext exits
   var catalogConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
 
   val CaseSensitive = "caseSensitive"
@@ -287,21 +293,21 @@ object XDContext extends CoreConfig {
   val CatalogConfigKey = "catalog"
   val StreamingConfigKey = "streaming"
   val ClassConfigKey = "class"
-  val CatalogClassConfigKey : String = s"$CatalogConfigKey.$ClassConfigKey"
-  val StreamingCatalogClassConfigKey : String = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
+  val CatalogClassConfigKey: String = s"$CatalogConfigKey.$ClassConfigKey"
+  val StreamingCatalogClassConfigKey: String = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
 
   @transient private val INSTANTIATION_LOCK = new Object()
 
   /**
-   * Reference to the last created SQLContext.
-   */
+    * Reference to the last created SQLContext.
+    */
   @transient private val lastInstantiatedContext = new AtomicReference[XDContext]()
 
   /**
-   * Get the singleton SQLContext if it exists or create a new one using the given SparkContext.
-   * This function can be used to create a singleton SQLContext object that can be shared across
-   * the JVM.
-   */
+    * Get the singleton SQLContext if it exists or create a new one using the given SparkContext.
+    * This function can be used to create a singleton SQLContext object that can be shared across
+    * the JVM.
+    */
   def getOrCreate(sparkContext: SparkContext, userConfig: Option[Config] = None): XDContext = {
     INSTANTIATION_LOCK.synchronized {
       Option(lastInstantiatedContext.get()).getOrElse(new XDContext(sparkContext, userConfig))
