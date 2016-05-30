@@ -37,7 +37,7 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
     new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
 
   private def futurize[P](operation : => P): P =
-    Await.result(Future(operation), 10 seconds)
+    Await.result(Future(operation), 5 seconds)
 
 
   /**
