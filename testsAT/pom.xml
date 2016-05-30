@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>parent</artifactId>
-        <version>0.5.0</version>
+        <version>0.7.2</version>
     </parent>
     <properties>
         <stratio-test-bdd.version>0.2.0-SNAPSHOT</stratio-test-bdd.version>
