@@ -173,14 +173,16 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
                                  databaseName: Option[String],
                                  options: Map[String, String]): Try[Unit] = {
 
-    //TODO: ELASTIC DOES NOT SUPPORT DELETE MAPPING IN THE NEW IMPLEMENTATIONS:
-    //https://www.elastic.co/guide/en/elasticsearch/reference/2.1/indices-delete-mapping.html#indices-delete-mapping
-
     val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).orElse(databaseName.map((_, tableName))).
       getOrElse(throw new RuntimeException(s"$ES_RESOURCE is required when running DROP EXTERNAL TABLE"))
 
+    val indexType = IndexType(index, typeName)
+
     Try {
-      ElasticSearchConnectionUtils.buildClient(options).client.admin().indices().prepareDeleteMapping(index).setType(typeName).get(TimeValue.timeValueSeconds(5))
+      val client = ElasticSearchConnectionUtils.buildClient(options)
+      client.execute {
+        deleteMapping(indexType)
+      }
     }
   }
 
