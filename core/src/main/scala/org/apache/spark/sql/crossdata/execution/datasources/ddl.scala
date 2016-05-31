@@ -243,6 +243,18 @@ private[crossdata] case class AddJar(jarPath: String)
   }
 }
 
+private [crossdata] case class CreateGlobalIndex(
+                                                indexName: String,
+                                                tableIdent: TableIdentifier,
+                                                cols: Seq[String],
+                                                provider: String,
+                                                options: Map[String, String]
+                                                ) extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = ???
+
+}
+
 case class CreateExternalTable(
                                 tableIdent: TableIdentifier,
                                 userSpecifiedSchema: StructType,

@@ -173,4 +173,20 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
     parser.parse(sentence) shouldBe AddJar("/tmp/jar")
   }
 
+  it should "successfully parse a CREATE GLOBAL INDEX into a CreateGlobalIndex RunnableCommand" in {
+    val sentence =
+      """|CREATE GLOBAL INDEX indexName ON ex_db.ex_table (col1, col2)
+         |USING com.spark.test
+         |OPTIONS (
+         |   opt1 "opt1val",
+         |   opt2 "opt2val"
+         |)""".stripMargin
+    parser.parse(sentence) shouldBe
+      CreateGlobalIndex("indexName",
+                        TableIdentifier("ex_table", Some("ex_db")),
+                        Seq("col1","col2"),
+                        "com.spark.test",
+                        Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
+  }
+
 }
