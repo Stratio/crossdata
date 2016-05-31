@@ -100,8 +100,6 @@
     </modules>
 
     <properties>
-        <scala.binary.version>2.10</scala.binary.version>
-        <scala.version>2.10.4</scala.version>
         <spark.version>1.6.1</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
         <easymock.version>3.4</easymock.version>
@@ -122,6 +120,8 @@
         <common.utils.version>0.5.0</common.utils.version>
         <guava.version>18.0</guava.version>
         <!-- Scala version and cross build properties -->
+        <scala.binary.version>2.10</scala.binary.version>
+        <scala.version>2.10.4</scala.version>
         <scala_2.10.version>2.10.4</scala_2.10.version>
         <scala_2.11.version>2.11.7</scala_2.11.version>
         <default.scala.binary.version>2.10</default.scala.binary.version>
