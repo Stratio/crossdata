@@ -13,19 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.catalog.interfaces
 
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
-import org.apache.spark.sql.execution.datasources.LogicalRelation
 
-object XDCatalogWithPersistence {
-  implicit def asPersistentCatalog(catalog: Catalog): XDCatalogWithPersistence = catalog.asInstanceOf[XDCatalogWithPersistence]
-}
-
-trait XDCatalogWithPersistence extends XDCatalog {
+trait XDCatalogPersistence {
 
   def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit
   def persistView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit
