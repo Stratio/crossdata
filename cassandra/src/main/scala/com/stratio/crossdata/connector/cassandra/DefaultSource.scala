@@ -173,14 +173,10 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
   }
 
   override def dropExternalTable(context: SQLContext,
-                                 tableName: String,
-                                 databaseName: Option[String],
                                  options: Map[String, String]): Try[Unit] = {
 
-    val keyspace: String = options.get(CassandraDataSourceKeyspaceNameProperty).orElse(databaseName).
-      getOrElse(throw new RuntimeException(s"$CassandraDataSourceKeyspaceNameProperty required when use DROP EXTERNAL TABLE command"))
-
-    val table: String = options.getOrElse(CassandraDataSourceTableNameProperty, tableName)
+    val keyspace: String = options.get(CassandraDataSourceKeyspaceNameProperty).get
+    val table: String = options.get(CassandraDataSourceTableNameProperty).get
 
     Try {
       buildCassandraConnector(context, options).withSessionDo { s =>

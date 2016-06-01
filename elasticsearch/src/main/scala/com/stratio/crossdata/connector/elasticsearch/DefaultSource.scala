@@ -169,13 +169,9 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
   }
 
   override def dropExternalTable(context: SQLContext,
-                                 tableName: String,
-                                 databaseName: Option[String],
                                  options: Map[String, String]): Try[Unit] = {
 
-    val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).orElse(databaseName.map((_, tableName))).
-      getOrElse(throw new RuntimeException(s"$ES_RESOURCE is required when running DROP EXTERNAL TABLE"))
-
+    val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).get
     val indexType = IndexType(index, typeName)
 
     Try {

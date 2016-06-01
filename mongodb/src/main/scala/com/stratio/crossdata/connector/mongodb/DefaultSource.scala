@@ -181,14 +181,11 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
   }
 
   override def dropExternalTable(context: SQLContext,
-                                 tableName: String,
-                                 databaseName: Option[String],
                                  options: Map[String, String]): Try[Unit] = {
 
-    val database: String = options.get(Database).orElse(databaseName).
-      getOrElse(throw new RuntimeException(s"$Database required when use DROP EXTERNAL TABLE command"))
+    val database: String = options.get(Database).get
+    val collection: String = options.get(Collection).get
 
-    val collection: String = options.getOrElse(Collection, tableName)
     Try {
       MongodbConnection.withClientDo(parseParametersWithoutValidation(options)){ mongoClient =>
         mongoClient.getDB(database).getCollection(collection).drop()

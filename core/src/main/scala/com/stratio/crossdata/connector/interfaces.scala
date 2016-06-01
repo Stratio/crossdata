@@ -137,7 +137,5 @@ trait TableManipulation extends GenerateConnectorOptions{
                           options: Map[String, String]): Option[TableInventory.Table]
 
   def dropExternalTable(context: SQLContext,
-                        tableName: String,
-                        databaseName: Option[String],
                         options: Map[String, String]): Try[Unit]
 }
