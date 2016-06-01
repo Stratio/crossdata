@@ -247,6 +247,7 @@ private [crossdata] case class CreateGlobalIndex(
                                                 indexName: String,
                                                 tableIdent: TableIdentifier,
                                                 cols: Seq[String],
+                                                pk: Seq[String],
                                                 provider: Option[String],
                                                 options: Map[String, String]
                                                 ) extends LogicalPlan with RunnableCommand {

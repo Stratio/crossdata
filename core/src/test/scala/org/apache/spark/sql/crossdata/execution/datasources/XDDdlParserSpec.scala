@@ -177,6 +177,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
     val sentence =
       """|CREATE GLOBAL INDEX myIndex
          |ON myDb.myTable(col1, col2)
+         |WITH PK (pk1, pk2)
          |USING com.stratio.crossdata.connector.elasticsearch
          |OPTIONS (
          |   opt1 "opt1val",
@@ -186,6 +187,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
       CreateGlobalIndex("myIndex",
                         TableIdentifier("myTable", Some("myDb")),
                         Seq("col1","col2"),
+                        Seq("pk1","pk2"),
                         Option("com.stratio.crossdata.connector.elasticsearch"),
                         Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }
@@ -194,6 +196,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
     val sentence =
       """|CREATE GLOBAL INDEX myIndex
         |ON myDb.myTable(col1, col2)
+        |WITH PK (pk1, pk2)
         |OPTIONS (
         |   opt1 "opt1val",
         |   opt2 "opt2val"
@@ -202,6 +205,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
       CreateGlobalIndex("myIndex",
         TableIdentifier("myTable", Some("myDb")),
         Seq("col1","col2"),
+        Seq("pk1","pk2"),
         None,
         Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }
@@ -210,6 +214,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
     val sentence =
       """|CREATE GLOBAL INDEX myIndex
         |ON myTable(col1, col2)
+        |WITH PK (pk1, pk2)
         |OPTIONS (
         |   opt1 "opt1val",
         |   opt2 "opt2val"
@@ -218,6 +223,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
       CreateGlobalIndex("myIndex",
         TableIdentifier("myTable"),
         Seq("col1","col2"),
+        Seq("pk1","pk2"),
         None,
         Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }

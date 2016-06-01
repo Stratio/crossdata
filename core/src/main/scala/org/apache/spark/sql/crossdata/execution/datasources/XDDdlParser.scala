@@ -41,6 +41,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val GLOBAL = Keyword("GLOBAL")
   protected val INDEX = Keyword("INDEX")
   protected val ON = Keyword("ON")
+  protected val PK = Keyword("PK")
   //Streaming keywords
   protected val EPHEMERAL = Keyword("EPHEMERAL")
   protected val SHOW = Keyword("SHOW")
@@ -281,10 +282,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val createGlobalIndex: Parser[LogicalPlan] = {
 
-    CREATE ~ GLOBAL ~ INDEX ~> ident ~ (ON ~> tableIdentifier) ~ schemaValues ~ (USING ~> className).? ~ (OPTIONS ~> options) ^^ {
-      case indexName ~ table ~ columns ~ provider ~ opts =>
+    CREATE ~ GLOBAL ~ INDEX ~> ident ~ (ON ~> tableIdentifier) ~ schemaValues ~ (WITH ~> PK ~> schemaValues) ~ (USING ~> className).? ~ (OPTIONS ~> options) ^^ {
+      case indexName ~ table ~ columns ~ pks ~ provider ~ opts =>
 
-        CreateGlobalIndex(indexName, table, columns, provider, opts)
+        CreateGlobalIndex(indexName, table, columns, pks, provider, opts)
     }
   }
 
