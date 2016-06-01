@@ -281,8 +281,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val createGlobalIndex: Parser[LogicalPlan] = {
 
-    CREATE ~ GLOBAL ~ INDEX ~> ident ~ (ON ~> tableIdentifier) ~ schemaValues ~ (USING ~> className) ~ (OPTIONS ~> options) ^^ {
+    CREATE ~ GLOBAL ~ INDEX ~> ident ~ (ON ~> tableIdentifier) ~ schemaValues ~ (USING ~> className).? ~ (OPTIONS ~> options) ^^ {
       case indexName ~ table ~ columns ~ provider ~ opts =>
+
         CreateGlobalIndex(indexName, table, columns, provider, opts)
     }
   }

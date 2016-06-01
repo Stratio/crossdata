@@ -175,18 +175,51 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
   it should "successfully parse a CREATE GLOBAL INDEX into a CreateGlobalIndex RunnableCommand" in {
     val sentence =
-      """|CREATE GLOBAL INDEX indexName ON ex_db.ex_table (col1, col2)
-         |USING com.spark.test
+      """|CREATE GLOBAL INDEX myIndex
+         |ON myDb.myTable(col1, col2)
+         |USING com.stratio.crossdata.connector.elasticsearch
          |OPTIONS (
          |   opt1 "opt1val",
          |   opt2 "opt2val"
          |)""".stripMargin
     parser.parse(sentence) shouldBe
-      CreateGlobalIndex("indexName",
-                        TableIdentifier("ex_table", Some("ex_db")),
+      CreateGlobalIndex("myIndex",
+                        TableIdentifier("myTable", Some("myDb")),
                         Seq("col1","col2"),
-                        "com.spark.test",
+                        Option("com.stratio.crossdata.connector.elasticsearch"),
                         Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
+  }
+
+  it should "successfully parse a CREATE GLOBAL INDEX without USING into a CreateGlobalIndex RunnableCommand" in {
+    val sentence =
+      """|CREATE GLOBAL INDEX myIndex
+        |ON myDb.myTable(col1, col2)
+        |OPTIONS (
+        |   opt1 "opt1val",
+        |   opt2 "opt2val"
+        |)""".stripMargin
+    parser.parse(sentence) shouldBe
+      CreateGlobalIndex("myIndex",
+        TableIdentifier("myTable", Some("myDb")),
+        Seq("col1","col2"),
+        None,
+        Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
+  }
+
+  it should "successfully parse a CREATE GLOBAL INDEX without USING without dbName into a CreateGlobalIndex RunnableCommand" in {
+    val sentence =
+      """|CREATE GLOBAL INDEX myIndex
+        |ON myTable(col1, col2)
+        |OPTIONS (
+        |   opt1 "opt1val",
+        |   opt2 "opt2val"
+        |)""".stripMargin
+    parser.parse(sentence) shouldBe
+      CreateGlobalIndex("myIndex",
+        TableIdentifier("myTable"),
+        Seq("col1","col2"),
+        None,
+        Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }
 
 }
