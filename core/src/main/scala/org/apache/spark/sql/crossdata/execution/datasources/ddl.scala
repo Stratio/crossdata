@@ -57,13 +57,13 @@ object DDLUtils {
       case (value:String, _: DateType) => Try(Date.valueOf(value))
       case (value:String, _: TimestampType) => Try(Timestamp.valueOf(value))
 
-      case (seq: Seq[_], ArrayType(elementType, withNulls)) =>
+      case (seq: Seq, ArrayType(elementType, withNulls)) =>
         seqOfTryToTryOfSeq(seq map {seqValue => convertSparkDatatypeToScala(seqValue, elementType)})
 
       case (invalidSeq, ArrayType(elementType, withNulls)) =>
         Failure(new RuntimeException("Invalid array passed as argument:" + invalidSeq.toString))
 
-      case (mapParsed: Map[_,_], MapType(keyType, valueType, withNulls)) =>
+      case (mapParsed: Map, MapType(keyType, valueType, withNulls)) =>
         Try(
           mapParsed map {
             case (key, value) => (convertSparkDatatypeToScala(key, keyType).get, convertSparkDatatypeToScala(value, valueType).get)
