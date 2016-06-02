@@ -45,25 +45,25 @@ object DDLUtils {
   def convertSparkDatatypeToScala(value: Any, sparkDataType: DataType): Try[Any] = {
 
     (value, sparkDataType) match {
-      case (value:String, _: ByteType) => Try(value.toByte)
-      case (value:String, _: ShortType) => Try(value.toShort)
-      case (value:String, _: IntegerType) => Try(value.toInt)
-      case (value:String, _: LongType) => Try(value.toLong)
-      case (value:String, _: FloatType) => Try(value.toFloat)
-      case (value:String, _: DoubleType) => Try(value.toDouble)
-      case (value:String, _: DecimalType) => Try(BigDecimal(value))
-      case (value:String, _: StringType) => Try(value)
-      case (value:String, _: BooleanType) => Try(value.toBoolean)
-      case (value:String, _: DateType) => Try(Date.valueOf(value))
-      case (value:String, _: TimestampType) => Try(Timestamp.valueOf(value))
+      case (value: String, _: ByteType) => Try(value.toByte)
+      case (value: String, _: ShortType) => Try(value.toShort)
+      case (value: String, _: IntegerType) => Try(value.toInt)
+      case (value: String, _: LongType) => Try(value.toLong)
+      case (value: String, _: FloatType) => Try(value.toFloat)
+      case (value: String, _: DoubleType) => Try(value.toDouble)
+      case (value: String, _: DecimalType) => Try(BigDecimal(value))
+      case (value: String, _: StringType) => Try(value)
+      case (value: String, _: BooleanType) => Try(value.toBoolean)
+      case (value: String, _: DateType) => Try(Date.valueOf(value))
+      case (value: String, _: TimestampType) => Try(Timestamp.valueOf(value))
 
-      case (seq: Seq, ArrayType(elementType, withNulls)) =>
-        seqOfTryToTryOfSeq(seq map {seqValue => convertSparkDatatypeToScala(seqValue, elementType)})
+      case (seq: Seq[_], ArrayType(elementType, withNulls)) =>
+        seqOfTryToTryOfSeq(seq map { seqValue => convertSparkDatatypeToScala(seqValue, elementType) })
 
       case (invalidSeq, ArrayType(elementType, withNulls)) =>
         Failure(new RuntimeException("Invalid array passed as argument:" + invalidSeq.toString))
 
-      case (mapParsed: Map, MapType(keyType, valueType, withNulls)) =>
+      case (mapParsed: Map[_, _], MapType(keyType, valueType, withNulls)) =>
         Try(
           mapParsed map {
             case (key, value) => (convertSparkDatatypeToScala(key, keyType).get, convertSparkDatatypeToScala(value, valueType).get)
