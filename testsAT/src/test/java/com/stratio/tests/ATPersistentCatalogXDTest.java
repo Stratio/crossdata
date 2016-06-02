@@ -176,7 +176,8 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 	}
 
 	@AfterClass(enabled = false)
-	public void cleanUp() {
+	public void cleanUp()
+	{
         MongoClient mongoClient = null;
         try {
             mongoClient = new MongoClient(mongoHost, mongoPort);
