@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog.api
+package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.util.DataTypeParser
 import org.apache.spark.sql.crossdata
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog.ViewIdentifier
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.ViewIdentifier
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.apache.spark.sql.types.{Metadata, StructField, StructType}
 import org.json4s.jackson.Serialization._

@@ -16,9 +16,8 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.catalog.CatalogChain
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.{XDCatalog, CatalogChain}
+import XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.catalog.persistent.PersistentCatalogWithCache
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types.StringType

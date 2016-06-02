@@ -16,8 +16,7 @@
 package org.apache.spark.sql.crossdata
 
 import java.util.UUID
-
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.{Logging, SparkContext}
 import com.typesafe.config.Config
 

@@ -2,7 +2,8 @@ package org.apache.spark.sql.crossdata.util
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import XDCatalog.CrossdataTable
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.{HadoopFsRelationProvider, RelationProvider, SchemaRelationProvider}
 

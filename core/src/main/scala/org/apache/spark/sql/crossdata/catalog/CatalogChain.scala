@@ -18,8 +18,7 @@ package org.apache.spark.sql.crossdata.catalog
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
@@ -29,13 +28,12 @@ object CatalogChain {
     val temporaryCatalogs = catalogs.collect { case a: XDTemporaryCatalog => a }
     val persistentCatalogs = catalogs.collect { case a: XDPersistentCatalog => a }
     val streamingCatalogs = catalogs.collect { case a: XDStreamingCatalog => a }
-    // TODO resolve this limitation
-    require(streamingCatalogs.length < 1, "Only one streaming catalog can be included")
+    require(streamingCatalogs.length <= 1, "Only one streaming catalog can be included")
     require(
       temporaryCatalogs.headOption.orElse(persistentCatalogs.headOption).isDefined,
       "At least one catalog (temporary or persistent ) must be included"
     )
-    new CatalogChain(temporaryCatalogs, persistentCatalogs, streamingCatalogs)(conf)
+    new CatalogChain(temporaryCatalogs, persistentCatalogs, streamingCatalogs.headOption)(conf)
   }
 }
 
@@ -45,12 +43,12 @@ object CatalogChain {
  */
 private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTemporaryCatalog],
                                               val persistentCatalogs: Seq[XDPersistentCatalog],
-                                              val streamingCatalogs: Seq[XDStreamingCatalog]
+                                              val streamingCatalogs: Option[XDStreamingCatalog]
                                                )(override val conf: CatalystConf) extends XDCatalog with SparkLoggerComponent {
 
   import XDCatalogCommon._
 
-  private val catalogs: Seq[XDCatalogCommon] = temporaryCatalogs ++: persistentCatalogs ++: streamingCatalogs
+  private val catalogs: Seq[XDCatalogCommon] = temporaryCatalogs ++: persistentCatalogs ++: streamingCatalogs.toSeq
 
   private implicit def crossdataTable2tableIdentifier(xdTable: CrossdataTable): TableIdentifier =
     TableIdentifier(xdTable.tableName, xdTable.dbName)
@@ -101,7 +99,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
     def getRelations(catalogSeq: Seq[XDCatalogCommon], isTemporary: Boolean): Seq[(String, Boolean)] = {
       catalogSeq.flatMap { cat =>
-        cat.allRelations(databaseName).map(normalizeTableName(_, conf) -> true)
+        cat.allRelations(databaseName).map(normalizeTableName(_, conf) -> isTemporary)
       }
     }
     getRelations(temporaryCatalogs, isTemporary = true) ++ getRelations(persistentCatalogs, isTemporary = false)

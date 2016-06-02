@@ -1,4 +1,4 @@
-package org.apache.spark.sql.crossdata.catalog.api
+package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 

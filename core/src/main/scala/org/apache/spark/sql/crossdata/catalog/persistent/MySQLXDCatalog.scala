@@ -20,8 +20,7 @@ import java.sql.{Connection, DriverManager, ResultSet}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
-import org.apache.spark.sql.crossdata.catalog.persistent
+import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.crossdata.CrossdataVersion
 import scala.annotation.tailrec

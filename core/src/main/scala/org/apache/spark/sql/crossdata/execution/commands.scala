@@ -19,7 +19,8 @@ import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.EliminateSubQueries
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}

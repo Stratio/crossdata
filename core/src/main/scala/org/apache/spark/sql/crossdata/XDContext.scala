@@ -30,7 +30,6 @@ import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
 import org.apache.spark.sql.crossdata.catalog._
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
 import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
@@ -108,9 +107,9 @@ class XDContext protected (@transient val sc: SparkContext,
     else DerbyClass
 
     val externalCatalogClass = Class.forName(externalCatalogName)
-    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[XDContext], classOf[CatalystConf])
+    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[SQLContext], classOf[CatalystConf])
 
-    constr.newInstance(conf, self).asInstanceOf[XDPersistentCatalog]
+    constr.newInstance(self, conf).asInstanceOf[XDPersistentCatalog]
   }
 
 
@@ -120,7 +119,7 @@ class XDContext protected (@transient val sc: SparkContext,
       val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)
       val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
-      Option(constr.newInstance(self).asInstanceOf[XDStreamingCatalog])
+      Option(constr.newInstance(conf).asInstanceOf[XDStreamingCatalog])
     } else {
       logError("Empty streaming catalog")
       None
@@ -338,11 +337,10 @@ object XDContext extends CoreConfig {
   var catalogConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
 
   val CaseSensitive = "caseSensitive"
-  val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
+  val DerbyClass = "org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog"
   val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
-  val JDBCClass = "org.apache.spark.sql.crossdata.catalog.JDBCCatalog"
-  val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog"
-  val ZookeeperStreamingClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperStreamingCatalog"
+  val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.persistent.ZookeeperCatalog"
+  val ZookeeperStreamingClass = "org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog"
   val CatalogConfigKey = "catalog"
   val StreamingConfigKey = "streaming"
   val SecurityConfigKey = "security"

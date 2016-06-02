@@ -23,7 +23,7 @@ import com.stratio.crossdata.streaming.test.{BaseSparkStreamingXDTest, CommonVal
 import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
 import org.apache.spark.sql.catalyst.SimpleCatalystConf
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.ZookeeperStreamingCatalog
+import org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog
 import org.apache.spark.sql.crossdata.models.ConnectionModel
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.{SparkConf, SparkContext}

@@ -18,8 +18,7 @@ package org.apache.spark.sql.crossdata.catalog
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata._
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
-import org.apache.spark.sql.crossdata.catalog.api.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.catalog.inmemory.MapCatalog
 import org.apache.spark.sql.crossdata.catalog.persistent.PersistentCatalogWithCache
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
