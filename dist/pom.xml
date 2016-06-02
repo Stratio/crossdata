@@ -20,7 +20,7 @@
             <dependencies>
                 <dependency>
                     <groupId>com.stratio.crossdata</groupId>
-                    <artifactId>crossdata-driver_2.10</artifactId>
+                    <artifactId>crossdata-driver_${scala.binary.version}</artifactId>
                     <version>${project.parent.version}</version>
                     <classifier>jar-with-dependencies</classifier>
                 </dependency>
