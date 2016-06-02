@@ -34,6 +34,9 @@ import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 import org.elasticsearch.hadoop.util.Version
 import org.elasticsearch.hadoop.{EsHadoopIllegalArgumentException, EsHadoopIllegalStateException}
 import org.elasticsearch.spark.sql.ElasticsearchXDRelation
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.util.{Failure, Success}
 
 
 object DefaultSource {
@@ -154,14 +157,19 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
     val indexType = IndexType(index, typeName)
     try {
       val client = ElasticSearchConnectionUtils.buildClient(options)
-      client.execute {
+      val future = client.execute {
         put.mapping(indexType) as elasticSchema
       }
+
+      future onComplete {
+        case Success(response) => println("Response:"+response)
+        case Failure(t) => println("An error has occured: " + t.getMessage)
+      }
+
       Option(Table(typeName, Option(index), Option(schema)))
     } catch {
       case e: Exception =>
         sys.error(e.getMessage)
-        None
     }
   }
 

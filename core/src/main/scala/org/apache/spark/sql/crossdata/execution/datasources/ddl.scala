@@ -58,6 +58,13 @@ object DDLUtils {
     }
   }
 
+  def extractSchema(schemaFromUser: Seq[String], tableSchema: StructType): StructType = {
+    val fields = schemaFromUser map {column =>
+      tableSchema(tableSchema.fieldIndex(column))
+    }
+    StructType(fields)
+  }
+
 }
 
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
@@ -133,20 +140,13 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
     schema.toAttributes
   }
 
-  def extractSchema(schemaFromUser: Seq[String], tableSchema: StructType): StructType = {
-    val fields = schemaFromUser map {column =>
-      tableSchema(tableSchema.fieldIndex(column))
-    }
-    StructType(fields)
-  }
-
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
     sqlContext.catalog.lookupRelation(tableIdentifier) match {
 
       case Subquery(_, LogicalRelation(relation : BaseRelation, _ )) =>
 
-        val schema = schemaFromUser map (extractSchema(_,relation.schema)) getOrElse (relation.schema)
+        val schema = schemaFromUser map (DDLUtils.extractSchema(_,relation.schema)) getOrElse (relation.schema)
 
         relation match {
           case insertableRelation: InsertableRelation =>
@@ -244,7 +244,7 @@ private[crossdata] case class AddJar(jarPath: String)
 }
 
 private [crossdata] case class CreateGlobalIndex(
-                                                indexName: String,
+                                                index: TableIdentifier,
                                                 tableIdent: TableIdentifier,
                                                 cols: Seq[String],
                                                 pk: Seq[String],
@@ -252,7 +252,36 @@ private [crossdata] case class CreateGlobalIndex(
                                                 options: Map[String, String]
                                                 ) extends LogicalPlan with RunnableCommand {
 
-  override def run(sqlContext: SQLContext): Seq[Row] = ???
+  private def createElasticIndex(sqlContext: SQLContext): Try[Unit] =
+    Try {
+      val indexProvider = provider getOrElse "com.stratio.crossdata.connector.elasticsearch"
+
+      val finalIndex = TableIdentifier(index.table, Option(index.database getOrElse("gidx")))
+
+      val colsWithoutSchema = pk ++ cols
+
+      val elasticSchema = sqlContext.catalog.lookupRelation(tableIdent) match {
+
+        case Subquery(_, LogicalRelation(relation : BaseRelation, _ )) =>
+          DDLUtils.extractSchema(colsWithoutSchema, relation.schema)
+
+        case _ =>
+          sys.error("The Datasource does not support CREATE GLOBAL INDEX command")
+      }
+
+      CreateExternalTable(finalIndex, elasticSchema, indexProvider, options).run(sqlContext)
+    }
+
+  private def saveIndexMetadata = ???
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    createElasticIndex(sqlContext).get
+    saveIndexMetadata
+
+    //TODO: Recover if something bad happens
+    ???
+  }
 
 }
 
