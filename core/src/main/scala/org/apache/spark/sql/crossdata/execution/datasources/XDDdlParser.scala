@@ -63,7 +63,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable |
-      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp
+      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp | executeApp
 
   // TODO move to StreamingDdlParser
 
@@ -152,9 +152,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
 
   protected lazy val executeApp: Parser[LogicalPlan] =
-    EXECUTE ~> ident ~> tableValues ^^ {
-      case appName ~ arguments =>
-        ExecuteApp(xDContext, appName, arguments)
+    (EXECUTE ~> ident) ~ tableValues ~ (OPTIONS ~> options).? ^^ {
+      case appName ~ arguments ~ opts =>
+        ExecuteApp(xDContext, appName, arguments, opts)
     }
   /**
    * Streaming

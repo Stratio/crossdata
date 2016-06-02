@@ -134,7 +134,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
         sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exists or is not a hdfs file", Some(new Exception("File doesn't exists or is not a hdfs file"))))
       }
 
-    case CommandEnvelope(addAppCommand@AddAppCommand(path, clss, alias,_), session@Session(id, requester)) =>
+    case CommandEnvelope(addAppCommand@AddAppCommand(path, alias, clss,_), session@Session(id, requester)) =>
       xdContext.addApp(path, clss, alias)
       sender ! SQLReply(addAppCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
 

@@ -130,6 +130,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
     preparedStatement.setString(1, alias)
+//    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars")
     val resultSet: ResultSet = preparedStatement.executeQuery()
 
     if (!resultSet.next) {

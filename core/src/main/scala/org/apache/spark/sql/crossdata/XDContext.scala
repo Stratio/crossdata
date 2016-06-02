@@ -23,9 +23,11 @@ import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 
 import com.stratio.crossdata.connector.FunctionInventory
+import com.stratio.crossdata.launcher.SparkJobLauncher
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.launcher.SparkLauncher
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
@@ -43,6 +45,8 @@ import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWr
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
+
+import scala.util.{Failure, Success}
 
 /**
   * CrossdataContext leverages the features of [[SQLContext]]
@@ -213,12 +217,25 @@ class XDContext private(@transient val sc: SparkContext,
   }
 
   def addApp(path: String, clss: String, alias: String): Unit = {
-    catalog.persistAppMetadata(CrossdataApp(path, alias, clss))
+    val crossdataApp=CrossdataApp(path,alias,clss)
+    catalog.persistAppMetadata(crossdataApp)
   }
 
-  def executeApp(appName: String, arguments: Seq[String]): Unit = {
-    val crossdataApp=catalog.lookupApp(appName).getOrElse(sys.error(s"There is not any app called $appName"))
-    
+  def executeApp(appName: String, arguments: Seq[String], submitOptions:Option[Map[String,String]]=None): Seq[Row] = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    val crossdataApp = catalog.lookupApp(appName).getOrElse(sys.error(s"There is not any app called $appName"))
+    val sparkJob = SparkJobLauncher.getSparkJob(xdConfig,this.sparkContext.master, crossdataApp.appClass, arguments, crossdataApp.jar, crossdataApp.appAlias, submitOptions)
+    sparkJob match {
+      case Failure(exception) =>
+        logError(exception.getMessage, exception)
+        sys.error("Validation error: " + exception.getMessage)
+        Seq(Row(exception.getMessage))
+
+      case Success(job) =>
+        logInfo("SparkJob created. Ready to submit.")
+        job.submit()
+        Seq(Row("Spark app launched"))
+    }
   }
 
   /**

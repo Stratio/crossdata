@@ -24,7 +24,6 @@ import org.scalatest.junit.JUnitRunner
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.reflect.io.File
 
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
@@ -97,7 +96,32 @@ class DriverIT extends EndToEndTest {
 
   }
 
+  it should "indicates that the cluster is alive when there is a server up" in {
+    val driver = Driver.getOrCreate()
 
+    driver.isClusterAlive(6 seconds) shouldBe true
+  }
+
+  it should "return the addresses of servers up and running" in {
+    val driver = Driver.getOrCreate()
+
+    val addresses = Await.result(driver.serversUp(), 6 seconds)
+
+    addresses should have length 1
+    addresses.head.host shouldBe Some("127.0.0.1")
+  }
+
+  it should "return the current cluster state" in {
+    val driver = Driver.getOrCreate()
+
+    val clusterState = Await.result(driver.clusterState(), 6 seconds)
+
+    clusterState.getLeader.host shouldBe Some("127.0.0.1")
+  }
+
+
+
+  //
   //    // TODO move to examples??
   //    // TODO check this tests with HDFS
   //    it should "be able to execute ADD JAR Command of an existent file" in {
@@ -132,43 +156,35 @@ class DriverIT extends EndToEndTest {
   //  }
 
 
-  it should "indicates that the cluster is alive when there is a server up" in {
-    val driver = Driver.getOrCreate()
 
-    driver.isClusterAlive(6 seconds) shouldBe true
-  }
+  //      it should "be able to execute ADD APP Command of an existent file" in {
+  //        assumeCrossdataUpAndRunning
+  //
+  //        val filePath=getClass.getResource("/TestAddApp.jar").getPath
+  //        val driver = Driver.getOrCreate()
+  //        val result = driver.addAppCommand(filePath,"com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
+  //        driver.sql("EXECUTE testApp(rain,bow)").waitForResult()
+  //        driver.stop()
+  //        result.hasError should equal (false)
+  //
+  //
+  //      }
 
-  it should "return the addresses of servers up and running" in {
-    val driver = Driver.getOrCreate()
-
-    val addresses = Await.result(driver.serversUp(), 6 seconds)
-
-    addresses should have length 1
-    addresses.head.host shouldBe Some("127.0.0.1")
-  }
-
-  it should "return the current cluster state" in {
-    val driver = Driver.getOrCreate()
-
-    val clusterState = Await.result(driver.clusterState(), 6 seconds)
-
-    clusterState.getLeader.host shouldBe Some("127.0.0.1")
-  }
-
-
-//      it should "be able to execute ADD APP Command of an existent file" in {
-//        assumeCrossdataUpAndRunning
-//
-//        val file=File(s"/tmp/addAppFile_${System.currentTimeMillis()}.jar").createFile(false)
-//        val driver = Driver.getOrCreate()
-//        val result = driver.addAppCommand(file.path,"com.a.test.main", Some("testApp")).waitForResult()
-//
-//        driver.stop()
-//        file.delete()
-//
-//        result.hasError should equal (false)
-//
-//
-//      }
+  //  it should "be able to execute ADD APP Command of an existent file with options" in {
+  //    assumeCrossdataUpAndRunning
+  //
+  //    val filePath=getClass.getResource("/TestAddApp.jar").getPath
+  //    val driver = Driver.getOrCreate()
+  //    val addAppResult = driver.addAppCommand(filePath,"com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
+  //    addAppResult.hasError should equal (false)
+  //
+  //    val executeResult=driver.sql("""EXECUTE testApp(rain,bow2) OPTIONS (executor.memory '20G')""").waitForResult()
+  //
+  //    executeResult.hasError should equal (false)
+  //    executeResult.resultSet.length should equal (1)
+  //    executeResult.resultSet(0).get(0) should equal ("Spark app launched")
+  //
+  //    driver.stop()
+  //  }
 
 }

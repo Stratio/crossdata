@@ -19,6 +19,7 @@ import java.sql.{Date, Timestamp}
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
+import com.typesafe.config.Config
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
@@ -243,7 +244,7 @@ private[crossdata] case class AddJar(jarPath: String)
   }
 }
 
-private[crossdata] case class AddApp(xdContext:XDContext, jarPath: String, className:String,alias:Option[String]=None)
+private[crossdata] case class AddApp(xdContext:XDContext, jarPath: String, className:String,aliasName:Option[String]=None)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
@@ -254,17 +255,22 @@ private[crossdata] case class AddApp(xdContext:XDContext, jarPath: String, class
     } else {
       sys.error("File doesn't exists or is not a hdfs file")
     }
-    xdContext.addApp(jarPath,className,alias.getOrElse(jarPath))
+    xdContext.addApp(path=jarPath, clss = className, alias=aliasName.getOrElse(jarPath))
     Seq.empty
   }
 }
 
-private[crossdata] case class ExecuteApp(xdContext:XDContext,appName:String, arguments:Seq[String])
+private[crossdata] case class ExecuteApp(xdContext:XDContext,appName:String, arguments:Seq[String], options:Option[Map[String,String]])
   extends LogicalPlan with RunnableCommand {
 
+  override val output: Seq[Attribute] = {
+    val schema = StructType(Seq(
+      StructField("infoMessage", StringType, nullable = true)
+    ))
+    schema.toAttributes
+  }
   override def run(sqlContext: SQLContext): Seq[Row] = {
-   xdContext.executeApp(appName,arguments)
-    Seq.empty
+    xdContext.executeApp(appName, arguments, options)
   }
 }
 
