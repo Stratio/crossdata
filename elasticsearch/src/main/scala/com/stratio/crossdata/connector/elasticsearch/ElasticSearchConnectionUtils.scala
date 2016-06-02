@@ -103,7 +103,7 @@ object ElasticSearchConnectionUtils {
 
   private def buildStructType(mapping: MappingMetaData): StructType ={
 
-    val esFields = mapping.sourceAsMap().get("properties").asInstanceOf[java.util.LinkedHashMap[String,java.util.LinkedHashMap[String, String]]].toMap;
+    val esFields = mapping.sourceAsMap().get("properties").asInstanceOf[java.util.LinkedHashMap[String,java.util.LinkedHashMap[String, String]]].toMap
 
     val fields: Seq[StructField] = esFields.map {
           case (colName, propertyValueMap) => StructField(colName, convertType(propertyValueMap.get("type")), false)

@@ -104,8 +104,8 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
     }
 
     // validate path
-    params.getOrElse(ConfigurationOptions.ES_RESOURCE_READ,
-      params.getOrElse(ConfigurationOptions.ES_RESOURCE, throw new EsHadoopIllegalArgumentException("resource must be specified for Elasticsearch resources.")))
+    if (params.get(ConfigurationOptions.ES_RESOURCE_READ).orElse(params.get(ConfigurationOptions.ES_RESOURCE)).isEmpty)
+      throw new EsHadoopIllegalArgumentException("resource must be specified for Elasticsearch resources.")
 
     params
   }
@@ -156,12 +156,11 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
       val client = ElasticSearchConnectionUtils.buildClient(options)
       client.execute {
         put.mapping(indexType) as elasticSchema
-      }
+      }.await
       Option(Table(typeName, Option(index), Option(schema)))
     } catch {
       case e: Exception =>
         sys.error(e.getMessage)
-        None
     }
   }
 
