@@ -2,12 +2,12 @@ Feature: CassandraSelectUDFS
   Scenario: [CASSANDRA NATIVE, CROSSDATA-31] SELECT ident, now() FROM tabletest;
     When I execute 'SELECT ident, now() FROM tabletest'
     Then The result has to have '10' rows
-      |ident-integer| _c1-string     |
+      |ident-integer| _c1-timestamp     |
 
   Scenario: [CASSANDRA NATIVE, CROSSDATA-31]SELECT ident, now() AS actual FROM tabletest;
     When I execute 'SELECT ident, now() AS actual FROM tabletest'
     Then The result has to have '10' rows
-      |ident-integer|actual-string     |
+      |ident-integer|actual-timestamp     |
 
   Scenario: [CASSANDRA NATIVE, CROSSDATA-31] SELECT ident, dateOf(now()) AS now FROM tabletest
     When I execute 'SELECT ident, dateOf(now()) AS now FROM tabletest'
