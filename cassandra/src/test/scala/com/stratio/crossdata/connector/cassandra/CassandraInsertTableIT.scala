@@ -24,10 +24,26 @@ class CassandraInsertTableIT extends CassandraInsertCollection {
 
   it should "insert a row using INSERT INTO table VALUES in Cassandra" in {
     _xdContext.sql(s"INSERT INTO $Table VALUES (20, 25, [(x -> 3)], ['proof'], 'proof description', true, (x->[1]), (a->2), 'Eve' )").collect() should be (Row(1)::Nil)
+
+    //EXPECTATION
+    val results = sql(s"select * from $Table where id=20").collect()
+
+    results should have length 1
+    results should contain
+    Row(20, 25, "proof description", true, "Eve",
+        Seq("proof"), Map("a" -> "2"), List(Map("x" -> "1", "y" -> "1"),
+        Map("z" -> "1")), Map("x" -> List("1", "2"), "y" -> List("3", "4")))
   }
 
   it should "insert a row using INSERT INTO table(schema) VALUES in Cassandra" in {
     _xdContext.sql(s"INSERT INTO $Table(id, age, name) VALUES (21, 25, 'Peter')").collect() should be (Row(1)::Nil)
+
+    //EXPECTATION
+    val results = sql(s"select id, age, enrolled from $Table where id=21").collect()
+
+    results should have length 1
+    results should contain
+    Row(21, 25, "Peter")
   }
 
   it should "insert multiple rows using INSERT INTO table VALUES in Cassandra" in {
@@ -38,6 +54,22 @@ class CassandraInsertTableIT extends CassandraInsertCollection {
        """.stripMargin
     val rows: Array[Row] = _xdContext.sql(query).collect()
     rows should be (Row(3)::Nil)
+
+    //EXPECTATION
+    val results = sql(s"select id,age,comment,enrolled,name,array_test,map_test,array_map,map_array from $Table where id=22 or id=23 or id=24").collect()
+
+    results should have length 3
+    results should contain allOf(
+
+      Row(22, 25, "proof description", true, "John", Seq("4", "5"),
+        Map("x" -> "1"), Seq(Map("x" -> "1")), Map("x" -> Seq("1", "5"))),
+
+      Row(23, 1, "other description", false, "James", Seq("1", "2", "3"),
+        Map("key" -> "value"), Seq(Map("x" -> "7", "y"->"8")), Map("x" -> Seq("1"))),
+
+      Row(24, 33, "other fun description", false, "July", Seq("true", "true"),
+        Map("z" -> "1", "a" -> "2"), Seq(Map("x" -> "3")), Map("x" -> Seq("1", "9")))
+      )
   }
 
   it should "insert multiple rows using INSERT INTO table(schema) VALUES in Cassandra" in {

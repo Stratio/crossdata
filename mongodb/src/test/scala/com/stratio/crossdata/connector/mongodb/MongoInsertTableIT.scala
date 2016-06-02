@@ -37,7 +37,6 @@ class MongoInsertTableIT extends MongoInsertCollection {
     val results = sql(s"select * from $Collection where id=20").collect()
 
     results should have length 1
-
     results should contain
     Row(20, 25, "proof description", true, "Eve",
       false, Seq("proof"), Map("a" -> "2"), List(Map("x" -> "1", "y" -> "1"),
