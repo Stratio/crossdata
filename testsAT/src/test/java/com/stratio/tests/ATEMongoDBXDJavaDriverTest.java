@@ -133,7 +133,7 @@ public class ATEMongoDBXDJavaDriverTest extends BaseTest{
         mongoClient.dropDatabase(dataBase);
     }
 
-    @Test(enabled = true, groups = {"basic"})
+    @Test(enabled = true, groups = {"advanced"})
     public void ATMongoDBXDJavaDriverTest() throws Exception{
         new CucumberRunner(this.getClass()).runCukes();
     }

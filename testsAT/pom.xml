@@ -6,21 +6,33 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>parent</artifactId>
-        <version>0.5.0</version>
+        <version>0.7.2</version>
     </parent>
+
+    <groupId>com.stratio.crossdata.testsAT</groupId>
+    <artifactId>parent_2.10</artifactId>
+    <name>Stratio Crossdata TestAT</name>
+    <version>1.4.0-SNAPSHOT</version>
     <properties>
-        <stratio-test-bdd.version>0.2.0-SNAPSHOT</stratio-test-bdd.version>
-        <crossdata.version>1.3.0-SNAPSHOT</crossdata.version>
-        <assertj-core.version>1.7.0</assertj-core.version>
         <scala.binary.version>2.10</scala.binary.version>
+        <scala.version>2.10.4</scala.version>
+        <stratio-test-bdd.version>0.2.0-SNAPSHOT</stratio-test-bdd.version>
+        <crossdata.version>1.4.0-SNAPSHOT</crossdata.version>
+        <assertj-core.version>1.7.0</assertj-core.version>
+        <scala_2.10.version>2.10.4</scala_2.10.version>
+        <scala_2.11.version>2.11.7</scala_2.11.version>
     </properties>
-    <groupId>com.stratio.crossdata</groupId>
-    <artifactId>testsAT</artifactId>
-
-    <version>1.3.0-SNAPSHOT</version>
-
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.stratio.mojo</groupId>
+                <artifactId>scala-cross-build-maven-plugin</artifactId>
+                <version>0.1.0-RC3</version>
+                <configuration>
+                    <defaultScalaBinaryVersion>${default.scala.binary.version}</defaultScalaBinaryVersion>
+                    <defaultScalaVersion>${default.scala.version}</defaultScalaVersion>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -176,4 +188,20 @@
             <version>1.3</version>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>scala-2.11</id>
+            <properties>
+                <scala.version>${scala_2.11.version}</scala.version>
+                <scala.binary.version>2.11</scala.binary.version>
+            </properties>
+        </profile>
+            <profile>
+                <id>scala-2.10</id>
+                <properties>
+                    <scala.version>${scala_2.10.version}</scala.version>
+                    <scala.binary.version>2.10</scala.binary.version>
+                </properties>
+         </profile>
+    </profiles>
 </project>

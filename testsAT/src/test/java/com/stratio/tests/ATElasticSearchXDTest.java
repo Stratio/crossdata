@@ -46,22 +46,23 @@ import com.stratio.tests.utils.ThreadProperty;
 import cucumber.api.CucumberOptions;
 
 //Indicar feature
-@CucumberOptions(features = { "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
-        "src/test/resources/features/Udaf/Group_concat.feature",
-        "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
-        "src/test/resources/features/Elasticsearch/Views.feature",
-       "src/test/resources/features/Views/DropViews.feature"
+@CucumberOptions(features = {
+//        "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
+//         "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
+//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
+//        "src/test/resources/features/Udaf/Group_concat.feature",
+//        "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
+//        "src/test/resources/features/Elasticsearch/Views.feature",
+       "src/test/resources/features/Elasticsearch/DropViews.feature"
 })
 public class ATElasticSearchXDTest extends BaseTest {
     private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
-    private String elasticSearchIP = System.getProperty("ES_NODE","172.17.0.2");
+    private String elasticSearchIP = System.getProperty("ES_NODE","127.0.0.1");
     Client client;
     private Settings settings = ImmutableSettings.settingsBuilder()
             .put("cluster.name", elasticSearchCluster).build();
@@ -136,7 +137,7 @@ public class ATElasticSearchXDTest extends BaseTest {
         client.close();
 	}
 
-    @Test(enabled = true, groups = {"basic"})
+    @Test(enabled = true, groups = {"advanced"})
     public void ATElasticSearchXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
