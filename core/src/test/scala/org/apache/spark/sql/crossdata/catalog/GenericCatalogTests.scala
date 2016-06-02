@@ -18,14 +18,26 @@ package org.apache.spark.sql.crossdata.catalog
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata._
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.api.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.inmemory.MapCatalog
+import org.apache.spark.sql.crossdata.catalog.persistent.PersistentCatalogWithCache
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types._
 
+
 trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   def catalogName: String
+
+  implicit def catalogToPersistenceWithCache(catalog: XDCatalog): PersistentCatalogWithCache = {
+    catalog.asInstanceOf[CatalogChain].persistentCatalogs.head.asInstanceOf[PersistentCatalogWithCache]
+  }
+
+  implicit def catalogToTemporaryCatalog(catalog: XDCatalog): MapCatalog = {
+    catalog.asInstanceOf[CatalogChain].temporaryCatalogs.head.asInstanceOf[MapCatalog]
+  }
 
   s"${catalogName}CatalogSpec" must "return a dataframe from a persist table without catalog using json datasource" in {
     val fields = Seq[StructField](Field1, Field2)
@@ -190,7 +202,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     xdContext.catalog.unregisterAllTables()
-    xdContext.catalog.asInstanceOf[CatalogChain].catalogs.head.getTables(None).size shouldBe 0
+    xdContext.catalog.tableCache.size shouldBe 0
     val tables = xdContext.catalog.getTables(Some(Database))
     tables.size shouldBe 1
   }
@@ -204,7 +216,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     xdContext.catalog.unregisterAllTables()
-    xdContext.catalog.asInstanceOf[CatalogChain].catalogs.head.getTables(None).size shouldBe 0
+    xdContext.catalog.tableCache.size shouldBe 0
     val tables = xdContext.catalog.getTables(None)
     tables.size shouldBe 1
   }

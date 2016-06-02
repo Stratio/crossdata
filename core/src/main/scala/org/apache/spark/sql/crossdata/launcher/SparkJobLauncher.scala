@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.launcher
+package org.apache.spark.sql.crossdata.launcher
 
 import java.io.File
 import java.util.UUID
@@ -23,7 +23,7 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.utils.HdfsUtils
 import com.typesafe.config.{Config, ConfigRenderOptions}
 import org.apache.spark.launcher.SparkLauncher
-import org.apache.spark.sql.crossdata.catalog.XDStreamingCatalog
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
 import org.apache.spark.sql.crossdata.config.{CoreConfig, StreamingConstants}
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
@@ -34,7 +34,7 @@ import scala.util.{Properties, Try}
 
 object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
 
-  def getSparkStreamingJob(crossdataConfig: Config, streamingCatalog: XDStreamingCatalog, ephemeralTableName: String)
+  def getSparkStreamingJob(xdContext: XDContext, crossdataConfig: Config, ephemeralTableName: String)
                           (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
     val streamingConfig = crossdataConfig.getConfig(StreamingConfPath)
     val sparkHome =
@@ -42,7 +42,7 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
         throw new RuntimeException("You must set the $SPARK_HOME path in configuration or environment")
       )
 
-    val eTable = streamingCatalog.getEphemeralTable(ephemeralTableName).getOrElse(notFound(ephemeralTableName))
+    val eTable = xdContext.catalog.getEphemeralTable(ephemeralTableName).getOrElse(notFound(ephemeralTableName))
     val appName = s"${eTable.name}_${UUID.randomUUID()}"
     val zkConfigEncoded: String = encode(render(streamingConfig, ZooKeeperStreamingCatalogPath))
     val catalogConfigEncoded: String = encode(render(crossdataConfig, CoreConfig.CatalogConfigKey))

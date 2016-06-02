@@ -13,20 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
-import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata._
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.CrossdataVersion
+import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.persistent
 import org.apache.spark.sql.types.StructType
 
 import scala.annotation.tailrec
 
-
+// TODO refactor SQL catalog implementations
 object DerbyCatalog {
+  val DB = "CROSSDATA"
+  val TableWithTableMetadata = "xdtables"
+  val TableWithViewMetadata = "xdviews"
   // TableMetadataFields
   val DatabaseField = "db"
   val TableNameField = "tableName"
@@ -40,20 +44,16 @@ object DerbyCatalog {
 }
 
 /**
- * Default implementation of the [[catalog.PersistentCatalog]] with persistence using
+ * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
  * Derby.
  *
- * @param conf An implementation of the [[CatalystConf]].
+ * @param catalystConf An implementation of the [[CatalystConf]].
  */
-class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends PersistentCatalog(conf, xdContext) with SparkLoggerComponent {
+class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
+  extends PersistentCatalogWithCache(sqlContext, catalystConf) {
 
   import DerbyCatalog._
-  import PersistentCatalog._
-
-  private val db = "CROSSDATA"
-  private val tableWithTableMetadata = "xdtables"
-  private val tableWithViewMetadata = "xdviews"
+  import XDCatalog._
 
   @transient lazy val connection: Connection = {
 
@@ -65,12 +65,12 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     // CREATE PERSISTENT METADATA TABLE
 
-    if(!schemaExists(db, jdbcConnection)) {
-      jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
+    if(!schemaExists(DB, jdbcConnection)) {
+      jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $DB")
 
 
       jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE $db.$tableWithTableMetadata (
+        s"""|CREATE TABLE $DB.$TableWithTableMetadata (
            |$DatabaseField VARCHAR(50),
            |$TableNameField VARCHAR(50),
            |$SchemaField LONG VARCHAR,
@@ -81,7 +81,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
       jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE $db.$tableWithViewMetadata (
+        s"""|CREATE TABLE $DB.$TableWithViewMetadata (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
             |$SqlViewField LONG VARCHAR,
@@ -94,9 +94,8 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   }
 
 
-  override def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
-
-    val resultSet = selectMetadata(tableWithTableMetadata, tableIdentifier)
+  override def lookupTable(tableIdentifier: ViewIdentifier): Option[CrossdataTable] = {
+    val resultSet = selectMetadata(TableWithTableMetadata, tableIdentifier)
 
     if (!resultSet.next) {
       None
@@ -117,6 +116,16 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     }
   }
 
+  override def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
+    val resultSet = selectMetadata(TableWithViewMetadata, viewIdentifier)
+    if (!resultSet.next)
+      None
+    else
+      Option(resultSet.getString(SqlViewField))
+  }
+
+
+
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
     try {
 
@@ -127,11 +136,11 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       connection.setAutoCommit(false)
 
       // check if the database-table exist in the persisted catalog
-      val resultSet = selectMetadata(tableWithTableMetadata, TableIdentifier(crossdataTable.tableName, crossdataTable.dbName))
+      val resultSet = selectMetadata(TableWithTableMetadata, TableIdentifier(crossdataTable.tableName, crossdataTable.dbName))
 
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
-          s"""|INSERT INTO $db.$tableWithTableMetadata (
+          s"""|INSERT INTO $DB.$TableWithTableMetadata (
               | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
@@ -146,7 +155,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       }
       else {
         val prepped = connection.prepareStatement(
-          s"""|UPDATE $db.$tableWithTableMetadata SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+          s"""|UPDATE $DB.$TableWithTableMetadata SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
               |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}'
        """.stripMargin)
         prepped.setString(1, tableSchema)
@@ -162,55 +171,14 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       connection.setAutoCommit(true)
     }
 
-
-
-  override def dropTable(tableIdentifier: ViewIdentifier): Unit =
-    connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'"
-    )
-
-  override def dropView(viewIdentifier: ViewIdentifier): Unit =
-    connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
-
-
-  override def dropAllViews(): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
-
-  override def dropAllTables(): Unit = {
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata")
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
-  }
-
-
-  private def schemaExists(schema: String, connection: Connection) : Boolean= {
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$db'")
-    val resultSet = preparedStatement.executeQuery()
-
-    resultSet.next()
-
-  }
-
-  override protected[crossdata] def lookupView(tableIdentifier: TableIdentifier): Option[String] = {
-
-    val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
-
-    if (!resultSet.next)
-      None
-    else
-      Option(resultSet.getString(SqlViewField))
-  }
-
-
-  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
+  override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
     try {
       connection.setAutoCommit(false)
-
-      val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
+      val resultSet = selectMetadata(TableWithViewMetadata, tableIdentifier)
 
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
-          s"""|INSERT INTO $db.$tableWithViewMetadata (
+          s"""|INSERT INTO $DB.$TableWithViewMetadata (
               | $DatabaseField, $TableNameField, $SqlViewField, $CrossdataVersionField
               |) VALUES (?,?,?,?)
          """.stripMargin)
@@ -221,7 +189,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         prepped.execute()
       } else {
         val prepped = connection.prepareStatement(
-          s"""|UPDATE $db.$tableWithViewMetadata SET $SqlViewField=?
+          s"""|UPDATE $DB.$TableWithViewMetadata SET $SqlViewField=?
               |WHERE $DatabaseField='${tableIdentifier.database.getOrElse("")}' AND $TableNameField='${tableIdentifier.table}'
          """.stripMargin)
         prepped.setString(1, sqlText)
@@ -232,25 +200,33 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       connection.setAutoCommit(true)
     }
 
-  private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
+  override def dropTableMetadata(tableIdentifier: TableIdentifier): Unit =
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $DB.$TableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'"
+    )
 
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
-    preparedStatement.setString(2, tableIdentifier.table)
-    preparedStatement.executeQuery()
-
-  }
+  override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $DB.$TableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'"
+    )
 
 
-  override def checkConnectivity: Boolean = true
+  override def dropAllTablesMetadata(): Unit =
+    connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithTableMetadata")
+  // TODO dropAllTables
 
-  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
+  override def dropAllViewsMetadata(): Unit =
+    connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithViewMetadata")
+
+  override def isAvailable: Boolean = true
+
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
     @tailrec
-    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[String] = Set()): Set[String] = {
+    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifier] = Set.empty): Set[TableIdentifier] = {
       if (next) {
         val database = resultset.getString(DatabaseField)
         val table = resultset.getString(TableNameField)
-        val tableId = if (database.trim.isEmpty) table else s"$database.$table"
+        val tableId = if (database.trim.isEmpty) TableIdentifier(table) else TableIdentifier(table, Option(database))
         getSequenceAux(resultset, resultset.next(), set + tableId)
       } else {
         set
@@ -259,8 +235,23 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     val statement = connection.createStatement
     val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
-    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
+    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $DB.$TableWithTableMetadata $dbFilter")
 
-    getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
+    getSequenceAux(resultSet, resultSet.next).toSeq
+  }
+
+  private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
+
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $DB.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
+    preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
+    preparedStatement.setString(2, tableIdentifier.table)
+    preparedStatement.executeQuery()
+
+  }
+  private def schemaExists(schema: String, connection: Connection): Boolean = {
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$DB'")
+    val resultSet = preparedStatement.executeQuery()
+
+    resultSet.next()
   }
 }

@@ -15,120 +15,220 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.api.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
+import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
-import scala.collection.SeqView
+
+object CatalogChain {
+  def apply(catalogs: XDCatalogCommon*)(conf: CatalystConf): CatalogChain = {
+    val temporaryCatalogs = catalogs.collect { case a: XDTemporaryCatalog => a }
+    val persistentCatalogs = catalogs.collect { case a: XDPersistentCatalog => a }
+    val streamingCatalogs = catalogs.collect { case a: XDStreamingCatalog => a }
+    // TODO resolve this limitation
+    require(streamingCatalogs.length < 1, "Only one streaming catalog can be included")
+    require(
+      temporaryCatalogs.headOption.orElse(persistentCatalogs.headOption).isDefined,
+      "At least one catalog (temporary or persistent ) must be included"
+    )
+    new CatalogChain(temporaryCatalogs, persistentCatalogs, streamingCatalogs)(conf)
+  }
+}
 
 /*
   Write through (always true for this class)-> Each write is synchronously done to all catalogs in the chain
   No-Write allocate (always true) -> A miss at levels 0...i-1,i isn't written to these levels when found at level i+1
  */
-class CatalogChain(
-    firstLevel: XDCatalog,
-    fallbackCatalogs: XDCatalog*
-  ) extends XDCatalogWithPersistence {
+private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTemporaryCatalog],
+                                              val persistentCatalogs: Seq[XDPersistentCatalog],
+                                              val streamingCatalogs: Seq[XDStreamingCatalog]
+                                               )(override val conf: CatalystConf) extends XDCatalog with SparkLoggerComponent {
+
+  import XDCatalogCommon._
+
+  private val catalogs: Seq[XDCatalogCommon] = temporaryCatalogs ++: persistentCatalogs ++: streamingCatalogs
 
   private implicit def crossdataTable2tableIdentifier(xdTable: CrossdataTable): TableIdentifier =
     TableIdentifier(xdTable.tableName, xdTable.dbName)
 
-  val catalogs = (firstLevel +: fallbackCatalogs)
-
-  private def chainedLookup[R](lookup: XDCatalog => Option[R]): Option[R] =
-    catalogs.view map(lookup) collectFirst {
+  private def chainedLookup[R](lookup: XDCatalogCommon => Option[R]): Option[R] =
+    catalogs.view map lookup collectFirst {
       case Some(res) => res
     }
 
-  private def persistentCatalogsView: SeqView[PersistentCatalog, Seq[_]] = catalogs.view collect {
-    case c: PersistentCatalog => c
+
+  /**
+   * TemporaryCatalog
+   */
+
+  override def registerView(viewIdentifier: ViewIdentifier, logicalPlan: LogicalPlan): Unit =
+    temporaryCatalogs.foreach(_.saveView(viewIdentifier, logicalPlan))
+
+  override def unregisterView(viewIdentifier: ViewIdentifier): Unit =
+    temporaryCatalogs.foreach(_.dropView(viewIdentifier))
+
+  override def registerTable(tableIdent: TableIdentifier, plan: LogicalPlan): Unit =
+    temporaryCatalogs.foreach(_.saveTable(tableIdent, plan))
+
+  override def unregisterTable(tableIdent: TableIdentifier): Unit =
+    temporaryCatalogs.foreach(_.dropTable(tableIdent))
+
+  override def unregisterAllTables(): Unit =
+    temporaryCatalogs.foreach(_.dropAllTables())
+
+
+  /**
+   * CommonCatalog
+   */
+
+  private def lookupRelationOpt(tableIdent: TableIdentifier, alias: Option[String] = None): Option[LogicalPlan] =
+    chainedLookup(_.relation(tableIdent))
+
+  override def lookupRelation(tableIdent: TableIdentifier, alias: Option[String]): LogicalPlan =
+    lookupRelationOpt(tableIdent, alias) getOrElse {
+      log.debug(s"Relation not found: ${tableIdent.unquotedString}")
+      sys.error(s"Relation not found: ${tableIdent.unquotedString}")
+    }
+
+  override def tableExists(tableIdent: TableIdentifier): Boolean =
+    lookupRelationOpt(tableIdent).isDefined
+
+  // TODO streaming tables
+  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
+    def getRelations(catalogSeq: Seq[XDCatalogCommon], isTemporary: Boolean): Seq[(String, Boolean)] = {
+      catalogSeq.flatMap { cat =>
+        cat.allRelations(databaseName).map(normalizeTableName(_, conf) -> true)
+      }
+    }
+    getRelations(temporaryCatalogs, isTemporary = true) ++ getRelations(persistentCatalogs, isTemporary = false)
   }
 
-  // Persistence interface
+  /**
+   * Check the connection to the set Catalog
+   */
+  override def checkConnectivity: Boolean = catalogs.forall(_.isAvailable)
 
-  override def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit = {
-    registerTable(crossdataTable, table)
-    persistentCatalogsView foreach (_.persistTable(crossdataTable, table))
-  }
+  /**
+   * ExternalCatalog
+   */
 
-  override def persistView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit = {
-    registerView(viewIdentifier, plan)
-    persistentCatalogsView foreach (_.persistView(viewIdentifier, plan, sqlText))
-  }
+  override def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit =
+    persistentCatalogs.foreach(_.saveTable(crossdataTable, table))
+
+  override def persistView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit =
+    persistentCatalogs.foreach(_.saveView(tableIdentifier, plan, sqlText))
 
   override def dropTable(tableIdentifier: TableIdentifier): Unit = {
     if (!tableExists(tableIdentifier)) throw new RuntimeException("Table can't be deleted because it doesn't exists")
     logInfo(s"Deleting table ${tableIdentifier.unquotedString}from catalog")
-    unregisterTable(tableIdentifier)
-    persistentCatalogsView foreach (_.dropTable(tableIdentifier))
-  }
-
-  override def dropView(viewIdentifier: ViewIdentifier): Unit = {
-    if (!tableExists(viewIdentifier)) throw new RuntimeException("View can't be deleted because it doesn't exists")
-    logInfo(s"Deleting table ${viewIdentifier.unquotedString} from catalog")
-    unregisterView(viewIdentifier)
-    persistentCatalogsView foreach (_.dropView(viewIdentifier))
+    temporaryCatalogs foreach (_.dropTable(tableIdentifier))
+    persistentCatalogs foreach (_.dropTable(tableIdentifier))
   }
 
   override def dropAllTables(): Unit = {
-    dropAllViews
-    unregisterAllTables
-    persistentCatalogsView foreach (_.dropAllTables)
+    dropAllViews()
+    temporaryCatalogs foreach (_.dropAllTables())
+    persistentCatalogs foreach (_.dropAllTables())
+  }
+
+  override def dropView(viewIdentifier: ViewIdentifier): Unit = {
+    if (!tableExists(viewIdentifier)) throw new RuntimeException("Table can't be deleted because it doesn't exists")
+    logInfo(s"Deleting table ${viewIdentifier.unquotedString}from catalog")
+    temporaryCatalogs foreach (_.dropView(viewIdentifier))
+    persistentCatalogs foreach (_.dropView(viewIdentifier))
   }
 
   override def dropAllViews(): Unit = {
-    unregisterAllViews
-    persistentCatalogsView foreach (_.dropAllViews)
+    temporaryCatalogs foreach (_.dropAllViews())
+    persistentCatalogs foreach (_.dropAllViews())
   }
 
-  // Catalog interface
+  override def refreshTable(tableIdent: TableIdentifier): Unit =
+    persistentCatalogs.foreach(_.refreshCache(tableIdent))
 
-  override def registerTable(tableIdent: TableIdentifier, plan: LogicalPlan): Unit =
-    catalogs foreach (_.registerTable(tableIdent, plan))
-  override def registerView(viewIdentifier: ViewIdentifier, plan: LogicalPlan): Unit =
-    catalogs foreach (_.registerView(viewIdentifier, plan))
-
-  override def unregisterTable(tableIdent: TableIdentifier): Unit = catalogs foreach (_.unregisterTable(tableIdent))
-  override def unregisterView(viewIdent: ViewIdentifier): Unit = catalogs foreach (_.unregisterView(viewIdent))
-
-  override def unregisterAllTables(): Unit = catalogs foreach(_.unregisterAllTables)
-  override def unregisterAllViews(): Unit = catalogs.foreach(_.unregisterAllViews)
-
-  private def lookupRelationOpt(tableIdent: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
-    chainedLookup { catalog: XDCatalog =>
-      if(catalog tableExists tableIdent) Some(catalog.lookupRelation(tableIdent, alias)) else None
-    }
-
-  override def lookupRelation(tableIdent: TableIdentifier, alias: Option[String]): LogicalPlan =
-    lookupRelationOpt(tableIdent, alias) get
-
-
-  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] =
-    (Map.empty[String, Boolean] /: (catalogs flatMap (_.getTables(databaseName)))) {
-      case (res, entry: (String, Boolean) @ unchecked) =>
-        if(res.get(entry._1).getOrElse(true)) res + entry else res
-    } toSeq
-
-  override def refreshTable(tableIdent: TableIdentifier): Unit = ()
-
-  override def tableExists(tableIdent: TableIdentifier): Boolean =
-    lookupRelationOpt(tableIdent, None) isDefined
-
-
-  override protected[crossdata] def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
-    persistentCatalogsView foreach (_.persistTableMetadata(crossdataTable))
-
-  override protected[crossdata] def persistViewMetadata(tableIdentifier: ViewIdentifier, sqlText: String): Unit =
-    persistentCatalogsView foreach (_.persistViewMetadata(tableIdentifier, sqlText))
-
+  // TODO streaming (Option vs real)
   /**
-    * Check the connection to the set Catalog
-    */
-  override def checkConnectivity: Boolean = catalogs.forall(_.checkConnectivity)
+   * StreamingCatalog
+   */
+
+  // Ephemeral Table Functions
+
+  override def existsEphemeralTable(tableIdentifier: String): Boolean =
+    getEphemeralTable(tableIdentifier).isDefined
+
+  override def getEphemeralTable(tableIdentifier: String): Option[EphemeralTableModel] =
+    executeWithStrCatalogOrNone(_.getEphemeralTable(tableIdentifier))
 
 
-  override val xdContext: XDContext = catalogs.head.xdContext
-  override val conf: CatalystConf = firstLevel.conf //TODO: Own config?
+  override def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel] =
+    withStreamingCatalogDo(_.createEphemeralTable(ephemeralTable))
+
+
+  override def dropEphemeralTable(tableIdentifier: String): Unit =
+    withStreamingCatalogDo(_.dropEphemeralTable(tableIdentifier))
+
+  override def getAllEphemeralTables: Seq[EphemeralTableModel] =
+    executeWithStrCatalogOrEmptyList(_.getAllEphemeralTables)
+
+  override def dropAllEphemeralTables(): Unit =
+    withStreamingCatalogDo(_.dropAllEphemeralTables())
+
+  // Ephemeral Queries Functions
+
+  override def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel] =
+    withStreamingCatalogDo(_.createEphemeralQuery(ephemeralQuery))
+
+  override def getEphemeralQuery(queryAlias: String): Option[EphemeralQueryModel] =
+    executeWithStrCatalogOrNone(_.getEphemeralQuery(queryAlias))
+
+  override def dropEphemeralQuery(queryAlias: String): Unit =
+    withStreamingCatalogDo(_.dropEphemeralQuery(queryAlias))
+
+  override def existsEphemeralQuery(queryAlias: String): Boolean =
+    getEphemeralQuery(queryAlias).isDefined
+
+  override def getAllEphemeralQueries: Seq[EphemeralQueryModel] =
+    executeWithStrCatalogOrEmptyList(_.getAllEphemeralQueries)
+
+  override def dropAllEphemeralQueries(): Unit =
+    withStreamingCatalogDo(_.dropAllEphemeralQueries())
+
+
+  // Ephemeral Status Functions
+
+  override protected[crossdata] def getEphemeralStatus(tableIdentifier: String): Option[EphemeralStatusModel] =
+    executeWithStrCatalogOrNone(_.getEphemeralStatus(tableIdentifier))
+
+  override protected[crossdata] def getAllEphemeralStatuses: Seq[EphemeralStatusModel] =
+    executeWithStrCatalogOrEmptyList(_.getAllEphemeralStatuses)
+
+  override protected[crossdata] def dropEphemeralStatus(tableIdentifier: String): Unit =
+    withStreamingCatalogDo(_.dropEphemeralStatus(tableIdentifier))
+
+  override protected[crossdata] def dropAllEphemeralStatus(): Unit =
+    withStreamingCatalogDo(_.dropAllEphemeralStatus())
+
+  override protected[crossdata] def createEphemeralStatus(tableIdentifier: String, ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel =
+    withStreamingCatalogDo(_.createEphemeralStatus(tableIdentifier, ephemeralStatusModel))
+
+  override protected[crossdata] def updateEphemeralStatus(tableIdentifier: String, status: EphemeralStatusModel): Unit =
+    withStreamingCatalogDo(_.updateEphemeralStatus(tableIdentifier, status))
+
+  // Utils
+  private def withStreamingCatalogDo[R](streamingCatalogOperation: XDStreamingCatalog => R): R = {
+    streamingCatalogs.headOption.map(streamingCatalogOperation).getOrElse {
+      throw new RuntimeException("There is no streaming catalog")
+    }
+  }
+  private def executeWithStrCatalogOrNone[R](streamingCatalogOperation: XDStreamingCatalog => Option[R]): Option[R] =
+    streamingCatalogs.headOption.flatMap(streamingCatalogOperation)
+
+  private def executeWithStrCatalogOrEmptyList[R](streamingCatalogOperation: XDStreamingCatalog => Seq[R]): Seq[R] =
+    streamingCatalogs.headOption.map(streamingCatalogOperation).getOrElse(Seq.empty)
+
 
 }

@@ -15,15 +15,17 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.daos.impl._
+import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.models._
 
 import scala.util.Try
 
-class ZookeeperStreamingCatalog(override val xdContext: XDContext
-                               ) extends XDStreamingCatalog(xdContext) {
+class ZookeeperStreamingCatalog(val catalystConf: CatalystConf) extends XDStreamingCatalog {
 
   private[spark] val streamingConfig = XDContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
   private[spark] val ephemeralTableDAO =
@@ -32,6 +34,22 @@ class ZookeeperStreamingCatalog(override val xdContext: XDContext
     new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
   private[spark] val ephemeralTableStatusDAO =
     new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+
+  // TODO
+
+  override def relation(tableIdent: TableIdentifier, alias: Option[String]): Option[LogicalPlan] = {
+    val tableIdentifier: String = normalizeTableName(tableIdent)
+    if (existsEphemeralTable(tableIdentifier))
+      Some(StreamingRelation(tableIdentifier))
+    else
+      None
+  }
+
+  // TODO
+  override def isAvailable: Boolean = true
+
+  // TODO It must not return the relations until the catalog can distinguish between real/ephemeral tables
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = Seq.empty
 
   /**
    * Ephemeral Table Functions
@@ -122,9 +140,5 @@ class ZookeeperStreamingCatalog(override val xdContext: XDContext
   override protected[crossdata] def dropAllEphemeralStatus(): Unit =
     ephemeralTableStatusDAO.dao.deleteAll
 
-  /**
-    * Check the connection to the set Catalog
-    */
-  override def checkConnectivity:Boolean = true //TODO: Provide a proper connectivity check
-  override val conf: CatalystConf = SimpleCatalystConf(true)
+
 }

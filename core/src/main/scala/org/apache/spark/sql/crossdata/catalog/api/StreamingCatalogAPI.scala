@@ -1,8 +1,8 @@
-package org.apache.spark.sql.crossdata.catalog.interfaces
+package org.apache.spark.sql.crossdata.catalog.api
 
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
-trait XDCatalogStreaming {
+private[crossdata] trait StreamingCatalogAPI {
 
   /**
     * Ephemeral Table Functions

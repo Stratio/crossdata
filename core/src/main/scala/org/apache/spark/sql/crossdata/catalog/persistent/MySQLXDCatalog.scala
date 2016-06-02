@@ -13,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
-import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata._
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
-import org.apache.spark.sql.types.StructType
-
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.persistent
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.crossdata.CrossdataVersion
 import scala.annotation.tailrec
 
-object PostgreSQLXDCatalog {
+object MySQLXDCatalog {
   // SQLConfig
   val Driver = "jdbc.driver"
   val Url = "jdbc.url"
   val Database = "jdbc.db.name"
-  val Table = "jdbc.db.table"
+  val TableWithTableMetadata = "jdbc.db.table"
   val TableWithViewMetadata = "jdbc.db.view"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
@@ -42,27 +43,28 @@ object PostgreSQLXDCatalog {
   val PartitionColumnField = "partitionColumn"
   val OptionsField = "options"
   val CrossdataVersionField = "crossdataVersion"
-  val SqlViewField = "sqlView"
 
+  // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
+  val SqlViewField = "sqlView"
 }
 
 /**
-  * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.PersistentCatalog]] with persistence using
-  * Jdbc.
-  * Supported MySQL and PostgreSQL
+ * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
+ * Jdbc.
+ * Supported MySQL and PostgreSQL
  *
-  * @param conf An implementation of the [[CatalystConf]].
-  */
-class PostgreSQLXDCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends PersistentCatalog(conf, xdContext) with SparkLoggerComponent {
+ * @param catalystConf An implementation of the [[CatalystConf]].
+ */
+class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
+  extends PersistentCatalogWithCache(sqlContext, catalystConf) {
 
-  import PostgreSQLXDCatalog._
-  import PersistentCatalog._
+  import MySQLXDCatalog._
+  import XDCatalog._
+
 
   private val config = XDContext.catalogConfig
-
   private val db = config.getString(Database)
-  private val table = config.getString(Table)
+  private val tableWithTableMetadata = config.getString(TableWithTableMetadata)
   private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
 
   @transient lazy val connection: Connection = {
@@ -73,15 +75,16 @@ class PostgreSQLXDCatalog(override val conf: CatalystConf = new SimpleCatalystCo
     val url = config.getString(Url)
 
     Class.forName(driver)
-    try{
+    try {
       val jdbcConnection = DriverManager.getConnection(url, user, pass)
 
       // CREATE PERSISTENT METADATA TABLE
-      if(!schemaExists(db, jdbcConnection))
-        jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
+
+      jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA IF NOT EXISTS $db")
+
 
       jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE IF NOT EXISTS $db.$table (
+        s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithTableMetadata (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
             |$SchemaField TEXT,
@@ -105,16 +108,12 @@ class PostgreSQLXDCatalog(override val conf: CatalystConf = new SimpleCatalystCo
         logError(e.getMessage)
         null
     }
-
   }
 
 
   override def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
 
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
-    preparedStatement.setString(2, tableIdentifier.table)
-    val resultSet = preparedStatement.executeQuery()
+    val resultSet = selectMetadata(tableWithTableMetadata, tableIdentifier)
 
     if (!resultSet.isBeforeFirst) {
       None
@@ -135,13 +134,13 @@ class PostgreSQLXDCatalog(override val conf: CatalystConf = new SimpleCatalystCo
   }
 
 
-  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
     @tailrec
-    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[String] = Set()): Set[String] = {
+    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifier] = Set.empty): Set[TableIdentifier] = {
       if (next) {
         val database = resultset.getString(DatabaseField)
         val table = resultset.getString(TableNameField)
-        val tableId = if (database.trim.isEmpty) table else s"$database.$table"
+        val tableId = if (database.trim.isEmpty) TableIdentifier(table) else TableIdentifier(table, Option(database))
         getSequenceAux(resultset, resultset.next(), set + tableId)
       } else {
         set
@@ -150,72 +149,69 @@ class PostgreSQLXDCatalog(override val conf: CatalystConf = new SimpleCatalystCo
 
     val statement = connection.createStatement
     val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
-    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$table $dbFilter")
+    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
 
-    getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
+    getSequenceAux(resultSet, resultSet.next).toSeq
   }
 
-  override def persistTableMetadata(crossdataTable: CrossdataTable): Unit = {
+  override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
+    try {
 
-    val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(new StructType()))
-    val tableOptions = serializeOptions(crossdataTable.opts)
-    val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
+      val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(new StructType()))
+      val tableOptions = serializeOptions(crossdataTable.opts)
+      val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
-    connection.setAutoCommit(false)
+      connection.setAutoCommit(false)
 
-    // check if the database-table exist in the persisted catalog
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement.setString(1, crossdataTable.dbName.getOrElse(""))
-    preparedStatement.setString(2, crossdataTable.tableName)
-    val resultSet = preparedStatement.executeQuery()
+      // check if the database-table exist in the persisted catalog
+      val resultSet = selectMetadata(tableWithTableMetadata, TableIdentifier(crossdataTable.tableName, crossdataTable.dbName))
 
-    if (!resultSet.isBeforeFirst) {
-      val prepped = connection.prepareStatement(
-        s"""|INSERT INTO $db.$table (
-            | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
-            |) VALUES (?,?,?,?,?,?,?)
+      if (!resultSet.isBeforeFirst) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $db.$tableWithTableMetadata (
+              | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
+              |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
-      prepped.setString(1, crossdataTable.dbName.getOrElse(""))
-      prepped.setString(2, crossdataTable.tableName)
-      prepped.setString(3, tableSchema)
-      prepped.setString(4, crossdataTable.datasource)
-      prepped.setString(5, partitionColumn)
-      prepped.setString(6, tableOptions)
-      prepped.setString(7, CrossdataVersion)
-      prepped.execute()
-    }
-    else {
-      val prepped = connection.prepareStatement(
-        s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-            |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
+        prepped.setString(1, crossdataTable.dbName.getOrElse(""))
+        prepped.setString(2, crossdataTable.tableName)
+        prepped.setString(3, tableSchema)
+        prepped.setString(4, crossdataTable.datasource)
+        prepped.setString(5, partitionColumn)
+        prepped.setString(6, tableOptions)
+        prepped.setString(7, CrossdataVersion)
+        prepped.execute()
+      } else {
+        val prepped =
+          connection.prepareStatement(
+            s"""|UPDATE $db.$tableWithTableMetadata
+                |SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+                |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
        """.stripMargin.replaceAll("\n", " "))
 
-      prepped.setString(1, tableSchema)
-      prepped.setString(2, crossdataTable.datasource)
-      prepped.setString(3, partitionColumn)
-      prepped.setString(4, tableOptions)
-      prepped.setString(5, CrossdataVersion)
-      prepped.execute()
+        prepped.setString(1, tableSchema)
+        prepped.setString(2, crossdataTable.datasource)
+        prepped.setString(3, partitionColumn)
+        prepped.setString(4, tableOptions)
+        prepped.setString(5, CrossdataVersion)
+        prepped.execute()
+      }
+      connection.commit()
+
+    } finally {
+      connection.setAutoCommit(true)
     }
-    connection.commit()
-    connection.setAutoCommit(true)
-  }
 
 
 
-  override def dropTable(tableIdentifier: ViewIdentifier): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
+  override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
 
-  override def dropAllTables(): Unit = connection.createStatement.executeUpdate(s"TRUNCATE $db.$table")
+  override def dropAllTablesMetadata(): Unit =
+    connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithTableMetadata")
 
-  def schemaExists(schema: String, connection: Connection): Boolean = {
-    val statement = connection.createStatement()
-    val result = statement.executeQuery(s"SELECT schema_name FROM information_schema.schemata WHERE schema_name = '$schema';")
-    result.isBeforeFirst
-  }
 
-  override protected[crossdata] def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
-    val resultSet = selectMetadata(tableWithViewMetadata, viewIdentifier)
+  override def lookupView(tableIdentifier: TableIdentifier): Option[String] = {
+    val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
     if (!resultSet.isBeforeFirst) {
       None
     } else {
@@ -224,7 +220,7 @@ class PostgreSQLXDCatalog(override val conf: CatalystConf = new SimpleCatalystCo
     }
   }
 
-  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = {
+  override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
     try {
       connection.setAutoCommit(false)
       val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
@@ -255,7 +251,6 @@ class PostgreSQLXDCatalog(override val conf: CatalystConf = new SimpleCatalystCo
     } finally {
       connection.setAutoCommit(true)
     }
-  }
 
   private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
 
@@ -266,17 +261,16 @@ class PostgreSQLXDCatalog(override val conf: CatalystConf = new SimpleCatalystCo
 
   }
 
-  override def dropView(viewIdentifier: ViewIdentifier): Unit =  {
+
+
+  override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
     connection.createStatement.executeUpdate(
       s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
-  }
 
 
-  override def dropAllViews(): Unit = {
+  override def dropAllViewsMetadata(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
 
-  override def checkConnectivity:Boolean = {
-    connection!=null
-  }
+  override def isAvailable: Boolean = Option(connection).isDefined
 }

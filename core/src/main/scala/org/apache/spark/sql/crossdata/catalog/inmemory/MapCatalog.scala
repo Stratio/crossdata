@@ -17,62 +17,55 @@ package org.apache.spark.sql.crossdata.catalog.inmemory
 
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.ViewIdentifier
+import org.apache.spark.sql.crossdata.catalog.api.XDCatalog.ViewIdentifier
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
 import scala.collection.mutable.Map
 
-trait MapCatalog extends XDCatalog {
+abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog {
+
+  // TODO map with catalog/tableIdentifier
 
   protected def newMap: Map[String, LogicalPlan]
 
   private val tables: Map[String, LogicalPlan] = newMap
   private val views: Map[String, LogicalPlan] = newMap
 
-  implicit def tableIdent2string(tident: TableIdentifier): String = getTableName(tident)
+  implicit def tableIdent2string(tident: TableIdentifier): String = normalizeTableName(tident)
 
-  override def tableExists(tableIdent: TableIdentifier): Boolean =
-    (tables contains tableIdent) || (views contains tableIdent)
+  override def relation(tableIdent: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
+    (tables get tableIdent) orElse (views get tableIdent) map {
+      processAlias(tableIdent, _, alias)
+    }
 
-  //Will throw [[NoSuchElementException]] if not present
-  override def lookupRelation(tableIdent: TableIdentifier, alias: Option[String]): LogicalPlan =
-    tables get(tableIdent) orElse(views get tableIdent) map (processAlias(tableIdent, _, alias)) get
-
-
-  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
-    val dbName = databaseName.map(normalizeDBIdentifier)
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
+    val dbName = databaseName.map(normalizeIdentifier)
     (tables ++ views).toSeq collect {
       case (k,_) if dbName.map(_ == k.split("\\.")(0)).getOrElse(true) =>
-        k.split("\\.").take(2).mkString(".") -> true
+        k.split("\\.") match {
+          case Array(db, tb) => TableIdentifier(tb, Option(tb))
+          case Array(tb) => TableIdentifier(tb)       }
     }
   }
 
-  override def refreshTable(tableIdentifier: TableIdentifier): Unit = {
-    throw new UnsupportedOperationException
+  override def saveTable(tableIdentifier: ViewIdentifier, plan: LogicalPlan): Unit = {
+    views get tableIdentifier foreach (_ => dropView(tableIdentifier))
+    tables put (normalizeTableName(tableIdentifier), plan)
   }
 
-  override def registerTable(tableIdent: TableIdentifier, plan: LogicalPlan): Unit = {
-    views get tableIdent foreach (_ => unregisterView(tableIdent))
-    tables put (getTableName(tableIdent), plan)
+  override def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan): Unit = {
+    tables get viewIdentifier foreach (_ => dropTable(viewIdentifier))
+    views put (normalizeTableName(viewIdentifier), plan)
   }
 
-  override def registerView(tableIdent: ViewIdentifier, plan: LogicalPlan) = {
-    tables get tableIdent foreach (_ => unregisterTable(tableIdent))
-    views put (getTableName(tableIdent), plan)
-  }
+  override def dropView(viewIdentifier: ViewIdentifier): Unit =
+    views remove normalizeTableName(viewIdentifier)
 
+  override def dropAllViews(): Unit = views clear
 
-  override def unregisterTable(tableIdent: TableIdentifier): Unit =
-    tables remove getTableName(tableIdent)
+  override def dropAllTables(): Unit = tables clear
 
-  override def unregisterView(viewIdent: ViewIdentifier): Unit =
-    views remove getTableName(viewIdent)
-
-  override def unregisterAllTables(): Unit = {
-    unregisterAllViews()
-    tables clear
-  }
-
-  override def unregisterAllViews(): Unit = views clear
+  override def dropTable(tableIdentifier: TableIdentifier): Unit =
+    tables remove normalizeTableName(tableIdentifier)
 
 }

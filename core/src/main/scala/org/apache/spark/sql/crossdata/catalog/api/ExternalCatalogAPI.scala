@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog.interfaces
+package org.apache.spark.sql.crossdata.catalog.api
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.api.XDCatalog.{ViewIdentifier, CrossdataTable}
 
-trait XDCatalogPersistence {
+private[crossdata] trait ExternalCatalogAPI {
 
   def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit
   def persistView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit
@@ -30,8 +30,7 @@ trait XDCatalogPersistence {
   def dropView(viewIdentifier: ViewIdentifier): Unit
   def dropAllViews(): Unit
 
-  protected[crossdata] def persistTableMetadata(crossdataTable: CrossdataTable): Unit
-  protected[crossdata] def persistViewMetadata(tableIdentifier: ViewIdentifier, sqlText: String): Unit
-
-
 }
+
+
+

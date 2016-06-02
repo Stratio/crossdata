@@ -17,9 +17,9 @@ package org.apache.spark.sql.crossdata
 
 import java.util.UUID
 
+import org.apache.spark.sql.crossdata.catalog.api.XDCatalog
 import org.apache.spark.{Logging, SparkContext}
 import com.typesafe.config.Config
-import org.apache.spark.sql.crossdata.catalog.XDCatalogWithPersistence
 
 /**
   *
@@ -41,7 +41,7 @@ class XDSession (
 
 
   //TODO: Use catalog for this session instead fix one
-  override protected[sql] lazy val catalog: XDCatalogWithPersistence = xdContext.catalog
+  override protected[sql] lazy val catalog: XDCatalog = xdContext.catalog
 
 
 }
