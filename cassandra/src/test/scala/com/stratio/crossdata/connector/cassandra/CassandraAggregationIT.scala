@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,38 +23,36 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class CassandraAggregationIT extends CassandraWithSharedContext {
 
+  val nativeErrorMessage =  "The operation cannot be executed without Spark"
   // PRIMARY KEY id
   // CLUSTERING KEY age, comment
   // DEFAULT enrolled
   // SECONDARY_INDEX name
 
-  "The Cassandra connector" should "execute natively a (SELECT count(*) FROM _)" in {
+  "The Cassandra connector" should "not execute natively a (SELECT count(*) FROM _)" in {
     assumeEnvironmentIsUpAndRunning
 
-    val result = sql(s"SELECT count(*) FROM $Table ").collect(Native)
-    result should have length 1
-    result(0) should have length 1
-    result(0).getLong(0) should be(10)
+    the[CrossdataException] thrownBy {
+      sql(s"SELECT count(*) FROM $Table").collect(Native)
+    } should have message nativeErrorMessage
+
   }
 
-  it should "execute natively a (SELECT count(*) AS alias FROM _)" in {
+  it should "not execute natively a (SELECT count(*) AS alias FROM _)" in {
     assumeEnvironmentIsUpAndRunning
-    val dataframe = sql(s"SELECT count(*) as agg FROM $Table ")
-    val result = dataframe.collect(Native)
-    result should have length 1
-    result(0) should have length 1
-    result(0).getLong(0) should be(10)
-    dataframe.schema.fieldNames should be(Array("agg"))
+    the[CrossdataException] thrownBy {
+      sql(s"SELECT count(*) as agg FROM $Table").collect(Native)
+    } should have message nativeErrorMessage
   }
 
 
-  it should "execute natively a (SELECT count(*) FROM _ WHERE _)" in {
+  it should "not execute natively a (SELECT count(*) FROM _ WHERE _)" in {
     assumeEnvironmentIsUpAndRunning
 
-    val result = sql(s"SELECT count(*) FROM $Table WHERE id = 5").collect(Native)
-    result should have length 1
-    result(0) should have length 1
-    result(0).getLong(0) should be(1)
+    the[CrossdataException] thrownBy {
+      sql(s"SELECT count(*) FROM $Table WHERE id = 5").collect(Native)
+    } should have message nativeErrorMessage
+
   }
 
   // NOT SUPPORTED NATIVELY
@@ -63,7 +61,7 @@ class CassandraAggregationIT extends CassandraWithSharedContext {
 
     the[CrossdataException] thrownBy {
       sql(s"SELECT count(*) FROM $Table GROUP BY id").collect(Native)
-    } should have message "The operation cannot be executed without Spark"
+    } should have message nativeErrorMessage
 
   }
 
@@ -73,7 +71,7 @@ class CassandraAggregationIT extends CassandraWithSharedContext {
 
     the[CrossdataException] thrownBy {
       sql(s"SELECT max(id) FROM $Table").collect(Native)
-    } should have message "The operation cannot be executed without Spark"
+    } should have message nativeErrorMessage
   }
 
 }

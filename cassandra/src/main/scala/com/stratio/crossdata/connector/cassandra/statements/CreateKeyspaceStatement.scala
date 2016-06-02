@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.connector.cassandra.statements
 
-import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourceKeyspaceNameProperty
+
 import com.stratio.crossdata.connector.cassandra.DefaultSource.CassandraDataSourceKeyspaceReplicationStringProperty
 
 case class CreateKeyspaceStatement(options: Map[String, String]) {

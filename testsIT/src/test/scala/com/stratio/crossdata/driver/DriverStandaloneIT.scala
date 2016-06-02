@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.crossdata.driver
 
 import java.util.concurrent.TimeoutException
@@ -44,6 +43,11 @@ class DriverStandaloneIT extends BaseXDTest {
     val driver = Driver.getOrCreate()
     val future = driver.sql("select * from any").sqlResult
     a[TimeoutException] should be thrownBy Await.result(future, 2 seconds)
+  }
+
+  it should "indicates that the cluster is not alive when there is no server" in {
+    val driver = Driver.getOrCreate()
+    driver.isClusterAlive(1 second) shouldBe false
   }
 
 }

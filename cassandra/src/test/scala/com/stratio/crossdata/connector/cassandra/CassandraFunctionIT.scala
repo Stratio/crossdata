@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,7 @@ class CassandraFunctionIT extends CassandraWithSharedContext {
   it should s"be able to resolve non-duplicates functions automatically without specifying the datasource" in {
     assumeEnvironmentIsUpAndRunning
 
-    val query = s"SELECT unixTimestampOf(now()) as ut FROM $Table"
+    val query = s"SELECT unixTimestampOf(cassandra_now()) as ut FROM $Table"
     sql(query).collect(Native) should have length 10
   }
 

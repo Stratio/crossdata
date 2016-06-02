@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,12 +69,12 @@ class ElasticSearchXDRelationSpec extends BaseXDTest with MockitoSugar {
     result should be (true)
   }
 
-  def buildElasticSearchRelation(): ElasticSearchXDRelation = {
+  def buildElasticSearchRelation(): ElasticsearchXDRelation = {
     val parameters: Map[String, String] = mock[Map[String, String]]
     val sqlContext: SQLContext = mock[SQLContext]
     val schemaProvided: Option[StructType] = None
 
-    new ElasticSearchXDRelation(parameters, sqlContext, schemaProvided)
+    new ElasticsearchXDRelation(parameters, sqlContext, schemaProvided)
   }
 
 }

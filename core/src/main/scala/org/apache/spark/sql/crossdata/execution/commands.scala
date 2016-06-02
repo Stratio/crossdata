@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,7 @@ private[crossdata] case class PersistDataSourceTable(
 
     val crossdataContext = sqlContext.asInstanceOf[XDContext]
     val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, userSpecifiedSchema, provider, Array.empty[String], options)
-    val tableExist = crossdataContext.catalog.tableExists(tableIdent.toSeq)
+    val tableExist = crossdataContext.catalog.tableExists(tableIdent)
 
     if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable, crossdataContext.catalog.createLogicalRelation(crossdataTable))
 
@@ -65,7 +65,7 @@ case class PersistSelectAsTable(
     // TODO REFACTOR HIVE CODE ***************
     var createMetastoreTable = false
     var existingSchema = None: Option[StructType]
-    if (crossdataContext.catalog.tableExists(tableIdent.toSeq)) {
+    if (crossdataContext.catalog.tableExists(tableIdent)) {
       // Check if we need to throw an exception or just return.
       mode match {
         case SaveMode.ErrorIfExists =>
@@ -82,7 +82,7 @@ case class PersistSelectAsTable(
           val resolved = ResolvedDataSource(
             sqlContext, Some(query.schema.asNullable), partitionColumns, provider, options)
           val createdRelation = LogicalRelation(resolved.relation)
-          EliminateSubQueries(sqlContext.catalog.lookupRelation(tableIdent.toSeq)) match {
+          EliminateSubQueries(sqlContext.catalog.lookupRelation(tableIdent)) match {
             case l @ LogicalRelation(_: InsertableRelation | _: HadoopFsRelation, _) =>
               if (l.relation != createdRelation.relation) {
                 val errorDescription =
@@ -107,7 +107,7 @@ case class PersistSelectAsTable(
               throw new AnalysisException(s"Saving data in ${o.toString} is not supported.")
           }
         case SaveMode.Overwrite =>
-          crossdataContext.catalog.dropTable(tableIdent.toSeq)
+          crossdataContext.catalog.dropTable(tableIdent)
           createMetastoreTable = true
       }
     } else {

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-
 package org.apache.spark.sql.crossdata.catalog
 
-import java.net.{Socket, InetSocketAddress, InetAddress}
+import java.net.Socket
 
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
@@ -26,10 +25,6 @@ import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{TableTypesafeDAO, ViewTypesafeDAO}
 import org.apache.spark.sql.crossdata.models.{TableModel, ViewModel}
 import org.apache.spark.sql.types.StructType
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.util.{Try, Success}
 
 /**
   * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.XDCatalog]] with persistence using Zookeeper.
@@ -43,11 +38,11 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
   @transient val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
 
 
-  override def lookupTable(tableName: String, databaseName: Option[String]): Option[CrossdataTable] = {
+  override def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
     if (tableDAO.dao.count > 0) {
       val findTable = tableDAO.dao.getAll()
         .find(tableModel =>
-          tableModel.name == tableName && tableModel.database == databaseName)
+          tableModel.name == tableIdentifier.table && tableModel.database == tableIdentifier.database)
 
       findTable match {
         case Some(zkTable) =>
@@ -98,19 +93,22 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
         crossdataTable.opts))
   }
 
-  override def dropPersistedTable(tableName: String, databaseName: Option[String]): Unit =
-    tableDAO.dao.getAll().filter(tableModel => tableName == tableModel.name && databaseName == tableModel.database)
-      .foreach(tableModel => tableDAO.dao.delete(tableModel.id))
+  override def dropPersistedTable(tableIdentifier: TableIdentifier): Unit =
+    tableDAO.dao.getAll().filter {
+      tableModel => tableIdentifier.table == tableModel.name && tableIdentifier.database == tableModel.database
+    } foreach { tableModel =>
+      tableDAO.dao.delete(tableModel.id)
+    }
 
   override def dropAllPersistedTables(): Unit = {
     tableDAO.dao.deleteAll
     viewDAO.dao.getAll.foreach(view=>viewDAO.dao.delete(view.id))
   }
 
-  override protected def lookupView(tableName: String, databaseName: Option[String]): Option[String] = {
+  override protected def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
     if (viewDAO.dao.count > 0) {
       val findView = viewDAO.dao.getAll()
-        .find(viewModel => viewModel.name == tableName && viewModel.database == databaseName)
+        .find(viewModel => viewModel.name == viewIdentifier.table && viewModel.database == viewIdentifier.database)
 
       findView match {
         case Some(zkView) =>
@@ -130,9 +128,12 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
     viewDAO.dao.create(viewId, ViewModel(viewId, tableIdentifier.table, tableIdentifier.database, sqlText))
   }
 
-  override protected def dropPersistedView(viewName: String, databaseName: Option[String]): Unit = {
-    viewDAO.dao.getAll().filter(view => view.name == viewName && view.database == databaseName).foreach(selectedView => viewDAO.dao.delete(selectedView.id))
-
+  override protected def dropPersistedView(viewIdentifier: ViewIdentifier): Unit = {
+    viewDAO.dao.getAll().filter {
+      view => view.name == viewIdentifier.table && view.database == viewIdentifier.database
+    } foreach { selectedView =>
+      viewDAO.dao.delete(selectedView.id)
+    }
   }
 
   override protected def dropAllPersistedViews(): Unit = {

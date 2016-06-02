@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,12 @@ package com.stratio.crossdata.driver
 
 import java.util.concurrent.atomic.AtomicReference
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.{ActorSystem, Address}
+import akka.cluster.ClusterEvent.CurrentClusterState
+import akka.cluster.MemberStatus
 import akka.contrib.pattern.ClusterClient
-import akka.pattern.ask
-import com.stratio.crossdata.common.result.{ErrorSQLResult, SQLResponse, SQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common._
-
+import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.FieldMetadata
@@ -33,10 +33,10 @@ import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future, Promise}
 import scala.language.postfixOps
-import scala.reflect.ClassTag
+import scala.util.Try
 
 /*
  * ======================================== NOTE ========================================
@@ -45,7 +45,63 @@ import scala.reflect.ClassTag
  * =======================================================================================
  */
 
-class Driver private(driverConf: DriverConf,
+
+object Driver {
+
+  private val DRIVER_CONSTRUCTOR_LOCK = new Object()
+
+  private val activeDriver: AtomicReference[Driver] =
+    new AtomicReference[Driver](null)
+
+
+  private[driver] def setActiveDriver(driver: Driver) = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      activeDriver.set(driver)
+    }
+  }
+
+  def clearActiveContext = {
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      val system = activeDriver.get().system
+      if (!system.isTerminated) system.shutdown()
+      activeDriver.set(null)
+    }
+  }
+
+
+  def getOrCreate(): Driver = getOrCreate(new DriverConf)
+
+  def getOrCreate(driverConf: DriverConf): Driver =
+    getOrCreate(driverConf, Driver.generateDefaultAuth)
+
+  def getOrCreate(user: String, password: String): Driver =
+    getOrCreate(user, password, new DriverConf)
+
+  def getOrCreate(user: String, password: String, driverConf: DriverConf): Driver =
+    getOrCreate(driverConf, Authentication(user, password))
+
+  def getOrCreate(seedNodes: java.util.List[String]): Driver =
+    getOrCreate(seedNodes, new DriverConf)
+
+  def getOrCreate(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
+    getOrCreate(driverConf.setClusterContactPoint(seedNodes))
+
+  /**
+    * Used by JavaDriver
+    */
+  private[crossdata] def getOrCreate(driverConf: DriverConf, authentication: Authentication): Driver =
+    DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      if (activeDriver.get() == null) {
+        setActiveDriver(new Driver(driverConf, authentication))
+      }
+      activeDriver.get()
+    }
+
+  private[driver] def generateDefaultAuth = new Authentication("crossdata", "stratio")
+
+}
+
+class Driver private(private[crossdata] val driverConf: DriverConf,
                      auth: Authentication = Driver.generateDefaultAuth) {
 
 
@@ -88,7 +144,8 @@ class Driver private(driverConf: DriverConf,
    * > import SQLResponse._
    * > val sqlResult: SQLResult = driver.sql("SELECT * FROM t")
    * > val rows: Array[Row] = driver.sql("SELECT * FROM t").resultSet
-   * @param query The SQL Command.
+    *
+    * @param query The SQL Command.
    * @return A SQLResponse with the id and the result set.
    */
   def sql(query: String): SQLResponse = {
@@ -97,13 +154,17 @@ class Driver private(driverConf: DriverConf,
     //Preparse query to know if it is an special command sent from the shell or other driver user that is not a query
     val Pattern="""(\s*add)(\s+jar\s+)(.*)""".r
     query match {
-      case Pattern(add,jar,path)=>addJar(path.trim)
-      case _=>
+      case Pattern(add,jar,path) => addJar(path.trim)
+      case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
-        val secureCommand = CommandEnvelope(sqlCommand, driverSession)
-        new SQLResponse(sqlCommand.requestId, askCommand[SQLReply](proxyActor, secureCommand).map(_.sqlResult)) {
+        val futureReply = askCommand(securitizeCommand(sqlCommand)).map{
+          case SQLReply(_, sqlResult) => sqlResult
+          case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
+        }
+        new SQLResponse(sqlCommand.requestId, futureReply) {
           // TODO cancel sync => 5 secs
-          override def cancelCommand() = askCommand(proxyActor, CancelCommand(sqlCommand.requestId))
+          override def cancelCommand(): Unit =
+            askCommand(securitizeCommand(CancelQueryExecution(sqlCommand.queryId)))
         }
     }
   }
@@ -111,13 +172,17 @@ class Driver private(driverConf: DriverConf,
 
   /**
     * Add Jar to the XD Context
+    *
     * @param path The path of the JAR
     * @return A SQLResponse with the id and the result set.
     */
   def addJar(path: String): SQLResponse = {
-    val addJarCommand = new AddJARCommand(path)
-    val secureCommand = CommandEnvelope(addJarCommand, driverSession)
-    new SQLResponse(addJarCommand.requestId, askCommand[SQLReply](proxyActor, secureCommand).map(_.sqlResult))
+    val addJarCommand = AddJARCommand(path)
+    val futureReply = askCommand(securitizeCommand(addJarCommand)).map{
+      case SQLReply(_, sqlResult) => sqlResult
+      case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
+    }
+    new SQLResponse(addJarCommand.requestId, futureReply)
   }
 
 
@@ -164,10 +229,10 @@ class Driver private(driverConf: DriverConf,
   }
 
 
-  // TODO remove infinite duration
-  // TODO remove askPattern
-  private def askCommand[T <: ServerReply : ClassTag](remoteActor: ActorRef, message: Any, timeout: FiniteDuration = 1 day): Future[T] = {
-    remoteActor.ask(message)(timeout).mapTo[T]
+  private def askCommand(commandEnvelope: CommandEnvelope): Future[ServerReply] = {
+    val promise = Promise[ServerReply]()
+    proxyActor ! (commandEnvelope, promise)
+    promise.future
   }
 
 
@@ -224,6 +289,44 @@ class Driver private(driverConf: DriverConf,
 
   def show(query: String) = sql(query).waitForResult().prettyResult.foreach(println)
 
+
+  /**
+   * Gets the server/cluster state
+   *
+   * @since 1.3
+   * @return Current snapshot state of the cluster
+   */
+  def clusterState(): Future[CurrentClusterState] = {
+    val promise = Promise[ServerReply]()
+    proxyActor ! (securitizeCommand(ClusterStateCommand()), promise)
+    promise.future.mapTo[ClusterStateReply].map(_.clusterState)
+  }
+
+  /**
+   * Gets the addresses of servers up and running
+   *
+   * @since 1.3
+   * @return A sequence with members of the cluster ready to serve requests
+   */
+  def serversUp(): Future[Seq[Address]] = {
+    import collection.JavaConverters._
+    clusterState().map { cState =>
+      cState.getMembers.asScala.collect {
+        case member if member.status == MemberStatus.Up => member.address
+      }.toSeq
+    }
+  }
+
+  /**
+   * Indicates if the cluster is alive or not
+   *
+   * @since 1.3
+   * @return whether at least one member of the cluster is alive or not
+   */
+  def isClusterAlive(atMost: Duration = 3 seconds): Boolean =
+    Try(Await.result(serversUp(), atMost)).map(_.nonEmpty).getOrElse(false)
+
+
   /**
    * Execute an ordered shutdown
    */
@@ -233,7 +336,7 @@ class Driver private(driverConf: DriverConf,
   def close() = stop()
 
 
-  private def securitizeCommand(command: SQLCommand): CommandEnvelope =
+  private def securitizeCommand(command: Command): CommandEnvelope =
     new CommandEnvelope(command, driverSession)
 
 
@@ -255,60 +358,5 @@ class Driver private(driverConf: DriverConf,
       throw new RuntimeException(message)
     // TODO manage exceptions
   }
-
-}
-
-object Driver {
-
-  private val DRIVER_CONSTRUCTOR_LOCK = new Object()
-
-  private val activeDriver: AtomicReference[Driver] =
-    new AtomicReference[Driver](null)
-
-
-  private[driver] def setActiveDriver(driver: Driver) = {
-    DRIVER_CONSTRUCTOR_LOCK.synchronized {
-      activeDriver.set(driver)
-    }
-  }
-
-  def clearActiveContext = {
-    DRIVER_CONSTRUCTOR_LOCK.synchronized {
-      val system = activeDriver.get().system
-      if (!system.isTerminated) system.shutdown()
-      activeDriver.set(null)
-    }
-  }
-
-
-  def getOrCreate(): Driver = getOrCreate(new DriverConf)
-
-  def getOrCreate(driverConf: DriverConf): Driver =
-    getOrCreate(driverConf, Driver.generateDefaultAuth)
-
-  def getOrCreate(user: String, password: String): Driver =
-    getOrCreate(user, password, new DriverConf)
-
-  def getOrCreate(user: String, password: String, driverConf: DriverConf): Driver =
-    getOrCreate(driverConf, Authentication(user, password))
-
-  def getOrCreate(seedNodes: java.util.List[String]): Driver =
-    getOrCreate(seedNodes, new DriverConf)
-
-  def getOrCreate(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
-    getOrCreate(driverConf.setClusterContactPoint(seedNodes))
-
-  /**
-   * Used by JavaDriver
-   */
-  private[crossdata] def getOrCreate(driverConf: DriverConf, authentication: Authentication): Driver =
-    DRIVER_CONSTRUCTOR_LOCK.synchronized {
-      if (activeDriver.get() == null) {
-        setActiveDriver(new Driver(driverConf, authentication))
-      }
-      activeDriver.get()
-    }
-
-  private[driver] def generateDefaultAuth = new Authentication("crossdata", "stratio")
 
 }

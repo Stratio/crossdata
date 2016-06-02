@@ -5,17 +5,18 @@ Feature: VIEWS
     Then I execute 'SELECT * FROM viewTest'
     Then an exception 'IS NOT' thrown
     And The result has to have '10' rows ignoring the order:
-      |ident-integer|date-timestamp     |money-double |name-string| new-boolean |
-      |    5        |2005-05-05 00:00:00| 15.2        |name_5     |true         |
-      |    1        |2001-01-01 00:00:00| 11.2        |name_1     |true         |
-      |    8        |2008-08-08 00:00:00| 18.2        |name_8     |true         |
-      |    0        |1999-11-30 00:00:00| 10.2        |name_0     |true         |
-      |    2        |2002-02-02 00:00:00| 12.2        |name_2     |true         |
-      |    4        |2004-04-04 00:00:00| 14.2        |name_4     |true         |
-      |    7        |2007-07-07 00:00:00| 17.2        |name_7     |true         |
-      |    6        |2006-06-06 00:00:00| 16.2        |name_6     |true         |
-      |    9        |2009-09-09 00:00:00| 19.2        |name_9     |true         |
-      |    3        |2003-03-03 00:00:00| 13.2        |name_3     |true         |
+      |ident-integer|  name-string|money-double| new-boolean| date-timestamp|
+      |    3|name_3| 13.2|true|2003-03-03 00:00:0|
+      |    8|name_8| 18.2|true|2008-08-08 00:00:0|
+      |    4|name_4| 14.2|true|2004-04-04 00:00:0|
+      |    0|name_0| 10.2|true|1999-11-30 00:00:0|
+      |    5|name_5| 15.2|true|2005-05-05 00:00:0|
+      |    1|name_1| 11.2|true|2001-01-01 00:00:0|
+      |    6|name_6| 16.2|true|2006-06-06 00:00:0|
+      |    2|name_2| 12.2|true|2002-02-02 00:00:0|
+      |    7|name_7| 17.2|true|2007-07-07 00:00:0|
+      |    9|name_9| 19.2|true|2009-09-09 00:00:0|
+
 
   Scenario: [CROSSDATA-237] CREATE VIEW viewTest AS SELECT ident FROM tabletest;
     When I execute 'CREATE VIEW viewTest1 AS SELECT ident FROM tabletest'

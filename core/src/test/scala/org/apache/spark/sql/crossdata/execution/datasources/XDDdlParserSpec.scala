@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@ import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.datasources.{CreateTableUsing, DescribeCommand, RefreshTable}
+import org.apache.spark.sql.types.StructType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
@@ -104,6 +105,41 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = "DROP TABLE dbId.tableId"
     parser.parse(sentence) shouldBe DropTable( TableIdentifier("tableId", Some("dbId")))
+
+  }
+
+  it should "successfully parse a INSERT TABLE with qualified table name and VALUES provided into InsertTable RunnableCommand" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( 12, 12.01, 'proof', true)"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"), List(List("12", "12.01", "proof", "true")))
+
+  }
+
+  it should "successfully parse a INSERT TABLE with qualified table name and more than one VALUES provided into InsertTable RunnableCommand" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( 12, 12.01, 'proof', true), ( 2, 1.01, 'pof', true), ( 256, 0.01, 'pr', false)"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List("12", "12.01", "proof", "true"),List("2", "1.01", "pof", "true"),List("256", "0.01", "pr", "false")))
+
+  }
+
+  it should "successfully parse a INSERT TABLE with qualified table name, schema and VALUES provided into InsertTable RunnableCommand" in {
+
+    val sentence = """INSERT INTO tableId(Column1, Column2, Column3, Column4) VALUES ( 256, 0.01, 'pr', false)"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"), List(List("256", "0.01", "pr", "false")), Some(List("Column1", "Column2", "Column3", "Column4")))
+
+  }
+
+  it should "successfully parse a INSERT TABLE with qualified table name, schema and more than one VALUES provided into InsertTable RunnableCommand" in {
+
+    val sentence = """INSERT INTO tableId(Column1, Column2, Column3, Column4) VALUES ( 12, 12.01, 'proof', true), ( 2, 1.01, 'pof', true), ( 256, 0.01, 'pr', false)"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List("12", "12.01", "proof", "true"),List("2", "1.01", "pof", "true"),List("256", "0.01", "pr", "false")),
+        Some(List("Column1", "Column2", "Column3", "Column4")))
 
   }
 

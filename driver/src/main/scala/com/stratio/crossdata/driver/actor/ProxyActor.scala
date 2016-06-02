@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.crossdata.driver.actor
 
-import akka.actor.{Actor, ActorRef, Props}
-import akka.contrib.pattern.ClusterClient
-import com.stratio.crossdata.common.{AddJARCommand, SQLCommand, CommandEnvelope}
-import com.stratio.crossdata.driver.Driver
-import org.apache.log4j.Logger
 
+import java.util.UUID
+
+import akka.actor.{Actor, ActorRef, Props}
+import akka.pattern.pipe
+import akka.contrib.pattern.ClusterClient
+import com.stratio.crossdata.common._
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.driver.Driver
+import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
+import com.stratio.crossdata.driver.util.HttpClient
+import org.apache.log4j.Logger
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+
+import scala.concurrent.{Future, Promise}
 import scala.util.matching.Regex
 
 object ProxyActor {
@@ -32,6 +41,8 @@ object ProxyActor {
   def props(clusterClientActor: ActorRef, driver: Driver): Props =
     Props(new ProxyActor(clusterClientActor, driver))
 
+  case class PromisesByIds(promises: Map[UUID, Promise[ServerReply]])
+
 }
 
 class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
@@ -40,29 +51,101 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
   private val catalogOpExp: Regex = """^\s*CREATE\s+TEMPORARY.+$""".r
 
-  override def receive: Receive = {
+  private val httpClient = HttpClient(driver.driverConf, context.system)
 
-    /* TODO: This is a dirty trick to keep temporary tables synchronized at each XDContext
-        it should be fixed as soon as Spark version is updated to 1.6 since it'll enable.
-        WARNING: This disables creation cancellation commands and exposes the system behaviour to client-side code.
-     */
-    case secureSQLCommand @ CommandEnvelope(sqlCommand @ SQLCommand(sql @ catalogOpExp(), _, _, _, _), _) =>
+  override def receive: Receive = initial
+
+  private val initial: Receive = {
+    case any =>
+      logger.debug("Initial state. Changing to start state.")
+      context.become(start(PromisesByIds(Map.empty)))
+      self ! any
+  }
+
+
+  // Previous step to process the message where promise is stored.
+  def storePromise(promisesByIds: PromisesByIds): Receive = {
+    case (message: CommandEnvelope, promise: Promise[ServerReply]) =>
+      logger.debug("Sending message to the Crossdata cluster")
+      context.become(start(promisesByIds.copy(promisesByIds.promises + (message.cmd.requestId -> promise))))
+      self ! message
+  }
+
+  // Process messages from the Crossdata Driver.
+  def sendToServer(promisesByIds: PromisesByIds): Receive = {
+
+    /** TODO: This is a dirty trick to keep temporary tables synchronized at each XDContext
+    it should be fixed as soon as Spark version is updated to 1.6 since it'll enable.
+    WARNING: This disables creation cancellation commands and exposes the system behaviour to client-side code.
+    */
+    case secureSQLCommand @ CommandEnvelope(sqlCommand @ SQLCommand(sql @ catalogOpExp(), _, _, _), _) =>
       logger.info(s"Sending temporary catalog entry creation query to all servers: $sql")
-      clusterClientActor forward ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
+      clusterClientActor ! ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
 
     case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
-      logger.info(s"Sending query: ${sqlCommand.sql}")
-      clusterClientActor forward ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
+      logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
+      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(_: AddJARCommand, _) =>
-      logger.debug(s"Send Add Jar command to all servers")
-      clusterClientActor forward ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
+    case secureSQLCommand @ CommandEnvelope(aCmd @ AddJARCommand(path, _, _), _) =>
+      import context.dispatcher
+      val shipmentResponse: Future[SQLReply] = httpClient.sendJarToHTTPServer(path) map { response =>
+        SQLReply(
+          aCmd.requestId,
+          SuccessfulSQLResult(Array(Row(response)), StructType(StructField("filepath", StringType) :: Nil))
+        )
+      } recover {
+        case failureCause =>
+          val msg = s"Error trying to send JAR through HTTP: ${failureCause.getMessage}"
+          logger.error(msg)
+          SQLReply(
+            aCmd.requestId,
+            ErrorSQLResult(msg)
+          )
+      }
+      shipmentResponse pipeTo sender
 
-    case SQLCommand =>
-      logger.warn("Command message not securitized. Message won't be sent to the Crossdata cluster")
+    case CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
+      logger.debug(s"Send cluster state with requestID=${clusterStateCommand.requestId}")
+      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, clusterStateCommand, localAffinity = false)
 
-    case any =>
-      logger.warn(s"Unknown message: $any. Message won't be sent to the Crossdata cluster")
+    case sqlCommand: SQLCommand =>
+      logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
+  }
+
+
+
+  // Message received from a Crossdata Server.
+  def receiveFromServer(promisesByIds: PromisesByIds): Receive = {
+    case reply: ServerReply =>
+      logger.info(s"Sever reply received from Crossdata Server: $sender with ID=${reply.requestId}")
+      promisesByIds.promises.get(reply.requestId) match {
+        case Some(p) =>
+          context.become(start(promisesByIds.copy(promisesByIds.promises - reply.requestId)))
+          reply match {
+            case reply @ SQLReply(_, result) =>
+              logger.info(s"Successful SQL execution: ${result}")
+              p.success(reply)
+            // TODO review query cancelation
+            case reply @ QueryCancelledReply(id) =>
+              logger.info(s"Query $id cancelled")
+              p.success(reply)
+            case reply @ ClusterStateReply(_, clusterState) =>
+              logger.debug(s"Cluster snapshot received $clusterState")
+              p.success(reply)
+            case _ =>
+              p.failure(new RuntimeException(s"Unknown message: $reply"))
+          }
+        case None => logger.warn(s"Unexpected response: $reply")
+      }
+  }
+
+  def start(promisesByIds: PromisesByIds): Receive = {
+    storePromise(promisesByIds) orElse
+    sendToServer(promisesByIds) orElse
+    receiveFromServer(promisesByIds) orElse {
+      case any =>
+        logger.warn(s"Unknown message: $any. Message won't be sent to the Crossdata cluster")
+    }
   }
 }
 

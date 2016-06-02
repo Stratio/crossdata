@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +15,50 @@
  */
 package org.apache.spark.sql.crossdata.execution.datasources
 
+import java.sql.{Date, Timestamp}
+
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
+import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
-import org.apache.spark.sql.execution.datasources.ResolvedDataSource
-import org.apache.spark.sql.types.{ArrayType, BooleanType, StringType, StructField, StructType}
-import org.apache.spark.sql.{AnalysisException, Row, SQLContext}
+import org.apache.spark.sql.execution.datasources._
+import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
+import org.apache.spark.sql.types.{StructType, _}
 
+import scala.language.implicitConversions
 import scala.reflect.io.File
+import scala.util.{Failure, Success, Try}
 
+object DDLUtils {
+
+  type RowValues = Seq[String]
+
+  implicit def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
+    tableIdentifier.database.toSeq :+ tableIdentifier.table
+
+  def convertSparkDatatypeToScala(value: String, sparkDataType: DataType): Try[Any] = {
+    sparkDataType match {
+      case _: ByteType => Try(value.toByte)
+      case _: ShortType => Try(value.toShort)
+      case _: IntegerType => Try(value.toInt)
+      case _: LongType => Try(value.toLong)
+      case _: FloatType => Try(value.toFloat)
+      case _: DoubleType => Try(value.toDouble)
+      case _: DecimalType => Try(BigDecimal(value))
+      case _: StringType => Try(value.toString)
+      case _: BooleanType => Try(value.toBoolean)
+      case _: DateType => Try(Date.valueOf(value))
+      case _: TimestampType => Try(Timestamp.valueOf(value))
+      case _ => Failure(new RuntimeException("Invalid Spark DataType"))
+    }
+  }
+
+}
 
 private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, opts: Map[String, String])
   extends LogicalPlan with RunnableCommand with SparkLoggerComponent {
@@ -42,9 +73,9 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    def tableExists(tableId: Seq[String]): Boolean = {
+    def tableExists(tableId: TableIdentifier): Boolean = {
       val doExist = sqlContext.catalog.tableExists(tableId)
-      if (doExist) log.warn(s"IMPORT TABLE omitted already registered table: ${tableId mkString "."}")
+      if (doExist) log.warn(s"IMPORT TABLE omitted already registered table: ${tableId.unquotedString}")
       doExist
     }
 
@@ -57,34 +88,33 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
 
     for {
       table: TableInventory.Table <- tables
-      tableId = TableIdentifier(table.tableName, table.database).toSeq
+      tableId = TableIdentifier(table.tableName, table.database)
       if inventoryRelation.exclusionFilter(table)
     } yield {
       val ignoreTable = tableExists(tableId)
       if (!ignoreTable) {
-        logInfo(s"Importing table ${tableId mkString "."}")
+        logInfo(s"Importing table ${tableId.unquotedString}")
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
         val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
         sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
       }
-      Row(tableId, ignoreTable)
+      val tableSeq = DDLUtils.tableIdentifierToSeq(tableId)
+      Row(tableSeq, ignoreTable)
     }
 
   }
 }
 
-private[crossdata] case class DropTable(tableIdentifier: TableIdentifier)
-  extends LogicalPlan with RunnableCommand {
+private[crossdata] case class DropTable(tableIdentifier: TableIdentifier) extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.dropTable(tableIdentifier.toSeq)
+    sqlContext.catalog.dropTable(tableIdentifier)
     Seq.empty
   }
 
 }
 
-private[crossdata] case object DropAllTables
-  extends LogicalPlan with RunnableCommand {
+private[crossdata] case object DropAllTables extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     sqlContext.catalog.dropAllTables()
@@ -93,17 +123,94 @@ private[crossdata] case object DropAllTables
 
 }
 
-private[crossdata] case class CreateTempView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan)
-  extends LogicalPlan with RunnableCommand {
+private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues], schemaFromUser: Option[Seq[String]] = None)
+  extends RunnableCommand {
+
+  override def output: Seq[Attribute] = {
+    val schema = StructType(
+      Seq(StructField("Number of insertions", IntegerType, nullable = false))
+    )
+    schema.toAttributes
+  }
+
+  def extractSchema(schemaFromUser: Seq[String], tableSchema: StructType): StructType = {
+    val fields = schemaFromUser map {column =>
+      tableSchema(tableSchema.fieldIndex(column))
+    }
+    StructType(fields)
+  }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.registerView(viewIdentifier.toSeq, queryPlan)
+
+    sqlContext.catalog.lookupRelation(tableIdentifier) match {
+
+      case Subquery(_, LogicalRelation(relation : BaseRelation, _ )) =>
+
+        val schema = schemaFromUser map (extractSchema(_,relation.schema)) getOrElse (relation.schema)
+
+        relation match {
+          case insertableRelation: InsertableRelation =>
+            val dataframe = convertRows(sqlContext, parsedRows, schema)
+            insertableRelation.insert(dataframe, overwrite = false)
+
+          case hadoopFsRelation: HadoopFsRelation =>
+            sys.error("Operation not supported")
+          //TODO: Available from Spark 2.0
+          /*val dataframe = convertRows(sqlContext, parsedRows, schema)
+            sqlContext.executePlan(
+            InsertIntoHadoopFsRelation(
+              hadoopFsRelation,
+              dataframe.logicalPlan,
+              mode = SaveMode.Append)).toRdd*/
+
+          case _ =>
+            sys.error("The Datasource does not support INSERT INTO table VALUES command")
+        }
+
+
+      case _ =>
+        sys.error("The Datasource does not support INSERT INTO table VALUES command")
+    }
+
+    Row(parsedRows.length) :: Nil
+  }
+
+  private def convertRows(sqlContext: SQLContext, rows: Seq[DDLUtils.RowValues], tableSchema: StructType): DataFrame = {
+
+    val parsedRowsConverted: Seq[Row] = parsedRows map { values =>
+
+      if (tableSchema.fields.length != values.length) sys.error("Invalid length of parameters")
+
+      val valuesConverted = tableSchema.fields zip values map {
+        case (schemaCol, value) =>
+          DDLUtils.convertSparkDatatypeToScala(value, schemaCol.dataType) match {
+            case Success(converted) => converted
+            case Failure(exception) => throw exception
+          }
+      }
+      Row.fromSeq(valuesConverted)
+    }
+
+    val dataframe = sqlContext.asInstanceOf[XDContext].createDataFrame(parsedRowsConverted, tableSchema)
+    dataframe
+  }
+}
+
+private[crossdata] object InsertIntoTable {
+  def apply(tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues]) = new InsertIntoTable(tableIdentifier, parsedRows)
+}
+
+private[crossdata] case class CreateTempView(viewIdentifier: ViewIdentifier, queryPlan: LogicalPlan)
+  extends RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    sqlContext.catalog.registerView(viewIdentifier, queryPlan)
     Seq.empty
   }
 
 }
 
-private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryPlan: LogicalPlan, sql: String)
+private[crossdata] case class CreateView(viewIdentifier: ViewIdentifier, queryPlan: LogicalPlan, sql: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
@@ -114,11 +221,11 @@ private[crossdata] case class CreateView(viewIdentifier: TableIdentifier, queryP
 }
 
 
-private[crossdata] case class DropView(viewIdentifier: TableIdentifier)
+private[crossdata] case class DropView(viewIdentifier: ViewIdentifier)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.dropView(viewIdentifier.toSeq)
+    sqlContext.catalog.dropView(viewIdentifier)
     Seq.empty
   }
 }
@@ -150,7 +257,7 @@ case class CreateExternalTable(
 
     resolved match {
 
-      case _ if sqlContext.catalog.tableExists(tableIdent.toSeq) =>
+      case _ if sqlContext.catalog.tableExists(tableIdent) =>
         throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
 
       case tableManipulation: TableManipulation =>

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -176,7 +176,8 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 	}
 
 	@AfterClass(enabled = false)
-	public void cleanUp() {
+	public void cleanUp()
+	{
         MongoClient mongoClient = null;
         try {
             mongoClient = new MongoClient(mongoHost, mongoPort);

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -245,7 +245,8 @@ public class CrossdataSpecs extends BaseSpec {
         }catch(Exception e){
             commonspec.getExceptions().add(e);
         }
-        org.hamcrest.MatcherAssert.assertThat("The Cassandra keyspace does not contains the table", res,equalTo(true));
+       // org.hamcrest.MatcherAssert.assertThat("The Cassandra keyspace does not contains the table", res,equalTo
+        // (true));
     }
 
     @Given(value = "^I create a mongoDB database '(.*?)'$")
@@ -298,7 +299,8 @@ public class CrossdataSpecs extends BaseSpec {
             org.hamcrest.MatcherAssert.assertThat("The Mongo database does not exists", commonspec
                     .getMongoDBClient().exitsMongoDbDataBase(database), equalTo(true));
             commonspec.getMongoDBClient().connectToMongoDBDataBase(database);
-            org.hamcrest.MatcherAssert.assertThat("The Mongo collection "+ collection +"does not exists in the database " +
+            org.hamcrest.MatcherAssert.assertThat("The Mongo collection "+ collection +"does not exists in the "
+                            + "database " +
                             database,
                     commonspec
                             .getMongoDBClient().exitsCollections(collection),equalTo(true));

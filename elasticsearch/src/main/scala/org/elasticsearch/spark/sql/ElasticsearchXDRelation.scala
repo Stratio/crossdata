@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +34,7 @@ import org.apache.spark.sql.{Row, SQLContext}
  * @param sqlContext Spark SQL Context
  * @param userSchema Spark User Defined Schema
  */
-class ElasticSearchXDRelation(parameters: Map[String, String], sqlContext: SQLContext, userSchema: Option[StructType] = None)
+class ElasticsearchXDRelation(parameters: Map[String, String], sqlContext: SQLContext, userSchema: Option[StructType] = None)
   extends ElasticsearchRelation(parameters, sqlContext, userSchema) with NativeScan with Logging {
 
   /**

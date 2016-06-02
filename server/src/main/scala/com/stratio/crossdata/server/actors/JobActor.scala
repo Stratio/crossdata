@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.crossdata.server.actors
 
 import java.util.concurrent.{CancellationException, Executor}
@@ -110,7 +109,6 @@ class JobActor(
   override def receive: Receive = receive(State(None))
 
 
-
   private def receive(st: State): Receive = {
 
     // Commands
@@ -169,8 +167,7 @@ class JobActor(
         df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
       else df.collect()
 
-
-      SQLReply(command.queryId, SuccessfulSQLResult(rows, df.schema))
+      SQLReply(command.requestId, SuccessfulSQLResult(rows, df.schema))
     }
   }
 

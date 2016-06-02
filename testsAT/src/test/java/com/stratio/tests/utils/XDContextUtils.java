@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,8 +73,9 @@ public class XDContextUtils {
             return xdContext;
         }
 
-        public void executeQuery(String query){
-            df = (XDDataFrame)xdContext.sql(query);
+        public void executeQuery(String query)
+        {
+                df = (XDDataFrame)xdContext.sql(query);
         }
 
         public void importTables(String datasource, HashMap<String,String> options){

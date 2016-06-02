@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,15 +35,15 @@ class DropTableIT extends SharedXDContextTest {
   "DropTable command" should "remove a table from Crossdata catalog" in {
 
     _xdContext.catalog.persistTableMetadata(CrossdataTable(TableName, None, Some(Schema), DatasourceName, opts = Map("path" -> "fakepath")))
-    _xdContext.catalog.tableExists(TableIdentifier(TableName).toSeq) shouldBe true
+    _xdContext.catalog.tableExists(TableIdentifier(TableName)) shouldBe true
     sql(s"DROP TABLE $TableName")
-    _xdContext.catalog.tableExists(TableIdentifier(TableName).toSeq) shouldBe false
+    _xdContext.catalog.tableExists(TableIdentifier(TableName)) shouldBe false
   }
 
   it should "remove a qualified table from Crossdata catalog" in {
     _xdContext.catalog.persistTableMetadata(CrossdataTable(TableName, Some(DatabaseName), Some(Schema), DatasourceName, opts = Map("path" -> "fakepath")))
-    _xdContext.catalog.tableExists(TableIdentifier(TableName, Some(DatabaseName)).toSeq) shouldBe true
+    _xdContext.catalog.tableExists(TableIdentifier(TableName, Some(DatabaseName))) shouldBe true
     sql(s"DROP TABLE $DatabaseName.$TableName")
-    _xdContext.catalog.tableExists(TableIdentifier(TableName, Some(DatabaseName)).toSeq) shouldBe false
+    _xdContext.catalog.tableExists(TableIdentifier(TableName, Some(DatabaseName))) shouldBe false
   }
 }

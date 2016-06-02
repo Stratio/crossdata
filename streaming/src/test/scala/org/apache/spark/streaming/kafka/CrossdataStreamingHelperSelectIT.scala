@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.spark.streaming.kafka
 
 import java.util.Properties
@@ -88,6 +87,7 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
     }
   }
 
+/*
   test("Crossdata streaming must save into the kafka output the sql results") {
 
     deletePath(checkpointDirectorySelect)
@@ -135,4 +135,5 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
       case None => throw new Exception("Ephemeral table not created")
     }
   }
+*/
 }

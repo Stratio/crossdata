@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,11 +56,14 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
         "description" -> s"A ${a}description about the Name$a",
         "enrolled" -> (if (a % 2 == 0) true else null),
         "name" -> s"Name $a",
-        "birthday" -> DateTime.parse((1980+a)+"-01-01T10:00:00-00:00").toDate,
-        "salary" -> a*1000.5,
-        "ageInMilis" ->  DateTime.parse((1980+a)+"-01-01T10:00:00-00:00").getMillis)
-      }.await
-    }
+        "birthday" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").toDate,
+        "salary" -> a * 1000.5,
+        "ageInMilis" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").getMillis)
+    }.await
+    client.get.execute {
+      flush index Index
+    }.await
+  }
 
   override protected def terminateClient: Unit = client.get.close()
 

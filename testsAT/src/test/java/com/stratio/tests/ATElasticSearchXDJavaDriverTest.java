@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -137,7 +137,7 @@ public class ATElasticSearchXDJavaDriverTest extends BaseTest {
         client.close();
 	}
 
-    @Test(enabled = true, groups = {"basic"})
+    @Test(enabled = true, groups = {"advanced"})
     public void ATElasticSearchXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}

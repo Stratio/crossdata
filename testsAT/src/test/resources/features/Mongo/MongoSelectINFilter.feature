@@ -63,19 +63,6 @@ Feature: MongoSelectINFilter
     Then The result has to have '0' rows:
       | new-boolean |
 
-  Scenario: [MONGO NATIVE] SELECT date FROM tabletest WHERE date IN ('2000-1-1','1998-12-25','2005-1-1','2008-2-27');
-    When I execute 'SELECT date FROM tabletest WHERE date IN ('2000-1-1','1998-12-25','2005-1-1','2008-2-27')'
-    Then The result has to have '2' rows:
-       | date-date  |
-       | 2000-1-1  |
-       | 2005-1-1  |
-
-  Scenario: [MONGO NATIVE] SELECT date FROM tabletest WHERE date IN ('1998-12-25','2008-2-27');
-    When I execute 'SELECT date FROM tabletest WHERE date IN ('1998-12-25','2008-2-27')'
-    Then The result has to have '0' rows:
-      | date-date  |
-
-
   Scenario: [CROSSDATA-74, CROSSDATA-201 : MONGO NATIVE] SELECT * FROM tablearray WHERE names[0] IN ('names_00', 'names_12', 'names_03');
     When I execute 'SELECT * FROM tablearray WHERE names[0] IN ('names_00', 'names_12', 'names_03')'
     Then The result has to have '2' rows:
