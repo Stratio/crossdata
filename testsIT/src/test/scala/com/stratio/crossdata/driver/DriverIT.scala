@@ -24,6 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.reflect.io.File
 
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
@@ -154,5 +155,20 @@ class DriverIT extends EndToEndTest {
     clusterState.getLeader.host shouldBe Some("127.0.0.1")
   }
 
+
+//      it should "be able to execute ADD APP Command of an existent file" in {
+//        assumeCrossdataUpAndRunning
+//
+//        val file=File(s"/tmp/addAppFile_${System.currentTimeMillis()}.jar").createFile(false)
+//        val driver = Driver.getOrCreate()
+//        val result = driver.addAppCommand(file.path,"com.a.test.main", Some("testApp")).waitForResult()
+//
+//        driver.stop()
+//        file.delete()
+//
+//        result.hasError should equal (false)
+//
+//
+//      }
 
 }

@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.catalog
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata._
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataTable}
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types._
@@ -227,6 +227,18 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     xdContext.sql(s"DESCRIBE $Database.$TableName").count() should not be 0
   }
 
+
+  it should s"persist an App in catalog "in {
+
+    val crossdataApp = CrossdataApp("hdfs://url/myjar.jar", "myApp", "com.stratio.app.main")
+
+    xdContext.catalog.persistAppMetadata(crossdataApp)
+    val res:CrossdataApp=xdContext.catalog.lookupApp("myApp").get
+    res shouldBe a[CrossdataApp]
+    res.jar shouldBe "hdfs://url/myjar.jar"
+    res.appAlias shouldBe "myApp"
+    res.appClass shouldBe "com.stratio.app.main"
+  }
   
   override protected def afterAll() {
     xdContext.catalog.dropAllTables()

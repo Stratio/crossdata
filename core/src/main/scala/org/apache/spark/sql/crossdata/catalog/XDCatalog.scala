@@ -15,10 +15,11 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
+
 import org.apache.spark.sql.catalyst.analysis.{Catalog, UnresolvedRelation}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Project, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier, util}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
@@ -32,9 +33,9 @@ import scala.util.parsing.json.JSON
 
 
 /**
- * CrossdataCatalog aims to provide a mechanism to persist the
- * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
- */
+  * CrossdataCatalog aims to provide a mechanism to persist the
+  * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
+  */
 abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
                          xdContext: XDContext) extends Catalog with CatalogCommon with Serializable {
   // TODO should we use a cache?
@@ -44,7 +45,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     if (tables.get(getTableName(tableIdentifier)).isDefined) {
       true
     } else {
-      lookupTable(tableIdentifier).fold(false){ crossdataTable =>
+      lookupTable(tableIdentifier).fold(false) { crossdataTable =>
         val logicalPlan: LogicalPlan = createLogicalRelation(crossdataTable)
         registerTable(tableIdentifier, logicalPlan)
         true
@@ -71,14 +72,13 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
         case (tableName, _) => (tableName, true)
       }.toSeq
     } { definedDBName =>
-      tablesInDb(definedDBName).map{
+      tablesInDb(definedDBName).map {
         case (tableName, _) => (tableName.split("\\.")(0) + "." + tableName.split("\\.")(1), true)
       }.toSeq
     }
     // persisted tables replace temporary tables
     (cachedTables.toMap ++ listPersistedTables(databaseName).toMap).toSeq
   }
-
 
 
   override def lookupRelation(relationIdentifier: TableIdentifier, alias: Option[String]): LogicalPlan = {
@@ -120,11 +120,11 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
     tableOpt.fold[Option[LogicalPlan]] {
       None
     } { table =>
-      Some( processAlias(tableIdentifier, table, alias))
+      Some(processAlias(tableIdentifier, table, alias))
     }
   }
 
-  private def processAlias( tableIdentifier: TableIdentifier, lPlan: LogicalPlan, alias: Option[String]) = {
+  private def processAlias(tableIdentifier: TableIdentifier, lPlan: LogicalPlan, alias: Option[String]) = {
     val tableWithQualifiers = Subquery(getTableName(tableIdentifier), lPlan)
     // If an alias was specified by the lookup, wrap the plan in a subquery so that attributes are
     // properly qualified with this alias.
@@ -132,15 +132,15 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   }
 
   /**
-   * Get the table name of TableIdentifier for temporary tables.
-   */
+    * Get the table name of TableIdentifier for temporary tables.
+    */
   override protected def getTableName(tableIdent: TableIdentifier): String =
     if (conf.caseSensitiveAnalysis) {
       tableIdent.unquotedString
     } else {
       tableIdent.unquotedString.toLowerCase
     }
-  
+
 
   override def registerTable(tableIdentifier: TableIdentifier, plan: LogicalPlan): Unit =
     tables.put(getTableName(tableIdentifier), plan)
@@ -156,6 +156,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   override def refreshTable(tableIdentifier: TableIdentifier): Unit = {
     throw new UnsupportedOperationException
   }
+
 
   protected[crossdata] def createLogicalRelation(crossdataTable: CrossdataTable): LogicalRelation = {
 
@@ -182,17 +183,16 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   final def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit = {
     val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
 
-    if (tableExists(tableIdentifier)){
+    if (tableExists(tableIdentifier)) {
       logWarning(s"The table $tableIdentifier already exists")
       throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
     } else {
       logInfo(s"XDCatalog: Persisting table ${crossdataTable.tableName}")
       persistTableMetadata(crossdataTable.copy(schema = Option(table.schema)))
-      val tableIdentifier = TableIdentifier(crossdataTable.tableName,crossdataTable.dbName)
+      val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
       registerTable(tableIdentifier, table)
     }
   }
-
 
 
   final def persistView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String) = {
@@ -206,7 +206,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
       }
     }
     checkPlan(plan)
-    if (tableExists(tableIdentifier)){
+    if (tableExists(tableIdentifier)) {
       val msg = s"The view ${tableIdentifier.unquotedString} already exists"
       logWarning(msg)
       throw new UnsupportedOperationException(msg)
@@ -258,8 +258,8 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   protected[crossdata] def persistViewMetadata(tableIdentifier: ViewIdentifier, sqlText: String): Unit
 
   /**
-   * Drop table(s)/view(s) if exists.
-   */
+    * Drop table(s)/view(s) if exists.
+    */
   protected def dropPersistedTable(tableIdentifier: TableIdentifier): Unit
 
   protected def dropAllPersistedTables(): Unit
@@ -270,9 +270,13 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
 
   /**
-   * Check the connection to the set Catalog
-   */
+    * Check the connection to the set Catalog
+    */
   def checkConnectivity: Boolean
+
+  def lookupApp(alias: String): Option[CrossdataApp]
+
+  def persistAppMetadata(crossdataApp: CrossdataApp): Unit
 
 }
 
@@ -281,10 +285,12 @@ object XDCatalog extends CrossdataSerializer {
   implicit def asXDCatalog(catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
 
   type ViewIdentifier = TableIdentifier
-  
-  case class CrossdataTable(tableName: String, dbName: Option[String],  schema: Option[StructType],
+
+  case class CrossdataTable(tableName: String, dbName: Option[String], schema: Option[StructType],
                             datasource: String, partitionColumn: Array[String] = Array.empty,
-                            opts: Map[String, String] = Map.empty , crossdataVersion: String = CrossdataVersion)
+                            opts: Map[String, String] = Map.empty, crossdataVersion: String = CrossdataVersion)
+
+  case class CrossdataApp(jar: String, appAlias: String, appClass: String)
 
   def getUserSpecifiedSchema(schemaJSON: String): Option[StructType] = {
 
@@ -325,29 +331,29 @@ object XDCatalog extends CrossdataSerializer {
     write(partitionColumn)
   }
 
-  private def convertToGrammar (m: Any) : String = {
+  private def convertToGrammar(m: Any): String = {
     def isStruct(map: Map[String, Any]) = map("type") == "struct"
     def isArray(map: Map[String, Any]) = map("type") == "array"
     def isMap(map: Map[String, Any]) = map("type") == "map"
 
     m match {
-      case tpeMap: Map[String @unchecked, _] if isStruct(tpeMap) =>
-        val fields =  tpeMap.get("fields").fold(throw new Error("Struct type not found"))(_.asInstanceOf[List[Map[String, Any]]])
+      case tpeMap: Map[String@unchecked, _] if isStruct(tpeMap) =>
+        val fields = tpeMap.get("fields").fold(throw new Error("Struct type not found"))(_.asInstanceOf[List[Map[String, Any]]])
         val fieldsStr = fields.map {
           x => s"`${x.getOrElse("name", throw new Error("Name not found"))}`:" + convertToGrammar(x)
         } mkString ","
         s"struct<$fieldsStr>"
 
-      case tpeMap: Map[String @unchecked, _] if isArray(tpeMap) =>
+      case tpeMap: Map[String@unchecked, _] if isArray(tpeMap) =>
         val tpeArray = tpeMap.getOrElse("elementType", throw new Error("Array type not found"))
         s"array<${convertToGrammar(tpeArray)}>"
 
-      case tpeMap: Map[String @unchecked, _] if isMap(tpeMap) =>
+      case tpeMap: Map[String@unchecked, _] if isMap(tpeMap) =>
         val tpeKey = tpeMap.getOrElse("keyType", throw new Error("Key type not found"))
         val tpeValue = tpeMap.getOrElse("valueType", throw new Error("Value type not found"))
         s"map<${convertToGrammar(tpeKey)},${convertToGrammar(tpeValue)}>"
 
-      case tpeMap: Map[String @unchecked, _] =>
+      case tpeMap: Map[String@unchecked, _] =>
         convertToGrammar(tpeMap.getOrElse("type", throw new Error("Type not found")))
 
       case basicType: String => basicType

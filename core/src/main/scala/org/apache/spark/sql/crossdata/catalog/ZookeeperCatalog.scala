@@ -22,8 +22,8 @@ import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIde
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
-import org.apache.spark.sql.crossdata.daos.impl.{TableTypesafeDAO, ViewTypesafeDAO}
-import org.apache.spark.sql.crossdata.models.{TableModel, ViewModel}
+import org.apache.spark.sql.crossdata.daos.impl.{AppTypesafeDAO, TableTypesafeDAO, ViewTypesafeDAO}
+import org.apache.spark.sql.crossdata.models.{AppModel, TableModel, ViewModel}
 import org.apache.spark.sql.types.StructType
 
 /**
@@ -36,6 +36,7 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
 
   @transient val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
   @transient val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
+  @transient val appDAO = new AppTypesafeDAO(XDContext.catalogConfig)
 
 
   override def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
@@ -62,6 +63,28 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
       None
     }
   }
+
+  override def lookupApp(alias:String): Option[CrossdataApp] = {
+    if (appDAO.dao.count > 0) {
+      val findApp = appDAO.dao.getAll()
+        .find(appModel =>
+          appModel.appAlias==alias)
+
+      findApp match {
+        case Some(zkApp) =>
+          Option(CrossdataApp(zkApp.jar,
+            zkApp.appAlias,
+            zkApp.appClass))
+        case None =>
+          appDAO.logger.warn("App doesn't exist")
+          None
+      }
+    } else {
+      appDAO.logger.warn("App path doesn't exist")
+      None
+    }
+  }
+
 
   override def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
     if (tableDAO.dao.count > 0) {
@@ -91,6 +114,16 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
         crossdataTable.dbName,
         crossdataTable.partitionColumn,
         crossdataTable.opts))
+  }
+
+  override def persistAppMetadata(crossdataApp: CrossdataApp): Unit = {
+    val appId = createId
+
+    appDAO.dao.create(appId,
+      AppModel(
+        crossdataApp.jar,
+        crossdataApp.appAlias,
+        crossdataApp.appClass))
   }
 
   override def dropPersistedTable(tableIdentifier: TableIdentifier): Unit =

@@ -13,19 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.daos
+package com.stratio.crossdata.launcher
 
-import java.util.UUID
+import com.typesafe.config.Config
+import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
 
-object DAOConstants {
+trait CrossdataApp {
+  def runJob(xDContext: XDContext, jobConfig: Config): XDDataFrame
 
-  val BaseZKPath = "stratio/crossdata"
-  val TablesPath = s"$BaseZKPath/tables"
-  val ViewsPath = s"$BaseZKPath/views"
-  val AppsPath = s"$BaseZKPath/apps"
-  val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
-  val EphemeralTableStatusPath = s"$BaseZKPath/ephemeraltablestatus"
-  val EphemeralQueriesPath = s"$BaseZKPath/ephemeralqueries"
-
-  def createId: String = UUID.randomUUID.toString
+  def validate(xDContext: XDContext, config: Config): Any
 }

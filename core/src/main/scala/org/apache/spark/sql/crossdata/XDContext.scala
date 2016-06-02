@@ -30,6 +30,7 @@ import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIde
 import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
@@ -253,8 +254,11 @@ class XDContext private (@transient val sc: SparkContext,
     * @param path The local path or hdfs path where SparkContext will take the JAR
     */
   override def addJar(path: String) = {
-    // TODO Add to current Classpath
-    super.addJar(path)
+       super.addJar(path)
+  }
+
+  def addApp(path: String, clss: String, alias: String): Unit ={
+    catalog.persistAppMetadata(CrossdataApp(path,alias,clss))
   }
 
   /**
