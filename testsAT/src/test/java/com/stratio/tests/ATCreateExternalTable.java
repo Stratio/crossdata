@@ -75,7 +75,7 @@ public class ATCreateExternalTable extends BaseTest {
 
 	}
 
-	@Test(enabled = true, groups = {"basic"})
+	@Test(enabled = true, groups = {"advanced"})
 	public void ATCreateExternalTable() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
