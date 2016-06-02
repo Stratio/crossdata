@@ -87,7 +87,7 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
     }
   }
 
-/*
+
   test("Crossdata streaming must save into the kafka output the sql results") {
 
     deletePath(checkpointDirectorySelect)
@@ -135,5 +135,5 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
       case None => throw new Exception("Ephemeral table not created")
     }
   }
-*/
+
 }
