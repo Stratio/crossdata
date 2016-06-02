@@ -15,9 +15,12 @@
  */
 package com.stratio.crossdata.connector.mongodb
 
+import com.mongodb.{BasicDBList, DBObject}
+import com.mongodb.casbah.commons.{MongoDBList, MongoDBObject}
 import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+
 
 @RunWith(classOf[JUnitRunner])
 class MongoInsertTableIT extends MongoInsertCollection {
@@ -30,10 +33,36 @@ class MongoInsertTableIT extends MongoInsertCollection {
 
     _xdContext.sql(query).collect() should be (Row(1)::Nil)
 
+    //EXPECTATION
+    val results = sql(s"select * from $Collection where id=20").collect()
+
+    results map { row =>
+      row.getAs[Int]("id") shouldBe 20
+      row.getAs[Int]("age") shouldBe 25
+      row.getAs[String]("description") shouldBe "proof description"
+      row.getAs[Boolean]("enrolled") shouldBe true
+      row.getAs[String]("name") shouldBe "Eve"
+      row.getAs[Boolean]("optionalField") shouldBe false
+      row.getAs[Seq[String]]("array_test") shouldBe Seq("proof")
+      row.getAs[Map[String,String]]("map_test") shouldBe Map("a" -> "2")
+      row.getAs[Seq[Map[String,String]]]("array_map") shouldBe List( Map("x" -> "1", "y" -> "1"), Map("z" -> "1"))
+      row.getAs[Map[String,Seq[String]]]("map_array") shouldBe Map("x" -> List("1" , "2"), "y" -> List("3", "4"))
+    }
+
+
   }
 
   it should "insert a row using INSERT INTO table(schema) VALUES in MongoDb" in {
     _xdContext.sql(s"INSERT INTO $Collection(age,name, enrolled) VALUES ( 25, 'Peter', true)").collect() should be (Row(1)::Nil)
+
+    //EXPECTATION
+    val results = sql(s"select * from $Collection where age=25 and name='Peter'").collect()
+
+    results map { row =>
+      row.getAs[Int]("age") shouldBe 25
+      row.getAs[Boolean]("enrolled") shouldBe true
+      row.getAs[String]("name") shouldBe "Peter"
+    }
   }
 
   it should "insert multiple rows using INSERT INTO table VALUES in MongoDb" in {
