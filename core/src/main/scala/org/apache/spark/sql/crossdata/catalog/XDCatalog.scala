@@ -247,7 +247,7 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
 
   protected def lookupView(viewIdentifier: ViewIdentifier): Option[String]
 
-  protected def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable]
+  protected[crossdata] def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable]
 
   def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)]
 

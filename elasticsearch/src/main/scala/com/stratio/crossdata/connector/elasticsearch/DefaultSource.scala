@@ -35,6 +35,8 @@ import org.elasticsearch.hadoop.util.Version
 import org.elasticsearch.hadoop.{EsHadoopIllegalArgumentException, EsHadoopIllegalStateException}
 import org.elasticsearch.spark.sql.ElasticsearchXDRelation
 
+import scala.util.Try
+
 
 object DefaultSource {
   val DataSourcePushDown: String = "es.internal.spark.sql.pushdown"
@@ -162,6 +164,20 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
       case e: Exception =>
         sys.error(e.getMessage)
         None
+    }
+  }
+
+  override def dropExternalTable(context: SQLContext,
+                                 options: Map[String, String]): Try[Unit] = {
+
+    val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).get
+    val indexType = IndexType(index, typeName)
+
+    Try {
+      val client = ElasticSearchConnectionUtils.buildClient(options)
+      client.execute {
+        deleteMapping(indexType)
+      } await
     }
   }
 
