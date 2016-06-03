@@ -29,7 +29,6 @@ import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, DataSourceRegister, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.{BooleanType, DateType, DoubleType, FloatType, IntegerType, LongType, StringType, StructType}
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
-import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 import org.elasticsearch.hadoop.util.Version
@@ -178,7 +177,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
       val client = ElasticSearchConnectionUtils.buildClient(options)
       client.execute {
         deleteMapping(indexType)
-      }
+      } await
     }
   }
 
