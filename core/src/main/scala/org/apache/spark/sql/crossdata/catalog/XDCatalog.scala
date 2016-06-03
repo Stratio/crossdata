@@ -16,6 +16,8 @@
 package org.apache.spark.sql.crossdata.catalog
 
 
+import java.sql.{ResultSet, Statement}
+
 import org.apache.spark.sql.catalyst.analysis.{Catalog, UnresolvedRelation}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Project, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier, util}
@@ -277,6 +279,11 @@ abstract class XDCatalog(val conf: CatalystConf = new SimpleCatalystConf(true),
   def lookupApp(alias: String): Option[CrossdataApp]
 
   def persistAppMetadata(crossdataApp: CrossdataApp): Unit
+
+  def closeJDBCStatements(statement: Statement, resultSet: ResultSet): Unit ={
+    resultSet.close()
+    statement.close()
+  }
 
 }
 

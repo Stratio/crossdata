@@ -249,8 +249,6 @@ private[crossdata] case class AddApp(xdContext:XDContext, jarPath: String, class
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     if (jarPath.toLowerCase.startsWith("hdfs://") || File(jarPath).exists) {
-      sqlContext.sparkContext.addJar(jarPath)
-    } else if (File(jarPath).exists){
       xdContext.addJar(jarPath)
     } else {
       sys.error("File doesn't exists or is not a hdfs file")

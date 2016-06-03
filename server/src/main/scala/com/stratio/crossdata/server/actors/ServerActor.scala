@@ -116,25 +116,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
       jobActor ! StartJob
       context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
 
-    case CommandEnvelope(addJarCommand: AddJARCommand, session@Session(id, requester)) =>
-      logger.debug(s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
-      logger.debug(s"Session identifier $session")
-      //TODO  Maybe include job controller if it is necessary as in sql command
-      if (addJarCommand.path.toLowerCase.startsWith("hdfs://")) {
-        xdContext.addJar(addJarCommand.path)
-        //add to runtime
-        val hdfsIS: InputStream = HdfsUtils(addJarCommand.hdfsConfig.get).getFile(addJarCommand.path)
-        val file: File = createFile(hdfsIS, config.getString(ServerConfig.repoJars))
-        addToClasspath(file)
-
-        val row=new GenericRowWithSchema(Array(addJarCommand.path),new StructType(Array(StructField("res", StringType))))
-
-        sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array(row), new StructType(Array(StructField("res", StringType)))))
-      } else {
-        sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exists or is not a hdfs file", Some(new Exception("File doesn't exists or is not a hdfs file"))))
-      }
-
-    case CommandEnvelope(addAppCommand@AddAppCommand(path, alias, clss,_), session@Session(id, requester)) =>
+    case CommandEnvelope(addAppCommand@AddAppCommand(path, alias, clss, _), session@Session(id, requester)) =>
       xdContext.addApp(path, clss, alias)
       sender ! SQLReply(addAppCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
 
@@ -142,26 +124,6 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
       st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
   }
 
-  private def addToClasspath(file: File): Unit = {
-    if (file.exists) {
-      val method: Method = classOf[URLClassLoader].getDeclaredMethod("addURL", classOf[URL])
-      method.setAccessible(true)
-      method.invoke(ClassLoader.getSystemClassLoader, file.toURI.toURL)
-      method.setAccessible(false)
-    } else {
-      logger.warn(s"The file ${file.getName} not exists.")
-    }
-  }
-
-  private def createFile(hdfsIS: InputStream, path: String): File = {
-    val targetFile = new File(path)
-
-    val arrayBuffer = new Array[Byte](hdfsIS.available)
-    hdfsIS.read(arrayBuffer)
-
-    Files.write(arrayBuffer, targetFile)
-    targetFile
-  }
 
   // Receive functions:
 

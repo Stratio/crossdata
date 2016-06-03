@@ -45,6 +45,7 @@ object DerbyCatalog {
 /**
   * Default implementation of the [[catalog.XDCatalog]] with persistence using
   * Derby.
+  *
   * @param conf An implementation of the [[CatalystConf]].
   */
 class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
@@ -130,17 +131,17 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
     preparedStatement.setString(1, alias)
-//    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars")
     val resultSet: ResultSet = preparedStatement.executeQuery()
 
     if (!resultSet.next) {
+      closeJDBCStatements(preparedStatement, resultSet)
       None
     } else {
-
       val jar = resultSet.getString(JarPath)
       val alias = resultSet.getString(AppAlias)
       val clss = resultSet.getString(AppClass)
 
+      closeJDBCStatements(preparedStatement, resultSet)
       Some(
         CrossdataApp(jar, alias, clss)
       )
@@ -156,6 +157,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         val tableId = if (database.trim.isEmpty) table else s"$database.$table"
         getSequenceAux(resultset, resultset.next(), set + tableId)
       } else {
+        resultset.close()
         set
       }
     }
@@ -165,6 +167,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
 
     getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
+
   }
 
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
@@ -193,6 +196,8 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         prepped.setString(6, tableOptions)
         prepped.setString(7, CrossdataVersion)
         prepped.execute()
+
+        closeJDBCStatements(prepped, resultSet)
       }
       else {
         val prepped = connection.prepareStatement(
@@ -205,6 +210,8 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         prepped.setString(4, tableOptions)
         prepped.setString(5, CrossdataVersion)
         prepped.execute()
+
+        closeJDBCStatements(prepped, resultSet)
       }
       connection.commit()
 
@@ -235,10 +242,14 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
 
-    if (!resultSet.next)
+    if (!resultSet.next) {
+      resultSet.close()
       None
-    else
+    } else {
+      resultSet.close()
       Option(resultSet.getString(SqlViewField))
+    }
+
   }
 
 
@@ -259,6 +270,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         prepped.setString(3, sqlText)
         prepped.setString(4, CrossdataVersion)
         prepped.execute()
+        closeJDBCStatements(prepped, resultSet)
       } else {
         val prepped = connection.prepareStatement(
           s"""|UPDATE $db.$tableWithViewMetadata SET $SqlViewField=?
@@ -266,6 +278,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
          """.stripMargin)
         prepped.setString(1, sqlText)
         prepped.execute()
+        closeJDBCStatements(prepped, resultSet)
       }
       connection.commit()
     } finally {
@@ -299,6 +312,8 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
         prepped.setString(1, crossdataApp.jar)
         prepped.setString(2, crossdataApp.appClass)
         prepped.execute()
+
+        closeJDBCStatements(prepped, resultSet)
       }
       connection.commit()
     } finally {
@@ -311,6 +326,7 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
     preparedStatement.setString(2, tableIdentifier.table)
     preparedStatement.executeQuery()
+
 
   }
 

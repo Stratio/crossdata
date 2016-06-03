@@ -147,8 +147,8 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val addApp: Parser[LogicalPlan] =
     (ADD ~> APP ~> ident) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
-      case jarPath ~ xxx ~ cname =>
-        AddApp(xDContext, jarPath.toString, cname, xxx)
+      case jarPath ~ alias ~ cname =>
+        AddApp(xDContext, jarPath.toString, cname, alias)
     }
 
   protected lazy val executeApp: Parser[LogicalPlan] =

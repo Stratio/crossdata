@@ -18,7 +18,7 @@ package com.stratio.crossdata.launcher
 import com.typesafe.config.Config
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
 
-trait CrossdataApp {
+trait CrossdataExecuteApp {
   def runJob(xDContext: XDContext, jobConfig: Config): XDDataFrame
 
   def validate(xDContext: XDContext, config: Config): Any
