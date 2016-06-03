@@ -21,7 +21,6 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.{XDContext, catalog}
-import org.apache.spark.sql.types._
 
 import scala.annotation.tailrec
 
@@ -125,7 +124,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       val version = resultSet.getString(CrossdataVersionField)
 
       Some(
-        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource, getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
+        CrossdataTable(table, Some(database), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource, deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
       )
     }
   }
@@ -153,7 +152,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
     try {
 
-      val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(new StructType()))
+      val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(requireSchema()))
       val tableOptions = serializeOptions(crossdataTable.opts)
       val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
