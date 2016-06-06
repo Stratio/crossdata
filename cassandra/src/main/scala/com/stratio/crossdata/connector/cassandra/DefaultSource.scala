@@ -34,6 +34,8 @@ import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
 import org.apache.spark.sql.types.{DataTypes, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
+import scala.util.Try
+
 
 
 /**
@@ -167,6 +169,19 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
       case e: Exception =>
         sys.error(e.getMessage)
         None
+    }
+  }
+
+  override def dropExternalTable(context: SQLContext,
+                                 options: Map[String, String]): Try[Unit] = {
+
+    val keyspace: String = options.get(CassandraDataSourceKeyspaceNameProperty).get
+    val table: String = options.get(CassandraDataSourceTableNameProperty).get
+
+    Try {
+      buildCassandraConnector(context, options).withSessionDo { s =>
+        s.execute(s"DROP TABLE $keyspace.$table")
+      }
     }
   }
 
