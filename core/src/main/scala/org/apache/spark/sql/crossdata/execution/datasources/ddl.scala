@@ -42,6 +42,12 @@ object DDLUtils {
   implicit def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
     tableIdentifier.database.toSeq :+ tableIdentifier.table
 
+  /**
+    * Convert from String, Map or Seq to Scala Types
+    * @param value the String, Map or Seq
+    * @param sparkDataType the original SparkDatatype
+    * @return The value converted from SparkDatatype to Scala
+    */
   def convertSparkDatatypeToScala(value: Any, sparkDataType: DataType): Try[Any] = {
 
     (value, sparkDataType) match {

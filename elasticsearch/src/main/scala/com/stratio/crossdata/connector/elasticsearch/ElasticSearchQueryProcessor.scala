@@ -69,7 +69,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
     }
 
     val plan = validatedNativePlan getOrElse( sys.error("Invalid native plan") )
-    
+
     val result: Try[Array[Row]] = plan match {
       case (baseLogicalPlan, limit) =>
         val requiredColumns = baseLogicalPlan match {
