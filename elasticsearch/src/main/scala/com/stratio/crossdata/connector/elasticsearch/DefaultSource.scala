@@ -23,6 +23,7 @@ package com.stratio.crossdata.connector.elasticsearch
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.IndexType
 import com.sksamuel.elastic4s.mappings._
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
 import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
@@ -49,11 +50,14 @@ object DefaultSource {
 /**
  * This class is used by Spark to create a new  [[ElasticsearchXDRelation]]
  */
-class DefaultSource extends RelationProvider with SchemaRelationProvider
-                                              with CreatableRelationProvider
-                                              with TableInventory
-                                              with DataSourceRegister
-                                              with TableManipulation  {
+class DefaultSource
+  extends RelationProvider
+  with SchemaRelationProvider
+  with CreatableRelationProvider
+  with TableInventory
+  with DataSourceRegister
+  with TableManipulation
+  with SparkLoggerComponent {
 
   import DefaultSource._
 
@@ -106,8 +110,8 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
     }
 
     // validate path
-    params.getOrElse(ConfigurationOptions.ES_RESOURCE_READ,
-      params.getOrElse(ConfigurationOptions.ES_RESOURCE, throw new EsHadoopIllegalArgumentException("resource must be specified for Elasticsearch resources.")))
+    if (params.get(ConfigurationOptions.ES_RESOURCE_READ).orElse(params.get(ConfigurationOptions.ES_RESOURCE)).isEmpty)
+      throw new EsHadoopIllegalArgumentException("resource must be specified for Elasticsearch resources.")
 
     params
   }
@@ -140,7 +144,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
     val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).orElse(databaseName.map((_, tableName))).
       getOrElse(throw new RuntimeException(s"$ES_RESOURCE is required when running CREATE EXTERNAL TABLE"))
 
-
+    // TODO specified mapping is not the same that the resulting mapping inferred once some data is indexed
     val elasticSchema = schema.map { field =>
       field.dataType match {
         case IntegerType => new IntegerFieldDefinition(field.name)
@@ -158,12 +162,12 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
       val client = ElasticSearchConnectionUtils.buildClient(options)
       client.execute {
         put.mapping(indexType) as elasticSchema
-      }
+      }.await
       Option(Table(typeName, Option(index), Option(schema)))
     } catch {
       case e: Exception =>
+        logError(e.getMessage, e)
         sys.error(e.getMessage)
-        None
     }
   }
 
