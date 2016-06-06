@@ -41,16 +41,11 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
 
   def relation(tableIdent: TableIdentifier, alias: Option[String] = None): Option[LogicalPlan]
 
-  //  def contains(tableIdentifier: TableIdentifier): Boolean = relation(tableIdentifier).isDefined
-
   def allRelations(databaseName: Option[String]): Seq[TableIdentifier]
 
   def isAvailable: Boolean
 
   // TODO def isView(id: TableIdentifier): Boolean
-
- /* TODO remove protected def normalizeDBIdentifier(dbName: String)(implicit conf: CatalystConf): String =
-    if (conf.caseSensitiveAnalysis) dbName else dbName.toLowerCase*/
 
   protected def notFound(resource: String) = {
     val message = s"$resource not found"

@@ -211,7 +211,6 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
   override def dropAllTablesMetadata(): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithTableMetadata")
-  // TODO dropAllTables
 
   override def dropAllViewsMetadata(): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithViewMetadata")

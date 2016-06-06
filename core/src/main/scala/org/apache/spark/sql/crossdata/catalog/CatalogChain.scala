@@ -84,7 +84,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
    */
 
   private def lookupRelationOpt(tableIdent: TableIdentifier, alias: Option[String] = None): Option[LogicalPlan] =
-    chainedLookup(_.relation(tableIdent))
+    chainedLookup(_.relation(tableIdent, alias))
 
   override def lookupRelation(tableIdent: TableIdentifier, alias: Option[String]): LogicalPlan =
     lookupRelationOpt(tableIdent, alias) getOrElse {
@@ -154,7 +154,6 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   override def refreshTable(tableIdent: TableIdentifier): Unit =
     persistentCatalogs.foreach(_.refreshCache(tableIdent))
 
-  // TODO streaming (Option vs real)
   /**
    * StreamingCatalog
    */
