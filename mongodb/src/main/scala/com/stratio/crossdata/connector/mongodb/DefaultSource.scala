@@ -20,7 +20,7 @@ import com.mongodb.casbah.Imports.DBObject
 import com.mongodb.casbah.MongoDB
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
-import com.stratio.datasource.mongodb.config.{MongodbConfigBuilder, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions}
 import com.stratio.datasource.mongodb.{DefaultSource => ProviderDS, MongodbConnection, MongodbRelation}
 import com.stratio.datasource.util.Config._
 import com.stratio.datasource.util.{Config, ConfigBuilder}
@@ -28,6 +28,8 @@ import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+
+import scala.util.{Failure, Try}
 
 /**
  * Allows creation of MongoDB based tables using
@@ -175,6 +177,24 @@ class DefaultSource extends ProviderDS with TableInventory with DataSourceRegist
       case e: Exception =>
         sys.error(e.getMessage)
         None
+    }
+  }
+
+  override def dropExternalTable(context: SQLContext,
+                                 options: Map[String, String]): Try[Unit] = {
+    val tupleDbColl = for {
+      db <- options.get(Database)
+      coll <- options.get(Collection)
+    } yield (db, coll)
+
+    tupleDbColl.fold[Try[Unit]](
+      ifEmpty = Failure(throw new RuntimeException(s"Required options not found ${Set(Database, Collection) -- options.keys}"))
+    ) { case (dbName, collName) =>
+      Try {
+        MongodbConnection.withClientDo(parseParametersWithoutValidation(options)) { mongoClient =>
+          mongoClient.getDB(dbName).getCollection(collName).drop()
+        }
+      }
     }
   }
 
