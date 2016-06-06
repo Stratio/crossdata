@@ -4,7 +4,7 @@ Feature: CassandraSelectEqualsFilter
     When I execute 'SELECT * FROM tabletest WHERE ident = 0'
     Then The result has to have '1' rows:
       |ident-integer|date-timestamp     |money-double |name-string| new-boolean |
-      |    0        |1999-11-30 00:00:00| 10.2        |name_0     |true         |
+      |    0        |1999-11-30 01:00:00| 10.2        |name_0     |true         |
 
   Scenario: [CASSANDRA NATIVE] SELECT * FROM tabletest WHERE ident = 10;
     When I execute 'SELECT * FROM tabletest WHERE ident = 10'
@@ -49,7 +49,7 @@ Feature: CassandraSelectEqualsFilter
     When I execute 'SELECT * FROM tab4 WHERE date = '1999-11-30 00:00:00''
     Then The result has to have '1' rows:
       |date-timestamp|
-      |1999-11-30 00:00:00    |
+      |1999-11-30 01:00:00    |
 
   Scenario: [CROSSDATA-81 : CASSANDRA NATIVE] SELECT * FROM tab4 WHERE date = '1999-12-30 00:00:00';
     When I execute 'SELECT * FROM tab4 WHERE date = '1999-12-30 00:00:00''

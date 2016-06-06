@@ -46,7 +46,7 @@ Feature: MongoSelectEqualsFilter
       |  true         |
       |  true         |
   Scenario: [CROSSDATA-79,CROSSDATA-81 : MONGO NATIVE] SELECT date FROM tabletest WHERE date = ' 2000-1-1';
-    When I execute 'SELECT date FROM tabletest WHERE date = '2000-1-1''
+    When I execute 'SELECT date FROM tabletest WHERE date = '2000-1-1 00:00:0''
     Then The result has to have '1' rows:
       | date-date  |
       | 2000-1-1 |
