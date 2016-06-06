@@ -179,10 +179,11 @@ class DefaultSource
     val indexType = IndexType(index, typeName)
 
     Try {
-      val client = ElasticSearchConnectionUtils.buildClient(options)
-      client.execute {
-        deleteMapping(indexType)
-      } await
+      ElasticSearchConnectionUtils.withClientDo(options){ client =>
+        client.execute {
+          deleteMapping(indexType)
+        }.await
+      }
     }
   }
 
