@@ -28,7 +28,7 @@ class ElasticSearchCreateExternalTableIT extends ElasticWithSharedContext {
       s"""|CREATE EXTERNAL TABLE $Index.newtable (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
-          |es.resource '$Index/$Type',
+          |es.resource '$Index/newtable',
           |es.nodes '$ElasticHost',
           |es.port '$ElasticRestPort',
           |es.nativePort '$ElasticNativePort',
