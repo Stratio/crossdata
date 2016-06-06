@@ -79,25 +79,21 @@ class XDContext protected (@transient val sc: SparkContext,
 
   catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
 
-  @transient
-  override protected[sql] lazy val catalog: XDCatalog = {
-
+  private val catalystConf: CatalystConf = {
     import XDContext.CaseSensitive
     val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
-
-    val conf = new SimpleCatalystConf(caseSensitive)
-
-    val catalogs: List[XDCatalogCommon] =  temporaryCatalog :: externalCatalog :: streamingCatalog.toList
-
-    CatalogChain(catalogs:_*)(conf)
-
+    new SimpleCatalystConf(caseSensitive)
   }
 
-  // TODO config TemporaryCatalog
   @transient
-  private lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(conf)
+  override protected[sql] lazy val catalog: XDCatalog = {
+    val catalogs: List[XDCatalogCommon] =  temporaryCatalog :: externalCatalog :: streamingCatalog.toList
+    CatalogChain(catalogs:_*)(catalystConf)
+  }
 
-  // TODO config PersistentCatalog
+  @transient
+  private lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(catalystConf)
+
   @transient
   private lazy val externalCatalog: XDPersistentCatalog = {
 
@@ -109,7 +105,7 @@ class XDContext protected (@transient val sc: SparkContext,
     val externalCatalogClass = Class.forName(externalCatalogName)
     val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[SQLContext], classOf[CatalystConf])
 
-    constr.newInstance(self, conf).asInstanceOf[XDPersistentCatalog]
+    constr.newInstance(self, catalystConf).asInstanceOf[XDPersistentCatalog]
   }
 
 
@@ -119,7 +115,7 @@ class XDContext protected (@transient val sc: SparkContext,
       val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)
       val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
-      Option(constr.newInstance(conf).asInstanceOf[XDStreamingCatalog])
+      Option(constr.newInstance(catalystConf).asInstanceOf[XDStreamingCatalog])
     } else {
       logError("Empty streaming catalog")
       None
@@ -173,7 +169,7 @@ class XDContext protected (@transient val sc: SparkContext,
   }
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
-    new Analyzer(catalog, functionRegistry, conf) {
+    new Analyzer(catalog, functionRegistry, catalystConf) {
       override val extendedResolutionRules =
         ResolveAggregateAlias ::
           ExtractPythonUDFs ::
