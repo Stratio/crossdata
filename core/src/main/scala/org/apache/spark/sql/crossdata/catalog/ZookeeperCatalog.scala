@@ -24,7 +24,6 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{TableTypesafeDAO, ViewTypesafeDAO}
 import org.apache.spark.sql.crossdata.models.{TableModel, ViewModel}
-import org.apache.spark.sql.types.StructType
 
 /**
   * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.XDCatalog]] with persistence using Zookeeper.
@@ -48,7 +47,7 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
         case Some(zkTable) =>
           Option(CrossdataTable(zkTable.name,
             zkTable.database,
-            getUserSpecifiedSchema(zkTable.schema),
+            Option(deserializeUserSpecifiedSchema(zkTable.schema)),
             zkTable.dataSource,
             zkTable.partitionColumns.toArray,
             zkTable.options,
@@ -86,7 +85,7 @@ class ZookeeperCatalog(override val conf: CatalystConf = new SimpleCatalystConf(
     tableDAO.dao.create(tableId,
       TableModel(tableId,
         crossdataTable.tableName,
-        serializeSchema(crossdataTable.schema.getOrElse(new StructType())),
+        serializeSchema(crossdataTable.schema.getOrElse(requireSchema())),
         crossdataTable.datasource,
         crossdataTable.dbName,
         crossdataTable.partitionColumn,

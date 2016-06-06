@@ -59,7 +59,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   override protected lazy val ddl: Parser[LogicalPlan] =
 
-    createTable | describeTable | refreshTable | importStart | dropTable |
+    createTable | describeTable | refreshTable | importStart | dropTable | dropExternalTable |
       createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable
 
   // TODO move to StreamingDdlParser
@@ -80,6 +80,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     DROP ~> TABLE ~> tableIdentifier ^^ {
       case tableId =>
         DropTable(tableId)
+    }
+
+  protected lazy val dropExternalTable: Parser[LogicalPlan] =
+    DROP ~> EXTERNAL ~> TABLE ~> tableIdentifier ^^ {
+      case tableId =>
+        DropExternalTable(tableId)
     }
 
   protected lazy val dropAllTables: Parser[LogicalPlan] = {

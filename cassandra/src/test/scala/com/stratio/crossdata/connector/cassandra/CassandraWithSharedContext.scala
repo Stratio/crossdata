@@ -37,7 +37,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
     "table"    -> Table,
     "keyspace" -> Catalog,
     "cluster"  -> ClusterName,
-    "pushdown" -> "true",
+    "pushdown" -> "false", // TODO replace with pushdown true when c* fix some issues
     "spark_cassandra_connection_host" -> CassandraHost
   )
 

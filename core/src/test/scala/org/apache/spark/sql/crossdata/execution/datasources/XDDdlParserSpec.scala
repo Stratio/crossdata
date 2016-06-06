@@ -108,6 +108,22 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
   }
 
+  it should "successfully parse a DROP EXTERNAL TABLE into a DropExternalTable RunnableCommand" in {
+
+    val sentence = "DROP EXTERNAL TABLE tableId"
+    parser.parse(sentence) shouldBe DropExternalTable( TableIdentifier("tableId", None))
+
+  }
+
+  it should "successfully parse a DROP EXTERNAL TABLE with a qualified table name into a DropExternalTable RunnableCommand" in {
+
+    val sentence = "DROP EXTERNAL TABLE dbId.tableId"
+    parser.parse(sentence) shouldBe DropExternalTable( TableIdentifier("tableId", Some("dbId")))
+
+  }
+
+
+
   it should "successfully parse a INSERT TABLE with qualified table name and VALUES provided into InsertTable RunnableCommand" in {
 
     val sentence = """INSERT INTO tableId VALUES ( 12, 12.01, 'proof', true)"""
