@@ -30,6 +30,8 @@ private[crossdata] trait ExternalCatalogAPI {
   def dropView(viewIdentifier: ViewIdentifier): Unit
   def dropAllViews(): Unit
 
+  def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable]
+
 }
 
 

@@ -121,7 +121,7 @@ private[crossdata] case class DropExternalTable(tableIdentifier: TableIdentifier
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val crossadataTable = sqlContext.catalog.lookupTable(tableIdentifier) getOrElse( sys.error("Error dropping external table. Table doesn't exists in the catalog") )
+    val crossadataTable = sqlContext.catalog.tableMetadata(tableIdentifier) getOrElse( sys.error("Error dropping external table. Table doesn't exists in the catalog") )
 
     val provider = crossadataTable.datasource
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()

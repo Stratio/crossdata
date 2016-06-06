@@ -145,6 +145,12 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     persistentCatalogs foreach (_.dropAllViews())
   }
 
+  override def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
+    persistentCatalogs.view map(_.lookupTable(tableIdentifier)) collectFirst {
+      case Some(res) => res
+    }
+  }
+
   override def refreshTable(tableIdent: TableIdentifier): Unit =
     persistentCatalogs.foreach(_.refreshCache(tableIdent))
 

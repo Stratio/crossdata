@@ -40,7 +40,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   val viewCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
 
   // TODO refactor (nonCachedLookup)
-  final override def relation(relationIdentifier: TableIdentifier, alias: Option[String]): Option[LogicalPlan] = {
+  override final def relation(relationIdentifier: TableIdentifier, alias: Option[String]): Option[LogicalPlan] = {
     (tableCache get relationIdentifier) orElse (viewCache get relationIdentifier)
   } orElse {
     logInfo(s"PersistentCatalog: Looking up table ${relationIdentifier.unquotedString}")
@@ -60,9 +60,9 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     }
   }
 
-  final override def refreshCache(tableIdent: ViewIdentifier): Unit = tableCache clear
+  override final def refreshCache(tableIdent: ViewIdentifier): Unit = tableCache clear
 
-  final override def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit = {
+  override final def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit = {
     def checkPlan(plan: LogicalPlan): Unit = {
       plan collect {
         case UnresolvedRelation(tIdent, _) => tIdent
@@ -85,7 +85,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     }
   }
 
-  final override def saveTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit = {
+  override final def saveTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit = {
 
     val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
     if (relation(tableIdentifier).isDefined){
@@ -98,30 +98,30 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     }
   }
 
-  final override def dropTable(tableIdentifier: TableIdentifier): Unit = {
+  override final def dropTable(tableIdentifier: TableIdentifier): Unit = {
     tableCache remove tableIdentifier
     dropTableMetadata(tableIdentifier)
   }
 
-  final override def dropView(viewIdentifier: ViewIdentifier): Unit = {
+  override final def dropView(viewIdentifier: ViewIdentifier): Unit = {
     viewCache remove viewIdentifier
     dropViewMetadata(viewIdentifier)
   }
 
-  final override def dropAllViews(): Unit = {
+  override final def dropAllViews(): Unit = {
     viewCache.clear
     dropAllViewsMetadata()
   }
 
-  final override def dropAllTables(): Unit = {
+  override final def dropAllTables(): Unit = {
     tableCache.clear
     dropAllTablesMetadata()
   }
 
   protected def schemaNotFound() = throw new RuntimeException("the schema must be non empty")
+
   //New Methods
 
-  def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable]
 
   def lookupView(viewIdentifier: ViewIdentifier): Option[String]
 

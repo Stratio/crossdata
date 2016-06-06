@@ -105,6 +105,8 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def dropAllViews(): Unit
 
+  def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable]
+
 }
 
 trait XDStreamingCatalog extends XDCatalogCommon {
