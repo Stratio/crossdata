@@ -17,12 +17,16 @@ package org.apache.spark.sql.crossdata.catalog.streaming
 
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
+import java.util.concurrent.TimeUnit
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.daos.impl._
 import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.models._
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.util.Try
 
 class ZookeeperStreamingCatalog(val catalystConf: CatalystConf) extends XDStreamingCatalog {
@@ -35,11 +39,12 @@ class ZookeeperStreamingCatalog(val catalystConf: CatalystConf) extends XDStream
   private[spark] val ephemeralTableStatusDAO =
     new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
 
+
   // TODO
 
   override def relation(tableIdent: TableIdentifier, alias: Option[String]): Option[LogicalPlan] = {
     val tableIdentifier: String = normalizeTableName(tableIdent)
-    if (existsEphemeralTable(tableIdentifier))
+    if (futurize(existsEphemeralTable(tableIdentifier)))
       Some(StreamingRelation(tableIdentifier))
     else
       None
@@ -51,14 +56,17 @@ class ZookeeperStreamingCatalog(val catalystConf: CatalystConf) extends XDStream
   // TODO It must not return the relations until the catalog can distinguish between real/ephemeral tables
   override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = Seq.empty
 
+  private def futurize[P](operation : => P): P =
+    Await.result(Future(operation), 5 seconds)
+
   /**
    * Ephemeral Table Functions
    */
   override def existsEphemeralTable(tableIdentifier: String): Boolean =
-    ephemeralTableDAO.dao.exists(tableIdentifier)
+    futurize(ephemeralTableDAO.dao.exists(tableIdentifier))
 
   override def getEphemeralTable(tableIdentifier: String): Option[EphemeralTableModel] =
-    ephemeralTableDAO.dao.get(tableIdentifier)
+    futurize(ephemeralTableDAO.dao.get(tableIdentifier))
 
   override def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel] =
     if(!existsEphemeralTable(ephemeralTable.name)){

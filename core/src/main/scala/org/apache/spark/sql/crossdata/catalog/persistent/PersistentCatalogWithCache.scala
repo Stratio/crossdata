@@ -118,6 +118,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     dropAllTablesMetadata()
   }
 
+  protected def schemaNotFound() = throw new RuntimeException("the schema must be non empty")
   //New Methods
 
   def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable]

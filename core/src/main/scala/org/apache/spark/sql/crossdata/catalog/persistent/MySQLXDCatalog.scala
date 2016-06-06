@@ -19,10 +19,9 @@ import java.sql.{Connection, DriverManager, ResultSet}
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.crossdata.CrossdataVersion
+
 import scala.annotation.tailrec
 
 object MySQLXDCatalog {
@@ -127,7 +126,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
       val version = resultSet.getString(CrossdataVersionField)
 
       Some(
-        CrossdataTable(table, Some(database), getUserSpecifiedSchema(schemaJSON), datasource, getPartitionColumn(partitionColumn), getOptions(optsJSON), version)
+        CrossdataTable(table, Some(database), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource, deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
       )
     }
   }
@@ -156,7 +155,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
     try {
 
-      val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(new StructType()))
+      val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(schemaNotFound()))
       val tableOptions = serializeOptions(crossdataTable.opts)
       val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
