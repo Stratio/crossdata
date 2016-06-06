@@ -80,5 +80,13 @@ trait ElasticInsertCollection extends ElasticWithSharedContext {
 
   override val Type = s"students_test_insert"
 
+  override val defaultOptions = Map(
+    "resource" -> s"$Index/$Type",
+    "es.nodes" -> s"$ElasticHost",
+    "es.port" -> s"$ElasticRestPort",
+    "es.nativePort" -> s"$ElasticNativePort",
+    "es.cluster" -> s"$ElasticClusterName"
+  )
+
 
 }
