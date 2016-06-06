@@ -13,6 +13,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Improved communication between client and server.
 * Native jobs available in SparkUI
 * Improved native access to MongoDB
+* Fix multiples implementation of Slf4j
 
 ## 1.2.2 (May 2016)
 * Upgrade spark-mongodb to 0.11.2
