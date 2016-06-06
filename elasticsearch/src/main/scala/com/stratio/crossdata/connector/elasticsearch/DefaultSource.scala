@@ -153,9 +153,10 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
 
     val indexType = IndexType(index, typeName)
     try {
-      val client = ElasticSearchConnectionUtils.buildClient(options)
-      client.execute {
-        put.mapping(indexType) as elasticSchema
+      ElasticSearchConnectionUtils.withClientDo(options){ client =>
+        client.execute {
+          put.mapping(indexType) as elasticSchema
+        }
       }
       Option(Table(typeName, Option(index), Option(schema)))
     } catch {
