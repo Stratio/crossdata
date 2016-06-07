@@ -28,7 +28,7 @@ class CassandraPKFiltersIT extends CassandraWithSharedContext {
 
   val uuid = java.util.UUID.randomUUID.toString.replace("-", "").substring(16)
 
-  val FixedDate = "'2015-06-23 10:30:00'"
+  val FixedDate = "2015-06-23 10:30:00"
 
   override val Catalog = s"ks$uuid"
   override val Table = s"t$uuid"
@@ -50,7 +50,7 @@ class CassandraPKFiltersIT extends CassandraWithSharedContext {
 
   "The Cassandra connector" should "execute natively a query with a filter by a PK of Timestamp type" in {
     assumeEnvironmentIsUpAndRunning
-    val dataframe = sql(s"SELECT * FROM $Table WHERE ${pk(0)} = $FixedDate")
+    val dataframe = sql(s"SELECT * FROM $Table WHERE ${pk(0)} = '$FixedDate'")
     val optimizedPlan = dataframe.queryExecution.optimizedPlan
     val schema = dataframe.schema
     val result = dataframe.collect(Native)

@@ -159,10 +159,11 @@ class DefaultSource
 
     val indexType = IndexType(index, typeName)
     try {
-      val client = ElasticSearchConnectionUtils.buildClient(options)
-      client.execute {
-        put.mapping(indexType) as elasticSchema
-      }.await
+      ElasticSearchConnectionUtils.withClientDo(options){ client =>
+        client.execute {
+          put.mapping(indexType) as elasticSchema
+        }.await
+      }
       Option(Table(typeName, Option(index), Option(schema)))
     } catch {
       case e: Exception =>
@@ -178,10 +179,11 @@ class DefaultSource
     val indexType = IndexType(index, typeName)
 
     Try {
-      val client = ElasticSearchConnectionUtils.buildClient(options)
-      client.execute {
-        deleteMapping(indexType)
-      } await
+      ElasticSearchConnectionUtils.withClientDo(options){ client =>
+        client.execute {
+          deleteMapping(indexType)
+        }.await
+      }
     }
   }
 
