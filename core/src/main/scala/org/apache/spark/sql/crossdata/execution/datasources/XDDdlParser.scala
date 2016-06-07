@@ -62,7 +62,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   override protected lazy val ddl: Parser[LogicalPlan] =
 
-    createTable | describeTable | refreshTable | importStart | dropTable |
+    createTable | describeTable | refreshTable | importStart | dropTable | dropExternalTable |
       createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp | executeApp
 
 

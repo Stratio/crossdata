@@ -263,9 +263,10 @@ class XDContext private(@transient val sc: SparkContext,
     super.addJar(path)
   }
 
-  def addApp(path: String, clss: String, alias: String): Unit = {
+  def addApp(path: String, clss: String, alias: String): Option[CrossdataApp] = {
     val crossdataApp = CrossdataApp(path, alias, clss)
     catalog.persistAppMetadata(crossdataApp)
+    catalog.lookupApp(alias)
   }
 
   def executeApp(appName: String, arguments: Seq[String], submitOptions: Option[Map[String, String]] = None): Seq[Row] = {
