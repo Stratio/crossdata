@@ -225,15 +225,15 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   // Utils
   private def withStreamingCatalogDo[R](streamingCatalogOperation: XDStreamingCatalog => R): R = {
-    streamingCatalogs.headOption.map(streamingCatalogOperation).getOrElse {
+    streamingCatalogs.map(streamingCatalogOperation).getOrElse {
       throw new RuntimeException("There is no streaming catalog")
     }
   }
   private def executeWithStrCatalogOrNone[R](streamingCatalogOperation: XDStreamingCatalog => Option[R]): Option[R] =
-    streamingCatalogs.headOption.flatMap(streamingCatalogOperation)
+    streamingCatalogs.flatMap(streamingCatalogOperation)
 
   private def executeWithStrCatalogOrEmptyList[R](streamingCatalogOperation: XDStreamingCatalog => Seq[R]): Seq[R] =
-    streamingCatalogs.headOption.map(streamingCatalogOperation).getOrElse(Seq.empty)
+    streamingCatalogs.toSeq.flatMap(streamingCatalogOperation)
 
 
 }
