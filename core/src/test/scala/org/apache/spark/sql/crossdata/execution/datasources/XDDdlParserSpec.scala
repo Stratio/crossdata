@@ -159,6 +159,51 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
   }
 
+  it should "successfully parse a INSERT TABLE using arrays provided in VALUES" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( [1,2], 12, 12.01, 'proof', [false,true], true, ["proof array", "proof2"])"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List(List("1","2"),"12", "12.01", "proof", List("false","true"), "true", List("proof array","proof2"))))
+
+  }
+
+  it should "successfully parse a INSERT TABLE using arrays with Strings with comma provided in VALUES" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( [1,2], 12, 12.01, 'proof', [false,true], true, ["proof, array", "proof2"])"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List(List("1","2"),"12", "12.01", "proof", List("false","true"), "true", List("proof, array","proof2"))))
+
+  }
+
+  it should "successfully parse a INSERT TABLE using maps provided in VALUES" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( (x -> 1, y -> 2), 12, 12.01, 'proof', (x1 -> false, x2 -> true), true)"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List(Map("x"->"1","y"->"2"),"12", "12.01", "proof", Map("x1"->"false","x2"->"true"), "true")))
+
+  }
+
+  it should "successfully parse a INSERT TABLE using maps with strings provided in VALUES" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( (x -> 1, y -> 2, z -> 3), 12, 12.01, 'proof', (x1 -> "proof,comma", x2 -> "proof2"), true)"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List(Map("x"->"1","y"->"2","z"->"3"),"12", "12.01", "proof", Map("x1"->"proof,comma","x2"->"proof2"), "true")))
+
+  }
+
+  it should "successfully parse a INSERT TABLE using maps with arrays and viceversa provided in VALUES" in {
+
+    val sentence = """INSERT INTO tableId VALUES ( [(x->1, y->2), (z->3)], (x -> [3,4], y -> [5,6]) )"""
+    parser.parse(sentence) shouldBe
+      InsertIntoTable( TableIdentifier("tableId"),
+        List(List( List(Map("x"->"1","y"->"2"), Map("z"->"3")), Map("x" -> List("3","4"), "y" -> List("5","6")) )))
+
+  }
+
   it should "successfully parse a CREATE VIEW into a CreateView RunnableCommand" in {
 
     val sentence = "CREATE VIEW vn AS SELECT * FROM tn"

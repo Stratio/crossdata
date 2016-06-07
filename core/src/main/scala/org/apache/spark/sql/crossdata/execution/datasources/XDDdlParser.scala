@@ -98,8 +98,25 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
   }
 
+  protected lazy val schemaValues: Parser[Seq[String]] = "(" ~> repsep(token, ",") <~ ")"
 
-  protected lazy val tableValues: Parser[Seq[String]] = "(" ~> repsep(token, ",") <~ ")"
+  protected lazy val tableValues: Parser[Seq[Any]] = "(" ~> repsep(mapValues | arrayValues | token, ",") <~ ")"
+
+  protected lazy val arrayValues: Parser[Any] = {
+    "[" ~> repsep(mapValues | token, ",") <~ "]"
+  }
+
+  protected lazy val tokenMap: Parser[(Any,Any)] = {
+    (token <~ "-" <~ ">") ~ (arrayValues | token) ^^ {
+      case key ~ value => (key, value)
+    }
+  }
+
+  protected lazy val mapValues: Parser[Any] = {
+    "(" ~> repsep(tokenMap, ",") <~ ")" ^^ {
+      case pairs => Map(pairs:_*)
+    }
+  }
 
 
   def token: Parser[String] = {
@@ -109,7 +126,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
 
   protected lazy val insertIntoTable: Parser[LogicalPlan] =
-    INSERT ~> INTO ~> tableIdentifier ~ tableValues.? ~ (VALUES ~> repsep(tableValues,","))  ^^ {
+    INSERT ~> INTO ~> tableIdentifier ~ schemaValues.? ~ (VALUES ~> repsep(tableValues,","))  ^^ {
       case tableId ~ schemaValues ~ tableValues =>
         if(schemaValues.isDefined)
           InsertIntoTable(tableId, tableValues, schemaValues)
