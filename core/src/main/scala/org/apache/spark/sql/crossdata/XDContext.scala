@@ -327,6 +327,7 @@ object XDContext extends CoreConfig {
   val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
   val JDBCClass = "org.apache.spark.sql.crossdata.catalog.JDBCCatalog"
   val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog"
+  val ZookeeperStreamingCatalogClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperStreamingCatalog"
   val CatalogConfigKey = "catalog"
   val StreamingConfigKey = "streaming"
   val SecurityConfigKey = "security"

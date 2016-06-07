@@ -29,8 +29,8 @@ import scala.util.{Failure, Success, Try, Random}
 trait CommonValues {
 
   /**
-   * Kafka Options
-   */
+    * Kafka Options
+    */
   val ConsumerHost = "localhost"
   val ProducerHost = "localhost"
   val HostStream = "127.0.0.1"
@@ -127,8 +127,8 @@ trait CommonValues {
   val ephemeralTableModelWithSparkOptionsPrefix = EphemeralTableModel(TableName, ephemeralOptionsWithSparkOptionsPrefix)
 
   /**
-   * Select query
-   */
+    * Select query
+    */
   val TableNameSelect = "tabletestselect"
   val TopicTestSelect = "topictestselect"
   val AliasNameSelect = "aliasselect"
@@ -155,8 +155,8 @@ trait CommonValues {
     EphemeralTableModel(TableNameSelect, ephemeralOptionsStreamKafkaSelect)
 
   /**
-   * Projected query
-   */
+    * Projected query
+    */
   val TableNameProject = "tabletestproject"
   val TopicTestProject = "topicTestproject"
   val AliasNameProject = "aliasproject"
@@ -183,8 +183,10 @@ trait CommonValues {
     EphemeralTableModel(TableNameProject, ephemeralOptionsStreamKafkaProject)
 
   def parseZookeeperCatalogConfig(zookeeperConf: Map[String, String]): Map[String, String] = {
-    Map(CatalogClassConfigKey -> ZookeeperClass) ++
-      Map(StreamingCatalogClassConfigKey -> ZookeeperClass) ++
+    Map(
+      CatalogClassConfigKey -> ZookeeperClass,
+      StreamingCatalogClassConfigKey -> ZookeeperStreamingCatalogClass
+    ) ++
       zookeeperConf.map { case (key, value) =>
         s"$CatalogConfigKey.$ZookeeperPrefixName.$key" -> value
       } ++
