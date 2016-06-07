@@ -15,21 +15,26 @@
  */
 package com.stratio.crossdata.driver
 
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
+import com.sksamuel.elastic4s.ElasticDsl
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import com.sksamuel.elastic4s.ElasticDsl._
 
 
 @RunWith(classOf[JUnitRunner])
-class MongoCreateGlobalIndexIT extends SharedXDContextTest {
+class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
+
+  val mongoTestDatabase = "globalIndexDb"
+  val defaultIndexES = "gidx"
+
 
   protected override def beforeAll(): Unit = {
     super.beforeAll()
 
     //Create test tables
     val createTable1 =
-      s"""|CREATE EXTERNAL TABLE globalIndexDb.proofGlobalIndex (id Integer, name String, comments String)
-      USING com.stratio.crossdata.connector.mongodb
+      s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String)
+      USING $MongoSourceProvider
           |OPTIONS (
           |host '127.0.0.1:27017',
           |database 'globalIndexDb',
@@ -38,6 +43,18 @@ class MongoCreateGlobalIndexIT extends SharedXDContextTest {
       """.stripMargin.replaceAll("\n", " ")
     sql(createTable1)
 
+  }
+
+  protected override def afterAll(): Unit = {
+
+    mongoClient(mongoTestDatabase).dropDatabase()
+
+    elasticClient.execute{
+      deleteIndex(defaultIndexES)
+    }.await
+
+
+    super.afterAll()
   }
 
   "The Mongo connector" should "execute a CREATE GLOBAL INDEX" in {
