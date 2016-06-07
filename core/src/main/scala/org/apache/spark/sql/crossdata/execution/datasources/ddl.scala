@@ -230,7 +230,7 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
 
       case _ =>
-        sys.error("Sorry this Table does not support INSERT INTO table VALUES command")
+        sys.error("Table not found. Are you trying to insert values into a view/temporary table?")
     }
 
     Row(parsedRows.length) :: Nil
