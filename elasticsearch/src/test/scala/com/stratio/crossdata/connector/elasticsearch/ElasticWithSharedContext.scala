@@ -78,7 +78,7 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
     elasticClient
   } toOption
 
-  override val sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
+  override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
     str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN, birthday DATE, salary DOUBLE, ageInMilis LONG)")
 
   override val runningError: String = "ElasticSearch and Spark must be up and running"
