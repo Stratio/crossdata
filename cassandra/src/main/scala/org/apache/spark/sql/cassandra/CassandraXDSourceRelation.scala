@@ -268,26 +268,31 @@ class CassandraXDSourceRelation(tableRef: TableRef,
     filter match {
       case sources.EqualTo(attribute, f: AttributeReference) if udfs contains f.toString =>
         udfvalcmp(attribute, "=", f)
-      case sources.EqualTo(attribute, value) => (s"${quote(attribute)} = ?", Seq(value))
-
-      case sources.In(attribute, values) =>
-        (quote(attribute) + " IN " + values.map(_ => "?").mkString("(", ", ", ")"), values.toSeq)
+      case sources.EqualTo(attribute, value) =>
+        (s"${quote(attribute)} = ?", Seq(toCqlValue(attribute, value)))
 
       case sources.LessThan(attribute, f: AttributeReference) if udfs contains f.toString =>
         udfvalcmp(attribute, "<", f)
-      case sources.LessThan(attribute, value) => (s"${quote(attribute)} < ?", Seq(value))
+      case sources.LessThan(attribute, value) =>
+        (s"${quote(attribute)} < ?", Seq(toCqlValue(attribute, value)))
 
       case sources.LessThanOrEqual(attribute, f: AttributeReference) if udfs contains f.toString =>
         udfvalcmp(attribute, "<=", f)
-      case sources.LessThanOrEqual(attribute, value) => (s"${quote(attribute)} <= ?", Seq(value))
+      case sources.LessThanOrEqual(attribute, value) =>
+        (s"${quote(attribute)} <= ?", Seq(toCqlValue(attribute, value)))
 
       case sources.GreaterThan(attribute, f: AttributeReference) if udfs contains f.toString =>
         udfvalcmp(attribute, ">", f)
-      case sources.GreaterThan(attribute, value) => (s"${quote(attribute)} > ?", Seq(value))
+      case sources.GreaterThan(attribute, value) =>
+        (s"${quote(attribute)} > ?", Seq(toCqlValue(attribute, value)))
 
       case sources.GreaterThanOrEqual(attribute, f: AttributeReference) if udfs contains f.toString =>
         udfvalcmp(attribute, ">=", f)
-      case sources.GreaterThanOrEqual(attribute, value) => (s"${quote(attribute)} >= ?", Seq(value))
+      case sources.GreaterThanOrEqual(attribute, value) =>
+        (s"${quote(attribute)} >= ?", Seq(toCqlValue(attribute, value)))
+
+      case sources.In(attribute, values)                 =>
+        (quote(attribute) + " IN " + values.map(_ => "?").mkString("(", ", ", ")"), toCqlValues(attribute, values))
 
       case _ =>
         throw new UnsupportedOperationException(

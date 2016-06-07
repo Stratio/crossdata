@@ -115,6 +115,36 @@ private[crossdata] case class DropTable(tableIdentifier: TableIdentifier) extend
 
 }
 
+private[crossdata] case class DropExternalTable(tableIdentifier: TableIdentifier) extends RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val crossadataTable = sqlContext.catalog.lookupTable(tableIdentifier) getOrElse( sys.error("Error dropping external table. Table doesn't exists in the catalog") )
+
+    val provider = crossadataTable.datasource
+    val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
+
+    resolved match {
+
+      case _ if !sqlContext.catalog.tableExists(tableIdentifier) =>
+        throw new AnalysisException(s"Table ${tableIdentifier.unquotedString} does not exist")
+
+      case tableManipulation: TableManipulation =>
+
+        tableManipulation.dropExternalTable(sqlContext, crossadataTable.opts) map { result =>
+          sqlContext.catalog.dropTable(tableIdentifier)
+          Seq.empty
+        } getOrElse( sys.error("Impossible to drop external table") )
+
+      case _ =>
+        sys.error("The Datasource does not support DROP EXTERNAL TABLE command")
+    }
+
+    Seq.empty
+  }
+
+}
+
 private[crossdata] case object DropAllTables extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
