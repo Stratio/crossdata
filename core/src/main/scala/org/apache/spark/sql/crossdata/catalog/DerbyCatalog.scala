@@ -245,8 +245,9 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       resultSet.close()
       None
     } else {
+      val res=Option(resultSet.getString(SqlViewField))
       resultSet.close()
-      Option(resultSet.getString(SqlViewField))
+      res
     }
 
   }

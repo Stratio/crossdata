@@ -55,9 +55,9 @@ import scala.util.{Failure, Success}
   *
   * @param sc A [[SparkContext]].
   */
-class XDContext private (@transient val sc: SparkContext,
-                userConfig: Option[Config] = None,
-                credentials: Credentials = Credentials()) extends SQLContext(sc) with Logging  {
+class XDContext private(@transient val sc: SparkContext,
+                        userConfig: Option[Config] = None,
+                        credentials: Credentials = Credentials()) extends SQLContext(sc) with Logging {
 
   self =>
 
@@ -264,16 +264,15 @@ class XDContext private (@transient val sc: SparkContext,
   }
 
   def addApp(path: String, clss: String, alias: String): Unit = {
-    val crossdataApp=CrossdataApp(path,alias,clss)
+    val crossdataApp = CrossdataApp(path, alias, clss)
     catalog.persistAppMetadata(crossdataApp)
   }
 
-  def executeApp(appName: String, arguments: Seq[String], submitOptions:Option[Map[String,String]]=None): Seq[Row] = {
+  def executeApp(appName: String, arguments: Seq[String], submitOptions: Option[Map[String, String]] = None): Seq[Row] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     val crossdataApp = catalog.lookupApp(appName).getOrElse(sys.error(s"There is not any app called $appName"))
-    val launcherConfig=xdConfig.getConfig(LauncherKey)
-    val sparkJob = SparkJobLauncher.getSparkJob(launcherConfig,this.sparkContext.master, crossdataApp.appClass, arguments, crossdataApp.jar, crossdataApp.appAlias, submitOptions)
-    sparkJob match {
+    val launcherConfig = xdConfig.getConfig(LauncherKey)
+    SparkJobLauncher.getSparkJob(launcherConfig, this.sparkContext.master, crossdataApp.appClass, arguments, crossdataApp.jar, crossdataApp.appAlias, submitOptions) match {
       case Failure(exception) =>
         logError(exception.getMessage, exception)
         sys.error("Validation error: " + exception.getMessage)
