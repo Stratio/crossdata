@@ -20,3 +20,7 @@ CREATE TABLE databasetest.tab4(date Timestamp PRIMARY KEY);
 INSERT INTO databasetest.tab4(date) VALUES ('1999-11-30');
 CREATE TABLE databasetest.sample_times (a int, c timeuuid, PRIMARY KEY (a,c));
 INSERT INTO databasetest.sample_times (a,c) VALUES (1,50554d6e-29bb-11e5-b345-feff819cdc9f);
+CREATE TABLE databasetest.insertinto1 (ident INT PRIMARY KEY, name TEXT, money DOUBLE, new BOOLEAN, date Timestamp);
+CREATE TABLE databasetest.insertinto2 (ident INT PRIMARY KEY, name TEXT, money DOUBLE, new BOOLEAN, date Timestamp);
+CREATE TABLE databasetest.insertinto3 (ident INT PRIMARY KEY, name TEXT, money DOUBLE, new BOOLEAN, date Timestamp);
+CREATE TABLE databasetest.insertinto4 (ident INT PRIMARY KEY, name TEXT, money DOUBLE, new BOOLEAN, date Timestamp);

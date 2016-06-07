@@ -185,7 +185,24 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
                 commonspec.getXdDriver().executeSyncQuery(sql.toString());
             }else {
                 commonspec.getXdContext().executeQuery(sql.toString());
-            }                  break;
+            }
+            //
+            for(int i = 1; i <= 4 ; i++) {
+                sql = new StringBuilder("CREATE TABLE insertintotable" + i + " USING com.stratio.crossdata"
+                        + ".connector.cassandra OPTIONS ");
+                sql.append("(table 'insertinto" + i + "',keyspace 'databasetest',cluster '").append(System.getProperty
+                        ("CASSANDRA_CLUSTER",
+                                "Test Cluster"));
+                sql.append("',pushdown \"true\",").append("spark_cassandra_connection_host '").append(System.getProperty
+                        ("CASSANDRA_HOST", "127.0.0.1")).append("')");
+                if (ThreadProperty.get("Driver").equals("javaDriver")) {
+                    commonspec.getXdDriver().executeSyncQuery(sql.toString());
+                } else {
+                    commonspec.getXdContext().executeQuery(sql.toString());
+                }
+            }
+            //
+            break;
         case "Mongo":
             StringBuilder sqlMongo = new StringBuilder();
             sqlMongo.append("CREATE TABLE tabletest(ident INT, name STRING, money ");
