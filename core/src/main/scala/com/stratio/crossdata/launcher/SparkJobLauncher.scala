@@ -86,11 +86,10 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
     s"hdfs://$hdfsMaster/$destPath/$jarName"
   }
 
-  def getSparkJob(crossdataConfig:Config, master: String, main: String, args: Seq[String], jar: String, appName: String, submitOptions: Option[Map[String, String]])
+  def getSparkJob(launcherConfig:Config, master: String, main: String, args: Seq[String], jar: String, appName: String, submitOptions: Option[Map[String, String]])
                  (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
 
-    val launcherConfig=crossdataConfig.getConfig(LauncherKey)
-    val sparkHome =
+   val sparkHome =
       Properties.envOrNone("SPARK_HOME").orElse(Try(launcherConfig.getString(SparkHomeKey)).toOption).getOrElse(
         throw new RuntimeException("You must set the $SPARK_HOME path in configuration or environment")
       )
@@ -127,9 +126,9 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
       .setMaster(master)
       .setDeployMode("cluster")
     // TODO startApplication(listener) since 1.6 preferred
-    sparkLauncher.launch()
     externalJars.foreach(sparkLauncher.addJar)
     sparkConf.map({ case (key, value) => sparkLauncher.setConf(key, value) })
+    sparkLauncher.launch()
     new SparkJob(sparkLauncher)(executionContext)
   }
 

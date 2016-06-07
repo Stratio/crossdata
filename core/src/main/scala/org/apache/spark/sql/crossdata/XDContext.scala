@@ -35,6 +35,7 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
+import org.apache.spark.sql.crossdata.config.CoreConfig._
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.security.{Credentials, SecurityManager}
@@ -270,7 +271,8 @@ class XDContext private (@transient val sc: SparkContext,
   def executeApp(appName: String, arguments: Seq[String], submitOptions:Option[Map[String,String]]=None): Seq[Row] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     val crossdataApp = catalog.lookupApp(appName).getOrElse(sys.error(s"There is not any app called $appName"))
-    val sparkJob = SparkJobLauncher.getSparkJob(xdConfig,this.sparkContext.master, crossdataApp.appClass, arguments, crossdataApp.jar, crossdataApp.appAlias, submitOptions)
+    val launcherConfig=xdConfig.getConfig(LauncherKey)
+    val sparkJob = SparkJobLauncher.getSparkJob(launcherConfig,this.sparkContext.master, crossdataApp.appClass, arguments, crossdataApp.jar, crossdataApp.appAlias, submitOptions)
     sparkJob match {
       case Failure(exception) =>
         logError(exception.getMessage, exception)
