@@ -269,7 +269,7 @@ private[crossdata] case class AddJar(jarPath: String)
       sqlContext.sparkContext.addJar(jarPath)
       Seq.empty
     } else {
-      sys.error("File doesn't exists or is not a hdfs file")
+      sys.error("File doesn't exist or is not a hdfs file")
     }
   }
 }
@@ -281,9 +281,9 @@ private[crossdata] case class AddApp(xdContext:XDContext, jarPath: String, class
     if (jarPath.toLowerCase.startsWith("hdfs://") || File(jarPath).exists) {
       xdContext.addJar(jarPath)
     } else {
-      sys.error("File doesn't exists or is not a hdfs file")
+      sys.error("File doesn't exist or is not a hdfs file")
     }
-    xdContext.addApp(path=jarPath, clss = className, alias=aliasName.getOrElse(jarPath))
+    xdContext.addApp(path=jarPath, clss = className, alias=aliasName.getOrElse(jarPath.split("/").last.split('.').head))
     Seq.empty
   }
 }
