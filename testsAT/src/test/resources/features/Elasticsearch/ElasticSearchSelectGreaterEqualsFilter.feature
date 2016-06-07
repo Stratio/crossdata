@@ -4,12 +4,12 @@ Feature: ElasticSearchSelectGreaterEqualsFilter
     When I execute 'SELECT * FROM tabletest WHERE ident >= 9'
     Then The result has to have '1' rows:
       | ident-long | name-string   | money-double  |  new-boolean  | date-timestamp  |
-      |    9          | name_9        | 19.2          |  true         | 2009-09-09 00:00:00|
+      |    9          | name_9        | 19.2          |  true         | 2009-09-08 22:00:00|
 
   Scenario: [CROSSDATA-18: ES NATIVE] SELECT * FROM tabletest WHERE ident >= 19;
     When I execute 'SELECT * FROM tabletest WHERE ident >= 19'
     Then The result has to have '0' rows:
-      | ident-long | name-string   | money-double  |  new-boolean  | date-timestamp 00:00:00 |
+      | ident-long | name-string   | money-double  |  new-boolean  | date-timestamp |
 
 
   Scenario: [CROSSDATA-18: ES NATIVE] SELECT ident AS identificador FROM tabletest WHERE ident >= 9;
@@ -54,7 +54,7 @@ Feature: ElasticSearchSelectGreaterEqualsFilter
 
 
   Scenario: [CROSSDATA-18: ES NATIVE] SELECT date FROM tabletest WHERE date >= '2009-09-09';
-    When I execute 'SELECT date FROM tabletest WHERE date >= '2009-09-09''
+    When I execute 'SELECT date FROM tabletest WHERE date >= '2009-09-08 22:00:00.0''
     Then The result has to have '1' rows:
       | date-timestamp   |
-      |  2009-09-09 00:00:00|
+      |  2009-09-08 22:00:00|

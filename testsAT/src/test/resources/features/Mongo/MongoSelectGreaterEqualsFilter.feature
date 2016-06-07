@@ -54,7 +54,7 @@ Feature: MongoSelectGreaterEqualsFilter
 
 
   Scenario: [CROSSDATA-79,CROSSDATA-81 : MONGO NATIVE] SELECT date FROM tabletest WHERE date >= '2009-1-1 00:00:00';
-    When I execute 'SELECT date FROM tabletest WHERE date >= '2009-1-1 00:00:00''
+    When I execute 'SELECT date FROM tabletest WHERE date >= '2008-12-1''
     Then The result has to have '1' rows:
       | date-date   |
       |    2009-1-1 |
