@@ -58,16 +58,16 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
             val alias = ephemeralQuery.alias
             if(!countdowns.contains(alias)){
               countdowns.put(alias, (ephemeralQuery.window / sparkStreamingWindow))
-            } else {
-              countdowns.put(alias, countdowns.get(alias).getOrElse(0)-1)
             }
+            countdowns.put(alias, countdowns.get(alias).getOrElse(0)-1)
             logDebug(s"Countdowns: ${countdowns.mkString(", ")}")
 
             countdowns.get(alias) foreach {
-              case 0 =>
+              case 0 => {
                 countdowns.put(alias, (ephemeralQuery.window / sparkStreamingWindow))
                 logInfo(s"Executing streaming query $alias")
                 executeQuery(rdd, ephemeralQuery, ephemeralTable, kafkaOptions, zookeeperConf, crossdataCatalogConf)
+              }
               case countdown =>
                 logDebug(s"Current countdown for $alias: $countdown")
             }
