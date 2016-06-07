@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.sql.{Connection, DriverManager, ResultSet}
-
-import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata._
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.{CrossdataVersion, _}
+import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 
 import scala.annotation.tailrec
 
-object PostgreSQLCatalog {
+object PostgreSQLXDCatalog {
   // SQLConfig
   val Driver = "jdbc.driver"
   val Url = "jdbc.url"
@@ -45,15 +45,16 @@ object PostgreSQLCatalog {
 }
 
 /**
-  * Default implementation of the [[org.apache.spark.sql.crossdata.catalog.XDCatalog]] with persistence using
+  * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
   * Jdbc.
   * Supported MySQL and PostgreSQL
-  * @param conf An implementation of the [[CatalystConf]].
+ *
+  * @param catalystConf An implementation of the [[CatalystConf]].
   */
-class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends XDCatalog(conf, xdContext) with SparkLoggerComponent {
+class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
+  extends PersistentCatalogWithCache(sqlContext, catalystConf) {
 
-  import PostgreSQLCatalog._
+  import PostgreSQLXDCatalog._
   import XDCatalog._
 
   private val config = XDContext.catalogConfig
@@ -131,13 +132,14 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     }
   }
 
-  override def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
+
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
     @tailrec
-    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[String] = Set()): Set[String] = {
+    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifier] = Set.empty): Set[TableIdentifier] = {
       if (next) {
         val database = resultset.getString(DatabaseField)
         val table = resultset.getString(TableNameField)
-        val tableId = if (database.trim.isEmpty) table else s"$database.$table"
+        val tableId = if (database.trim.isEmpty) TableIdentifier(table) else TableIdentifier(table, Option(database))
         getSequenceAux(resultset, resultset.next(), set + tableId)
       } else {
         set
@@ -148,12 +150,12 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
     val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$table $dbFilter")
 
-    getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
+    getSequenceAux(resultSet, resultSet.next).toSeq
   }
 
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit = {
 
-    val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(requireSchema()))
+    val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(schemaNotFound()))
     val tableOptions = serializeOptions(crossdataTable.opts)
     val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
@@ -197,12 +199,12 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     connection.setAutoCommit(true)
   }
 
-  override def dropPersistedTable(tableIdentifier: TableIdentifier): Unit = {
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
-  }
 
-  override def dropAllPersistedTables(): Unit =
-    connection.createStatement.executeUpdate(s"TRUNCATE $db.$table")
+
+  override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
+
+  override def dropAllTablesMetadata(): Unit = connection.createStatement.executeUpdate(s"TRUNCATE $db.$table")
 
   def schemaExists(schema: String, connection: Connection): Boolean = {
     val statement = connection.createStatement()
@@ -210,7 +212,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     result.isBeforeFirst
   }
 
-  override protected def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
+  override def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
     val resultSet = selectMetadata(tableWithViewMetadata, viewIdentifier)
     if (!resultSet.isBeforeFirst) {
       None
@@ -220,7 +222,7 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
     }
   }
 
-  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = {
+  override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = {
     try {
       connection.setAutoCommit(false)
       val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
@@ -262,16 +264,15 @@ class PostgreSQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf
 
   }
 
-  override protected def dropPersistedView(viewIdentifier: ViewIdentifier): Unit = {
+  override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =  {
     connection.createStatement.executeUpdate(
       s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
   }
 
-  override protected def dropAllPersistedViews(): Unit = {
+
+  override def dropAllViewsMetadata(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
 
-  override def checkConnectivity:Boolean = {
-    connection!=null
-  }
+  override def isAvailable: Boolean = Option(connection).isDefined
 }
