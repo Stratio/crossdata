@@ -136,7 +136,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   override def dropView(viewIdentifier: ViewIdentifier): Unit = {
     val strView = viewIdentifier.unquotedString
-    if (lookupRelationOpt(viewIdentifier).isDefined) throw new RuntimeException(s"View $strView can't be deleted because it doesn't exist")
+    if (lookupRelationOpt(viewIdentifier).isEmpty) throw new RuntimeException(s"View $strView can't be deleted because it doesn't exist")
     logInfo(s"Deleting view ${viewIdentifier.unquotedString} from catalog")
     temporaryCatalogs foreach (_.dropView(viewIdentifier))
     persistentCatalogs foreach (_.dropView(viewIdentifier))
