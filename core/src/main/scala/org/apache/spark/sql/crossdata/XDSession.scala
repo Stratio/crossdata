@@ -15,32 +15,35 @@
  */
 package org.apache.spark.sql.crossdata
 
-import java.util.UUID
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import org.apache.spark.{Logging, SparkContext}
 import com.typesafe.config.Config
+import org.apache.spark.Logging
+import org.apache.spark.sql.SQLConf
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
 
+// TODO It will be the main entryPoint, so we should add a XDSession builder to make it easier to work with.
 /**
-  *
-  *[[XDSession]], as with Spark 2.0, SparkSession will be the Crossdata entry point for SQL interfaces. It wraps and
-  *implements [[XDContext]]. Overriding those methods & attributes which vary among sessions and keeping
-  *common ones in the delegated [[XDContext]].
- **
- *Resource initialization is avoided through attribute initialization laziness.
+ *
+ * [[XDSession]], as with Spark 2.0, SparkSession will be the Crossdata entry point for SQL interfaces. It wraps and
+ * implements [[XDContext]]. Overriding those methods & attributes which vary among sessions and keeping
+ * common ones in the delegated [[XDContext]].
+ *
+ * Resource initialization is avoided through attribute initialization laziness.
  */
-class XDSession (
-                  @transient override val sc: SparkContext,
-                  session: UUID,
-                  userConfig: Option[Config] = None
-                )
-  extends XDContext(sc) with Logging {
+class XDSession(
+                 xdSharedState: XDSharedState,
+                 xdSessionState: XDSessionState,
+                 userConfig: Option[Config] = None
+                 )
+  extends XDContext(xdSharedState.sc) with Logging {
 
+  // TODO move context to sharedState => userConfig should be read before. Otherwise properties will be the same for all
   // xdContext will host common Crossdata context entities
   private val xdContext: XDContext = XDContext.getOrCreate(sc, userConfig) //Delegated XDContext
 
 
-  //TODO: Use catalog for this session instead fix one
+  //TODO: +1 Use catalog for this session instead fix one
   override protected[sql] lazy val catalog: XDCatalog = xdContext.catalog
 
 
+  override protected[sql] lazy val conf: SQLConf = xdSessionState.sqlConf
 }
