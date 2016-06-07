@@ -122,7 +122,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   override def dropTable(tableIdentifier: TableIdentifier): Unit = {
     val strTable = tableIdentifier.unquotedString
-    if (!tableExists(tableIdentifier)) throw new RuntimeException(s"Table $strTable can't be deleted because it doesn't exists")
+    if (!tableExists(tableIdentifier)) throw new RuntimeException(s"Table $strTable can't be deleted because it doesn't exist")
     logInfo(s"Deleting table $strTable from catalog")
     temporaryCatalogs foreach (_.dropTable(tableIdentifier))
     persistentCatalogs foreach (_.dropTable(tableIdentifier))
@@ -136,7 +136,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   override def dropView(viewIdentifier: ViewIdentifier): Unit = {
     val strView = viewIdentifier.unquotedString
-    if (lookupRelationOpt(viewIdentifier).isDefined) throw new RuntimeException(s"View $strView can't be deleted because it doesn't exists")
+    if (lookupRelationOpt(viewIdentifier).isDefined) throw new RuntimeException(s"View $strView can't be deleted because it doesn't exist")
     logInfo(s"Deleting view ${viewIdentifier.unquotedString} from catalog")
     temporaryCatalogs foreach (_.dropView(viewIdentifier))
     persistentCatalogs foreach (_.dropView(viewIdentifier))

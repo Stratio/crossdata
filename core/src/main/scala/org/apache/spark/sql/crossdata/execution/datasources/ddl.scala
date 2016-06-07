@@ -121,7 +121,7 @@ private[crossdata] case class DropExternalTable(tableIdentifier: TableIdentifier
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val crossadataTable = sqlContext.catalog.tableMetadata(tableIdentifier) getOrElse( sys.error("Error dropping external table. Table doesn't exists in the catalog") )
+    val crossadataTable = sqlContext.catalog.tableMetadata(tableIdentifier) getOrElse( sys.error("Error dropping external table. Table doesn't exist in the catalog") )
 
     val provider = crossadataTable.datasource
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
@@ -271,7 +271,7 @@ private[crossdata] case class AddJar(jarPath: String)
       sqlContext.sparkContext.addJar(jarPath)
       Seq.empty
     } else {
-      sys.error("File doesn't exists or is not a hdfs file")
+      sys.error("File doesn't exist or is not a hdfs file")
     }
   }
 }

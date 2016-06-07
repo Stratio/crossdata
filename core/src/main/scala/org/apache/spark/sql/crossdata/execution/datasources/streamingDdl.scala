@@ -51,7 +51,7 @@ private[crossdata] case class DescribeEphemeralTable(tableIdent: TableIdentifier
   override def run(sqlContext: SQLContext): Seq[Row] =
     sqlContext.catalog.getEphemeralTable(tableIdent.unquotedString)
       .map(ephTable => Seq(Row(ephTable.toPrettyString)))
-      .getOrElse(throw new RuntimeException(s"${tableIdent.unquotedString} doesn't exists"))
+      .getOrElse(throw new RuntimeException(s"${tableIdent.unquotedString} doesn't exist"))
 
 }
 
@@ -161,7 +161,7 @@ private[crossdata] case class ShowEphemeralStatus(tableIdent: TableIdentifier) e
   override def run(sqlContext: SQLContext): Seq[Row] = {
     sqlContext.catalog.getEphemeralStatus(tableIdent.unquotedString)
       .map(ephStatus => Seq(Row(ephStatus.status.toString)))
-      .getOrElse(sys.error(s"${tableIdent.unquotedString} status doesn't exists"))
+      .getOrElse(sys.error(s"${tableIdent.unquotedString} status doesn't exist"))
   }
 }
 
