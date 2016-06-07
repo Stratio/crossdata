@@ -63,12 +63,13 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
             }
             logDebug(s"Countdowns: ${countdowns.mkString(", ")}")
 
-            countdowns.get(alias) match {
-              case Some(countdown) if (countdown == 0) => {
+            countdowns.get(alias) foreach {
+              case 0 =>
                 countdowns.put(alias, (ephemeralQuery.window / sparkStreamingWindow))
                 logInfo(s"Executing streaming query $alias")
                 executeQuery(rdd, ephemeralQuery, ephemeralTable, kafkaOptions, zookeeperConf, crossdataCatalogConf)
-              }
+              case countdown =>
+                logDebug(s"Current countdown for $alias: $countdown")
             }
           })
         }
