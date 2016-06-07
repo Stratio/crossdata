@@ -121,8 +121,9 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     persistentCatalogs.foreach(_.saveView(tableIdentifier, plan, sqlText))
 
   override def dropTable(tableIdentifier: TableIdentifier): Unit = {
-    if (!tableExists(tableIdentifier)) throw new RuntimeException("Table can't be deleted because it doesn't exists")
-    logInfo(s"Deleting table ${tableIdentifier.unquotedString}from catalog")
+    val strTable = tableIdentifier.unquotedString
+    if (!tableExists(tableIdentifier)) throw new RuntimeException(s"Table $strTable can't be deleted because it doesn't exists")
+    logInfo(s"Deleting table $strTable from catalog")
     temporaryCatalogs foreach (_.dropTable(tableIdentifier))
     persistentCatalogs foreach (_.dropTable(tableIdentifier))
   }
@@ -134,8 +135,9 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   }
 
   override def dropView(viewIdentifier: ViewIdentifier): Unit = {
-    if (!tableExists(viewIdentifier)) throw new RuntimeException("Table can't be deleted because it doesn't exists")
-    logInfo(s"Deleting table ${viewIdentifier.unquotedString}from catalog")
+    val strView = viewIdentifier.unquotedString
+    if (lookupRelationOpt(viewIdentifier).isDefined) throw new RuntimeException(s"View $strView can't be deleted because it doesn't exists")
+    logInfo(s"Deleting view ${viewIdentifier.unquotedString} from catalog")
     temporaryCatalogs foreach (_.dropView(viewIdentifier))
     persistentCatalogs foreach (_.dropView(viewIdentifier))
   }
