@@ -230,7 +230,7 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
 
       case _ =>
-        sys.error("The Datasource does not support INSERT INTO table VALUES command")
+        sys.error("Sorry this Table does not support INSERT INTO table VALUES command")
     }
 
     Row(parsedRows.length) :: Nil
