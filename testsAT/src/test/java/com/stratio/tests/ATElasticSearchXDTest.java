@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
@@ -58,7 +59,8 @@ import cucumber.api.CucumberOptions;
         "src/test/resources/features/Udaf/Group_concat.feature",
         "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
         "src/test/resources/features/Elasticsearch/Views.feature",
-       "src/test/resources/features/Elasticsearch/DropViews.feature"
+       "src/test/resources/features/Elasticsearch/DropViews.feature",
+        "src/test/resources/features/Elasticsearch/ElasticSearchInsertInto.feature"
 })
 public class ATElasticSearchXDTest extends BaseTest {
     private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
