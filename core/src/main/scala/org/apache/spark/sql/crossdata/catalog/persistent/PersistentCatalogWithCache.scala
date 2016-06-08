@@ -28,9 +28,9 @@ import scala.collection.mutable
 
 
 /**
- * PersistentCatalog aims to provide a mechanism to persist the
- * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
- */
+  * PersistentCatalog aims to provide a mechanism to persist the
+  * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
+  */
 abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: CatalystConf) extends XDPersistentCatalog
   with Serializable {
 
@@ -39,26 +39,23 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   val tableCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
   val viewCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
 
-  // TODO refactor (nonCachedLookup)
-  override final def relation(relationIdentifier: TableIdentifier, alias: Option[String]): Option[LogicalPlan] = {
-    (tableCache get relationIdentifier) orElse (viewCache get relationIdentifier)
-  } orElse {
-    logInfo(s"PersistentCatalog: Looking up table ${relationIdentifier.unquotedString}")
-    lookupTable(relationIdentifier) map { crossdataTable =>
-      val table: LogicalPlan = createLogicalRelation(sqlContext, crossdataTable)
-      val processedTable = processAlias(relationIdentifier, table, alias)
-      tableCache.put(relationIdentifier, processedTable)
-      processedTable
-    }
-  } orElse {
-    log.debug(s"Table Not Found: ${relationIdentifier.unquotedString}")
-    lookupView(relationIdentifier).map{ sqlView =>
-      val viewPlan: LogicalPlan = sqlContext.sql(sqlView).logicalPlan
-      val processedView = processAlias(relationIdentifier, viewPlan, alias)
-      viewCache.put(relationIdentifier, processedView)
-      processedView
-    }
-  }
+  override final def relation(relationIdentifier: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
+    // TODO refactor (nonCachedLookup)
+    (tableCache get relationIdentifier) orElse (viewCache get relationIdentifier) orElse {
+      logInfo(s"PersistentCatalog: Looking up table ${relationIdentifier.unquotedString}")
+      lookupTable(relationIdentifier) map { crossdataTable =>
+        val table: LogicalPlan = createLogicalRelation(sqlContext, crossdataTable)
+        tableCache.put(relationIdentifier, table)
+        table
+      }
+    } orElse {
+      log.debug(s"Table Not Found: ${relationIdentifier.unquotedString}")
+      lookupView(relationIdentifier).map { sqlView =>
+        val viewPlan: LogicalPlan = sqlContext.sql(sqlView).logicalPlan
+        viewCache.put(relationIdentifier, viewPlan)
+        viewPlan
+      }
+    } map (processAlias(relationIdentifier, _, alias))
 
   override final def refreshCache(tableIdent: ViewIdentifier): Unit = tableCache clear
 
@@ -88,12 +85,12 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   override final def saveTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit = {
 
     val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
-    if (relation(tableIdentifier).isDefined){
+    if (relation(tableIdentifier).isDefined) {
       logWarning(s"The table $tableIdentifier already exists")
       throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
     } else {
       logInfo(s"Persisting table ${crossdataTable.tableName}")
-      tableCache.put(tableIdentifier,table)
+      tableCache.put(tableIdentifier, table)
       persistTableMetadata(crossdataTable.copy(schema = Option(table.schema)))
     }
   }
