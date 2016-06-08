@@ -27,8 +27,9 @@ object XDSessionProvider {
 }
 
 // TODO It should share some of the XDContext fields. It will be possible when Spark 2.0 is released
+// TODO Crossdata server should create new session and close session when certain events happen
 abstract class XDSessionProvider(
-                                  @transient protected val sc: SparkContext,
+                                  @transient val sc: SparkContext,
                                   protected val commonConfig: Option[Config] = None
                                   ) {
 

@@ -34,7 +34,7 @@ import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJo
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.XDSessionProvider
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -42,8 +42,8 @@ import scala.concurrent.duration.FiniteDuration
 object ServerActor {
   val ManagementTopic: String = "jobsManagement"
 
-  def props(cluster: Cluster, xdContext: XDContext, config: ServerActorConfig): Props =
-    Props(new ServerActor(cluster, xdContext, config))
+  def props(cluster: Cluster, sessionProvider: XDSessionProvider, config: ServerActorConfig): Props =
+    Props(new ServerActor(cluster, sessionProvider, config))
 
 
   protected case class JobId(requester: ActorRef, queryId: UUID)
@@ -62,7 +62,8 @@ object ServerActor {
 
 }
 
-class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: ServerActorConfig) extends Actor with ServerConfig {
+// TODO it should only accept messages from known sessions
+class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverActorConfig: ServerActorConfig) extends Actor with ServerConfig {
 
   import ServerActor.ManagementMessages._
   import ServerActor._
@@ -108,7 +109,8 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
     case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, requester)) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
-      val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
+      val xdSession = sessionProvider.session(id).getOrElse(throw new RuntimeException(s"Received message with an unknown sessionId $id"))
+      val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
       jobActor ! StartJob
       context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
 

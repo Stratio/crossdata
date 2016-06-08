@@ -31,17 +31,17 @@ import com.stratio.crossdata.server.actors.ServerActor.State
 import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.utils.HdfsUtils
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.XDSessionProvider
 import org.apache.spark.sql.types.StructType
 
 object ResourceManagerActor {
   val AddJarTopic: String = "newJAR"
 
-  def props(cluster: Cluster, xdContext: XDContext): Props =
-    Props(new ResourceManagerActor(cluster, xdContext))
+  def props(cluster: Cluster, sessionProvider: XDSessionProvider): Props =
+    Props(new ResourceManagerActor(cluster, sessionProvider))
 }
 
-class ResourceManagerActor(cluster: Cluster, xdContext: XDContext) extends Actor with ServerConfig {
+class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider) extends Actor with ServerConfig {
 
   import ResourceManagerActor._
 
@@ -80,7 +80,7 @@ class ResourceManagerActor(cluster: Cluster, xdContext: XDContext) extends Actor
       logger.debug(s"Session identifier $session")
       //TODO  Maybe include job controller if it is necessary as in sql command
       if (addJarCommand.path.toLowerCase.startsWith("hdfs://")) {
-        xdContext.addJar(addJarCommand.path)
+        sessionProvider.sc.addJar(addJarCommand.path) // TODO addJar should not affect other sessions // add to runtime within the sc
         //add to runtime
         val fileHdfsPath = addJarCommand.path
         val hdfsIS: InputStream = HdfsUtils(addJarCommand.hdfsConfig.get).getFile(fileHdfsPath)

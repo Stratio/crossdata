@@ -25,7 +25,7 @@ import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobS
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.actors.JobActor.{ProlificExecutor, Task}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
+import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame, XDSession}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.ExecutionContext
@@ -83,8 +83,8 @@ object JobActor {
     } getOrElse Idle
   }
 
-  def props(xDContext: XDContext, command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration]): Props =
-    Props(new JobActor(xDContext, Task(command, requester, timeout)))
+  def props(xdSession: XDSession, command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration]): Props =
+    Props(new JobActor(xdSession, Task(command, requester, timeout)))
 
   /**
     * Executor class which runs each command in a brand new thread each time

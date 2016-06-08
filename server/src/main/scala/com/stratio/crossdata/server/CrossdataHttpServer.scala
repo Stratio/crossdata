@@ -16,6 +16,7 @@
 package com.stratio.crossdata.server
 
 import java.io.File
+import java.util.UUID
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.contrib.pattern.DistributedPubSubExtension
@@ -72,7 +73,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
               val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
               //Send a broadcast message to all servers
               val hdfsPath = writeJarToHdfs(hdfsConfig, path)
-              mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), new Session("HttpServer", serverActor)))
+              mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), new Session(UUID.randomUUID(), serverActor)))
               hdfsPath
             }
           }

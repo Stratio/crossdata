@@ -55,7 +55,8 @@ class DriverIT extends EndToEndTest {
     rows should have length 2
     rows(0) should have length 2
 
-    crossdataServer.flatMap(_.xdContext).foreach(_.dropTempTable("jsonTable"))
+
+    crossdataServer.flatMap(_.sessionProviderOpt).foreach(_.session(SessionID).get.dropTempTable("jsonTable"))
   }
 
   it should "get a list of tables" in {

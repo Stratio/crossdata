@@ -35,12 +35,12 @@ object HazelcastSessionProvider {
 
 class HazelcastSessionProvider(
                                 @transient sc: SparkContext,
-                                userConfig: Option[Config] = None
-                                ) extends XDSessionProvider(sc, userConfig) {
+                                userConfig: Config
+                                ) extends XDSessionProvider(sc, Option(userConfig)) {
 
   import HazelcastSessionProvider._
 
-  private val sharedState = new XDSharedState(sc, userConfig)
+  private val sharedState = new XDSharedState(sc, Option(userConfig))
 
   // TODO manage config
   private val cfg = new HazelcastConfig

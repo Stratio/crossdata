@@ -29,7 +29,8 @@ import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata
-import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.session.HazelcastSessionProvider
+import org.apache.spark.sql.crossdata.{XDContext, XDSessionProvider}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
@@ -41,7 +42,7 @@ class CrossdataServer extends Daemon with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
   var system: Option[ActorSystem] = None
-  var xdContext: Option[XDContext] = None
+  var sessionProviderOpt: Option[XDSessionProvider] = None
   var bindingFuture: Option[Future[ServerBinding]] = None
 
   override def init(p1: DaemonContext): Unit = ()
@@ -58,16 +59,14 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     val filteredSparkParams = metricsPath.fold(sparkParams)(m => checkMetricsFile(sparkParams, m.get))
 
-    xdContext = {
-      val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
-      Some(new XDContext(sparkContext))
-    }
-
-    require(xdContext.isDefined, "Crossdata context must be started")
-
+    val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
+    sessionProviderOpt = Option(new HazelcastSessionProvider(sparkContext, config))
+    val sesionProvider = sessionProviderOpt.getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
     //Check if the catalog is "on line"
+    /*
     val ctx=xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started"))
     require(ctx.checkCatalogConnection,"Crossdata Server cannot be started because there isn't a connection with the Catalog")
+     */
 
     system = Some(ActorSystem(clusterName, config))
 
@@ -79,10 +78,10 @@ class CrossdataServer extends Daemon with ServerConfig {
         RoundRobinPool(minServerActorInstances, Some(resizer)).props(
           Props(classOf[ServerActor],
             Cluster(actorSystem),
-            xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")),
+            sesionProvider,
             serverActorConfig)),
         actorName)
-      val resourceManagerActor=actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem),xdContext.get))
+      val resourceManagerActor=actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sesionProvider))
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
       ClusterReceptionistExtension(actorSystem).registerService(resourceManagerActor)
 
@@ -108,7 +107,7 @@ class CrossdataServer extends Daemon with ServerConfig {
   }
 
   override def stop(): Unit = {
-    xdContext.foreach(_.sc.stop())
+    sessionProviderOpt.foreach(_.sc.stop())
 
     system.foreach { actSystem =>
       implicit val exContext = actSystem.dispatcher
