@@ -47,17 +47,17 @@ import cucumber.api.CucumberOptions;
 
 //Indicar feature
 @CucumberOptions(features = {
-//        "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
-//          "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
-//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
-//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
-//         "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
-//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
-//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
-//          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
-//        "src/test/resources/features/Udaf/Group_concat.feature",
-//        "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
-//        "src/test/resources/features/Elasticsearch/Views.feature",
+        "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
+          "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
+          "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
+          "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
+         "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
+          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
+          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
+          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
+        "src/test/resources/features/Udaf/Group_concat.feature",
+        "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
+        "src/test/resources/features/Elasticsearch/Views.feature",
        "src/test/resources/features/Elasticsearch/DropViews.feature"
 })
 public class ATElasticSearchXDTest extends BaseTest {
@@ -137,7 +137,7 @@ public class ATElasticSearchXDTest extends BaseTest {
         client.close();
 	}
 
-    @Test(enabled = true, groups = {"advanced"})
+    @Test(enabled = true, groups = {"basic"})
     public void ATElasticSearchXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}

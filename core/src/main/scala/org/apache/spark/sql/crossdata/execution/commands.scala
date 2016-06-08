@@ -18,8 +18,10 @@ package org.apache.spark.sql.crossdata.execution
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.EliminateSubQueries
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.util.CreateRelationUtil
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.{HadoopFsRelation, InsertableRelation}
@@ -38,8 +40,8 @@ private[crossdata] case class PersistDataSourceTable(
     val crossdataContext = sqlContext.asInstanceOf[XDContext]
     val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, userSpecifiedSchema, provider, Array.empty[String], options)
     val tableExist = crossdataContext.catalog.tableExists(tableIdent)
-
-    if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable, crossdataContext.catalog.createLogicalRelation(crossdataTable))
+    import CreateRelationUtil._
+    if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable, createLogicalRelation(crossdataContext, crossdataTable))
 
     if (tableExist && !allowExisting)
       throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")

@@ -4,16 +4,16 @@ Feature: ElsticSearchSelectSimple
     When I execute 'SELECT * FROM tabletest'
     Then The result has to have '10' rows ignoring the order:
       | ident-long | name-string   | money-double  |  new-boolean  | date-timestamp  |
-      |    0          | name_0        | 10.2          |  true         | 1999-11-30 00:00:00|
-      |    1          | name_1        | 11.2          |  true         | 2001-01-01 00:00:00|
-      |    2          | name_2        | 12.2          |  true         | 2002-02-02 00:00:00|
-      |    3          | name_3        | 13.2          |  true         | 2003-03-03 00:00:00|
-      |    4          | name_4        | 14.2          |  true         | 2004-04-04 00:00:00|
-      |    5          | name_5        | 15.2          |  true         | 2005-05-05 00:00:00|
-      |    6          | name_6        | 16.2          |  true         | 2006-06-06 00:00:00|
-      |    7          | name_7        | 17.2          |  true         | 2007-07-07 00:00:00|
-      |    8          | name_8        | 18.2          |  true         | 2008-08-08 00:00:00|
-      |    9          | name_9        | 19.2          |  true         | 2009-09-09 00:00:00|
+      |    0          | name_0        | 10.2          |  true         | 1999-11-29 23:00:00.0|
+      |    1          | name_1        | 11.2          |  true         | 2000-12-31 23:00:00.0|
+      |    2          | name_2        | 12.2          |  true         | 2002-02-01 23:00:00.0|
+      |    3          | name_3        | 13.2          |  true         | 2003-03-02 23:00:00.0|
+      |    4          | name_4        | 14.2          |  true         | 2004-04-03 22:00:00.0|
+      |    5          | name_5        | 15.2          |  true         | 2005-05-04 22:00:00.0|
+      |    6          | name_6        | 16.2          |  true         | 2006-06-05 22:00:00.0|
+      |    7          | name_7        | 17.2          |  true         | 2007-07-06 22:00:00.0|
+      |    8          | name_8        | 18.2          |  true         | 2008-08-7 22:00:00.0|
+      |    9          | name_9        | 19.2          |  true         | 2009-09-08 22:00:00.0|
 
   Scenario: [CROSSDATA-18 : ELASTICSEARCH NATIVE] SELECT ident AS identificador FROM tabletest;
     When I execute 'SELECT ident AS identificador FROM tabletest'
@@ -168,16 +168,16 @@ Feature: ElsticSearchSelectSimple
     When I execute 'SELECT ident,name,money,new,date FROM tabletest'
     Then The result has to have '10' rows ignoring the order:
       | ident-long | name-string   | money-double  |  new-boolean  | date-timestamp  |
-      |    0          | name_0        | 10.2          |  true         | 1999-11-30 00:00:00|
-      |    1          | name_1        | 11.2          |  true         | 2001-01-01 00:00:00|
-      |    2          | name_2        | 12.2          |  true         | 2002-02-02 00:00:00|
-      |    3          | name_3        | 13.2          |  true         | 2003-03-03 00:00:00|
-      |    4          | name_4        | 14.2          |  true         | 2004-04-04 00:00:00|
-      |    5          | name_5        | 15.2          |  true         | 2005-05-05 00:00:00|
-      |    6          | name_6        | 16.2          |  true         | 2006-06-06 00:00:00|
-      |    7          | name_7        | 17.2          |  true         | 2007-07-07 00:00:00|
-      |    8          | name_8        | 18.2          |  true         | 2008-08-08 00:00:00|
-      |    9          | name_9        | 19.2          |  true         | 2009-09-09 00:00:00|
+      |    0          | name_0        | 10.2          |  true         | 1999-11-29 23:00:00.0|
+      |    1          | name_1        | 11.2          |  true         | 2000-12-31 23:00:00.0|
+      |    2          | name_2        | 12.2          |  true         | 2002-02-01 23:00:00.0|
+      |    3          | name_3        | 13.2          |  true         | 2003-03-02 23:00:00.0|
+      |    4          | name_4        | 14.2          |  true         | 2004-04-03 22:00:00.0|
+      |    5          | name_5        | 15.2          |  true         | 2005-05-04 22:00:00.0|
+      |    6          | name_6        | 16.2          |  true         | 2006-06-05 22:00:00.0|
+      |    7          | name_7        | 17.2          |  true         | 2007-07-06 22:00:00.0|
+      |    8          | name_8        | 18.2          |  true         | 2008-08-7 22:00:00.0|
+      |    9          | name_9        | 19.2          |  true         | 2009-09-08 22:00:00.0|
 
   Scenario:[CROSSDATA-282] SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias
     When I execute 'SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias'

@@ -37,9 +37,10 @@ class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConsta
     }
   }
 
+
   s"ZookeeperStreamingCatalogSpec" should "persist ephemeral tables" in {
-    assert(xdContext.streamingCatalog.isDefined)
-    val streamCatalog = xdContext.streamingCatalog.get
+
+    val streamCatalog = xdContext.catalog
 
     streamCatalog.existsEphemeralTable(EphemeralTableName) shouldBe false
     streamCatalog.createEphemeralTable(EphemeralTable) shouldBe Right(EphemeralTable)
@@ -51,8 +52,8 @@ class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConsta
   }
 
   it should "create the ephemeral table status when creating the table" in {
-    assert(xdContext.streamingCatalog.isDefined)
-    val streamCatalog = xdContext.streamingCatalog.get
+
+    val streamCatalog = xdContext.catalog
 
     streamCatalog.createEphemeralTable(EphemeralTable) shouldBe Right(EphemeralTable)
     streamCatalog.existsEphemeralTable(EphemeralTableName) shouldBe true
@@ -62,8 +63,8 @@ class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConsta
   }
 
   it should "fail when persisting an ephemeral table twice" in {
-    assert(xdContext.streamingCatalog.isDefined)
-    val streamCatalog = xdContext.streamingCatalog.get
+
+    val streamCatalog = xdContext.catalog
 
     streamCatalog.existsEphemeralTable(EphemeralTableName) shouldBe false
     streamCatalog.createEphemeralTable(EphemeralTable)
@@ -73,22 +74,22 @@ class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConsta
   }
 
   it should "not fail when trying to get a table which does not exist" in {
-    assert(xdContext.streamingCatalog.isDefined)
-    val streamCatalog = xdContext.streamingCatalog.get
+
+    val streamCatalog = xdContext.catalog
 
     streamCatalog.getEphemeralTable("stronker").isEmpty shouldBe true
   }
 
   it should "fail when dropping a ephemeral table which does not exist" in {
-    assert(xdContext.streamingCatalog.isDefined)
-    val streamCatalog = xdContext.streamingCatalog.get
+
+    val streamCatalog = xdContext.catalog
 
     an [Exception] should be thrownBy streamCatalog.dropEphemeralTable("stronker")
   }
 
   it should "not fail when droppingAll ephemeral tables even though the catalog is empty" in {
-    assert(xdContext.streamingCatalog.isDefined)
-    val streamCatalog = xdContext.streamingCatalog.get
+
+    val streamCatalog = xdContext.catalog
 
     streamCatalog.createEphemeralTable(EphemeralTable)
     streamCatalog.dropAllEphemeralTables()
@@ -96,8 +97,8 @@ class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConsta
   }
 
   it should "fail when dropping an ephemeral table which status is started" in {
-    assert(xdContext.streamingCatalog.isDefined)
-    val streamCatalog = xdContext.streamingCatalog.get
+
+    val streamCatalog = xdContext.catalog
 
     streamCatalog.createEphemeralTable(EphemeralTable)
     streamCatalog.updateEphemeralStatus(
@@ -117,8 +118,8 @@ class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConsta
 
 
   it should "manage ephemeral table status" in {
-    assert(xdContext.streamingCatalog.isDefined)
-    val streamCatalog = xdContext.streamingCatalog.get
+
+    val streamCatalog = xdContext.catalog
 
     streamCatalog.createEphemeralTable(EphemeralTable)
     streamCatalog.getEphemeralStatus(EphemeralTableName).isDefined shouldBe true
@@ -129,8 +130,8 @@ class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConsta
   }
 
   it should "create, get, and drop queries" in {
-    assert(xdContext.streamingCatalog.isDefined)
-    val streamCatalog = xdContext.streamingCatalog.get
+
+    val streamCatalog = xdContext.catalog
 
     streamCatalog.existsEphemeralQuery(QueryAlias) shouldBe false
     streamCatalog.createEphemeralQuery(EphemeralQuery) shouldBe Right(EphemeralQuery)
@@ -147,7 +148,7 @@ class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConsta
    * Stop the underlying [[org.apache.spark.SparkContext]], if any.
    */
   protected override def afterAll(): Unit = {
-    xdContext.streamingCatalog.foreach(_.dropAllEphemeralTables())
+    xdContext.catalog.dropAllEphemeralTables()
     super.afterAll()
   }
 }

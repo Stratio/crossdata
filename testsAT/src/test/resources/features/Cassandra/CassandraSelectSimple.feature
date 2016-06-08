@@ -4,16 +4,16 @@ Feature: CassandraSelectSimple
     When I execute 'SELECT * FROM tabletest'
     Then The result has to have '10' rows ignoring the order:
       |ident-integer|date-timestamp     |money-double |name-string| new-boolean |
-      |    5        |2005-05-05 00:00:00| 15.2        |name_5     |true         |
-      |    1        |2001-01-01 00:00:00| 11.2        |name_1     |true         |
-      |    8        |2008-08-08 00:00:00| 18.2        |name_8     |true         |
-      |    0        |1999-11-30 00:00:00| 10.2        |name_0     |true         |
-      |    2        |2002-02-02 00:00:00| 12.2        |name_2     |true         |
-      |    4        |2004-04-04 00:00:00| 14.2        |name_4     |true         |
-      |    7        |2007-07-07 00:00:00| 17.2        |name_7     |true         |
-      |    6        |2006-06-06 00:00:00| 16.2        |name_6     |true         |
-      |    9        |2009-09-09 00:00:00| 19.2        |name_9     |true         |
-      |    3        |2003-03-03 00:00:00| 13.2        |name_3     |true         |
+      |    5        |2005-05-05 02:00:00| 15.2        |name_5     |true         |
+      |    1        |2001-01-01 01:00:00| 11.2        |name_1     |true         |
+      |    8        |2008-08-08 02:00:00| 18.2        |name_8     |true         |
+      |    0        |1999-11-30 01:00:00| 10.2        |name_0     |true         |
+      |    2        |2002-02-02 01:00:00| 12.2        |name_2     |true         |
+      |    4        |2004-04-04 02:00:00| 14.2        |name_4     |true         |
+      |    7        |2007-07-07 02:00:00| 17.2        |name_7     |true         |
+      |    6        |2006-06-06 02:00:00| 16.2        |name_6     |true         |
+      |    9        |2009-09-09 02:00:00| 19.2        |name_9     |true         |
+      |    3        |2003-03-03 01:00:00| 13.2        |name_3     |true         |
 
   Scenario: [CASSANDRA NATIVE] SELECT ident FROM tabletest;
     When I execute 'SELECT ident FROM tabletest'
@@ -170,17 +170,16 @@ Feature: CassandraSelectSimple
     When I execute 'SELECT ident,name,money,new,date FROM tabletest'
     Then The result has to have '10' rows ignoring the order:
       | ident-integer | name-string   | money-double  |  new-boolean  | date-timestamp      |
-      |    0          | name_0        | 10.2          |  true         | 1999-11-30 00:00:00 |
-      |    1          | name_1        | 11.2          |  true         | 2001-01-01 00:00:00 |
-      |    2          | name_2        | 12.2          |  true         | 2002-02-02 00:00:00 |
-      |    3          | name_3        | 13.2          |  true         | 2003-03-03 00:00:00 |
-      |    4          | name_4        | 14.2          |  true         | 2004-04-04 00:00:00 |
-      |    5          | name_5        | 15.2          |  true         | 2005-05-05 00:00:00 |
-      |    6          | name_6        | 16.2          |  true         | 2006-06-06 00:00:00 |
-      |    6          | name_6        | 16.2          |  true         | 2006-06-06 00:00:00 |
-      |    7          | name_7        | 17.2          |  true         | 2007-07-07 00:00:00 |
-      |    8          | name_8        | 18.2          |  true         | 2008-08-08 00:00:00 |
-      |    9          | name_9        | 19.2          |  true         | 2009-09-09 00:00:00 |
+      |    0          | name_0        | 10.2          |  true         | 1999-11-30 01:00:00 |
+      |    1          | name_1        | 11.2          |  true         | 2001-01-01 01:00:00 |
+      |    2          | name_2        | 12.2          |  true         | 2002-02-02 01:00:00 |
+      |    3          | name_3        | 13.2          |  true         | 2003-03-03 01:00:00 |
+      |    4          | name_4        | 14.2          |  true         | 2004-04-04 02:00:00 |
+      |    5          | name_5        | 15.2          |  true         | 2005-05-05 02:00:00 |
+      |    6          | name_6        | 16.2          |  true         | 2006-06-06 02:00:00 |
+      |    7          | name_7        | 17.2          |  true         | 2007-07-07 02:00:00 |
+      |    8          | name_8        | 18.2          |  true         | 2008-08-08 02:00:00 |
+      |    9          | name_9        | 19.2          |  true         | 2009-09-09 02:00:00 |
 
     Scenario:[CROSSDATA-282] SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias
       When I execute 'SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias'

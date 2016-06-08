@@ -32,7 +32,7 @@ trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefau
 
   override type ClientParams = MongoClient
   override val provider: String = SourceProvider
-  override val defaultOptions = Map(
+  override def defaultOptions = Map(
     "host" -> s"$MongoHost:$MongoPort",
     "database" -> s"$Database",
     "collection" -> s"$Collection"

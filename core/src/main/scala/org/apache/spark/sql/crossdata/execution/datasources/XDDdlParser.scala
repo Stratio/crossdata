@@ -98,8 +98,25 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
   }
 
+  protected lazy val schemaValues: Parser[Seq[String]] = "(" ~> repsep(token, ",") <~ ")"
 
-  protected lazy val tableValues: Parser[Seq[String]] = "(" ~> repsep(token, ",") <~ ")"
+  protected lazy val tableValues: Parser[Seq[Any]] = "(" ~> repsep(mapValues | arrayValues | token, ",") <~ ")"
+
+  protected lazy val arrayValues: Parser[Any] = {
+    "[" ~> repsep(mapValues | token, ",") <~ "]"
+  }
+
+  protected lazy val tokenMap: Parser[(Any,Any)] = {
+    (token <~ "-" <~ ">") ~ (arrayValues | token) ^^ {
+      case key ~ value => (key, value)
+    }
+  }
+
+  protected lazy val mapValues: Parser[Any] = {
+    "(" ~> repsep(tokenMap, ",") <~ ")" ^^ {
+      case pairs => Map(pairs:_*)
+    }
+  }
 
 
   def token: Parser[String] = {
@@ -109,7 +126,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
 
   protected lazy val insertIntoTable: Parser[LogicalPlan] =
-    INSERT ~> INTO ~> tableIdentifier ~ tableValues.? ~ (VALUES ~> repsep(tableValues,","))  ^^ {
+    INSERT ~> INTO ~> tableIdentifier ~ schemaValues.? ~ (VALUES ~> repsep(tableValues,","))  ^^ {
       case tableId ~ schemaValues ~ tableValues =>
         if(schemaValues.isDefined)
           InsertIntoTable(tableId, tableValues, schemaValues)
@@ -149,7 +166,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val addJar: Parser[LogicalPlan] =
     ADD ~> JAR ~> restInput ^^ {
       case jarPath =>
-        AddJar(jarPath.trim)
+        AddJar(xDContext,jarPath.trim)
     }
 
   protected lazy val addApp: Parser[LogicalPlan] =
@@ -161,7 +178,8 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val executeApp: Parser[LogicalPlan] =
     (EXECUTE ~> ident) ~ tableValues ~ (OPTIONS ~> options).? ^^ {
       case appName ~ arguments ~ opts =>
-        ExecuteApp(xDContext, appName, arguments, opts)
+        val args=arguments map {arg=> arg.toString}
+        ExecuteApp(xDContext, appName, args, opts)
     }
   /**
    * Streaming

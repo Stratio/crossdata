@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.catalog.streaming
 
-import java.util.concurrent.TimeUnit
-
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDStreamingCatalog
 import org.apache.spark.sql.crossdata.daos.impl._
+import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.models._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,7 +28,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Try
 
-class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog(xdContext) {
+class ZookeeperStreamingCatalog(val catalystConf: CatalystConf) extends XDStreamingCatalog {
 
   private[spark] val streamingConfig = XDContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
   private[spark] val ephemeralTableDAO =
@@ -36,9 +38,23 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
   private[spark] val ephemeralTableStatusDAO =
     new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
 
-  private def futurize[P](operation : => P): P =
-    Await.result(Future(operation), 5 seconds)
 
+  override def relation(tableIdent: TableIdentifier, alias: Option[String]): Option[LogicalPlan] = {
+    val tableIdentifier: String = normalizeTableName(tableIdent)
+    if (futurize(existsEphemeralTable(tableIdentifier)))
+      Some(StreamingRelation(tableIdentifier))
+    else
+      None
+  }
+
+  // TODO
+  override def isAvailable: Boolean = true
+
+  // TODO It must not return the relations until the catalog can distinguish between real/ephemeral tables
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = Seq.empty
+
+  private def futurize[P](operation: => P): P =
+    Await.result(Future(operation), 5 seconds)
 
   /**
    * Ephemeral Table Functions
@@ -50,24 +66,24 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
     futurize(ephemeralTableDAO.dao.get(tableIdentifier))
 
   override def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel] =
-    if(!existsEphemeralTable(ephemeralTable.name)){
+    if (!existsEphemeralTable(ephemeralTable.name)) {
       createEphemeralStatus(ephemeralTable.name, EphemeralStatusModel(ephemeralTable.name, EphemeralExecutionStatus.NotStarted))
       Right(ephemeralTableDAO.dao.upsert(ephemeralTable.name, ephemeralTable))
-      }
+    }
     else Left("Ephemeral table exists")
 
 
   override def dropEphemeralTable(tableIdentifier: String): Unit = {
-    val isRunning = ephemeralTableStatusDAO.dao.get(tableIdentifier).map{ tableStatus =>
+    val isRunning = ephemeralTableStatusDAO.dao.get(tableIdentifier).map { tableStatus =>
       tableStatus.status == EphemeralExecutionStatus.Started || tableStatus.status == EphemeralExecutionStatus.Starting
     } getOrElse notFound(tableIdentifier)
 
-    if(isRunning) throw new RuntimeException("The ephemeral is running. The process should be stopped first using 'Stop <tableIdentifier>'")
-    
+    if (isRunning) throw new RuntimeException("The ephemeral is running. The process should be stopped first using 'Stop <tableIdentifier>'")
+
     ephemeralTableDAO.dao.delete(tableIdentifier)
     ephemeralTableStatusDAO.dao.delete(tableIdentifier)
 
-    ephemeralQueriesDAO.dao.getAll().filter( _.ephemeralTableName == tableIdentifier) foreach { query =>
+    ephemeralQueriesDAO.dao.getAll().filter(_.ephemeralTableName == tableIdentifier) foreach { query =>
       ephemeralQueriesDAO.dao.delete(query.alias)
     }
   }
@@ -92,7 +108,7 @@ class ZookeeperStreamingCatalog(xdContext: XDContext) extends XDStreamingCatalog
     ephemeralQueriesDAO.dao.exists(queryAlias)
 
   override def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel] =
-    if(!existsEphemeralQuery(ephemeralQuery.alias))
+    if (!existsEphemeralQuery(ephemeralQuery.alias))
       Right(ephemeralQueriesDAO.dao.upsert(ephemeralQuery.alias, ephemeralQuery))
     else Left("Ephemeral query exists")
 

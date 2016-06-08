@@ -48,7 +48,7 @@ private[crossdata] case class SQLCommand private(sql: String,
 
 
 case class AddJARCommand(path: String, hdfsConfig: Option[Config] = None,
-                         timeout: Option[FiniteDuration] = None
+                         timeout: Option[FiniteDuration] = None, toClassPath:Option[Boolean]= None
                         ) extends Command {
   def this(
             jarpath: String,
@@ -62,6 +62,10 @@ case class AddJARCommand(path: String, hdfsConfig: Option[Config] = None,
             jarpath: String,
             hdfsConf: Config
           ) = this(path = jarpath, hdfsConfig = Option(hdfsConf))
+
+  def this (jarpath: String,
+            toClassPath: Boolean
+           ) = this(path = jarpath, toClassPath = Option(toClassPath))
 }
 
 case class AddAppCommand(path: String,alias:String,clss:String,

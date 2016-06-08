@@ -65,7 +65,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
   // Previous step to process the message where promise is stored.
   def storePromise(promisesByIds: PromisesByIds): Receive = {
-    case (message: CommandEnvelope, promise: Promise[ServerReply]) =>
+    case (message: CommandEnvelope, promise: Promise[ServerReply @unchecked]) =>
       logger.debug("Sending message to the Crossdata cluster")
       context.become(start(promisesByIds.copy(promisesByIds.promises + (message.cmd.requestId -> promise))))
       self ! message
@@ -86,7 +86,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
       clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(aCmd @ AddJARCommand(path, _, _), _) =>
+    case secureSQLCommand @ CommandEnvelope(aCmd @ AddJARCommand(path, _, _, _), _) =>
       import context.dispatcher
       val shipmentResponse: Future[SQLReply] = sendJarToServers(aCmd,path)
       shipmentResponse pipeTo sender

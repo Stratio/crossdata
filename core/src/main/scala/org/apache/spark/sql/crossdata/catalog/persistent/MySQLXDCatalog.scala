@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
-import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog._
-import org.apache.spark.sql.crossdata.{XDContext, catalog}
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
+import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 
 import scala.annotation.tailrec
 
-object MySQLCatalog {
+object MySQLXDCatalog {
   // SQLConfig
   val Driver = "jdbc.driver"
   val Url = "jdbc.url"
@@ -47,22 +48,24 @@ object MySQLCatalog {
   val SqlViewField = "sqlView"
 
   //App values
-  val JarPath="jarPath"
-  val AppAlias="alias"
-  val AppClass="class"
+  val JarPath = "jarPath"
+  val AppAlias = "alias"
+  val AppClass = "class"
 }
 
 /**
- * Default implementation of the [[catalog.XDCatalog]] with persistence using
- * Jdbc.
- * Supported MySQL and PostgreSQL
- * @param conf An implementation of the [[CatalystConf]].
- */
-class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true), xdContext: XDContext)
-  extends XDCatalog(conf, xdContext) with SparkLoggerComponent {
+  * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
+  * Jdbc.
+  * Supported MySQL and PostgreSQL
+  *
+  * @param catalystConf An implementation of the [[CatalystConf]].
+  */
+class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
+  extends PersistentCatalogWithCache(sqlContext, catalystConf) {
 
-  import MySQLCatalog._
-  import org.apache.spark.sql.crossdata._
+  import MySQLXDCatalog._
+  import XDCatalog._
+
 
   private val config = XDContext.catalogConfig
   private val db = config.getString(Database)
@@ -113,8 +116,8 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
             |PRIMARY KEY ($AppAlias))""".stripMargin)
 
       jdbcConnection
-    }catch{
-      case e:Exception =>
+    } catch {
+      case e: Exception =>
         logError(e.getMessage)
         null
     }
@@ -143,13 +146,14 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     }
   }
 
-  override def listPersistedTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
+
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
     @tailrec
-    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[String] = Set()): Set[String] = {
+    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifier] = Set.empty): Set[TableIdentifier] = {
       if (next) {
         val database = resultset.getString(DatabaseField)
         val table = resultset.getString(TableNameField)
-        val tableId = if (database.trim.isEmpty) table else s"$database.$table"
+        val tableId = if (database.trim.isEmpty) TableIdentifier(table) else TableIdentifier(table, Option(database))
         getSequenceAux(resultset, resultset.next(), set + tableId)
       } else {
         set
@@ -160,13 +164,13 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
     val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
 
-    getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
+    getSequenceAux(resultSet, resultSet.next).toSeq
   }
 
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
     try {
 
-      val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(requireSchema()))
+      val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(schemaNotFound()))
       val tableOptions = serializeOptions(crossdataTable.opts)
       val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
@@ -210,17 +214,15 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       connection.setAutoCommit(true)
     }
 
-  override def dropPersistedTable(tableIdentifier: TableIdentifier): Unit =
+
+  override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
 
-
-  override def dropAllPersistedTables(): Unit = {
+  override def dropAllTablesMetadata(): Unit =
     connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithTableMetadata")
-    connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithViewMetadata")
-  }
 
 
-  override protected def lookupView(tableIdentifier: TableIdentifier): Option[String] = {
+  override def lookupView(tableIdentifier: TableIdentifier): Option[String] = {
     val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
     if (!resultSet.isBeforeFirst) {
       None
@@ -230,7 +232,7 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
     }
   }
 
-  override protected[crossdata] def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
+  override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
     try {
       connection.setAutoCommit(false)
       val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
@@ -271,22 +273,24 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
   }
 
-  override protected def dropPersistedView(viewIdentifier: ViewIdentifier): Unit = {
+
+  override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
     connection.createStatement.executeUpdate(
       s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
-  }
 
-  override protected def dropAllPersistedViews(): Unit = {
+
+  override def dropAllViewsMetadata(): Unit = {
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
 
-  override def persistAppMetadata(crossdataApp: CrossdataApp): Unit =
+
+  override def saveAppMetadata(crossdataApp: CrossdataApp): Unit =
     try {
       connection.setAutoCommit(false)
 
       val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
       preparedStatement.setString(1, crossdataApp.appAlias)
-      val resultSet=preparedStatement.executeQuery()
+      val resultSet = preparedStatement.executeQuery()
 
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
@@ -312,28 +316,26 @@ class MySQLCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
       connection.setAutoCommit(true)
     }
 
-  override def lookupApp(alias: String): Option[CrossdataApp] = {
+  override def getApp(alias: String): Option[CrossdataApp] = {
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
     preparedStatement.setString(1, alias)
-    val resultSet=preparedStatement.executeQuery()
+    val resultSet = preparedStatement.executeQuery()
 
     if (!resultSet.next) {
       None
     } else {
 
       val jar = resultSet.getString(JarPath)
-      val alias= resultSet.getString(AppAlias)
+      val alias = resultSet.getString(AppAlias)
       val clss = resultSet.getString(AppClass)
 
       Some(
-        CrossdataApp(jar,alias,clss)
+        CrossdataApp(jar, alias, clss)
       )
     }
   }
 
+  override def isAvailable: Boolean = Option(connection).isDefined
 
-  override def checkConnectivity:Boolean = {
-    connection!=null
-  }
 }
