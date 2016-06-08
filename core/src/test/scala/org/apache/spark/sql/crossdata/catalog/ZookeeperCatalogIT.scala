@@ -24,10 +24,9 @@ import org.scalatest.junit.JUnitRunner
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class ZookeeperCatalogIT extends SharedXDContextTest with CatalogConstants with GenericCatalogTests
-with ZookeeperDefaultTestConstants{
-
-  override val catalogName = "Zookeeper"
+class ZookeeperCatalogIT extends {
+  val catalogName = "Zookeeper"
+} with SharedXDContextTest with CatalogConstants with GenericCatalogTests with ZookeeperDefaultTestConstants{
 
   override val catalogConfig : Option[Config] = {
     val zkResourceConfig =

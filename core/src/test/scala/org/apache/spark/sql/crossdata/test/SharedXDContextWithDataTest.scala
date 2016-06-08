@@ -35,7 +35,7 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest with SparkLoggerCo
                                                         */
 
   val provider: String                                 // Datasource class name (fully specified)
-  val defaultOptions: Map[String, String] = Map.empty  // Spark options used to register the test table in the catalog
+  def defaultOptions: Map[String, String] = Map.empty  // Spark options used to register the test table in the catalog
 
   def sparkRegisterTableSQL: Seq[SparkTable] = Nil     /* Spark CREATE sentence. Without OPTIONS or USING parts since
                                                         * they'll be generated from `provider` and `defaultOptions`
@@ -73,7 +73,7 @@ trait SharedXDContextWithDataTest extends SharedXDContextTest with SparkLoggerCo
       sparkRegisterTableSQL.foreach { case SparkTable(s, opts) => sql(Sentence(s, provider, opts).toString) }
       client.isDefined
     } recover { case e: Throwable =>
-      logError(e.getMessage)
+      logError(e.getMessage, e)
       false
     } get
   }

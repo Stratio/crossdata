@@ -50,7 +50,7 @@ import com.stratio.tests.utils.ThreadProperty;
        "src/test/resources/features/Mongo/Group_concat.feature",
         "src/test/resources/features/Mongo/TemporaryViews.feature",
         "src/test/resources/features/Mongo/Views.feature",
-        "src/test/resources/features/Mongo/MongoDBInsertInto.feature"
+        "src/test/resources/features/Mongo/MongoDBInsertInto.feature",
 })
 
 public class ATEMongoDBXDTest extends BaseTest{

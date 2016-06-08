@@ -60,7 +60,7 @@ import cucumber.api.CucumberOptions;
         "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
         "src/test/resources/features/Elasticsearch/Views.feature",
        "src/test/resources/features/Elasticsearch/DropViews.feature",
-        "src/test/resources/features/Elasticsearch/ElasticSearchInsertInto.feature"
+        "src/test/resources/features/Elasticsearch/ElasticSearchInsertInto.feature",
 })
 public class ATElasticSearchXDTest extends BaseTest {
     private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
