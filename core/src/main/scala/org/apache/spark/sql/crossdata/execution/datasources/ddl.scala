@@ -31,32 +31,63 @@ import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.{StructType, _}
 
+import scala.annotation.tailrec
 import scala.language.implicitConversions
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
 
 object DDLUtils {
 
-  type RowValues = Seq[String]
+  type RowValues = Seq[Any]
 
   implicit def tableIdentifierToSeq(tableIdentifier: TableIdentifier): Seq[String] =
     tableIdentifier.database.toSeq :+ tableIdentifier.table
 
-  def convertSparkDatatypeToScala(value: String, sparkDataType: DataType): Try[Any] = {
-    sparkDataType match {
-      case _: ByteType => Try(value.toByte)
-      case _: ShortType => Try(value.toShort)
-      case _: IntegerType => Try(value.toInt)
-      case _: LongType => Try(value.toLong)
-      case _: FloatType => Try(value.toFloat)
-      case _: DoubleType => Try(value.toDouble)
-      case _: DecimalType => Try(BigDecimal(value))
-      case _: StringType => Try(value.toString)
-      case _: BooleanType => Try(value.toBoolean)
-      case _: DateType => Try(Date.valueOf(value))
-      case _: TimestampType => Try(Timestamp.valueOf(value))
-      case _ => Failure(new RuntimeException("Invalid Spark DataType"))
+  /**
+    * Convert from String, Map or Seq to Scala Types
+    * @param value the String, Map or Seq
+    * @param sparkDataType the original SparkDatatype
+    * @return The value converted from SparkDatatype to Scala
+    */
+  def convertSparkDatatypeToScala(value: Any, sparkDataType: DataType): Try[Any] = {
+
+    (value, sparkDataType) match {
+      case (value: String, _: ByteType) => Try(value.toByte)
+      case (value: String, _: ShortType) => Try(value.toShort)
+      case (value: String, _: IntegerType) => Try(value.toInt)
+      case (value: String, _: LongType) => Try(value.toLong)
+      case (value: String, _: FloatType) => Try(value.toFloat)
+      case (value: String, _: DoubleType) => Try(value.toDouble)
+      case (value: String, _: DecimalType) => Try(BigDecimal(value))
+      case (value: String, _: StringType) => Try(value)
+      case (value: String, _: BooleanType) => Try(value.toBoolean)
+      case (value: String, _: DateType) => Try(Date.valueOf(value))
+      case (value: String, _: TimestampType) => Try(Timestamp.valueOf(value))
+
+      case (seq: Seq[_], ArrayType(elementType, withNulls)) =>
+        seqOfTryToTryOfSeq(seq map { seqValue => convertSparkDatatypeToScala(seqValue, elementType) })
+
+      case (invalidSeq, ArrayType(elementType, withNulls)) =>
+        Failure(new RuntimeException("Invalid array passed as argument:" + invalidSeq.toString))
+
+      case (mapParsed: Map[_, _], MapType(keyType, valueType, withNulls)) =>
+        Try(
+          mapParsed map {
+            case (key, value) => (convertSparkDatatypeToScala(key, keyType).get, convertSparkDatatypeToScala(value, valueType).get)
+          }
+        )
+
+      case (invalidMap, MapType(keyType, valueType, withNulls)) =>
+        Failure(new RuntimeException("Invalid map passed as argument:" + invalidMap.toString))
+
+      case unparsed => Failure(new RuntimeException("Impossible to parse value as Spark DataType provided:" + unparsed.toString))
     }
+  }
+
+  private def seqOfTryToTryOfSeq[T](tries: Seq[Try[T]]):Try[Seq[T]] = {
+    Try (
+      tries map ( _.get )
+    )
   }
 
 }
@@ -121,7 +152,7 @@ private[crossdata] case class DropExternalTable(tableIdentifier: TableIdentifier
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val crossadataTable = sqlContext.catalog.tableMetadata(tableIdentifier) getOrElse( sys.error("Error dropping external table. Table doesn't exists in the catalog") )
+    val crossadataTable = sqlContext.catalog.tableMetadata(tableIdentifier) getOrElse( sys.error("Error dropping external table. Table doesn't exist in the catalog") )
 
     val provider = crossadataTable.datasource
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
@@ -202,7 +233,7 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
 
       case _ =>
-        sys.error("The Datasource does not support INSERT INTO table VALUES command")
+        sys.error("Table not found. Are you trying to insert values into a view/temporary table?")
     }
 
     Row(parsedRows.length) :: Nil
@@ -271,7 +302,7 @@ private[crossdata] case class AddJar(jarPath: String)
       sqlContext.sparkContext.addJar(jarPath)
       Seq.empty
     } else {
-      sys.error("File doesn't exists or is not a hdfs file")
+      sys.error("File doesn't exist or is not a hdfs file")
     }
   }
 }

@@ -28,6 +28,8 @@ import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => Sourc
 import org.apache.spark.sql.types.StructType
 import org.elasticsearch.action.search.SearchResponse
 
+import scala.util.{Failure, Success, Try}
+
 object ElasticSearchQueryProcessor {
 
   def apply(logicalPlan: LogicalPlan, parameters: Map[String, String], schemaProvided: Option[StructType] = None)
@@ -48,28 +50,44 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
   /**
    * Executes the [[LogicalPlan]]] and query the ElasticSearch database
-   * @return the query result
+    *
+    * @return the query result
    */
   def execute(): Option[Array[Row]] = {
-    validatedNativePlan.map { case (baseLogicalPlan, limit) =>
-      val requiredColumns = baseLogicalPlan match {
-        case SimpleLogicalPlan(projects, _, _, _) =>
-          projects
-      }
 
-      val filters = baseLogicalPlan.filters
-
-      val (esIndex, esType) = extractIndexAndType(parameters).get
-
-      val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
-      val esClient = buildClient(parameters)
-      try {
+    def tryRows(requiredColumns: Seq[Attribute], finalQuery: SearchDefinition, esClient: ElasticClient): Try[Array[Row]] = {
+      val rows: Try[Array[Row]] = Try {
         val resp: SearchResponse = esClient.execute(finalQuery).await
-        ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
-      }finally {
-        esClient.close()
+        if (resp.getShardFailures.length > 0) {
+          val errors = resp.getShardFailures map { failure => failure.reason() }
+          throw new RuntimeException(errors mkString("Errors from ES:", ";\n", ""))
+        } else {
+          ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
+        }
       }
+      rows
     }
+
+    val plan = validatedNativePlan getOrElse( sys.error("Invalid native plan") )
+
+    val result: Try[Array[Row]] = plan match {
+      case (baseLogicalPlan, limit) =>
+        val requiredColumns = baseLogicalPlan match {
+          case SimpleLogicalPlan(projects, _, _, _) =>
+            projects
+        }
+
+        val filters = baseLogicalPlan.filters
+        val (esIndex, esType) = extractIndexAndType(parameters).get
+
+        val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
+
+        withClientDo(parameters){ esClient =>
+          tryRows(requiredColumns, finalQuery, esClient)
+        }
+    }
+
+    result.toOption
   }
 
 

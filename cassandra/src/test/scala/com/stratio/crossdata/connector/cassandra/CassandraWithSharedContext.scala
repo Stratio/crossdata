@@ -33,7 +33,7 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
 
   override type ClientParams = (Cluster, Session)
   override val provider: String = SourceProvider
-  override val defaultOptions = Map(
+  override def defaultOptions = Map(
     "table"    -> Table,
     "keyspace" -> Catalog,
     "cluster"  -> ClusterName,
@@ -72,7 +72,20 @@ trait CassandraWithSharedContext extends SharedXDContextWithDataTest
     def insertRow(row: List[Any]): Unit = {
       session.execute(
         s"""INSERT INTO $Catalog.$Table(${schema.map(p => p._1).mkString(", ")})
-           | VALUES (${row.mkString(", ")})""".stripMargin.replaceAll("\n", ""))
+           | VALUES (${parseRow(row)})""".stripMargin.replaceAll("\n", ""))
+    }
+
+    def parseRow(row: List[Any]): String = {
+      row map {col => parseElement(col)} mkString ", "
+    }
+
+    def parseElement(element: Any): String = {
+      element match {
+        case map : Map[_,_] => map map { case (key,value) => s"${parseElement(key)} : ${parseElement(value)}" } mkString ("{", ", ", "}")
+        case list : Seq[_] => list map {listElement => parseElement(listElement)} mkString ("[", ", ", "]")
+        case string: String => s"'$string'"
+        case other => other.toString
+      }
     }
 
     testData.foreach(insertRow(_))
@@ -119,7 +132,7 @@ sealed trait CassandraDefaultTestConstants {
   val indexedColumn = "name"
 
   val testData = (for (a <- 1 to 10) yield {
-    a :: (10 + a) :: s"'Comment $a'" :: (a % 2 == 0) :: s"'Name $a'" :: Nil
+    a :: (10 + a) :: s"Comment $a" :: (a % 2 == 0) :: s"Name $a" :: Nil
   }).toList
 
   val CassandraHost: String = {

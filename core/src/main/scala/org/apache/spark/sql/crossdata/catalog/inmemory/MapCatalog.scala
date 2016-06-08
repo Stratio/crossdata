@@ -15,22 +15,21 @@
  */
 package org.apache.spark.sql.crossdata.catalog.inmemory
 
-import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog.ViewIdentifier
+import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.ViewIdentifier
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
-import scala.collection.mutable.Map
+import scala.collection.mutable
 
 abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog {
 
   // TODO map with catalog/tableIdentifier
 
-  protected def newMap: Map[String, LogicalPlan]
+  protected def newMap: mutable.Map[String, LogicalPlan]
 
-  private val tables: Map[String, LogicalPlan] = newMap
-  private val views: Map[String, LogicalPlan] = newMap
+  private val tables: mutable.Map[String, LogicalPlan] = newMap
+  private val views: mutable.Map[String, LogicalPlan] = newMap
 
   implicit def tableIdent2string(tident: TableIdentifier): String = normalizeTableName(tident)
 
@@ -42,21 +41,22 @@ abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog
   override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
     val dbName = databaseName.map(normalizeIdentifier)
     (tables ++ views).toSeq collect {
-      case (k,_) if dbName.map(_ == k.split("\\.")(0)).getOrElse(true) =>
+      case (k, _) if dbName.map(_ == k.split("\\.")(0)).getOrElse(true) =>
         k.split("\\.") match {
-          case Array(db, tb) => TableIdentifier(tb, Option(tb))
-          case Array(tb) => TableIdentifier(tb)       }
+          case Array(db, tb) => TableIdentifier(tb, Option(db))
+          case Array(tb) => TableIdentifier(tb)
+        }
     }
   }
 
   override def saveTable(tableIdentifier: ViewIdentifier, plan: LogicalPlan): Unit = {
     views get tableIdentifier foreach (_ => dropView(tableIdentifier))
-    tables put (normalizeTableName(tableIdentifier), plan)
+    tables put(normalizeTableName(tableIdentifier), plan)
   }
 
   override def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan): Unit = {
     tables get viewIdentifier foreach (_ => dropTable(viewIdentifier))
-    views put (normalizeTableName(viewIdentifier), plan)
+    views put(normalizeTableName(viewIdentifier), plan)
   }
 
   override def dropView(viewIdentifier: ViewIdentifier): Unit =

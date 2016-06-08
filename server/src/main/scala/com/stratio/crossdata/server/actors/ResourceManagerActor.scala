@@ -88,7 +88,7 @@ class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
         addToClasspath(file)
         sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
       } else {
-        sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exists or is not a hdfs file", Some(new Exception("File doesn't exists or is not a hdfs file"))))
+        sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exist or is not a hdfs file", Some(new Exception("File doesn't exist or is not a hdfs file"))))
       }
     case _ =>
   }
