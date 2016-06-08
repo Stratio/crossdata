@@ -89,6 +89,8 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
         if(!ThreadProperty.get("Driver").equals("javaDriver")){
             commonspec.getXdContext().getXDContext().dropAllTables();
             commonspec.getXdContext().closeSparkContext();
+        }else{
+            commonspec.getXdDriver().executeSyncQuery("DROP ALL TABLES");
         }
     }
 
