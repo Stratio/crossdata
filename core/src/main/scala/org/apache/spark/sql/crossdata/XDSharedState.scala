@@ -19,7 +19,7 @@ import com.typesafe.config.Config
 import org.apache.spark.SparkContext
 
 
-class XDSharedState(
+class XDSharedState( // TODO externalCatalog
                      @transient val sc: SparkContext,
                      userConfig: Option[Config] = None
                      )

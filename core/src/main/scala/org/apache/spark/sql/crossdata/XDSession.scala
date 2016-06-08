@@ -18,7 +18,8 @@ package org.apache.spark.sql.crossdata
 import com.typesafe.config.Config
 import org.apache.spark.Logging
 import org.apache.spark.sql.SQLConf
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 
 // TODO It will be the main entryPoint, so we should add a XDSession builder to make it easier to work with.
 /**
@@ -36,14 +37,21 @@ class XDSession(
                  )
   extends XDContext(xdSharedState.sc) with Logging {
 
+
   // TODO move context to sharedState => userConfig should be read before. Otherwise properties will be the same for all
+  // TODO we can't move XDContext to XDSession because RunnableCommand use XDContext instead of SparkSession.sessionCatalog
+
   // xdContext will host common Crossdata context entities
-  private val xdContext: XDContext = XDContext.getOrCreate(sc, userConfig) //Delegated XDContext
+  //private val xdContext: XDContext = XDContext.getOrCreate(sc, userConfig) //Delegated XDContext
 
 
   //TODO: +1 Use catalog for this session instead fix one
-  override protected[sql] lazy val catalog: XDCatalog = xdContext.catalog
+  override protected[sql] lazy val catalog: XDCatalog = {
+      // TODO add hazelcastTemporary catalog
+      val catalogs: List[XDCatalogCommon] =  xdSessionState.xdTemporaryCatalog :: externalCatalog :: streamingCatalog.toList
+      CatalogChain(catalogs:_*)(catalystConf)
+  }
 
-
+  // XDContext does not allow to override conf so far.
   override protected[sql] lazy val conf: SQLConf = xdSessionState.sqlConf
 }

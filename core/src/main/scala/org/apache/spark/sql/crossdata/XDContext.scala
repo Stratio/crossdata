@@ -79,7 +79,9 @@ class XDContext protected (@transient val sc: SparkContext,
 
   catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
 
-  private val catalystConf: CatalystConf = {
+  // TODO replace with sqlConf (which extends CatalystConf)
+  // TODO @deprecated
+  protected lazy val catalystConf: CatalystConf = {
     import XDContext.CaseSensitive
     val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
     new SimpleCatalystConf(caseSensitive)
@@ -92,10 +94,10 @@ class XDContext protected (@transient val sc: SparkContext,
   }
 
   @transient
-  private lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(catalystConf)
+  protected lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(catalystConf)
 
   @transient
-  private lazy val externalCatalog: XDPersistentCatalog = {
+  protected lazy val externalCatalog: XDPersistentCatalog = {
 
     import XDContext.DerbyClass
     val externalCatalogName = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
@@ -110,7 +112,7 @@ class XDContext protected (@transient val sc: SparkContext,
 
 
   @transient
-  private lazy val streamingCatalog: Option[XDStreamingCatalog] = {
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = {
     if (xdConfig.hasPath(StreamingCatalogClassConfigKey)) {
       val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)

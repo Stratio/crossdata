@@ -26,6 +26,7 @@ object XDSessionProvider {
   type SessionID = UUID
 }
 
+// TODO It should share some of the XDContext fields. It will be possible when Spark 2.0 is released
 abstract class XDSessionProvider(
                                   @transient protected val sc: SparkContext,
                                   protected val commonConfig: Option[Config] = None

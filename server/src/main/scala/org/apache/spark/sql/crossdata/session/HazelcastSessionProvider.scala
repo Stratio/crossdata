@@ -21,6 +21,7 @@ import com.typesafe.config.Config
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
+import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.{XDSession, XDSessionProvider, XDSessionState, XDSharedState}
 
 import scala.util.Try
@@ -70,7 +71,8 @@ class HazelcastSessionProvider(
 
   // TODO take advantage of common utils pattern?
   override def session(sessionID: SessionID): Try[XDSession] = Try {
-    val sessionState = new XDSessionState(catalogMap.get(sessionID))
+    val sqlConf = catalogMap.get(sessionID)
+    val sessionState = new XDSessionState(sqlConf, new HashmapCatalog(sqlConf)) // TODO replace with HazelcastCatalog
     new XDSession(sharedState, sessionState)
   }
 }
