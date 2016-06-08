@@ -76,88 +76,91 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    val client = ElasticSearchConnectionUtils.buildClient(connectionOptions)
+    ElasticSearchConnectionUtils.withClientDo(connectionOptions){ client =>
+      client.execute { index into Index -> "NewMapping" fields {
+        "name" -> "luis"
+      }}
 
-    client.execute { index into Index -> "NewMapping" fields {
-      "name" -> "luis"
-    }}
-
-    val importQuery =
-      s"""
-         |IMPORT TABLES
-         |USING $SourceProvider
-          |OPTIONS (
-          |es.nodes '$ElasticHost',
-          |es.port '$ElasticRestPort',
-          |es.nativePort '$ElasticNativePort',
-          |es.cluster '$ElasticClusterName',
-          |es.resource '$Index/$Type'
-          |)
+      val importQuery =
+        s"""
+           |IMPORT TABLES
+           |USING $SourceProvider
+           |OPTIONS (
+           |es.nodes '$ElasticHost',
+           |es.port '$ElasticRestPort',
+           |es.nativePort '$ElasticNativePort',
+           |es.cluster '$ElasticClusterName',
+           |es.resource '$Index/$Type'
+           |)
       """.stripMargin
 
-    //Experimentation
-    sql(importQuery)
+      //Experimentation
+      sql(importQuery)
 
-    //Expectations
-    xdContext.tableNames() should contain (s"$Index.$Type")
-    xdContext.tableNames() should not contain s"$Index.NewMapping"
+      //Expectations
+      xdContext.tableNames() should contain (s"$Index.$Type")
+      xdContext.tableNames() should not contain s"$Index.NewMapping"
+    }
+
   }
 
   it should "fail when infer schema with bad es.resource" in {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    val client = ElasticSearchConnectionUtils.buildClient(connectionOptions)
+    ElasticSearchConnectionUtils.withClientDo(connectionOptions){ client =>
+      client.execute { index into Index -> "NewMapping" fields {
+        "name" -> "luis"
+      }}
 
-    client.execute { index into Index -> "NewMapping" fields {
-      "name" -> "luis"
-    }}
-
-    val importQuery =
-      s"""
-         |IMPORT TABLES
-         |USING $SourceProvider
-          |OPTIONS (
-          |es.nodes '$ElasticHost',
-          |es.port '$ElasticRestPort',
-          |es.nativePort '$ElasticNativePort',
-          |es.cluster '$ElasticClusterName',
-          |es.resource '$Type'
-                                                                                                                                                                |)
+      val importQuery =
+        s"""
+           |IMPORT TABLES
+           |USING $SourceProvider
+           |OPTIONS (
+           |es.nodes '$ElasticHost',
+           |es.port '$ElasticRestPort',
+           |es.nativePort '$ElasticNativePort',
+           |es.cluster '$ElasticClusterName',
+           |es.resource '$Type'
+           |)
       """.stripMargin
 
-    //Experimentation
-    an [IllegalArgumentException] should be thrownBy sql(importQuery)
+      //Experimentation
+      an [IllegalArgumentException] should be thrownBy sql(importQuery)
+    }
+
   }
 
   it should "infer schema after import all tables from a Cluster" in {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    val client = ElasticSearchConnectionUtils.buildClient(connectionOptions)
-    createIndex(client,"index_test", typeMapping())
-    try {
-      val importQuery =
-        s"""
-           |IMPORT TABLES
-           |USING $SourceProvider
-            |OPTIONS (
-            |es.nodes '$ElasticHost',
-            |es.port '$ElasticRestPort',
-            |es.nativePort '$ElasticNativePort',
-            |es.cluster '$ElasticClusterName'
-            |)
+    ElasticSearchConnectionUtils.withClientDo(connectionOptions){ client =>
+      createIndex(client,"index_test", typeMapping())
+      try {
+        val importQuery =
+          s"""
+             |IMPORT TABLES
+             |USING $SourceProvider
+             |OPTIONS (
+             |es.nodes '$ElasticHost',
+             |es.port '$ElasticRestPort',
+             |es.nativePort '$ElasticNativePort',
+             |es.cluster '$ElasticClusterName'
+             |)
       """.stripMargin
 
-      //Experimentation:
-      sql(importQuery)
+        //Experimentation:
+        sql(importQuery)
 
-      //Expectations
-      sql("SHOW TABLES").count should be > 1l
-      xdContext.tableNames().length should be > 1
+        //Expectations
+        sql("SHOW TABLES").count should be > 1l
+        xdContext.tableNames().length should be > 1
 
-    }finally {
-      cleanTestData(client, "index_test")
+      }finally {
+        cleanTestData(client, "index_test")
+      }
     }
   }
 
@@ -165,26 +168,26 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    val client = ElasticSearchConnectionUtils.buildClient(connectionOptions)
+    ElasticSearchConnectionUtils.withClientDo(connectionOptions){ client =>
+      client.execute { index into Index -> "NewMapping" fields {
+        "name" -> "luis"
+      }}
 
-    client.execute { index into Index -> "NewMapping" fields {
-      "name" -> "luis"
-    }}
-
-    val importQuery =
-      s"""
-         |IMPORT TABLES
-         |USING $SourceProvider
-         |OPTIONS (
-         |es.nodes '$ElasticHost',
-         |es.port '$ElasticRestPort',
-         |es.nativePort '$ElasticNativePort',
-         |es.resource '$Index/$Type'
-         |)
+      val importQuery =
+        s"""
+           |IMPORT TABLES
+           |USING $SourceProvider
+           |OPTIONS (
+           |es.nodes '$ElasticHost',
+           |es.port '$ElasticRestPort',
+           |es.nativePort '$ElasticNativePort',
+           |es.resource '$Index/$Type'
+           |)
       """.stripMargin
 
-    //Experimentation
-    an [RuntimeException] should be thrownBy sql(importQuery)
+      //Experimentation
+      an [RuntimeException] should be thrownBy sql(importQuery)
+    }
 
   }
 

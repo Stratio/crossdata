@@ -163,23 +163,29 @@ class DefaultSource
 
     val indexType = IndexType(indexName, typeName)
     try {
-      val client = ElasticSearchConnectionUtils.buildClient(options)
 
-      val exists = client.execute {
-        index.exists(indexName)
-      }.await
+      ElasticSearchConnectionUtils.withClientDo(options){ client =>
+        val exists = client.execute {
+          index.exists(indexName)
+        }.await
 
-      if (exists.isExists) {
-        client.execute {
-          put.mapping(indexType) as elasticSchema
-        }.await
-      } else {
-        client.execute {
-          createIndex(indexName) mappings (mapping(typeName) as elasticSchema)
-        }.await
+        if (exists.isExists) {
+          ElasticSearchConnectionUtils.withClientDo(options){ client =>
+            client.execute {
+              put.mapping(indexType) as elasticSchema
+            }.await
+          }
+        } else {
+          ElasticSearchConnectionUtils.withClientDo(options){ client =>
+            client.execute {
+              createIndex(indexName) mappings (mapping(typeName) as elasticSchema)
+            }.await
+          }
+        }
       }
 
       Option(Table(typeName, Option(indexName), Option(schema)))
+
     } catch {
       case e: Exception =>
         logError(e.getMessage, e)
@@ -194,10 +200,11 @@ class DefaultSource
     val indexType = IndexType(index, typeName)
 
     Try {
-      val client = ElasticSearchConnectionUtils.buildClient(options)
-      client.execute {
-        deleteMapping(indexType)
-      } await
+      ElasticSearchConnectionUtils.withClientDo(options){ client =>
+        client.execute {
+          deleteMapping(indexType)
+        }.await
+      }
     }
   }
 

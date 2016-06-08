@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.catalog.inmemory
 
-import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import org.apache.spark.sql.catalyst.CatalystConf
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 
-trait CatalogCommon extends SparkLoggerComponent {
+import scala.collection.mutable
+import scala.collection.mutable.HashMap
 
-  protected def notFound(resource: String) = {
-    val message = s"$resource not found"
-    logWarning(message)
-    throw new RuntimeException(message)
-  }
+class HashmapCatalog(override val catalystConf: CatalystConf) extends MapCatalog(catalystConf) {
+
+  override protected def newMap: mutable.Map[String, LogicalPlan] = new HashMap[String, LogicalPlan]
+
+  override def isAvailable: Boolean = true
 }

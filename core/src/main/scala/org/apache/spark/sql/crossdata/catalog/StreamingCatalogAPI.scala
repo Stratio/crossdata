@@ -15,20 +15,15 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.models._
+import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
-/**
- * CrossdataStreamingCatalog aims to provide a mechanism to persist the
- * Streaming metadata executions.
- */
-abstract class XDStreamingCatalog(xdContext: XDContext) extends CatalogCommon with Serializable {
+private[crossdata] trait StreamingCatalogAPI {
 
   /**
-   * Ephemeral Table Functions
-   */
+    * Ephemeral Table Functions
+    */
   def existsEphemeralTable(tableIdentifier: String): Boolean
-  
+
   def getEphemeralTable(tableIdentifier: String) : Option[EphemeralTableModel]
 
   def getAllEphemeralTables : Seq[EphemeralTableModel]
@@ -40,8 +35,8 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends CatalogCommon wi
   def dropAllEphemeralTables(): Unit
 
   /**
-   * Ephemeral Status Functions
-   */
+    * Ephemeral Status Functions
+    */
   protected[crossdata] def createEphemeralStatus(tableIdentifier: String, ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel
 
   protected[crossdata] def getEphemeralStatus(tableIdentifier: String) : Option[EphemeralStatusModel]
@@ -51,12 +46,12 @@ abstract class XDStreamingCatalog(xdContext: XDContext) extends CatalogCommon wi
   protected[crossdata] def updateEphemeralStatus(tableIdentifier: String, status: EphemeralStatusModel) : Unit
 
   protected[crossdata] def dropEphemeralStatus(tableIdentifier: String): Unit
-  
+
   protected[crossdata] def dropAllEphemeralStatus(): Unit
 
   /**
-   * Ephemeral Queries Functions
-   */
+    * Ephemeral Queries Functions
+    */
   def existsEphemeralQuery(queryAlias: String): Boolean
 
   def getEphemeralQuery(queryAlias: String) : Option[EphemeralQueryModel]

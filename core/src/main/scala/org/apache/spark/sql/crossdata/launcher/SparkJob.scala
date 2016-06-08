@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.launcher
+package org.apache.spark.sql.crossdata.launcher
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.launcher.SparkLauncher
