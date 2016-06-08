@@ -29,6 +29,7 @@ object DerbyCatalog {
   val DB = "CROSSDATA"
   val TableWithTableMetadata = "xdtables"
   val TableWithViewMetadata = "xdviews"
+  val TableWithIndexMetadata = "xdindexes"
   // TableMetadataFields
   val DatabaseField = "db"
   val TableNameField = "tableName"
@@ -39,6 +40,11 @@ object DerbyCatalog {
   val CrossdataVersionField = "crossdataVersion"
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
+  //IndexMetadataFields
+  val IndexNameField = "indexName"
+  val IndexTypeField = "indexType"
+  val IndexedColsField = "indexedCols"
+  val PKColsField = "pkCols"
 }
 
 /**
@@ -86,6 +92,22 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
             |$CrossdataVersionField VARCHAR(30),
             |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
+    }
+
+    //Index support
+    if(!indexTableExists(DB, jdbcConnection)) {
+      jdbcConnection.createStatement().executeUpdate( //TODO: Relational way using other table for the columns??
+        s"""|CREATE TABLE $DB.$TableWithIndexMetadata (
+            |$DatabaseField VARCHAR(50),
+            |$TableNameField VARCHAR(50),
+            |$IndexNameField VARCHAR(50),
+            |$IndexTypeField VARCHAR(50),
+            |$IndexedColsField LONG VARCHAR,
+            |$PKColsField LONG VARCHAR,
+            |$DatasourceField LONG VARCHAR,
+            |$OptionsField LONG VARCHAR,
+            |$CrossdataVersionField VARCHAR(30),
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin) //TODO: Multiple indexing??
     }
 
     jdbcConnection
@@ -246,7 +268,21 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
   }
   private def schemaExists(schema: String, connection: Connection): Boolean = {
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$DB'")
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$schema'")
+    val resultSet = preparedStatement.executeQuery()
+
+    resultSet.next()
+  }
+
+  private def indexTableExists(schema: String, connection: Connection): Boolean = tableSchemaExists(schema, TableWithIndexMetadata, connection)
+
+  private def tableSchemaExists(schema: String, table: String, connection: Connection): Boolean =  {
+    val query =
+      s"""|SELECT * FROM SYS.SYSSCHEMAS sch
+          |LEFT JOIN SYS.SYSTABLES tb ON tb.schemaid = sch.schemaid
+          |WHERE sch.SCHEMANAME='$schema' AND tb.TABLENAME='$table'""".stripMargin
+
+    val preparedStatement = connection.prepareStatement(query)
     val resultSet = preparedStatement.executeQuery()
 
     resultSet.next()

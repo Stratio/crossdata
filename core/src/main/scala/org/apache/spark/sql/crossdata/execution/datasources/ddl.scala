@@ -45,10 +45,6 @@ object DDLUtils {
 
   /**
     * Convert from String, Map or Seq to Scala Types
-<<<<<<< HEAD
-    *
-=======
->>>>>>> upstream/master
     * @param value the String, Map or Seq
     * @param sparkDataType the original SparkDatatype
     * @return The value converted from SparkDatatype to Scala
@@ -337,6 +333,7 @@ private [crossdata] case class CreateGlobalIndex(
           sys.error("The Datasource does not support CREATE GLOBAL INDEX command")
       }
 
+      //TODO: Change index name, for allowing multiple index ???
       CreateExternalTable(finalIndex, elasticSchema, indexProvider, options).run(sqlContext)
     }
 
