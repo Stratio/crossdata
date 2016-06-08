@@ -45,7 +45,10 @@ object DDLUtils {
 
   /**
     * Convert from String, Map or Seq to Scala Types
+<<<<<<< HEAD
     *
+=======
+>>>>>>> upstream/master
     * @param value the String, Map or Seq
     * @param sparkDataType the original SparkDatatype
     * @return The value converted from SparkDatatype to Scala

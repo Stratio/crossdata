@@ -185,7 +185,6 @@ class DefaultSource
       }
 
       Option(Table(typeName, Option(indexName), Option(schema)))
-
     } catch {
       case e: Exception =>
         logError(e.getMessage, e)
