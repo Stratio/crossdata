@@ -23,6 +23,7 @@ import org.apache.spark.sql.crossdata.CrossdataVersion
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 
 import scala.annotation.tailrec
+import scala.util.Try
 
 // TODO refactor SQL catalog implementations
 object DerbyCatalog {
@@ -220,6 +221,54 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       connection.setAutoCommit(true)
     }
 
+  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = {
+    try {
+      connection.setAutoCommit(false)
+      // check if the database-table exist in the persisted catalog
+      val resultSet = selectMetadata(TableWithIndexMetadata, crossdataIndex.tableIdentifier)
+
+      val serializedIndexedCols = serializeSeq(crossdataIndex.indexedCols)
+      val serializedPK = serializeSeq(crossdataIndex.pkCols)
+      val serializedOptions = serializeOptions(crossdataIndex.opts)
+
+      if (!resultSet.next()) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $DB.$TableWithIndexMetadata (
+              | $DatabaseField, $TableNameField, $IndexNameField, $IndexTypeField, $IndexedColsField,
+              | $PKColsField, $DatasourceField, $OptionsField, $CrossdataVersionField
+              |) VALUES (?,?,?,?,?,?,?,?,?)
+       """.stripMargin)
+        prepped.setString(1, crossdataIndex.tableIdentifier.database.getOrElse(""))
+        prepped.setString(2, crossdataIndex.tableIdentifier.table)
+        prepped.setString(3, crossdataIndex.indexName)
+        prepped.setString(4, crossdataIndex.indexType)
+        prepped.setString(5, serializedIndexedCols)
+        prepped.setString(6, serializedPK)
+        prepped.setString(7, crossdataIndex.datasource)
+        prepped.setString(8, serializedOptions)
+        prepped.setString(9, CrossdataVersion)
+        prepped.execute()
+      }
+      else {
+        /*val prepped = connection.prepareStatement(
+          s"""|UPDATE $DB.$TableWithIndexMetadata SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
+              |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}'
+       """.stripMargin)
+        prepped.setString(1, tableSchema)
+        prepped.setString(2, crossdataTable.datasource)
+        prepped.setString(3, partitionColumn)
+        prepped.setString(4, tableOptions)
+        prepped.setString(5, CrossdataVersion)
+        prepped.execute()*/
+        //TODO: Support change index metadata?
+        ???
+      }
+      connection.commit()
+    } finally {
+      connection.setAutoCommit(true)
+    }
+  }
+
   override def dropTableMetadata(tableIdentifier: TableIdentifier): Unit =
     connection.createStatement.executeUpdate(
       s"DELETE FROM $DB.$TableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'"
@@ -267,6 +316,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     preparedStatement.executeQuery()
 
   }
+
   private def schemaExists(schema: String, connection: Connection): Boolean = {
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$schema'")
     val resultSet = preparedStatement.executeQuery()
@@ -280,7 +330,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     val query =
       s"""|SELECT * FROM SYS.SYSSCHEMAS sch
           |LEFT JOIN SYS.SYSTABLES tb ON tb.schemaid = sch.schemaid
-          |WHERE sch.SCHEMANAME='$schema' AND tb.TABLENAME='$table'""".stripMargin
+          |WHERE sch.SCHEMANAME='$schema' AND tb.TABLENAME='${table.toUpperCase}'""".stripMargin
 
     val preparedStatement = connection.prepareStatement(query)
     val resultSet = preparedStatement.executeQuery()

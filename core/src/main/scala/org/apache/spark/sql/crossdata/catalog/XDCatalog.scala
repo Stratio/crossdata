@@ -36,6 +36,10 @@ implicit def asXDCatalog (catalog: Catalog): XDCatalog = catalog.asInstanceOf[XD
                             datasource: String, partitionColumn: Array[String] = Array.empty,
                             opts: Map[String, String] = Map.empty, crossdataVersion: String = crossdata.CrossdataVersion)
 
+  case class CrossdataIndex(tableIdentifier: TableIdentifier, indexType: String,
+                            indexName: String, indexedCols: Seq[String], pkCols: Seq[String],
+                            datasource: String, opts: Map[String, String] = Map.empty, crossdataVersion: String = crossdata.CrossdataVersion)
+
 
   def serializeSchema(schema: StructType): String = write(schema)
 
@@ -48,6 +52,10 @@ implicit def asXDCatalog (catalog: Catalog): XDCatalog = catalog.asInstanceOf[XD
   def serializeOptions(options: Map[String, String]): String =  write(options)
 
   def deserializeOptions(optsJSON: String): Map[String, String] = read[Map[String, String]](optsJSON)
+
+  def serializeSeq(seq: Seq[String]): String = write(seq)
+
+  def deserializeSeq(seqJSON: String): Seq[String] = read[Seq[String]](seqJSON)
 
 
 }

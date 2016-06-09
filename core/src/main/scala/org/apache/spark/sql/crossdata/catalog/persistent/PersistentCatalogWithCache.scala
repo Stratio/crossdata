@@ -20,7 +20,7 @@ import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog.{CrossdataTable, ViewIdentifier}
+import XDCatalog.{CrossdataIndex, CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDPersistentCatalog
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
 
@@ -38,6 +38,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
 
   val tableCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
   val viewCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
+  val indexCache: mutable.Map[TableIdentifier, CrossdataIndex] = mutable.Map.empty
 
   override final def relation(relationIdentifier: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
     // TODO refactor (nonCachedLookup)
@@ -95,6 +96,23 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     }
   }
 
+  override final def saveIndex(crossdataIndex: CrossdataIndex): Unit = {
+    logInfo(s"Persisting index ${crossdataIndex.indexName}")
+    indexCache.put(crossdataIndex.tableIdentifier, crossdataIndex)
+    persistIndexMetadata(crossdataIndex)
+
+    //TODO: Check if exists
+    /*val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
+    if (relation(tableIdentifier).isDefined) {
+      logWarning(s"The table $tableIdentifier already exists")
+      throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
+    } else {
+      logInfo(s"Persisting table ${crossdataTable.tableName}")
+      tableCache.put(tableIdentifier, table)
+      persistTableMetadata(crossdataTable.copy(schema = Option(table.schema)))
+    }*/
+  }
+
   override final def dropTable(tableIdentifier: TableIdentifier): Unit = {
     tableCache remove tableIdentifier
     dropTableMetadata(tableIdentifier)
@@ -125,6 +143,8 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   def persistTableMetadata(crossdataTable: CrossdataTable): Unit
 
   def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit
+
+  def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit
 
   def dropTableMetadata(tableIdentifier: TableIdentifier): Unit
 

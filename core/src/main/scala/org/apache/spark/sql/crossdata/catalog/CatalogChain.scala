@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.catalog
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataIndex, CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
@@ -119,6 +119,9 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   override def persistView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit =
     persistentCatalogs.foreach(_.saveView(tableIdentifier, plan, sqlText))
+
+  override def persistIndex(crossdataIndex: CrossdataIndex): Unit =
+    persistentCatalogs.foreach(_.saveIndex(crossdataIndex))
 
   override def dropTable(tableIdentifier: TableIdentifier): Unit = {
     val strTable = tableIdentifier.unquotedString
@@ -234,6 +237,5 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   private def executeWithStrCatalogOrEmptyList[R](streamingCatalogOperation: XDStreamingCatalog => Seq[R]): Seq[R] =
     streamingCatalogs.toSeq.flatMap(streamingCatalogOperation)
-
 
 }

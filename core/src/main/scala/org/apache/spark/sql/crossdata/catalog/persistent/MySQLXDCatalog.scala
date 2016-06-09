@@ -271,4 +271,6 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
   }
 
   override def isAvailable: Boolean = Option(connection).isDefined
+
+  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = ???
 }

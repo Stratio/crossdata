@@ -154,4 +154,6 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
     Try(new Socket(address(0), address(1).toInt)).map( _ => true).getOrElse(false)
   }
 
+  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = ???
+
 }

@@ -330,11 +330,14 @@ private [crossdata] case class CreateGlobalIndex(
           DDLUtils.extractSchema(colsWithoutSchema, relation.schema)
 
         case _ =>
-          sys.error("The Datasource does not support CREATE GLOBAL INDEX command")
+          sys.error("Not found the table you want to index")
       }
 
       //TODO: Change index name, for allowing multiple index ???
       CreateExternalTable(finalIndex, elasticSchema, indexProvider, options).run(sqlContext)
+
+      val crossdataIndex = CrossdataIndex(tableIdent, finalIndex.table, finalIndex.database.get, cols, pk, indexProvider, options)
+      sqlContext.catalog.persistIndex(crossdataIndex)
     }
 
   private def saveIndexMetadata = ???

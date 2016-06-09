@@ -275,4 +275,6 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
   }
 
   override def isAvailable: Boolean = Option(connection).isDefined
+
+  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = ???
 }
