@@ -32,6 +32,11 @@ implicit def asXDCatalog (catalog: Catalog): XDCatalog = catalog.asInstanceOf[XD
 
   type ViewIdentifier = TableIdentifier
 
+  case class IndexIdentifier(indexType: String, indexName: String) {
+    def quotedString: String = s"`$indexName`.`$indexType`"
+    def unquotedString: String = s"$indexName.$indexType"
+  }
+
   case class CrossdataTable(tableName: String, dbName: Option[String], schema: Option[StructType],
                             datasource: String, partitionColumn: Array[String] = Array.empty,
                             opts: Map[String, String] = Map.empty, crossdataVersion: String = crossdata.CrossdataVersion)

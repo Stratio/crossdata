@@ -108,6 +108,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
             |$DatasourceField LONG VARCHAR,
             |$OptionsField LONG VARCHAR,
             |$CrossdataVersionField VARCHAR(30),
+            |UNIQUE ($IndexNameField, $IndexTypeField),
             |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin) //TODO: Multiple indexing??
     }
 
@@ -130,8 +131,8 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
-      Some(
-        CrossdataTable(table, Some(database), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource,
+      Option(
+        CrossdataTable(table, Option(database), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource,
           deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
       )
     }
@@ -143,6 +144,30 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       None
     else
       Option(resultSet.getString(SqlViewField))
+  }
+
+  override def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] = {
+    val resultSet = selectIndex(indexIdentifier)
+
+    if (!resultSet.next) {
+      None
+    } else {
+
+      val database = resultSet.getString(DatabaseField)
+      val table = resultSet.getString(TableNameField)
+      val indexName = resultSet.getString(IndexNameField)
+      val indexType = resultSet.getString(IndexTypeField)
+      val indexedCols = resultSet.getString(IndexedColsField)
+      val pkCols = resultSet.getString(PKColsField)
+      val datasource = resultSet.getString(DatasourceField)
+      val optsJSON = resultSet.getString(OptionsField)
+      val version = resultSet.getString(CrossdataVersionField)
+
+      Option(
+        CrossdataIndex(TableIdentifier(table, Option(database)), indexType, indexName,
+          deserializeSeq(indexedCols), deserializeSeq(pkCols), datasource, deserializeOptions(optsJSON), version)
+      )
+    }
   }
 
 
@@ -248,20 +273,9 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
         prepped.setString(8, serializedOptions)
         prepped.setString(9, CrossdataVersion)
         prepped.execute()
-      }
-      else {
-        /*val prepped = connection.prepareStatement(
-          s"""|UPDATE $DB.$TableWithIndexMetadata SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-              |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}'
-       """.stripMargin)
-        prepped.setString(1, tableSchema)
-        prepped.setString(2, crossdataTable.datasource)
-        prepped.setString(3, partitionColumn)
-        prepped.setString(4, tableOptions)
-        prepped.setString(5, CrossdataVersion)
-        prepped.execute()*/
+      } else {
         //TODO: Support change index metadata?
-        ???
+        sys.error("Index already exists")
       }
       connection.commit()
     } finally {
@@ -279,12 +293,20 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       s"DELETE FROM $DB.$TableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'"
     )
 
+  override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $DB.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
+    )
+
 
   override def dropAllTablesMetadata(): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithTableMetadata")
 
   override def dropAllViewsMetadata(): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithViewMetadata")
+
+  override def dropAllIndexesMetadata(): Unit =
+    connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithIndexMetadata")
 
   override def isAvailable: Boolean = true
 
@@ -315,6 +337,13 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     preparedStatement.setString(2, tableIdentifier.table)
     preparedStatement.executeQuery()
 
+  }
+
+  private def selectIndex(indexIdentifier: IndexIdentifier): ResultSet = {
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $DB.$TableWithIndexMetadata WHERE $IndexNameField= ? AND $IndexTypeField= ?")
+    preparedStatement.setString(1, indexIdentifier.indexName)
+    preparedStatement.setString(2, indexIdentifier.indexType)
+    preparedStatement.executeQuery()
   }
 
   private def schemaExists(schema: String, connection: Connection): Boolean = {

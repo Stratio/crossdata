@@ -20,7 +20,7 @@ import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog.{CrossdataIndex, CrossdataTable, ViewIdentifier}
+import XDCatalog.{CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDPersistentCatalog
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
 
@@ -38,7 +38,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
 
   val tableCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
   val viewCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
-  val indexCache: mutable.Map[TableIdentifier, CrossdataIndex] = mutable.Map.empty
+  val indexCache: mutable.Map[IndexIdentifier, CrossdataIndex] = mutable.Map.empty
 
   override final def relation(relationIdentifier: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
     // TODO refactor (nonCachedLookup)
@@ -97,20 +97,17 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   }
 
   override final def saveIndex(crossdataIndex: CrossdataIndex): Unit = {
-    logInfo(s"Persisting index ${crossdataIndex.indexName}")
-    indexCache.put(crossdataIndex.tableIdentifier, crossdataIndex)
-    persistIndexMetadata(crossdataIndex)
 
-    //TODO: Check if exists
-    /*val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
-    if (relation(tableIdentifier).isDefined) {
-      logWarning(s"The table $tableIdentifier already exists")
-      throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
+    val indexIdentifier = IndexIdentifier(crossdataIndex.indexType, crossdataIndex.indexName)
+    if(lookupIndex(indexIdentifier).isDefined) {
+      logWarning(s"The index $indexIdentifier already exists")
+      throw new UnsupportedOperationException(s"The index $indexIdentifier already exists")
     } else {
-      logInfo(s"Persisting table ${crossdataTable.tableName}")
-      tableCache.put(tableIdentifier, table)
-      persistTableMetadata(crossdataTable.copy(schema = Option(table.schema)))
-    }*/
+      logInfo(s"Persisting index ${crossdataIndex.indexName}")
+      indexCache.put(indexIdentifier, crossdataIndex) //TODO Save using table as key, or using index as key???
+      persistIndexMetadata(crossdataIndex)
+    }
+
   }
 
   override final def dropTable(tableIdentifier: TableIdentifier): Unit = {
@@ -123,6 +120,11 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     dropViewMetadata(viewIdentifier)
   }
 
+  override final def dropIndex(indexIdentifer: IndexIdentifier): Unit = {
+    indexCache remove indexIdentifer
+    dropIndexMetadata(indexIdentifer)
+  }
+
   override final def dropAllViews(): Unit = {
     viewCache.clear
     dropAllViewsMetadata()
@@ -131,6 +133,11 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   override final def dropAllTables(): Unit = {
     tableCache.clear
     dropAllTablesMetadata()
+  }
+
+  override final def dropAllIndexes(): Unit = {
+    indexCache.clear
+    dropAllIndexesMetadata()
   }
 
   protected def schemaNotFound() = throw new RuntimeException("the schema must be non empty")
@@ -150,8 +157,12 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
 
   def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit
 
+  def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit
+
   def dropAllViewsMetadata(): Unit
 
   def dropAllTablesMetadata(): Unit
+
+  def dropAllIndexesMetadata(): Unit
 
 }

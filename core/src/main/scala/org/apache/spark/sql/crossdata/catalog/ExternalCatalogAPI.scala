@@ -17,12 +17,13 @@ package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataIndex, CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
 
 private[crossdata] trait ExternalCatalogAPI {
 
   def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit
   def persistView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit
+  def persistIndex(crossdataIndex: CrossdataIndex): Unit
 
   def dropTable(tableIdentifier: TableIdentifier): Unit
   def dropAllTables(): Unit
@@ -30,9 +31,10 @@ private[crossdata] trait ExternalCatalogAPI {
   def dropView(viewIdentifier: ViewIdentifier): Unit
   def dropAllViews(): Unit
 
-  def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable]
+  def dropIndex(tableIdentifier: IndexIdentifier): Unit //Support multiple index per table?
+  def dropAllIndexes(): Unit
 
-  def persistIndex(crossdataIndex: CrossdataIndex): Unit
+  def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable]
 
 }
 

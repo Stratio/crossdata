@@ -272,5 +272,12 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
 
   override def isAvailable: Boolean = Option(connection).isDefined
 
+  //TODO
   override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = ???
+
+  override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit = ???
+
+  override def dropAllIndexesMetadata(): Unit = ???
+
+  override def lookupIndex(tableIdentifier: IndexIdentifier): Option[CrossdataIndex] = ???
 }
