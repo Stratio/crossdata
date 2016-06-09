@@ -284,4 +284,6 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
   override def dropAllIndexesMetadata(): Unit = ???
 
   override def lookupIndex(tableIdentifier: IndexIdentifier): Option[CrossdataIndex] = ???
+
+  override def dropIndexMetadata(tableIdentifier: ViewIdentifier): Unit = ???
 }

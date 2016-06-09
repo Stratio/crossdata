@@ -114,6 +114,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   override final def dropTable(tableIdentifier: TableIdentifier): Unit = {
     tableCache remove tableIdentifier
     dropTableMetadata(tableIdentifier)
+    dropIndexesFromTable(tableIdentifier)
   }
 
   override final def dropView(viewIdentifier: ViewIdentifier): Unit = {
@@ -121,11 +122,9 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     dropViewMetadata(viewIdentifier)
   }
 
-  private def dropTableIndex(tableIdentifier: TableIdentifier): Unit = {
-    val removedIndex = indexCache remove tableIdentifier
-    if(removedIndex.isDefined){
-      dropIndex(removedIndex.get.indexIdentifier)
-    }
+  override final def dropIndexesFromTable(tableIdentifier: TableIdentifier): Unit = {
+    indexCache remove tableIdentifier
+    dropIndexMetadata(tableIdentifier)
   }
 
   override final def dropIndex(indexIdentifer: IndexIdentifier): Unit = {
@@ -170,6 +169,8 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit
 
   def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit
+
+  def dropIndexMetadata(tableIdentifier: TableIdentifier): Unit
 
   def dropAllViewsMetadata(): Unit
 

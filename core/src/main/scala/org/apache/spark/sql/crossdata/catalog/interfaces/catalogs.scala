@@ -98,7 +98,9 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def dropView(viewIdentifier: ViewIdentifier): Unit
 
-  def dropIndex(tableIdentifier: IndexIdentifier): Unit
+  def dropIndex(indexIdentifier: IndexIdentifier): Unit
+
+  def dropIndexesFromTable(tableIdentifier: TableIdentifier): Unit
 
   def dropAllTables(): Unit
 

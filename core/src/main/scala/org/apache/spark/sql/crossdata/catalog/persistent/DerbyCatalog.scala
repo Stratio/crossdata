@@ -298,6 +298,11 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       s"DELETE FROM $DB.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
     )
 
+  override def dropIndexMetadata(tableIdentifier: TableIdentifier): Unit =
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $DB.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
+    )
+
 
   override def dropAllTablesMetadata(): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithTableMetadata")
