@@ -38,7 +38,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
 
   val tableCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
   val viewCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
-  val indexCache: mutable.Map[IndexIdentifier, CrossdataIndex] = mutable.Map.empty
+  val indexCache: mutable.Map[TableIdentifier, CrossdataIndex] = mutable.Map.empty
 
   override final def relation(relationIdentifier: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
     // TODO refactor (nonCachedLookup)
@@ -104,7 +104,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
       throw new UnsupportedOperationException(s"The index $indexIdentifier already exists")
     } else {
       logInfo(s"Persisting index ${crossdataIndex.indexName}")
-      indexCache.put(indexIdentifier, crossdataIndex) //TODO Save using table as key, or using index as key???
+      indexCache.put(crossdataIndex.tableIdentifier, crossdataIndex)
       persistIndexMetadata(crossdataIndex)
     }
 
@@ -121,7 +121,13 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   }
 
   override final def dropIndex(indexIdentifer: IndexIdentifier): Unit = {
-    indexCache remove indexIdentifer
+
+    val tuple = indexCache find { case(key,value) =>
+      value.indexType == indexIdentifer.indexType && value.indexName == indexIdentifer.indexName
+    }
+
+    indexCache remove tuple.get._1
+
     dropIndexMetadata(indexIdentifer)
   }
 
