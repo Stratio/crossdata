@@ -320,7 +320,7 @@ private [crossdata] case class CreateGlobalIndex(
     Try {
       val indexProvider = provider getOrElse "com.stratio.crossdata.connector.elasticsearch"
 
-      val finalIndex = TableIdentifier(index.table, Option(index.database getOrElse("gidx")))
+      val finalIndex = IndexIdentifier(index.table, index.database getOrElse("gidx"))
 
       val colsWithoutSchema = pk ++ cols
 
@@ -334,9 +334,9 @@ private [crossdata] case class CreateGlobalIndex(
       }
 
       //TODO: Change index name, for allowing multiple index ???
-      CreateExternalTable(finalIndex, elasticSchema, indexProvider, options).run(sqlContext)
+      CreateExternalTable(TableIdentifier(finalIndex.indexType, Option(finalIndex.indexName)), elasticSchema, indexProvider, options).run(sqlContext)
 
-      val crossdataIndex = CrossdataIndex(tableIdent, finalIndex.table, finalIndex.database.get, cols, pk, indexProvider, options)
+      val crossdataIndex = CrossdataIndex(tableIdent, finalIndex, cols, pk, indexProvider, options)
       sqlContext.catalog.persistIndex(crossdataIndex)
     }
 

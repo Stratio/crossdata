@@ -98,12 +98,13 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
 
   override final def saveIndex(crossdataIndex: CrossdataIndex): Unit = {
 
-    val indexIdentifier = IndexIdentifier(crossdataIndex.indexType, crossdataIndex.indexName)
+    val indexIdentifier = crossdataIndex.indexIdentifier
+
     if(lookupIndex(indexIdentifier).isDefined) {
       logWarning(s"The index $indexIdentifier already exists")
       throw new UnsupportedOperationException(s"The index $indexIdentifier already exists")
     } else {
-      logInfo(s"Persisting index ${crossdataIndex.indexName}")
+      logInfo(s"Persisting index ${crossdataIndex.indexIdentifier}")
       indexCache.put(crossdataIndex.tableIdentifier, crossdataIndex)
       persistIndexMetadata(crossdataIndex)
     }
@@ -120,13 +121,18 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     dropViewMetadata(viewIdentifier)
   }
 
+  private def dropTableIndex(tableIdentifier: TableIdentifier): Unit = {
+    val removedIndex = indexCache remove tableIdentifier
+    if(removedIndex.isDefined){
+      dropIndex(removedIndex.get.indexIdentifier)
+    }
+  }
+
   override final def dropIndex(indexIdentifer: IndexIdentifier): Unit = {
 
-    val tuple = indexCache find { case(key,value) =>
-      value.indexType == indexIdentifer.indexType && value.indexName == indexIdentifer.indexName
-    }
+    val found: Option[(TableIdentifier, CrossdataIndex)] = indexCache find { case(key,value) => value.indexIdentifier == indexIdentifer}
 
-    indexCache remove tuple.get._1
+    if(found.isDefined) indexCache remove found.get._1
 
     dropIndexMetadata(indexIdentifer)
   }
