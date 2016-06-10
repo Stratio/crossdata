@@ -26,8 +26,13 @@ trait XDStrategies extends SparkStrategies {
 
   object XDDDLStrategy extends Strategy {
     def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {
-      case CreateTableUsing(tableIdent, userSpecifiedSchema, provider, false, opts, allowExisting, _) =>
-        val cmd = PersistDataSourceTable(tableIdent, userSpecifiedSchema, provider, opts, allowExisting)
+      case CreateTableUsing(tableIdent, userSpecifiedSchema, provider, temporary, opts, allowExisting, _) =>
+
+        val cmd = if(temporary)
+          RegisterDataSourceTable(tableIdent, userSpecifiedSchema, provider, opts, allowExisting)
+        else
+          PersistDataSourceTable(tableIdent, userSpecifiedSchema, provider, opts, allowExisting)
+
         ExecutedCommand(cmd) :: Nil
 
       case CreateTableUsingAsSelect(tableIdent, provider, false, partitionCols, mode, opts, query) =>
@@ -37,5 +42,5 @@ trait XDStrategies extends SparkStrategies {
       case _ => Nil
     }
   }
-  
+
 }

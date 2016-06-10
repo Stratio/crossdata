@@ -21,35 +21,72 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import XDCatalog.CrossdataTable
-import org.apache.spark.sql.crossdata.util.CreateRelationUtil
+import org.apache.spark.sql.crossdata.util.CreateRelationUtil.createLogicalRelation
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.{HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{AnalysisException, DataFrame, Row, SQLContext, SaveMode}
 
-private[crossdata] case class PersistDataSourceTable(
-                                   tableIdent: TableIdentifier,
-                                   userSpecifiedSchema: Option[StructType],
-                                   provider: String,
-                                   options: Map[String, String],
-                                   allowExisting: Boolean) extends RunnableCommand {
+private[crossdata] trait DoCatalogDataSourceTable extends RunnableCommand {
+
+  protected val tableIdent: TableIdentifier
+  protected val userSpecifiedSchema: Option[StructType]
+  protected val provider: String
+  protected val options: Map[String, String]
+  protected val allowExisting: Boolean
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
     val crossdataContext = sqlContext.asInstanceOf[XDContext]
-    val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, userSpecifiedSchema, provider, Array.empty[String], options)
-    val tableExist = crossdataContext.catalog.tableExists(tableIdent)
-    import CreateRelationUtil._
-    if (!tableExist) crossdataContext.catalog.persistTable(crossdataTable, createLogicalRelation(crossdataContext, crossdataTable))
 
-    if (tableExist && !allowExisting)
+    if (crossdataContext.catalog.tableExists(tableIdent) && !allowExisting)
       throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
     else
-      Seq.empty[Row]
+      catalogDataSourceTable(
+        crossdataContext,
+        CrossdataTable(tableIdent.table, tableIdent.database, userSpecifiedSchema, provider, Array.empty[String], options)
+      )
+
   }
+
+  protected def catalogDataSourceTable(crossdataContext: XDContext, crossdataTable: CrossdataTable): Seq[Row]
+
 }
 
+private[crossdata] case class PersistDataSourceTable(
+                                                      protected val tableIdent: TableIdentifier,
+                                                      protected val userSpecifiedSchema: Option[StructType],
+                                                      protected val provider: String,
+                                                      protected val options: Map[String, String],
+                                                      protected val allowExisting: Boolean
+                                                    ) extends DoCatalogDataSourceTable {
+
+  override protected def catalogDataSourceTable(
+                                                 crossdataContext: XDContext,
+                                                 crossdataTable: CrossdataTable): Seq[Row] = {
+    crossdataContext.catalog.persistTable(crossdataTable, createLogicalRelation(crossdataContext, crossdataTable))
+    Seq.empty[Row]
+  }
+
+}
+
+private[crossdata] case class RegisterDataSourceTable(
+                                                       protected val tableIdent: TableIdentifier,
+                                                       protected val userSpecifiedSchema: Option[StructType],
+                                                       protected val provider: String,
+                                                       protected val options: Map[String, String],
+                                                       protected val allowExisting: Boolean
+                                                     ) extends DoCatalogDataSourceTable {
+
+  override protected def catalogDataSourceTable(
+                                                 crossdataContext: XDContext,
+                                                 crossdataTable: CrossdataTable): Seq[Row] = {
+    crossdataContext.catalog.registerTable(tableIdent, createLogicalRelation(crossdataContext, crossdataTable))
+    Seq.empty[Row]
+  }
+
+}
 
 private[crossdata]
 case class PersistSelectAsTable(
@@ -85,7 +122,7 @@ case class PersistSelectAsTable(
             sqlContext, Some(query.schema.asNullable), partitionColumns, provider, options)
           val createdRelation = LogicalRelation(resolved.relation)
           EliminateSubQueries(sqlContext.catalog.lookupRelation(tableIdent)) match {
-            case l @ LogicalRelation(_: InsertableRelation | _: HadoopFsRelation, _) =>
+            case l@LogicalRelation(_: InsertableRelation | _: HadoopFsRelation, _) =>
               if (l.relation != createdRelation.relation) {
                 val errorDescription =
                   s"Cannot append to table ${tableIdent.unquotedString} because the resolved relation does not " +
