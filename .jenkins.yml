@@ -43,6 +43,7 @@ ITPARAMETERS: >
     -Delasticsearch.hosts.0=%%ELASTICSEARCH
     -Delasticsearch.cluster=%%JUID
     -Dspark.master=spark://%%SPARK:7077
+    -Dlauncher.sparkHome=
     -Dhdfs.namenode=hdfs://%%HADOOP:8020
     -Dhdfs.user="Stratio"
     -Djars.externalJars="/root"
