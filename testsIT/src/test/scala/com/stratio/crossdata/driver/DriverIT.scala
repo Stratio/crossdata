@@ -146,20 +146,20 @@ class DriverIT extends EndToEndTest {
         result.hasError should equal (true)
       }
 
+  //TODO Uncomment when CD be ready
 
-
-  it should "be able to execute ADD APP Command of an existent file" in {
-    assumeCrossdataUpAndRunning
-
-    val filePath = getClass.getResource("/TestAddApp.jar").getPath
-    val driver = Driver.getOrCreate()
-    val result = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
-    driver.sql("EXECUTE testApp(rain,bow)").waitForResult()
-    driver.stop()
-    result.hasError should equal(false)
-
-
-  }
+//  it should "be able to execute ADD APP Command of an existent file" in {
+//    assumeCrossdataUpAndRunning
+//
+//    val filePath = getClass.getResource("/TestAddApp.jar").getPath
+//    val driver = Driver.getOrCreate()
+//    val result = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
+//    driver.sql("EXECUTE testApp(rain,bow)").waitForResult()
+//    driver.stop()
+//    result.hasError should equal(false)
+//
+//
+//  }
 
   //TODO Uncomment when CD be ready
 //  it should "be able to execute ADD APP Command of an existent file with options" in {
