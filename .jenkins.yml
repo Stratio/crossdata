@@ -45,6 +45,7 @@ ITPARAMETERS: >
     -Dspark.master=spark://%%SPARK:7077
     -Dhdfs.namenode=hdfs://%%HADOOP:8020
     -Dhdfs.user="Stratio"
+    -Djars.externalJars="/root"
     -Dcatalog.zookeeper.connectionString=%%ZOOKEEPER:2181
     -Dstreaming.catalog.zookeeper.connectionString=%%ZOOKEEPER:2181
     -Dstreaming.receiver.kafka.connection=%%KAFKA:9092
