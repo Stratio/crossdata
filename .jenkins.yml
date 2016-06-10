@@ -30,7 +30,7 @@ ITSERVICES:
   - HADOOP:
       image: stratio/hadoop:2.7.2
       env:
-        - MASTER_NODE=true
+        - MASTER=true
         - FUNC_MODE=hdfs
   - KAFKA:
       image: stratio/kafka:0.8.2.1
