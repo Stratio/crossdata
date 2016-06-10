@@ -31,6 +31,7 @@ ITSERVICES:
       image: stratio/hadoop:2.7.2
       env:
         - MASTER_NODE=true
+        - FUNC_MODE=hdfs
   - KAFKA:
       image: stratio/kafka:0.8.2.1
       env:
@@ -42,8 +43,8 @@ ITPARAMETERS: >
     -Delasticsearch.hosts.0=%%ELASTICSEARCH
     -Delasticsearch.cluster=%%JUID
     -Dspark.master=spark://%%SPARK:7077
-    -Dhdfs.namenode=hdfs://%%HADOOP:9000
-    -Dcrossdata-core.hdfs.hdfsMaster=%%HADOOP
+    -Dhdfs.namenode=hdfs://%%HADOOP:8020
+    -Dhdfs.user="Stratio"
     -Dcatalog.zookeeper.connectionString=%%ZOOKEEPER:2181
     -Dstreaming.catalog.zookeeper.connectionString=%%ZOOKEEPER:2181
     -Dstreaming.receiver.kafka.connection=%%KAFKA:9092
