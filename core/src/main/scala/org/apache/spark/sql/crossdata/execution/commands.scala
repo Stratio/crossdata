@@ -82,7 +82,10 @@ private[crossdata] case class RegisterDataSourceTable(
   override protected def catalogDataSourceTable(
                                                  crossdataContext: XDContext,
                                                  crossdataTable: CrossdataTable): Seq[Row] = {
-    crossdataContext.catalog.registerTable(tableIdent, createLogicalRelation(crossdataContext, crossdataTable))
+    crossdataContext.catalog.registerTable(
+      tableIdent,
+      createLogicalRelation(crossdataContext, crossdataTable), Some(crossdataTable)
+    )
     Seq.empty[Row]
   }
 

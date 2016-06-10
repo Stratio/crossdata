@@ -142,7 +142,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     (CREATE ~> TEMPORARY.? <~ VIEW) ~ tableIdentifier ~ (AS ~> restInput) ^^ {
       case temp ~ viewIdentifier ~ query =>
         if (temp.isDefined)
-          CreateTempView(viewIdentifier, parseQuery(query))
+          CreateTempView(viewIdentifier, parseQuery(query), query)
         else
           CreateView(viewIdentifier, parseQuery(query), query)
     }
