@@ -102,9 +102,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val tableValues: Parser[Seq[Any]] = "(" ~> repsep(mapValues | arrayValues | token, ",") <~ ")"
 
-  protected lazy val arrayValues: Parser[Any] = {
-    "[" ~> repsep(mapValues | token, ",") <~ "]"
-  }
+  protected lazy val arrayValues: Parser[Any] =
+    ("[" ~> repsep(mapValues | token, ",") <~ "]") | ("[" ~> success(List()) <~ "]")
+
 
   protected lazy val tokenMap: Parser[(Any,Any)] = {
     (token <~ "-" <~ ">") ~ (arrayValues | token) ^^ {
@@ -112,11 +112,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
   }
 
-  protected lazy val mapValues: Parser[Any] = {
+  protected lazy val mapValues: Parser[Map[Any, Any]] =
     "(" ~> repsep(tokenMap, ",") <~ ")" ^^ {
       case pairs => Map(pairs:_*)
-    }
-  }
+    } | "(" ~> success(Map.empty[Any, Any]) <~ ")"
 
 
   def token: Parser[String] = {
