@@ -118,6 +118,6 @@ trait ElasticSearchDefaultConstants {
   val ElasticRestPort = 9200
   val ElasticNativePort = 9300
   val SourceProvider = "com.stratio.crossdata.connector.elasticsearch"
-  val ElasticClusterName: String = Try(config.getString("elasticsearch.cluster")).getOrElse("STRATIO_CLUSTER")
+  val ElasticClusterName: String = Try(config.getString("elasticsearch.cluster")).getOrElse("esCluster")
 
 }
