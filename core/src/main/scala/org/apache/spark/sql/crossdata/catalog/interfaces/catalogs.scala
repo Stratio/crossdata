@@ -69,9 +69,15 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
 
 trait XDTemporaryCatalog extends XDCatalogCommon {
 
-  def saveTable(tableIdentifier: TableIdentifier, plan: LogicalPlan): Unit
+  def saveTable(
+                 tableIdentifier: TableIdentifier,
+                 plan: LogicalPlan,
+                 crossdataTable: Option[CrossdataTable] = None): Unit
 
-  def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan): Unit
+  def saveView(
+                viewIdentifier: ViewIdentifier,
+                plan: LogicalPlan,
+                query: Option[String] = None): Unit
 
   def dropTable(tableIdentifier: TableIdentifier): Unit
 
