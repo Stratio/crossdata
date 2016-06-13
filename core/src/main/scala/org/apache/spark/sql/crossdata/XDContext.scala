@@ -18,13 +18,13 @@
 
 package org.apache.spark.sql.crossdata
 
-import java.io.{File, InputStream}
+import java.io.InputStream
 import java.lang.reflect.{Constructor, Method}
 import java.net.{URL, URLClassLoader}
+import java.nio.file.StandardCopyOption
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 
-import com.google.common.io.Files
 import com.stratio.crossdata.connector.FunctionInventory
 import com.stratio.crossdata.utils.HdfsUtils
 import com.typesafe.config.Config
@@ -51,7 +51,6 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext, Strategy, execution => 
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
-import scala.reflect.io.File
 import scala.util.{Failure, Success}
 
 /**
@@ -274,11 +273,10 @@ class XDContext protected (@transient val sc: SparkContext,
     */
   def addJar(path: String, toClasspath:Option[Boolean]=None) = {
     super.addJar(path)
-    if (path.toLowerCase.startsWith("hdfs://")){
+    if ((path.toLowerCase.startsWith("hdfs://")) && (toClasspath.getOrElse(true))){
       val hdfsIS: InputStream = HdfsUtils(xdConfig.getConfig(CoreConfig.HdfsKey)).getFile(path)
       val file: java.io.File = createFile(hdfsIS, s"${xdConfig.getConfig(CoreConfig.JarsRepo).getString("externalJars")}/${path.split("/").last}")
-      if (toClasspath.getOrElse(true))
-        addToClasspath(file)
+      addToClasspath(file)
     }else if (scala.reflect.io.File(path).exists){
       val file=new java.io.File(path)
       addToClasspath(file)
@@ -301,11 +299,7 @@ class XDContext protected (@transient val sc: SparkContext,
 
   private def createFile(hdfsIS: InputStream, path: String): java.io.File = {
     val targetFile = new java.io.File(path)
-
-    val arrayBuffer = new Array[Byte](hdfsIS.available)
-    hdfsIS.read(arrayBuffer)
-
-    Files.write(arrayBuffer, targetFile)
+    java.nio.file.Files.copy(hdfsIS, targetFile.toPath, StandardCopyOption.REPLACE_EXISTING)
     targetFile
   }
 

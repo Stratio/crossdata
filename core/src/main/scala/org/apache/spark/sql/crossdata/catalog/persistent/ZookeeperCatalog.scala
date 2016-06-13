@@ -186,7 +186,7 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
     //TODO this method must be changed when Stratio Commons provide a status connection of Zookeeper
     val value = XDContext.catalogConfig.getString("zookeeper.connectionString")
     val address = value.split(":")
-    Try(new Socket(address(0), address(1).toInt)).map(_ => true).getOrElse(false)
+    Try(new Socket(address(0), address(1).toInt)).map(s => { s.close; true}).getOrElse(false)
   }
 
 }
