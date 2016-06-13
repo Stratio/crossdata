@@ -18,6 +18,7 @@ package org.apache.spark.sql.crossdata.execution
 import org.apache.spark.sql.Strategy
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTableUsingAsSelect}
 import org.apache.spark.sql.execution.{ExecutedCommand, SparkPlan, SparkStrategies}
 
@@ -28,10 +29,19 @@ trait XDStrategies extends SparkStrategies {
     def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {
       case CreateTableUsing(tableIdent, userSpecifiedSchema, provider, temporary, opts, allowExisting, _) =>
 
+        val crossdataTable = CrossdataTable(
+          tableIdent.table,
+          tableIdent.database,
+          userSpecifiedSchema,
+          provider,
+          Array.empty[String],
+          opts
+        )
+
         val cmd = if(temporary)
-          RegisterDataSourceTable(tableIdent, userSpecifiedSchema, provider, opts, allowExisting)
+          RegisterDataSourceTable(crossdataTable, allowExisting)
         else
-          PersistDataSourceTable(tableIdent, userSpecifiedSchema, provider, opts, allowExisting)
+          PersistDataSourceTable(crossdataTable, allowExisting)
 
         ExecutedCommand(cmd) :: Nil
 

@@ -30,64 +30,48 @@ import org.apache.spark.sql.{AnalysisException, DataFrame, Row, SQLContext, Save
 
 private[crossdata] trait DoCatalogDataSourceTable extends RunnableCommand {
 
-  protected val tableIdent: TableIdentifier
-  protected val userSpecifiedSchema: Option[StructType]
-  protected val provider: String
-  protected val options: Map[String, String]
+  protected val crossdataTable: CrossdataTable
   protected val allowExisting: Boolean
 
-  override def run(sqlContext: SQLContext): Seq[Row] = {
+  override def run(sqlContext: SQLContext): Seq[Row] =
+    catalogDataSourceTable(sqlContext.asInstanceOf[XDContext])
 
-    val crossdataContext = sqlContext.asInstanceOf[XDContext]
-
-
-      catalogDataSourceTable(
-        crossdataContext,
-        CrossdataTable(tableIdent.table, tableIdent.database, userSpecifiedSchema, provider, Array.empty[String], options)
-      )
-
-  }
-
-  protected def catalogDataSourceTable(crossdataContext: XDContext, crossdataTable: CrossdataTable): Seq[Row]
+  protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row]
 
 }
 
 private[crossdata] case class PersistDataSourceTable(
-                                                      protected val tableIdent: TableIdentifier,
-                                                      protected val userSpecifiedSchema: Option[StructType],
-                                                      protected val provider: String,
-                                                      protected val options: Map[String, String],
+                                                      protected val crossdataTable: CrossdataTable,
                                                       protected val allowExisting: Boolean
                                                     ) extends DoCatalogDataSourceTable {
 
-  override protected def catalogDataSourceTable(
-                                                 crossdataContext: XDContext,
-                                                 crossdataTable: CrossdataTable): Seq[Row] = {
+  override protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row] = {
 
 
-    if (crossdataContext.catalog.tableExists(tableIdent) && !allowExisting)
-      throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
+    val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
+
+    if (crossdataContext.catalog.tableExists(tableIdentifier) && !allowExisting)
+      throw new AnalysisException(s"Table ${tableIdentifier.unquotedString} already exists")
     else
       crossdataContext.catalog.persistTable(crossdataTable, createLogicalRelation(crossdataContext, crossdataTable))
 
     Seq.empty[Row]
   }
 
+
 }
 
 private[crossdata] case class RegisterDataSourceTable(
-                                                       protected val tableIdent: TableIdentifier,
-                                                       protected val userSpecifiedSchema: Option[StructType],
-                                                       protected val provider: String,
-                                                       protected val options: Map[String, String],
+                                                       protected val crossdataTable: CrossdataTable,
                                                        protected val allowExisting: Boolean
                                                      ) extends DoCatalogDataSourceTable {
 
-  override protected def catalogDataSourceTable(
-                                                 crossdataContext: XDContext,
-                                                 crossdataTable: CrossdataTable): Seq[Row] = {
+  override protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row] = {
+
+    val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
+
     crossdataContext.catalog.registerTable(
-      tableIdent,
+      tableIdentifier,
       createLogicalRelation(crossdataContext, crossdataTable), Some(crossdataTable)
     )
     Seq.empty[Row]
