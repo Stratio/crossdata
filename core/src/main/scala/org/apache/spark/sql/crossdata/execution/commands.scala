@@ -40,9 +40,7 @@ private[crossdata] trait DoCatalogDataSourceTable extends RunnableCommand {
 
     val crossdataContext = sqlContext.asInstanceOf[XDContext]
 
-    if (crossdataContext.catalog.tableExists(tableIdent) && !allowExisting)
-      throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
-    else
+
       catalogDataSourceTable(
         crossdataContext,
         CrossdataTable(tableIdent.table, tableIdent.database, userSpecifiedSchema, provider, Array.empty[String], options)
@@ -65,7 +63,13 @@ private[crossdata] case class PersistDataSourceTable(
   override protected def catalogDataSourceTable(
                                                  crossdataContext: XDContext,
                                                  crossdataTable: CrossdataTable): Seq[Row] = {
-    crossdataContext.catalog.persistTable(crossdataTable, createLogicalRelation(crossdataContext, crossdataTable))
+
+
+    if (crossdataContext.catalog.tableExists(tableIdent) && !allowExisting)
+      throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
+    else
+      crossdataContext.catalog.persistTable(crossdataTable, createLogicalRelation(crossdataContext, crossdataTable))
+
     Seq.empty[Row]
   }
 
