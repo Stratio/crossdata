@@ -37,19 +37,19 @@ import com.stratio.tests.utils.ThreadProperty;
 
 
 @CucumberOptions(features = {
-       "src/test/resources/features/Mongo/MongoSelectSimple.feature",
-       "src/test/resources/features/Mongo/MongoSelectLimit.feature",
-        "src/test/resources/features/Mongo/MongoSelectEqualsFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectLessFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectLessEqualsFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectGreaterFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectGreaterEqualsFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectINFilter.feature",
-        "src/test/resources/features/Mongo/MongoSelectAnd.feature",
-        "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature",
-       "src/test/resources/features/Mongo/Group_concat.feature",
-        "src/test/resources/features/Mongo/TemporaryViews.feature",
-        "src/test/resources/features/Mongo/Views.feature",
+//       "src/test/resources/features/Mongo/MongoSelectSimple.feature",
+//       "src/test/resources/features/Mongo/MongoSelectLimit.feature",
+//        "src/test/resources/features/Mongo/MongoSelectEqualsFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectLessFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectLessEqualsFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectGreaterFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectGreaterEqualsFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectINFilter.feature",
+//        "src/test/resources/features/Mongo/MongoSelectAnd.feature",
+//        "src/test/resources/features/Mongo/MongoSelectNOTBetween.feature",
+//       "src/test/resources/features/Mongo/Group_concat.feature",
+//        "src/test/resources/features/Mongo/TemporaryViews.feature",
+//        "src/test/resources/features/Mongo/Views.feature",
         "src/test/resources/features/Mongo/MongoDBInsertInto.feature",
 })
 

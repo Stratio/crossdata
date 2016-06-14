@@ -187,7 +187,7 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
                 commonspec.getXdContext().executeQuery(sql.toString());
             }
             //
-            for(int i = 1; i <= 4 ; i++) {
+            for(int i = 1; i <= 7 ; i++) {
                 sql = new StringBuilder("CREATE TABLE insertintotable" + i + " USING com.stratio.crossdata"
                         + ".connector.cassandra OPTIONS ");
                 sql.append("(table 'insertinto" + i + "',keyspace 'databasetest',cluster '").append(System.getProperty

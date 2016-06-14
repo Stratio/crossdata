@@ -24,3 +24,6 @@ CREATE TABLE databasetest.insertinto1 (ident INT PRIMARY KEY, name TEXT, money D
 CREATE TABLE databasetest.insertinto2 (ident INT PRIMARY KEY, name TEXT, money DOUBLE, new BOOLEAN, date Timestamp);
 CREATE TABLE databasetest.insertinto3 (ident INT PRIMARY KEY, name TEXT, money DOUBLE, new BOOLEAN, date Timestamp);
 CREATE TABLE databasetest.insertinto4 (ident INT PRIMARY KEY, name TEXT, money DOUBLE, new BOOLEAN, date Timestamp);
+CREATE TABLE databasetest.insertinto5 (ident INT PRIMARY KEY, names set<TEXT>);
+CREATE TABLE databasetest.insertinto6 (ident INT PRIMARY KEY, names list<TEXT>);
+CREATE TABLE databasetest.insertinto7 (ident INT PRIMARY KEY, namesphone map<TEXT, INT>);

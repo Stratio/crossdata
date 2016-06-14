@@ -37,3 +37,49 @@ Feature:[CROSSDATA-465]Cassandra InsertInto
     Then The spark result has to have '1' rows:
       |_c0-long|
       | 2     |
+
+  Scenario Outline: [CROSSDATA-465] INSERT INTO insertintotable5 over Cassandra SET
+    When I truncate a Cassandra table named 'insertintotable5' using keyspace 'databasetest'
+    When I execute 'INSERT INTO insertintotable5 (ident,names) VALUES (0, <array>)'
+    Then an exception 'IS NOT' thrown
+    When I execute 'SELECT count(*) FROM insertintotable5'
+    Then The spark result has to have '1' rows:
+      |_c0-long       |
+      | 1             |
+
+    Examples:
+     | array                |
+     | ['name_0']           |
+     | []                   |
+     | ['name_0','name_1']  |
+
+  Scenario Outline: [CROSSDATA-465] INSERT INTO insertintotable6 over Cassandra LIST
+    When I truncate a Cassandra table named 'insertintotable6' using keyspace 'databasetest'
+    When I execute 'INSERT INTO insertintotable6 (ident,names) VALUES (0, <array>)'
+    Then an exception 'IS NOT' thrown
+    When I execute 'SELECT count(*) FROM insertintotable6'
+    Then The spark result has to have '1' rows:
+      |_c0-long       |
+      | 1             |
+
+    Examples:
+      | array                |
+      | ['name_0']           |
+      | []                   |
+      | ['name_0','name_1']  |
+
+
+  Scenario Outline: [CROSSDATA-465] INSERT INTO insertintotable7 over Cassandra LIST
+    When I truncate a Cassandra table named 'insertinto7' using keyspace 'databasetest'
+    When I execute 'INSERT INTO insertintotable7 (ident,namesphone) VALUES (0, <map>)'
+    Then an exception 'IS NOT' thrown
+    When I execute 'SELECT count(*) FROM insertintotable7'
+    Then The spark result has to have '1' rows:
+      |_c0-long       |
+      | 1             |
+
+    Examples:
+      | map                |
+      | ('name_0'-> 00)           |
+      | ()                   |
+      | ('name_0'-> 00,'name_1'-> 10)  |
