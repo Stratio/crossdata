@@ -28,6 +28,7 @@ import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import akka.remote.DisassociatedEvent
 import com.google.common.io.Files
+import com.stratio.crossdata.common.result.ErrorSQLResult
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
@@ -37,6 +38,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDSessionProvider
 
 import scala.concurrent.duration.FiniteDuration
+import scala.util.{Failure, Success}
 
 
 object ServerActor {
@@ -109,10 +111,17 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
     case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, requester)) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
-      val xdSession = sessionProvider.session(id).getOrElse(throw new RuntimeException(s"Received message with an unknown sessionId $id"))
-      val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
-      jobActor ! StartJob
-      context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
+      val sessionOpt = sessionProvider.session(id) match {
+        case Success(xdSession) =>
+          val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
+          jobActor ! StartJob
+          context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
+
+        case Failure(error) =>
+          logger.warn(s"Received message with an unknown sessionId $id", error)
+          sender ! ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+      }
+
 
     case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, requester)) =>
       st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
@@ -155,6 +164,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
       }
   }
 
+  // TODO do not accept unknown sessions
   // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
   def commandMessagesRec(st: State): Receive = {
 
