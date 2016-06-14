@@ -265,11 +265,23 @@ private[crossdata] object InsertIntoTable {
   def apply(tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues]) = new InsertIntoTable(tableIdentifier, parsedRows)
 }
 
-private[crossdata] case class CreateTempView(viewIdentifier: ViewIdentifier, queryPlan: LogicalPlan)
+object CreateTempView {
+  def apply(
+             viewIdentifier: ViewIdentifier,
+             queryPlan: LogicalPlan,
+             sql: String
+           ): CreateTempView = new CreateTempView(viewIdentifier, queryPlan, Some(sql))
+}
+
+private[crossdata] case class CreateTempView(
+                                              viewIdentifier: ViewIdentifier,
+                                              queryPlan: LogicalPlan,
+                                              sql: Option[String]
+                                            )
   extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.registerView(viewIdentifier, queryPlan)
+    sqlContext.catalog.registerView(viewIdentifier, queryPlan, sql)
     Seq.empty
   }
 

@@ -58,6 +58,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
       case Some(res) => res
     }
 
+
   private def persistentChainedLookup[R](lookup: XDPersistentCatalog => Option[R]): Option[R] =
     persistentCatalogs.view map lookup collectFirst {
       case Some(res) => res
@@ -67,14 +68,14 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
    * TemporaryCatalog
    */
 
-  override def registerView(viewIdentifier: ViewIdentifier, logicalPlan: LogicalPlan): Unit =
-    temporaryCatalogs.foreach(_.saveView(viewIdentifier, logicalPlan))
+  override def registerView(viewIdentifier: ViewIdentifier, logicalPlan: LogicalPlan, sql: Option[String]): Unit =
+    temporaryCatalogs.foreach(_.saveView(viewIdentifier, logicalPlan, sql))
+
+  override def registerTable(tableIdent: ViewIdentifier, plan: LogicalPlan, crossdataTable: Option[CrossdataTable]): Unit =
+    temporaryCatalogs.foreach(_.saveTable(tableIdent, plan, crossdataTable))
 
   override def unregisterView(viewIdentifier: ViewIdentifier): Unit =
     temporaryCatalogs.foreach(_.dropView(viewIdentifier))
-
-  override def registerTable(tableIdent: TableIdentifier, plan: LogicalPlan): Unit =
-    temporaryCatalogs.foreach(_.saveTable(tableIdent, plan))
 
   override def unregisterTable(tableIdent: TableIdentifier): Unit =
     temporaryCatalogs.foreach(_.dropTable(tableIdent))
