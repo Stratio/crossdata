@@ -29,7 +29,7 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 import org.apache.spark.sql.crossdata.{XDSession, XDSessionProvider, XDSessionState, XDSharedState}
 
 import scala.collection.JavaConversions._
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 object HazelcastSessionProvider {
 
@@ -83,9 +83,18 @@ class HazelcastSessionProvider(
 
 
   // TODO take advantage of common utils pattern?
-  override def session(sessionID: SessionID): Try[XDSession] = Try {
-    val catMap =  catalogMap.get(sessionID)
-    buildSession(sqlPropsToSQLConf(confMap.get(sessionID)), catalogMap.get(sessionID)) // TODO try
+  override def session(sessionID: SessionID): Try[XDSession] = {
+    def checkNotNull[T]: T => Try[T] =
+      a => Option(a).map(Success(_)).getOrElse(Failure(sys.error(s"Session ${sessionID} not found")))
+
+    for {
+      tempCatalogMap <- checkNotNull(catalogMap.get(sessionID))
+      configMap <- checkNotNull(confMap.get(sessionID))
+      sess = buildSession(sqlPropsToSQLConf(configMap), tempCatalogMap) // TODO try
+    } yield {
+      sess
+    }
+
   }
 
   override def close(): Unit = {
