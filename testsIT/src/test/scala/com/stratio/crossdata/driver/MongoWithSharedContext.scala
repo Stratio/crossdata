@@ -93,7 +93,7 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
          |host '$MongoHost:${MongoPort.toString}',
          |${MongodbConfig.Database} '$Database',
          |${MongodbConfig.Collection} '$Collection',
-         |${MongodbConfig.SamplingRatio} '0.1'
+         |${MongodbConfig.SamplingRatio} '0.6'
          |)
       """.stripMargin
 
