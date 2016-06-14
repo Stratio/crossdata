@@ -15,7 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
@@ -28,14 +27,17 @@ import org.json4s.jackson.Serialization._
 
 object XDCatalog extends CrossdataSerializer {
 
+
 implicit def asXDCatalog (catalog: Catalog): XDCatalog = catalog.asInstanceOf[XDCatalog]
 
   type ViewIdentifier = TableIdentifier
+
 
   case class CrossdataTable(tableName: String, dbName: Option[String], schema: Option[StructType],
                             datasource: String, partitionColumn: Array[String] = Array.empty,
                             opts: Map[String, String] = Map.empty, crossdataVersion: String = crossdata.CrossdataVersion)
 
+  case class CrossdataApp(jar: String, appAlias: String, appClass: String)
 
   def serializeSchema(schema: StructType): String = write(schema)
 
@@ -48,7 +50,6 @@ implicit def asXDCatalog (catalog: Catalog): XDCatalog = catalog.asInstanceOf[XD
   def serializeOptions(options: Map[String, String]): String =  write(options)
 
   def deserializeOptions(optsJSON: String): Map[String, String] = read[Map[String, String]](optsJSON)
-
 
 }
 
@@ -66,11 +67,8 @@ with StreamingCatalogAPI {
   def unregisterView(viewIdentifier: ViewIdentifier): Unit
 
   /**
-   * Check the connection to the set Catalog
-   */
+    * Check the connection to the set Catalog
+    */
   def checkConnectivity: Boolean
 
 }
-
-
-
