@@ -32,4 +32,3 @@ metastore_db/
 crossdata-scripts/spark-crossdata-distribution*
 **/sampledb/**
 **/dependency-reduced-pom.xml
-/cassandra/pom.xml
