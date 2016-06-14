@@ -55,8 +55,6 @@ class DriverIT extends EndToEndTest {
     rows should have length 2
     rows(0) should have length 2
 
-
-    crossdataServer.flatMap(_.sessionProviderOpt).foreach(_.session(SessionID).get.dropTempTable("jsonTable"))
   }
 
   it should "get a list of tables" in {
@@ -76,8 +74,7 @@ class DriverIT extends EndToEndTest {
 
   "Crossdata Driver" should "be able to close the connection and start it again" in {
     assumeCrossdataUpAndRunning
-    var driver = Driver.getOrCreate();
-    Driver.getOrCreate()
+    var driver = Driver.getOrCreate()
     val newDriver = Driver.getOrCreate()
 
     driver should be theSameInstanceAs newDriver

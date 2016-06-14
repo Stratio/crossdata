@@ -21,7 +21,11 @@ import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 
-// TODO It will be the main entryPoint, so we should add a XDSession builder to make it easier to work with.
+
+object XDSession{
+  // TODO It will be the main entryPoint, so we should add a XDSession builder to make it easier to work with.
+}
+
 /**
  *
  * [[XDSession]], as with Spark 2.0, SparkSession will be the Crossdata entry point for SQL interfaces. It wraps and
@@ -47,7 +51,6 @@ class XDSession(
 
   //TODO: +1 Use catalog for this session instead fix one
   override protected[sql] lazy val catalog: XDCatalog = {
-      // TODO add hazelcastTemporary catalog
       val catalogs: List[XDCatalogCommon] =  xdSessionState.xdTemporaryCatalog :: externalCatalog :: streamingCatalog.toList
       CatalogChain(catalogs:_*)(catalystConf)
   }

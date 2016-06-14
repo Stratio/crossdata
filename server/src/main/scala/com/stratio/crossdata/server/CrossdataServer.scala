@@ -29,6 +29,7 @@ import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata
+import org.apache.spark.sql.crossdata.XDSessionProvider
 import org.apache.spark.sql.crossdata.session.HazelcastSessionProvider
 import org.apache.spark.sql.crossdata.{XDContext, XDSessionProvider}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -81,7 +82,7 @@ class CrossdataServer extends Daemon with ServerConfig {
             sesionProvider,
             serverActorConfig)),
         actorName)
-      val resourceManagerActor=actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sesionProvider))
+      val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sesionProvider))
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
       ClusterReceptionistExtension(actorSystem).registerService(resourceManagerActor)
 
@@ -107,6 +108,8 @@ class CrossdataServer extends Daemon with ServerConfig {
   }
 
   override def stop(): Unit = {
+    sessionProviderOpt.foreach(_.close())
+
     sessionProviderOpt.foreach(_.sc.stop())
 
     system.foreach { actSystem =>

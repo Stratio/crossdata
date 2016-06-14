@@ -28,6 +28,8 @@ object XDSessionProvider {
 
 // TODO It should share some of the XDContext fields. It will be possible when Spark 2.0 is released
 // TODO Crossdata server should create new session and close session when certain events happen
+
+//TODO sessionProvider should be threadSafe
 abstract class XDSessionProvider(
                                   @transient val sc: SparkContext,
                                   protected val commonConfig: Option[Config] = None
@@ -35,12 +37,20 @@ abstract class XDSessionProvider(
 
   import XDSessionProvider._
 
-  def session(sessionID: SessionID): Try[XDSession]
 
+  def session(sessionID: SessionID): Try[XDSession]
 
   def newSession(sessionID: SessionID): Try[XDSession]
 
   def closeSession(sessionID: SessionID): Try[Unit]
+
+  /**
+    * Close the underlying connections.
+    *
+    * It is called when the crossdata server is stopped, so if a session provider needs to open an external connection
+    * it should be closed here.
+    */
+  def close(): Unit
 
 }
 
@@ -62,5 +72,7 @@ class SimpleSessionProvider(
   override def closeSession(sessionID: SessionID): Try[Unit] = Failure(new UnsupportedOperationException(errorMessage))
 
   override def session(sessionID: SessionID): Try[XDSession] = Failure(new UnsupportedOperationException(errorMessage))
+
+  override def close(): Unit = ()
 }
 

@@ -31,7 +31,11 @@ import scala.util.Try
 
 class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeAndAfterAll {
 
-  var client:MongoClient = MongoClient(MongoHost, MongoPort)
+  var client: MongoClient = MongoClient(MongoHost, MongoPort)
+
+  var crossdataServer: Option[CrossdataServer] = None
+  var crossdataSession: Option[XDSession] = None
+  val SessionID: SessionID = UUID.randomUUID()
 
   protected def saveTestData: Unit = {
     val collection = client(Database)(Collection)
@@ -59,9 +63,7 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
 
   }
 
-  var crossdataServer: Option[CrossdataServer] = None
-  var crossdataSession: Option[XDSession] = None
-  val SessionID: SessionID = UUID.randomUUID()
+
 
   def init() = {
     crossdataServer = Some(new CrossdataServer)
@@ -73,6 +75,7 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
 
   def stop() = {
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.session(SessionID).get.dropAllTables()))
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.closeSession(SessionID)))
     crossdataServer.foreach(_.stop())
     crossdataServer.foreach(_.destroy())
   }
@@ -99,6 +102,8 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
 
   override protected def afterAll(): Unit = {
     stop()
+    cleanTestData
+    client.close()
   }
 
   def assumeCrossdataUpAndRunning() = {

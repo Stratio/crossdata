@@ -173,9 +173,16 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
         mediator ! Publish(ManagementTopic, DelegateCommand(sc, self))
       }
 
-    case clusterStateCommand @ ClusterStateCommand() =>
-      sender ! ClusterStateReply(clusterStateCommand.requestId, cluster.state)
+    case sc@CommandEnvelope(_: ClusterStateCommand, session) =>
+      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
 
+    case sc@CommandEnvelope(_: OpenSessionCommand, session) =>
+      sessionProvider.newSession(session.id)
+      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
+
+    case sc@CommandEnvelope(_: CloseSessionCommand, session) =>
+      // TODO validate/ actorRef instead of sessionId
+      sessionProvider.closeSession(session.id)
 
   }
 

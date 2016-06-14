@@ -18,4 +18,4 @@ package org.apache.spark.sql.crossdata
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
-class XDSessionState(val sqlConf: SQLConf, val xdTemporaryCatalog: XDTemporaryCatalog /*= new HashmapCatalog(new SQLConf)*/) // TODO temporaryCatalog => Hazelcast
+class XDSessionState(val sqlConf: SQLConf, val xdTemporaryCatalog: XDTemporaryCatalog)

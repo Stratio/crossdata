@@ -29,6 +29,9 @@ object ServerConfig {
   val ServerBasicConfig = "server-reference.conf"
   val ParentConfigName = "crossdata-server"
 
+
+  val SparkSqlConfigPrefix = "config.spark.sql"
+
   //  akka cluster values
   val ServerClusterNameKey = "config.cluster.name"
   val ServerActorNameKey = "config.cluster.actor"

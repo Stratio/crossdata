@@ -48,6 +48,8 @@ import scala.util.Try
 
 object Driver {
 
+  private val InitializationTimeout: Duration = 10 seconds
+
   private val DRIVER_CONSTRUCTOR_LOCK = new Object()
 
   private val activeDriver: AtomicReference[Driver] =
@@ -62,6 +64,7 @@ object Driver {
 
   def clearActiveContext = {
     DRIVER_CONSTRUCTOR_LOCK.synchronized {
+      activeDriver.get().closeSession()
       val system = activeDriver.get().system
       if (!system.isTerminated) system.shutdown()
       activeDriver.set(null)
@@ -86,13 +89,17 @@ object Driver {
   def getOrCreate(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
     getOrCreate(driverConf.setClusterContactPoint(seedNodes))
 
-  /**
-    * Used by JavaDriver
-    */
   private[crossdata] def getOrCreate(driverConf: DriverConf, authentication: Authentication): Driver =
     DRIVER_CONSTRUCTOR_LOCK.synchronized {
-      if (activeDriver.get() == null) {
-        setActiveDriver(new Driver(driverConf, authentication))
+      if (Option(activeDriver.get()).isEmpty) {
+        val driver = new Driver(driverConf, authentication)
+        val isConnected = driver.openSession().getOrElse {
+          throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
+        }
+        /* TODO if (!isConnected) {
+          throw new RuntimeException(s"T")
+        }*/
+        setActiveDriver(driver)
       }
       activeDriver.get()
     }
@@ -104,6 +111,13 @@ object Driver {
 class Driver private(private[crossdata] val driverConf: DriverConf,
                      auth: Authentication = Driver.generateDefaultAuth) {
 
+
+  // TODO improve implementation
+  Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
+    def run() {
+      Try(closeSession())
+    }
+  }))
 
   /**
    * Tuple (tableName, Optional(databaseName))
@@ -335,6 +349,22 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   @deprecated("Close will be removed from public API. Use stop instead")
   def close() = stop()
 
+
+  private def openSession(): Try[Boolean] = {
+    import Driver._
+    Try {
+      val promise = Promise[ServerReply]()
+      proxyActor ! (securitizeCommand(OpenSessionCommand()), promise)
+      Await.result(promise.future.mapTo[ClusterStateReply].map(_.clusterState), InitializationTimeout).members.nonEmpty
+    }
+/*
+    */
+  }
+
+  private def closeSession(): Unit = {
+    // TODO ?
+    proxyActor ! securitizeCommand(CloseSessionCommand())
+  }
 
   private def securitizeCommand(command: Command): CommandEnvelope =
     new CommandEnvelope(command, driverSession)
