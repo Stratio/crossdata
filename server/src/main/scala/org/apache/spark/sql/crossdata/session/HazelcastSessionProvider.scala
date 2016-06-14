@@ -90,7 +90,7 @@ class HazelcastSessionProvider(
     for {
       tempCatalogMap <- checkNotNull(catalogMap.get(sessionID))
       configMap <- checkNotNull(confMap.get(sessionID))
-      sess = buildSession(sqlPropsToSQLConf(configMap), tempCatalogMap) // TODO try
+      sess <- Try(buildSession(sqlPropsToSQLConf(configMap), tempCatalogMap))
     } yield {
       sess
     }
