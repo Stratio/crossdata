@@ -35,7 +35,7 @@ class DriverDdlIT extends MongoWithSharedContext {
       MongodbConfig.Collection -> Collection
     )
     driver.importTables("mongodb", mongoImportOptions).resultSet.head.getSeq(0) shouldBe Seq(Database,Collection)
-
+    driver.stop()
   }
 
   it should "allow to create tables" in {
@@ -50,6 +50,7 @@ class DriverDdlIT extends MongoWithSharedContext {
       isTemporary = true).resultSet
 
     driver.listTables() should contain("crtTable", None)
+    driver.stop()
   }
 
   it should "allow to drop tables" in {
@@ -62,6 +63,7 @@ class DriverDdlIT extends MongoWithSharedContext {
     driver.dropTable("jsonTable3").waitForResult()
 
     driver.listTables() should not contain ("jsonTable3", None)
+    driver.stop()
   }
 
   it should "allow to drop all tables" in {
@@ -74,6 +76,7 @@ class DriverDdlIT extends MongoWithSharedContext {
     driver.dropAllTables().waitForResult()
 
     driver.listTables() should not contain ("jsonTable3", None)
+    driver.stop()
   }
 
 }

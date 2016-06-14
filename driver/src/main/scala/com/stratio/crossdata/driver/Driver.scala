@@ -115,7 +115,7 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   // TODO improve implementation
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
     def run() {
-      Try(closeSession())
+      Try(Driver.clearActiveContext)
     }
   }))
 

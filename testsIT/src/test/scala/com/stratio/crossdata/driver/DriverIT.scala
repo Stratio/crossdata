@@ -38,6 +38,7 @@ class DriverIT extends EndToEndTest {
     result.asInstanceOf[ErrorSQLResult].cause.isDefined shouldBe (true)
     result.asInstanceOf[ErrorSQLResult].cause.get shouldBe a[Exception]
     result.asInstanceOf[ErrorSQLResult].cause.get.getMessage should include regex "cannot resolve .*"
+    driver.stop()
   }
 
   it should "return a SuccessfulQueryResult when executing a select *" in {
@@ -54,7 +55,7 @@ class DriverIT extends EndToEndTest {
     val rows = result.resultSet
     rows should have length 2
     rows(0) should have length 2
-
+    driver.stop()
   }
 
   it should "get a list of tables" in {
@@ -70,6 +71,7 @@ class DriverIT extends EndToEndTest {
     ).waitForResult()
 
     driver.listTables() should contain allOf(("jsonTable2", Some("db")), ("jsonTable2", None))
+    driver.stop()
   }
 
   "Crossdata Driver" should "be able to close the connection and start it again" in {
@@ -91,6 +93,7 @@ class DriverIT extends EndToEndTest {
     val result = driver.sql(s"SHOW TABLES")
 
     result.hasError should equal(false)
+    driver.stop()
 
   }
 
@@ -133,6 +136,7 @@ class DriverIT extends EndToEndTest {
     val driver = Driver.getOrCreate()
 
     driver.isClusterAlive(6 seconds) shouldBe true
+    driver.stop()
   }
 
   it should "return the addresses of servers up and running" in {
@@ -142,6 +146,7 @@ class DriverIT extends EndToEndTest {
 
     addresses should have length 1
     addresses.head.host shouldBe Some("127.0.0.1")
+    driver.stop()
   }
 
   it should "return the current cluster state" in {
@@ -150,6 +155,7 @@ class DriverIT extends EndToEndTest {
     val clusterState = Await.result(driver.clusterState(), 6 seconds)
 
     clusterState.getLeader.host shouldBe Some("127.0.0.1")
+    driver.stop()
   }
 
 
