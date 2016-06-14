@@ -21,18 +21,18 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.stratio.crossdata</groupId>
-        <artifactId>parent_2.11</artifactId>
+        <artifactId>parent_2.10</artifactId>
         <version>1.3.0-RC3-SNAPSHOT</version>
     </parent>
     <groupId>com.stratio.crossdata.connector</groupId>
-    <artifactId>crossdata-cassandra_2.11</artifactId>
+    <artifactId>crossdata-cassandra_2.10</artifactId>
     <packaging>jar</packaging>
     <name>Cassandra Connector</name>
     <description>Crossdata Cassandra Connector</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
-        <cassandra.connector.version>1.6.0-M2</cassandra.connector.version>
+        <cassandra.connector.version>1.6.0</cassandra.connector.version>
     </properties>
 
     <dependencies>
