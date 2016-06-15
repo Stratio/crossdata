@@ -232,7 +232,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
   private[this] def sparkResultFromCassandra(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
     import scala.collection.JavaConversions._
-    val cassandraRowMetadata = CassandraRowMetadata.fromResultSet(requiredColumns, resultSet)
+    val cassandraRowMetadata = CassandraRowMetadata.fromColumnNames(requiredColumns)
     resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, cassandraRowMetadata)).toArray
   }
 
