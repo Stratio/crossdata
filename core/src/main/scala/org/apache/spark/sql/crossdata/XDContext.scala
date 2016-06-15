@@ -27,6 +27,7 @@ import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, NoSuchTableException, ResolveUpCast, UnresolvedRelation}
 import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.optimizer.{DefaultOptimizer, Optimizer}
 import org.apache.spark.sql.catalyst.plans.logical.{InsertIntoTable, LocalRelation, LogicalPlan, UnaryNode}
 import org.apache.spark.sql.catalyst.rules.Rule
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
@@ -230,6 +231,27 @@ class XDContext protected (@transient val sc: SparkContext,
           CleanupAliases)
       )
     }
+
+  @transient
+  override protected[sql] lazy val optimizer: Optimizer = XDOptimizer
+
+  object XDOptimizer extends Optimizer {
+
+    def convertStrategy(strategy: DefaultOptimizer.Strategy): Strategy = strategy.maxIterations match {
+      case 1 => Once
+      case n => FixedPoint(n)
+    }
+
+    def convertBatches(batch: DefaultOptimizer.Batch): XDOptimizer.Batch =
+      Batch(batch.name, convertStrategy(batch.strategy), batch.rules: _*)
+
+    override protected val batches: Seq[XDOptimizer.Batch] =
+      (DefaultOptimizer.batches map (convertBatches(_))) ++ Seq(Batch("Global indexes phase", FixedPoint(10), CheckGlobalIndexInFilters))
+  }
+
+  object CheckGlobalIndexInFilters extends Rule[LogicalPlan] {
+    def apply(plan: LogicalPlan): LogicalPlan = plan
+  }
 
   @transient
   class XDPlanner extends sparkexecution.SparkPlanner(this) with XDStrategies {
