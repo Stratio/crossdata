@@ -34,6 +34,7 @@ import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, Securit
 import org.apache.spark.sql.crossdata.catalog._
 import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
+import org.apache.spark.sql.crossdata.catalyst.ExtendedUnresolvedRelation
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
@@ -124,6 +125,8 @@ class XDContext protected (@transient val sc: SparkContext,
     }
   }
 
+
+
   @transient
   protected[crossdata] lazy val securityManager = {
 
@@ -189,17 +192,10 @@ class XDContext protected (@transient val sc: SparkContext,
       object XDResolveRelations extends Rule[LogicalPlan] {
         override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
           case i @ InsertIntoTable(u: UnresolvedRelation, _, _, _, _) =>
-            ExtendedUnresolvedRelation(u.tableIdentifier, ResolveRelations(u))
+            i.copy(table = ExtendedUnresolvedRelation(u.tableIdentifier, ResolveRelations(u)))
           case u: UnresolvedRelation =>
             ExtendedUnresolvedRelation(u.tableIdentifier, ResolveRelations(u))
-          case other =>
-            logWarning("XDResolveRelations strange case")
-            ResolveRelations(plan)
         }
-      }
-
-      case class ExtendedUnresolvedRelation(tableIdentifier: TableIdentifier, child: LogicalPlan) extends UnaryNode {
-        override def output: Seq[Attribute] = child.output
       }
 
       val preparationRules = Seq(PrepareAggregateAlias)
