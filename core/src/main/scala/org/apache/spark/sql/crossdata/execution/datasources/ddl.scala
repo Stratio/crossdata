@@ -26,7 +26,7 @@ import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
@@ -130,7 +130,6 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
         val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
         import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
-        import XDCatalog._
         sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
       }
       val tableSeq = DDLUtils.tableIdentifierToSeq(tableId)

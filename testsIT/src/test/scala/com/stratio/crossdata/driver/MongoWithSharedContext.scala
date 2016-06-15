@@ -15,19 +15,27 @@
  */
 package com.stratio.crossdata.driver
 
+import java.util.UUID
+
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
 import com.stratio.crossdata.server.CrossdataServer
 import com.stratio.crossdata.test.BaseXDTest
 import com.stratio.datasource.mongodb.config.MongodbConfig
 import com.typesafe.config.ConfigFactory
+import org.apache.spark.sql.crossdata.XDSession
+import org.apache.spark.sql.crossdata.XDSessionProvider._
 import org.scalatest.BeforeAndAfterAll
 
 import scala.util.Try
 
 class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeAndAfterAll {
 
-  var client:MongoClient = MongoClient(MongoHost, MongoPort)
+  var client: MongoClient = MongoClient(MongoHost, MongoPort)
+
+  var crossdataServer: Option[CrossdataServer] = None
+  var crossdataSession: Option[XDSession] = None
+  val SessionID: SessionID = UUID.randomUUID()
 
   protected def saveTestData: Unit = {
     val collection = client(Database)(Collection)
@@ -55,17 +63,19 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
 
   }
 
-  var crossdataServer: Option[CrossdataServer] = None
+
 
   def init() = {
     crossdataServer = Some(new CrossdataServer)
     crossdataServer.foreach(_.init(null))
     crossdataServer.foreach(_.start())
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID)))
 
   }
 
   def stop() = {
-    crossdataServer.get.xdContext.get.dropAllTables()
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.session(SessionID).get.dropAllTables()))
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.closeSession(SessionID)))
     crossdataServer.foreach(_.stop())
     crossdataServer.foreach(_.destroy())
   }
@@ -83,15 +93,17 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
          |host '$MongoHost:${MongoPort.toString}',
          |${MongodbConfig.Database} '$Database',
          |${MongodbConfig.Collection} '$Collection',
-         |${MongodbConfig.SamplingRatio} '0.1'
+         |${MongodbConfig.SamplingRatio} '0.6'
          |)
       """.stripMargin
 
-    crossdataServer.get.xdContext.get.sql(importQuery)
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.session(SessionID).get.sql(importQuery)))
   }
 
   override protected def afterAll(): Unit = {
     stop()
+    cleanTestData
+    client.close()
   }
 
   def assumeCrossdataUpAndRunning() = {

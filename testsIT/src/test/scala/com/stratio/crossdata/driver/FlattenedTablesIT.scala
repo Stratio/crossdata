@@ -38,7 +38,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     result should contain (new FieldMetadata("account.details.bank", StringType))
     result should contain (new FieldMetadata("grades.FP", DoubleType))
 
-    flattenedDriver.close()
+    flattenedDriver.stop()
   }
 
   it should " List table's description with nested fields Not flattened" in {
@@ -57,7 +57,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     result should contain (new FieldMetadata("address", addressType))
     result should contain (new FieldMetadata("account", accountType))
 
-    driver.close()
+    driver.stop()
   }
 
 
@@ -72,7 +72,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     //Expectations
     result.head.toSeq(0).toString should fullyMatch regex "[0-9]+th Avenue"
 
-    flattenedDriver.close()
+    flattenedDriver.stop()
   }
 
   it should " Query with Flattened Fields On Filters" in {
@@ -86,7 +86,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     //Expectations
     result.head.toSeq(0).toString should be equals "description5"
 
-    flattenedDriver.close()
+    flattenedDriver.stop()
   }
 
 }

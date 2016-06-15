@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.session
+package org.apache.spark.sql.crossdata
 
-import java.util.UUID
+import com.typesafe.config.Config
+import org.apache.spark.SparkContext
 
-import akka.actor.ActorRef
-import com.stratio.crossdata.common.security.Session
 
-object SessionManager {
+class XDSharedState( // TODO externalCatalog
+                     @transient val sc: SparkContext,
+                     userConfig: Option[Config] = None
+                     )
 
-  def createSession(auth: Authentication, clientRef: ActorRef): Session =
-    Session(UUID.randomUUID, clientRef)
-
-}
-
-case class Authentication(user: String, password: String)
 
