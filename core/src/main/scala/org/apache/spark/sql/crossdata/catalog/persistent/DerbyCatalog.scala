@@ -53,13 +53,14 @@ object DerbyCatalog {
  *
  * @param catalystConf An implementation of the [[CatalystConf]].
  */
+// TODO synchronize methods
 class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
   extends PersistentCatalogWithCache(sqlContext, catalystConf) {
 
   import DerbyCatalog._
   import XDCatalog._
 
-  @transient lazy val connection: Connection = {
+  @transient lazy val connection: Connection = synchronized {
 
     val driver = "org.apache.derby.jdbc.EmbeddedDriver"
     val url = "jdbc:derby:sampledb/crossdata;create=true"
@@ -105,7 +106,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
   }
 
 
-  override def lookupTable(tableIdentifier: ViewIdentifier): Option[CrossdataTable] = {
+  override def lookupTable(tableIdentifier: ViewIdentifier): Option[CrossdataTable] = synchronized {
     val resultSet = selectMetadata(TableWithTableMetadata, tableIdentifier)
 
     if (!resultSet.next) {
@@ -120,6 +121,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
+      resultSet.close()// TODO close it properly (try) and in any case
       Some(
         CrossdataTable(table, Some(database), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource,
           deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
@@ -146,8 +148,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     }
   }
 
-
-  override def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
+  override def lookupView(viewIdentifier: ViewIdentifier): Option[String] = synchronized {
     val resultSet = selectMetadata(TableWithViewMetadata, viewIdentifier)
     if (!resultSet.next)
       None
@@ -156,7 +157,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
   }
 
 
-  override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
+  override def persistTableMetadata(crossdataTable: CrossdataTable): Unit = synchronized {
     try {
 
       val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(schemaNotFound()))
@@ -200,8 +201,9 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     } finally {
       connection.setAutoCommit(true)
     }
+  }
 
-  override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
+  override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = synchronized {
 
     try {
       connection.setAutoCommit(false)
@@ -230,7 +232,19 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     } finally {
       connection.setAutoCommit(true)
     }
+  }
 
+  override def dropTableMetadata(tableIdentifier: TableIdentifier): Unit = synchronized {
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $DB.$TableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'"
+    )
+  }
+
+  override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =synchronized {
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $DB.$TableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'"
+    )
+  }
 
   override def saveAppMetadata(crossdataApp: CrossdataApp): Unit =
     try {
@@ -264,26 +278,17 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       connection.setAutoCommit(true)
     }
 
-  override def dropTableMetadata(tableIdentifier: TableIdentifier): Unit =
-    connection.createStatement.executeUpdate(
-      s"DELETE FROM $DB.$TableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'"
-    )
-
-  override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
-    connection.createStatement.executeUpdate(
-      s"DELETE FROM $DB.$TableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'"
-    )
-
-
-  override def dropAllTablesMetadata(): Unit =
+  override def dropAllTablesMetadata(): Unit = synchronized {
     connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithTableMetadata")
+  }
 
-  override def dropAllViewsMetadata(): Unit =
+  override def dropAllViewsMetadata(): Unit = synchronized {
     connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithViewMetadata")
+  }
 
   override def isAvailable: Boolean = true
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = synchronized{
     @tailrec
     def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifier] = Set.empty): Set[TableIdentifier] = {
       if (next) {

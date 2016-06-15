@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.common.security
 
+import java.util.UUID
+
 import akka.actor.ActorRef
 
-private [crossdata] case class Session(id: String, clientRef: ActorRef) extends Serializable
+private [crossdata] case class Session(id: UUID, clientRef: ActorRef) extends Serializable

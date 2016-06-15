@@ -71,6 +71,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   override def registerView(viewIdentifier: ViewIdentifier, logicalPlan: LogicalPlan, sql: Option[String]): Unit =
     temporaryCatalogs.foreach(_.saveView(viewIdentifier, logicalPlan, sql))
 
+  // TODO throw an exception if there is no temp catalogs! Review CatalogChain
   override def registerTable(tableIdent: ViewIdentifier, plan: LogicalPlan, crossdataTable: Option[CrossdataTable]): Unit =
     temporaryCatalogs.foreach(_.saveTable(tableIdent, plan, crossdataTable))
 

@@ -13,19 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.session
+package org.apache.spark.sql.crossdata
 
-import java.util.UUID
+import org.apache.spark.sql.SQLConf
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
-import akka.actor.ActorRef
-import com.stratio.crossdata.common.security.Session
-
-object SessionManager {
-
-  def createSession(auth: Authentication, clientRef: ActorRef): Session =
-    Session(UUID.randomUUID, clientRef)
-
-}
-
-case class Authentication(user: String, password: String)
-
+class XDSessionState(val sqlConf: SQLConf, val xdTemporaryCatalog: XDTemporaryCatalog)

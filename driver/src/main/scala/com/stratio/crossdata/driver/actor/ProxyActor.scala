@@ -19,8 +19,8 @@ package com.stratio.crossdata.driver.actor
 import java.util.UUID
 
 import akka.actor.{Actor, ActorRef, Props}
-import akka.pattern.pipe
 import akka.contrib.pattern.ClusterClient
+import akka.pattern.pipe
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.driver.Driver
@@ -91,12 +91,15 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       val shipmentResponse: Future[SQLReply] = sendJarToServers(aCmd,path)
       shipmentResponse pipeTo sender
 
+    case secureSQLCommand @ CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
+      logger.debug(s"Send cluster state with requestID=${clusterStateCommand.requestId}")
+      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
+
     case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss, _), _) =>
       clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath,secureSQLCommand, localAffinity=false)
 
-    case CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
-      logger.debug(s"Send cluster state with requestID=${clusterStateCommand.requestId}")
-      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, clusterStateCommand, localAffinity = false)
+    case secureSQLCommand @ CommandEnvelope(_: OpenSessionCommand | _: CloseSessionCommand, _) =>
+      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = true)
 
     case sqlCommand: SQLCommand =>
       logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
@@ -130,7 +133,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
           context.become(start(promisesByIds.copy(promisesByIds.promises - reply.requestId)))
           reply match {
             case reply @ SQLReply(_, result) =>
-              logger.info(s"Successful SQL execution: ${result}")
+              logger.info(s"Successful SQL execution: $result")
               p.success(reply)
             // TODO review query cancelation
             case reply @ QueryCancelledReply(id) =>
