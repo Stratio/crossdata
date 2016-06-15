@@ -25,8 +25,10 @@ import java.util.concurrent.atomic.AtomicReference
 import com.stratio.crossdata.connector.FunctionInventory
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
-import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, NoSuchTableException, ResolveUpCast, UnresolvedRelation}
+import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.plans.logical.{InsertIntoTable, LocalRelation, LogicalPlan, UnaryNode}
+import org.apache.spark.sql.catalyst.rules.Rule
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
 import org.apache.spark.sql.crossdata.catalog._
@@ -167,6 +169,9 @@ class XDContext protected (@transient val sc: SparkContext,
 
     constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
   }
+
+
+
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
     new Analyzer(catalog, functionRegistry, catalystConf) {
@@ -181,6 +186,22 @@ class XDContext protected (@transient val sc: SparkContext,
         PreWriteCheck(catalog)
       )
 
+      object XDResolveRelations extends Rule[LogicalPlan] {
+        override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
+          case i @ InsertIntoTable(u: UnresolvedRelation, _, _, _, _) =>
+            ExtendedUnresolvedRelation(u.tableIdentifier, ResolveRelations(u))
+          case u: UnresolvedRelation =>
+            ExtendedUnresolvedRelation(u.tableIdentifier, ResolveRelations(u))
+          case other =>
+            logWarning("XDResolveRelations strange case")
+            ResolveRelations(plan)
+        }
+      }
+
+      case class ExtendedUnresolvedRelation(tableIdentifier: TableIdentifier, child: LogicalPlan) extends UnaryNode {
+        override def output: Seq[Attribute] = child.output
+      }
+
       val preparationRules = Seq(PrepareAggregateAlias)
 
       override lazy val batches: Seq[Batch] = Seq(
@@ -189,7 +210,7 @@ class XDContext protected (@transient val sc: SparkContext,
           WindowsSubstitution),
         Batch("Preparation", fixedPoint, preparationRules : _*),
         Batch("Resolution", fixedPoint,
-          ResolveRelations ::
+          XDResolveRelations ::
             ResolveReferences ::
             ResolveGroupingAnalytics ::
             ResolvePivot ::
