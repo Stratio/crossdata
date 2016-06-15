@@ -26,6 +26,8 @@ import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
+import scala.reflect.io.File
+
 @RunWith(classOf[JUnitRunner])
 class XDContextIT extends SharedXDContextTest {
 
@@ -91,5 +93,15 @@ class XDContextIT extends SharedXDContextTest {
     dataFrame.collect should have length 5
 
   }
+
+//  it must "execute jar app previously uploaded" in {
+//    val file = File(s"TestAddApp.jar")
+//    xdContext.addJar("TestAddApp.jar")
+//    xdContext.addApp(file.path, "com.stratio.addApp.AddAppTest.main", "app1")
+//
+//    xdContext.executeApp("app1", Seq("hi", "world"))
+//
+//  }
+
 
 }

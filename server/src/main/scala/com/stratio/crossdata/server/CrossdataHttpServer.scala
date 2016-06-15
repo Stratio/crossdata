@@ -82,9 +82,8 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
       complete("Welcome to Crossdata HTTP Server")
 
   private def writeJarToHdfs(hdfsConfig: Config, jar: String): String = {
-    val user = hdfsConfig.getString("hadoopUserName")
-    val hdfsMaster = hdfsConfig.getString("hdfsMaster")
-    val hdfsPort = hdfsConfig.getString("hdfsPort")
+    val user = hdfsConfig.getString("user")
+    val hdfsMaster = hdfsConfig.getString("namenode")
     val destPath = s"/user/$user/externalJars/"
 
     val hdfsUtil = HdfsUtils(hdfsConfig)
@@ -94,7 +93,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
     if (!hdfsUtil.fileExist(s"$destPath/$jarName")) {
       hdfsUtil.write(jar, destPath)
     }
-    s"hdfs://$hdfsMaster:$hdfsPort/$destPath/$jarName"
+    s"$hdfsMaster/$destPath/$jarName"
   }
 
 }

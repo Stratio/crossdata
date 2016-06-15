@@ -23,6 +23,7 @@ import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.datasources.DDLParser
 import org.apache.spark.sql.types._
 
+import scala.Option
 import scala.language.implicitConversions
 
 
@@ -55,12 +56,15 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val START = Keyword("START")
   protected val STOP = Keyword("STOP")
   protected val IN = Keyword("IN")
+  protected val APP = Keyword("APP")
+  protected val EXECUTE = Keyword("EXECUTE")
 
 
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable | dropExternalTable |
-      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable
+      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp | executeApp
+
 
   // TODO move to StreamingDdlParser
 
@@ -98,9 +102,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val tableValues: Parser[Seq[Any]] = "(" ~> repsep(mapValues | arrayValues | token, ",") <~ ")"
 
-  protected lazy val arrayValues: Parser[Any] = {
-    "[" ~> repsep(mapValues | token, ",") <~ "]"
-  }
+  protected lazy val arrayValues: Parser[Any] =
+    ("[" ~> repsep(mapValues | token, ",") <~ "]") | ("[" ~> success(List()) <~ "]")
+
 
   protected lazy val tokenMap: Parser[(Any,Any)] = {
     (token <~ "-" <~ ">") ~ (arrayValues | token) ^^ {
@@ -108,11 +112,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
   }
 
-  protected lazy val mapValues: Parser[Any] = {
+  protected lazy val mapValues: Parser[Map[Any, Any]] =
     "(" ~> repsep(tokenMap, ",") <~ ")" ^^ {
       case pairs => Map(pairs:_*)
-    }
-  }
+    } | "(" ~> success(Map.empty[Any, Any]) <~ ")"
 
 
   def token: Parser[String] = {
@@ -142,7 +145,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     (CREATE ~> TEMPORARY.? <~ VIEW) ~ tableIdentifier ~ (AS ~> restInput) ^^ {
       case temp ~ viewIdentifier ~ query =>
         if (temp.isDefined)
-          CreateTempView(viewIdentifier, parseQuery(query))
+          CreateTempView(viewIdentifier, parseQuery(query), query)
         else
           CreateView(viewIdentifier, parseQuery(query), query)
     }
@@ -162,9 +165,21 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val addJar: Parser[LogicalPlan] =
     ADD ~> JAR ~> restInput ^^ {
       case jarPath =>
-        AddJar(jarPath.trim)
+        AddJar(xDContext,jarPath.trim)
     }
 
+  protected lazy val addApp: Parser[LogicalPlan] =
+    (ADD ~> APP ~> ident) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
+      case jarPath ~ alias ~ cname =>
+        AddApp(xDContext, jarPath.toString, cname, alias)
+    }
+
+  protected lazy val executeApp: Parser[LogicalPlan] =
+    (EXECUTE ~> ident) ~ tableValues ~ (OPTIONS ~> options).? ^^ {
+      case appName ~ arguments ~ opts =>
+        val args=arguments map {arg=> arg.toString}
+        ExecuteApp(xDContext, appName, args, opts)
+    }
   /**
    * Streaming
    */

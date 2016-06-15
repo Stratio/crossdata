@@ -15,9 +15,6 @@
  */
 package com.stratio.crossdata.server.actors
 
-import java.io.{File, InputStream}
-import java.lang.reflect.Method
-import java.net.{URL, URLClassLoader}
 import java.util.UUID
 
 import akka.actor.SupervisorStrategy.Restart
@@ -27,8 +24,7 @@ import akka.cluster.ClusterEvent.InitialStateAsSnapshot
 import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import akka.remote.DisassociatedEvent
-import com.google.common.io.Files
-import com.stratio.crossdata.common.result.ErrorSQLResult
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
@@ -36,6 +32,7 @@ import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFai
 import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDSessionProvider
+import org.apache.spark.sql.types.StructType
 
 import scala.concurrent.duration.FiniteDuration
 import scala.util.{Failure, Success}
@@ -123,30 +120,16 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
       }
 
 
+    case CommandEnvelope(addAppCommand@AddAppCommand(path, alias, clss, _), session@Session(id, requester)) =>
+      if ( sessionProvider.session(id).map(_.addApp(path, clss, alias)).getOrElse(None).isDefined)// TODO improve addJar sessionManagement
+        sender ! SQLReply(addAppCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
+      else
+        sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
+
     case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, requester)) =>
       st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
   }
 
-  private def addToClasspath(file: File): Unit = {
-    if (file.exists) {
-      val method: Method = classOf[URLClassLoader].getDeclaredMethod("addURL", classOf[URL])
-      method.setAccessible(true)
-      method.invoke(ClassLoader.getSystemClassLoader, file.toURI.toURL)
-      method.setAccessible(false)
-    } else {
-      logger.warn(s"The file ${file.getName} not exists.")
-    }
-  }
-
-  private def createFile(hdfsIS: InputStream, path: String): File = {
-    val targetFile = new File(path)
-
-    val arrayBuffer = new Array[Byte](hdfsIS.available)
-    hdfsIS.read(arrayBuffer)
-
-    Files.write(arrayBuffer, targetFile)
-    targetFile
-  }
 
   // Receive functions:
 
@@ -171,8 +154,10 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
     case sc@CommandEnvelope(_: SQLCommand, _) =>
       executeAccepted(sc)(st)
 
-    // TODO broadcastMessage
     case sc@CommandEnvelope(_: AddJARCommand, _) =>
+      executeAccepted(sc)(st)
+
+    case sc@CommandEnvelope(_: AddAppCommand, _) =>
       executeAccepted(sc)(st)
 
     case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, requester)) =>
