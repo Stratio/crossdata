@@ -10,6 +10,8 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Encryption for the communication between client and server.
 * Added method to check communication between client ans server.
 * Upgrade Stratio spark-mongodb to 0.11.2
+* Upgrade Datastax spark-cassandra-connector to 1.6.0
+* Upgrade Elasticsearch-hadoop to 2.3
 * Improved communication between client and server.
 * Native jobs available in SparkUI
 * Improved native access to MongoDB
