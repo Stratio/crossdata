@@ -104,18 +104,7 @@ class CassandraXDSourceRelation(tableRef: TableRef,
 
   // ~~ NativeScan implementation 
 
-  lazy val tableDef = {
-    val tableName = tableRef.table
-    val keyspaceName = tableRef.keyspace
-    Schema.fromCassandra(connector, Some(keyspaceName), Some(tableName)).tables.headOption match {
-      case Some(t) => t
-      case None =>
-        val metadata: Metadata = connector.withClusterDo(_.getMetadata)
-        val suggestions = NameTools.getSuggestions(metadata, keyspaceName, tableName)
-        val errorMessage = NameTools.getErrorString(keyspaceName, tableName, suggestions)
-        throw new IOException(errorMessage)
-    }
-  }
+  lazy val tableDef = Schema.tableFromCassandra(connector, tableRef.keyspace, tableRef.table)
 
   override def schema: StructType = {
     userSpecifiedSchema.getOrElse(StructType(tableDef.columns.map(toStructField)))
@@ -268,26 +257,31 @@ class CassandraXDSourceRelation(tableRef: TableRef,
     filter match {
       case sources.EqualTo(attribute, f: AttributeReference) if udfs contains f.toString =>
         udfvalcmp(attribute, "=", f)
-      case sources.EqualTo(attribute, value) => (s"${quote(attribute)} = ?", Seq(value))
-
-      case sources.In(attribute, values) =>
-        (quote(attribute) + " IN " + values.map(_ => "?").mkString("(", ", ", ")"), values.toSeq)
+      case sources.EqualTo(attribute, value) =>
+        (s"${quote(attribute)} = ?", Seq(toCqlValue(attribute, value)))
 
       case sources.LessThan(attribute, f: AttributeReference) if udfs contains f.toString =>
         udfvalcmp(attribute, "<", f)
-      case sources.LessThan(attribute, value) => (s"${quote(attribute)} < ?", Seq(value))
+      case sources.LessThan(attribute, value) =>
+        (s"${quote(attribute)} < ?", Seq(toCqlValue(attribute, value)))
 
       case sources.LessThanOrEqual(attribute, f: AttributeReference) if udfs contains f.toString =>
         udfvalcmp(attribute, "<=", f)
-      case sources.LessThanOrEqual(attribute, value) => (s"${quote(attribute)} <= ?", Seq(value))
+      case sources.LessThanOrEqual(attribute, value) =>
+        (s"${quote(attribute)} <= ?", Seq(toCqlValue(attribute, value)))
 
       case sources.GreaterThan(attribute, f: AttributeReference) if udfs contains f.toString =>
         udfvalcmp(attribute, ">", f)
-      case sources.GreaterThan(attribute, value) => (s"${quote(attribute)} > ?", Seq(value))
+      case sources.GreaterThan(attribute, value) =>
+        (s"${quote(attribute)} > ?", Seq(toCqlValue(attribute, value)))
 
       case sources.GreaterThanOrEqual(attribute, f: AttributeReference) if udfs contains f.toString =>
         udfvalcmp(attribute, ">=", f)
-      case sources.GreaterThanOrEqual(attribute, value) => (s"${quote(attribute)} >= ?", Seq(value))
+      case sources.GreaterThanOrEqual(attribute, value) =>
+        (s"${quote(attribute)} >= ?", Seq(toCqlValue(attribute, value)))
+
+      case sources.In(attribute, values)                 =>
+        (quote(attribute) + " IN " + values.map(_ => "?").mkString("(", ", ", ")"), toCqlValues(attribute, values))
 
       case _ =>
         throw new UnsupportedOperationException(
