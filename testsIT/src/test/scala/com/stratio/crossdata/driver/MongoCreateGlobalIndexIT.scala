@@ -59,10 +59,10 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
   "The Mongo connector" should "execute a CREATE GLOBAL INDEX" in {
 
-    val ElasticHost: String = "127.0.0.1"
+    val ElasticHost: String = "172.17.0.2"
     val ElasticRestPort = 9200
     val ElasticNativePort = 9300
-    val ElasticClusterName: String = "esCluster"
+    val ElasticClusterName: String = "elasticsearch"
 
 
     val sentence =

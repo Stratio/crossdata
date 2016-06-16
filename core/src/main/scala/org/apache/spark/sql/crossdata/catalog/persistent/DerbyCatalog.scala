@@ -371,4 +371,30 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
     resultSet.next()
   }
+
+  override def obtainTableIndex(tableIdentifier: TableIdentifier):Option[CrossdataIndex] = {
+    val query=
+      s"SELECT * FROM $DB.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
+    val preparedStatement = connection.prepareStatement(query)
+    val resultSet = preparedStatement.executeQuery()
+    if (!resultSet.next) {
+      None
+    } else {
+
+      val database = resultSet.getString(DatabaseField)
+      val table = resultSet.getString(TableNameField)
+      val indexName = resultSet.getString(IndexNameField)
+      val indexType = resultSet.getString(IndexTypeField)
+      val indexedCols = resultSet.getString(IndexedColsField)
+      val pkCols = resultSet.getString(PKColsField)
+      val datasource = resultSet.getString(DatasourceField)
+      val optsJSON = resultSet.getString(OptionsField)
+      val version = resultSet.getString(CrossdataVersionField)
+
+      Option(
+        CrossdataIndex(TableIdentifier(table, Option(database)), IndexIdentifier(indexType, indexName),
+          deserializeSeq(indexedCols), deserializeSeq(pkCols), datasource, deserializeOptions(optsJSON), version)
+      )
+    }
+  }
 }

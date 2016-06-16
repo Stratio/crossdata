@@ -165,4 +165,5 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
 
   override def dropIndexMetadata(tableIdentifier: ViewIdentifier): Unit = ???
 
+  override def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = ???
 }

@@ -159,13 +159,20 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   override def dropIndex(indexIdentifier: IndexIdentifier): Unit = {
     val strIndex = indexIdentifier.unquotedString
-    if(lookupIndex(indexIdentifier).isEmpty) throw new RuntimeException(s"Index $strIndex can't be deleted because it doesn't exist")
+    if(indexMetadata(indexIdentifier).isEmpty) throw new RuntimeException(s"Index $strIndex can't be deleted because it doesn't exist")
     logInfo(s"Deleting index ${indexIdentifier.unquotedString} from catalog")
     persistentCatalogs foreach(_.dropIndex(indexIdentifier))
   }
 
-  private def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] =
-    persistentChainedLookup(_.lookupIndex(indexIdentifier))
+  override def indexMetadata(tableIdentifier: IndexIdentifier): Option[CrossdataIndex]=
+    persistentChainedLookup(_.lookupIndex(tableIdentifier))
+
+  override def tableHasIndex(tableIdentifier: TableIdentifier): Boolean = persistentCatalogs exists (_.tableHasIndex(tableIdentifier))
+
+  override def obtainTableIndex(tableIdentifier: TableIdentifier):Option[CrossdataIndex]=
+    persistentCatalogs map (_.obtainTableIndex(tableIdentifier)) collectFirst {
+      case Some(index) =>index
+    }
 
   override def dropAllIndexes(): Unit = {
     persistentCatalogs foreach (_.dropAllIndexes())

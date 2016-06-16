@@ -282,4 +282,6 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
   override def lookupIndex(tableIdentifier: IndexIdentifier): Option[CrossdataIndex] = ???
 
   override def dropIndexMetadata(tableIdentifier: ViewIdentifier): Unit = ???
+
+  override def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = ???
 }

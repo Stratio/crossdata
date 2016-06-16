@@ -35,7 +35,9 @@ private[crossdata] trait ExternalCatalogAPI {
   def dropAllIndexes(): Unit
 
   def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable]
-
+  def indexMetadata(indexIdentifier: IndexIdentifier): Option[CrossdataIndex]
+  def tableHasIndex(tableIdentifier: TableIdentifier): Boolean
+  def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex]
 }
 
 
