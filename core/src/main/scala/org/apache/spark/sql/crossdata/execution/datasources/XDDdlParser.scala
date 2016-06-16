@@ -171,20 +171,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
 
 
-//TODO nvestigate how to detect paths with the parser for add app command
-//protected lazy val ext: Parser[String] = repsep(ident, ".") ^^ {
-//  case exte => exte.toString
-//}
-//  protected lazy val path: Parser[String] = "/" ~> repsep(ident, "/")  ^^ {
-//    case pathx  => "/" + (pathx mkString "/")
-//  }
-//    protected lazy val addApp: Parser[LogicalPlan] =
-//    (ADD ~> APP ~> (path ~ ext.?)) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
-//      case jarPath ~ ext ~ alias ~ cname =>
-//        println(jarPath.toString + ext.getOrElse(""))
-//        AddApp(xDContext, jarPath.toString + ext.getOrElse(""), cname, alias)
-//    }
-
 protected lazy val addApp: Parser[LogicalPlan] =
   (ADD ~> APP ~> stringLit) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
     case jarPath ~ alias ~ cname =>
