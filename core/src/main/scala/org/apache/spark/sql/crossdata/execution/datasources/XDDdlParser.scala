@@ -17,6 +17,7 @@ package org.apache.spark.sql.crossdata.execution.datasources
 
 import java.util.UUID
 
+import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
@@ -58,6 +59,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val IN = Keyword("IN")
   protected val APP = Keyword("APP")
   protected val EXECUTE = Keyword("EXECUTE")
+
 
 
   override protected lazy val ddl: Parser[LogicalPlan] =
@@ -168,11 +170,27 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
         AddJar(xDContext,jarPath.trim)
     }
 
-  protected lazy val addApp: Parser[LogicalPlan] =
-    (ADD ~> APP ~> ident) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
-      case jarPath ~ alias ~ cname =>
-        AddApp(xDContext, jarPath.toString, cname, alias)
-    }
+
+//TODO nvestigate how to detect paths with the parser for add app command
+//protected lazy val ext: Parser[String] = repsep(ident, ".") ^^ {
+//  case exte => exte.toString
+//}
+//  protected lazy val path: Parser[String] = "/" ~> repsep(ident, "/")  ^^ {
+//    case pathx  => "/" + (pathx mkString "/")
+//  }
+//    protected lazy val addApp: Parser[LogicalPlan] =
+//    (ADD ~> APP ~> (path ~ ext.?)) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
+//      case jarPath ~ ext ~ alias ~ cname =>
+//        println(jarPath.toString + ext.getOrElse(""))
+//        AddApp(xDContext, jarPath.toString + ext.getOrElse(""), cname, alias)
+//    }
+
+protected lazy val addApp: Parser[LogicalPlan] =
+  (ADD ~> APP ~> stringLit) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
+    case jarPath ~ alias ~ cname =>
+      AddApp(xDContext, jarPath.toString, cname, alias)
+  }
+
 
   protected lazy val executeApp: Parser[LogicalPlan] =
     (EXECUTE ~> ident) ~ tableValues ~ (OPTIONS ~> options).? ^^ {

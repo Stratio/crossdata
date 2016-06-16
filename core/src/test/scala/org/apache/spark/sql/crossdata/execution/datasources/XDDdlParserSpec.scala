@@ -244,4 +244,14 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
     parser.parse(sentence) shouldBe AddJar(xdContext,"/tmp/jar")
   }
 
+  it should "successfully parse a ADD APP into a AddApp RunnableCommand" in {
+    val sentence = "ADD APP '/my/path/file.jar' AS jj WITH aaa.bbb.ccc"
+    parser.parse(sentence) shouldBe AddApp(xdContext,"/my/path/file.jar", "aaa.bbb.ccc", Some("jj"))
+  }
+
+  it should "successfully parse a ADD APP without Alias into a AddApp RunnableCommand" in {
+    val sentence = "ADD APP '/my/path/file.jar' WITH aaa.bbb.ccc"
+    parser.parse(sentence) shouldBe AddApp(xdContext,"/my/path/file.jar", "aaa.bbb.ccc", None)
+  }
+
 }
