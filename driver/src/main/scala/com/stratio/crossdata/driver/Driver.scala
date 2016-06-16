@@ -36,6 +36,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future, Promise}
 import scala.language.postfixOps
+import scala.reflect.io.File
 import scala.util.Try
 
 /*
@@ -106,8 +107,8 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
 
   /**
-   * Tuple (tableName, Optional(databaseName))
-   */
+    * Tuple (tableName, Optional(databaseName))
+    */
   type TableIdentifier = (String, Option[String])
 
   private lazy val driverSession = SessionManager.createSession(auth, proxyActor)
@@ -133,31 +134,41 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     system.actorOf(ProxyActor.props(clusterClientActor, this), ProxyActor.DefaultName)
   }
 
-
   /**
-   * Executes a SQL sentence.
-   * In order to work in an asynchronous way:
-   * > driver.sql("SELECT * FROM t").sqlResult onComplete { callback }
-   * In order to work in an synchronous way:
-   * > val sqlResult: SQLResult = driver.sql("SELECT * FROM t").waitForResult(5 seconds)
-   * Also, you can use implicits
-   * > import SQLResponse._
-   * > val sqlResult: SQLResult = driver.sql("SELECT * FROM t")
-   * > val rows: Array[Row] = driver.sql("SELECT * FROM t").resultSet
+    * Executes a SQL sentence.
+    * In order to work in an asynchronous way:
+    * > driver.sql("SELECT * FROM t").sqlResult onComplete { callback }
+    * In order to work in an synchronous way:
+    * > val sqlResult: SQLResult = driver.sql("SELECT * FROM t").waitForResult(5 seconds)
+    * Also, you can use implicits
+    * > import SQLResponse._
+    * > val sqlResult: SQLResult = driver.sql("SELECT * FROM t")
+    * > val rows: Array[Row] = driver.sql("SELECT * FROM t").resultSet
     *
     * @param query The SQL Command.
-   * @return A SQLResponse with the id and the result set.
-   */
+    * @return A SQLResponse with the id and the result set.
+    */
   def sql(query: String): SQLResponse = {
 
     //TODO remove this part when servers broadcast bus was realized
     //Preparse query to know if it is an special command sent from the shell or other driver user that is not a query
-    val Pattern="""(\s*add)(\s+jar\s+)(.*)""".r
+    val addJarPattern =
+      """(\s*add)(\s+jar\s+)(.*)""".r
+    val addAppWithAliasPattern ="""(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(\S*)""".r
+    val addAppPattern ="""(\s*add)(\s+app\s+)(.*)(\s+with\s+)(\S*)""".r
     query match {
-      case Pattern(add,jar,path) => addJar(path.trim)
+      case addJarPattern(add, jar, path) => addJar(path.trim)
+      case addAppWithAliasPattern(add, app, path, as, alias, wth, clss) =>
+        val res = addJar(path).waitForResult()
+        val hdfspath = res.resultSet(0).getString(0)
+        addApp(hdfspath, clss, alias)
+      case addAppPattern(add, app, path, wth, clss) =>
+        val res = addJar(path).waitForResult()
+        val hdfspath = res.resultSet(0).getString(0)
+        addApp(hdfspath, clss, path)
       case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
-        val futureReply = askCommand(securitizeCommand(sqlCommand)).map{
+        val futureReply = askCommand(securitizeCommand(sqlCommand)).map {
           case SQLReply(_, sqlResult) => sqlResult
           case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
         }
@@ -176,13 +187,38 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     * @param path The path of the JAR
     * @return A SQLResponse with the id and the result set.
     */
-  def addJar(path: String): SQLResponse = {
-    val addJarCommand = AddJARCommand(path)
-    val futureReply = askCommand(securitizeCommand(addJarCommand)).map{
+  def addJar(path: String, toClassPath:Option[Boolean]=None): SQLResponse = {
+    val addJarCommand = AddJARCommand(path,toClassPath=toClassPath)
+    if (File(path).exists) {
+      val futureReply = askCommand(securitizeCommand(addJarCommand)).map {
+        case SQLReply(_, sqlResult) => sqlResult
+        case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
+      }
+      new SQLResponse(addJarCommand.requestId, futureReply)
+    } else {
+        new SQLResponse(addJarCommand.requestId, Future(ErrorSQLResult("File doesn't exist")))
+    }
+  }
+
+  def addAppCommand(path: String, clss: String, alias: Option[String] = None): SQLResponse = {
+    val result = addJar(path,Option(false)).waitForResult()
+    val hdfsPath = result.resultSet(0).getString(0)
+    addApp(hdfsPath, clss, alias.getOrElse(path))
+  }
+
+  /**
+    * @param path  The path of the JAR
+    * @param clss  The main class
+    * @param alias The alias of the JAR
+    * @return A SQLResponse with the id and the result set.
+    */
+  private def addApp(path: String, clss: String, alias: String): SQLResponse = {
+    val addAppCommand = AddAppCommand(path, alias, clss)
+    val futureReply = askCommand(securitizeCommand(addAppCommand)).map {
       case SQLReply(_, sqlResult) => sqlResult
       case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
     }
-    new SQLResponse(addJarCommand.requestId, futureReply)
+    new SQLResponse(addAppCommand.requestId, futureReply)
   }
 
 
@@ -231,17 +267,17 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
   private def askCommand(commandEnvelope: CommandEnvelope): Future[ServerReply] = {
     val promise = Promise[ServerReply]()
-    proxyActor ! (commandEnvelope, promise)
+    proxyActor !(commandEnvelope, promise)
     promise.future
   }
 
 
   /**
-   * Gets a list of tables from a database or all if the database is None
-   *
-   * @param databaseName The database name
-   * @return A sequence of tables an its database
-   */
+    * Gets a list of tables from a database or all if the database is None
+    *
+    * @param databaseName The database name
+    * @return A sequence of tables an its database
+    */
   def listTables(databaseName: Option[String] = None): Seq[TableIdentifier] = {
     def processTableName(qualifiedName: String): (String, Option[String]) = {
       qualifiedName.split('.') match {
@@ -259,12 +295,12 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   }
 
   /**
-   * Gets the metadata from a specific table.
-   *
-   * @param database Database of the table.
-   * @param tableName The name of the table.
-   * @return A sequence with the metadata of the fields of the table.
-   */
+    * Gets the metadata from a specific table.
+    *
+    * @param database  Database of the table.
+    * @param tableName The name of the table.
+    * @return A sequence with the metadata of the fields of the table.
+    */
   def describeTable(database: Option[String], tableName: String): Seq[FieldMetadata] = {
 
     def extractNameDataType: Row => (String, String) = row => (row.getString(0), row.getString(1))
@@ -291,23 +327,23 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
 
   /**
-   * Gets the server/cluster state
-   *
-   * @since 1.3
-   * @return Current snapshot state of the cluster
-   */
+    * Gets the server/cluster state
+    *
+    * @since 1.3
+    * @return Current snapshot state of the cluster
+    */
   def clusterState(): Future[CurrentClusterState] = {
     val promise = Promise[ServerReply]()
-    proxyActor ! (securitizeCommand(ClusterStateCommand()), promise)
+    proxyActor !(securitizeCommand(ClusterStateCommand()), promise)
     promise.future.mapTo[ClusterStateReply].map(_.clusterState)
   }
 
   /**
-   * Gets the addresses of servers up and running
-   *
-   * @since 1.3
-   * @return A sequence with members of the cluster ready to serve requests
-   */
+    * Gets the addresses of servers up and running
+    *
+    * @since 1.3
+    * @return A sequence with members of the cluster ready to serve requests
+    */
   def serversUp(): Future[Seq[Address]] = {
     import collection.JavaConverters._
     clusterState().map { cState =>
@@ -318,18 +354,18 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   }
 
   /**
-   * Indicates if the cluster is alive or not
-   *
-   * @since 1.3
-   * @return whether at least one member of the cluster is alive or not
-   */
+    * Indicates if the cluster is alive or not
+    *
+    * @since 1.3
+    * @return whether at least one member of the cluster is alive or not
+    */
   def isClusterAlive(atMost: Duration = 3 seconds): Boolean =
     Try(Await.result(serversUp(), atMost)).map(_.nonEmpty).getOrElse(false)
 
 
   /**
-   * Execute an ordered shutdown
-   */
+    * Execute an ordered shutdown
+    */
   def stop() = Driver.clearActiveContext
 
   @deprecated("Close will be removed from public API. Use stop instead")

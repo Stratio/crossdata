@@ -51,20 +51,19 @@ case class HdfsUtils(dfs: FileSystem, userName: String) {
 object HdfsUtils extends SLF4JLogging {
 
   private final val DefaultFSProperty = "fs.defaultFS"
-  private final val HdfsDefaultPort = 8020
+  private final val HdfsDefaultPort = 9000
 
-  def apply(user: String, master: String, port: Int = HdfsDefaultPort): HdfsUtils = {
+  def apply(user: String, namenode:String): HdfsUtils = {
     val conf = new Configuration()
-    conf.set(DefaultFSProperty, s"hdfs://$master:$port")
+    conf.set(DefaultFSProperty, namenode)
     log.debug(s"Configuring HDFS with master: ${conf.get(DefaultFSProperty)} and user: $user")
     val defaultUri = FileSystem.getDefaultUri(conf)
     new HdfsUtils(FileSystem.get(defaultUri, conf, user), user)
   }
 
   def apply(config: Config): HdfsUtils = {
-    val user = config.getString("hadoopUserName")
-    val master = config.getString("hdfsMaster")
-    val port = Try(config.getInt("hdfsPort")).getOrElse(HdfsDefaultPort)
-    apply(user, master, port)
+    val namenode=config.getString("namenode")
+    val user = config.getString("user")
+    apply(user, namenode)
   }
 }
