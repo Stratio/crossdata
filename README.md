@@ -74,7 +74,7 @@ Alternatively, you can try to reach us at gitter or our IRC channel `#stratio-cr
 Release notes
 =============
 
-Features and changes are detailed in the `changelog <CHANGELOG.md>`_.
+Features and changes are detailed in the [changelog](CHANGELOG.md).
 
 =======
 License
