@@ -55,7 +55,7 @@ Spark Compatibility
 Documentation
 =============
 
-For a complete documentation, please, visit https://stratio.atlassian.net/wiki/display/CROSSDATA1x2.
+For a complete documentation, please, visit https://stratio.atlassian.net/wiki/display/CROSSDATA1x3.
 
 ===========
 Get support
