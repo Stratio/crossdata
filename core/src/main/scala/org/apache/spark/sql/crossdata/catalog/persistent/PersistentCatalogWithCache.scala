@@ -19,8 +19,8 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDPersistentCatalog
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
 
@@ -36,10 +36,10 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
 
   import CreateRelationUtil._
 
-  val tableCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
+  val tableCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty // TODO tableIdentifier should be normalized // TODO tests // do it in catalogChain?
   val viewCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
 
-  override final def relation(relationIdentifier: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
+  override final def relation(relationIdentifier: TableIdentifier, alias: Option[String])(implicit sqlContext: SQLContext): Option[LogicalPlan] =
     // TODO refactor (nonCachedLookup)
     (tableCache get relationIdentifier) orElse (viewCache get relationIdentifier) orElse {
       logInfo(s"PersistentCatalog: Looking up table ${relationIdentifier.unquotedString}")
@@ -64,14 +64,14 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
       plan collect {
         case UnresolvedRelation(tIdent, _) => tIdent
       } foreach { tIdent =>
-        if (relation(tIdent).isEmpty) {
+        if (relation(tIdent)(sqlContext).isEmpty) {
           throw new RuntimeException("Views only can be created with a previously persisted table")
         }
       }
     }
 
     checkPlan(plan)
-    if (relation(viewIdentifier).isDefined) {
+    if (relation(viewIdentifier)(sqlContext).isDefined) {
       val msg = s"The view ${viewIdentifier.unquotedString} already exists"
       logWarning(msg)
       throw new UnsupportedOperationException(msg)
@@ -85,7 +85,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   override final def saveTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit = {
 
     val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
-    if (relation(tableIdentifier).isDefined) {
+    if (relation(tableIdentifier)(sqlContext).isDefined) {
       logWarning(s"The table $tableIdentifier already exists")
       throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
     } else {

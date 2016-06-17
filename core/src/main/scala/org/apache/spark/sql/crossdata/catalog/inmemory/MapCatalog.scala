@@ -15,6 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.catalog.inmemory
 
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
@@ -33,7 +34,7 @@ abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog
 
   implicit def tableIdent2string(tident: TableIdentifier): String = normalizeTableName(tident)
 
-  override def relation(tableIdent: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
+  override def relation(tableIdent: TableIdentifier, alias: Option[String])(implicit sQLContext: SQLContext): Option[LogicalPlan] =
     (tables get tableIdent) orElse (views get tableIdent) map {
       processAlias(tableIdent, _, alias)
     }

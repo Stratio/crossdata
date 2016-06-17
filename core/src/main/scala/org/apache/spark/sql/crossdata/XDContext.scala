@@ -97,7 +97,7 @@ class XDContext protected (@transient val sc: SparkContext,
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {
     val catalogs: List[XDCatalogCommon] =  temporaryCatalog :: externalCatalog :: streamingCatalog.toList
-    CatalogChain(catalogs:_*)(catalystConf)
+    CatalogChain(catalogs:_*)(self)
   }
 
   @transient
