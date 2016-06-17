@@ -20,6 +20,7 @@ import java.sql.{Connection, DriverManager, ResultSet}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 
 import scala.annotation.tailrec
@@ -31,6 +32,7 @@ object MySQLXDCatalog {
   val Database = "jdbc.db.name"
   val TableWithTableMetadata = "jdbc.db.table"
   val TableWithViewMetadata = "jdbc.db.view"
+  val TableWithAppMetadata = "jdbc.db.app"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
   // CatalogFields
@@ -44,15 +46,20 @@ object MySQLXDCatalog {
 
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
+
+  //App values
+  val JarPath = "jarPath"
+  val AppAlias = "alias"
+  val AppClass = "class"
 }
 
 /**
- * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
- * Jdbc.
- * Supported MySQL and PostgreSQL
- *
- * @param catalystConf An implementation of the [[CatalystConf]].
- */
+  * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
+  * Jdbc.
+  * Supported MySQL and PostgreSQL
+  *
+  * @param catalystConf An implementation of the [[CatalystConf]].
+  */
 class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
   extends PersistentCatalogWithCache(sqlContext, catalystConf) {
 
@@ -64,6 +71,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
   private val db = config.getString(Database)
   private val tableWithTableMetadata = config.getString(TableWithTableMetadata)
   private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
+  private val tableWithAppJars = config.getString(TableWithAppMetadata)
 
   @transient lazy val connection: Connection = {
 
@@ -100,9 +108,16 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
             |$CrossdataVersionField VARCHAR(30),
             |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE $db.$tableWithAppJars (
+            |$JarPath VARCHAR(100),
+            |$AppAlias VARCHAR(50),
+            |$AppClass VARCHAR(100),
+            |PRIMARY KEY ($AppAlias))""".stripMargin)
+
       jdbcConnection
-    }catch{
-      case e:Exception =>
+    } catch {
+      case e: Exception =>
         logError(e.getMessage)
         null
     }
@@ -200,7 +215,6 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
     }
 
 
-
   override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
 
@@ -260,7 +274,6 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
   }
 
 
-
   override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
     connection.createStatement.executeUpdate(
       s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
@@ -270,7 +283,61 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
 
+
+  override def saveAppMetadata(crossdataApp: CrossdataApp): Unit =
+    try {
+      connection.setAutoCommit(false)
+
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
+      preparedStatement.setString(1, crossdataApp.appAlias)
+      val resultSet = preparedStatement.executeQuery()
+
+      if (!resultSet.next()) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $db.$tableWithAppJars (
+              | $JarPath, $AppAlias, $AppClass
+              |) VALUES (?,?,?)
+         """.stripMargin)
+        prepped.setString(1, crossdataApp.jar)
+        prepped.setString(2, crossdataApp.appAlias)
+        prepped.setString(3, crossdataApp.appClass)
+        prepped.execute()
+      } else {
+        val prepped = connection.prepareStatement(
+          s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, $AppClass=?
+              |WHERE $AppAlias='${crossdataApp.appAlias}'
+         """.stripMargin)
+        prepped.setString(1, crossdataApp.jar)
+        prepped.setString(2, crossdataApp.appClass)
+        prepped.execute()
+      }
+      connection.commit()
+    } finally {
+      connection.setAutoCommit(true)
+    }
+
+  override def getApp(alias: String): Option[CrossdataApp] = {
+
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
+    preparedStatement.setString(1, alias)
+    val resultSet = preparedStatement.executeQuery()
+
+    if (!resultSet.next) {
+      None
+    } else {
+
+      val jar = resultSet.getString(JarPath)
+      val alias = resultSet.getString(AppAlias)
+      val clss = resultSet.getString(AppClass)
+
+      Some(
+        CrossdataApp(jar, alias, clss)
+      )
+    }
+  }
+
   override def isAvailable: Boolean = Option(connection).isDefined
+
 
   //TODO
   override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = ???
@@ -284,4 +351,5 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
   override def dropIndexMetadata(tableIdentifier: ViewIdentifier): Unit = ???
 
   override def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = ???
+
 }

@@ -20,6 +20,7 @@ import java.sql.{Connection, DriverManager, ResultSet}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.CrossdataVersion
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 
 import scala.annotation.tailrec
@@ -31,6 +32,8 @@ object DerbyCatalog {
   val TableWithTableMetadata = "xdtables"
   val TableWithViewMetadata = "xdviews"
   val TableWithIndexMetadata = "xdindexes"
+  val TableWithAppJars = "appJars"
+
   // TableMetadataFields
   val DatabaseField = "db"
   val TableNameField = "tableName"
@@ -41,11 +44,18 @@ object DerbyCatalog {
   val CrossdataVersionField = "crossdataVersion"
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
+
   //IndexMetadataFields
   val IndexNameField = "indexName"
   val IndexTypeField = "indexType"
   val IndexedColsField = "indexedCols"
   val PKColsField = "pkCols"
+
+  //App values
+  val JarPath = "jarPath"
+  val AppAlias = "alias"
+  val AppClass = "class"
+
 }
 
 /**
@@ -70,6 +80,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
     // CREATE PERSISTENT METADATA TABLE
 
+
     if(!schemaExists(DB, jdbcConnection)) {
       jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $DB")
 
@@ -93,6 +104,12 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
             |$CrossdataVersionField VARCHAR(30),
             |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE $DB.$TableWithAppJars (
+            |$JarPath VARCHAR(100),
+            |$AppAlias VARCHAR(50),
+            |$AppClass VARCHAR(100),
+            |PRIMARY KEY ($AppAlias))""".stripMargin)
     }
 
     //Index support
@@ -138,6 +155,26 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     }
   }
 
+  override def getApp(alias: String): Option[CrossdataApp] = {
+
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $DB.$TableWithAppJars WHERE $AppAlias= ?")
+    preparedStatement.setString(1, alias)
+    val resultSet: ResultSet = preparedStatement.executeQuery()
+
+    if (!resultSet.next) {
+      None
+    } else {
+      val jar = resultSet.getString(JarPath)
+      val alias = resultSet.getString(AppAlias)
+      val clss = resultSet.getString(AppClass)
+
+      Some(
+        CrossdataApp(jar, alias, clss)
+      )
+    }
+  }
+
+
   override def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
     val resultSet = selectMetadata(TableWithViewMetadata, viewIdentifier)
     if (!resultSet.next)
@@ -169,7 +206,6 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       )
     }
   }
-
 
 
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
@@ -218,6 +254,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     }
 
   override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
+
     try {
       connection.setAutoCommit(false)
       val resultSet = selectMetadata(TableWithViewMetadata, tableIdentifier)
@@ -245,6 +282,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     } finally {
       connection.setAutoCommit(true)
     }
+
 
   override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = {
     try {
@@ -277,11 +315,44 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
         //TODO: Support change index metadata?
         sys.error("Index already exists")
       }
+    }
+  }
+
+  override def saveAppMetadata(crossdataApp: CrossdataApp): Unit ={
+    try {
+      connection.setAutoCommit(false)
+
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $DB.$TableWithAppJars WHERE $AppAlias= ?")
+      preparedStatement.setString(1, crossdataApp.appAlias)
+      val resultSet = preparedStatement.executeQuery()
+
+      if (!resultSet.next()) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $DB.$TableWithAppJars (
+              | $JarPath, $AppAlias, $AppClass
+              |) VALUES (?,?,?)
+         """.stripMargin)
+        prepped.setString(1, crossdataApp.jar)
+        prepped.setString(2, crossdataApp.appAlias)
+        prepped.setString(3, crossdataApp.appClass)
+        prepped.execute()
+      } else {
+        val prepped = connection.prepareStatement(
+          s"""|UPDATE $DB.$TableWithAppJars SET $JarPath=?, $AppClass=?
+              |WHERE $AppAlias='${crossdataApp.appAlias}'
+         """.stripMargin)
+        prepped.setString(1, crossdataApp.jar)
+        prepped.setString(2, crossdataApp.appClass)
+        prepped.execute()
+
+      }
       connection.commit()
     } finally {
       connection.setAutoCommit(true)
     }
+
   }
+
 
   override def dropTableMetadata(tableIdentifier: TableIdentifier): Unit =
     connection.createStatement.executeUpdate(
@@ -342,6 +413,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     preparedStatement.setString(2, tableIdentifier.table)
     preparedStatement.executeQuery()
 
+
   }
 
   private def selectIndex(indexIdentifier: IndexIdentifier): ResultSet = {
@@ -357,6 +429,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
     resultSet.next()
   }
+
 
   private def indexTableExists(schema: String, connection: Connection): Boolean = tableSchemaExists(schema, TableWithIndexMetadata, connection)
 
@@ -397,4 +470,5 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       )
     }
   }
+
 }

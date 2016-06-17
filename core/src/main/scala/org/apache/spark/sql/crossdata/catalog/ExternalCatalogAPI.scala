@@ -17,9 +17,13 @@ package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
 
-private[crossdata] trait ExternalCatalogAPI {
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
+
+
+private[crossdata] trait ExternalCatalogAPI extends XDAppsCatalog{
 
   def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit
   def persistView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit
