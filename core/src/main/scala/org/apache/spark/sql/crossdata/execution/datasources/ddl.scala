@@ -325,7 +325,7 @@ private[crossdata] case class CreateGlobalIndex(
                                                  options: Map[String, String]
                                                ) extends LogicalPlan with RunnableCommand {
 
-  private def createElasticIndex(sqlContext: SQLContext): Try[Unit] =
+  private def createElasticIndex(sqlContext: SQLContext): Try[CrossdataIndex] =
     Try {
       val indexProvider = provider getOrElse "com.stratio.crossdata.connector.elasticsearch"
 
@@ -345,19 +345,23 @@ private[crossdata] case class CreateGlobalIndex(
       //TODO: Change index name, for allowing multiple index ???
       CreateExternalTable(TableIdentifier(finalIndex.indexType, Option(finalIndex.indexName)), elasticSchema, indexProvider, options).run(sqlContext)
 
-      val crossdataIndex = CrossdataIndex(tableIdent, finalIndex, cols, pk, indexProvider, options)
-      sqlContext.catalog.persistIndex(crossdataIndex)
+      CrossdataIndex(tableIdent, finalIndex, cols, pk, indexProvider, options)
+
     }
 
-  private def saveIndexMetadata = ???
+  private def saveIndexMetadata(sqlContext:SQLContext, crossdataIndex: CrossdataIndex) = {
+
+    sqlContext.catalog.persistIndex(crossdataIndex)
+  }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    createElasticIndex(sqlContext).get
-    saveIndexMetadata
-
+    val crossdataIndex=createElasticIndex(sqlContext).get
+    saveIndexMetadata(sqlContext,crossdataIndex)
+    Seq.empty
     //TODO: Recover if something bad happens
-    ???
+
+
   }
 
 }
