@@ -80,7 +80,7 @@ Features and changes are detailed in the [changelog](CHANGELOG.md).
 License
 =======
 
-Stratio Crossdata is licensed as `Apache2 <http://www.apache.org/licenses/LICENSE-2.0.txt>`_
+Stratio Crossdata is licensed as [Apache2](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 Licensed to STRATIO (C) under one or more contributor license agreements.
 See the NOTICE file distributed with this work for additional information
