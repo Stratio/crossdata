@@ -18,14 +18,12 @@ class HazelcastCatalog(
   import XDCatalogCommon._
 
 
-  override def relation(tableIdent: TableIdentifier, alias: Option[String])(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
+  override def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
     val normalizedTableIdent = tableIdent.normalize(catalystConf);
     {
       Option(tables.get(normalizedTableIdent)) map (CreateRelationUtil.createLogicalRelation(sqlContext, _))
     } orElse {
       Option(views.get(normalizedTableIdent)) map (sqlContext.sql(_).logicalPlan)
-    } map { logicalPlan =>
-      processAlias(normalizedTableIdent, logicalPlan, alias)
     }
   }
 

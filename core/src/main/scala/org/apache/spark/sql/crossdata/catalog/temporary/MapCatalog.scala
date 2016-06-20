@@ -34,10 +34,8 @@ abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog
 
   implicit def tableIdent2string(tident: TableIdentifier): String = normalizeTableName(tident)
 
-  override def relation(tableIdent: TableIdentifier, alias: Option[String])(implicit sQLContext: SQLContext): Option[LogicalPlan] =
-    (tables get tableIdent) orElse (views get tableIdent) map {
-      processAlias(tableIdent, _, alias)
-    }
+  override def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
+    (tables get tableIdent) orElse (views get tableIdent)
 
   override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
     val dbName = databaseName.map(normalizeIdentifier)

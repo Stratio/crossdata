@@ -40,7 +40,7 @@ class ZookeeperStreamingCatalog(val catalystConf: CatalystConf) extends XDStream
     new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
 
 
-  override def relation(tableIdent: TableIdentifier, alias: Option[String])(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
+  override def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
     val tableIdentifier: String = normalizeTableName(tableIdent)
     if (futurize(existsEphemeralTable(tableIdentifier)))
       Some(StreamingRelation(tableIdentifier))

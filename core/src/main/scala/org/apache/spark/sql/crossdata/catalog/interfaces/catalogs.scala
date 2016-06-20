@@ -43,13 +43,20 @@ object XDCatalogCommon {
     } else {
       identifier.toLowerCase
     }
+
+  def processAlias(tableIdentifier: TableIdentifier, lPlan: LogicalPlan, alias: Option[String])(conf: CatalystConf) = {
+    val tableWithQualifiers = Subquery(normalizeTableName(tableIdentifier, conf), lPlan)
+    // If an alias was specified by the lookup, wrap the plan in a subquery so that attributes are
+    // properly qualified with this alias.
+    alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
+  }
 }
 
 sealed trait XDCatalogCommon extends SparkLoggerComponent {
 
   def catalystConf: CatalystConf
 
-  def relation(tableIdent: TableIdentifier, alias: Option[String] = None)(implicit sqlContext: SQLContext): Option[LogicalPlan]
+  def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan]
 
   def allRelations(databaseName: Option[String]): Seq[TableIdentifier]
 
@@ -67,12 +74,6 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
   protected def normalizeIdentifier(identifier: String): String =
     XDCatalogCommon.normalizeIdentifier(identifier, catalystConf)
 
-  protected def processAlias( tableIdentifier: TableIdentifier, lPlan: LogicalPlan, alias: Option[String]) = {
-    val tableWithQualifiers = Subquery(normalizeTableName(tableIdentifier), lPlan)
-    // If an alias was specified by the lookup, wrap the plan in a subquery so that attributes are
-    // properly qualified with this alias.
-    alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
-  }
 }
 
 trait XDTemporaryCatalog extends XDCatalogCommon {

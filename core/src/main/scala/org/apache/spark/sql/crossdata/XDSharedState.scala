@@ -34,6 +34,7 @@ object XDSharedState {
   }
 }
 
+// TODO rename XDSharedState
 class XDSharedState( // TODO externalCatalog
                      @transient val sc: SparkContext,
                      userConfig: Option[Config] = None // TODO this is server config. Probably should be core => the server should remove the config prefix (config.spark.sql...)
@@ -55,5 +56,3 @@ class XDSharedState( // TODO externalCatalog
 
 
 }
-
-

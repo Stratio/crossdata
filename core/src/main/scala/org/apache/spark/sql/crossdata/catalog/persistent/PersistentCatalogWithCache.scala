@@ -19,7 +19,6 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDPersistentCatalog
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
@@ -39,7 +38,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   val tableCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty // TODO tableIdentifier should be normalized // TODO tests // do it in catalogChain?
   val viewCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
 
-  override final def relation(relationIdentifier: TableIdentifier, alias: Option[String])(implicit sqlContext: SQLContext): Option[LogicalPlan] =
+  override final def relation(relationIdentifier: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
     // TODO refactor (nonCachedLookup)
     (tableCache get relationIdentifier) orElse (viewCache get relationIdentifier) orElse {
       logInfo(s"PersistentCatalog: Looking up table ${relationIdentifier.unquotedString}")
@@ -55,7 +54,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
         viewCache.put(relationIdentifier, viewPlan)
         viewPlan
       }
-    } map (processAlias(relationIdentifier, _, alias))
+    }
 
   override final def refreshCache(tableIdent: ViewIdentifier): Unit = tableCache clear
 

@@ -58,6 +58,10 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   private implicit def crossdataTable2tableIdentifier(xdTable: CrossdataTable): TableIdentifier =
     TableIdentifier(xdTable.tableName, xdTable.dbName)
 
+  /**
+    * Apply the lookup function to each underlying catalog until a [[LogicalPlan]] is found. If the table is found in a
+    * temporary catalog, the relation is saved into the previous temporary catalogs.
+    */
   private def chainedLookup(lookup: XDCatalogCommon => Option[LogicalPlan], tableIdentifier: TableIdentifier): Option[LogicalPlan] = {
     val (relationOpt, previousCatalogs) = takeUntilRelationFound(lookup, temporaryCatalogs)
 
@@ -73,19 +77,28 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   }
 
 
-  private def takeUntilRelationFound[R](lookup: XDCatalogCommon => Option[R], catList: Seq[XDTemporaryCatalog]): (Option[R], Seq[XDTemporaryCatalog]) = {
+  /**
+    * Apply the lookup function to each temporary catalog until a relation [[R]] is found. Returns the list of catalog,
+    * until a catalog satisfy the predicate 'lookup'.
+    *
+    * @param lookup lookup function
+    * @param tempCatalogs a seq of temporary catalogs
+    * @return a tuple (optionalRelation, firstNonMatchingLookupCatalogs)
+    */
+  private def takeUntilRelationFound[R](lookup: XDCatalogCommon => Option[R], tempCatalogs: Seq[XDTemporaryCatalog]): (Option[R], Seq[XDTemporaryCatalog]) = {
     @tailrec
     def accumulateRecursive(accum: Seq[XDTemporaryCatalog], rest: Seq[XDTemporaryCatalog]): (Option[R], Seq[XDTemporaryCatalog]) = {
 
-      if (rest.isEmpty) (None, accum)
-      else {
+      if (rest.isEmpty) {
+        (None, accum)
+      } else {
         lookup(rest.head) match {
           case Some(table) => (Some(table), accum)
           case None => accumulateRecursive(accum :+ rest.head, rest.tail)
         }
       }
     }
-    accumulateRecursive(Nil, catList)
+    accumulateRecursive(Nil, tempCatalogs)
   }
 
 
@@ -120,11 +133,11 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
    * CommonCatalog
    */
 
-  private def lookupRelationOpt(tableIdent: TableIdentifier, alias: Option[String] = None): Option[LogicalPlan] =
-    chainedLookup(_.relation(tableIdent, alias), tableIdent)
+  private def lookupRelationOpt(tableIdent: TableIdentifier): Option[LogicalPlan] =
+    chainedLookup(_.relation(tableIdent), tableIdent)
 
   override def lookupRelation(tableIdent: TableIdentifier, alias: Option[String]): LogicalPlan =
-    lookupRelationOpt(tableIdent, alias) getOrElse {
+    lookupRelationOpt(tableIdent) map { processAlias(tableIdent, _, alias)(conf)} getOrElse { // TODO streaming should take it into account, shouldn't it?
       log.debug(s"Relation not found: ${tableIdent.unquotedString}")
       sys.error(s"Relation not found: ${tableIdent.unquotedString}")
     }
