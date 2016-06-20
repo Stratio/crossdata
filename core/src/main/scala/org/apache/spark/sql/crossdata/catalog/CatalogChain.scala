@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.catalog
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp,CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
@@ -68,14 +68,14 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
    * TemporaryCatalog
    */
 
-  override def registerView(viewIdentifier: ViewIdentifier, logicalPlan: LogicalPlan): Unit =
-    temporaryCatalogs.foreach(_.saveView(viewIdentifier, logicalPlan))
+  override def registerView(viewIdentifier: ViewIdentifier, logicalPlan: LogicalPlan, sql: Option[String]): Unit =
+    temporaryCatalogs.foreach(_.saveView(viewIdentifier, logicalPlan, sql))
+
+  override def registerTable(tableIdent: ViewIdentifier, plan: LogicalPlan, crossdataTable: Option[CrossdataTable]): Unit =
+    temporaryCatalogs.foreach(_.saveTable(tableIdent, plan, crossdataTable))
 
   override def unregisterView(viewIdentifier: ViewIdentifier): Unit =
     temporaryCatalogs.foreach(_.dropView(viewIdentifier))
-
-  override def registerTable(tableIdent: TableIdentifier, plan: LogicalPlan): Unit =
-    temporaryCatalogs.foreach(_.saveTable(tableIdent, plan))
 
   override def unregisterTable(tableIdent: TableIdentifier): Unit =
     temporaryCatalogs.foreach(_.dropTable(tableIdent))
@@ -157,25 +157,32 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     persistentCatalogs foreach (_.dropAllViews())
   }
 
+
   override def dropIndex(indexIdentifier: IndexIdentifier): Unit = {
     val strIndex = indexIdentifier.unquotedString
-    if(lookupIndex(indexIdentifier).isEmpty) throw new RuntimeException(s"Index $strIndex can't be deleted because it doesn't exist")
+    if(indexMetadata(indexIdentifier).isEmpty) throw new RuntimeException(s"Index $strIndex can't be deleted because it doesn't exist")
     logInfo(s"Deleting index ${indexIdentifier.unquotedString} from catalog")
     persistentCatalogs foreach(_.dropIndex(indexIdentifier))
   }
 
-  private def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] =
-    persistentChainedLookup(_.lookupIndex(indexIdentifier))
+  override def indexMetadata(tableIdentifier: IndexIdentifier): Option[CrossdataIndex]=
+    persistentChainedLookup(_.lookupIndex(tableIdentifier))
+
+  override def tableHasIndex(tableIdentifier: TableIdentifier): Boolean = persistentCatalogs exists (_.tableHasIndex(tableIdentifier))
+
+  override def obtainTableIndex(tableIdentifier: TableIdentifier):Option[CrossdataIndex]=
+    persistentCatalogs map (_.obtainTableIndex(tableIdentifier)) collectFirst {
+      case Some(index) =>index
+    }
 
   override def dropAllIndexes(): Unit = {
     persistentCatalogs foreach (_.dropAllIndexes())
+
   }
 
-  override def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
-    persistentCatalogs.view map(_.lookupTable(tableIdentifier)) collectFirst {
-      case Some(res) => res
-    }
-  }
+  override def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable] =
+    persistentChainedLookup(_.lookupTable(tableIdentifier))
+
 
   override def refreshTable(tableIdent: TableIdentifier): Unit =
     persistentCatalogs.foreach(_.refreshCache(tableIdent))
@@ -258,5 +265,12 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   private def executeWithStrCatalogOrEmptyList[R](streamingCatalogOperation: XDStreamingCatalog => Seq[R]): Seq[R] =
     streamingCatalogs.toSeq.flatMap(streamingCatalogOperation)
+
+
+  override def lookupApp(alias: String): Option[CrossdataApp] =
+    persistentChainedLookup(_.getApp(alias))
+
+  override def persistAppMetadata(crossdataApp: CrossdataApp): Unit =
+    persistentCatalogs.foreach(_.saveAppMetadata(crossdataApp))
 
 }

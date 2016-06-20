@@ -21,17 +21,18 @@ import java.net.Socket
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
-import org.apache.spark.sql.crossdata.daos.impl.{TableTypesafeDAO, ViewTypesafeDAO}
-import org.apache.spark.sql.crossdata.models.{TableModel, ViewModel}
+import org.apache.spark.sql.crossdata.daos.impl.{AppTypesafeDAO, TableTypesafeDAO, ViewTypesafeDAO}
+import org.apache.spark.sql.crossdata.models.{AppModel, TableModel, ViewModel}
 
 import scala.util.Try
 
 /**
   * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using Zookeeper.
   * Using the common Stratio components for access and manage Zookeeper connections with Apache Curator.
- *
+  *
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
 class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
@@ -41,6 +42,7 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
 
   @transient val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
   @transient val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
+  @transient val appDAO = new AppTypesafeDAO(XDContext.catalogConfig)
 
 
   override def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
@@ -64,6 +66,28 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
       }
     } else {
       tableDAO.logger.warn("Tables path doesn't exist")
+      None
+    }
+  }
+
+
+  override def getApp(alias: String): Option[CrossdataApp] = {
+    if (appDAO.dao.count > 0) {
+      val findApp = appDAO.dao.getAll()
+        .find(appModel =>
+          appModel.appAlias == alias)
+
+      findApp match {
+        case Some(zkApp) =>
+          Option(CrossdataApp(zkApp.jar,
+            zkApp.appAlias,
+            zkApp.appClass))
+        case None =>
+          appDAO.logger.warn("App doesn't exist")
+          None
+      }
+    } else {
+      appDAO.logger.warn("App path doesn't exist")
       None
     }
   }
@@ -100,6 +124,17 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
   }
 
 
+  override def saveAppMetadata(crossdataApp: CrossdataApp): Unit = {
+    val appId = createId
+
+    appDAO.dao.create(appId,
+      AppModel(
+        crossdataApp.jar,
+        crossdataApp.appAlias,
+        crossdataApp.appClass))
+  }
+
+
   override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
     tableDAO.dao.getAll().filter {
       tableModel => tableIdentifier.table == tableModel.name && tableIdentifier.database == tableModel.database
@@ -110,7 +145,7 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
 
   override def dropAllTablesMetadata(): Unit = {
     tableDAO.dao.deleteAll
-    viewDAO.dao.getAll.foreach(view=>viewDAO.dao.delete(view.id))
+    viewDAO.dao.getAll.foreach(view => viewDAO.dao.delete(view.id))
   }
 
   override def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
@@ -149,9 +184,9 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
 
   override def isAvailable: Boolean = {
     //TODO this method must be changed when Stratio Commons provide a status connection of Zookeeper
-    val value=XDContext.catalogConfig.getString("zookeeper.connectionString")
-    val address=value.split(":")
-    Try(new Socket(address(0), address(1).toInt)).map( _ => true).getOrElse(false)
+    val value = XDContext.catalogConfig.getString("zookeeper.connectionString")
+    val address = value.split(":")
+    Try(new Socket(address(0), address(1).toInt)).map(s => { s.close; true}).getOrElse(false)
   }
 
   //TODO
@@ -165,4 +200,5 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
 
   override def dropIndexMetadata(tableIdentifier: ViewIdentifier): Unit = ???
 
+  override def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = ???
 }
