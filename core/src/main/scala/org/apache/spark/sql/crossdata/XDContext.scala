@@ -192,10 +192,13 @@ class XDContext protected (@transient val sc: SparkContext,
 
       object XDResolveRelations extends Rule[LogicalPlan] {
         override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
-          case i @ InsertIntoTable(u: UnresolvedRelation, _, _, _, _) =>
-            i.copy(table = ExtendedUnresolvedRelation(u.tableIdentifier, ResolveRelations(u)))
-          case u: UnresolvedRelation =>
-            ExtendedUnresolvedRelation(u.tableIdentifier, ResolveRelations(u))
+
+          case f @ org.apache.spark.sql.catalyst.plans.logical.Filter(condition, child: UnresolvedRelation) =>
+            if(true) { //TODO: Check catalog and check if we can get index comparing fields
+              org.apache.spark.sql.catalyst.plans.logical.Filter(condition, ExtendedUnresolvedRelation(child.tableIdentifier,child))
+            } else {
+              org.apache.spark.sql.catalyst.plans.logical.Filter(condition, child)
+            }
         }
       }
 
@@ -208,6 +211,7 @@ class XDContext protected (@transient val sc: SparkContext,
         Batch("Preparation", fixedPoint, preparationRules : _*),
         Batch("Resolution", fixedPoint,
           XDResolveRelations ::
+            ResolveRelations ::
             ResolveReferences ::
             ResolveGroupingAnalytics ::
             ResolvePivot ::
@@ -233,29 +237,8 @@ class XDContext protected (@transient val sc: SparkContext,
     }
 
   @transient
-  override protected[sql] lazy val optimizer: Optimizer = XDOptimizer
-
-  object XDOptimizer extends Optimizer {
-
-    def convertStrategy(strategy: DefaultOptimizer.Strategy): Strategy = strategy.maxIterations match {
-      case 1 => Once
-      case n => FixedPoint(n)
-    }
-
-    def convertBatches(batch: DefaultOptimizer.Batch): XDOptimizer.Batch =
-      Batch(batch.name, convertStrategy(batch.strategy), batch.rules: _*)
-
-    override protected val batches: Seq[XDOptimizer.Batch] =
-      (DefaultOptimizer.batches map (convertBatches(_))) ++ Seq(Batch("Global indexes phase", FixedPoint(10), CheckGlobalIndexInFilters))
-  }
-
-  object CheckGlobalIndexInFilters extends Rule[LogicalPlan] {
-    def apply(plan: LogicalPlan): LogicalPlan = plan
-  }
-
-  @transient
   class XDPlanner extends sparkexecution.SparkPlanner(this) with XDStrategies {
-    override def strategies: Seq[Strategy] = Seq(XDDDLStrategy, ExtendedDataSourceStrategy) ++ super.strategies
+    override def strategies: Seq[Strategy] = Seq(GlobalIndexStrategy, XDDDLStrategy, ExtendedDataSourceStrategy) ++ super.strategies
   }
 
   @transient

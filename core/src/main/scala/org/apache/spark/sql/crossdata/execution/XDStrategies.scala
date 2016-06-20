@@ -16,8 +16,12 @@
 package org.apache.spark.sql.crossdata.execution
 
 import org.apache.spark.sql.Strategy
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.plans.logical.{Filter, LogicalPlan}
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataIndex, IndexIdentifier}
+import org.apache.spark.sql.crossdata.catalyst.ExtendedUnresolvedRelation
 import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTableUsingAsSelect}
 import org.apache.spark.sql.execution.{ExecutedCommand, SparkPlan, SparkStrategies}
 
@@ -34,6 +38,31 @@ trait XDStrategies extends SparkStrategies {
         val cmd = PersistSelectAsTable(tableIdent, provider, partitionCols, mode, opts, query)
         ExecutedCommand(cmd) :: Nil
 
+      case _ => Nil
+    }
+  }
+
+  object GlobalIndexStrategy extends Strategy {
+    override def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {
+      case Filter(condition, ExtendedUnresolvedRelation(tableIdentifier, child)) =>
+        //TODO:Get catalog, check we have indexed table, check the condition has the
+        if(true){
+
+          val crossdataIndex: CrossdataIndex = CrossdataIndex(TableIdentifier("studentsInsertTest",Option("asd")), IndexIdentifier("studentsInsertTest","gidx"),
+            Seq("col1", "col2"), Seq("pk1", "pk2"), "dataSource", Map()) //TODO: Merge with jjlopez
+
+          val left = sqlContext.analyzer.execute(
+            sqlContext.parseSql(s"select * from ${crossdataIndex.indexIdentifier.unquotedString} where col = 22")
+          )
+          val right = sqlContext.analyzer.execute(
+            sqlContext.parseSql(s"select * from ${crossdataIndex.tableIdentifier.unquotedString} where fake IN (22)")
+          )
+
+          XDIndexJoin(planLater(left),right) :: Nil
+        } else {
+          org.apache.spark.sql.execution.Filter(condition, planLater(child)) :: Nil
+        }
+      case ExtendedUnresolvedRelation(tableIdentifier, child) => planLater(child) :: Nil
       case _ => Nil
     }
   }

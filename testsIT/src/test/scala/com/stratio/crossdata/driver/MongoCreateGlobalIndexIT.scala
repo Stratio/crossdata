@@ -19,6 +19,7 @@ import com.sksamuel.elastic4s.ElasticDsl
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.sksamuel.elastic4s.ElasticDsl._
+import org.apache.spark.sql.crossdata.ExecutionType
 
 
 @RunWith(classOf[JUnitRunner])
@@ -78,6 +79,11 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
          |)""".stripMargin
 
     sql(sentence)
+
+
+    val results = sql(s"select * from $Collection WHERE age > 10").collect(ExecutionType.Spark)
+
+    results should have length 1
   }
 
 }
