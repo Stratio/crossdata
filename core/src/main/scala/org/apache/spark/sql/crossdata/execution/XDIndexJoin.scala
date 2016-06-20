@@ -10,7 +10,7 @@ import org.apache.spark.sql.execution.{BinaryNode, Filter, SparkPlan}
 /**
   * Created by usarasola on 16/06/16.
   */
-case class XDIndexJoin(left: SparkPlan, right: LogicalPlan) extends XDBinaryNodeWithoutResolveLeft {
+case class XDIndexJoin(left: SparkPlan, right: LogicalPlan) extends XDBinaryNodeWithoutResolveRight {
 
 
   override protected def doExecute(): RDD[InternalRow] = {
@@ -33,7 +33,7 @@ case class XDIndexJoin(left: SparkPlan, right: LogicalPlan) extends XDBinaryNode
 
 }
 
-private[sql] trait XDBinaryNodeWithoutResolveLeft extends SparkPlan {
+private[sql] trait XDBinaryNodeWithoutResolveRight extends SparkPlan {
   def left: SparkPlan
   def right: LogicalPlan
 

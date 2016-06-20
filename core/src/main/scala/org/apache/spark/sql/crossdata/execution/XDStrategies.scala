@@ -48,15 +48,17 @@ trait XDStrategies extends SparkStrategies {
         //TODO:Get catalog, check we have indexed table, check the condition has the
         if(true){
 
-          val crossdataIndex: CrossdataIndex = CrossdataIndex(TableIdentifier("studentsInsertTest",Option("asd")), IndexIdentifier("studentsInsertTest","gidx"),
+          val crossdataIndex: CrossdataIndex = CrossdataIndex(TableIdentifier("proofGlobalIndex",Option("globalIndexDb")), IndexIdentifier("myIndex","gidx"),
             Seq("col1", "col2"), Seq("pk1", "pk2"), "dataSource", Map()) //TODO: Merge with jjlopez
 
           val left = sqlContext.analyzer.execute(
-            sqlContext.parseSql(s"select * from ${crossdataIndex.indexIdentifier.unquotedString} where col = 22")
+            sqlContext.parseSql(s"select id from ${crossdataIndex.indexIdentifier.unquotedString} where other > 10")
           )
-          val right = sqlContext.analyzer.execute(
-            sqlContext.parseSql(s"select * from ${crossdataIndex.tableIdentifier.unquotedString} where fake IN (22)")
-          )
+          /*val right = sqlContext.analyzer.execute(
+            sqlContext.parseSql(s"select * from ${crossdataIndex.tableIdentifier.unquotedString} where id IN (22)")
+          )*/
+
+          val right = sqlContext.parseSql(s"select * from ${crossdataIndex.tableIdentifier.unquotedString} where id IN (22)")
 
           XDIndexJoin(planLater(left),right) :: Nil
         } else {

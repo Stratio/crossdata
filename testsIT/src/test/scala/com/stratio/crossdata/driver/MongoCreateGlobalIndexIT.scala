@@ -34,7 +34,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     //Create test tables
     val createTable1 =
-      s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String)
+      s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String, other Integer)
       USING $MongoSourceProvider
           |OPTIONS (
           |host '127.0.0.1:27017',
@@ -68,7 +68,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     val sentence =
       s"""|CREATE GLOBAL INDEX myIndex
-         |ON globalIndexDb.proofGlobalIndex (comments)
+         |ON globalIndexDb.proofGlobalIndex (other)
          |WITH PK (id)
          |USING com.stratio.crossdata.connector.elasticsearch
          |OPTIONS (
@@ -81,7 +81,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     sql(sentence)
 
 
-    val results = sql(s"select * from $Collection WHERE age > 10").collect(ExecutionType.Spark)
+    val results = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect(ExecutionType.Spark)
 
     results should have length 1
   }

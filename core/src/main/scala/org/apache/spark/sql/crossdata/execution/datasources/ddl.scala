@@ -345,10 +345,11 @@ private [crossdata] case class CreateGlobalIndex(
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
     createElasticIndex(sqlContext).get
-    saveIndexMetadata
+    //saveIndexMetadata
 
     //TODO: Recover if something bad happens
-    ???
+    //???
+    Seq()
   }
 
 }
