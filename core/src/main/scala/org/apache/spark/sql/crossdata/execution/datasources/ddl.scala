@@ -196,7 +196,7 @@ private[crossdata] case object DropAllTables extends RunnableCommand {
 
 }
 
-private[crossdata] case class InsertIntoTable(xDContext: XDContext, tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues], schemaFromUser: Option[Seq[String]] = None)
+private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues], schemaFromUser: Option[Seq[String]] = None)
   extends RunnableCommand {
 
   override def output: Seq[Attribute] = {
@@ -217,10 +217,10 @@ private[crossdata] case class InsertIntoTable(xDContext: XDContext, tableIdentif
         relation match {
           case insertableRelation: InsertableRelation =>
             val dataframe = convertRows(sqlContext, parsedRows, schema)
-            if (xDContext.catalog.tableHasIndex(tableIdentifier)) {
+            if (sqlContext.catalog.tableHasIndex(tableIdentifier)) {
               //insert into ES because of global index
-              val crossdataIndex = xDContext.catalog.obtainTableIndex(tableIdentifier).get
-              xDContext.sql(
+              val crossdataIndex = sqlContext.catalog.obtainTableIndex(tableIdentifier).get
+              sqlContext.sql(
                 s"""INSERT INTO ${crossdataIndex.indexIdentifier}
                     |(${crossdataIndex.indexedCols.mkString(",")})
                     |VALUES (${parsedRows.mkString(",")})""".stripMargin)
@@ -271,7 +271,7 @@ private[crossdata] case class InsertIntoTable(xDContext: XDContext, tableIdentif
 }
 
 private[crossdata] object InsertIntoTable {
-  def apply(xDContext: XDContext, tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues]) = new InsertIntoTable(xDContext, tableIdentifier, parsedRows)
+  def apply(tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues]) = new InsertIntoTable(tableIdentifier, parsedRows)
 }
 
 object CreateTempView {

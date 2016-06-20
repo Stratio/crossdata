@@ -135,9 +135,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     INSERT ~> INTO ~> tableIdentifier ~ schemaValues.? ~ (VALUES ~> repsep(tableValues,","))  ^^ {
       case tableId ~ schemaValues ~ tableValues =>
         if(schemaValues.isDefined)
-          InsertIntoTable(xDContext, tableId, tableValues, schemaValues)
+          InsertIntoTable(tableId, tableValues, schemaValues)
         else
-          InsertIntoTable(xDContext, tableId, tableValues)
+          InsertIntoTable(tableId, tableValues)
     }
 
 

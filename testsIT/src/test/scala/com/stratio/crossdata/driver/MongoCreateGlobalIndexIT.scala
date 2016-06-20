@@ -80,4 +80,21 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     sql(sentence)
   }
 
+
+
+  "The insert in mongo doc with a global index" should "insert in ES too" in {
+
+    val ElasticHost: String = "172.17.0.2"
+    val ElasticRestPort = 9200
+    val ElasticNativePort = 9300
+    val ElasticClusterName: String = "elasticsearch"
+
+
+    val sentence =
+      s"""|INSERT INTO globalIndexDb.proofGlobalIndex(comments)
+          |VALUES( "this is a proof of insert in a column that has a global index")
+          |""".stripMargin
+
+    sql(sentence)
+  }
 }
