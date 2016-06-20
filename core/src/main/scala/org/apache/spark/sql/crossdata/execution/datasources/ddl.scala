@@ -220,10 +220,10 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
             if (sqlContext.catalog.tableHasIndex(tableIdentifier)) {
               //insert into ES because of global index
               val crossdataIndex = sqlContext.catalog.obtainTableIndex(tableIdentifier).get
+              val values = parsedRows map (x => x.mkString("\"", ",", "\"") ) mkString("(",",",")")
+
               sqlContext.sql(
-                s"""INSERT INTO ${crossdataIndex.indexIdentifier}
-                    |(${crossdataIndex.indexedCols.mkString(",")})
-                    |VALUES (${parsedRows.mkString(",")})""".stripMargin)
+                s"""INSERT INTO ${crossdataIndex.indexIdentifier.unquotedString} (${crossdataIndex.indexedCols.mkString(",")}) VALUES ${values}""".stripMargin)
             }
             insertableRelation.insert(dataframe, overwrite = false)
 
@@ -316,7 +316,7 @@ private[crossdata] case class DropView(viewIdentifier: ViewIdentifier)
   }
 }
 
-private[crossdata] case class AddJar(xdContext:XDContext,jarPath: String)
+private[crossdata] case class AddJar(xdContext: XDContext, jarPath: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
@@ -379,72 +379,72 @@ private[crossdata] case class CreateGlobalIndex(
   }
 }
 
-  private[crossdata] case class AddApp(xdContext: XDContext, jarPath: String, className: String, aliasName: Option[String] = None)
-    extends LogicalPlan with RunnableCommand {
+private[crossdata] case class AddApp(xdContext: XDContext, jarPath: String, className: String, aliasName: Option[String] = None)
+  extends LogicalPlan with RunnableCommand {
 
-    override def run(sqlContext: SQLContext): Seq[Row] = {
-      if (File(jarPath).exists) {
-        xdContext.addJar(jarPath)
-      } else {
-        sys.error("File doesn't exist")
-      }
-      xdContext.addApp(path = jarPath, clss = className, alias = aliasName.getOrElse(jarPath.split("/").last.split('.').head))
-      Seq.empty
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    if (File(jarPath).exists) {
+      xdContext.addJar(jarPath)
+    } else {
+      sys.error("File doesn't exist")
     }
+    xdContext.addApp(path = jarPath, clss = className, alias = aliasName.getOrElse(jarPath.split("/").last.split('.').head))
+    Seq.empty
+  }
+}
+
+private[crossdata] case class ExecuteApp(xdContext: XDContext, appName: String, arguments: Seq[String], options: Option[Map[String, String]])
+  extends LogicalPlan with RunnableCommand {
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(Seq(
+      StructField("infoMessage", StringType, nullable = true)
+    ))
+    schema.toAttributes
   }
 
-  private[crossdata] case class ExecuteApp(xdContext: XDContext, appName: String, arguments: Seq[String], options: Option[Map[String, String]])
-    extends LogicalPlan with RunnableCommand {
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    xdContext.executeApp(appName, arguments, options)
+  }
 
-    override val output: Seq[Attribute] = {
-      val schema = StructType(Seq(
-        StructField("infoMessage", StringType, nullable = true)
-      ))
-      schema.toAttributes
+}
+
+case class CreateExternalTable(
+                                tableIdent: TableIdentifier,
+                                userSpecifiedSchema: StructType,
+                                provider: String,
+                                options: Map[String, String],
+                                allowExisting: Boolean = false) extends LogicalPlan with RunnableCommand {
+
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+
+    val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
+
+    resolved match {
+
+      case _ if sqlContext.catalog.tableExists(tableIdent) =>
+        throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
+
+      case tableManipulation: TableManipulation =>
+
+        val tableInventory = tableManipulation.createExternalTable(sqlContext, tableIdent.table, tableIdent.database, userSpecifiedSchema, options)
+        tableInventory.map { tableInventory =>
+          val optionsWithTable = tableManipulation.generateConnectorOpts(tableInventory, options)
+          val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
+          import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
+          sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
+        } getOrElse (throw new RuntimeException(s"External table can't be created"))
+
+      case _ =>
+        sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")
     }
 
-    override def run(sqlContext: SQLContext): Seq[Row] = {
-      xdContext.executeApp(appName, arguments, options)
-    }
+    Seq.empty
 
   }
 
-  case class CreateExternalTable(
-                                  tableIdent: TableIdentifier,
-                                  userSpecifiedSchema: StructType,
-                                  provider: String,
-                                  options: Map[String, String],
-                                  allowExisting: Boolean = false) extends LogicalPlan with RunnableCommand {
-
-
-    override def run(sqlContext: SQLContext): Seq[Row] = {
-
-      val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
-
-      resolved match {
-
-        case _ if sqlContext.catalog.tableExists(tableIdent) =>
-          throw new AnalysisException(s"Table ${tableIdent.unquotedString} already exists")
-
-        case tableManipulation: TableManipulation =>
-
-          val tableInventory = tableManipulation.createExternalTable(sqlContext, tableIdent.table, tableIdent.database, userSpecifiedSchema, options)
-          tableInventory.map { tableInventory =>
-            val optionsWithTable = tableManipulation.generateConnectorOpts(tableInventory, options)
-            val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
-            import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
-            sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
-          } getOrElse (throw new RuntimeException(s"External table can't be created"))
-
-        case _ =>
-          sys.error("The Datasource does not support CREATE EXTERNAL TABLE command")
-      }
-
-      Seq.empty
-
-    }
-
-  }
+}
 
 
 
