@@ -28,7 +28,7 @@
 
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>parent_2.10</artifactId>
-    <version>1.5.0-SNAPSHOT</version>
+    <version>1.6.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Stratio Crossdata Parent</name>
     <description>Stratio Crossdata reactor</description>
@@ -100,7 +100,7 @@
     </modules>
 
     <properties>
-        <spark.version>1.6.1</spark.version>
+        <spark.version>2.0.0-preview</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
         <easymock.version>3.4</easymock.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
