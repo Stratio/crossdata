@@ -128,7 +128,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( 12, 12.01, 'proof', true)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List(List("12", "12.01", "proof", "true")))
+      InsertIntoTable(TableIdentifier("tableId"), List(List("12", "12.01", "proof", "true")))
 
   }
 
@@ -136,7 +136,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( 12, 12.01, 'proof', true), ( 2, 1.01, 'pof', true), ( 256, 0.01, 'pr', false)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"),
+      InsertIntoTable(TableIdentifier("tableId"),
         List(List("12", "12.01", "proof", "true"),List("2", "1.01", "pof", "true"),List("256", "0.01", "pr", "false")))
 
   }
@@ -145,7 +145,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId(Column1, Column2, Column3, Column4) VALUES ( 256, 0.01, 'pr', false)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List(List("256", "0.01", "pr", "false")), Some(List("Column1", "Column2", "Column3", "Column4")))
+      InsertIntoTable(TableIdentifier("tableId"), List(List("256", "0.01", "pr", "false")), Some(List("Column1", "Column2", "Column3", "Column4")))
 
   }
 
@@ -153,7 +153,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId(Column1, Column2, Column3, Column4) VALUES ( 12, 12.01, 'proof', true), ( 2, 1.01, 'pof', true), ( 256, 0.01, 'pr', false)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"),
+      InsertIntoTable(TableIdentifier("tableId"),
         List(List("12", "12.01", "proof", "true"),List("2", "1.01", "pof", "true"),List("256", "0.01", "pr", "false")),
         Some(List("Column1", "Column2", "Column3", "Column4")))
 
@@ -163,7 +163,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( [1,2], 12, 12.01, 'proof', [false,true], true, ["proof array", "proof2"])"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"),
+      InsertIntoTable(TableIdentifier("tableId"),
         List(List(List("1","2"),"12", "12.01", "proof", List("false","true"), "true", List("proof array","proof2"))))
 
   }
@@ -172,7 +172,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( [1,2], 12, 12.01, 'proof', [false,true], true, ["proof, array", "proof2"])"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"),
+      InsertIntoTable(TableIdentifier("tableId"),
         List(List(List("1","2"),"12", "12.01", "proof", List("false","true"), "true", List("proof, array","proof2"))))
 
   }
@@ -181,7 +181,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( (x -> 1, y -> 2), 12, 12.01, 'proof', (x1 -> false, x2 -> true), true)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"),
+      InsertIntoTable(TableIdentifier("tableId"),
         List(List(Map("x"->"1","y"->"2"),"12", "12.01", "proof", Map("x1"->"false","x2"->"true"), "true")))
 
   }
@@ -190,7 +190,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( (x -> 1, y -> 2, z -> 3), 12, 12.01, 'proof', (x1 -> "proof,comma", x2 -> "proof2"), true)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"),
+      InsertIntoTable(TableIdentifier("tableId"),
         List(List(Map("x"->"1","y"->"2","z"->"3"),"12", "12.01", "proof", Map("x1"->"proof,comma","x2"->"proof2"), "true")))
 
   }
@@ -199,7 +199,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ( [(x->1, y->2), (z->3)], (x -> [3,4], y -> [5,6]) )"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"),
+      InsertIntoTable(TableIdentifier("tableId"),
         List(List( List(Map("x"->"1","y"->"2"), Map("z"->"3")), Map("x" -> List("3","4"), "y" -> List("5","6")) )))
 
   }
@@ -208,7 +208,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
     val sentence = """INSERT INTO tableId VALUES ([], ())"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable( TableIdentifier("tableId"), List(List(List(), Map())))
+      InsertIntoTable(TableIdentifier("tableId"), List(List(List(), Map())))
 
   }
 
@@ -252,6 +252,64 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
   it should "successfully parse a ADD APP without Alias into a AddApp RunnableCommand" in {
     val sentence = "ADD APP '/my/path/file.jar' WITH aaa.bbb.ccc"
     parser.parse(sentence) shouldBe AddApp(xdContext,"/my/path/file.jar", "aaa.bbb.ccc", None)
+  }
+
+  it should "successfully parse a CREATE GLOBAL INDEX into a CreateGlobalIndex RunnableCommand" in {
+    val sentence =
+      """|CREATE GLOBAL INDEX myIndex
+         |ON myDb.myTable(col1, col2)
+         |WITH PK (pk1, pk2)
+         |USING com.stratio.crossdata.connector.elasticsearch
+         |OPTIONS (
+         |   opt1 "opt1val",
+         |   opt2 "opt2val"
+         |)""".stripMargin
+    parser.parse(sentence) shouldBe
+      CreateGlobalIndex(
+                        TableIdentifier("myIndex"),
+                        TableIdentifier("myTable", Some("myDb")),
+                        Seq("col1","col2"),
+                        Seq("pk1","pk2"),
+                        Option("com.stratio.crossdata.connector.elasticsearch"),
+                        Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
+  }
+
+  it should "successfully parse a CREATE GLOBAL INDEX without USING into a CreateGlobalIndex RunnableCommand" in {
+    val sentence =
+      """|CREATE GLOBAL INDEX myIndex
+         |ON myDb.myTable(col1, col2)
+         |WITH PK (pk1, pk2)
+         |OPTIONS (
+         |   opt1 "opt1val",
+         |   opt2 "opt2val"
+         |)""".stripMargin
+    parser.parse(sentence) shouldBe
+      CreateGlobalIndex(
+        TableIdentifier("myIndex"),
+        TableIdentifier("myTable", Some("myDb")),
+        Seq("col1","col2"),
+        Seq("pk1","pk2"),
+        None,
+        Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
+  }
+
+  it should "successfully parse a CREATE GLOBAL INDEX without USING without dbName into a CreateGlobalIndex RunnableCommand" in {
+    val sentence =
+      """|CREATE GLOBAL INDEX myDbIndex.myIndex
+         |ON myTable(col1, col2)
+         |WITH PK (pk1, pk2)
+         |OPTIONS (
+         |   opt1 "opt1val",
+         |   opt2 "opt2val"
+         |)""".stripMargin
+    parser.parse(sentence) shouldBe
+      CreateGlobalIndex(
+        TableIdentifier("myIndex",Option("myDbIndex")),
+        TableIdentifier("myTable"),
+        Seq("col1","col2"),
+        Seq("pk1","pk2"),
+        None,
+        Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }
 
 }

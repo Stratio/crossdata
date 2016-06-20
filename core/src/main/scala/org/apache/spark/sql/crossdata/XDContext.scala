@@ -29,14 +29,17 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.stratio.crossdata.utils.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
-import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, NoSuchTableException, ResolveUpCast, UnresolvedRelation}
+import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.plans.logical.{InsertIntoTable, LocalRelation, LogicalPlan, UnaryNode}
+import org.apache.spark.sql.catalyst.rules.Rule
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
 import org.apache.spark.sql.crossdata.catalog._
 import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
+import org.apache.spark.sql.crossdata.catalyst.ExtendedUnresolvedRelation
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
@@ -131,6 +134,8 @@ class XDContext protected (@transient val sc: SparkContext,
     }
   }
 
+
+
   @transient
   protected[crossdata] lazy val securityManager = {
 
@@ -176,6 +181,9 @@ class XDContext protected (@transient val sc: SparkContext,
 
     constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
   }
+
+
+
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
     new Analyzer(catalog, functionRegistry, catalystConf) {
@@ -190,6 +198,15 @@ class XDContext protected (@transient val sc: SparkContext,
         PreWriteCheck(catalog)
       )
 
+      object XDResolveRelations extends Rule[LogicalPlan] {
+        override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
+          case i @ InsertIntoTable(u: UnresolvedRelation, _, _, _, _) =>
+            i.copy(table = ExtendedUnresolvedRelation(u.tableIdentifier, ResolveRelations(u)))
+          case u: UnresolvedRelation =>
+            ExtendedUnresolvedRelation(u.tableIdentifier, ResolveRelations(u))
+        }
+      }
+
       val preparationRules = Seq(PrepareAggregateAlias)
 
       override lazy val batches: Seq[Batch] = Seq(
@@ -198,7 +215,7 @@ class XDContext protected (@transient val sc: SparkContext,
           WindowsSubstitution),
         Batch("Preparation", fixedPoint, preparationRules: _*),
         Batch("Resolution", fixedPoint,
-          ResolveRelations ::
+          XDResolveRelations ::
             ResolveReferences ::
             ResolveGroupingAnalytics ::
             ResolvePivot ::

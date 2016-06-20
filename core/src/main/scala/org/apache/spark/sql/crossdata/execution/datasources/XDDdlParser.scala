@@ -40,6 +40,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val INSERT = Keyword("INSERT")
   protected val INTO = Keyword("INTO")
   protected val VALUES = Keyword("VALUES")
+  protected val GLOBAL = Keyword("GLOBAL")
+  protected val INDEX = Keyword("INDEX")
+  protected val ON = Keyword("ON")
+  protected val PK = Keyword("PK")
   //Streaming keywords
   protected val EPHEMERAL = Keyword("EPHEMERAL")
   protected val SHOW = Keyword("SHOW")
@@ -65,7 +69,8 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable | dropExternalTable |
-      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp | executeApp
+      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp | executeApp | createGlobalIndex
+
 
 
   // TODO move to StreamingDdlParser
@@ -312,6 +317,15 @@ protected lazy val addApp: Parser[LogicalPlan] =
         }
         Success(streamSql, streamingInfoInput(in))
       }
+    }
+  }
+
+  protected lazy val createGlobalIndex: Parser[LogicalPlan] = {
+
+    CREATE ~ GLOBAL ~ INDEX ~> tableIdentifier ~ (ON ~> tableIdentifier) ~ schemaValues ~ (WITH ~> PK ~> schemaValues) ~ (USING ~> className).? ~ (OPTIONS ~> options) ^^ {
+      case index ~ table ~ columns ~ pks ~ provider ~ opts =>
+
+        CreateGlobalIndex(index, table, columns, pks, provider, opts)
     }
   }
 
