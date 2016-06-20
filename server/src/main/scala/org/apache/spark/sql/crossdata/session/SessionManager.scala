@@ -6,7 +6,7 @@ import com.hazelcast.core.{HazelcastInstance, IMap}
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
-import org.apache.spark.sql.crossdata.catalog.inmemory.{HashmapCatalog, HazelcastCatalog, MapCatalog}
+import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog, MapCatalog}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
 import scala.util.Try

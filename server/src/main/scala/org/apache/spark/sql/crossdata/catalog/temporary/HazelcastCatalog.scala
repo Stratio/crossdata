@@ -1,4 +1,4 @@
-package org.apache.spark.sql.crossdata.catalog.inmemory
+package org.apache.spark.sql.crossdata.catalog.temporary
 
 import com.hazelcast.core.IMap
 import org.apache.spark.sql.SQLContext

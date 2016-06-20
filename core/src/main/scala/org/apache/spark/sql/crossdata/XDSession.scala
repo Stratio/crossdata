@@ -47,7 +47,7 @@ class XDSession(
 
   //TODO: +1 Use catalog for this session instead fix one
   override protected[sql] lazy val catalog: XDCatalog = {
-    val catalogs: Seq[XDCatalogCommon] = (xdSessionState.xdTemporaryCatalog :+ externalCatalog) ++ streamingCatalog.toSeq
+    val catalogs: Seq[XDCatalogCommon] = (xdSessionState.temporaryCatalogs :+ externalCatalog) ++ streamingCatalog.toSeq
     CatalogChain(catalogs: _*)(this)
   }
 

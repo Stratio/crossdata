@@ -18,4 +18,4 @@ package org.apache.spark.sql.crossdata
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
-class XDSessionState(val sqlConf: SQLConf, val xdTemporaryCatalog: Seq[XDTemporaryCatalog])
+class XDSessionState(val sqlConf: SQLConf, val temporaryCatalogs: Seq[XDTemporaryCatalog])
