@@ -10,14 +10,14 @@
     </parent>
     <properties>
         <stratio-test-bdd.version>0.2.0-SNAPSHOT</stratio-test-bdd.version>
-        <crossdata.version>1.3.0-SNAPSHOT</crossdata.version>
+        <crossdata.version>1.4.0-RC1-SNAPSHOT</crossdata.version>
         <assertj-core.version>1.7.0</assertj-core.version>
         <scala.binary.version>2.10</scala.binary.version>
     </properties>
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>testsAT</artifactId>
 
-    <version>1.3.1-RC1-SNAPSHOT</version>
+    <version>1.4.0-RC1-SNAPSHOT</version>
 
     <build>
         <plugins>
