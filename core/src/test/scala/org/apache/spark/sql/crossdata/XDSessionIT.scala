@@ -25,7 +25,7 @@ import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.execution.PersistDataSourceTable
 import org.apache.spark.sql.execution.ExecutedCommand
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SQLConf}
+import org.apache.spark.sql.{DataFrame, Row, SQLConf, SaveMode}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfterAll
@@ -90,9 +90,12 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
       xdSession1.table(TempTableName).collect should not be empty
     }
 
-    df.write.format("csv").option("path", Paths.get(getClass.getResource(s"/$PersTableName.csv").toURI).toString).saveAsTable(PersTableName)
+    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$PersTableName").saveAsTable(PersTableName)
+
     xdSession2.table(PersTableName).collect should not be empty
     xdSession1.table(PersTableName).collect should not be empty
+
+    xdSession2.dropAllTables()
 
   }
 
