@@ -29,6 +29,9 @@ object CoreConfig {
   val CoreUserConfigFile = "external.config.filename"
   val CoreUserConfigResource = "external.config.resource"
   val CatalogConfigKey = "catalog"
+  val LauncherKey= "launcher"
+  val JarsRepo = "jars"
+  val HdfsKey = "hdfs"
 }
 
 trait CoreConfig extends Logging {

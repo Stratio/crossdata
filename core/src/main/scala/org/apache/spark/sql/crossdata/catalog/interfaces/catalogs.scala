@@ -19,7 +19,7 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog.{CrossdataTable, ViewIdentifier}
+import XDCatalog.{CrossdataApp, CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
 object XDCatalogCommon {
@@ -69,9 +69,15 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
 
 trait XDTemporaryCatalog extends XDCatalogCommon {
 
-  def saveTable(tableIdentifier: TableIdentifier, plan: LogicalPlan): Unit
+  def saveTable(
+                 tableIdentifier: TableIdentifier,
+                 plan: LogicalPlan,
+                 crossdataTable: Option[CrossdataTable] = None): Unit
 
-  def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan): Unit
+  def saveView(
+                viewIdentifier: ViewIdentifier,
+                plan: LogicalPlan,
+                query: Option[String] = None): Unit
 
   def dropTable(tableIdentifier: TableIdentifier): Unit
 
@@ -101,6 +107,18 @@ trait XDPersistentCatalog extends XDCatalogCommon {
   def dropAllViews(): Unit
 
   def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable]
+
+  def getApp(alias: String): Option[CrossdataApp]
+
+  def saveAppMetadata(crossdataApp: CrossdataApp): Unit
+
+}
+
+trait XDAppsCatalog {
+
+  def lookupApp(alias: String): Option[CrossdataApp]
+
+  def persistAppMetadata(crossdataApp: CrossdataApp): Unit
 
 }
 
