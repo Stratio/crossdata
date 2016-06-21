@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.test.util.akka
+package com.stratio.crossdata.util.akka.KeepAlive
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.TestKit
-import com.stratio.crossdata.util.akka.KeepAlive.{DoCheck, HeartBeat, LiveMan, Master}
+import com.stratio.crossdata.util.akka.KeepAlive.KeepAliveMaster.{DoCheck, HeartbeatLost}
+import com.stratio.crossdata.util.akka.KeepAlive.LiveMan.HeartBeat
 import org.scalatest.{FlatSpecLike, Matchers}
 
 import scala.concurrent.duration._
@@ -32,19 +33,6 @@ class KeepAliveSpec extends TestKit(ActorSystem("KeepAliveSpec"))
     override def receive: Receive = PartialFunction.empty
   }
 
-  abstract class MasterActorReceive extends Actor {
-    override def receive: Receive = PartialFunction.empty
-  }
-
-  case class HeartbeatLost(x: Int)
-
-  // https://issues.scala-lang.org/browse/SI-912
-  class MasterActor extends MasterActorReceive with Master[Int] {
-    override protected def onMiss(id: Int): Boolean = {
-      testActor ! HeartbeatLost(id)
-      false
-    }
-  }
 
   "A LiveMan Actor" should "periodically send HearBeat message providing its id" in {
 
@@ -60,7 +48,7 @@ class KeepAliveSpec extends TestKit(ActorSystem("KeepAliveSpec"))
 
   "A Master Actor" should "detect when a LiveManActor stops beating" in {
 
-    val master: ActorRef = system.actorOf(Props(new MasterActor))
+    val master: ActorRef = system.actorOf(KeepAliveMaster.props[Int](testActor))
 
     val liveMen: Seq[(Int, ActorRef)] = (1 to 5) map { idx =>
       master ! DoCheck(idx, 200 milliseconds)
@@ -86,11 +74,12 @@ class KeepAliveSpec extends TestKit(ActorSystem("KeepAliveSpec"))
     system.stop(lastActor)
 
     expectMsg(500 milliseconds, HeartbeatLost(lastId))
-
-    system.stop(master)
+    
     liveMen foreach {
       case (_, monitoredActor) => system.stop(monitoredActor)
     }
+
+    system.stop(master)
 
   }
 
