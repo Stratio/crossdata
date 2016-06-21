@@ -94,7 +94,6 @@ class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf:
     }
 
   override def clearAllSessions(): Unit = {
-    // TODO clear underlying maps
     import scala.collection.JavaConversions._
     sessionIDToTableViewID.values().foreach { case (tableUUID, viewUUID) =>
       hInstance.getMap(tableUUID.toString).clear()
