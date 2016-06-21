@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.stratio.crossdata.util.akka.KeepAlive
+package com.stratio.crossdata.common.util.akka.KeepAlive
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.stratio.crossdata.util.akka.KeepAlive.LiveMan.HeartBeat
-import com.stratio.crossdata.util.akka.KeepAlive.KeepAliveMaster.{DoCheck, HeartbeatLost}
+import LiveMan.HeartBeat
+import KeepAliveMaster.{DoCheck, HeartbeatLost}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -38,6 +38,7 @@ object KeepAliveMaster {
 
   /**
     * Message sent to the monitor client when a heartbeat has been lost.
+    *
     * @param id Identifier of the faulty monitored actor.
     */
   case class HeartbeatLost[T](id: T)

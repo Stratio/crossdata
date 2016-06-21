@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.util.akka.KeepAlive
+package com.stratio.crossdata.common.util.akka.KeepAlive
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.TestKit
-import com.stratio.crossdata.util.akka.KeepAlive.KeepAliveMaster.{DoCheck, HeartbeatLost}
-import com.stratio.crossdata.util.akka.KeepAlive.LiveMan.HeartBeat
+import com.stratio.crossdata.common.util.akka.KeepAlive.KeepAliveMaster.{DoCheck, HeartbeatLost}
+import com.stratio.crossdata.common.util.akka.KeepAlive.LiveMan.HeartBeat
 import org.scalatest.{FlatSpecLike, Matchers}
 
 import scala.concurrent.duration._

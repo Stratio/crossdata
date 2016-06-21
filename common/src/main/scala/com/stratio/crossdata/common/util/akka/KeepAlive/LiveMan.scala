@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.stratio.crossdata.util.akka.KeepAlive
+package com.stratio.crossdata.common.util.akka.KeepAlive
 
 import akka.actor.{Actor, ActorRef, Cancellable}
-import com.stratio.crossdata.util.akka.KeepAlive.LiveMan.HeartBeat
+import LiveMan.HeartBeat
 
 import scala.concurrent.duration._
 
