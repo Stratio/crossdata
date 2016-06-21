@@ -43,13 +43,15 @@ trait LiveMan[ID] extends Actor {
   private var ticks: Option[Cancellable] = None
   private lazy val tick: HeartBeat[ID] = HeartBeat(keepAliveId)
 
+  protected def sendTick: Unit = {
+    master ! tick
+  }
+
   abstract override def preStart(): Unit = {
     super.preStart()
     ticks = Some {
       import context.dispatcher
-      context.system.scheduler.schedule(initialDelay, period) {
-        master ! tick
-      }
+      context.system.scheduler.schedule(initialDelay, period)(sendTick)
     }
   }
 
