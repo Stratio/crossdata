@@ -33,7 +33,7 @@ object HazelcastSessionProvider {
 
   // TODO this is not the right place
   def checkNotNull[T]: T => Try[T] =
-    a => Option(a).map(Success(_)).getOrElse(Failure(sys.error(s"Map not found")))
+    a => Option(a).map(Success(_)).getOrElse(Failure(new RuntimeException(s"Map not found")))
 
 }
 
@@ -56,7 +56,6 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
   // TODO snapshot from (list(session) + addlistener)?? (
   private val sessionSQLProps: java.util.Map[SessionID, Map[String,String]] = hInstance.getMap(SqlConfMapId)
   private val sessionTempCatalogs: SessionManager[SessionID, Seq[XDTemporaryCatalog]] = new HazelcastSessionCatalogManager(hInstance, sharedState.sqlConf)
-
   // TODO addSessionsToAllMap && recieveSpecificOptions
   override def newSession(sessionID: SessionID): Try[XDSession] = // TODO try vs future
     Try {
@@ -67,10 +66,11 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
     }
 
   // TODO closeSession && removeFromAllCatalogs
-  override def closeSession(sessionID: SessionID): Try[Unit] = Try {
-    sessionSQLProps.remove(sessionID)
-    sessionTempCatalogs.removeSession(sessionID)
-  }
+  override def closeSession(sessionID: SessionID): Try[Unit] =
+    for {
+      _ <- checkNotNull(sessionSQLProps.remove(sessionID))
+      _ <- sessionTempCatalogs.removeSession(sessionID)
+    } yield ()
 
 
   // TODO take advantage of common utils pattern?
@@ -95,6 +95,5 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalogs)
     new XDSession(sharedState, sessionState)
   }
-
 
 }

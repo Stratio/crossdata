@@ -10,7 +10,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class HazelcastCatalogIT extends {
+class HazelcastCatalogSpec extends {
   val catalogName = "Hazelcast"
 } with XDTemporaryCatalogTests {
 
