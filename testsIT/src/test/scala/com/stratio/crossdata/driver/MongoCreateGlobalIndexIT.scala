@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.driver
 
+import com.mongodb.DBObject
+import com.mongodb.casbah.commons.MongoDBObject
 import com.sksamuel.elastic4s.ElasticDsl
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -43,6 +45,14 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
           |)
       """.stripMargin.replaceAll("\n", " ")
     sql(createTable1)
+
+    mongoClient(mongoTestDatabase)("proofGlobalIndex").insert(
+      MongoDBObject("id" -> 11, "name" -> "prueba", "comments" -> "one comment", "other" -> 12)
+    )
+
+    mongoClient(mongoTestDatabase)("proofGlobalIndex").insert(
+      MongoDBObject("id" -> 13, "name" -> "prueba fail", "comments" -> "one comment fail", "other" -> 5)
+    )
 
   }
 
@@ -82,7 +92,28 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     val results = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect(ExecutionType.Spark)
 
-    results should have length 0
+    results should have length 0 //No indexed data
+
+    elasticClient.execute {
+      index into "gidx" / "myIndex" fields(
+        "id" -> 11,
+        "other"-> 12)
+    }.await
+
+    elasticClient.execute {
+      index into "gidx" / "myIndex" fields(
+        "id" -> 13,
+        "other"-> 5)
+    }.await
+
+    elasticClient.execute {
+      flush index "gidx"
+    }.await
+
+    val resultsAfter = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect(ExecutionType.Spark)
+
+    resultsAfter should have length 1 //No indexed data
+
   }
 
 "The insert in mongo doc with a global index" should "insert in ES too" in {

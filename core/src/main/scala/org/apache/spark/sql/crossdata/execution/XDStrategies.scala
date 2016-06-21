@@ -82,7 +82,8 @@ trait XDStrategies extends SparkStrategies {
             val optimized = sqlContext.optimizer.execute(left)
 
             //Convert from select [] from indexedTable where [] > x to select [] from indexedTable where pks IN [leftResults]
-            val inCondition = In(UnresolvedAttribute(pk.head), Seq()) //TODO: Compound PK
+            val pkAttribute = child.output filter {x => x.name == pk.head} head
+            val inCondition = In(pkAttribute, Seq()) //TODO: Compound PK
             XDIndexJoin(planLater(optimized),Filter(inCondition, child)) :: Nil
 
           case _ => sys.error("Unsupported operation with index") //Should never be thrown (avoided by analizer)
