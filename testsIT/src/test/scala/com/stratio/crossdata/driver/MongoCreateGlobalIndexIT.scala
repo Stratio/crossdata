@@ -82,7 +82,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     val results = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect(ExecutionType.Spark)
 
-    results should have length 1
+    results should have length 0
   }
 
 "The insert in mongo doc with a global index" should "insert in ES too" in {

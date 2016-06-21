@@ -28,13 +28,13 @@ case class XDIndexJoin(left: SparkPlan, @transient right: LogicalPlan) extends X
 
       sparkPlanForIn.next().execute()
     } else {
-      left.execute()
+      sparkContext.emptyRDD
     }
 
 
   }
 
-  override def output: Seq[Attribute] = left.output
+  override def output: Seq[Attribute] = right.output
 
 }
 
