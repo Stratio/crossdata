@@ -41,7 +41,7 @@ trait LiveMan[ID] extends Actor {
   // Internal implementation
 
   private var ticks: Option[Cancellable] = None
-  private lazy val tick: HeartBeat[ID] = HeartBeat(keepAliveId)
+  protected lazy val tick: HeartBeat[ID] = HeartBeat(keepAliveId)
 
   protected def sendTick: Unit = {
     master ! tick
