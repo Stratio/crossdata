@@ -28,6 +28,8 @@ import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => Sourc
 import org.apache.spark.sql.types.StructType
 import org.elasticsearch.action.search.SearchResponse
 
+import scala.util.{Failure, Success, Try}
+
 object ElasticSearchQueryProcessor {
 
   def apply(logicalPlan: LogicalPlan, parameters: Map[String, String], schemaProvided: Option[StructType] = None)
@@ -48,28 +50,44 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
   /**
    * Executes the [[LogicalPlan]]] and query the ElasticSearch database
-   * @return the query result
+    *
+    * @return the query result
    */
   def execute(): Option[Array[Row]] = {
-    validatedNativePlan.map { case (baseLogicalPlan, limit) =>
-      val requiredColumns = baseLogicalPlan match {
-        case SimpleLogicalPlan(projects, _, _, _) =>
-          projects
+
+    def tryRows(requiredColumns: Seq[Attribute], finalQuery: SearchDefinition, esClient: ElasticClient): Try[Array[Row]] = {
+      val rows: Try[Array[Row]] = Try {
+        val resp = esClient.execute(finalQuery).await
+        if (resp.shardFailures.length > 0) {
+          val errors = resp.shardFailures map { failure => failure.reason() }
+          throw new RuntimeException(errors mkString("Errors from ES:", ";\n", ""))
+        } else {
+          ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
+        }
       }
-
-      val filters = baseLogicalPlan.filters
-
-      val (esIndex, esType) = extractIndexAndType(parameters).get
-
-      val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
-      val esClient = buildClient(parameters)
-      try {
-        val resp: SearchResponse = esClient.execute(finalQuery).await
-        ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
-      }finally {
-        esClient.close()
-      }
+      rows
     }
+
+    val plan = validatedNativePlan getOrElse(sys.error("Invalid native plan") )
+
+    val result: Try[Array[Row]] = plan match {
+      case (baseLogicalPlan, limit) =>
+        val requiredColumns = baseLogicalPlan match {
+          case SimpleLogicalPlan(projects, _, _, _) =>
+            projects
+        }
+
+        val filters = baseLogicalPlan.filters
+        val (esIndex, esType) = extractIndexAndType(parameters).get
+
+        val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
+
+        withClientDo(parameters) { esClient =>
+          tryRows(requiredColumns, finalQuery, esClient)
+        }
+    }
+
+    result.toOption
   }
 
 
@@ -85,15 +103,17 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       case sources.StringStartsWith(attribute, value) => prefixQuery(attribute, value.toLowerCase)
     }
 
+    import scala.collection.JavaConversions._
+
     val searchFilters = sFilters.collect {
-      case sources.EqualTo(attribute, value) => termFilter(attribute, value)
-      case sources.GreaterThan(attribute, value) => rangeFilter(attribute).gt(value)
-      case sources.GreaterThanOrEqual(attribute, value) => rangeFilter(attribute).gte(value.toString)
-      case sources.LessThan(attribute, value) => rangeFilter(attribute).lt(value)
-      case sources.LessThanOrEqual(attribute, value) => rangeFilter(attribute).lte(value.toString)
-      case sources.In(attribute, value) => termsFilter(attribute, value.toList: _*)
-      case sources.IsNotNull(attribute) => existsFilter(attribute)
-      case sources.IsNull(attribute) => missingFilter(attribute)
+      case sources.EqualTo(attribute, value) => termQuery(attribute, value)
+      case sources.GreaterThan(attribute, value) => rangeQuery(attribute).from(value).includeLower(false)
+      case sources.GreaterThanOrEqual(attribute, value) => rangeQuery(attribute).gte(value.toString)
+      case sources.LessThan(attribute, value) => rangeQuery(attribute).to(value).includeUpper(false)
+      case sources.LessThanOrEqual(attribute, value) => rangeQuery(attribute).lte(value.toString)
+      case sources.In(attribute, value) => termsQuery(attribute, value.map(_.asInstanceOf[AnyRef]): _*)
+      case sources.IsNotNull(attribute) => existsQuery(attribute)
+      case sources.IsNull(attribute) => must(not(existsQuery(attribute)))
     }
 
     val matchQuery = query bool must(matchers)
