@@ -239,6 +239,7 @@
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-testkit_${scala.binary.version}</artifactId>
                 <version>${akka.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
