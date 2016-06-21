@@ -20,12 +20,12 @@ import java.util.UUID
 import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.InitialStateAsSnapshot
 import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
-import akka.remote.DisassociatedEvent
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
+import com.stratio.crossdata.common.util.akka.KeepAlive.KeepAliveMaster
+import com.stratio.crossdata.common.util.akka.KeepAlive.KeepAliveMaster.{DoCheck, HeartbeatLost}
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
@@ -34,7 +34,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDSessionProvider
 import org.apache.spark.sql.types.StructType
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 
@@ -44,8 +44,7 @@ object ServerActor {
   def props(cluster: Cluster, sessionProvider: XDSessionProvider, config: ServerActorConfig): Props =
     Props(new ServerActor(cluster, sessionProvider, config))
 
-
-  protected case class JobId(requester: ActorRef, queryId: UUID)
+  protected case class JobId(requester: ActorRef, sessionId: UUID, queryId: UUID)
 
   protected case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
 
@@ -57,12 +56,13 @@ object ServerActor {
 
   }
 
-  case class State(jobsById: Map[JobId, ActorRef])
+  case class State(jobsById: Map[JobId, ActorRef], clientMonitor: ActorRef)
 
 }
 
 // TODO it should only accept messages from known sessions
-class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverActorConfig: ServerActorConfig) extends Actor with ServerConfig {
+class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverActorConfig: ServerActorConfig)
+  extends Actor with ServerConfig {
 
   import ServerActor.ManagementMessages._
   import ServerActor._
@@ -77,9 +77,6 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
     // Subscribe to the management distributed topic
     mediator ! Subscribe(ManagementTopic, self)
 
-    // Subscribe to disassociation events in the cluster
-    cluster.subscribe(self, InitialStateAsSnapshot, classOf[DisassociatedEvent])
-
   }
 
   // Actor behaviours
@@ -93,9 +90,10 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
   }
 
   private def checkSubscriptions(pendingTopics: Set[String]): Unit =
-    if (pendingTopics.isEmpty)
-      context.become(ready(State(Map.empty)))
-    else
+    if (pendingTopics.isEmpty) {
+      val clientMonitor = context.actorOf(KeepAliveMaster.props(self))
+      context.become(ready(State(Map.empty, clientMonitor)))
+    } else
       context.become(initial(pendingTopics))
 
   /**
@@ -112,7 +110,9 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
         case Success(xdSession) =>
           val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
           jobActor ! StartJob
-          context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
+          context.become(
+            ready(st.copy(jobsById = st.jobsById + (JobId(requester, id, sqlCommand.queryId) -> jobActor)))
+          )
 
         case Failure(error) =>
           logger.warn(s"Received message with an unknown sessionId $id", error)
@@ -127,7 +127,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
         sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
 
     case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, requester)) =>
-      st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
+      st.jobsById.get(JobId(requester, id, queryId)).get ! CancelJob
   }
 
 
@@ -140,8 +140,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
     case DelegateCommand(cmd, broadcaster) if broadcaster != self =>
       cmd match {
         // Inner pattern matching for future delegated command validations
-        case sc@CommandEnvelope(CancelQueryExecution(queryId), Session(_, requester)) =>
-          st.jobsById.get(JobId(requester, queryId)) foreach (_ => executeAccepted(sc)(st))
+        case sc@CommandEnvelope(CancelQueryExecution(queryId), Session(sid, requester)) =>
+          st.jobsById.get(JobId(requester, sid, queryId)) foreach (_ => executeAccepted(sc)(st))
         /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
             servers through the topic. */
       }
@@ -161,7 +161,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
       executeAccepted(sc)(st)
 
     case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, requester)) =>
-      st.jobsById.get(JobId(requester, cc.requestId)) map { _ =>
+      st.jobsById.get(JobId(requester, id, cc.requestId)) map { _ =>
         executeAccepted(sc)(st) // Command validated to be executed by this server.
       } getOrElse {
         // If it can't run here it should be executed somewhere else
@@ -175,9 +175,13 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
       sessionProvider.newSession(session.id)
       sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
 
+      st.clientMonitor ! DoCheck(session.id, 1 minute) //TODO: Time before alarm has to be configurable
+
     case sc@CommandEnvelope(_: CloseSessionCommand, session) =>
       // TODO validate/ actorRef instead of sessionId
       sessionProvider.closeSession(session.id)
+      /* Note that the client monitoring isn't explicitly stopped. It'll after the first miss
+          is detected, right after the driver has ended its session. */
 
   }
 
@@ -196,30 +200,26 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
       context.children.find(_ == who).foreach(gracefullyKill)
   }
 
+  // Manages clients' heartbeats losses, closing their sessions and stopping all jobs related to them.
+  def clientMonitoringEvents(st: State): Receive = {
+    case HeartbeatLost(sessionId: UUID) =>
+      val newjobsmap = st.jobsById filter {
+        case (JobId(_, jobSessionId, _), job) if jobSessionId == sessionId =>
+          gracefullyKill(job) // WARNING! Side-effect
+          sessionProvider.closeSession(sessionId)
+          false
+        case _ => true
+      }
+      context.become(ready(st.copy(jobsById = newjobsmap)))
+  }
+
   // Function composition to build the finally applied receive-function
   private def ready(st: State): Receive =
     broadcastRequestsRec(st) orElse
       commandMessagesRec(st) orElse
-      eventsRec(st) orElse {
-
-      case DisassociatedEvent(_, remoteAddress, _) =>
-        /*
-          Uses `DisassociatedEvent` to get notified of an association loss.
-          An akka association consist on the connection of a JVM to another to build remote connections upon.
-          Thus, the reception of this event message means all remote clients within the addressed jvm are down.
-
-           More info at: http://doc.akka.io/docs/akka/2.3.11/scala/remoting.html
-         */
-        val newjobsmap = st.jobsById filter {
-          case (JobId(requester, _), job) if requester.path.address == remoteAddress =>
-            gracefullyKill(job) // WARNING! Side-effect
-            false
-          case _ => true
-        }
-        context.become(ready(st.copy(jobsById = newjobsmap)))
-
-      case any =>
-        logger.warn(s"Something is going wrong! Unknown message: $any")
+      eventsRec(st) orElse
+      clientMonitoringEvents(st) orElse { case any =>
+      logger.warn(s"Something is going wrong! Unknown message: $any")
     }
 
   private def sentenceToDeath(victim: ActorRef): Unit = serverActorConfig.completedJobTTL match {
@@ -228,7 +228,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
     case _ => // Reprieve by infinite limit
   }
 
-  private def gracefullyKill(victim: ActorRef): Unit = {
+  def gracefullyKill(victim: ActorRef): Unit = {
     victim ! CancelJob
     victim ! PoisonPill
   }
@@ -238,5 +238,5 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
     case _ => Restart //Crashed job gets restarted (or not, depending on `retryNoAttempts` and `retryCountWindow`)
   }
 
-
 }
+

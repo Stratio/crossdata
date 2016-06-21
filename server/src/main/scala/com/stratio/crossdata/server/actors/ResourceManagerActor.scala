@@ -15,21 +15,19 @@
  */
 package com.stratio.crossdata.server.actors
 
-import java.io.{File, InputStream}
-import java.lang.reflect.Method
-import java.net.{URL, URLClassLoader}
+/*
+  TODO: Fix this actor since adding session management has broken it
+ */
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import akka.cluster.Cluster
 import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{Subscribe, SubscribeAck}
-import com.google.common.io.Files
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.server.actors.ServerActor.State
 import com.stratio.crossdata.server.config.ServerConfig
-import com.stratio.crossdata.utils.HdfsUtils
+import org.apache.hadoop.mapreduce.v2.api.records.JobId
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDSessionProvider
 import org.apache.spark.sql.types.StructType
@@ -39,6 +37,9 @@ object ResourceManagerActor {
 
   def props(cluster: Cluster, sessionProvider: XDSessionProvider): Props =
     Props(new ResourceManagerActor(cluster, sessionProvider))
+
+  case class State(jobsById: Map[JobId, ActorRef])
+
 }
 
 class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider) extends Actor with ServerConfig {
