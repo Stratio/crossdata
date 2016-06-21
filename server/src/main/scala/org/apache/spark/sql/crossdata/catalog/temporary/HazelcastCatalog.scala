@@ -24,11 +24,10 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDTem
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
 
 
-
 class HazelcastCatalog(
-                        private val tables: IMap[TableIdentifier, CrossdataTable], //TODO replace with map
+                        private val tables: IMap[TableIdentifier, CrossdataTable], //TODO replace with map? // hazelcastCatalogSessionManage should add the listener
                         private val views: IMap[TableIdentifier, String]
-                      )(implicit val catalystConf: CatalystConf) extends XDTemporaryCatalog with Serializable{
+                      )(implicit val catalystConf: CatalystConf) extends XDTemporaryCatalog with Serializable {
 
   import XDCatalogCommon._
 

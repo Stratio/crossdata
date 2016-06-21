@@ -58,7 +58,7 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
 
   def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan]
 
-  def allRelations(databaseName: Option[String]): Seq[TableIdentifier]
+  def allRelations(databaseName: Option[String] = None): Seq[TableIdentifier]
 
   def isAvailable: Boolean
 
