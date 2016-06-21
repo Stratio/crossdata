@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.catalog
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata._
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataTable}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataIndex, CrossdataTable, IndexIdentifier}
 import org.apache.spark.sql.crossdata.catalog.inmemory.MapCatalog
 import org.apache.spark.sql.crossdata.catalog.persistent.PersistentCatalogWithCache
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
@@ -250,10 +250,84 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     res.appAlias shouldBe "myApp"
     res.appClass shouldBe "com.stratio.app.main"
   }
-  
+
+  it should "persist index in catalog" in {
+    val tableIdentifier=TableIdentifier("tableIndex")
+    val indexIdentifier=IndexIdentifier("global","myIndex")
+    val indexedCols=Seq("colIndexed")
+    val pkCols=Seq("primaryCol")
+    val dataSource="mongo"
+    val opts=Map[String,String]()
+    val version="1.5.0"
+    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pkCols,dataSource,opts,version)
+
+    xdContext.catalog.persistIndex(crossdataIndex)
+
+    val res=xdContext.catalog.lookupIndex(indexIdentifier)
+
+    res.get shouldBe a[CrossdataIndex]
+    res.get.indexIdentifier shouldBe indexIdentifier
+  }
+
+  it should "drop index from catalog" in {
+    val tableIdentifier=TableIdentifier("tableIndex2")
+    val indexIdentifier=IndexIdentifier("global2","myIndex2")
+    val indexedCols=Seq("colIndexed")
+    val pkCols=Seq("primaryCol")
+    val dataSource="mongo"
+    val opts=Map[String,String]()
+    val version="1.5.0"
+    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pkCols,dataSource,opts,version)
+
+    xdContext.catalog.persistIndex(crossdataIndex)
+
+    xdContext.catalog.dropIndex(indexIdentifier)
+    val res=xdContext.catalog.lookupIndex(indexIdentifier)
+
+    res shouldBe None
+  }
+
+  it should "obtain index from catalog with tableIdentifier" in {
+    val tableIdentifier=TableIdentifier("tableIndex3")
+    val indexIdentifier=IndexIdentifier("global3","myIndex3")
+    val indexedCols=Seq("colIndexed")
+    val pkCols=Seq("primaryCol")
+    val dataSource="mongo"
+    val opts=Map[String,String]()
+    val version="1.5.0"
+    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pkCols,dataSource,opts,version)
+
+    xdContext.catalog.persistIndex(crossdataIndex)
+
+    val res=xdContext.catalog.obtainTableIndex(tableIdentifier)
+
+    res.get shouldBe a[CrossdataIndex]
+    res.get.indexIdentifier shouldBe indexIdentifier
+  }
+
+  it should "drop all indexes" in {
+    val tableIdentifier=TableIdentifier("tableIndex4")
+    val indexIdentifier=IndexIdentifier("global4","myIndex4")
+    val indexedCols=Seq("colIndexed")
+    val pkCols=Seq("primaryCol")
+    val dataSource="mongo"
+    val opts=Map[String,String]()
+    val version="1.5.0"
+    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pkCols,dataSource,opts,version)
+
+    xdContext.catalog.persistIndex(crossdataIndex)
+
+    xdContext.catalog.dropAllIndexes()
+
+    val res=xdContext.catalog.lookupIndex(indexIdentifier)
+    res shouldBe None
+
+  }
+
   override protected def afterAll() {
     xdContext.catalog.dropAllTables()
     xdContext.catalog.dropAllViews()
+    xdContext.catalog.dropAllIndexes()
     super.afterAll()
   }
 
