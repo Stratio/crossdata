@@ -29,9 +29,10 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.stratio.crossdata.utils.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, NoSuchTableException, ResolveUpCast, UnresolvedRelation}
-import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, NoSuchTableException, ResolveUpCast, UnresolvedAttribute, UnresolvedRelation}
+import org.apache.spark.sql.catalyst.expressions.{Attribute, GreaterThan, Literal}
 import org.apache.spark.sql.catalyst.optimizer.{DefaultOptimizer, Optimizer}
+import org.apache.spark.sql.catalyst.plans.logical
 import org.apache.spark.sql.catalyst.plans.logical.{InsertIntoTable, LocalRelation, LogicalPlan, UnaryNode}
 import org.apache.spark.sql.catalyst.rules.Rule
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
@@ -199,13 +200,20 @@ class XDContext protected (@transient val sc: SparkContext,
       )
 
       object XDResolveRelations extends Rule[LogicalPlan] {
+
         override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
 
-          case f @ org.apache.spark.sql.catalyst.plans.logical.Filter(condition, child: UnresolvedRelation) =>
-            if(true) { //TODO: Check catalog and check if we can get index comparing fields
-              org.apache.spark.sql.catalyst.plans.logical.Filter(condition, ExtendedUnresolvedRelation(child.tableIdentifier,child))
-            } else {
-              org.apache.spark.sql.catalyst.plans.logical.Filter(condition, child)
+          case f @ logical.Filter(condition, child: UnresolvedRelation) => condition match {
+
+              case GreaterThan(attr @ UnresolvedAttribute(_), Literal(value, dataType)) => //TODO: Ver con David
+                val index = catalog.obtainTableIndex(child.tableIdentifier)
+                if(index.isDefined && index.get.indexedCols.contains(attr.name)){ //TODO: Que pasa si viene como db.attr?
+                  logical.Filter(condition, ExtendedUnresolvedRelation(child.tableIdentifier,child))
+                } else{
+                  logical.Filter(condition, child)
+                }
+
+              case _ => logical.Filter(condition, child)
             }
         }
       }

@@ -355,11 +355,8 @@ private[crossdata] case class CreateGlobalIndex(
           sys.error("Not found the table you want to index")
       }
 
-      //TODO: Change index name, for allowing multiple index ???
       CreateExternalTable(TableIdentifier(finalIndex.indexType, Option(finalIndex.indexName)), elasticSchema, indexProvider, options).run(sqlContext)
-
       CrossdataIndex(tableIdent, finalIndex, cols, pk, indexProvider, options)
-
     }
 
   private def saveIndexMetadata(sqlContext: SQLContext, crossdataIndex: CrossdataIndex) = {
