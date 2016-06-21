@@ -398,7 +398,8 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
   private def openSession(): Try[Boolean] = {
     import Driver._
-    Try {
+
+    val res = Try {
       val promise = Promise[ServerReply]()
       proxyActor ! (securitizeCommand(OpenSessionCommand()), promise)
 
@@ -407,11 +408,13 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
         InitializationTimeout
       ).members.nonEmpty
 
-    } foreach {
-      case true =>
-        sessionBeacon = Some(system.actorOf(sessionBeaconProps))
-      case _ =>
     }
+
+    res.filter(x => x).foreach { _ =>
+      sessionBeacon = Some(system.actorOf(sessionBeaconProps))
+    }
+
+    res
 
   }
 
