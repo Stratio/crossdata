@@ -36,6 +36,7 @@ implicit def asXDCatalog (catalog: Catalog): XDCatalog = catalog.asInstanceOf[XD
     def quotedString: String = s"`$indexName`.`$indexType`"
     def unquotedString: String = s"$indexName.$indexType"
     override def toString: String = quotedString
+    def asTableIdentifier: TableIdentifier = TableIdentifier(indexType,Option(indexName))
   }
 
   case class CrossdataTable(tableName: String, dbName: Option[String], schema: Option[StructType],

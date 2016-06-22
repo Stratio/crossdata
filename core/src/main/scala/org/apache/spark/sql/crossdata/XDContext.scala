@@ -30,28 +30,29 @@ import com.stratio.crossdata.utils.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, NoSuchTableException, ResolveUpCast, UnresolvedAttribute, UnresolvedRelation}
-import org.apache.spark.sql.catalyst.expressions.{Attribute, AttributeReference, GreaterThan, In, Literal, UnsafeRow}
+import org.apache.spark.sql.catalyst.expressions.{Attribute, AttributeReference, Expression, GreaterThan, In, Literal, UnsafeRow}
 import org.apache.spark.sql.catalyst.optimizer.{DefaultOptimizer, Optimizer}
 import org.apache.spark.sql.catalyst.plans.logical
-import org.apache.spark.sql.catalyst.plans.logical.{InsertIntoTable, LocalRelation, LogicalPlan, UnaryNode}
+import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.catalyst.rules.Rule
 import org.apache.spark.sql.catalyst.{CatalystConf, InternalRow, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataIndex, IndexIdentifier}
 import org.apache.spark.sql.crossdata.catalog._
 import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalyst.ExtendedUnresolvedRelation
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
+import org.apache.spark.sql.crossdata.execution.datasources.{DDLUtils, ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.launcher.SparkJobLauncher
 import org.apache.spark.sql.crossdata.security.{Credentials, SecurityManager}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.{ExtractPythonUDFs, SparkPlan}
-import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
-import org.apache.spark.sql.types.{IntegerType, StructType}
+import org.apache.spark.sql.execution.datasources.{LogicalRelation, PreInsertCastAndRename, PreWriteCheck}
+import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.types.{DataType, IntegerType, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, Strategy, execution => sparkexecution}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
@@ -203,18 +204,22 @@ class XDContext protected (@transient val sc: SparkContext,
 
         override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
 
-          case f @ logical.Filter(condition, child: UnresolvedRelation) => condition match {
+          case f @ logical.Filter(condition, child: UnresolvedRelation) => //Just support Filter + unresolved with Filters for now
+            val index = catalog.obtainTableIndex(child.tableIdentifier)
 
-              case GreaterThan(attr @ UnresolvedAttribute(_), Literal(value, dataType)) => //TODO: Ver con David
-                val index = catalog.obtainTableIndex(child.tableIdentifier)
-                if(index.isDefined && index.get.indexedCols.contains(attr.name)){ //TODO: Que pasa si viene como db.attr?
-                  logical.Filter(condition, ExtendedUnresolvedRelation(child.tableIdentifier,child))
-                } else{
-                  logical.Filter(condition, child)
-                }
-
-              case _ => logical.Filter(condition, child)
+            //TODO: Que pasa si viene como db.attr?
+            val attrs: Seq[String] = condition collect {
+              case UnresolvedAttribute(name) => name.last //Avoid table.name
+              case AttributeReference(name,_,_,_) => name //Needed?
             }
+
+
+            if(index.isDefined && (index.get.indexedCols filter { col => attrs.contains(col)}).length > 0 ){
+              logical.Filter(condition, ExtendedUnresolvedRelation(child.tableIdentifier,child))
+            } else{
+              logical.Filter(condition, child)
+            }
+
         }
       }
 
@@ -285,36 +290,57 @@ class XDContext protected (@transient val sc: SparkContext,
       self.planner.plan(analyzeAndOptimize(plan)).next()
     }
 
-    private def pkToAttribute(pk: String, schema: StructType): UnresolvedAttribute = //TODO (multiple PK and get real name)
-      UnresolvedAttribute(pk)
+    private def schemaToAttribute(schema: StructType): Seq[UnresolvedAttribute] =
+      schema.fields map {field => UnresolvedAttribute(field.name)}
 
-    private def resultPksToLiterals(rows: Array[InternalRow], pk: String, schema: StructType): Seq[Literal] =
-      rows map { row =>  Literal(row.getInt(0)) } //TODO
+    private def resultPksToLiterals(rows: Array[InternalRow], dataType:DataType): Seq[Literal] =
+      rows map { row =>
+        val valTransformed = row.toSeq(Seq(dataType)).head
+        Literal.create(valTransformed, dataType)
+      } //TODO compound PK
+
+    private def buildIndexRequestLogicalPlan(condition: Expression, index: CrossdataIndex): LogicalPlan = {
+
+      val (logical,base) = self.catalog.lookupRelation(index.indexIdentifier.asTableIdentifier) match {
+        case Subquery(_, logicalRelation @ LogicalRelation(relation: BaseRelation, _)) => (logicalRelation,relation)
+      }
+
+      //We need to retrieve all the retrieve cols for use the filter
+      val pksAndColsIndexed: Seq[UnresolvedAttribute] = schemaToAttribute(DDLUtils.extractSchema(index.pkCols++index.indexedCols, base.schema))
+
+      //Old attributes reference have to be updated
+      val convertedCondition = condition transform {
+        case UnresolvedAttribute(name) => (pksAndColsIndexed filter (_.name == name)).head
+        case AttributeReference(name, _, _, _) => (pksAndColsIndexed filter (_.name == name)).head
+      }
+
+      Filter(convertedCondition, Project(pksAndColsIndexed, logical))
+    }
 
     def apply(plan: LogicalPlan): LogicalPlan = plan transform {
-      case f@logical.Filter(condition, ExtendedUnresolvedRelation(tableIdentifier, child)) => condition match {
+      case f@logical.Filter(condition, ExtendedUnresolvedRelation(tableIdentifier, child)) => {
 
-        case GreaterThan(AttributeReference(attrName, _, _, _), Literal(value, dataType)) => //TODO: Other cases...
-          val crossdataIndex = self.catalog.asInstanceOf[XDCatalog].obtainTableIndex(tableIdentifier) getOrElse
-            (sys.error("Unexpected error. Can't find index for enhance query with indexes"))
-          val pk = crossdataIndex.pkCols.head //TODO: Multiple pks?????
+        val crossdataIndex = self.catalog.asInstanceOf[XDCatalog].obtainTableIndex(tableIdentifier) getOrElse
+          (sys.error("Unexpected error. Can't find index for enhance query with indexes"))
 
-          val elasticSparkPlan = optimizeAndToSparkPlan(
-            self.parseSql(
-              s"""|select ${pk} from ${crossdataIndex.indexIdentifier.unquotedString}
-                  |where $attrName > $value""".stripMargin)
-          )
+        val indexLogicalPlan = buildIndexRequestLogicalPlan(condition, crossdataIndex)
+        val indexSparkPlan = optimizeAndToSparkPlan(indexLogicalPlan)
+        val indexedRows = self.prepareForExecution.execute(indexSparkPlan).execute().collect() //TODO: Warning memory issues
 
-          //Get rows from ES
-          val indexedRows = self.prepareForExecution.execute(elasticSparkPlan).execute().collect() //TODO: Warning memory issues
-          if (indexedRows.length > 0) {
-
-            //Convert to query with filter IN
-            //TODO: SCHEMA
-            analyzeAndOptimize(logical.Filter(In(pkToAttribute(pk, child.schema), resultPksToLiterals(indexedRows, pk, child.schema)),child))
-          } else {
-            LocalRelation(child.output)
+        if (indexedRows.length > 0) {
+          //Convert to query with filter IN
+          val baseRelationFromSourceTable = self.catalog.lookupRelation(crossdataIndex.tableIdentifier) match {
+            case Subquery(_, logicalRelation @ LogicalRelation(relation: BaseRelation, _)) => relation
           }
+
+          //TODO: Compound PK????
+          val pkSchema = DDLUtils.extractSchema(crossdataIndex.pkCols, baseRelationFromSourceTable.schema)
+          val pkAttribute = schemaToAttribute(pkSchema).head
+
+          analyzeAndOptimize(logical.Filter(In(pkAttribute, resultPksToLiterals(indexedRows,pkSchema.fields.head.dataType)),child))
+        } else {
+          LocalRelation(child.output)
+        }
       }
     }
   }
