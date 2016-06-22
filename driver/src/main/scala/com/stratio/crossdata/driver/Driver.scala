@@ -151,7 +151,7 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
   private val sessionBeaconProps = SessionBeaconActor.props(
     driverSession.id,
-    1 minute, //TODO: Make this configurable
+    10 seconds, //TODO: Make this configurable
     clusterClientActor,
     ServerClusterClientParameters.ServerPath
   )

@@ -26,6 +26,7 @@ import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.KeepAlive.KeepAliveMaster
 import com.stratio.crossdata.common.util.akka.KeepAlive.KeepAliveMaster.{DoCheck, HeartbeatLost}
+import com.stratio.crossdata.common.util.akka.KeepAlive.LiveMan.HeartBeat
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
@@ -173,6 +174,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
 
     case sc@CommandEnvelope(_: OpenSessionCommand, session) =>
       sessionProvider.newSession(session.id)
+
       sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
 
       st.clientMonitor ! DoCheck(session.id, 1 minute) //TODO: Time before alarm has to be configurable
@@ -206,11 +208,14 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
       val newjobsmap = st.jobsById filter {
         case (JobId(_, jobSessionId, _), job) if jobSessionId == sessionId =>
           gracefullyKill(job) // WARNING! Side-effect
-          sessionProvider.closeSession(sessionId)
           false
         case _ => true
       }
       context.become(ready(st.copy(jobsById = newjobsmap)))
+      sessionProvider.closeSession(sessionId)
+
+    case hb: HeartBeat[_] =>
+      st.clientMonitor forward hb
   }
 
   // Function composition to build the finally applied receive-function
