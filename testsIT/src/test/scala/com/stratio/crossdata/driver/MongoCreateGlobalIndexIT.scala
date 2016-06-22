@@ -21,6 +21,7 @@ import com.sksamuel.elastic4s.ElasticDsl
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.sksamuel.elastic4s.ElasticDsl._
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.ExecutionType
 
 
@@ -51,7 +52,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     )
 
     mongoClient(mongoTestDatabase)("proofGlobalIndex").insert(
-      MongoDBObject("id" -> 13, "name" -> "prueba fail", "comments" -> "one comment fail", "other" -> 5)
+      MongoDBObject("id" -> 13, "name" -> "prueba2", "comments" -> "one comment fail", "other" -> 5)
     )
 
   }
@@ -112,7 +113,13 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     val resultsAfter = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect(ExecutionType.Spark)
 
-    resultsAfter should have length 1 //No indexed data
+    resultsAfter should have length 1
+    resultsAfter shouldBe Array(Row(11, "prueba", "one comment", 12))
+
+    val resultsEquals = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other = 5").collect(ExecutionType.Spark)
+
+    resultsEquals should have length 1
+    resultsEquals shouldBe Array(Row(13, "prueba2", "one comment fail", 5))
 
   }
 

@@ -298,7 +298,6 @@ class XDContext protected (@transient val sc: SparkContext,
           val crossdataIndex = self.catalog.asInstanceOf[XDCatalog].obtainTableIndex(tableIdentifier) getOrElse
             (sys.error("Unexpected error. Can't find index for enhance query with indexes"))
           val pk = crossdataIndex.pkCols.head //TODO: Multiple pks?????
-          //val indexedCols = crossdataIndex.indexedCols //TODO: check if is an indexed col
 
           val elasticSparkPlan = optimizeAndToSparkPlan(
             self.parseSql(
