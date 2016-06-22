@@ -126,7 +126,7 @@ class XDContext protected (@transient val sc: SparkContext,
       val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
       Option(constr.newInstance(catalystConf).asInstanceOf[XDStreamingCatalog])
     } else {
-      logError("Empty streaming catalog")
+      logWarning("There is no configured streaming catalog")
       None
     }
   }
