@@ -97,9 +97,9 @@ object Driver {
         val isConnected = driver.openSession().getOrElse {
           throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after ${Driver.InitializationTimeout}")
         }
-        /* TODO if (!isConnected) {
-          throw new RuntimeException(s"T")
-        }*/
+        if (!isConnected) { // TODO openSession().filter??
+          throw new RuntimeException(s"The server has rejected the open session request")
+        }
         setActiveDriver(driver)
       }
       activeDriver.get()
@@ -391,7 +391,7 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     Try {
       val promise = Promise[ServerReply]()
       proxyActor ! (securitizeCommand(OpenSessionCommand()), promise)
-      Await.result(promise.future.mapTo[ClusterStateReply].map(_.clusterState), InitializationTimeout).members.nonEmpty
+      Await.result(promise.future.mapTo[OpenSessionReply].map(_.isOpen), InitializationTimeout)
     }
 /*
     */
