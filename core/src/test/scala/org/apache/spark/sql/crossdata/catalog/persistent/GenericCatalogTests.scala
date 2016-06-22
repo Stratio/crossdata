@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.catalog.persistent
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataTable}
-import org.apache.spark.sql.crossdata.catalog.inmemory.MapCatalog
-import org.apache.spark.sql.crossdata.catalog.persistent.PersistentCatalogWithCache
+import org.apache.spark.sql.crossdata.catalog.temporary.MapCatalog
+import org.apache.spark.sql.crossdata.catalog.{CatalogChain, CatalogConstants, XDCatalog}
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types._

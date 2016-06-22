@@ -15,9 +15,6 @@
  */
 package com.stratio.crossdata.server.actors
 
-import java.io.{File, InputStream}
-import java.lang.reflect.Method
-import java.net.{URL, URLClassLoader}
 import java.util.UUID
 
 import akka.actor.SupervisorStrategy.Restart
@@ -27,27 +24,25 @@ import akka.cluster.ClusterEvent.InitialStateAsSnapshot
 import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import akka.remote.DisassociatedEvent
-import com.google.common.io.Files
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
-import com.stratio.crossdata.utils.HdfsUtils
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst.expressions.{GenericRowWithSchema, GenericRow}
-import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.types.{StringType, DataType, StructField, StructType}
+import org.apache.spark.sql.crossdata.XDSessionProvider
+import org.apache.spark.sql.types.StructType
 
 import scala.concurrent.duration.FiniteDuration
+import scala.util.{Failure, Success}
 
 
 object ServerActor {
   val ManagementTopic: String = "jobsManagement"
 
-  def props(cluster: Cluster, xdContext: XDContext, config: ServerActorConfig): Props =
-    Props(new ServerActor(cluster, xdContext, config))
+  def props(cluster: Cluster, sessionProvider: XDSessionProvider, config: ServerActorConfig): Props =
+    Props(new ServerActor(cluster, sessionProvider, config))
 
 
   protected case class JobId(requester: ActorRef, queryId: UUID)
@@ -66,7 +61,8 @@ object ServerActor {
 
 }
 
-class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: ServerActorConfig) extends Actor with ServerConfig {
+// TODO it should only accept messages from known sessions
+class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverActorConfig: ServerActorConfig) extends Actor with ServerConfig {
 
   import ServerActor.ManagementMessages._
   import ServerActor._
@@ -112,12 +108,20 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
     case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, requester)) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
-      val jobActor = context.actorOf(JobActor.props(xdContext, sqlCommand, sender(), timeout))
-      jobActor ! StartJob
-      context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
+      val sessionOpt = sessionProvider.session(id) match {
+        case Success(xdSession) =>
+          val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
+          jobActor ! StartJob
+          context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
+
+        case Failure(error) =>
+          logger.warn(s"Received message with an unknown sessionId $id", error)
+          sender ! ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+      }
+
 
     case CommandEnvelope(addAppCommand@AddAppCommand(path, alias, clss, _), session@Session(id, requester)) =>
-      if (xdContext.addApp(path, clss, alias).isDefined)
+      if ( sessionProvider.session(id).map(_.addApp(path, clss, alias)).getOrElse(None).isDefined)// TODO improve addJar sessionManagement
         sender ! SQLReply(addAppCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
       else
         sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
@@ -143,6 +147,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
       }
   }
 
+  // TODO do not accept unknown sessions
   // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
   def commandMessagesRec(st: State): Receive = {
 
@@ -163,9 +168,24 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
         mediator ! Publish(ManagementTopic, DelegateCommand(sc, self))
       }
 
-    case clusterStateCommand@ClusterStateCommand() =>
-      sender ! ClusterStateReply(clusterStateCommand.requestId, cluster.state)
+    case sc@CommandEnvelope(_: ClusterStateCommand, session) =>
+      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
 
+    case sc@CommandEnvelope(_: OpenSessionCommand, session) =>
+      sessionProvider.newSession(session.id) match {
+        case Success(_) =>
+          logger.info(s"new session with sessionID=${session.id} has been created")//TODO debug
+          sender ! OpenSessionReply(sc.cmd.requestId, isOpen = true)
+        case Failure(error) =>
+          logger.error(s"failure while creating the session with sessionID=${session.id}")//TODO debug
+          sender ! OpenSessionReply(sc.cmd.requestId, isOpen = false)
+      }
+
+
+
+    case sc@CommandEnvelope(_: CloseSessionCommand, session) =>
+      // TODO validate/ actorRef instead of sessionId
+      sessionProvider.closeSession(session.id)
 
   }
 

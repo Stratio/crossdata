@@ -32,10 +32,9 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
 import org.apache.spark.sql.crossdata.catalog._
-import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
+import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
@@ -79,7 +78,6 @@ class XDContext protected (@transient val sc: SparkContext,
      Config should be changed by a map and implicitly converted into `Config` whenever one of its
      methods is called.
      */
-
   import XDContext.{catalogConfig, config, xdConfig}
 
   xdConfig = userConfig.fold(config) { userConf =>
@@ -88,7 +86,9 @@ class XDContext protected (@transient val sc: SparkContext,
 
   catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
 
-  private val catalystConf: CatalystConf = {
+  // TODO replace with sqlConf (which extends CatalystConf)
+  // TODO @deprecated
+  protected lazy val catalystConf: CatalystConf = {
     import XDContext.CaseSensitive
     val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
     new SimpleCatalystConf(caseSensitive)
@@ -97,14 +97,14 @@ class XDContext protected (@transient val sc: SparkContext,
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {
     val catalogs: List[XDCatalogCommon] =  temporaryCatalog :: externalCatalog :: streamingCatalog.toList
-    CatalogChain(catalogs:_*)(catalystConf)
+    CatalogChain(catalogs:_*)(self)
   }
 
   @transient
-  private lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(catalystConf)
+  protected lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(catalystConf)
 
   @transient
-  private lazy val externalCatalog: XDPersistentCatalog = {
+  protected lazy val externalCatalog: XDPersistentCatalog = {
 
     import XDContext.DerbyClass
     val externalCatalogName = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
@@ -119,14 +119,14 @@ class XDContext protected (@transient val sc: SparkContext,
 
 
   @transient
-  private lazy val streamingCatalog: Option[XDStreamingCatalog] = {
-    if (xdConfig.hasPath(StreamingCatalogClassConfigKey)) {
-      val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = {
+    if (xdConfig.hasPath(XDContext.StreamingCatalogClassConfigKey)) {
+      val streamingCatalogClass = xdConfig.getString(XDContext.StreamingCatalogClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)
       val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
       Option(constr.newInstance(catalystConf).asInstanceOf[XDStreamingCatalog])
     } else {
-      logError("Empty streaming catalog")
+      logWarning("There is no configured streaming catalog")
       None
     }
   }
@@ -134,7 +134,7 @@ class XDContext protected (@transient val sc: SparkContext,
   @transient
   protected[crossdata] lazy val securityManager = {
 
-    import XDContext.DefaultSecurityManager
+    import XDContext._
 
     val securityClass = if (xdConfig.hasPath(SecurityClassConfigKey))
       xdConfig.getString(SecurityClassConfigKey)
@@ -271,7 +271,7 @@ class XDContext protected (@transient val sc: SparkContext,
     *
     * @param path The local path or hdfs path where SparkContext will take the JAR
     */
-  def addJar(path: String, toClasspath:Option[Boolean]=None) = {
+  def addJar(path: String, toClasspath: Option[Boolean] = None) = {
     super.addJar(path)
     if ((path.toLowerCase.startsWith("hdfs://")) && (toClasspath.getOrElse(true))){
       val hdfsIS: InputStream = HdfsUtils(xdConfig.getConfig(CoreConfig.HdfsKey)).getFile(path)

@@ -32,6 +32,10 @@
     <description>Crossdata Server</description>
     <url>http://stratio.github.io/crossdata/</url>
 
+    <properties>
+        <hazelcast.version>3.6.3</hazelcast.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
@@ -99,6 +103,11 @@
             <groupId>com.stratio.common</groupId>
             <artifactId>common-utils_${scala.binary.version}</artifactId>
             <version>${common.utils.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>${hazelcast.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

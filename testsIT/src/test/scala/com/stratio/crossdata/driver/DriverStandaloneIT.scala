@@ -15,39 +15,18 @@
  */
 package com.stratio.crossdata.driver
 
-import java.util.concurrent.TimeoutException
-
-import com.stratio.crossdata.common.result.ErrorSQLResult
 import com.stratio.crossdata.test.BaseXDTest
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class DriverStandaloneIT extends BaseXDTest {
 
   "Crossdata driver" should "fail with a timeout when there is no server" in {
-    val driver = Driver.getOrCreate()
 
-    val result = driver.sql("select * from any").waitForResult(1 seconds)
+    a[RuntimeException] should be thrownBy Driver.getOrCreate()
 
-    result.hasError should be(true)
-    a[RuntimeException] should be thrownBy result.resultSet
+    the [RuntimeException] thrownBy {
+      Driver.getOrCreate()
+    } should have message s"Cannot establish connection to XDServer: timed out after ${Driver.InitializationTimeout}"
 
-    result shouldBe an[ErrorSQLResult]
-    result.asInstanceOf[ErrorSQLResult].message should include regex "(?i)timeout was exceed"
-
-  }
-
-
-  it should "return a future with a timeout when there is no server" in {
-    val driver = Driver.getOrCreate()
-    val future = driver.sql("select * from any").sqlResult
-    a[TimeoutException] should be thrownBy Await.result(future, 2 seconds)
-  }
-
-  it should "indicates that the cluster is not alive when there is no server" in {
-    val driver = Driver.getOrCreate()
-    driver.isClusterAlive(1 second) shouldBe false
   }
 
 }

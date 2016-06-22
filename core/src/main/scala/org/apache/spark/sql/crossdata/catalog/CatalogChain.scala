@@ -18,13 +18,16 @@ package org.apache.spark.sql.crossdata.catalog
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
+import scala.annotation.tailrec
+
 
 object CatalogChain {
-  def apply(catalogs: XDCatalogCommon*)(conf: CatalystConf): CatalogChain = {
+  def apply(catalogs: XDCatalogCommon*)(xdContext: XDContext): CatalogChain = {
     val temporaryCatalogs = catalogs.collect { case a: XDTemporaryCatalog => a }
     val persistentCatalogs = catalogs.collect { case a: XDPersistentCatalog => a }
     val streamingCatalogs = catalogs.collect { case a: XDStreamingCatalog => a }
@@ -33,7 +36,7 @@ object CatalogChain {
       temporaryCatalogs.headOption.orElse(persistentCatalogs.headOption).isDefined,
       "At least one catalog (temporary or persistent ) must be included"
     )
-    new CatalogChain(temporaryCatalogs, persistentCatalogs, streamingCatalogs.headOption)(conf)
+    new CatalogChain(temporaryCatalogs, persistentCatalogs, streamingCatalogs.headOption)(xdContext)
   }
 }
 
@@ -44,19 +47,59 @@ object CatalogChain {
 private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTemporaryCatalog],
                                               val persistentCatalogs: Seq[XDPersistentCatalog],
                                               val streamingCatalogs: Option[XDStreamingCatalog]
-                                               )(override val conf: CatalystConf) extends XDCatalog with SparkLoggerComponent {
+                                               )(implicit val xdContext: XDContext) extends XDCatalog with SparkLoggerComponent {
 
   import XDCatalogCommon._
+
+  override val conf: CatalystConf = xdContext.conf
 
   private val catalogs: Seq[XDCatalogCommon] = temporaryCatalogs ++: persistentCatalogs ++: streamingCatalogs.toSeq
 
   private implicit def crossdataTable2tableIdentifier(xdTable: CrossdataTable): TableIdentifier =
     TableIdentifier(xdTable.tableName, xdTable.dbName)
 
-  private def chainedLookup[R](lookup: XDCatalogCommon => Option[R]): Option[R] =
-    catalogs.view map lookup collectFirst {
-      case Some(res) => res
+  /**
+    * Apply the lookup function to each underlying catalog until a [[LogicalPlan]] is found. If the table is found in a
+    * temporary catalog, the relation is saved into the previous temporary catalogs.
+    */
+  private def chainedLookup(lookup: XDCatalogCommon => Option[LogicalPlan], tableIdentifier: TableIdentifier): Option[LogicalPlan] = {
+    val (relationOpt, previousCatalogs) = takeUntilRelationFound(lookup, temporaryCatalogs)
+
+    if (relationOpt.isDefined) {
+      previousCatalogs.foreach(_.saveTable(tableIdentifier, relationOpt.get)) //TODO tableIdentifier should be available
+      relationOpt
+    } else {
+      (persistentCatalogs ++: streamingCatalogs.toSeq).view map lookup collectFirst {
+        case Some(res) => res
+      }
     }
+
+  }
+
+
+  /**
+    * Apply the lookup function to each temporary catalog until a relation [[R]] is found. Returns the list of catalog,
+    * until a catalog satisfy the predicate 'lookup'.
+    *
+    * @param lookup lookup function
+    * @param tempCatalogs a seq of temporary catalogs
+    * @return a tuple (optionalRelation, firstNonMatchingLookupCatalogs)
+    */
+  private def takeUntilRelationFound[R](lookup: XDCatalogCommon => Option[R], tempCatalogs: Seq[XDTemporaryCatalog]): (Option[R], Seq[XDTemporaryCatalog]) = {
+    @tailrec
+    def accumulateRecursive(accum: Seq[XDTemporaryCatalog], rest: Seq[XDTemporaryCatalog]): (Option[R], Seq[XDTemporaryCatalog]) = {
+
+      if (rest.isEmpty) {
+        (None, accum)
+      } else {
+        lookup(rest.head) match {
+          case Some(table) => (Some(table), accum)
+          case None => accumulateRecursive(accum :+ rest.head, rest.tail)
+        }
+      }
+    }
+    accumulateRecursive(Nil, tempCatalogs)
+  }
 
 
   private def persistentChainedLookup[R](lookup: XDPersistentCatalog => Option[R]): Option[R] =
@@ -71,6 +114,8 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   override def registerView(viewIdentifier: ViewIdentifier, logicalPlan: LogicalPlan, sql: Option[String]): Unit =
     temporaryCatalogs.foreach(_.saveView(viewIdentifier, logicalPlan, sql))
 
+  // TODO throw an exception if there is no temp catalogs! Review CatalogChain
+  // TODO refactor => CrossdataTable without Option
   override def registerTable(tableIdent: ViewIdentifier, plan: LogicalPlan, crossdataTable: Option[CrossdataTable]): Unit =
     temporaryCatalogs.foreach(_.saveTable(tableIdent, plan, crossdataTable))
 
@@ -88,11 +133,11 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
    * CommonCatalog
    */
 
-  private def lookupRelationOpt(tableIdent: TableIdentifier, alias: Option[String] = None): Option[LogicalPlan] =
-    chainedLookup(_.relation(tableIdent, alias))
+  private def lookupRelationOpt(tableIdent: TableIdentifier): Option[LogicalPlan] =
+    chainedLookup(_.relation(tableIdent), tableIdent)
 
   override def lookupRelation(tableIdent: TableIdentifier, alias: Option[String]): LogicalPlan =
-    lookupRelationOpt(tableIdent, alias) getOrElse {
+    lookupRelationOpt(tableIdent) map { processAlias(tableIdent, _, alias)(conf)} getOrElse { // TODO streaming should take it into account, shouldn't it?
       log.debug(s"Relation not found: ${tableIdent.unquotedString}")
       sys.error(s"Relation not found: ${tableIdent.unquotedString}")
     }
