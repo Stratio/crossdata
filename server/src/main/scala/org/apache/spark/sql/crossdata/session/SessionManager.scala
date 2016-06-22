@@ -21,9 +21,10 @@ import com.hazelcast.core.{HazelcastInstance, IMap}
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
-import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog, MapCatalog}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
+import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog, MapCatalog}
 
+import scala.collection.mutable
 import scala.util.Try
 
 
@@ -48,15 +49,14 @@ class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf:
   type TableMapUUID = UUID
   type ViewMapUUID = UUID
 
-  private val sessionIDToMapCatalog: java.util.Map[SessionID, MapCatalog] = new java.util.HashMap()
+  private val sessionIDToMapCatalog: mutable.Map[SessionID, MapCatalog] = mutable.Map.empty
   private val sessionIDToTableViewID: IMap[SessionID, (TableMapUUID, ViewMapUUID)] = hInstance.getMap(HazelcastCatalogMapId)
 
   // Returns the seq of XDTempCatalog for the new session
   override def addSession(key: SessionID): Seq[XDTemporaryCatalog] = {
     // TODO try // TODO check if the session already exists?? and use it or it hsould not happen??
     // AddMapCatalog for local/cache interaction
-    val localCatalog = new HashmapCatalog(catalystConf)
-    sessionIDToMapCatalog.put(key, localCatalog)
+    val localCatalog = addNewMapCatalog(key)
 
     // Add hazCatalog for detect metadata from other servers
     val (tableMap, tableMapUUID) = createRandomMap[TableIdentifier, CrossdataTable]
@@ -70,19 +70,17 @@ class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf:
   // TODO refactor
   override def getSession(key: SessionID): Try[Seq[XDTemporaryCatalog]] =
     for {
-      mapCatalog <- checkNotNull(sessionIDToMapCatalog.get(key))
       (tableUUID, viewUUID) <- checkNotNull(sessionIDToTableViewID.get(key))
       hazelcastTables <- checkNotNull(hInstance.getMap[TableIdentifier, CrossdataTable](tableUUID.toString))
       hazelcastViews <- checkNotNull(hInstance.getMap[ViewIdentifier, String](viewUUID.toString))
     } yield {
       val hazelcastCatalog = new HazelcastCatalog(hazelcastTables, hazelcastViews)(catalystConf)
+      val mapCatalog = sessionIDToMapCatalog.getOrElse(key, addNewMapCatalog(key)) // local catalog could not exist
       Seq(mapCatalog, hazelcastCatalog)
     }
 
-
   override def removeSession(key: SessionID): Try[Unit] =
     for {
-      mapCatalog <- checkNotNull(sessionIDToMapCatalog.get(key))
       (tableUUID, viewUUID) <- checkNotNull(sessionIDToTableViewID.get(key))
       hazelcastTables <- checkNotNull(hInstance.getMap(tableUUID.toString))
       hazelcastViews <- checkNotNull(hInstance.getMap(viewUUID.toString))
@@ -106,6 +104,12 @@ class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf:
   private def createRandomMap[K, V]: (IMap[K, V], UUID) = {
     val randomUUID = UUID.randomUUID()
     (hInstance.getMap[K, V](randomUUID.toString), randomUUID)
+  }
+
+  private def addNewMapCatalog(sessionID: SessionID): HashmapCatalog = {
+    val localCatalog = new HashmapCatalog(catalystConf)
+    sessionIDToMapCatalog.put(sessionID, localCatalog)
+    localCatalog
   }
 
 }
