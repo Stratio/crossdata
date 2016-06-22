@@ -16,7 +16,9 @@
 package org.apache.spark.sql.crossdata.execution.datasources
 
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.{XDCatalog, CatalogChain}
+import XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.persistent.PersistentCatalogWithCache
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.types.StructField
@@ -31,6 +33,10 @@ class DropTableIT extends SharedXDContextTest {
   private val DatabaseName = "dbId"
   private val DatasourceName = "json"
   private val Schema = StructType(Seq(StructField("col", StringType)))
+
+  implicit def catalogToPersistenceWithCache(catalog: XDCatalog): PersistentCatalogWithCache = {
+    catalog.asInstanceOf[CatalogChain].persistentCatalogs.head.asInstanceOf[PersistentCatalogWithCache]
+  }
 
   "DropTable command" should "remove a table from Crossdata catalog" in {
 

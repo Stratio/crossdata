@@ -19,12 +19,14 @@ import java.sql.{Date, Timestamp}
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
+import com.typesafe.config.Config
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.XDCatalog._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
@@ -127,7 +129,9 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
         logInfo(s"Importing table ${tableId.unquotedString}")
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
         val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
-        sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
+        import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
+        import XDCatalog._
+        sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
       }
       val tableSeq = DDLUtils.tableIdentifierToSeq(tableId)
       Row(tableSeq, ignoreTable)
@@ -149,7 +153,7 @@ private[crossdata] case class DropExternalTable(tableIdentifier: TableIdentifier
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val crossadataTable = sqlContext.catalog.lookupTable(tableIdentifier) getOrElse( sys.error("Error dropping external table. Table doesn't exists in the catalog") )
+    val crossadataTable = sqlContext.catalog.tableMetadata(tableIdentifier) getOrElse( sys.error("Error dropping external table. Table doesn't exist in the catalog") )
 
     val provider = crossadataTable.datasource
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
@@ -261,11 +265,23 @@ private[crossdata] object InsertIntoTable {
   def apply(tableIdentifier: TableIdentifier, parsedRows: Seq[DDLUtils.RowValues]) = new InsertIntoTable(tableIdentifier, parsedRows)
 }
 
-private[crossdata] case class CreateTempView(viewIdentifier: ViewIdentifier, queryPlan: LogicalPlan)
+object CreateTempView {
+  def apply(
+             viewIdentifier: ViewIdentifier,
+             queryPlan: LogicalPlan,
+             sql: String
+           ): CreateTempView = new CreateTempView(viewIdentifier, queryPlan, Some(sql))
+}
+
+private[crossdata] case class CreateTempView(
+                                              viewIdentifier: ViewIdentifier,
+                                              queryPlan: LogicalPlan,
+                                              sql: Option[String]
+                                            )
   extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.registerView(viewIdentifier, queryPlan)
+    sqlContext.catalog.registerView(viewIdentifier, queryPlan, sql)
     Seq.empty
   }
 
@@ -291,16 +307,44 @@ private[crossdata] case class DropView(viewIdentifier: ViewIdentifier)
   }
 }
 
-private[crossdata] case class AddJar(jarPath: String)
+private[crossdata] case class AddJar(xdContext:XDContext,jarPath: String)
   extends LogicalPlan with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     if (jarPath.toLowerCase.startsWith("hdfs://") || File(jarPath).exists) {
-      sqlContext.sparkContext.addJar(jarPath)
+      xdContext.addJar(jarPath)
       Seq.empty
     } else {
-      sys.error("File doesn't exists or is not a hdfs file")
+      sys.error("File doesn't exist or is not a hdfs file")
     }
+  }
+}
+
+private[crossdata] case class AddApp(xdContext:XDContext, jarPath: String, className:String,aliasName:Option[String]=None)
+  extends LogicalPlan with RunnableCommand {
+
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    if (File(jarPath).exists) {
+      xdContext.addJar(jarPath)
+    } else {
+      sys.error("File doesn't exist")
+    }
+    xdContext.addApp(path=jarPath, clss = className, alias=aliasName.getOrElse(jarPath.split("/").last.split('.').head))
+    Seq.empty
+  }
+}
+
+private[crossdata] case class ExecuteApp(xdContext:XDContext,appName:String, arguments:Seq[String], options:Option[Map[String,String]])
+  extends LogicalPlan with RunnableCommand {
+
+  override val output: Seq[Attribute] = {
+    val schema = StructType(Seq(
+      StructField("infoMessage", StringType, nullable = true)
+    ))
+    schema.toAttributes
+  }
+  override def run(sqlContext: SQLContext): Seq[Row] = {
+    xdContext.executeApp(appName, arguments, options)
   }
 }
 
@@ -327,7 +371,8 @@ case class CreateExternalTable(
         tableInventory.map{ tableInventory =>
           val optionsWithTable = tableManipulation.generateConnectorOpts(tableInventory, options)
           val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
-          sqlContext.catalog.persistTable(crossdataTable, sqlContext.catalog.createLogicalRelation(crossdataTable))
+          import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
+          sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
         } getOrElse( throw new RuntimeException(s"External table can't be created"))
 
       case _ =>

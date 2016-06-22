@@ -17,21 +17,17 @@ package org.apache.spark.streaming.kafka
 
 import java.util.Properties
 
-import com.stratio.crossdata.streaming.helpers.CrossdataStreamingHelper
 import com.stratio.crossdata.streaming.helpers.CrossdataStreamingHelper._
 import com.stratio.crossdata.streaming.test.{BaseSparkStreamingXDTest, CommonValues}
 import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
-import kafka.serializer.StringDecoder
+import org.apache.spark.sql.catalyst.SimpleCatalystConf
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.ZookeeperStreamingCatalog
-import org.apache.spark.sql.crossdata.models.{ConnectionModel, ConnectionHostModel}
+import org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import scala.collection.mutable
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 @RunWith(classOf[JUnitRunner])
@@ -56,7 +52,7 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
       zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress)
       catalogConf = parseZookeeperCatalogConfig(zookeeperConf)
       xDContext = XDContext.getOrCreate(sc, parseCatalogConfig(catalogConf))
-      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(xDContext)
+      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true))
     }
 
     if (consumer == null){

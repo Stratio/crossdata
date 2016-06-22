@@ -24,6 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.reflect.io.File
 
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
@@ -96,41 +97,6 @@ class DriverIT extends EndToEndTest {
 
   }
 
-
-  //    // TODO move to examples??
-  //    // TODO check this tests with HDFS
-  //    it should "be able to execute ADD JAR Command of an existent file" in {
-  //      assumeCrossdataUpAndRunning
-  //
-  //      val file=File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
-  //      val driver = Driver.getOrCreate()
-  //      val result = driver.addJar(file.path).waitForResult()
-  //
-  //      driver.stop()
-  //      file.delete()
-  //
-  //      result.hasError should equal (false)
-  //    }
-
-  //  it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
-  //
-  //    val driver = Driver.getOrCreate()
-  //    val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
-  //    driver.stop()
-  //
-  //    result.hasError should equal (true)
-  //  }
-  //
-  //  it should "be able to execute ADD JAR Command of any HDFS file" in {
-  //
-  //    val driver = Driver.getOrCreate()
-  //    val result = driver.addJar(s"hdfs://repo/file.jar").waitForResult()
-  //    driver.stop()
-  //
-  //    result.hasError should equal (false)
-  //  }
-
-
   it should "indicates that the cluster is alive when there is a server up" in {
     val driver = Driver.getOrCreate()
 
@@ -154,5 +120,63 @@ class DriverIT extends EndToEndTest {
     clusterState.getLeader.host shouldBe Some("127.0.0.1")
   }
 
+
+
+
+
+        it should "be able to execute ADD JAR Command of an existent file" in {
+          assumeCrossdataUpAndRunning
+
+          val file=File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
+          val driver = Driver.getOrCreate()
+          val result = driver.addJar(file.path).waitForResult()
+
+          driver.stop()
+          file.delete()
+
+          result.hasError should equal (false)
+        }
+
+      it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
+
+        val driver = Driver.getOrCreate()
+        val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
+        driver.stop()
+
+        result.hasError should equal (true)
+      }
+
+  //TODO Uncomment when CD be ready
+
+//  it should "be able to execute ADD APP Command of an existent file" in {
+//    assumeCrossdataUpAndRunning
+//
+//    val filePath = getClass.getResource("/TestAddApp.jar").getPath
+//    val driver = Driver.getOrCreate()
+//    val result = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
+//    driver.sql("EXECUTE testApp(rain,bow)").waitForResult()
+//    driver.stop()
+//    result.hasError should equal(false)
+//
+//
+//  }
+
+  //TODO Uncomment when CD be ready
+//  it should "be able to execute ADD APP Command of an existent file with options" in {
+//    assumeCrossdataUpAndRunning
+//
+//    val filePath = getClass.getResource("/TestAddApp.jar").getPath
+//    val driver = Driver.getOrCreate()
+//    val addAppResult = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
+//    addAppResult.hasError should equal(false)
+//
+//    val executeResult = driver.sql("""EXECUTE testApp(rain,bow2) OPTIONS (executor.memory '20G')""").waitForResult()
+//
+//    executeResult.hasError should equal(false)
+//    executeResult.resultSet.length should equal(1)
+//    executeResult.resultSet(0).get(0) should equal("Spark app launched")
+//
+//    driver.stop()
+//  }
 
 }

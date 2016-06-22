@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.daos.impl
 
-import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import com.typesafe.config.Config
+import org.apache.spark.sql.crossdata.daos.AppDAO
 
-trait CatalogCommon extends SparkLoggerComponent {
+class AppTypesafeDAO(configuration: Config) extends AppDAO {
 
-  protected def notFound(resource: String) = {
-    val message = s"$resource not found"
-    logWarning(message)
-    throw new RuntimeException(message)
-  }
+  override val config = new TypesafeConfig(Option(configuration))
+
 }

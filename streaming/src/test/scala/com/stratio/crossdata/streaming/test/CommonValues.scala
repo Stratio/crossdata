@@ -184,7 +184,7 @@ trait CommonValues {
 
   def parseZookeeperCatalogConfig(zookeeperConf: Map[String, String]): Map[String, String] = {
     Map(CatalogClassConfigKey -> ZookeeperClass) ++
-      Map(StreamingCatalogClassConfigKey -> ZookeeperClass) ++
+      Map(StreamingCatalogClassConfigKey -> ZookeeperStreamingClass) ++
       zookeeperConf.map { case (key, value) =>
         s"$CatalogConfigKey.$ZookeeperPrefixName.$key" -> value
       } ++

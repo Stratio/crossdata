@@ -13,14 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
-
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+package org.apache.spark.sql.crossdata.models
 
 
-@RunWith(classOf[JUnitRunner])
-class DerbyCatalogIT extends {
-  val catalogName = "Derby"
-} with SharedXDContextTest with CatalogConstants with GenericCatalogTests
+case class AppModel(jar: String,
+                    appAlias: String,
+                    appClass: String)

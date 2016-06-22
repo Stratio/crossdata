@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.catalog.inmemory
 
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.apache.spark.sql.catalyst.CatalystConf
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 
+import scala.collection.mutable
+import scala.collection.mutable.HashMap
 
-@RunWith(classOf[JUnitRunner])
-class DerbyCatalogIT extends {
-  val catalogName = "Derby"
-} with SharedXDContextTest with CatalogConstants with GenericCatalogTests
+class HashmapCatalog(override val catalystConf: CatalystConf) extends MapCatalog(catalystConf) {
+
+  override protected def newMap: mutable.Map[String, LogicalPlan] = new HashMap[String, LogicalPlan]
+
+  override def isAvailable: Boolean = true
+}

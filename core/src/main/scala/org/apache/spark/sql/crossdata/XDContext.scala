@@ -18,39 +18,48 @@
 
 package org.apache.spark.sql.crossdata
 
-import java.lang.reflect.Constructor
+import java.io.InputStream
+import java.lang.reflect.{Constructor, Method}
+import java.net.{URL, URLClassLoader}
+import java.nio.file.StandardCopyOption
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 
 import com.stratio.crossdata.connector.FunctionInventory
+import com.stratio.crossdata.utils.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, FunctionRegistry, HiveTypeCoercion}
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
-import org.apache.spark.sql.crossdata.catalog.{XDCatalog, XDStreamingCatalog}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
+import org.apache.spark.sql.crossdata.catalog._
+import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
+import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
+import org.apache.spark.sql.crossdata.launcher.SparkJobLauncher
 import org.apache.spark.sql.crossdata.security.{Credentials, SecurityManager}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
-import org.apache.spark.sql.{DataFrame, Row, SQLContext, Strategy, execution => sparkexecution}
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, Row, SQLContext, Strategy, execution => sparkexecution}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
+import scala.util.{Failure, Success}
+
 /**
- * CrossdataContext leverages the features of [[SQLContext]]
- * and adds some features of the Crossdata system.
+  * CrossdataContext leverages the features of [[SQLContext]]
+  * and adds some features of the Crossdata system.
   *
   * @param sc A [[SparkContext]].
- */
-class XDContext private (@transient val sc: SparkContext,
+  */
+class XDContext protected (@transient val sc: SparkContext,
                 userConfig: Option[Config] = None,
                 credentials: Credentials = Credentials()) extends SQLContext(sc) with Logging  {
   self =>
@@ -70,6 +79,7 @@ class XDContext private (@transient val sc: SparkContext,
      Config should be changed by a map and implicitly converted into `Config` whenever one of its
      methods is called.
      */
+
   import XDContext.{catalogConfig, config, xdConfig}
 
   xdConfig = userConfig.fold(config) { userConf =>
@@ -78,33 +88,43 @@ class XDContext private (@transient val sc: SparkContext,
 
   catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
 
-  @transient
-  override protected[sql] lazy val catalog: XDCatalog = {
-
-    import XDContext.{CaseSensitive, DerbyClass}
-
-    val catalogClass = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
-      catalogConfig.getString(XDContext.ClassConfigKey)
-    else DerbyClass
-
-    val xdCatalog = Class.forName(catalogClass)
-
+  private val catalystConf: CatalystConf = {
+    import XDContext.CaseSensitive
     val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
-
-    val constr: Constructor[_] = xdCatalog.getConstructor(classOf[CatalystConf], classOf[XDContext])
-
-    constr.newInstance(
-      new SimpleCatalystConf(caseSensitive), self).asInstanceOf[XDCatalog]
+    new SimpleCatalystConf(caseSensitive)
   }
 
   @transient
-  protected[crossdata] lazy val streamingCatalog: Option[XDStreamingCatalog] = {
+  override protected[sql] lazy val catalog: XDCatalog = {
+    val catalogs: List[XDCatalogCommon] =  temporaryCatalog :: externalCatalog :: streamingCatalog.toList
+    CatalogChain(catalogs:_*)(catalystConf)
+  }
+
+  @transient
+  private lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(catalystConf)
+
+  @transient
+  private lazy val externalCatalog: XDPersistentCatalog = {
+
+    import XDContext.DerbyClass
+    val externalCatalogName = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
+      catalogConfig.getString(XDContext.ClassConfigKey)
+    else DerbyClass
+
+    val externalCatalogClass = Class.forName(externalCatalogName)
+    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[SQLContext], classOf[CatalystConf])
+
+    constr.newInstance(self, catalystConf).asInstanceOf[XDPersistentCatalog]
+  }
+
+
+  @transient
+  private lazy val streamingCatalog: Option[XDStreamingCatalog] = {
     if (xdConfig.hasPath(StreamingCatalogClassConfigKey)) {
       val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)
-      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[XDContext])
-
-      Option(constr.newInstance(self).asInstanceOf[XDStreamingCatalog])
+      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
+      Option(constr.newInstance(catalystConf).asInstanceOf[XDStreamingCatalog])
     } else {
       logError("Empty streaming catalog")
       None
@@ -156,10 +176,9 @@ class XDContext private (@transient val sc: SparkContext,
 
     constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
   }
-
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
-    new Analyzer(catalog, functionRegistry, conf) {
+    new Analyzer(catalog, functionRegistry, catalystConf) {
       override val extendedResolutionRules =
         ResolveAggregateAlias ::
           ExtractPythonUDFs ::
@@ -177,7 +196,7 @@ class XDContext private (@transient val sc: SparkContext,
         Batch("Substitution", fixedPoint,
           CTESubstitution,
           WindowsSubstitution),
-        Batch("Preparation", fixedPoint, preparationRules : _*),
+        Batch("Preparation", fixedPoint, preparationRules: _*),
         Batch("Resolution", fixedPoint,
           ResolveRelations ::
             ResolveReferences ::
@@ -193,7 +212,7 @@ class XDContext private (@transient val sc: SparkContext,
             ResolveAggregateFunctions ::
             DistinctAggregationRewriter(conf) ::
             HiveTypeCoercion.typeCoercionRules ++
-              extendedResolutionRules : _*),
+              extendedResolutionRules: _*),
         Batch("Nondeterministic", Once,
           PullOutNondeterministic,
           ComputeCurrentTime),
@@ -252,39 +271,89 @@ class XDContext private (@transient val sc: SparkContext,
     *
     * @param path The local path or hdfs path where SparkContext will take the JAR
     */
-  override def addJar(path: String) = {
-    // TODO Add to current Classpath
+  def addJar(path: String, toClasspath:Option[Boolean]=None) = {
     super.addJar(path)
+    if ((path.toLowerCase.startsWith("hdfs://")) && (toClasspath.getOrElse(true))){
+      val hdfsIS: InputStream = HdfsUtils(xdConfig.getConfig(CoreConfig.HdfsKey)).getFile(path)
+      val file: java.io.File = createFile(hdfsIS, s"${xdConfig.getConfig(CoreConfig.JarsRepo).getString("externalJars")}/${path.split("/").last}")
+      addToClasspath(file)
+    }else if (scala.reflect.io.File(path).exists){
+      val file=new java.io.File(path)
+      addToClasspath(file)
+    }else{
+      sys.error("File doesn't exist or is not a hdfs file")
+    }
+
+  }
+
+  private def addToClasspath(file:java.io.File): Unit = {
+    if (file.exists) {
+      val method: Method = classOf[URLClassLoader].getDeclaredMethod("addURL", classOf[URL])
+      method.setAccessible(true)
+      method.invoke(ClassLoader.getSystemClassLoader, file.toURI.toURL)
+      method.setAccessible(false)
+    } else {
+      sys.error(s"The file ${file.getName} not exists.")
+    }
+  }
+
+  private def createFile(hdfsIS: InputStream, path: String): java.io.File = {
+    val targetFile = new java.io.File(path)
+    java.nio.file.Files.copy(hdfsIS, targetFile.toPath, StandardCopyOption.REPLACE_EXISTING)
+    targetFile
+  }
+
+  def addApp(path: String, clss: String, alias: String): Option[CrossdataApp] = {
+    val crossdataApp = CrossdataApp(path, alias, clss)
+    catalog.persistAppMetadata(crossdataApp)
+    catalog.lookupApp(alias)
+  }
+
+  def executeApp(appName: String, arguments: Seq[String], submitOptions: Option[Map[String, String]] = None): Seq[Row] = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    val crossdataApp = catalog.lookupApp(appName).getOrElse(sys.error(s"There is not any app called $appName"))
+    val launcherConfig = xdConfig.getConfig(CoreConfig.LauncherKey)
+    SparkJobLauncher.getSparkJob(launcherConfig, this.sparkContext.master, crossdataApp.appClass, arguments, crossdataApp.jar, crossdataApp.appAlias, submitOptions) match {
+      case Failure(exception) =>
+        logError(exception.getMessage, exception)
+        sys.error("Validation error: " + exception.getMessage)
+        Seq(Row(exception.getMessage))
+
+      case Success(job) =>
+        logInfo("SparkJob created. Ready to submit.")
+        job.submit()
+        Seq(Row("Spark app launched"))
+    }
   }
 
   /**
-   * Drops the table in the persistent catalog.
-   * It applies only to metadata, so data do not be deleted.
-   *
-   * @param tableIdentifier the table to be dropped.
-   *
-   */
+    * Drops the table in the persistent catalog.
+    * It applies only to metadata, so data do not be deleted.
+    *
+    * @param tableIdentifier the table to be dropped.
+    *
+    */
   def dropTable(tableIdentifier: TableIdentifier): Unit = {
     cacheManager.tryUncacheQuery(table(tableIdentifier.unquotedString))
     catalog.dropTable(tableIdentifier)
   }
 
   /**
-   * Drops all tables in the persistent catalog.
-   * It applies only to metadata, so data do not be deleted.
-   *
-   */
+    * Drops all tables in the persistent catalog.
+    * It applies only to metadata, so data do not be deleted.
+    *
+    */
   def dropAllTables(): Unit = {
     cacheManager.clearCache()
     catalog.dropAllTables()
   }
 
   /**
-   * Imports tables from a DataSource in the persistent catalog.
-   *
-   * @param datasource
-   * @param opts
-   */
+    * Imports tables from a DataSource in the persistent catalog.
+    *
+    * @param datasource
+    * @param opts
+    */
   def importTables(datasource: String, opts: Map[String, String]): Unit =
     ImportTablesUsingWithOptions(datasource, opts).run(this)
 
@@ -294,9 +363,8 @@ class XDContext private (@transient val sc: SparkContext,
     *
     * @return if connection is possible
     */
-  def checkCatalogConnection : Boolean=
+  def checkCatalogConnection: Boolean =
     catalog.checkConnectivity
-
 
 
   def createDataFrame(rows: Seq[Row], schema: StructType): DataFrame =
@@ -307,9 +375,9 @@ class XDContext private (@transient val sc: SparkContext,
 }
 
 /**
- * This XDContext object contains utility functions to create a singleton XDContext instance,
- * or to get the last created XDContext instance.
- */
+  * This XDContext object contains utility functions to create a singleton XDContext instance,
+  * or to get the last created XDContext instance.
+  */
 object XDContext extends CoreConfig {
 
   /* TODO: Remove the config attributes from the companion object!!!
@@ -319,19 +387,21 @@ object XDContext extends CoreConfig {
   //This is definitely NOT right and will only work as long a single instance of XDContext exits
   override lazy val logger = Logger.getLogger(classOf[XDContext])
 
-  var xdConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
+  var xdConfig: Config = _
+  //This is definitely NOT right and will only work as long a single instance of XDContext exits
   var catalogConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
 
   val CaseSensitive = "caseSensitive"
-  val DerbyClass = "org.apache.spark.sql.crossdata.catalog.DerbyCatalog"
+  val DerbyClass = "org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog"
   val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
-  val JDBCClass = "org.apache.spark.sql.crossdata.catalog.JDBCCatalog"
-  val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.ZookeeperCatalog"
+  val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.persistent.ZookeeperCatalog"
+  val ZookeeperStreamingClass = "org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog"
   val CatalogConfigKey = "catalog"
   val StreamingConfigKey = "streaming"
   val SecurityConfigKey = "security"
   val SecurityManagerConfigKey = "manager"
   val ClassConfigKey = "class"
+
   val AuditConfigKey = "audit"
   val UserConfigKey = "user"
   val PasswordConfigKey = "password"
@@ -348,18 +418,20 @@ object XDContext extends CoreConfig {
   @transient private val INSTANTIATION_LOCK = new Object()
 
   /**
-   * Reference to the last created SQLContext.
-   */
+    * Reference to the last created SQLContext.
+    */
   @transient private val lastInstantiatedContext = new AtomicReference[XDContext]()
 
   /**
-   * Get the singleton SQLContext if it exists or create a new one using the given SparkContext.
-   * This function can be used to create a singleton SQLContext object that can be shared across
-   * the JVM.
-   */
+    * Get the singleton SQLContext if it exists or create a new one using the given SparkContext.
+    * This function can be used to create a singleton SQLContext object that can be shared across
+    * the JVM.
+    */
   def getOrCreate(sparkContext: SparkContext, userConfig: Option[Config] = None): XDContext = {
     INSTANTIATION_LOCK.synchronized {
-      Option(lastInstantiatedContext.get()).getOrElse(new XDContext(sparkContext, userConfig))
+      Option(lastInstantiatedContext.get()).filter(
+        _.getClass == classOf[XDContext]
+      ).getOrElse(new XDContext(sparkContext, userConfig))
     }
     lastInstantiatedContext.get()
   }
