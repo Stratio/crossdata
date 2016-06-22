@@ -17,7 +17,7 @@ package com.stratio.crossdata.driver.ignore
 
 import java.nio.file.Paths
 
-import com.stratio.crossdata.common.result.SuccessfulSQLResult
+import com.stratio.crossdata.common.result.{SQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
@@ -28,18 +28,26 @@ import scala.language.postfixOps
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends BaseXDTest {
 
-  it should "return a SuccessfulQueryResult when executing a select *" in {
+  it should "be able to execute a query involving a temporary table in any server" ignore {// TODO it is ignored until a crossdata-server container can be launched
 
     val driver = Driver.getOrCreate()
+
     driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
 
-    val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
+    for (_ <- 1 to 3) {
+      // It assumes that the driver has a round robin policy
+      val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
+      validateResult(result)
+    }
+
+    driver.stop()
+  }
+
+  private def validateResult(result: SQLResult): Unit = {
     result shouldBe an[SuccessfulSQLResult]
     result.hasError should be(false)
     val rows = result.resultSet
     rows should have length 2
     rows(0) should have length 2
-    driver.stop()
   }
-
 }
