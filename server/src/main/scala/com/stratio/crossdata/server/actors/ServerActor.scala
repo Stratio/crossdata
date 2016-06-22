@@ -30,7 +30,7 @@ import com.stratio.crossdata.common.util.akka.KeepAlive.LiveMan.HeartBeat
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
-import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
+import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDSessionProvider
 import org.apache.spark.sql.types.StructType
@@ -42,8 +42,8 @@ import scala.util.{Failure, Success}
 object ServerActor {
   val ManagementTopic: String = "jobsManagement"
 
-  def props(cluster: Cluster, sessionProvider: XDSessionProvider, config: ServerActorConfig): Props =
-    Props(new ServerActor(cluster, sessionProvider, config))
+  def props(cluster: Cluster, sessionProvider: XDSessionProvider): Props =
+    Props(new ServerActor(cluster, sessionProvider))
 
   protected case class JobId(requester: ActorRef, sessionId: UUID, queryId: UUID)
 
@@ -62,7 +62,7 @@ object ServerActor {
 }
 
 // TODO it should only accept messages from known sessions
-class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverActorConfig: ServerActorConfig)
+class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
   extends Actor with ServerConfig {
 
   import ServerActor.ManagementMessages._
@@ -177,7 +177,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
 
       sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
 
-      st.clientMonitor ! DoCheck(session.id, 1 minute) //TODO: Time before alarm has to be configurable
+      st.clientMonitor ! DoCheck(session.id, expectedClientHeartbeatPeriod)
 
     case sc@CommandEnvelope(_: CloseSessionCommand, session) =>
       // TODO validate/ actorRef instead of sessionId
@@ -227,7 +227,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
       logger.warn(s"Something is going wrong! Unknown message: $any")
     }
 
-  private def sentenceToDeath(victim: ActorRef): Unit = serverActorConfig.completedJobTTL match {
+  private def sentenceToDeath(victim: ActorRef): Unit = completedJobTTL match {
     case finite: FiniteDuration =>
       context.system.scheduler.scheduleOnce(finite, self, FinishJob(victim))(context.dispatcher)
     case _ => // Reprieve by infinite limit
@@ -239,7 +239,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
   }
 
   //TODO: Use number of tries and timeout configuration parameters
-  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(serverActorConfig.retryNoAttempts, serverActorConfig.retryCountWindow) {
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {
     case _ => Restart //Crashed job gets restarted (or not, depending on `retryNoAttempts` and `retryCountWindow`)
   }
 

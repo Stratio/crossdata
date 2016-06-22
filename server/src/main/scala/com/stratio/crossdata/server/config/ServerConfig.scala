@@ -32,6 +32,8 @@ object ServerConfig {
 
   val SparkSqlConfigPrefix = "config.spark.sql"
 
+  val ClientExpectedHeartbeatPeriod = "config.client.ExpectedHeartbeatPeriod"
+
   //  akka cluster values
   val ServerClusterNameKey = "config.cluster.name"
   val ServerActorNameKey = "config.cluster.actor"
@@ -46,13 +48,13 @@ object ServerConfig {
   val FinishedJobTTL = "config.jobs.finished.ttl_ms"
 
   // Host
-  val Host="akka.remote.netty.tcp.hostname"
+  val Host = "akka.remote.netty.tcp.hostname"
 
   // Jars Repo
-  val repoJars="config.externalJarsRepo"
+  val repoJars = "config.externalJarsRepo"
 
   // Http Server Port
-  val httpServerPort="config.HttpServerPort"
+  val httpServerPort = "config.HttpServerPort"
 }
 
 trait ServerConfig extends NumberActorConfig {
@@ -65,11 +67,15 @@ trait ServerConfig extends NumberActorConfig {
   lazy val retryNoAttempts: Int = Try(config.getInt(ServerConfig.ServerRetryMaxAttempts)).getOrElse(0)
   lazy val retryCountWindow: Duration = Try(
     config.getDuration(ServerConfig.ServerRetryCountWindow, TimeUnit.MILLISECONDS)
-  ) map(Duration(_, TimeUnit.MILLISECONDS)) getOrElse(Duration.Inf)
+  ) map (Duration(_, TimeUnit.MILLISECONDS)) getOrElse (Duration.Inf)
 
-  lazy val completedJobTTL: Duration = Try(
-    config.getDuration(ServerConfig.FinishedJobTTL, TimeUnit.MILLISECONDS)
-  ) map(FiniteDuration(_, TimeUnit.MILLISECONDS)) getOrElse(Duration.Inf)
+  lazy val completedJobTTL: Duration = extractDurationField(ServerConfig.FinishedJobTTL)
+
+  lazy val expectedClientHeartbeatPeriod: FiniteDuration =
+    extractDurationField(ServerConfig.ClientExpectedHeartbeatPeriod) match {
+      case d: FiniteDuration => d
+      case _ => 1 minute
+    }
 
   override val config: Config = {
 
@@ -112,7 +118,7 @@ trait ServerConfig extends NumberActorConfig {
     defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
 
     val finalConfig = {
-      if(defaultConfig.hasPath("akka.cluster.server-nodes")){
+      if (defaultConfig.hasPath("akka.cluster.server-nodes")) {
         val serverNodes = defaultConfig.getString("akka.cluster.server-nodes")
         defaultConfig.withValue(
           "akka.cluster.seed-nodes",
@@ -125,6 +131,9 @@ trait ServerConfig extends NumberActorConfig {
     ConfigFactory.load(finalConfig)
   }
 
+  private def extractDurationField(key: String): Duration = Try(
+    config.getDuration(key, TimeUnit.MILLISECONDS)
+  ) map (FiniteDuration(_, TimeUnit.MILLISECONDS)) getOrElse (Duration.Inf)
 
 }
 
