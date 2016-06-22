@@ -17,6 +17,7 @@ package com.stratio.crossdata.connector.cassandra
 
 
 import com.datastax.driver.core.ResultSet
+import com.datastax.spark.connector.CassandraRowMetadata
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.{CassandraAttributeRole, ClusteringKey, Function, Indexed, NonIndexed, PartitionKey, Unknown}
 import com.stratio.crossdata.connector.{SQLLikeQueryProcessorUtils, SQLLikeUDFQueryProcessorUtils}
@@ -231,7 +232,8 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
   private[this] def sparkResultFromCassandra(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
     import scala.collection.JavaConversions._
-    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, requiredColumns)).toArray
+    val cassandraRowMetadata = CassandraRowMetadata.fromColumnNames(requiredColumns)
+    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, cassandraRowMetadata)).toArray
   }
 
 }
