@@ -104,7 +104,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, requester)) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
-      val sessionOpt = sessionProvider.session(id) match {
+
+      sessionProvider.session(id) match {
         case Success(xdSession) =>
           val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
           jobActor ! StartJob
