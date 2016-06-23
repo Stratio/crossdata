@@ -80,12 +80,7 @@ class ResourceManagerActor(cluster: Cluster, xdContext: XDContext) extends Actor
       logger.debug(s"Session identifier $session")
       //TODO  Maybe include job controller if it is necessary as in sql command
       if (addJarCommand.path.toLowerCase.startsWith("hdfs://")) {
-        xdContext.addJar(addJarCommand.path)
-        //add to runtime
-        val fileHdfsPath = addJarCommand.path
-        val hdfsIS: InputStream = HdfsUtils(addJarCommand.hdfsConfig.get).getFile(fileHdfsPath)
-        val file: File = createFile(hdfsIS, s"${config.getString(ServerConfig.repoJars)}/${fileHdfsPath.split("/").last}")
-        addToClasspath(file)
+        xdContext.addJar(addJarCommand.path,addJarCommand.toClassPath)
         sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
       } else {
         sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exist or is not a hdfs file", Some(new Exception("File doesn't exist or is not a hdfs file"))))
@@ -93,26 +88,7 @@ class ResourceManagerActor(cluster: Cluster, xdContext: XDContext) extends Actor
     case _ =>
   }
 
-  private def addToClasspath(file: File): Unit = {
-    if (file.exists) {
-      val method: Method = classOf[URLClassLoader].getDeclaredMethod("addURL", classOf[URL])
-      method.setAccessible(true)
-      method.invoke(ClassLoader.getSystemClassLoader, file.toURI.toURL)
-      method.setAccessible(false)
-    } else {
-      logger.warn(s"The file ${file.getName} not exists.")
-    }
-  }
 
-  private def createFile(hdfsIS: InputStream, path: String): File = {
-    val targetFile = new File(path)
-
-    val arrayBuffer = new Array[Byte](hdfsIS.available)
-    hdfsIS.read(arrayBuffer)
-
-    Files.write(arrayBuffer, targetFile)
-    targetFile
-  }
 
 
 }

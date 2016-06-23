@@ -17,7 +17,7 @@ package org.apache.spark.sql.crossdata.catalog.inmemory
 
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.ViewIdentifier
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
 import scala.collection.mutable
@@ -49,12 +49,19 @@ abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog
     }
   }
 
-  override def saveTable(tableIdentifier: ViewIdentifier, plan: LogicalPlan): Unit = {
+  override def saveTable(
+                          tableIdentifier: ViewIdentifier,
+                          plan: LogicalPlan,
+                          crossdataTable: Option[CrossdataTable] = None): Unit = {
+
     views get tableIdentifier foreach (_ => dropView(tableIdentifier))
     tables put(normalizeTableName(tableIdentifier), plan)
   }
 
-  override def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan): Unit = {
+  override def saveView(
+                         viewIdentifier: ViewIdentifier,
+                         plan: LogicalPlan,
+                         query: Option[String] = None): Unit = {
     tables get viewIdentifier foreach (_ => dropTable(viewIdentifier))
     views put(normalizeTableName(viewIdentifier), plan)
   }

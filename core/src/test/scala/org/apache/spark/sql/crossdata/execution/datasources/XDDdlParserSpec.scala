@@ -227,19 +227,31 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
   it should "successfully parse a CREATE TEMPORARY VIEW into a CreateTempView RunnableCommand" in {
 
-    val sentence = "CREATE TEMPORARY VIEW vn AS SELECT * FROM tn"
+    val sourceSentence = "SELECT * FROM tn"
+    val sentence = s"CREATE TEMPORARY VIEW vn AS $sourceSentence"
     val logicalPlan = parser.parse(sentence)
     logicalPlan shouldBe a [CreateTempView]
     logicalPlan match {
-      case CreateTempView(tableIdent, lPlan) =>
+      case CreateTempView(tableIdent, lPlan, sql) =>
         tableIdent shouldBe TableIdentifier("vn")
+        sql.map(_.trim) shouldBe Some(sourceSentence)
     }
 
   }
 
   it should "successfully parse a ADD JAR into a AddJar RunnableCommand" in {
     val sentence = "ADD JAR /tmp/jar"
-    parser.parse(sentence) shouldBe AddJar("/tmp/jar")
+    parser.parse(sentence) shouldBe AddJar(xdContext,"/tmp/jar")
+  }
+
+  it should "successfully parse a ADD APP into a AddApp RunnableCommand" in {
+    val sentence = "ADD APP '/my/path/file.jar' AS jj WITH aaa.bbb.ccc"
+    parser.parse(sentence) shouldBe AddApp(xdContext,"/my/path/file.jar", "aaa.bbb.ccc", Some("jj"))
+  }
+
+  it should "successfully parse a ADD APP without Alias into a AddApp RunnableCommand" in {
+    val sentence = "ADD APP '/my/path/file.jar' WITH aaa.bbb.ccc"
+    parser.parse(sentence) shouldBe AddApp(xdContext,"/my/path/file.jar", "aaa.bbb.ccc", None)
   }
 
 }

@@ -28,13 +28,17 @@ import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import akka.remote.DisassociatedEvent
 import com.google.common.io.Files
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
+import com.stratio.crossdata.utils.HdfsUtils
 import org.apache.log4j.Logger
+import org.apache.spark.sql.catalyst.expressions.{GenericRowWithSchema, GenericRow}
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.types.{StringType, DataType, StructField, StructType}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -112,30 +116,16 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
       jobActor ! StartJob
       context.become(ready(st.copy(jobsById = st.jobsById + (JobId(requester, sqlCommand.queryId) -> jobActor))))
 
+    case CommandEnvelope(addAppCommand@AddAppCommand(path, alias, clss, _), session@Session(id, requester)) =>
+      if (xdContext.addApp(path, clss, alias).isDefined)
+        sender ! SQLReply(addAppCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
+      else
+        sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
+
     case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, requester)) =>
       st.jobsById.get(JobId(requester, queryId)).get ! CancelJob
   }
 
-  private def addToClasspath(file: File): Unit = {
-    if (file.exists) {
-      val method: Method = classOf[URLClassLoader].getDeclaredMethod("addURL", classOf[URL])
-      method.setAccessible(true)
-      method.invoke(ClassLoader.getSystemClassLoader, file.toURI.toURL)
-      method.setAccessible(false)
-    } else {
-      logger.warn(s"The file ${file.getName} not exists.")
-    }
-  }
-
-  private def createFile(hdfsIS: InputStream, path: String): File = {
-    val targetFile = new File(path)
-
-    val arrayBuffer = new Array[Byte](hdfsIS.available)
-    hdfsIS.read(arrayBuffer)
-
-    Files.write(arrayBuffer, targetFile)
-    targetFile
-  }
 
   // Receive functions:
 
@@ -159,8 +149,10 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
     case sc@CommandEnvelope(_: SQLCommand, _) =>
       executeAccepted(sc)(st)
 
-    // TODO broadcastMessage
     case sc@CommandEnvelope(_: AddJARCommand, _) =>
+      executeAccepted(sc)(st)
+
+    case sc@CommandEnvelope(_: AddAppCommand, _) =>
       executeAccepted(sc)(st)
 
     case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, requester)) =>
@@ -171,7 +163,7 @@ class ServerActor(cluster: Cluster, xdContext: XDContext, serverActorConfig: Ser
         mediator ! Publish(ManagementTopic, DelegateCommand(sc, self))
       }
 
-    case clusterStateCommand @ ClusterStateCommand() =>
+    case clusterStateCommand@ClusterStateCommand() =>
       sender ! ClusterStateReply(clusterStateCommand.requestId, cluster.state)
 
 

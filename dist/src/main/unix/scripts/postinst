@@ -10,6 +10,7 @@ DIR_INSTALL='/opt/sds/crossdata'
 DIR_CONF='/etc/sds/crossdata'
 DIR_LOG='/var/log/sds/crossdata'
 DIR_CHECKPOINT='/var/sds/crossdata'
+DIR_EXTERNAL_JARS='/var/sds/crossdata/externalJars'
 
 chmod 755 /etc/init.d/crossdata
 chmod 755 /opt/sds/crossdata/bin
@@ -20,7 +21,7 @@ case "$1" in
 
   # Add stratio group if it doesn't already exists
   if ! getent group $GROUP >/dev/null 2>&1; then
-    groupadd ${GROUP} 
+    groupadd ${GROUP}
   fi
 
   # Add stratio user if it doesn't already exists
@@ -39,6 +40,10 @@ case "$1" in
     mkdir $DIR_CHECKPOINT
   fi
 
+  if [ ! -d "$DIR_EXTERNAL_JARS" ]; then
+    mkdir $DIR_EXTERNAL_JARS
+  fi
+
 
   # change ownership of the parents directories
   chown root:stratio /etc/sds
@@ -53,11 +58,12 @@ case "$1" in
   chmod 775 /var/run/sds
 
   chown root:root /etc/init.d/crossdata
- 
+
   chown -R ${USER}:${GROUP} $DIR_INSTALL
   chown -R ${USER}:${GROUP} $DIR_CONF
   chown -R ${USER}:${GROUP} $DIR_LOG
   chown -R ${USER}:${GROUP} $DIR_CHECKPOINT
+  chown -R ${USER}:${GROUP} $DIR_EXTERNAL_JARS
 
   chmod -R 755 $DIR_INSTALL
   chmod 755 $DIR_LOG
@@ -65,6 +71,7 @@ case "$1" in
   chmod 755 /opt/sds/crossdata/bin/*
 
   chmod 755 $DIR_CHECKPOINT
+  chmod 755 $DIR_EXTERNAL_JARS
   chmod 755 $DIR_CONF
   chmod 755 $DIR_CONF/shell
   chmod 755 $DIR_CONF/server
