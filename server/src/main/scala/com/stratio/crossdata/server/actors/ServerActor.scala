@@ -24,9 +24,7 @@ import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.util.akka.KeepAlive.KeepAliveMaster
 import com.stratio.crossdata.common.util.akka.KeepAlive.KeepAliveMaster.{DoCheck, HeartbeatLost}
-import com.stratio.crossdata.common.util.akka.KeepAlive.LiveMan.HeartBeat
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand, _}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
@@ -45,9 +43,9 @@ object ServerActor {
   def props(cluster: Cluster, sessionProvider: XDSessionProvider): Props =
     Props(new ServerActor(cluster, sessionProvider))
 
-  protected case class JobId(requester: ActorRef, sessionId: UUID, queryId: UUID)
+  private case class JobId(requester: ActorRef, sessionId: UUID, queryId: UUID)
 
-  protected case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
+  private case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
 
   private object ManagementMessages {
 
@@ -57,7 +55,7 @@ object ServerActor {
 
   }
 
-  case class State(jobsById: Map[JobId, ActorRef], clientMonitor: ActorRef)
+  private case class State(jobsById: Map[JobId, ActorRef])
 
 }
 
@@ -92,8 +90,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   private def checkSubscriptions(pendingTopics: Set[String]): Unit =
     if (pendingTopics.isEmpty) {
-      val clientMonitor = context.actorOf(KeepAliveMaster.props(self))
-      context.become(ready(State(Map.empty, clientMonitor)))
+      context.become(ready(State(Map.empty)))
     } else
       context.become(initial(pendingTopics))
 
@@ -177,7 +174,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
       sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
 
-      st.clientMonitor ! DoCheck(session.id, expectedClientHeartbeatPeriod)
+      context.actorSelection("/user/client-monitor") ! DoCheck(session.id, expectedClientHeartbeatPeriod)
 
     case sc@CommandEnvelope(_: CloseSessionCommand, session) =>
       // TODO validate/ actorRef instead of sessionId
@@ -214,8 +211,6 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       context.become(ready(st.copy(jobsById = newjobsmap)))
       sessionProvider.closeSession(sessionId)
 
-    case hb: HeartBeat[_] =>
-      st.clientMonitor forward hb
   }
 
   // Function composition to build the finally applied receive-function

@@ -22,7 +22,7 @@ import LiveMan.HeartBeat
 import scala.concurrent.duration._
 
 object LiveMan {
-  case class HeartBeat[ID](sourceId: ID)
+  private[KeepAlive] case class HeartBeat[ID](sourceId: ID)
 }
 
 /**

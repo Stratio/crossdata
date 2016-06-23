@@ -24,6 +24,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
 import akka.stream.ActorMaterializer
+import com.stratio.crossdata.common.util.akka.KeepAlive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.{Daemon, DaemonContext}
@@ -81,6 +82,10 @@ class CrossdataServer extends Daemon with ServerConfig {
             Cluster(actorSystem),
             sesionProvider)),
         actorName)
+
+      val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
+      ClusterReceptionistExtension(actorSystem).registerService(clientMonitor)
+
       val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sesionProvider))
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
       ClusterReceptionistExtension(actorSystem).registerService(resourceManagerActor)
