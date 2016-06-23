@@ -136,16 +136,15 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
 
 
-  it should "clear all maps when closing" in {
+  it should "close the hazelcast instance when closing" in {
     val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
     val sessionID = UUID.randomUUID()
 
     hazelcastSessionProvider.newSession(sessionID)
     hazelcastSessionProvider.close()
 
-    hazelcastSessionProvider.session(sessionID).isFailure shouldBe true
-    hazelcastSessionProvider.newSession(sessionID).isFailure shouldBe true
-
+    a [RuntimeException] shouldBe thrownBy (hazelcastSessionProvider.session(sessionID))
+    
   }
 
   private def tempCatalogsFromSession(session: XDSession): Seq[XDTemporaryCatalog] = {
