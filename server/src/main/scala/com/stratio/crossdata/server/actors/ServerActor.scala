@@ -178,7 +178,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
     case sc@CommandEnvelope(_: CloseSessionCommand, session) =>
       // TODO validate/ actorRef instead of sessionId
-      sessionProvider.closeSession(session.id)
+      closeSessionTerminatingJobs(session.id)(st)
       /* Note that the client monitoring isn't explicitly stopped. It'll after the first miss
           is detected, right after the driver has ended its session. */
 
@@ -202,15 +202,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
   // Manages clients' heartbeats losses, closing their sessions and stopping all jobs related to them.
   def clientMonitoringEvents(st: State): Receive = {
     case HeartbeatLost(sessionId: UUID) =>
-      val newjobsmap = st.jobsById filter {
-        case (JobId(_, jobSessionId, _), job) if jobSessionId == sessionId =>
-          gracefullyKill(job) // WARNING! Side-effect
-          false
-        case _ => true
-      }
-      context.become(ready(st.copy(jobsById = newjobsmap)))
-      sessionProvider.closeSession(sessionId)
-
+      closeSessionTerminatingJobs(sessionId)(st)
   }
 
   // Function composition to build the finally applied receive-function
@@ -221,6 +213,17 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       clientMonitoringEvents(st) orElse { case any =>
       logger.warn(s"Something is going wrong! Unknown message: $any")
     }
+
+  private def closeSessionTerminatingJobs(sessionId: UUID)(st: State): Unit = {
+    val newjobsmap = st.jobsById filter {
+      case (JobId(_, jobSessionId, _), job) if jobSessionId == sessionId =>
+        gracefullyKill(job) // WARNING! Side-effect within filter function
+        false
+      case _ => true
+    }
+    context.become(ready(st.copy(jobsById = newjobsmap)))
+    sessionProvider.closeSession(sessionId)
+  }
 
   private def sentenceToDeath(victim: ActorRef): Unit = completedJobTTL match {
     case finite: FiniteDuration =>
