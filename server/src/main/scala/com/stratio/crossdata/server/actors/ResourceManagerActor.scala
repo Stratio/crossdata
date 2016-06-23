@@ -26,8 +26,8 @@ import akka.contrib.pattern.DistributedPubSubMediator.{Subscribe, SubscribeAck}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
+import com.stratio.crossdata.server.actors.ServerActor.JobId
 import com.stratio.crossdata.server.config.ServerConfig
-import org.apache.hadoop.mapreduce.v2.api.records.JobId
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDSessionProvider
 import org.apache.spark.sql.types.StructType

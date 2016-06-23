@@ -35,6 +35,10 @@ object SessionBeaconActor {
 
 }
 
+/**
+  * This actor is used by the driver provide the cluster with proof of life for the current session.
+  * Check [[LiveMan]] for more details.
+  */
 class SessionBeaconActor private (
                      override val keepAliveId: UUID,
                      override val period: FiniteDuration,

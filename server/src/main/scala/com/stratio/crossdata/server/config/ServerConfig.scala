@@ -73,8 +73,9 @@ trait ServerConfig extends NumberActorConfig {
 
   lazy val expectedClientHeartbeatPeriod: FiniteDuration =
     extractDurationField(ServerConfig.ClientExpectedHeartbeatPeriod) match {
-      case d: FiniteDuration => d
-      case _ => 1 minute
+      case d: FiniteDuration =>
+        Seq(11 seconds, d) max // Alarm period need to be at least twice the hear beat period (5 seconds)
+      case _ => 2 minute // Default value
     }
 
   override val config: Config = {

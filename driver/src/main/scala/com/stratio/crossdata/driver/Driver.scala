@@ -411,9 +411,8 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
     }
 
-    res.filter(x => x).foreach { _ =>
+    if(res.isSuccess)
       sessionBeacon = Some(system.actorOf(sessionBeaconProps))
-    }
 
     res
 

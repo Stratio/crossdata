@@ -43,7 +43,7 @@ object ServerActor {
   def props(cluster: Cluster, sessionProvider: XDSessionProvider): Props =
     Props(new ServerActor(cluster, sessionProvider))
 
-  private case class JobId(requester: ActorRef, sessionId: UUID, queryId: UUID)
+  case class JobId(requester: ActorRef, sessionId: UUID, queryId: UUID)
 
   private case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
 
@@ -89,9 +89,9 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
   }
 
   private def checkSubscriptions(pendingTopics: Set[String]): Unit =
-    if (pendingTopics.isEmpty) {
+    if (pendingTopics.isEmpty)
       context.become(ready(State(Map.empty)))
-    } else
+    else
       context.become(initial(pendingTopics))
 
   /**
