@@ -18,7 +18,7 @@ ITSERVICES:
         - SPARK_MODE=slave
         - SPARK_MASTER_HOST=%%SPARK#0
   - ELASTICSEARCH:
-      image: itzg/elasticsearch:latest
+      image: itzg/elasticsearch:2.x
       sleep: 5
       env:
         - CLUSTER=%%JUID
