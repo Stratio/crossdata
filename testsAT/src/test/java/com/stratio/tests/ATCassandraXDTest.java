@@ -94,14 +94,6 @@ public class ATCassandraXDTest extends BaseTest {
 
 	@AfterClass(groups = {"basic"})
 	public void cleanUp() {
-		cassandra.connect();
-		cassandra.dropKeyspace(catalog);
-		try {
-			cassandra.disconnect();
-		} catch (DBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 	}
 
