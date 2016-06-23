@@ -52,6 +52,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     tempCatalogs.head shouldBe a[HashmapCatalog]
     tempCatalogs(1) shouldBe a[HazelcastCatalog]
 
+    hazelcastSessionProvider.close()
   }
 
 
@@ -76,6 +77,8 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
     Seq(sessionPersCatalogs, session2PersCatalogs) foreach (_ should have length 1)
     sessionPersCatalogs.head should be theSameInstanceAs session2PersCatalogs.head
+
+    hazelcastSessionProvider.close()
   }
 
   it should "allow to lookup an existing session" in {
@@ -91,6 +94,8 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     hazelcastSessionProvider.session(sessionId) should matchPattern {
       case Success(s: XDSession) if Try(s.catalog.lookupRelation(tableIdent)).isSuccess =>
     }
+
+    hazelcastSessionProvider.close()
   }
 
 
@@ -99,6 +104,8 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
 
     hazelcastSessionProvider.session(UUID.randomUUID()).isFailure shouldBe true
+
+    hazelcastSessionProvider.close()
   }
 
 
@@ -113,6 +120,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
     hazelcastSessionProvider.session(sessionId).isFailure shouldBe true
 
+    hazelcastSessionProvider.close()
   }
 
   it should "fail when trying to close a non-existing session" in {
@@ -122,6 +130,8 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     val session = hazelcastSessionProvider.newSession(UUID.randomUUID())
 
     hazelcastSessionProvider.closeSession(UUID.randomUUID()).isFailure shouldBe true
+    
+    hazelcastSessionProvider.close()
   }
 
 
