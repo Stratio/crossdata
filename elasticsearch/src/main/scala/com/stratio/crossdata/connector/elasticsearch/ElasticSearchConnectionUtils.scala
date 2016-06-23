@@ -22,13 +22,21 @@ import org.apache.spark.sql.types._
 import org.elasticsearch.client.IndicesAdminClient
 import org.elasticsearch.cluster.metadata.MappingMetaData
 import org.elasticsearch.common.collect.ImmutableOpenMap
-import org.elasticsearch.common.settings. ImmutableSettings
+import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 
 object ElasticSearchConnectionUtils {
 
+  def withClientDo[T](parameters: Map[String, String])(f: ElasticClient => T): T = {
+    val client = buildClient(parameters)
+    try {
+      f(client)
+    } finally {
+      client.close()
+    }
+  }
 
-  def buildClient(parameters: Map[String, String]): ElasticClient = {
+  private def buildClient(parameters: Map[String, String]): ElasticClient = {
     val host: String = parameters.getOrElse(ES_NODES, ES_NODES_DEFAULT)
     // TODO support for multiple host, no documentation found with expected format.
     val port: Int = parameters.getOrElse(ElasticNativePort, "9300").toInt
@@ -36,8 +44,8 @@ object ElasticSearchConnectionUtils {
 
     val uri = ElasticsearchClientUri(s"elasticsearch://$host:$port")
 
-    val settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build()
-    ElasticClient.remote(settings, uri)
+    val settings = Settings.settingsBuilder().put("cluster.name", clusterName).build()
+    ElasticClient.transport(settings, uri)
   }
 
   def extractIndexAndType(options: Map[String, String]): Option[(String, String)] = {
@@ -103,7 +111,7 @@ object ElasticSearchConnectionUtils {
 
   private def buildStructType(mapping: MappingMetaData): StructType ={
 
-    val esFields = mapping.sourceAsMap().get("properties").asInstanceOf[java.util.LinkedHashMap[String,java.util.LinkedHashMap[String, String]]].toMap;
+    val esFields = mapping.sourceAsMap().get("properties").asInstanceOf[java.util.LinkedHashMap[String,java.util.LinkedHashMap[String, String]]].toMap
 
     val fields: Seq[StructField] = esFields.map {
           case (colName, propertyValueMap) => StructField(colName, convertType(propertyValueMap.get("type")), false)

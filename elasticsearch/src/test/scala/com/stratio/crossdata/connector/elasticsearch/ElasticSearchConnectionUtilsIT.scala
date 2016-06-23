@@ -31,10 +31,12 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     )
 
     //Experimentation
-    val client = ElasticSearchConnectionUtils.buildClient(options)
+    ElasticSearchConnectionUtils.withClientDo(options){ client =>
 
-    //Expectations
-    client should not be (null)
+      //Expectations
+      client should not be (null)
+    }
+
   }
 
 
@@ -69,18 +71,18 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
       "es.cluster" -> s"$ElasticClusterName"
     )
 
-    val client = ElasticSearchConnectionUtils.buildClient(options)
-    createIndex(client,"index_test",  typeMapping())
-    try {
-      //Experimentation
-      val types = ElasticSearchConnectionUtils.listTypes(options)
+    ElasticSearchConnectionUtils.withClientDo(options){ client =>
+      createIndex(client,"index_test",  typeMapping())
+      try {
+        //Experimentation
+        val types = ElasticSearchConnectionUtils.listTypes(options)
 
-      //Expectations
-      types should not be (null)
-      types.size should be > 1
-
-    }finally {
-      cleanTestData(client, "index_test")
+        //Expectations
+        types should not be (null)
+        types.size should be > 1
+      } finally {
+        cleanTestData(client, "index_test")
+      }
     }
   }
 
@@ -96,20 +98,20 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
       "es.index" -> "empty_index"
     )
 
-    val client = ElasticSearchConnectionUtils.buildClient(options)
-    createIndex(client,"empty_index",  null)
+    ElasticSearchConnectionUtils.withClientDo(options){ client =>
+      createIndex(client,"empty_index",  null)
+      try {
+        //Experimentation
+        val types = ElasticSearchConnectionUtils.listTypes(options)
 
-    try {
-      //Experimentation
-      val types = ElasticSearchConnectionUtils.listTypes(options)
-
-      //Expectations
-      types should not be null
-      types.size should be (0)
-
-    }finally {
-      cleanTestData(client, "empty_index")
+        //Expectations
+        types should not be null
+        types.size should be (0)
+      } finally {
+        cleanTestData(client, "empty_index")
+      }
     }
+
   }
 
 }
