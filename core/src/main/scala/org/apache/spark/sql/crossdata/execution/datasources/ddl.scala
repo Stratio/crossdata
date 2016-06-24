@@ -333,7 +333,7 @@ private[crossdata] case class CreateGlobalIndex(
                                                  index: TableIdentifier,
                                                  tableIdent: TableIdentifier,
                                                  cols: Seq[String],
-                                                 pk: Seq[String],
+                                                 pk: String,
                                                  provider: Option[String],
                                                  options: Map[String, String]
                                                ) extends LogicalPlan with RunnableCommand {
@@ -344,7 +344,7 @@ private[crossdata] case class CreateGlobalIndex(
 
       val finalIndex = IndexIdentifier(index.table, index.database getOrElse ("gidx"))
 
-      val colsWithoutSchema = pk ++ cols
+      val colsWithoutSchema = Seq(pk) ++ cols
 
       val elasticSchema = sqlContext.catalog.lookupRelation(tableIdent) match {
 

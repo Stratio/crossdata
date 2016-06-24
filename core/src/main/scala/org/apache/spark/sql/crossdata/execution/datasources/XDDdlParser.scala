@@ -319,10 +319,10 @@ protected lazy val addApp: Parser[LogicalPlan] =
 
   protected lazy val createGlobalIndex: Parser[LogicalPlan] = {
 
-    CREATE ~ GLOBAL ~ INDEX ~> tableIdentifier ~ (ON ~> tableIdentifier) ~ schemaValues ~ (WITH ~> PK ~> schemaValues) ~ (USING ~> className).? ~ (OPTIONS ~> options) ^^ {
-      case index ~ table ~ columns ~ pks ~ provider ~ opts =>
+    CREATE ~ GLOBAL ~ INDEX ~> tableIdentifier ~ (ON ~> tableIdentifier) ~ schemaValues ~ (WITH ~> PK ~> token) ~ (USING ~> className).? ~ (OPTIONS ~> options) ^^ {
+      case index ~ table ~ columns ~ pk ~ provider ~ opts =>
 
-        CreateGlobalIndex(index, table, columns, pks, provider, opts)
+        CreateGlobalIndex(index, table, columns, pk, provider, opts)
     }
   }
 

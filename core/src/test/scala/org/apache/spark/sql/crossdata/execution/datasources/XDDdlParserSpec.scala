@@ -258,7 +258,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
     val sentence =
       """|CREATE GLOBAL INDEX myIndex
          |ON myDb.myTable(col1, col2)
-         |WITH PK (pk1, pk2)
+         |WITH PK pk1
          |USING com.stratio.crossdata.connector.elasticsearch
          |OPTIONS (
          |   opt1 "opt1val",
@@ -269,7 +269,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
                         TableIdentifier("myIndex"),
                         TableIdentifier("myTable", Some("myDb")),
                         Seq("col1","col2"),
-                        Seq("pk1","pk2"),
+                        "pk1",
                         Option("com.stratio.crossdata.connector.elasticsearch"),
                         Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }
@@ -278,7 +278,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
     val sentence =
       """|CREATE GLOBAL INDEX myIndex
          |ON myDb.myTable(col1, col2)
-         |WITH PK (pk1, pk2)
+         |WITH PK pk2
          |OPTIONS (
          |   opt1 "opt1val",
          |   opt2 "opt2val"
@@ -288,16 +288,17 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
         TableIdentifier("myIndex"),
         TableIdentifier("myTable", Some("myDb")),
         Seq("col1","col2"),
-        Seq("pk1","pk2"),
+        "pk2",
         None,
         Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }
+
 
   it should "successfully parse a CREATE GLOBAL INDEX without USING without dbName into a CreateGlobalIndex RunnableCommand" in {
     val sentence =
       """|CREATE GLOBAL INDEX myDbIndex.myIndex
          |ON myTable(col1, col2)
-         |WITH PK (pk1, pk2)
+         |WITH PK pk
          |OPTIONS (
          |   opt1 "opt1val",
          |   opt2 "opt2val"
@@ -307,65 +308,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
         TableIdentifier("myIndex",Option("myDbIndex")),
         TableIdentifier("myTable"),
         Seq("col1","col2"),
-        Seq("pk1","pk2"),
-        None,
-        Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
-  }
-
-  it should "successfully parse a CREATE GLOBAL INDEX into a CreateGlobalIndex RunnableCommand" in {
-    val sentence =
-      """|CREATE GLOBAL INDEX myIndex
-         |ON myDb.myTable(col1, col2)
-         |WITH PK (pk1, pk2)
-         |USING com.stratio.crossdata.connector.elasticsearch
-         |OPTIONS (
-         |   opt1 "opt1val",
-         |   opt2 "opt2val"
-         |)""".stripMargin
-    parser.parse(sentence) shouldBe
-      CreateGlobalIndex(
-                        TableIdentifier("myIndex"),
-                        TableIdentifier("myTable", Some("myDb")),
-                        Seq("col1","col2"),
-                        Seq("pk1","pk2"),
-                        Option("com.stratio.crossdata.connector.elasticsearch"),
-                        Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
-  }
-
-  it should "successfully parse a CREATE GLOBAL INDEX without USING into a CreateGlobalIndex RunnableCommand" in {
-    val sentence =
-      """|CREATE GLOBAL INDEX myIndex
-         |ON myDb.myTable(col1, col2)
-         |WITH PK (pk1, pk2)
-         |OPTIONS (
-         |   opt1 "opt1val",
-         |   opt2 "opt2val"
-         |)""".stripMargin
-    parser.parse(sentence) shouldBe
-      CreateGlobalIndex(
-        TableIdentifier("myIndex"),
-        TableIdentifier("myTable", Some("myDb")),
-        Seq("col1","col2"),
-        Seq("pk1","pk2"),
-        None,
-        Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
-  }
-
-  it should "successfully parse a CREATE GLOBAL INDEX without USING without dbName into a CreateGlobalIndex RunnableCommand" in {
-    val sentence =
-      """|CREATE GLOBAL INDEX myDbIndex.myIndex
-         |ON myTable(col1, col2)
-         |WITH PK (pk1, pk2)
-         |OPTIONS (
-         |   opt1 "opt1val",
-         |   opt2 "opt2val"
-         |)""".stripMargin
-    parser.parse(sentence) shouldBe
-      CreateGlobalIndex(
-        TableIdentifier("myIndex",Option("myDbIndex")),
-        TableIdentifier("myTable"),
-        Seq("col1","col2"),
-        Seq("pk1","pk2"),
+        "pk",
         None,
         Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }

@@ -204,6 +204,7 @@ class XDContext protected (@transient val sc: SparkContext,
 
         override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
 
+          // TODO project
           case f @ logical.Filter(condition, child: UnresolvedRelation) => //Just support Filter + unresolved with Filters for now
             val index = catalog.obtainTableIndex(child.tableIdentifier)
 
@@ -220,6 +221,7 @@ class XDContext protected (@transient val sc: SparkContext,
               logical.Filter(condition, child)
             }
 
+            // TODO comprobar si es un native scan y si soporta los filtros
         }
       }
 
@@ -293,9 +295,9 @@ class XDContext protected (@transient val sc: SparkContext,
     private def schemaToAttribute(schema: StructType): Seq[UnresolvedAttribute] =
       schema.fields map {field => UnresolvedAttribute(field.name)}
 
-    private def resultPksToLiterals(rows: Array[InternalRow], dataType:DataType): Seq[Literal] =
+    private def resultPksToLiterals(rows: Array[Row], dataType:DataType): Seq[Literal] = // TODOrow changed
       rows map { row =>
-        val valTransformed = row.toSeq(Seq(dataType)).head
+        val valTransformed = row.toSeq.head // TODO changed
         Literal.create(valTransformed, dataType)
       } //TODO compound PK
 
@@ -306,42 +308,43 @@ class XDContext protected (@transient val sc: SparkContext,
       }
 
       //We need to retrieve all the retrieve cols for use the filter
-      val pksAndColsIndexed: Seq[UnresolvedAttribute] = schemaToAttribute(DDLUtils.extractSchema(index.pkCols++index.indexedCols, base.schema))
+      val pkAndColsIndexed: Seq[UnresolvedAttribute] = schemaToAttribute(DDLUtils.extractSchema(Seq(index.pk)++index.indexedCols, base.schema))
 
       //Old attributes reference have to be updated
       val convertedCondition = condition transform {
-        case UnresolvedAttribute(name) => (pksAndColsIndexed filter (_.name == name)).head
-        case AttributeReference(name, _, _, _) => (pksAndColsIndexed filter (_.name == name)).head
+        case UnresolvedAttribute(name) => (pkAndColsIndexed filter (_.name == name)).head
+        case AttributeReference(name, _, _, _) => (pkAndColsIndexed filter (_.name == name)).head
       }
 
-      Filter(convertedCondition, Project(pksAndColsIndexed, logical))
+      Filter(convertedCondition, Project(pkAndColsIndexed, logical))
     }
 
     def apply(plan: LogicalPlan): LogicalPlan = plan transform {
-      case f@logical.Filter(condition, ExtendedUnresolvedRelation(tableIdentifier, child)) => {
+      case f@logical.Filter(condition, ExtendedUnresolvedRelation(tableIdentifier, child)) =>
 
         val crossdataIndex = self.catalog.asInstanceOf[XDCatalog].obtainTableIndex(tableIdentifier) getOrElse
           (sys.error("Unexpected error. Can't find index for enhance query with indexes"))
 
         val indexLogicalPlan = buildIndexRequestLogicalPlan(condition, crossdataIndex)
-        val indexSparkPlan = optimizeAndToSparkPlan(indexLogicalPlan)
-        val indexedRows = self.prepareForExecution.execute(indexSparkPlan).execute().collect() //TODO: Warning memory issues
+
+        val indexedRows = XDDataFrame(self, indexLogicalPlan).collect()
+        //TODO: Warning memory issues
 
         if (indexedRows.length > 0) {
           //Convert to query with filter IN
-          val baseRelationFromSourceTable = self.catalog.lookupRelation(crossdataIndex.tableIdentifier) match {
-            case Subquery(_, logicalRelation @ LogicalRelation(relation: BaseRelation, _)) => relation
-          }
 
-          //TODO: Compound PK????
-          val pkSchema = DDLUtils.extractSchema(crossdataIndex.pkCols, baseRelationFromSourceTable.schema)
-          val pkAttribute = schemaToAttribute(pkSchema).head
+          val lr = child.collectFirst{ case lr@ LogicalRelation(baseRelation, _) => lr }.get // TODO sdf
+
+          //crossdataIndex.pkCols.map(lr.attributeMap.map{ case (k, v) => k.(_))
+          val pkSchema = DDLUtils.extractSchema(Seq(crossdataIndex.pk), lr.schema)
+          val pkAttribute =  schemaToAttribute(pkSchema).head
 
           analyzeAndOptimize(logical.Filter(In(pkAttribute, resultPksToLiterals(indexedRows,pkSchema.fields.head.dataType)),child))
+
         } else {
           LocalRelation(child.output)
         }
-      }
+
     }
   }
 

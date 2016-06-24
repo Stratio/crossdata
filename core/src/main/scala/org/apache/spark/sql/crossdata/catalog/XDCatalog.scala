@@ -45,7 +45,7 @@ implicit def asXDCatalog (catalog: Catalog): XDCatalog = catalog.asInstanceOf[XD
 
 
   case class CrossdataIndex(tableIdentifier: TableIdentifier, indexIdentifier: IndexIdentifier,
-                            indexedCols: Seq[String], pkCols: Seq[String], datasource: String,
+                            indexedCols: Seq[String], pk: String, datasource: String,
                             opts: Map[String, String] = Map.empty, crossdataVersion: String = crossdata.CrossdataVersion)
 
 
