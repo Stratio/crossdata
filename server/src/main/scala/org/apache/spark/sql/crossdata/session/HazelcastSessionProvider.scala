@@ -15,7 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.session
 
-import com.hazelcast.config.{Config => HazelcastConfig}
+import com.hazelcast.config.{GroupConfig, XmlConfigBuilder, Config => HazelcastConfig}
 import com.hazelcast.core.Hazelcast
 import com.typesafe.config.Config
 import org.apache.spark.SparkContext
@@ -48,8 +48,10 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
 
   // TODO manage config
   private val hInstance = {
-    val cfg = new HazelcastConfig
-    Hazelcast.newHazelcastInstance(cfg)
+    val xmlConfig = new XmlConfigBuilder().build()
+    xmlConfig.setGroupConfig(new GroupConfig(scala.util.Properties.scalaPropOrElse("version.number", "unknown")))
+    // TODO it should only use Hazelcast.newHazelcastInstance() which internally create a xmlConfig
+    Hazelcast.newHazelcastInstance(xmlConfig)
   }
 
   // TODO scalaWrapper // scalaHazel
