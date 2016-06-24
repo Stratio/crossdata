@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.examples.driver
 
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.examples.cassandra._
@@ -54,7 +55,10 @@ object DriverExample extends App with DefaultConstants {
     for {
       xdDriver <- driver
     } {
-      xdDriver.importTables(SourceProvider, CassandraOptions).waitForResult()
+      xdDriver.importTables(SourceProvider, CassandraOptions).waitForResult() match {
+        case result: SuccessfulSQLResult => println("Successful importation")
+        case error: ErrorSQLResult => sys.error(error.message)
+      }
       xdDriver.listTables().foreach(println(_))
       xdDriver.show(s"SELECT * FROM $Catalog.$Table")
     }
