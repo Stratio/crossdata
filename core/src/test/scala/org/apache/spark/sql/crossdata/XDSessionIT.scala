@@ -76,24 +76,24 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
 
   "XDSession" should "be able to isolate temporary catalogs and share persistent catalogs" in {
 
-    val TempTableName = "records"
-    val PersTableName = "recordsPers"
+    val tempTableName = "records"
+    val persTableName = "recordsPers"
 
     val xdSession1 = createNewDefaultSession
     val xdSession2 = createNewDefaultSession
 
     val df: DataFrame = xdSession2.createDataFrame(xdSession2.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
-    df.registerTempTable(TempTableName)
+    df.registerTempTable(tempTableName)
 
-    xdSession2.table(TempTableName).collect should not be empty
+    xdSession2.table(tempTableName).collect should not be empty
     a [RuntimeException] shouldBe thrownBy{
-      xdSession1.table(TempTableName).collect should not be empty
+      xdSession1.table(tempTableName).collect should not be empty
     }
 
-    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$PersTableName").saveAsTable(PersTableName)
+    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$persTableName").saveAsTable(persTableName)
 
-    xdSession2.table(PersTableName).collect should not be empty
-    xdSession1.table(PersTableName).collect should not be empty
+    xdSession2.table(persTableName).collect should not be empty
+    xdSession1.table(persTableName).collect should not be empty
 
     xdSession2.dropAllTables()
 
