@@ -69,7 +69,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     super.afterAll()
   }
 
-  "The Mongo connector" should "execute a CREATE GLOBAL INDEX" in {
+  "The Mongo connector" should "execute a CREATE GLOBAL INDEX with select *" in {
 
     val ElasticHost: String = "127.0.0.1"
     val ElasticRestPort = 9200
@@ -80,7 +80,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     val sentence =
       s"""|CREATE GLOBAL INDEX myIndex
          |ON globalIndexDb.proofGlobalIndex (other)
-         |WITH PK (id)
+         |WITH PK id
          |USING com.stratio.crossdata.connector.elasticsearch
          |OPTIONS (
          | es.nodes '$ElasticHost',
@@ -120,6 +120,16 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     resultsEquals should have length 1
     resultsEquals shouldBe Array(Row(13, "prueba2", "one comment fail", 5))
+
+    val resultsAfter2 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
+
+    resultsAfter2 should have length 1
+    resultsAfter2 shouldBe Array(Row("prueba"))
+
+    val resultsEquals2 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
+
+    resultsEquals2 should have length 1
+    resultsEquals2 shouldBe Array(Row("prueba2"))
 
   }
 
