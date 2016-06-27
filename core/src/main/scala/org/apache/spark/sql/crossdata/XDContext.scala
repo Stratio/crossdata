@@ -112,9 +112,9 @@ class XDContext protected (@transient val sc: SparkContext,
     else DerbyClass
 
     val externalCatalogClass = Class.forName(externalCatalogName)
-    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[SQLContext], classOf[CatalystConf])
+    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[CatalystConf])
 
-    constr.newInstance(self, catalystConf).asInstanceOf[XDPersistentCatalog]
+    constr.newInstance(catalystConf).asInstanceOf[XDPersistentCatalog]
   }
 
 

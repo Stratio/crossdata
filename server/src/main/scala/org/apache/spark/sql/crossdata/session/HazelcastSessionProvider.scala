@@ -15,14 +15,19 @@
  */
 package org.apache.spark.sql.crossdata.session
 
+import java.lang.reflect.Constructor
+
 import com.hazelcast.config.{GroupConfig, XmlConfigBuilder, Config => HazelcastConfig}
 import com.hazelcast.core.Hazelcast
 import com.typesafe.config.Config
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLConf
+import org.apache.spark.sql.{SQLConf, SQLContext}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.crossdata.XDContext._
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
-import org.apache.spark.sql.crossdata.{XDSession, XDSessionProvider, XDSessionState, XDSharedState}
+import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
+import org.apache.spark.sql.crossdata.config.CoreConfig
+import org.apache.spark.sql.crossdata._
 
 import scala.util.{Failure, Success, Try}
 
@@ -44,7 +49,43 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
   import HazelcastSessionProvider._
   import XDSharedState._
 
-  private val sharedState = new XDSharedState(sc, Option(userConfig))// TODO add sqlConf
+  catalogConfig = userConfig.getConfig(CoreConfig.CatalogConfigKey)
+
+  // TODO replace with sqlConf (which extends CatalystConf)
+  // TODO @deprecated
+  protected lazy val catalystConf: CatalystConf = {
+    import XDContext.CaseSensitive
+    val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
+    new SimpleCatalystConf(caseSensitive)
+  }
+
+  val externalCatalog: XDPersistentCatalog = {
+
+    import XDContext.DerbyClass
+    val externalCatalogName = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
+      catalogConfig.getString(XDContext.ClassConfigKey)
+    else DerbyClass
+
+    val externalCatalogClass = Class.forName(externalCatalogName)
+    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[CatalystConf])
+
+    constr.newInstance(catalystConf).asInstanceOf[XDPersistentCatalog]
+  }
+
+  val streamingCatalog:Option[XDStreamingCatalog] = {
+    if (userConfig.hasPath(XDContext.StreamingCatalogClassConfigKey)) {
+      val streamingCatalogClass = userConfig.getString(XDContext.StreamingCatalogClassConfigKey)
+      val xdStreamingCatalog = Class.forName(streamingCatalogClass)
+      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
+      Option(constr.newInstance(catalystConf).asInstanceOf[XDStreamingCatalog])
+    } else {
+      sys.error("Empty streaming catalog")
+      None
+    }
+  }
+
+
+  private val sharedState = new XDSharedState(sc, Option(userConfig), externalCatalog, streamingCatalog)// TODO add sqlConf
 
   private val hInstance = {
     // TODO it should only use Hazelcast.newHazelcastInstance() which internally creates a xmlConfig and the group shouldn't be hardcoded (blocked by CD)

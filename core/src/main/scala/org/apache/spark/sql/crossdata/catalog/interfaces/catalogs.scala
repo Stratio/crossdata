@@ -103,9 +103,9 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def refreshCache(tableIdent: TableIdentifier): Unit
 
-  def saveTable(crossdataTable: CrossdataTable, plan: LogicalPlan): Unit
+  def saveTable(crossdataTable: CrossdataTable, plan: LogicalPlan)(implicit sqlContext: SQLContext): Unit
 
-  def saveView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit
+  def saveView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String)(implicit sqlContext: SQLContext): Unit
 
   def dropTable(tableIdentifier: TableIdentifier): Unit
 

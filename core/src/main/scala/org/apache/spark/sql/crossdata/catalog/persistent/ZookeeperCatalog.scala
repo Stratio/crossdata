@@ -36,7 +36,7 @@ import scala.util.Try
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
 class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
-  extends PersistentCatalogWithCache(sqlContext, catalystConf){
+  extends PersistentCatalogWithCache(catalystConf){
 
   import XDCatalog._
 
