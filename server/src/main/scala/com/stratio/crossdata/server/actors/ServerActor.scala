@@ -174,10 +174,10 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
     case sc@CommandEnvelope(_: OpenSessionCommand, session) =>
       sessionProvider.newSession(session.id) match {
         case Success(_) =>
-          logger.info(s"new session with sessionID=${session.id} has been created")//TODO debug
+          logger.debug(s"new session with sessionID=${session.id} has been created")
           sender ! OpenSessionReply(sc.cmd.requestId, isOpen = true)
         case Failure(error) =>
-          logger.error(s"failure while creating the session with sessionID=${session.id}")//TODO debug
+          logger.error(s"failure while creating the session with sessionID=${session.id}")
           sender ! OpenSessionReply(sc.cmd.requestId, isOpen = false)
       }
 
