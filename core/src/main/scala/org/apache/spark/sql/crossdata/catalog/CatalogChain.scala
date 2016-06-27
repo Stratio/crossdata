@@ -27,7 +27,7 @@ import scala.annotation.tailrec
 
 
 object CatalogChain {
-  def apply(catalogs: XDCatalogCommon*)(xdContext: XDContext): CatalogChain = {
+  def apply(catalogs: XDCatalogCommon*)(implicit xdContext: XDContext): CatalogChain = {
     val temporaryCatalogs = catalogs.collect { case a: XDTemporaryCatalog => a }
     val persistentCatalogs = catalogs.collect { case a: XDPersistentCatalog => a }
     val streamingCatalogs = catalogs.collect { case a: XDStreamingCatalog => a }
@@ -36,7 +36,7 @@ object CatalogChain {
       temporaryCatalogs.headOption.orElse(persistentCatalogs.headOption).isDefined,
       "At least one catalog (temporary or persistent ) must be included"
     )
-    new CatalogChain(temporaryCatalogs, persistentCatalogs, streamingCatalogs.headOption)(xdContext)
+    new CatalogChain(temporaryCatalogs, persistentCatalogs, streamingCatalogs.headOption)
   }
 }
 
@@ -78,27 +78,21 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
 
   /**
-    * Apply the lookup function to each temporary catalog until a relation [[R]] is found. Returns the list of catalog,
+    * Apply the lookup function to each temporary catalog until a relation [[R]] is found. Returns the list of catalogs,
     * until a catalog satisfy the predicate 'lookup'.
     *
-    * @param lookup lookup function
+    * @param lookup       lookup function
     * @param tempCatalogs a seq of temporary catalogs
-    * @return a tuple (optionalRelation, firstNonMatchingLookupCatalogs)
+    * @return a tuple (optionalRelation, previousNonMatchingLookupCatalogs)
     */
-  private def takeUntilRelationFound[R](lookup: XDCatalogCommon => Option[R], tempCatalogs: Seq[XDTemporaryCatalog]): (Option[R], Seq[XDTemporaryCatalog]) = {
-    @tailrec
-    def accumulateRecursive(accum: Seq[XDTemporaryCatalog], rest: Seq[XDTemporaryCatalog]): (Option[R], Seq[XDTemporaryCatalog]) = {
+  private def takeUntilRelationFound[R](lookup: XDCatalogCommon => Option[R], tempCatalogs: Seq[XDTemporaryCatalog]):
+  (Option[R], Seq[XDTemporaryCatalog]) = {
 
-      if (rest.isEmpty) {
-        (None, accum)
-      } else {
-        lookup(rest.head) match {
-          case Some(table) => (Some(table), accum)
-          case None => accumulateRecursive(accum :+ rest.head, rest.tail)
-        }
-      }
-    }
-    accumulateRecursive(Nil, tempCatalogs)
+    val (res: Option[R], idx: Int) = (tempCatalogs.view map (lookup) zipWithIndex) collectFirst {
+      case e @ (Some(_), _) => e
+    } getOrElse (None, 0)
+
+    (res, tempCatalogs.take(idx))
   }
 
 

@@ -24,8 +24,8 @@ import org.apache.spark.sql.crossdata.config.CoreConfig
 import scala.collection.JavaConversions._
 
 object XDSharedState {
-  // TODO make it implicit? // TODO move method
-   def sqlPropsToSQLConf(sparkSQLProps: Map[String, String]): SQLConf = {
+   // TODO move method
+   implicit def sqlPropsToSQLConf(sparkSQLProps: Map[String, String]): SQLConf = {
     val sqlConf = new SQLConf
     sparkSQLProps.foreach { case (key, value) =>
       sqlConf.setConfString(key, value)
@@ -52,7 +52,7 @@ class XDSharedState( // TODO externalCatalog
     }.getOrElse(Map.empty)
   }
 
-  lazy val sqlConf = sqlPropsToSQLConf(sparkSQLProps)
+  lazy val sqlConf: SQLConf = sparkSQLProps
 
 
 }
