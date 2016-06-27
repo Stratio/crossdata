@@ -90,7 +90,7 @@ class XDContext protected (@transient val sc: SparkContext,
   // TODO replace with sqlConf (which extends CatalystConf)
   // TODO @deprecated
   protected lazy val catalystConf: CatalystConf = {
-    import XDContext.CaseSensitive
+    import CoreConfig.CaseSensitive
     val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
     new SimpleCatalystConf(caseSensitive)
   }
@@ -114,7 +114,7 @@ class XDContext protected (@transient val sc: SparkContext,
   @transient
   protected[crossdata] lazy val securityManager = {
 
-    import XDContext._
+    import CoreConfig._
 
     val securityClass = if (xdConfig.hasPath(SecurityClassConfigKey))
       xdConfig.getString(SecurityClassConfigKey)
@@ -370,29 +370,6 @@ object XDContext extends CoreConfig {
   var xdConfig: Config = _
   //This is definitely NOT right and will only work as long a single instance of XDContext exits
   var catalogConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
-
-  val CaseSensitive = "caseSensitive"
-  val DerbyClass = "org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog"
-  val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
-  val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.persistent.ZookeeperCatalog"
-  val ZookeeperStreamingClass = "org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog"
-  val CatalogConfigKey = "catalog"
-  val StreamingConfigKey = "streaming"
-  val SecurityConfigKey = "security"
-  val SecurityManagerConfigKey = "manager"
-  val ClassConfigKey = "class"
-
-  val AuditConfigKey = "audit"
-  val UserConfigKey = "user"
-  val PasswordConfigKey = "password"
-  val SessionConfigKey = "session"
-  val CatalogClassConfigKey = s"$CatalogConfigKey.$ClassConfigKey"
-  val StreamingCatalogClassConfigKey = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
-  val SecurityClassConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
-  val SecurityAuditConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$AuditConfigKey"
-  val SecurityUserConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$UserConfigKey"
-  val SecurityPasswordConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$PasswordConfigKey"
-  val SecuritySessionConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$SessionConfigKey"
 
 
   @transient private val INSTANTIATION_LOCK = new Object()
