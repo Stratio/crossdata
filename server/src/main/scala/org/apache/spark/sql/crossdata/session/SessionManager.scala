@@ -29,9 +29,7 @@ import scala.util.Try
 
 
 trait SessionManager[K, V] {
-
-  //def put(key: K, value: V): Try[V]
-
+  
   def addSession(key: K): V
 
   def getSession(key: K): Try[V]
