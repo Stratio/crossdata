@@ -20,15 +20,15 @@ import java.lang.reflect.Constructor
 import com.typesafe.config.Config
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDStreamingCatalog}
+import org.apache.spark.sql.crossdata.config.CoreConfig
 
 object CatalogUtils extends Logging {
 
   protected[crossdata] def externalCatalog(catalystConf: CatalystConf, config: Config): XDPersistentCatalog = {
-    import XDContext.DerbyClass
-    val externalCatalogName = if (config.hasPath(XDContext.ClassConfigKey))
-      config.getString(XDContext.ClassConfigKey)
+    import CoreConfig.DerbyClass
+    val externalCatalogName = if (config.hasPath(CoreConfig.ClassConfigKey))
+      config.getString(CoreConfig.ClassConfigKey)
     else DerbyClass
 
     val externalCatalogClass = Class.forName(externalCatalogName)
@@ -38,8 +38,8 @@ object CatalogUtils extends Logging {
   }
 
   protected[crossdata] def streamingCatalog(catalystConf: CatalystConf, config: Config): Option[XDStreamingCatalog] = {
-    if (config.hasPath(XDContext.StreamingCatalogClassConfigKey)) {
-      val streamingCatalogClass = config.getString(XDContext.StreamingCatalogClassConfigKey)
+    if (config.hasPath(CoreConfig.StreamingCatalogClassConfigKey)) {
+      val streamingCatalogClass = config.getString(CoreConfig.StreamingCatalogClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)
       val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
       Option(constr.newInstance(catalystConf).asInstanceOf[XDStreamingCatalog])
