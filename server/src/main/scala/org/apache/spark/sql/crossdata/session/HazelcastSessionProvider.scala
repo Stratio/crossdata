@@ -28,6 +28,7 @@ import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata._
+import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 
 import scala.util.{Failure, Success, Try}
 
@@ -59,30 +60,12 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
     new SimpleCatalystConf(caseSensitive)
   }
 
-  val externalCatalog: XDPersistentCatalog = {
+  @transient
+  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(catalystConf,catalogConfig)
 
-    import XDContext.DerbyClass
-    val externalCatalogName = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
-      catalogConfig.getString(XDContext.ClassConfigKey)
-    else DerbyClass
+  @transient
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(catalystConf,xdConfig)
 
-    val externalCatalogClass = Class.forName(externalCatalogName)
-    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[CatalystConf])
-
-    constr.newInstance(catalystConf).asInstanceOf[XDPersistentCatalog]
-  }
-
-  val streamingCatalog:Option[XDStreamingCatalog] = {
-    if (userConfig.hasPath(XDContext.StreamingCatalogClassConfigKey)) {
-      val streamingCatalogClass = userConfig.getString(XDContext.StreamingCatalogClassConfigKey)
-      val xdStreamingCatalog = Class.forName(streamingCatalogClass)
-      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
-      Option(constr.newInstance(catalystConf).asInstanceOf[XDStreamingCatalog])
-    } else {
-      sys.error("Empty streaming catalog")
-      None
-    }
-  }
 
 
   private val sharedState = new XDSharedState(sc, Option(userConfig), externalCatalog, streamingCatalog)// TODO add sqlConf

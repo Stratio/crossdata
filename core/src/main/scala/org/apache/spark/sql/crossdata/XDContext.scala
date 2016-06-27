@@ -36,6 +36,7 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
 import org.apache.spark.sql.crossdata.catalog._
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
+import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
@@ -104,32 +105,10 @@ class XDContext protected (@transient val sc: SparkContext,
   protected lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(catalystConf)
 
   @transient
-  protected lazy val externalCatalog: XDPersistentCatalog = {
-
-    import XDContext.DerbyClass
-    val externalCatalogName = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
-      catalogConfig.getString(XDContext.ClassConfigKey)
-    else DerbyClass
-
-    val externalCatalogClass = Class.forName(externalCatalogName)
-    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[CatalystConf])
-
-    constr.newInstance(catalystConf).asInstanceOf[XDPersistentCatalog]
-  }
-
+  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(catalystConf,catalogConfig)
 
   @transient
-  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = {
-    if (xdConfig.hasPath(XDContext.StreamingCatalogClassConfigKey)) {
-      val streamingCatalogClass = xdConfig.getString(XDContext.StreamingCatalogClassConfigKey)
-      val xdStreamingCatalog = Class.forName(streamingCatalogClass)
-      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
-      Option(constr.newInstance(catalystConf).asInstanceOf[XDStreamingCatalog])
-    } else {
-      logError("Empty streaming catalog")
-      None
-    }
-  }
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(catalystConf,xdConfig)
 
   @transient
   protected[crossdata] lazy val securityManager = {
