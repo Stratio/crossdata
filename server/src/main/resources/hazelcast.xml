@@ -21,11 +21,16 @@
     Please see the schema for how to configure Hazelcast at https://hazelcast.com/schema/config/hazelcast-config-3.7.xsd
     or the documentation at https://hazelcast.org/documentation/
 -->
-<hazelcast>
+<hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.6.xsd"
+           xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <group>
         <name>crossdata</name>
         <password>crossdata</password>
     </group>
+    <properties>
+        <property name="hazelcast.logging.type">sl4j</property>
+    </properties>
     <network>
         <ssl enabled="false">
             <factory-class-name>
@@ -88,7 +93,4 @@
         -->
         <read-backup-data>false</read-backup-data>
     </map>
-    <properties>
-        <property name="hazelcast.logging.type">sl4j</property>
-    </properties>
 </hazelcast>
