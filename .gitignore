@@ -1,6 +1,7 @@
 .classpath
 .project
 .settings
+.ensime*
 *.log
 nbproject/
 build.xml

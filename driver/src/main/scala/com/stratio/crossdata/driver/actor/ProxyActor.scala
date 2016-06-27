@@ -34,9 +34,7 @@ import scala.concurrent.{Future, Promise}
 import scala.util.matching.Regex
 
 object ProxyActor {
-  val ServerPath = "/user/crossdata-server"
   val DefaultName = "proxy-actor"
-  val RemoteClientName = "remote-client"
 
   def props(clusterClientActor: ActorRef, driver: Driver): Props =
     Props(new ProxyActor(clusterClientActor, driver))
@@ -76,7 +74,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
     case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
-      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
+      clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
     case secureSQLCommand @ CommandEnvelope(addJARCommand @ AddJARCommand(path, _, _, _), _) =>
       import context.dispatcher
@@ -85,13 +83,13 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
     case secureSQLCommand @ CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
       logger.debug(s"Send cluster state with requestID=${clusterStateCommand.requestId}")
-      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
+      clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
     case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss, _), _) =>
-      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath,secureSQLCommand, localAffinity=false)
+      clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath,secureSQLCommand, localAffinity=false)
 
     case secureSQLCommand @ CommandEnvelope(_: OpenSessionCommand | _: CloseSessionCommand, _) =>
-      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = true)
+      clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = true)
 
     case sqlCommand: SQLCommand =>
       logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")

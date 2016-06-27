@@ -13,8 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.server.config
 
-import scala.concurrent.duration.Duration
+package com.stratio.crossdata.driver.actor
 
-case class ServerActorConfig(completedJobTTL: Duration, retryNoAttempts: Int, retryCountWindow: Duration)
+object ServerClusterClientParameters {
+
+  val ServerPath = "/user/crossdata-server"
+
+  val ClientMonitorName = "client-monitor"
+  val ClientMonitorPath = s"/user/$ClientMonitorName"
+
+  val RemoteClientName = "remote-client"
+
+}

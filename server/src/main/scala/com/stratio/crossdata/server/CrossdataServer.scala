@@ -24,14 +24,14 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
 import akka.stream.ActorMaterializer
+import com.stratio.crossdata.common.util.akka.KeepAlive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
-import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
+import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata
-import org.apache.spark.sql.crossdata.XDSessionProvider
 import org.apache.spark.sql.crossdata.session.HazelcastSessionProvider
-import org.apache.spark.sql.crossdata.{XDContext, XDSessionProvider}
+import org.apache.spark.sql.crossdata.XDSessionProvider
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
@@ -71,17 +71,21 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     system = Some(ActorSystem(clusterName, config))
 
-    val serverActorConfig = ServerActorConfig(completedJobTTL, retryNoAttempts, retryCountWindow)
+
 
     system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
       val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
       val serverActor = actorSystem.actorOf(
         RoundRobinPool(minServerActorInstances, Some(resizer)).props(
-          Props(classOf[ServerActor],
+          Props(
+            classOf[ServerActor],
             Cluster(actorSystem),
-            sesionProvider,
-            serverActorConfig)),
+            sesionProvider)),
         actorName)
+
+      val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
+      ClusterReceptionistExtension(actorSystem).registerService(clientMonitor)
+
       val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sesionProvider))
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
       ClusterReceptionistExtension(actorSystem).registerService(resourceManagerActor)
