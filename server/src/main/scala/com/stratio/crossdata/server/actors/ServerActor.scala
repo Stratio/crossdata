@@ -172,15 +172,15 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverAc
       sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
 
     case sc@CommandEnvelope(_: OpenSessionCommand, session) =>
-      sessionProvider.newSession(session.id) match {
+      val open = sessionProvider.newSession(session.id) match {
         case Success(_) =>
           logger.debug(s"new session with sessionID=${session.id} has been created")
-          sender ! OpenSessionReply(sc.cmd.requestId, isOpen = true)
+          true
         case Failure(error) =>
           logger.error(s"failure while creating the session with sessionID=${session.id}")
-          sender ! OpenSessionReply(sc.cmd.requestId, isOpen = false)
+          false
       }
-
+      sender ! OpenSessionReply(sc.cmd.requestId, isOpen = open)
 
 
     case sc@CommandEnvelope(_: CloseSessionCommand, session) =>
