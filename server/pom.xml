@@ -100,11 +100,6 @@
             <artifactId>common-utils_${scala.binary.version}</artifactId>
             <version>${common.utils.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
         <!-- TESTS -->
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
