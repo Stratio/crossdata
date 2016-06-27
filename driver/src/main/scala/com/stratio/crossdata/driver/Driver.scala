@@ -49,7 +49,7 @@ import scala.util.Try
 
 object Driver {
 
-  private val InitializationTimeout: Duration = 10 seconds
+  val InitializationTimeout: Duration = 10 seconds
 
   private val DRIVER_CONSTRUCTOR_LOCK = new Object()
 
@@ -95,11 +95,11 @@ object Driver {
       if (Option(activeDriver.get()).isEmpty) {
         val driver = new Driver(driverConf, authentication)
         val isConnected = driver.openSession().getOrElse {
-          throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
+          throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after ${Driver.InitializationTimeout}")
         }
-        /* TODO if (!isConnected) {
-          throw new RuntimeException(s"T")
-        }*/
+        if (!isConnected) { // TODO openSession().filter??
+          throw new RuntimeException(s"The server has rejected the open session request")
+        }
         setActiveDriver(driver)
       }
       activeDriver.get()
@@ -403,12 +403,7 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     val res = Try {
       val promise = Promise[ServerReply]()
       proxyActor ! (securitizeCommand(OpenSessionCommand()), promise)
-
-      Await.result(
-        promise.future.mapTo[ClusterStateReply].map(_.clusterState),
-        InitializationTimeout
-      ).members.nonEmpty
-
+      Await.result(promise.future.mapTo[OpenSessionReply].map(_.isOpen), InitializationTimeout)
     }
 
     if(res.isSuccess)

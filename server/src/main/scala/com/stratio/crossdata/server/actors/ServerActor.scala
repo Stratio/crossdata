@@ -171,9 +171,16 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
 
     case sc@CommandEnvelope(_: OpenSessionCommand, session) =>
-      sessionProvider.newSession(session.id)
+      val open = sessionProvider.newSession(session.id) match {
+        case Success(_) =>
+          logger.debug(s"new session with sessionID=${session.id} has been created")
+          true
+        case Failure(error) =>
+          logger.error(s"failure while creating the session with sessionID=${session.id}")
+          false
+      }
+      sender ! OpenSessionReply(sc.cmd.requestId, isOpen = open)
 
-      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
 
       context.actorSelection("/user/client-monitor") ! DoCheck(session.id, expectedClientHeartbeatPeriod)
 
@@ -217,7 +224,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   private def closeSessionTerminatingJobs(sessionId: UUID)(st: State): Unit = {
     val newjobsmap = st.jobsById filter {
-      case (JobId(_, jobSessionId, _), job) if jobSessionId == sessionId =>
+      case (JobId(_, `sessionId`, _), job) =>
         gracefullyKill(job) // WARNING! Side-effect within filter function
         false
       case _ => true

@@ -18,9 +18,11 @@ package com.stratio.crossdata.server.config
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-import com.typesafe.config.{ConfigValueFactory, Config, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
+
 import scala.collection.JavaConversions._
 import org.apache.log4j.Logger
+import org.apache.spark.sql.crossdata.config.CoreConfig
 
 import scala.concurrent.duration._
 import scala.util.Try
@@ -30,7 +32,7 @@ object ServerConfig {
   val ParentConfigName = "crossdata-server"
 
 
-  val SparkSqlConfigPrefix = "config.spark.sql"
+  val SparkSqlConfigPrefix = CoreConfig.SparkSqlConfigPrefix
 
   val ClientExpectedHeartbeatPeriod = "config.client.ExpectedHeartbeatPeriod"
 
