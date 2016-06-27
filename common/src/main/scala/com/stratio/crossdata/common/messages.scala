@@ -112,5 +112,7 @@ private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) ex
 
 private[crossdata] case class ClusterStateReply(requestId: UUID, clusterState: CurrentClusterState) extends ServerReply
 
+private[crossdata] case class OpenSessionReply(requestId: UUID, isOpen: Boolean) extends ServerReply
+
 private[crossdata] case class AddHdfsFileReply(requestId: UUID, hdfsRoute: String) extends ServerReply
 

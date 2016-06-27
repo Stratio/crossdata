@@ -110,6 +110,7 @@ class XDContext protected (@transient val sc: SparkContext,
   @transient
   protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(catalystConf,xdConfig)
 
+
   @transient
   protected[crossdata] lazy val securityManager = {
 
