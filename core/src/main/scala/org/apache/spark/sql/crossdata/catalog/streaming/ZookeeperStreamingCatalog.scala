@@ -15,6 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.catalog.streaming
 
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
@@ -39,7 +40,7 @@ class ZookeeperStreamingCatalog(val catalystConf: CatalystConf) extends XDStream
     new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
 
 
-  override def relation(tableIdent: TableIdentifier, alias: Option[String]): Option[LogicalPlan] = {
+  override def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
     val tableIdentifier: String = normalizeTableName(tableIdent)
     if (futurize(existsEphemeralTable(tableIdentifier)))
       Some(StreamingRelation(tableIdentifier))

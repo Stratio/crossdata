@@ -72,7 +72,8 @@ private[crossdata] case class RegisterDataSourceTable(
 
     crossdataContext.catalog.registerTable(
       tableIdentifier,
-      createLogicalRelation(crossdataContext, crossdataTable), Some(crossdataTable)
+      createLogicalRelation(crossdataContext, crossdataTable),
+      Some(crossdataTable)
     )
     Seq.empty[Row]
   }

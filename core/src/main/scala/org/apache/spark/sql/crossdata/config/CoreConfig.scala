@@ -32,6 +32,9 @@ object CoreConfig {
   val LauncherKey= "launcher"
   val JarsRepo = "jars"
   val HdfsKey = "hdfs"
+
+  //TODO this is read only by the server, but the core should use it, shouldn't it?
+  val SparkSqlConfigPrefix = "config.spark.sql"
 }
 
 trait CoreConfig extends Logging {

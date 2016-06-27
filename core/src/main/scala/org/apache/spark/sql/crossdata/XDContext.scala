@@ -34,7 +34,7 @@ import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
 import org.apache.spark.sql.crossdata.catalog._
-import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
+import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
@@ -97,7 +97,7 @@ class XDContext protected (@transient val sc: SparkContext,
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {
     val catalogs: List[XDCatalogCommon] =  temporaryCatalog :: externalCatalog :: streamingCatalog.toList
-    CatalogChain(catalogs:_*)(catalystConf)
+    CatalogChain(catalogs:_*)(self)
   }
 
   @transient

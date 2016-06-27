@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata
+package org.apache.spark.sql.crossdata.catalog.temporary
 
-import org.apache.spark.sql.SQLConf
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
+import org.apache.spark.sql.catalyst.CatalystConf
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 
-class XDSessionState(val sqlConf: SQLConf, val temporaryCatalogs: Seq[XDTemporaryCatalog])
+import scala.collection.mutable
+
+class HashmapCatalog(override val catalystConf: CatalystConf) extends MapCatalog(catalystConf) {
+
+  override protected def newMap: mutable.Map[String, LogicalPlan] = new mutable.HashMap[String, LogicalPlan]
+
+  override def isAvailable: Boolean = true
+}
