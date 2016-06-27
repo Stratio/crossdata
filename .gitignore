@@ -23,6 +23,10 @@ target/
 **/xdhistory.txt
 checkpoint/
 project/
+**.BACKUP.*.*
+**.BASE.*.*
+**.LOCAL.*.*
+**.REMOTE.*.*
 
 #hive ignores
 metastore_db/
