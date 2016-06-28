@@ -111,7 +111,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
       flush index "gidx"
     }.await
 
-    /*val resultsAfter = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
+    val resultsAfter = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
 
     resultsAfter should have length 1
     resultsAfter shouldBe Array(Row(11, "prueba", "one comment", 12))
@@ -124,7 +124,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     val resultsAfter2 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
 
     resultsAfter2 should have length 1
-    resultsAfter2 shouldBe Array(Row("prueba"))*/
+    resultsAfter2 shouldBe Array(Row("prueba"))
 
     val resultsEquals2 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
 

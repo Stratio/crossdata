@@ -185,46 +185,29 @@ class XDContext protected (@transient val sc: SparkContext,
     constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
   }
 
-
-  /*object FilterWithIndexLogicalPlan {
-    type ReturnType = (LogicalPlan, Seq[Filter], Seq[Project], UnresolvedRelation)
-
-    def unapply(plan: LogicalPlan): Option[ReturnType] = plan match {
-      case f @ logical.Filter(condition, child: LogicalPlan) =>
-        recoverFilterAndProjects(plan, Seq(f), Seq(), child)
-
-      case _ => None
-    }
-
+  object IndexUtils {
+    /**
+      * Return if an attribute in the exprs appears in the indexed columns
+      * @param exprs
+      * @param indexedCols
+      * @return
+      */
     @tailrec
-    def recoverFilterAndProjects(parent: LogicalPlan, filters: Seq[logical.Filter], projects: Seq[logical.Project], actual:LogicalPlan): Option[ReturnType] = actual match {
-      case f @ logical.Filter(_, child: LogicalPlan) =>
-        recoverFilterAndProjects(parent, filters :+ f, projects, child)
-
-      case p @ logical.Project(_, child: LogicalPlan) =>
-        recoverFilterAndProjects(parent, filters, projects :+ p, child)
-
-      case u: UnresolvedRelation =>
-        //Check if table has index
-        val index = catalog.obtainTableIndex(u.tableIdentifier)
-        if(index.isDefined){
-          //TODO: Que pasa si viene como db.attr?
-          val attrs: Seq[String] = condition collect {
-            case UnresolvedAttribute(name) => name.last //Avoid table.name
-            case AttributeReference(name,_,_,_) => name //Needed?
-          }
-        } else{
-          None
+    def foundAttributeIndexedInExpr(exprs: Seq[Expression], indexedCols: Seq[String]): Boolean = {
+      if(exprs.isEmpty) false
+      else {
+        val found = exprs.head match {
+          case UnresolvedAttribute(name)=> indexedCols.contains(name.last)
+          case AttributeReference(name,_,_,_) => indexedCols.contains(name)
+          case _ => false
         }
-
-
-        //Check if some filter has attribute indexed
-        Some(parent, filters, projects, u)
-
-      case _ => None
+        if(found) true
+        else if(exprs.head.children.length>0) foundAttributeIndexedInExpr(exprs.tail ++ exprs.head.children, indexedCols)
+        else foundAttributeIndexedInExpr(exprs.tail, indexedCols)
+      }
     }
-  }*/
 
+  }
 
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
@@ -242,27 +225,6 @@ class XDContext protected (@transient val sc: SparkContext,
 
       object XDResolveRelations extends Rule[LogicalPlan] {
 
-        /**
-          * Return if an attribute in the exprs appears in the indexed columns
-          * @param exprs
-          * @param indexedCols
-          * @return
-          */
-        @tailrec
-        private def foundAttributeIndexedInExpr(exprs: Seq[Expression], indexedCols: Seq[String]): Boolean = {
-          if(exprs.isEmpty) false
-          else {
-            val found = exprs.head match {
-              case UnresolvedAttribute(name)=> indexedCols.contains(name.last)
-              case AttributeReference(name,_,_,_) => indexedCols.contains(name.last)
-              case _ => false
-            }
-            if(found) true
-            else if(exprs.head.children.length>0) foundAttributeIndexedInExpr(exprs.tail ++ exprs.head.children, indexedCols)
-            else foundAttributeIndexedInExpr(exprs.tail, indexedCols)
-          }
-        }
-
         def planWithAvailableIndex(plan: LogicalPlan): Boolean = {
 
           //Get filters and escape projects to check if plan could be resolved using Indexes
@@ -277,7 +239,7 @@ class XDContext protected (@transient val sc: SparkContext,
             case u: UnresolvedRelation =>
               //Check if table has index and if one of the columns filtered is indexed
               val index = catalog.obtainTableIndex(u.tableIdentifier)
-              index.isDefined && foundAttributeIndexedInExpr(filtersConditions, index.get.indexedCols)
+              index.isDefined && IndexUtils.foundAttributeIndexedInExpr(filtersConditions, index.get.indexedCols)
 
             case _ => false
           }
@@ -389,32 +351,78 @@ class XDContext protected (@transient val sc: SparkContext,
       Filter(convertedCondition, Project(pkAndColsIndexed, logical))
     }
 
-    def apply(plan: LogicalPlan): LogicalPlan = plan transform {
-      case f@logical.Filter(condition, ExtendedUnresolvedRelation(tableIdentifier, child)) =>
+    def combineFiltersAndRelation(filters: Seq[LogicalPlan], relation: LogicalPlan): LogicalPlan =
+      filters.foldRight(relation){(filter, accum) => filter.withNewChildren(Seq(accum))}
 
+
+    def apply(plan: LogicalPlan): LogicalPlan = plan transform {
+
+      case FilterWithIndexLogicalPlan(filters, projects, ExtendedUnresolvedRelation(tableIdentifier, child)) =>
         val crossdataIndex = self.catalog.asInstanceOf[XDCatalog].obtainTableIndex(tableIdentifier) getOrElse
           (sys.error("Unexpected error. Can't find index for enhance query with indexes"))
 
-        val indexLogicalPlan = buildIndexRequestLogicalPlan(condition, crossdataIndex)
+        //Change the filters that has indexed rows, with a Filter IN with ES results or LocalRelation if we don't have results
+        val newFilters: Seq[LogicalPlan] = filters map { filter =>
+          if(IndexUtils.foundAttributeIndexedInExpr(Seq(filter.condition), crossdataIndex.indexedCols)) {
+            val indexLogicalPlan = buildIndexRequestLogicalPlan(filter.condition, crossdataIndex)
+            val indexedRows = XDDataFrame(self, indexLogicalPlan).collect() //TODO: Warning memory issues
+            if (indexedRows.length > 0) {
 
-        val indexedRows = XDDataFrame(self, indexLogicalPlan).collect()
-        //TODO: Warning memory issues
+              //Convert to query with filter IN
+              val lr = child.collectFirst{ case lr@ LogicalRelation(baseRelation, _) => lr }.get
+              val pkSchema = DDLUtils.extractSchema(Seq(crossdataIndex.pk), lr.schema)
+              val pkAttribute =  schemaToAttribute(pkSchema).head
+              analyzeAndOptimize(logical.Filter(In(pkAttribute, resultPksToLiterals(indexedRows,pkSchema.fields.head.dataType)),child))
 
-        if (indexedRows.length > 0) {
-          //Convert to query with filter IN
-
-          val lr = child.collectFirst{ case lr@ LogicalRelation(baseRelation, _) => lr }.get // TODO sdf
-
-          //crossdataIndex.pkCols.map(lr.attributeMap.map{ case (k, v) => k.(_))
-          val pkSchema = DDLUtils.extractSchema(Seq(crossdataIndex.pk), lr.schema)
-          val pkAttribute =  schemaToAttribute(pkSchema).head
-
-          analyzeAndOptimize(logical.Filter(In(pkAttribute, resultPksToLiterals(indexedRows,pkSchema.fields.head.dataType)),child))
-
-        } else {
-          LocalRelation(child.output)
+            } else {
+              LocalRelation(filter.output)
+            }
+          } else {
+            filter
+          }
         }
 
+        //If LocalRelation appear there are no results
+        val noResults: Option[LocalRelation] = newFilters collectFirst {
+          case localRelation : LocalRelation => localRelation
+        }
+
+        noResults getOrElse {
+          //If projects exists, just remain the first in the tree + Filters + Relation
+          val combined: LogicalPlan = combineFiltersAndRelation(newFilters, child)
+          if(projects.length > 0){
+            analyzeAndOptimize(projects.head.withNewChildren(Seq(combined)))
+          } else {
+            analyzeAndOptimize(combined)
+          }
+        }
+
+    }
+
+
+    object FilterWithIndexLogicalPlan {
+      type ReturnType = (Seq[Filter], Seq[Project], ExtendedUnresolvedRelation)
+
+      def unapply(plan: LogicalPlan): Option[ReturnType] = plan match {
+        case f @ logical.Filter(condition, child: LogicalPlan) =>
+          recoverFilterAndProjects(Seq(f), Seq(), child)
+
+        case _ => None
+      }
+
+      @tailrec
+      def recoverFilterAndProjects(filters: Seq[logical.Filter], projects: Seq[logical.Project], actual:LogicalPlan): Option[ReturnType] = actual match {
+        case f @ logical.Filter(_, child: LogicalPlan) =>
+          recoverFilterAndProjects(filters :+ f, projects, child)
+
+        case p @ logical.Project(_, child: LogicalPlan) =>
+          recoverFilterAndProjects(filters, projects :+ p, child)
+
+        case u: ExtendedUnresolvedRelation =>
+          Some(filters, projects, u)
+
+        case _ => None
+      }
     }
   }
 
