@@ -186,25 +186,39 @@ class XDContext protected (@transient val sc: SparkContext,
   }
 
   object IndexUtils {
+
     /**
-      * Return if an attribute in the exprs appears in the indexed columns
-      * @param exprs
+      * Return if all  attribute in the exprs are indexed columns
+      * @param condition filter.condition
       * @param indexedCols
       * @return
       */
-    @tailrec
-    def foundAttributeIndexedInExpr(exprs: Seq[Expression], indexedCols: Seq[String]): Boolean = { //TODO: Check all / check some (is what already do) / ES capabilities
-      if(exprs.isEmpty) false
-      else {
-        val found = exprs.head match {
-          case UnresolvedAttribute(name)=> indexedCols.contains(name.last)
-          case AttributeReference(name,_,_,_) => indexedCols.contains(name)
-          case _ => false
+    def areAllAttributeIndexedInExpr(condition: Expression, indexedCols: Seq[String]): Boolean = { //TODO: ES capabilities
+
+      @tailrec
+      def helper(remainExpr: Seq[Expression], allValids: Boolean): Boolean = {
+        if(remainExpr.isEmpty) allValids
+        else {
+          val (foundAttr, isIndexed) = remainExpr.head match {
+            case UnresolvedAttribute(name)=> (true, indexedCols.contains(name.last))
+            case AttributeReference(name,_,_,_) => (true, indexedCols.contains(name))
+            case _ => (false, false)
+          }
+          if(foundAttr){
+            if(isIndexed){
+              if(remainExpr.head.children.length>0) helper(remainExpr.tail ++ remainExpr.head.children, true)
+              else helper(remainExpr.tail, true)
+            } else{
+              false
+            }
+          } else {
+            if(remainExpr.head.children.length>0) helper(remainExpr.tail ++ remainExpr.head.children, allValids)
+            else helper(remainExpr.tail, allValids)
+          }
         }
-        if(found) true
-        else if(exprs.head.children.length>0) foundAttributeIndexedInExpr(exprs.tail ++ exprs.head.children, indexedCols)
-        else foundAttributeIndexedInExpr(exprs.tail, indexedCols)
       }
+
+      helper(Seq(condition), false)
     }
 
   }
@@ -237,9 +251,16 @@ class XDContext protected (@transient val sc: SparkContext,
               helper(filtersConditions, child)
 
             case u: UnresolvedRelation =>
-              //Check if table has index and if one of the columns filtered is indexed
+              //Check if table has index and if there are some Filter that have all its attributes indexed
               val index = catalog.obtainTableIndex(u.tableIdentifier)
-              index.isDefined && IndexUtils.foundAttributeIndexedInExpr(filtersConditions, index.get.indexedCols)
+              if(index.isDefined){
+                val canBeResolvedByFilter = filtersConditions filter { condition =>
+                  IndexUtils.areAllAttributeIndexedInExpr(condition, index.get.indexedCols)
+                }
+                canBeResolvedByFilter.length > 0
+              } else{
+                false
+              }
 
             case _ => false
           }
@@ -363,7 +384,7 @@ class XDContext protected (@transient val sc: SparkContext,
 
         //Change the filters that has indexed rows, with a Filter IN with ES results or LocalRelation if we don't have results
         val newFilters: Seq[LogicalPlan] = filters map { filter =>
-          if(IndexUtils.foundAttributeIndexedInExpr(Seq(filter.condition), crossdataIndex.indexedCols)) {
+          if(IndexUtils.areAllAttributeIndexedInExpr(filter.condition, crossdataIndex.indexedCols)) {
             val indexLogicalPlan = buildIndexRequestLogicalPlan(filter.condition, crossdataIndex)
             val indexedRows = XDDataFrame(self, indexLogicalPlan).collect() //TODO: Warning memory issues
             if (indexedRows.length > 0) {
