@@ -100,7 +100,7 @@
     </modules>
 
     <properties>
-        <spark.version>1.6.1</spark.version>
+        <spark.version>1.6.2</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
         <easymock.version>3.4</easymock.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
