@@ -34,8 +34,8 @@ import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
 import org.apache.spark.sql.crossdata.catalog._
-import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
+import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
@@ -50,7 +50,7 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext, Strategy, execution => 
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 /**
   * CrossdataContext leverages the features of [[SQLContext]]
@@ -136,46 +136,31 @@ class XDContext protected (@transient val sc: SparkContext,
 
     import XDContext._
 
-    val securityClass = if (xdConfig.hasPath(SecurityClassConfigKey))
-      xdConfig.getString(SecurityClassConfigKey)
-    else DefaultSecurityManager
+    val securityClass = Try(xdConfig.getString(SecurityClassConfigKey)).getOrElse(DefaultSecurityManager)
 
-    val audit: java.lang.Boolean = if (xdConfig.hasPath(SecurityAuditConfigKey))
-      xdConfig.getBoolean(SecurityAuditConfigKey)
-    else false
+    val audit: java.lang.Boolean = {
+      if (xdConfig.hasPath(SecurityAuditConfigKey))
+        xdConfig.getBoolean(SecurityAuditConfigKey)
+      else
+        false
+    }
 
-    val userConfig = if (xdConfig.hasPath(SecurityUserConfigKey))
-      Some(xdConfig.getString(SecurityUserConfigKey))
-    else None
-
-    val passwordConfig = if (xdConfig.hasPath(SecurityPasswordConfigKey))
-      Some(xdConfig.getString(SecurityPasswordConfigKey))
-    else None
-
-    val sessionIdConfig = if (xdConfig.hasPath(SecuritySessionConfigKey))
-      Some(xdConfig.getString(SecuritySessionConfigKey))
-    else None
+    val userConfig = Try(xdConfig.getString(SecurityUserConfigKey)).toOption
+    val passwordConfig = Try(xdConfig.getString(SecurityPasswordConfigKey)).toOption
+    val sessionIdConfig = Try(xdConfig.getString(SecuritySessionConfigKey)).toOption
 
     val securityManagerClass = Class.forName(securityClass)
 
+    val fallbackCredentials = Credentials(
+      user = credentials.user.orElse(userConfig),
+      password = credentials.password.orElse(passwordConfig),
+      sessionId = credentials.sessionId.orElse(sessionIdConfig)
+    )
+
     val constr: Constructor[_] = securityManagerClass.getConstructor(classOf[Credentials], classOf[Boolean])
-
-    val fallbackCredentials = credentials.copy(
-      user = credentials.user match {
-        case Some(u) => Some(u)
-        case _ => userConfig
-      },
-      password = credentials.password match {
-        case Some(p) => Some(p)
-        case _ => passwordConfig
-      },
-      sessionId = credentials.sessionId match {
-        case Some(s) => Some(s)
-        case _ => sessionIdConfig
-      })
-
     constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
   }
+
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
     new Analyzer(catalog, functionRegistry, catalystConf) {
