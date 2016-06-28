@@ -37,12 +37,12 @@ object CatalogUtils extends Logging {
     constr.newInstance(catalystConf).asInstanceOf[XDPersistentCatalog]
   }
 
-  protected[crossdata] def streamingCatalog(catalystConf: CatalystConf, config: Config): Option[XDStreamingCatalog] = {
-    if (config.hasPath(CoreConfig.StreamingCatalogClassConfigKey)) {
-      val streamingCatalogClass = config.getString(CoreConfig.StreamingCatalogClassConfigKey)
+  protected[crossdata] def streamingCatalog(catalystConf: CatalystConf, serverConfig: Config): Option[XDStreamingCatalog] = {
+    if (serverConfig.hasPath(CoreConfig.StreamingCatalogClassConfigKey)) {
+      val streamingCatalogClass = serverConfig.getString(CoreConfig.StreamingCatalogClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)
-      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
-      Option(constr.newInstance(catalystConf).asInstanceOf[XDStreamingCatalog])
+      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf], classOf[Config])
+      Option(constr.newInstance(catalystConf, serverConfig).asInstanceOf[XDStreamingCatalog])
     } else {
       logError("Empty streaming catalog")
       None
