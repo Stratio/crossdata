@@ -27,20 +27,22 @@ import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, Hazelca
 import scala.collection.mutable
 import scala.util.Try
 
+trait SessionResourceManager[K, V] {
 
-trait SessionManager[K, V] {
-  
-  def addSession(key: K): V
+  def newResource(key: K): V
 
-  def getSession(key: K): Try[V]
+  def getResource(key: K): Try[V]
 
-  def removeSession(key: K): Try[Unit]
+  def deleteSessionResource(key: K): Try[Unit]
 
-  def clearAllSessions(): Unit
+  def clearAllSessionsResources(): Unit
+
 }
 
+
+
 // TODO add listeners to propagate hazelcast changes (delete/updates) to the localCatalog
-class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf: CatalystConf) extends SessionManager[SessionID, Seq[XDTemporaryCatalog]]{
+class HazelcastSessionCatalogResourceManager(hInstance: HazelcastInstance, catalystConf: CatalystConf) extends SessionResourceManager[SessionID, Seq[XDTemporaryCatalog]]{
 
   import HazelcastSessionProvider._
 
@@ -51,7 +53,7 @@ class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf:
   private val sessionIDToTableViewID: IMap[SessionID, (TableMapUUID, ViewMapUUID)] = hInstance.getMap(HazelcastCatalogMapId)
 
   // Returns the seq of XDTempCatalog for the new session
-  override def addSession(key: SessionID): Seq[XDTemporaryCatalog] = {
+  override def newResource(key: SessionID): Seq[XDTemporaryCatalog] = {
     // TODO try // TODO check if the session already exists?? and use it or it hsould not happen??
     // AddMapCatalog for local/cache interaction
     val localCatalog = addNewMapCatalog(key)
@@ -66,7 +68,7 @@ class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf:
   }
 
   // TODO refactor
-  override def getSession(key: SessionID): Try[Seq[XDTemporaryCatalog]] =
+  override def getResource(key: SessionID): Try[Seq[XDTemporaryCatalog]] =
     for {
       (tableUUID, viewUUID) <- checkNotNull(sessionIDToTableViewID.get(key))
       hazelcastTables <- checkNotNull(hInstance.getMap[TableIdentifier, CrossdataTable](tableUUID.toString))
@@ -77,7 +79,7 @@ class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf:
       Seq(mapCatalog, hazelcastCatalog)
     }
 
-  override def removeSession(key: SessionID): Try[Unit] =
+  override def deleteSessionResource(key: SessionID): Try[Unit] =
     for {
       (tableUUID, viewUUID) <- checkNotNull(sessionIDToTableViewID.get(key))
       hazelcastTables <- checkNotNull(hInstance.getMap(tableUUID.toString))
@@ -89,7 +91,7 @@ class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf:
       sessionIDToMapCatalog remove key
     }
 
-  override def clearAllSessions(): Unit = {
+  override def clearAllSessionsResources(): Unit = {
     import scala.collection.JavaConversions._
     sessionIDToTableViewID.values().foreach { case (tableUUID, viewUUID) =>
       hInstance.getMap(tableUUID.toString).clear()
