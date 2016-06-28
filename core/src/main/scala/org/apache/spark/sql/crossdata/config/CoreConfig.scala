@@ -21,6 +21,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.Logging
 
+import scala.util.Try
+
 
 object CoreConfig {
 
@@ -80,7 +82,14 @@ trait CoreConfig extends Logging {
     }
 
     // System properties
-    defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
+    val systemPropertiesConfig =
+      Try(
+        ConfigFactory.parseProperties(System.getProperties).getConfig(ParentConfigName)
+      ).getOrElse(
+        ConfigFactory.parseProperties(System.getProperties)
+      )
+
+    defaultConfig = systemPropertiesConfig.withFallback(defaultConfig)
 
     ConfigFactory.load(defaultConfig)
   }

@@ -153,9 +153,15 @@ class DriverConf extends Logging {
       }
     }
 
-    // TODO Improve implementation
     // System properties
-    val finalConfigWithSystemProperties = ConfigFactory.parseProperties(System.getProperties).withFallback(finalConfig)
+    val systemPropertiesConfig =
+      Try(
+        ConfigFactory.parseProperties(System.getProperties).getConfig(ParentConfigName)
+      ).getOrElse(
+        ConfigFactory.parseProperties(System.getProperties)
+      )
+
+    val finalConfigWithSystemProperties = systemPropertiesConfig.withFallback(finalConfig)
 
     val finalConfigWithEnvVars = {
       if (finalConfigWithSystemProperties.hasPath("config.cluster.servers")) {
