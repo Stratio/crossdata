@@ -60,7 +60,7 @@ object MySQLXDCatalog {
   *
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
-class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
+class MySQLXDCatalog(override val catalystConf: CatalystConf)
   extends PersistentCatalogWithCache(catalystConf) {
 
   import MySQLXDCatalog._
