@@ -52,7 +52,7 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
       zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress)
       catalogConf = parseZookeeperCatalogConfig(zookeeperConf)
       xDContext = XDContext.getOrCreate(sc, parseCatalogConfig(catalogConf))
-      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true))
+      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), XDContext.xdConfig)
     }
 
     if (consumer == null){
