@@ -193,7 +193,7 @@ class XDContext protected (@transient val sc: SparkContext,
       * @return
       */
     @tailrec
-    def foundAttributeIndexedInExpr(exprs: Seq[Expression], indexedCols: Seq[String]): Boolean = {
+    def foundAttributeIndexedInExpr(exprs: Seq[Expression], indexedCols: Seq[String]): Boolean = { //TODO: Check all / check some (is what already do) / ES capabilities
       if(exprs.isEmpty) false
       else {
         val found = exprs.head match {
