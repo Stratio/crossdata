@@ -23,8 +23,9 @@ import org.apache.spark.sql.crossdata.config.CoreConfig
 
 import scala.collection.JavaConversions._
 
+
 object XDSharedState {
-   // TODO move method
+
    implicit def sqlPropsToSQLConf(sparkSQLProps: Map[String, String]): SQLConf = {
     val sqlConf = new SQLConf
     sparkSQLProps.foreach { case (key, value) =>
@@ -34,7 +35,7 @@ object XDSharedState {
   }
 }
 
-// TODO rename XDSharedState
+// TODO refactor (move XDSharedState, XDSessionState and HazelcastSessionProvider to org.apache.spark.sql.crossdata.session)
 class XDSharedState( // TODO externalCatalog
                      @transient val sc: SparkContext,
                      userConfig: Option[Config] = None // TODO this is server config. Probably should be core => the server should remove the config prefix (config.spark.sql...)

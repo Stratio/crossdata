@@ -44,7 +44,6 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
     val SparkSQLTungstenProperty = "spark.sql.tungsten.enabled"
     val XDTungstenProperty = "config.spark.sql.tungsten.enabled"
 
-    // TODO use future xdSession builder to avoid duplicate config
     val xdSession1 = {
 
       val (coreConfig, sqlConf) = {

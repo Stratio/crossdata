@@ -25,7 +25,7 @@ import org.apache.spark.sql.crossdata.util.CreateRelationUtil
 
 
 class HazelcastCatalog(
-                        private val tables: IMap[TableIdentifier, CrossdataTable], //TODO replace with map? // hazelcastCatalogSessionManage should add the listener
+                        private val tables: IMap[TableIdentifier, CrossdataTable],
                         private val views: IMap[TableIdentifier, String]
                       )(implicit val catalystConf: CatalystConf) extends XDTemporaryCatalog with Serializable {
 
@@ -53,12 +53,11 @@ class HazelcastCatalog(
     }.getOrElse(tableIdentSeq)
   }
 
-  // TODO class NormalizedTableIdentifier => implicit conversion
   override def saveTable(tableIdentifier: TableIdentifier, plan: LogicalPlan, crossdataTable: Option[CrossdataTable]): Unit = {
     require(crossdataTable.isDefined, requireSerializablePlanMessage("CrossdataTable"))
 
     val normalizedTableIdentifier = tableIdentifier.normalize
-    // TODO add create if not exists => fail if exists instead of override the table
+    // TODO add create/drop if not exists => fail if exists instead of override the table
     Option(views get normalizedTableIdentifier) foreach (_ => dropView(normalizedTableIdentifier))
     tables set(normalizedTableIdentifier, crossdataTable.get)
   }

@@ -146,7 +146,6 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       }
   }
 
-  // TODO do not accept unknown sessions
   // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
   def commandMessagesRec(st: State): Receive = {
 
@@ -185,7 +184,6 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       context.actorSelection("/user/client-monitor") ! DoCheck(session.id, expectedClientHeartbeatPeriod)
 
     case sc@CommandEnvelope(_: CloseSessionCommand, session) =>
-      // TODO validate/ actorRef instead of sessionId
       closeSessionTerminatingJobs(session.id)(st)
       /* Note that the client monitoring isn't explicitly stopped. It'll after the first miss
           is detected, right after the driver has ended its session. */

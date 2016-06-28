@@ -103,7 +103,7 @@ object CatalystToCrossdataAdapter {
       case c: GetArrayItem if itemAccess2att contains c =>
         c.references.map(Found -> relation.attributeMap(_)).toSeq :+ (Requested -> itemAccess2att(c))
 
-      // TODO should these expressions be ignored? We are ommitting expressions within structfields
+      // TODO should these expressions be ignored? We are omitting expressions within structfields
       case c: GetStructField  => c.references flatMap {
         case x => Seq(Requested -> relation.attributeMap(x))
       } toSeq

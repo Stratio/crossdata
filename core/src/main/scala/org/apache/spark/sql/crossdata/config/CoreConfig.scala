@@ -33,8 +33,7 @@ object CoreConfig {
   val JarsRepo = "jars"
   val HdfsKey = "hdfs"
 
-  //TODO this is read only by the server, but the core should use it, shouldn't it?
-  val SparkSqlConfigPrefix = "config.spark.sql"
+  val SparkSqlConfigPrefix = "config.spark.sql" //WARNING!! XDServer is using this path to read its parameters
 }
 
 trait CoreConfig extends Logging {
@@ -80,7 +79,6 @@ trait CoreConfig extends Logging {
       }
     }
 
-    // TODO Improve implementation
     // System properties
     defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
 

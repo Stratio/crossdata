@@ -25,7 +25,6 @@ import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types._
 
 // TODO: WARNING It is only valid for HazelcastCatalog until we create the proper plan to make it generic. (null!!)
-// TODO use SharedSparkContext instead of SharedXDContext
 trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   def catalogName: String
@@ -106,14 +105,6 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
     temporaryCatalog.relation(viewIdentifier) shouldBe empty
   }
 
-
-  it should s"not unregister view that not exists " ignore { // TODO Modify temporary relations' behaviour
-    a[RuntimeException] shouldBe thrownBy {
-      val viewIdentifier = TableIdentifier(ViewName, Option(Database))
-      temporaryCatalog.dropView(viewIdentifier)
-    }
-
-  }
 
   protected override def beforeAll(): Unit = {
     super.beforeAll()
