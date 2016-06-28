@@ -30,7 +30,7 @@ import com.stratio.crossdata.utils.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, NoSuchTableException, ResolveUpCast, UnresolvedAttribute, UnresolvedRelation}
-import org.apache.spark.sql.catalyst.expressions.{Attribute, AttributeReference, Expression, GreaterThan, In, Literal, UnsafeRow}
+import org.apache.spark.sql.catalyst.expressions.{And, Attribute, AttributeReference, Contains, EqualTo, Expression, GreaterThan, GreaterThanOrEqual, In, IsNotNull, IsNull, LessThan, LessThanOrEqual, Literal, Or, Predicate, StartsWith, UnsafeRow}
 import org.apache.spark.sql.catalyst.optimizer.{DefaultOptimizer, Optimizer}
 import org.apache.spark.sql.catalyst.plans.logical
 import org.apache.spark.sql.catalyst.plans.logical._
@@ -189,6 +189,7 @@ class XDContext protected (@transient val sc: SparkContext,
 
     /**
       * Return if all  attribute in the exprs are indexed columns
+      *
       * @param condition filter.condition
       * @param indexedCols
       * @return
@@ -199,26 +200,55 @@ class XDContext protected (@transient val sc: SparkContext,
       def helper(remainExpr: Seq[Expression], allValids: Boolean): Boolean = {
         if(remainExpr.isEmpty) allValids
         else {
-          val (foundAttr, isIndexed) = remainExpr.head match {
-            case UnresolvedAttribute(name)=> (true, indexedCols.contains(name.last))
-            case AttributeReference(name,_,_,_) => (true, indexedCols.contains(name))
-            case _ => (false, false)
+          val (supportedOperation, foundAttr, isIndexed) = remainExpr.head match {
+            case predicate: Predicate => (isSupportedPredicate(predicate), false, false)
+            case UnresolvedAttribute(name)=> (true, true, indexedCols.contains(name.last))
+            case AttributeReference(name,_,_,_) => (true, true, indexedCols.contains(name))
+            case _ => (true, false, false)
           }
-          if(foundAttr){
-            if(isIndexed){
-              if(remainExpr.head.children.length>0) helper(remainExpr.tail ++ remainExpr.head.children, true)
-              else helper(remainExpr.tail, true)
-            } else{
-              false
+          if(supportedOperation) {
+            if (foundAttr) {
+              if (isIndexed) {
+                if (remainExpr.head.children.length > 0) helper(remainExpr.tail ++ remainExpr.head.children, true)
+                else helper(remainExpr.tail, true)
+              } else {
+                false
+              }
+            } else {
+              if (remainExpr.head.children.length > 0) helper(remainExpr.tail ++ remainExpr.head.children, allValids)
+              else helper(remainExpr.tail, allValids)
             }
-          } else {
-            if(remainExpr.head.children.length>0) helper(remainExpr.tail ++ remainExpr.head.children, allValids)
-            else helper(remainExpr.tail, allValids)
+          } else{
+            false
           }
         }
       }
 
       helper(Seq(condition), false)
+    }
+
+    /**
+      * Check if predicate is supported by ElasticSearch native queries to use the index
+      *
+      * @param predicate
+      * @return
+      */
+    def isSupportedPredicate(predicate: Predicate): Boolean = predicate match {
+      //TODO: Add more filters?? Reference: ElasticSearchQueryProcessor
+      case _: And => true
+      case _: Contains => true
+      case _: EqualTo => true
+      case _: GreaterThan => true
+      case _: GreaterThanOrEqual => true
+      case _: In => true
+      case _: IsNull => true
+      case _: IsNotNull => true
+      case _: LessThan => true
+      case _: LessThanOrEqual => true
+      case _: Or => true
+      case _: StartsWith => true
+
+      case _ => false
     }
 
   }
