@@ -45,7 +45,7 @@ object DerbyCatalog {
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
 
-  //IndexMetadataFields
+  //IndexMetadataFields //TODO: To core-config
   val IndexNameField = "indexName"
   val IndexTypeField = "indexType"
   val IndexedColsField = "indexedCols"

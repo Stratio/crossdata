@@ -57,6 +57,7 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext, Strategy, execution => 
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
+import scala.annotation.tailrec
 import scala.util.{Failure, Success}
 
 /**
@@ -185,6 +186,45 @@ class XDContext protected (@transient val sc: SparkContext,
   }
 
 
+  /*object FilterWithIndexLogicalPlan {
+    type ReturnType = (LogicalPlan, Seq[Filter], Seq[Project], UnresolvedRelation)
+
+    def unapply(plan: LogicalPlan): Option[ReturnType] = plan match {
+      case f @ logical.Filter(condition, child: LogicalPlan) =>
+        recoverFilterAndProjects(plan, Seq(f), Seq(), child)
+
+      case _ => None
+    }
+
+    @tailrec
+    def recoverFilterAndProjects(parent: LogicalPlan, filters: Seq[logical.Filter], projects: Seq[logical.Project], actual:LogicalPlan): Option[ReturnType] = actual match {
+      case f @ logical.Filter(_, child: LogicalPlan) =>
+        recoverFilterAndProjects(parent, filters :+ f, projects, child)
+
+      case p @ logical.Project(_, child: LogicalPlan) =>
+        recoverFilterAndProjects(parent, filters, projects :+ p, child)
+
+      case u: UnresolvedRelation =>
+        //Check if table has index
+        val index = catalog.obtainTableIndex(u.tableIdentifier)
+        if(index.isDefined){
+          //TODO: Que pasa si viene como db.attr?
+          val attrs: Seq[String] = condition collect {
+            case UnresolvedAttribute(name) => name.last //Avoid table.name
+            case AttributeReference(name,_,_,_) => name //Needed?
+          }
+        } else{
+          None
+        }
+
+
+        //Check if some filter has attribute indexed
+        Some(parent, filters, projects, u)
+
+      case _ => None
+    }
+  }*/
+
 
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
@@ -202,26 +242,56 @@ class XDContext protected (@transient val sc: SparkContext,
 
       object XDResolveRelations extends Rule[LogicalPlan] {
 
+        /**
+          * Return if an attribute in the exprs appears in the indexed columns
+          * @param exprs
+          * @param indexedCols
+          * @return
+          */
+        @tailrec
+        private def foundAttributeIndexedInExpr(exprs: Seq[Expression], indexedCols: Seq[String]): Boolean = {
+          if(exprs.isEmpty) false
+          else {
+            val found = exprs.head match {
+              case UnresolvedAttribute(name)=> indexedCols.contains(name.last)
+              case AttributeReference(name,_,_,_) => indexedCols.contains(name.last)
+              case _ => false
+            }
+            if(found) true
+            else if(exprs.head.children.length>0) foundAttributeIndexedInExpr(exprs.tail ++ exprs.head.children, indexedCols)
+            else foundAttributeIndexedInExpr(exprs.tail, indexedCols)
+          }
+        }
+
+        def planWithAvailableIndex(plan: LogicalPlan): Boolean = {
+
+          //Get filters and escape projects to check if plan could be resolved using Indexes
+          @tailrec
+          def helper(filtersConditions: Seq[Expression], actual:LogicalPlan): Boolean = actual match {
+            case logical.Filter(condition, child: LogicalPlan) =>
+              helper(filtersConditions :+ condition, child)
+
+            case p @ logical.Project(_, child: LogicalPlan) =>
+              helper(filtersConditions, child)
+
+            case u: UnresolvedRelation =>
+              //Check if table has index and if one of the columns filtered is indexed
+              val index = catalog.obtainTableIndex(u.tableIdentifier)
+              index.isDefined && foundAttributeIndexedInExpr(filtersConditions, index.get.indexedCols)
+
+            case _ => false
+          }
+
+          helper(Seq(), plan)
+        }
+
         override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
 
-          // TODO project
-          case f @ logical.Filter(condition, child: UnresolvedRelation) => //Just support Filter + unresolved with Filters for now
-            val index = catalog.obtainTableIndex(child.tableIdentifier)
-
-            //TODO: Que pasa si viene como db.attr?
-            val attrs: Seq[String] = condition collect {
-              case UnresolvedAttribute(name) => name.last //Avoid table.name
-              case AttributeReference(name,_,_,_) => name //Needed?
+          case  pp if planWithAvailableIndex(pp) =>
+            plan resolveOperators {
+              case unresolvedRelation: UnresolvedRelation =>
+                ExtendedUnresolvedRelation(unresolvedRelation.tableIdentifier, unresolvedRelation)
             }
-
-
-            if(index.isDefined && (index.get.indexedCols filter { col => attrs.contains(col)}).length > 0 ){
-              logical.Filter(condition, ExtendedUnresolvedRelation(child.tableIdentifier,child))
-            } else{
-              logical.Filter(condition, child)
-            }
-
-            // TODO comprobar si es un native scan y si soporta los filtros
         }
       }
 
