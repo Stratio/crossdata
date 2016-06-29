@@ -24,7 +24,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
 import akka.stream.ActorMaterializer
-import com.stratio.crossdata.common.util.akka.KeepAlive.KeepAliveMaster
+import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.{Daemon, DaemonContext}
