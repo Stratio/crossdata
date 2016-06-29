@@ -113,7 +113,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
     //Index support
     if(!indexTableExists(DB, jdbcConnection)) {
-      jdbcConnection.createStatement().executeUpdate( //TODO: Relational way using other table for the columns??
+      jdbcConnection.createStatement().executeUpdate(
         s"""|CREATE TABLE $DB.$TableWithIndexMetadata (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
@@ -125,7 +125,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
             |$OptionsField LONG VARCHAR,
             |$CrossdataVersionField VARCHAR(30),
             |UNIQUE ($IndexNameField, $IndexTypeField),
-            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin) //TODO: Multiple indexing??
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
     }
 
     jdbcConnection

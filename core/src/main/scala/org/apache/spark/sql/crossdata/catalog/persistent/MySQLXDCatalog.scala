@@ -122,7 +122,20 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
             |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
 
-      //TODO: INDEX
+      //Index support
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE IF NOT EXISTS $db.$TableWithIndexMetadata (
+            |$DatabaseField VARCHAR(50),
+            |$TableNameField VARCHAR(50),
+            |$IndexNameField VARCHAR(50),
+            |$IndexTypeField VARCHAR(50),
+            |$IndexedColsField LONG VARCHAR,
+            |$PKField VARCHAR(100),
+            |$DatasourceField TEXT,
+            |$OptionsField TEXT,
+            |$CrossdataVersionField VARCHAR(30),
+            |UNIQUE ($IndexNameField, $IndexTypeField),
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
       jdbcConnection
     } catch {
