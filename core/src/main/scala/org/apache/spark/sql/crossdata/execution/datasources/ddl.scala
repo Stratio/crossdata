@@ -160,7 +160,7 @@ private[crossdata] case class DropExternalTable(tableIdentifier: TableIdentifier
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val crossadataTable = sqlContext.catalog.tableMetadata(tableIdentifier) getOrElse( sys.error("Error dropping external table. Table doesn't exist in the catalog") )
+    val crossadataTable = sqlContext.catalog.tableMetadata(tableIdentifier) getOrElse (sys.error("Error dropping external table. Table doesn't exist in the catalog"))
 
     val provider = crossadataTable.datasource
     val resolved = ResolvedDataSource.lookupDataSource(provider).newInstance()
@@ -175,7 +175,7 @@ private[crossdata] case class DropExternalTable(tableIdentifier: TableIdentifier
         tableManipulation.dropExternalTable(sqlContext, crossadataTable.opts) map { result =>
           sqlContext.catalog.dropTable(tableIdentifier)
           Seq.empty
-        } getOrElse( sys.error("Impossible to drop external table") )
+        } getOrElse (sys.error("Impossible to drop external table"))
 
       case _ =>
         sys.error("The Datasource does not support DROP EXTERNAL TABLE command")
@@ -209,7 +209,7 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
     sqlContext.catalog.lookupRelation(tableIdentifier) match {
 
-      case Subquery(_, LogicalRelation(relation : BaseRelation, _ )) =>
+      case Subquery(_, LogicalRelation(relation: BaseRelation, _)) =>
 
         val schema = schemaFromUser map (DDLUtils.extractSchema(_, relation.schema)) getOrElse (relation.schema)
 
@@ -219,10 +219,24 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
             if (sqlContext.catalog.tableHasIndex(tableIdentifier)) {
               //insert into ES because of global index
               val crossdataIndex = sqlContext.catalog.obtainTableIndex(tableIdentifier).get
+              val indexInsertCols = crossdataIndex.indexedCols.mkString(",") + "," + crossdataIndex.pk
+
+              var values: List[Any] = Nil
+
+              parsedRows.foreach { row =>
+                var indexInsertValues: List[Any] = Nil
+                indexInsertValues :::= List(row(schema.getFieldIndex(crossdataIndex.pk).getOrElse(0)))
+
+                crossdataIndex.indexedCols foreach { idxCol =>
+                  val pos = schema.getFieldIndex(idxCol).getOrElse(0)
+                  indexInsertValues :::= List(row(pos))
+                }
+
+                val value = indexInsertValues map (x => "'" + x + "'") mkString ","
+                values :::= List(value)
+              }
               sqlContext.sql(
-                s"""INSERT INTO ${crossdataIndex.indexIdentifier}
-                    |(${crossdataIndex.indexedCols.mkString(",")})
-                    |VALUES (${parsedRows.mkString(",")})""".stripMargin)
+                s"""INSERT INTO ${crossdataIndex.indexIdentifier.unquotedString} (${indexInsertCols}) VALUES ${values.map("(" + _ + ")").mkString(",")}""".stripMargin)
             }
             insertableRelation.insert(dataframe, overwrite = false)
 
@@ -355,8 +369,11 @@ private[crossdata] case class CreateGlobalIndex(
           sys.error("Not found the table you want to index")
       }
 
+      //TODO: Change index name, for allowing multiple index ???
       CreateExternalTable(TableIdentifier(finalIndex.indexType, Option(finalIndex.indexName)), elasticSchema, indexProvider, options).run(sqlContext)
+
       CrossdataIndex(tableIdent, finalIndex, cols, pk, indexProvider, options)
+
     }
 
   private def saveIndexMetadata(sqlContext: SQLContext, crossdataIndex: CrossdataIndex) = {
@@ -370,8 +387,6 @@ private[crossdata] case class CreateGlobalIndex(
     saveIndexMetadata(sqlContext, crossdataIndex)
     Seq.empty
     //TODO: Recover if something bad happens
-
-
   }
 }
 
@@ -380,7 +395,7 @@ private[crossdata] case class CreateGlobalIndex(
 
     override def run(sqlContext: SQLContext): Seq[Row] = {
       if (File(jarPath).exists) {
-        sqlContext.asInstanceOf[XDContext].addJar(jarPath)
+        sqlContext.addJar(jarPath)
       } else {
         sys.error("File doesn't exist")
       }

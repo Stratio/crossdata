@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalyst
+package org.apache.spark.sql.crossdata.daos.impl
 
-import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, UnaryNode}
+import com.typesafe.config.Config
+import org.apache.spark.sql.crossdata.daos.IndexDAO
 
-case class ExtendedUnresolvedRelation(tableIdentifier: TableIdentifier, child: LogicalPlan) extends UnaryNode {
-  override def output: Seq[Attribute] = child.output
+class IndexTypesafeDAO(configuration: Config) extends IndexDAO {
+
+  override val config = new TypesafeConfig(Option(configuration))
+
 }

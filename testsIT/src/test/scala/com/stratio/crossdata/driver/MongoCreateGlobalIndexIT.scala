@@ -152,8 +152,8 @@ val ElasticHost: String = "172.17.0.2"
 
 
     val sentence =
-      s"""|INSERT INTO globalIndexDb.proofGlobalIndex(comments)
-          |VALUES( "this is a proof of insert in a column that has a global index")
+      s"""|INSERT INTO globalIndexDb.proofGlobalIndex(id, name, comments)
+          |VALUES( 1, "foo", "this is a proof of insert in a column that has a global index")
           |""".stripMargin
 
     sql(sentence)
