@@ -71,12 +71,6 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
   "The Mongo connector" should "execute a CREATE GLOBAL INDEX with select *" in {
 
-    val ElasticHost: String = "127.0.0.1"
-    val ElasticRestPort = 9200
-    val ElasticNativePort = 9300
-    val ElasticClusterName: String = "esCluster"
-
-
     val sentence =
       s"""|CREATE GLOBAL INDEX myIndex
          |ON globalIndexDb.proofGlobalIndex (other)
@@ -146,12 +140,6 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
   //TODO: More tests and remove this properties from here!!!!!!!!!!!
 
 "The insert in mongo doc with a global index" should "insert in ES too" in {
-    
-val ElasticHost: String = "172.17.0.2"
-    val ElasticRestPort = 9200
-    val ElasticNativePort = 9300
-    val ElasticClusterName: String = "elasticsearch"
-
 
     val sentence =
       s"""|INSERT INTO globalIndexDb.proofGlobalIndex(id, name, comments)
