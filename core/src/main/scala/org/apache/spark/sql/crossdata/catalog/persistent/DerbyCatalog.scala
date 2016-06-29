@@ -53,8 +53,8 @@ object DerbyCatalog {
  *
  * @param catalystConf An implementation of the [[CatalystConf]].
  */
-class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
-  extends PersistentCatalogWithCache(sqlContext, catalystConf) {
+class DerbyCatalog(override val catalystConf: CatalystConf)
+  extends PersistentCatalogWithCache(catalystConf) {
 
   import DerbyCatalog._
   import XDCatalog._

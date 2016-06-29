@@ -21,6 +21,7 @@ import java.nio.file.Paths
 import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.execution.PersistDataSourceTable
 import org.apache.spark.sql.execution.ExecutedCommand
@@ -56,7 +57,7 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
       }
 
       new XDSession(
-        new XDSharedState(_sparkContext, Option(coreConfig)),
+        new XDSharedState(_sparkContext, Option(coreConfig), new DerbyCatalog(sqlConf), None),
         new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
       )
     }
@@ -183,7 +184,7 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
   private def createNewDefaultSession: XDSession = {
       val sqlConf = new SQLConf
       new XDSession(
-        new XDSharedState(_sparkContext),
+        new XDSharedState(_sparkContext, None, new DerbyCatalog(sqlConf), None),
         new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
       )
     }

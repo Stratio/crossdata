@@ -30,7 +30,7 @@ import scala.collection.mutable
   * PersistentCatalog aims to provide a mechanism to persist the
   * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
   */
-abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: CatalystConf) extends XDPersistentCatalog
+abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XDPersistentCatalog
   with Serializable {
 
   import CreateRelationUtil._
@@ -57,7 +57,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
 
   override final def refreshCache(tableIdent: ViewIdentifier): Unit = tableCache clear
 
-  override final def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit = {
+  override final def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String)(implicit sqlContext:SQLContext): Unit = {
     def checkPlan(plan: LogicalPlan): Unit = {
       plan collect {
         case UnresolvedRelation(tIdent, _) => tIdent
@@ -80,7 +80,7 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     }
   }
 
-  override final def saveTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit = {
+  override final def saveTable(crossdataTable: CrossdataTable, table: LogicalPlan)(implicit sqlContext:SQLContext): Unit = {
 
     val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
     if (relation(tableIdentifier)(sqlContext).isDefined) {

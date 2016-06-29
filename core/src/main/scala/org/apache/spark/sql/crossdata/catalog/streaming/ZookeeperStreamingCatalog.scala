@@ -15,11 +15,12 @@
  */
 package org.apache.spark.sql.crossdata.catalog.streaming
 
+import com.typesafe.config.Config
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDStreamingCatalog
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.daos.impl._
 import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.models._
@@ -29,15 +30,15 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Try
 
-class ZookeeperStreamingCatalog(val catalystConf: CatalystConf) extends XDStreamingCatalog {
+class ZookeeperStreamingCatalog(val catalystConf: CatalystConf, serverConfig: Config) extends XDStreamingCatalog {
 
-  private[spark] val streamingConfig = XDContext.xdConfig.getConfig(XDContext.StreamingConfigKey)
+  private[spark] val streamingConfig = serverConfig.getConfig(CoreConfig.StreamingConfigKey)
   private[spark] val ephemeralTableDAO =
-    new EphemeralTableTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+    new EphemeralTableTypesafeDAO(streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
   private[spark] val ephemeralQueriesDAO =
-    new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+    new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
   private[spark] val ephemeralTableStatusDAO =
-    new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(XDContext.CatalogConfigKey))
+    new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
 
 
   override def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
