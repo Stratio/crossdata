@@ -15,10 +15,14 @@
  */
 package com.stratio.crossdata.driver
 
+import com.mongodb.DBObject
+import com.mongodb.casbah.commons.MongoDBObject
 import com.sksamuel.elastic4s.ElasticDsl
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.sksamuel.elastic4s.ElasticDsl._
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.crossdata.ExecutionType
 
 
 @RunWith(classOf[JUnitRunner])
@@ -33,7 +37,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     //Create test tables
     val createTable1 =
-      s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String)
+      s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String, other Integer)
       USING $MongoSourceProvider
           |OPTIONS (
           |host '127.0.0.1:27017',
@@ -42,6 +46,14 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
           |)
       """.stripMargin.replaceAll("\n", " ")
     sql(createTable1)
+
+    mongoClient(mongoTestDatabase)("proofGlobalIndex").insert(
+      MongoDBObject("id" -> 11, "name" -> "prueba", "comments" -> "one comment", "other" -> 12)
+    )
+
+    mongoClient(mongoTestDatabase)("proofGlobalIndex").insert(
+      MongoDBObject("id" -> 13, "name" -> "prueba2", "comments" -> "one comment fail", "other" -> 5)
+    )
 
   }
 
@@ -57,18 +69,18 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     super.afterAll()
   }
 
-  "The Mongo connector" should "execute a CREATE GLOBAL INDEX" in {
+  "The Mongo connector" should "execute a CREATE GLOBAL INDEX with select *" in {
 
-    val ElasticHost: String = "172.17.0.2"
+    val ElasticHost: String = "127.0.0.1"
     val ElasticRestPort = 9200
     val ElasticNativePort = 9300
-    val ElasticClusterName: String = "elasticsearch"
+    val ElasticClusterName: String = "esCluster"
 
 
     val sentence =
       s"""|CREATE GLOBAL INDEX myIndex
-         |ON globalIndexDb.proofGlobalIndex (comments)
-         |WITH PK (id)
+         |ON globalIndexDb.proofGlobalIndex (other)
+         |WITH PK id
          |USING com.stratio.crossdata.connector.elasticsearch
          |OPTIONS (
          | es.nodes '$ElasticHost',
@@ -78,13 +90,64 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
          |)""".stripMargin
 
     sql(sentence)
+
+    val results = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
+
+    results should have length 0 //No indexed data
+
+    elasticClient.execute {
+      index into "gidx" / "myIndex" fields(
+        "id" -> 11,
+        "other"-> 12)
+    }.await
+
+    elasticClient.execute {
+      index into "gidx" / "myIndex" fields(
+        "id" -> 13,
+        "other"-> 5)
+    }.await
+
+    elasticClient.execute {
+      flush index "gidx"
+    }.await
+
+    val resultsAfter = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
+
+    resultsAfter should have length 1
+    resultsAfter shouldBe Array(Row(11, "prueba", "one comment", 12))
+
+    val resultsEquals = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
+
+    resultsEquals should have length 1
+    resultsEquals shouldBe Array(Row(13, "prueba2", "one comment fail", 5))
+
+    val resultsAfter2 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
+
+    resultsAfter2 should have length 1
+    resultsAfter2 shouldBe Array(Row("prueba"))
+
+    val resultsEquals2 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
+
+    resultsEquals2 should have length 1
+    resultsEquals2 shouldBe Array(Row("prueba2"))
+
+    val resultsEquals3 = xdContext.table("globalIndexDb.proofGlobalIndex").select("name", "other").where($"other" equalTo 5).select("name").collect()
+    resultsEquals3 should have length 1
+    resultsEquals3 shouldBe Array(Row("prueba2"))
+
+    //Mix
+    //val resultsEquals3 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10 AND name LIKE '*prueba*'").collect()
+
+    //resultsEquals3 should have length 1
+    //resultsEquals3 shouldBe Array(Row("prueba2"))
+
   }
 
+  //TODO: More tests and remove this properties from here!!!!!!!!!!!
 
-
-  "The insert in mongo doc with a global index" should "insert in ES too" in {
-
-    val ElasticHost: String = "172.17.0.2"
+"The insert in mongo doc with a global index" should "insert in ES too" in {
+    
+val ElasticHost: String = "172.17.0.2"
     val ElasticRestPort = 9200
     val ElasticNativePort = 9300
     val ElasticClusterName: String = "elasticsearch"

@@ -71,8 +71,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     createTable | describeTable | refreshTable | importStart | dropTable | dropExternalTable |
       createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp | executeApp | createGlobalIndex
 
-
-
   // TODO move to StreamingDdlParser
 
   protected lazy val streamingSentences: Parser[LogicalPlan] =
@@ -111,7 +109,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val arrayValues: Parser[Any] =
     ("[" ~> repsep(mapValues | token, ",") <~ "]") | ("[" ~> success(List()) <~ "]")
-
 
   protected lazy val tokenMap: Parser[(Any,Any)] = {
     (token <~ "-" <~ ">") ~ (arrayValues | token) ^^ {
@@ -172,14 +169,14 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val addJar: Parser[LogicalPlan] =
     ADD ~> JAR ~> restInput ^^ {
       case jarPath =>
-        AddJar(xDContext,jarPath.trim)
+        AddJar(jarPath.trim)
     }
 
 
 protected lazy val addApp: Parser[LogicalPlan] =
   (ADD ~> APP ~> stringLit) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
     case jarPath ~ alias ~ cname =>
-      AddApp(xDContext, jarPath.toString, cname, alias)
+      AddApp(jarPath.toString, cname, alias)
   }
 
 
@@ -187,7 +184,7 @@ protected lazy val addApp: Parser[LogicalPlan] =
     (EXECUTE ~> ident) ~ tableValues ~ (OPTIONS ~> options).? ^^ {
       case appName ~ arguments ~ opts =>
         val args=arguments map {arg=> arg.toString}
-        ExecuteApp(xDContext, appName, args, opts)
+        ExecuteApp(appName, args, opts)
     }
   /**
    * Streaming
@@ -322,10 +319,10 @@ protected lazy val addApp: Parser[LogicalPlan] =
 
   protected lazy val createGlobalIndex: Parser[LogicalPlan] = {
 
-    CREATE ~ GLOBAL ~ INDEX ~> tableIdentifier ~ (ON ~> tableIdentifier) ~ schemaValues ~ (WITH ~> PK ~> schemaValues) ~ (USING ~> className).? ~ (OPTIONS ~> options) ^^ {
-      case index ~ table ~ columns ~ pks ~ provider ~ opts =>
+    CREATE ~ GLOBAL ~ INDEX ~> tableIdentifier ~ (ON ~> tableIdentifier) ~ schemaValues ~ (WITH ~> PK ~> token) ~ (USING ~> className).? ~ (OPTIONS ~> options) ^^ {
+      case index ~ table ~ columns ~ pk ~ provider ~ opts =>
 
-        CreateGlobalIndex(index, table, columns, pks, provider, opts)
+        CreateGlobalIndex(index, table, columns, pk, provider, opts)
     }
   }
 

@@ -49,7 +49,7 @@ object MySQLXDCatalog {
   val IndexNameField = "indexName"
   val IndexTypeField = "indexType"
   val IndexedColsField = "indexedCols"
-  val PKColsField = "pkCols"
+  val PKField = "pk"
 
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
@@ -121,6 +121,8 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
             |$AppAlias VARCHAR(50),
             |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
+
+      //TODO: INDEX
 
       jdbcConnection
     } catch {
@@ -222,6 +224,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
     }
 
 
+
   override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
 
@@ -279,6 +282,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
     preparedStatement.executeQuery()
 
   }
+
 
 
   override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
@@ -354,14 +358,13 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
       val resultSet = selectMetadata(TableWithIndexMetadata, crossdataIndex.tableIdentifier)
 
       val serializedIndexedCols = serializeSeq(crossdataIndex.indexedCols)
-      val serializedPK = serializeSeq(crossdataIndex.pkCols)
       val serializedOptions = serializeOptions(crossdataIndex.opts)
 
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $db.$TableWithIndexMetadata (
               | $DatabaseField, $TableNameField, $IndexNameField, $IndexTypeField, $IndexedColsField,
-              | $PKColsField, $DatasourceField, $OptionsField, $CrossdataVersionField
+              | $PKField, $DatasourceField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?,?,?)
        """.stripMargin)
         prepped.setString(1, crossdataIndex.tableIdentifier.database.getOrElse(""))
@@ -369,7 +372,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
         prepped.setString(3, crossdataIndex.indexIdentifier.indexName)
         prepped.setString(4, crossdataIndex.indexIdentifier.indexType)
         prepped.setString(5, serializedIndexedCols)
-        prepped.setString(6, serializedPK)
+        prepped.setString(6, crossdataIndex.pk)
         prepped.setString(7, crossdataIndex.datasource)
         prepped.setString(8, serializedOptions)
         prepped.setString(9, CrossdataVersion)
@@ -401,14 +404,14 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
       val indexName = resultSet.getString(IndexNameField)
       val indexType = resultSet.getString(IndexTypeField)
       val indexedCols = resultSet.getString(IndexedColsField)
-      val pkCols = resultSet.getString(PKColsField)
+      val pk = resultSet.getString(PKField)
       val datasource = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
       Option(
         CrossdataIndex(TableIdentifier(table, Option(database)), IndexIdentifier(indexType, indexName),
-          deserializeSeq(indexedCols), deserializeSeq(pkCols), datasource, deserializeOptions(optsJSON), version)
+          deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
       )
     }
   }
@@ -439,14 +442,14 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
       val indexName = resultSet.getString(IndexNameField)
       val indexType = resultSet.getString(IndexTypeField)
       val indexedCols = resultSet.getString(IndexedColsField)
-      val pkCols = resultSet.getString(PKColsField)
+      val pk = resultSet.getString(PKField)
       val datasource = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
       Option(
         CrossdataIndex(TableIdentifier(table, Option(database)), IndexIdentifier(indexType, indexName),
-          deserializeSeq(indexedCols), deserializeSeq(pkCols), datasource, deserializeOptions(optsJSON), version)
+          deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
       )
     }
   }

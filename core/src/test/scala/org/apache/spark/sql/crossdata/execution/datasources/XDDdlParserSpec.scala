@@ -241,24 +241,24 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
   it should "successfully parse a ADD JAR into a AddJar RunnableCommand" in {
     val sentence = "ADD JAR /tmp/jar"
-    parser.parse(sentence) shouldBe AddJar(xdContext,"/tmp/jar")
+    parser.parse(sentence) shouldBe AddJar("/tmp/jar")
   }
 
   it should "successfully parse a ADD APP into a AddApp RunnableCommand" in {
     val sentence = "ADD APP '/my/path/file.jar' AS jj WITH aaa.bbb.ccc"
-    parser.parse(sentence) shouldBe AddApp(xdContext,"/my/path/file.jar", "aaa.bbb.ccc", Some("jj"))
+    parser.parse(sentence) shouldBe AddApp("/my/path/file.jar", "aaa.bbb.ccc", Some("jj"))
   }
 
   it should "successfully parse a ADD APP without Alias into a AddApp RunnableCommand" in {
     val sentence = "ADD APP '/my/path/file.jar' WITH aaa.bbb.ccc"
-    parser.parse(sentence) shouldBe AddApp(xdContext,"/my/path/file.jar", "aaa.bbb.ccc", None)
+    parser.parse(sentence) shouldBe AddApp("/my/path/file.jar", "aaa.bbb.ccc", None)
   }
 
   it should "successfully parse a CREATE GLOBAL INDEX into a CreateGlobalIndex RunnableCommand" in {
     val sentence =
       """|CREATE GLOBAL INDEX myIndex
          |ON myDb.myTable(col1, col2)
-         |WITH PK (pk1, pk2)
+         |WITH PK pk1
          |USING com.stratio.crossdata.connector.elasticsearch
          |OPTIONS (
          |   opt1 "opt1val",
@@ -269,7 +269,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
                         TableIdentifier("myIndex"),
                         TableIdentifier("myTable", Some("myDb")),
                         Seq("col1","col2"),
-                        Seq("pk1","pk2"),
+                        "pk1",
                         Option("com.stratio.crossdata.connector.elasticsearch"),
                         Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }
@@ -278,7 +278,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
     val sentence =
       """|CREATE GLOBAL INDEX myIndex
          |ON myDb.myTable(col1, col2)
-         |WITH PK (pk1, pk2)
+         |WITH PK pk2
          |OPTIONS (
          |   opt1 "opt1val",
          |   opt2 "opt2val"
@@ -288,16 +288,17 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
         TableIdentifier("myIndex"),
         TableIdentifier("myTable", Some("myDb")),
         Seq("col1","col2"),
-        Seq("pk1","pk2"),
+        "pk2",
         None,
         Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }
+
 
   it should "successfully parse a CREATE GLOBAL INDEX without USING without dbName into a CreateGlobalIndex RunnableCommand" in {
     val sentence =
       """|CREATE GLOBAL INDEX myDbIndex.myIndex
          |ON myTable(col1, col2)
-         |WITH PK (pk1, pk2)
+         |WITH PK pk
          |OPTIONS (
          |   opt1 "opt1val",
          |   opt2 "opt2val"
@@ -307,7 +308,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
         TableIdentifier("myIndex",Option("myDbIndex")),
         TableIdentifier("myTable"),
         Seq("col1","col2"),
-        Seq("pk1","pk2"),
+        "pk",
         None,
         Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }

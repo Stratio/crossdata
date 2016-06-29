@@ -45,11 +45,11 @@ object DerbyCatalog {
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
 
-  //IndexMetadataFields
+  //IndexMetadataFields //TODO: To core-config
   val IndexNameField = "indexName"
   val IndexTypeField = "indexType"
   val IndexedColsField = "indexedCols"
-  val PKColsField = "pkCols"
+  val PKField = "pk"
 
   //App values
   val JarPath = "jarPath"
@@ -79,7 +79,6 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     val jdbcConnection = DriverManager.getConnection(url)
 
     // CREATE PERSISTENT METADATA TABLE
-
 
     if(!schemaExists(DB, jdbcConnection)) {
       jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $DB")
@@ -121,7 +120,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
             |$IndexNameField VARCHAR(50),
             |$IndexTypeField VARCHAR(50),
             |$IndexedColsField LONG VARCHAR,
-            |$PKColsField LONG VARCHAR,
+            |$PKField VARCHAR(100),
             |$DatasourceField LONG VARCHAR,
             |$OptionsField LONG VARCHAR,
             |$CrossdataVersionField VARCHAR(30),
@@ -195,14 +194,14 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       val indexName = resultSet.getString(IndexNameField)
       val indexType = resultSet.getString(IndexTypeField)
       val indexedCols = resultSet.getString(IndexedColsField)
-      val pkCols = resultSet.getString(PKColsField)
+      val pk = resultSet.getString(PKField)
       val datasource = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
       Option(
         CrossdataIndex(TableIdentifier(table, Option(database)), IndexIdentifier(indexType, indexName),
-          deserializeSeq(indexedCols), deserializeSeq(pkCols), datasource, deserializeOptions(optsJSON), version)
+          deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
       )
     }
   }
@@ -254,7 +253,6 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     }
 
   override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
-
     try {
       connection.setAutoCommit(false)
       val resultSet = selectMetadata(TableWithViewMetadata, tableIdentifier)
@@ -291,14 +289,13 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       val resultSet = selectMetadata(TableWithIndexMetadata, crossdataIndex.tableIdentifier)
 
       val serializedIndexedCols = serializeSeq(crossdataIndex.indexedCols)
-      val serializedPK = serializeSeq(crossdataIndex.pkCols)
       val serializedOptions = serializeOptions(crossdataIndex.opts)
 
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $DB.$TableWithIndexMetadata (
               | $DatabaseField, $TableNameField, $IndexNameField, $IndexTypeField, $IndexedColsField,
-              | $PKColsField, $DatasourceField, $OptionsField, $CrossdataVersionField
+              | $PKField, $DatasourceField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?,?,?)
        """.stripMargin)
         prepped.setString(1, crossdataIndex.tableIdentifier.database.getOrElse(""))
@@ -306,7 +303,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
         prepped.setString(3, crossdataIndex.indexIdentifier.indexName)
         prepped.setString(4, crossdataIndex.indexIdentifier.indexType)
         prepped.setString(5, serializedIndexedCols)
-        prepped.setString(6, serializedPK)
+        prepped.setString(6, crossdataIndex.pk)
         prepped.setString(7, crossdataIndex.datasource)
         prepped.setString(8, serializedOptions)
         prepped.setString(9, CrossdataVersion)
@@ -413,7 +410,6 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     preparedStatement.setString(2, tableIdentifier.table)
     preparedStatement.executeQuery()
 
-
   }
 
   private def selectIndex(indexIdentifier: IndexIdentifier): ResultSet = {
@@ -429,7 +425,6 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
     resultSet.next()
   }
-
 
   private def indexTableExists(schema: String, connection: Connection): Boolean = tableSchemaExists(schema, TableWithIndexMetadata, connection)
 
@@ -459,16 +454,15 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       val indexName = resultSet.getString(IndexNameField)
       val indexType = resultSet.getString(IndexTypeField)
       val indexedCols = resultSet.getString(IndexedColsField)
-      val pkCols = resultSet.getString(PKColsField)
+      val pk = resultSet.getString(PKField)
       val datasource = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
       Option(
         CrossdataIndex(TableIdentifier(table, Option(database)), IndexIdentifier(indexType, indexName),
-          deserializeSeq(indexedCols), deserializeSeq(pkCols), datasource, deserializeOptions(optsJSON), version)
+          deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
       )
     }
   }
-
 }

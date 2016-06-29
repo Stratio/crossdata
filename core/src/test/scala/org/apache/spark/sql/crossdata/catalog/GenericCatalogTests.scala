@@ -255,11 +255,11 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val tableIdentifier=TableIdentifier("tableIndex")
     val indexIdentifier=IndexIdentifier("global","myIndex")
     val indexedCols=Seq("colIndexed")
-    val pkCols=Seq("primaryCol")
+    val pk="primaryCol"
     val dataSource="mongo"
     val opts=Map[String,String]()
     val version="1.5.0"
-    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pkCols,dataSource,opts,version)
+    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pk,dataSource,opts,version)
 
     xdContext.catalog.persistIndex(crossdataIndex)
 
@@ -273,11 +273,11 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val tableIdentifier=TableIdentifier("tableIndex2")
     val indexIdentifier=IndexIdentifier("global2","myIndex2")
     val indexedCols=Seq("colIndexed")
-    val pkCols=Seq("primaryCol")
+    val pk="primaryCol"
     val dataSource="mongo"
     val opts=Map[String,String]()
     val version="1.5.0"
-    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pkCols,dataSource,opts,version)
+    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pk,dataSource,opts,version)
 
     xdContext.catalog.persistIndex(crossdataIndex)
 
@@ -291,11 +291,11 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val tableIdentifier=TableIdentifier("tableIndex3")
     val indexIdentifier=IndexIdentifier("global3","myIndex3")
     val indexedCols=Seq("colIndexed")
-    val pkCols=Seq("primaryCol")
+    val pk="primaryCol"
     val dataSource="mongo"
     val opts=Map[String,String]()
     val version="1.5.0"
-    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pkCols,dataSource,opts,version)
+    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pk,dataSource,opts,version)
 
     xdContext.catalog.persistIndex(crossdataIndex)
 
@@ -309,11 +309,11 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val tableIdentifier=TableIdentifier("tableIndex4")
     val indexIdentifier=IndexIdentifier("global4","myIndex4")
     val indexedCols=Seq("colIndexed")
-    val pkCols=Seq("primaryCol")
+    val pk="primaryCol"
     val dataSource="mongo"
     val opts=Map[String,String]()
     val version="1.5.0"
-    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pkCols,dataSource,opts,version)
+    val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pk,dataSource,opts,version)
 
     xdContext.catalog.persistIndex(crossdataIndex)
 

@@ -16,7 +16,6 @@
 package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.sql.{Connection, DriverManager, ResultSet}
-
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
@@ -51,7 +50,7 @@ object PostgreSQLXDCatalog {
   val IndexNameField = "indexName"
   val IndexTypeField = "indexType"
   val IndexedColsField = "indexedCols"
-  val PKColsField = "pkCols"
+  val PKField = "pk"
 
   //App values
   val JarPath = "jarPath"
@@ -92,7 +91,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val jdbcConnection = DriverManager.getConnection(url, user, pass)
 
       // CREATE PERSISTENT METADATA TABLE
-      if (!schemaExists(db, jdbcConnection))
+      if(!schemaExists(db, jdbcConnection))
         jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
 
       jdbcConnection.createStatement().executeUpdate(
@@ -120,6 +119,8 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
             |$AppAlias VARCHAR(50),
             |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
+
+      //TODO: INDEX
 
 
       jdbcConnection
@@ -223,6 +224,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
     connection.commit()
     connection.setAutoCommit(true)
   }
+
 
 
   override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
@@ -361,14 +363,13 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val resultSet = selectMetadata(TableWithIndexMetadata, crossdataIndex.tableIdentifier)
 
       val serializedIndexedCols = serializeSeq(crossdataIndex.indexedCols)
-      val serializedPK = serializeSeq(crossdataIndex.pkCols)
       val serializedOptions = serializeOptions(crossdataIndex.opts)
 
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $db.$TableWithIndexMetadata (
               | $DatabaseField, $TableNameField, $IndexNameField, $IndexTypeField, $IndexedColsField,
-              | $PKColsField, $DatasourceField, $OptionsField, $CrossdataVersionField
+              | $PKField, $DatasourceField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?,?,?)
        """.stripMargin)
         prepped.setString(1, crossdataIndex.tableIdentifier.database.getOrElse(""))
@@ -376,7 +377,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
         prepped.setString(3, crossdataIndex.indexIdentifier.indexName)
         prepped.setString(4, crossdataIndex.indexIdentifier.indexType)
         prepped.setString(5, serializedIndexedCols)
-        prepped.setString(6, serializedPK)
+        prepped.setString(6, crossdataIndex.pk)
         prepped.setString(7, crossdataIndex.datasource)
         prepped.setString(8, serializedOptions)
         prepped.setString(9, CrossdataVersion)
@@ -408,14 +409,14 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val indexName = resultSet.getString(IndexNameField)
       val indexType = resultSet.getString(IndexTypeField)
       val indexedCols = resultSet.getString(IndexedColsField)
-      val pkCols = resultSet.getString(PKColsField)
+      val pk = resultSet.getString(PKField)
       val datasource = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
       Option(
         CrossdataIndex(TableIdentifier(table, Option(database)), IndexIdentifier(indexType, indexName),
-          deserializeSeq(indexedCols), deserializeSeq(pkCols), datasource, deserializeOptions(optsJSON), version)
+          deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
       )
     }
   }
@@ -446,14 +447,14 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val indexName = resultSet.getString(IndexNameField)
       val indexType = resultSet.getString(IndexTypeField)
       val indexedCols = resultSet.getString(IndexedColsField)
-      val pkCols = resultSet.getString(PKColsField)
+      val pk = resultSet.getString(PKField)
       val datasource = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
 
       Option(
         CrossdataIndex(TableIdentifier(table, Option(database)), IndexIdentifier(indexType, indexName),
-          deserializeSeq(indexedCols), deserializeSeq(pkCols), datasource, deserializeOptions(optsJSON), version)
+          deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
       )
     }
   }

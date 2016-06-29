@@ -59,7 +59,7 @@ trait ElasticInsertCollection extends ElasticWithSharedContext {
   override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
     str2sparkTableDesc(s"""|CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN,
                            |name STRING, optionalField BOOLEAN, birthday DATE, salary DOUBLE, ageInMilis LONG,
-                           |array_test ARRAY<STRING>, map_test MAP<STRING,STRING>,
+                           |array_test ARRAY<STRING>, map_test MAP<STRIoNG,STRING>,
                            |array_map ARRAY<MAP<STRING,STRING>>, map_array MAP<STRING, ARRAY<STRING>>)""".stripMargin)
 
 
