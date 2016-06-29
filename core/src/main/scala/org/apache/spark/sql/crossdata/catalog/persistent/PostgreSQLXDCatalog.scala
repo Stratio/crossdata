@@ -50,7 +50,7 @@ object PostgreSQLXDCatalog {
   val IndexNameField = "indexName"
   val IndexTypeField = "indexType"
   val IndexedColsField = "indexedCols"
-  val PKColsField = "pk"
+  val PKField = "pk"
 
   //App values
   val JarPath = "jarPath"
@@ -369,7 +369,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $db.$TableWithIndexMetadata (
               | $DatabaseField, $TableNameField, $IndexNameField, $IndexTypeField, $IndexedColsField,
-              | $PKColsField, $DatasourceField, $OptionsField, $CrossdataVersionField
+              | $PKField, $DatasourceField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?,?,?)
        """.stripMargin)
         prepped.setString(1, crossdataIndex.tableIdentifier.database.getOrElse(""))
@@ -409,7 +409,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val indexName = resultSet.getString(IndexNameField)
       val indexType = resultSet.getString(IndexTypeField)
       val indexedCols = resultSet.getString(IndexedColsField)
-      val pk = resultSet.getString(PKColsField)
+      val pk = resultSet.getString(PKField)
       val datasource = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
@@ -447,7 +447,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val indexName = resultSet.getString(IndexNameField)
       val indexType = resultSet.getString(IndexTypeField)
       val indexedCols = resultSet.getString(IndexedColsField)
-      val pk = resultSet.getString(PKColsField)
+      val pk = resultSet.getString(PKField)
       val datasource = resultSet.getString(DatasourceField)
       val optsJSON = resultSet.getString(OptionsField)
       val version = resultSet.getString(CrossdataVersionField)
