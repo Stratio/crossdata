@@ -19,6 +19,7 @@ package org.apache.spark.sql.crossdata
 import com.typesafe.config.Config
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
+import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 
 import scala.collection.JavaConversions._
@@ -37,7 +38,9 @@ object XDSharedState {
 // TODO rename XDSharedState
 class XDSharedState( // TODO externalCatalog
                      @transient val sc: SparkContext,
-                     userConfig: Option[Config] = None // TODO this is server config. Probably should be core => the server should remove the config prefix (config.spark.sql...)
+                     userConfig: Option[Config] = None, // TODO this is server config. Probably should be core => the server should remove the config prefix (config.spark.sql...)
+                     val externalCatalog: XDCatalogCommon,
+                     val streamingCatalog: Option[XDStreamingCatalog]
                      ) {
 
   import XDSharedState._
