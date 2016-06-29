@@ -23,6 +23,7 @@ import akka.contrib.pattern.ClusterClient
 import akka.pattern.pipe
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
 import com.stratio.crossdata.driver.util.HttpClient
@@ -76,9 +77,9 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
       clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(addJARCommand @ AddJARCommand(path, _, _, _), _) =>
+    case secureSQLCommand @ CommandEnvelope(addJARCommand @ AddJARCommand(path, _, _, _), session) =>
       import context.dispatcher
-      val shipmentResponse: Future[SQLReply] = sendJarToServers(addJARCommand, path)
+      val shipmentResponse: Future[SQLReply] = sendJarToServers(addJARCommand, path, session)
       shipmentResponse pipeTo sender
 
     case secureSQLCommand @ CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
@@ -96,9 +97,9 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
   }
 
 
-  def sendJarToServers(command: Command, path: String): Future[SQLReply] = {
+  def sendJarToServers(command: Command, path: String, session:Session): Future[SQLReply] = {
     import scala.concurrent.ExecutionContext.Implicits.global
-    httpClient.sendJarToHTTPServer(path) map { response =>
+    httpClient.sendJarToHTTPServer(path, session) map { response =>
       SQLReply(
         command.requestId,
         SuccessfulSQLResult(Array(Row(response)), StructType(StructField("filepath", StringType) :: Nil))

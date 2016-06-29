@@ -49,6 +49,7 @@ class XDSession(
   override protected[sql] lazy val catalog: XDCatalog = {
     val catalogs: Seq[XDCatalogCommon] = (xdSessionState.temporaryCatalogs :+ externalCatalog) ++ streamingCatalog.toSeq
     CatalogChain(catalogs: _*)(this)
+
   }
 
   // XDContext does not allow to override conf so far.

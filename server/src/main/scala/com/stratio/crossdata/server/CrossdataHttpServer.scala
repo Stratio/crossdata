@@ -47,6 +47,9 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
   def route =
     path("upload") {
+
+      val session = parameters('session){session=>val theSession=session}
+
       entity(as[Multipart.FormData]) {
         formData =>
           // collect all parts of the multipart as it arrives into a map
@@ -73,11 +76,12 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
               val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
               //Send a broadcast message to all servers
               val hdfsPath = writeJarToHdfs(hdfsConfig, path)
-              mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), new Session(UUID.randomUUID(), serverActor)))
+              mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), session))
               hdfsPath
             }
           }
       }
+
     } ~
       complete("Welcome to Crossdata HTTP Server")
 

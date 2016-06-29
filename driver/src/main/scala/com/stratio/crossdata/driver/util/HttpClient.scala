@@ -23,10 +23,11 @@ import akka.stream.ActorMaterializer
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, _}
 import akka.stream.scaladsl.{FileIO, Source}
+import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.util.HttpClient.HttpClientContext
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -47,10 +48,10 @@ class HttpClient(ctx: HttpClientContext) {
 
   private val http = Http(actorSystem)
 
-  def sendJarToHTTPServer(path: String): Future[String] = {
+  def sendJarToHTTPServer(path: String, session:Session): Future[String] = {
     val host = config.getCrossdataServerHost.split(':').head
     for(
-      request <- createRequest(s"http://$host:13422/upload", new File(path));
+      request <- createRequest(s"http://$host:13422/upload?${session}", new File(path));
       response <- http.singleRequest(request) map {
         case res @ HttpResponse(code, _, _, _) if(code != StatusCodes.OK) =>
           throw new RuntimeException(s"Request failed, response code: $code")
