@@ -23,6 +23,7 @@ object DAOConstants {
   val TablesPath = s"$BaseZKPath/tables"
   val ViewsPath = s"$BaseZKPath/views"
   val AppsPath = s"$BaseZKPath/apps"
+  val IndexesPath = s"$BaseZKPath/indexes"
   val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
   val EphemeralTableStatusPath = s"$BaseZKPath/ephemeraltablestatus"
   val EphemeralQueriesPath = s"$BaseZKPath/ephemeralqueries"

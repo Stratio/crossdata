@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalyst
+package org.apache.spark.sql.crossdata.models
 
-import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, UnaryNode}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataIndex
 
-case class ExtendedUnresolvedRelation(tableIdentifier: TableIdentifier, child: LogicalPlan) extends UnaryNode {
-  override def output: Seq[Attribute] = child.output
-}
+case class IndexModel(indexId:String, crossdataIndex: CrossdataIndex)
