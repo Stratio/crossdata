@@ -143,6 +143,8 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
   }
 
+  //TODO: More tests and remove this properties from here!!!!!!!!!!!
+
 "The insert in mongo doc with a global index" should "insert in ES too" in {
     
 val ElasticHost: String = "172.17.0.2"
