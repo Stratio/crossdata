@@ -17,13 +17,13 @@ package com.stratio.crossdata.driver
 
 import java.util.concurrent.atomic.AtomicReference
 
-import akka.actor.{ActorSystem, Address}
+import akka.actor.{ActorRef, ActorSystem, Address}
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.cluster.MemberStatus
 import akka.contrib.pattern.ClusterClient
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.driver.actor.ProxyActor
+import com.stratio.crossdata.driver.actor.{ProxyActor, ServerClusterClientParameters, SessionBeaconActor}
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.FieldMetadata
 import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
@@ -131,22 +131,33 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
   private val system = ActorSystem("CrossdataServerCluster", driverConf.finalSettings)
 
-  private val proxyActor = {
+  private lazy val clusterClientActor = {
 
     if (logger.isDebugEnabled) {
       system.logConfiguration()
     }
 
     val contactPoints = driverConf.getClusterContactPoint
-
     val initialContacts = contactPoints.map(system.actorSelection).toSet
+
     logger.debug("Initial contacts: " + initialContacts)
+    val actor = system.actorOf(ClusterClient.props(initialContacts), ServerClusterClientParameters.RemoteClientName)
+    logger.debug("Cluster client actor created with name: " + ServerClusterClientParameters.RemoteClientName)
 
-    val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), ProxyActor.RemoteClientName)
-    logger.debug("Cluster client actor created with name: " + ProxyActor.RemoteClientName)
-
-    system.actorOf(ProxyActor.props(clusterClientActor, this), ProxyActor.DefaultName)
+    actor
   }
+
+  private val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, this), ProxyActor.DefaultName)
+
+  private val sessionBeaconProps = SessionBeaconActor.props(
+    driverSession.id,
+    5 seconds, /* This ins't configurable since it's simpler for the user
+                  to play just with alert period time at server side. */
+    clusterClientActor,
+    ServerClusterClientParameters.ClientMonitorPath
+  )
+
+  private var sessionBeacon: Option[ActorRef] = None
 
   /**
     * Executes a SQL sentence.
@@ -388,18 +399,24 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
   private def openSession(): Try[Boolean] = {
     import Driver._
-    Try {
+
+    val res = Try {
       val promise = Promise[ServerReply]()
       proxyActor ! (securitizeCommand(OpenSessionCommand()), promise)
       Await.result(promise.future.mapTo[OpenSessionReply].map(_.isOpen), InitializationTimeout)
     }
-/*
-    */
+
+    if(res.isSuccess)
+      sessionBeacon = Some(system.actorOf(sessionBeaconProps))
+
+    res
+
   }
 
   private def closeSession(): Unit = {
     // TODO ?
     proxyActor ! securitizeCommand(CloseSessionCommand())
+    sessionBeacon.foreach(system.stop(_))
   }
 
   private def securitizeCommand(command: Command): CommandEnvelope =

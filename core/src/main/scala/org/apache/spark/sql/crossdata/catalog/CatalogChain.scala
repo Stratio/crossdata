@@ -23,6 +23,8 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, Crossdata
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
+import scala.annotation.tailrec
+
 
 object CatalogChain {
   def apply(catalogs: XDCatalogCommon*)(implicit xdContext: XDContext): CatalogChain = {
@@ -40,7 +42,7 @@ object CatalogChain {
 
 /*
   Write through (always true for this class)-> Each write is synchronously done to all catalogs in the chain
-  Write allocate for temporary catalogs -> A miss at levels 0...i-1,i will be written to these levels when found at level i+1
+  No-Write allocate (always true) -> A miss at levels 0...i-1,i isn't written to these levels when found at level i+1
  */
 private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTemporaryCatalog],
                                               val persistentCatalogs: Seq[XDPersistentCatalog],
