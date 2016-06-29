@@ -129,7 +129,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
             |$TableNameField VARCHAR(50),
             |$IndexNameField VARCHAR(50),
             |$IndexTypeField VARCHAR(50),
-            |$IndexedColsField LONG VARCHAR,
+            |$IndexedColsField TEXT,
             |$PKField VARCHAR(100),
             |$DatasourceField TEXT,
             |$OptionsField TEXT,

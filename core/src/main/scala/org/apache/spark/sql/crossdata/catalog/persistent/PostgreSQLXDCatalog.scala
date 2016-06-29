@@ -114,13 +114,25 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
             |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
       jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE $db.$tableWithAppJars (
+        s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithAppJars (
             |$JarPath VARCHAR(100),
             |$AppAlias VARCHAR(50),
             |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
 
-      //TODO: INDEX
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE IF NOT EXISTS $db.$TableWithIndexMetadata (
+            |$DatabaseField VARCHAR(50),
+            |$TableNameField VARCHAR(50),
+            |$IndexNameField VARCHAR(50),
+            |$IndexTypeField VARCHAR(50),
+            |$IndexedColsField TEXT,
+            |$PKField VARCHAR(100),
+            |$DatasourceField TEXT,
+            |$OptionsField TEXT,
+            |$CrossdataVersionField VARCHAR(30),
+            |UNIQUE ($IndexNameField, $IndexTypeField),
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
 
       jdbcConnection
