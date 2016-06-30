@@ -65,7 +65,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val EXECUTE = Keyword("EXECUTE")
 
 
-
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable | dropExternalTable |

@@ -106,7 +106,8 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def dropIndex(indexIdentifier: IndexIdentifier): Unit
 
-  def tableHasIndex(tableIdentifier: TableIdentifier): Boolean
+  def tableHasIndex(tableIdentifier: TableIdentifier): Boolean =
+    lookupIndexByTableIdentifier(tableIdentifier).isDefined
 
   def dropIndexesFromTable(tableIdentifier: TableIdentifier): Unit
 
@@ -118,10 +119,9 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable]
 
-
   def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] //TODO: Index operations to trait
 
-  def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex]
+  def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex]
 
   def getApp(alias: String): Option[CrossdataApp]
 
@@ -134,7 +134,6 @@ trait XDAppsCatalog {
   def lookupApp(alias: String): Option[CrossdataApp]
 
   def persistAppMetadata(crossdataApp: CrossdataApp): Unit
-
 
 }
 

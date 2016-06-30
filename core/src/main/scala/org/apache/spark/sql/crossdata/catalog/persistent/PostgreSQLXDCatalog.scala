@@ -32,7 +32,7 @@ object PostgreSQLXDCatalog {
   val Table = "jdbc.db.table"
   val TableWithViewMetadata = "jdbc.db.view"
   val TableWithAppMetadata = "jdbc.db.app"
-  val TableWithIndexMetadata = "xdindexes"
+  val TableWithIndexMetadata = "jdbc.db.index"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
 
@@ -224,7 +224,6 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
     connection.commit()
     connection.setAutoCommit(true)
   }
-
 
 
   override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
@@ -433,7 +432,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       s"DELETE FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     )
 
-  override def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
+  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
     val query =
       s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     val preparedStatement = connection.prepareStatement(query)

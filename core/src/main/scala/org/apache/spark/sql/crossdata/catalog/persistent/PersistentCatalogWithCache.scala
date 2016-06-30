@@ -136,10 +136,9 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     dropIndexMetadata(indexIdentifer)
   }
 
-  override final def tableHasIndex(tableIdentifier: TableIdentifier): Boolean = {
-    val found: Option[(TableIdentifier, CrossdataIndex)] = indexCache find { case (key, value) => key == tableIdentifier }
-    found.isDefined
-  }
+  override final def tableHasIndex(tableIdentifier: TableIdentifier): Boolean =
+    indexCache.contains(tableIdentifier)
+
 
   override final def dropAllViews(): Unit = {
     viewCache.clear

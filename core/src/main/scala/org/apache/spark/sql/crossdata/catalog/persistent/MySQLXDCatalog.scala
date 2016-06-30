@@ -19,9 +19,8 @@ import java.sql.{Connection, DriverManager, ResultSet}
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
 
 import scala.annotation.tailrec
 
@@ -33,7 +32,7 @@ object MySQLXDCatalog {
   val TableWithTableMetadata = "jdbc.db.table"
   val TableWithViewMetadata = "jdbc.db.view"
   val TableWithAppMetadata = "jdbc.db.app"
-  val TableWithIndexMetadata = "xdindexes"
+  val TableWithIndexMetadata = "jdbc.db.indexes"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
   // CatalogFields
@@ -428,7 +427,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
       s"DELETE FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     )
 
-  override def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
+  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
     val query =
       s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     val preparedStatement = connection.prepareStatement(query)
