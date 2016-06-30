@@ -120,6 +120,14 @@ class DriverIT extends EndToEndTest {
     clusterState.getLeader.host shouldBe Some("127.0.0.1")
   }
 
+  it should "return a message error without the exception type" in {
+    val driver = Driver.getOrCreate()
+
+    val result = driver.sql("SELECT * FROM noTable LIMIT 1").waitForResult()
+
+    result shouldBe a [ErrorSQLResult]
+    result.asInstanceOf[ErrorSQLResult].message should not contain "java.lang.RuntimeException"
+  }
 
 
 

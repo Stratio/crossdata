@@ -31,9 +31,9 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     )
 
     //Experimentation
-    ElasticSearchConnectionUtils.withClientDo(options){client =>
+    ElasticSearchConnectionUtils.withClientDo(options){ client =>
 
-      //Expectation
+      //Expectations
       client should not be (null)
     }
 
@@ -71,7 +71,6 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
       "es.cluster" -> s"$ElasticClusterName"
     )
 
-
     ElasticSearchConnectionUtils.withClientDo(options){ client =>
       createIndex(client,"index_test",  typeMapping())
       try {
@@ -81,8 +80,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
         //Expectations
         types should not be (null)
         types.size should be > 1
-
-      }finally {
+      } finally {
         cleanTestData(client, "index_test")
       }
     }
@@ -111,8 +109,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
         //Expectations
         types should not be null
         types.size should be (0)
-
-      }finally {
+      } finally {
         cleanTestData(client, "empty_index")
       }
     }
