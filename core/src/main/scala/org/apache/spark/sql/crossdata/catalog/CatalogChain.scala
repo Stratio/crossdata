@@ -134,7 +134,9 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     logInfo(s"Deleting table $strTable from catalog")
     temporaryCatalogs foreach (_.dropTable(tableIdentifier))
     persistentCatalogs foreach (_.dropTable(tableIdentifier))
-    //TODO: Indexes
+    obtainTableIndex(tableIdentifier) map { index =>
+      dropIndex(index.indexIdentifier)
+    }
   }
 
   override def dropAllTables(): Unit = {
