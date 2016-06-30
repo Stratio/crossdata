@@ -17,37 +17,65 @@ package org.apache.spark.sql.crossdata.session
 
 import java.util.UUID
 
-import com.hazelcast.core.{HazelcastInstance, IMap}
+import com.hazelcast.core.{HazelcastInstance, IMap, Message, MessageListener}
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
+import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator.{CacheInvalidationEvent, ResourceInvalidation, ResourceInvalidationForAllSessions}
 import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog, MapCatalog}
 
 import scala.collection.mutable
 import scala.util.Try
 
-trait SessionResourceManager[K, V] {
+trait SessionResourceManager[V] {
 
-  def newResource(key: K): V
+  //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
+  def newResource(key: SessionID): V
 
-  def getResource(key: K): Try[V]
+  def getResource(key: SessionID): Try[V]
 
-  def deleteSessionResource(key: K): Try[Unit]
+  def deleteSessionResource(key: SessionID): Try[Unit]
 
   def clearAllSessionsResources(): Unit
+
+  def invalidateLocalCaches(key: SessionID): Unit
+
+  def invalidateAllLocalCaches: Unit
 
 }
 
 
+trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidationEvent]
+  with SessionResourceManager[V] {
+
+  protected val topicName: String
+  protected val hInstance: HazelcastInstance
+
+  val invalidationTopic = hInstance.getTopic[CacheInvalidationEvent](topicName)
+
+  invalidationTopic.addMessageListener(this)
+
+  override def onMessage(message: Message[CacheInvalidationEvent]): Unit =
+    Option(message.getMessageObject) foreach {
+      case ResourceInvalidation(sessionId) => invalidateLocalCaches(sessionId)
+      case ResourceInvalidationForAllSessions => invalidateAllLocalCaches
+    }
+
+}
 
 // TODO add listeners to propagate hazelcast changes (delete/updates) to the localCatalog
-class HazelcastSessionCatalogResourceManager(hInstance: HazelcastInstance, catalystConf: CatalystConf) extends SessionResourceManager[SessionID, Seq[XDTemporaryCatalog]]{
+class HazelcastSessionCatalogResourceManager(
+                                              override protected val hInstance: HazelcastInstance,
+                                              catalystConf: CatalystConf
+                                            ) extends HazelcastSessionResourceManager[Seq[XDTemporaryCatalog]] {
 
   import HazelcastSessionProvider._
 
   type TableMapUUID = UUID
   type ViewMapUUID = UUID
+
+  override protected val topicName: String = "session-rec-catalog"
 
   private val sessionIDToMapCatalog: mutable.Map[SessionID, MapCatalog] = mutable.Map.empty
   private val sessionIDToTableViewID: IMap[SessionID, (TableMapUUID, ViewMapUUID)] = hInstance.getMap(HazelcastCatalogMapId)
@@ -55,8 +83,12 @@ class HazelcastSessionCatalogResourceManager(hInstance: HazelcastInstance, catal
   // Returns the seq of XDTempCatalog for the new session
   override def newResource(key: SessionID): Seq[XDTemporaryCatalog] = {
     // TODO try // TODO check if the session already exists?? and use it or it hsould not happen??
+    //NO! IT SHOULDN'T HAPPEN BUT SOME PROTECTION IS STILL TODO
     // AddMapCatalog for local/cache interaction
     val localCatalog = addNewMapCatalog(key)
+
+    //TODO: Make sure no newResource is invoked twice with the same session id.
+    // publishInvalidation(key) This can potentially invalidate the recently added map
 
     // Add hazCatalog for detect metadata from other servers
     val (tableMap, tableMapUUID) = createRandomMap[TableIdentifier, CrossdataTable]
@@ -89,6 +121,7 @@ class HazelcastSessionCatalogResourceManager(hInstance: HazelcastInstance, catal
       hazelcastTables clear()
       sessionIDToTableViewID remove key
       sessionIDToMapCatalog remove key
+      publishInvalidation(key)
     }
 
   override def clearAllSessionsResources(): Unit = {
@@ -99,6 +132,7 @@ class HazelcastSessionCatalogResourceManager(hInstance: HazelcastInstance, catal
     }
     sessionIDToMapCatalog.clear()
     sessionIDToTableViewID.clear()
+    publishInvalidation()
   }
 
   private def createRandomMap[K, V]: (IMap[K, V], UUID) = {
@@ -111,5 +145,23 @@ class HazelcastSessionCatalogResourceManager(hInstance: HazelcastInstance, catal
     sessionIDToMapCatalog.put(sessionID, localCatalog)
     localCatalog
   }
+
+  override def invalidateLocalCaches(key: SessionID): Unit = {
+    println(">"*10 +  "INVALIDATING CATALOG CACHE FOR SESSION: " + key) //TODO: remove this
+    sessionIDToMapCatalog remove key
+  }
+
+  override def invalidateAllLocalCaches: Unit = {
+    println(">"*10 +  "INVALIDATING CATALOG CACHE FOR ALL SESSIONS") //TODO: remove this
+    sessionIDToMapCatalog clear
+  }
+
+
+  private def publishInvalidation(sessionID: Option[SessionID] = None): Unit =
+    invalidationTopic publish {
+      sessionID.map(ResourceInvalidation(_)) getOrElse ResourceInvalidationForAllSessions
+    }
+
+  private def publishInvalidation(sessionID: SessionID): Unit = publishInvalidation(Some(sessionID))
 
 }

@@ -15,13 +15,16 @@
  */
 package org.apache.spark.sql.crossdata.session
 
-import com.hazelcast.config.{GroupConfig, XmlConfigBuilder, Config => HazelcastConfig}
+import com.hazelcast.config.{GroupConfig, XmlConfigBuilder}
 import com.hazelcast.core.Hazelcast
+import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.Config
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
+import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator
+import org.apache.spark.sql.crossdata.catalog.temporary.XDTemporaryCatalogWithInvalidation
 import org.apache.spark.sql.crossdata.{XDSession, XDSessionProvider, XDSessionState, XDSharedState}
 
 import scala.util.{Failure, Success, Try}
@@ -56,14 +59,18 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
   // TODO scalaWrapper // scalaHazel
   // TODO snapshot from (list(session) + addlistener)?? (
   private val sessionIDToSQLProps: java.util.Map[SessionID, Map[String,String]] = hInstance.getMap(SqlConfMapId)
-  private val sessionIDToTempCatalogs: SessionResourceManager[SessionID, Seq[XDTemporaryCatalog]] = new HazelcastSessionCatalogResourceManager(hInstance, sharedState.sqlConf)
+  private val sessionIDToTempCatalogs = new HazelcastSessionCatalogResourceManager(hInstance, sharedState.sqlConf)
+
+  private def catalogInvalidator(sessionID: SessionID): CacheInvalidator =
+    new HazelcastCacheInvalidator(sessionID, sessionIDToTempCatalogs.invalidationTopic)
+
   // TODO addSessionsToAllMap && recieveSpecificOptions
   override def newSession(sessionID: SessionID): Try[XDSession] = // TODO try vs future
     Try {
       val tempCatalogs = sessionIDToTempCatalogs.newResource(sessionID)
       sessionIDToSQLProps.put(sessionID, sharedState.sparkSQLProps) // TODO Imap and set
 
-      buildSession(sharedState.sqlConf, tempCatalogs)
+      buildSession(sessionID, sharedState.sqlConf, tempCatalogs)
     }
 
   // TODO closeSession && removeFromAllCatalogs
@@ -79,7 +86,7 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
     for {
       tempCatalogMap <- sessionIDToTempCatalogs.getResource(sessionID)
       configMap <- checkNotNull(sessionIDToSQLProps.get(sessionID))
-      sess <- Try(buildSession(configMap, tempCatalogMap))
+      sess <- Try(buildSession(sessionID, configMap, tempCatalogMap))
     } yield {
       sess
     }
@@ -92,9 +99,16 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
   }
 
 
-  private def buildSession(sqlConf: SQLConf, xDTemporaryCatalogs: Seq[XDTemporaryCatalog]): XDSession = {
-    val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalogs)
+  private def buildSession(
+                            sessionID: SessionID,
+                            sqlConf: SQLConf,
+                            xDTemporaryCatalogs: Seq[XDTemporaryCatalog]): XDSession = {
+
+    val (firstLevel, rest) = xDTemporaryCatalogs.splitAt(1)
+    val tempCatalogs = firstLevel.map(new XDTemporaryCatalogWithInvalidation(_, catalogInvalidator(sessionID))) ++ rest
+    val sessionState = new XDSessionState(sqlConf, tempCatalogs)
     new XDSession(sharedState, sessionState)
+
   }
 
 }

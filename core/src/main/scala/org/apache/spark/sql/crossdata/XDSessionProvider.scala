@@ -38,6 +38,7 @@ abstract class XDSessionProvider(
   import XDSessionProvider._
 
 
+  //NOTE: DO NEVER KEEP THE RETURNED REFERENCE FOR SEVERAL USES!
   def session(sessionID: SessionID): Try[XDSession]
 
   def newSession(sessionID: SessionID): Try[XDSession]
