@@ -39,7 +39,7 @@ private[crossdata] trait ExternalCatalogAPI extends XDAppsCatalog{
   def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable]
   def indexMetadata(indexIdentifier: IndexIdentifier): Option[CrossdataIndex]
   def indexMetadataByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex]
-  def tableHasIndex(tableIdentifier: TableIdentifier): Boolean =
+  def tableHasGlobalIndex(tableIdentifier: TableIdentifier): Boolean =
     indexMetadataByTableIdentifier(tableIdentifier).isDefined
 }
 
