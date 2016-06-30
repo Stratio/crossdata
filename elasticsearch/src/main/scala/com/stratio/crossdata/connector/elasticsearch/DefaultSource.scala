@@ -174,7 +174,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
                                  options: Map[String, String]): Try[Unit] = {
 
     val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).get
-    val indexType = IndexType(index, typeName)
+    val indexType = IndexAndType(index, typeName)
 
     Try {
       ElasticSearchConnectionUtils.withClientDo(options){ client =>
