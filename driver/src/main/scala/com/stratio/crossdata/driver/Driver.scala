@@ -154,18 +154,22 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     //Preparse query to know if it is an special command sent from the shell or other driver user that is not a query
     val addJarPattern =
       """(\s*add)(\s+jar\s+)(.*)""".r
-    val addAppWithAliasPattern ="""(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(\S*)""".r
-    val addAppPattern ="""(\s*add)(\s+app\s+)(.*)(\s+with\s+)(\S*)""".r
+
+    val addAppWithAliasPattern ="""(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(.*)""".r
+    val addAppPattern ="""(\s*add)(\s+app\s+)(.*)(\s+with\s+)(.*)""".r
     query match {
       case addJarPattern(add, jar, path) => addJar(path.trim)
       case addAppWithAliasPattern(add, app, path, as, alias, wth, clss) =>
-        val res = addJar(path).waitForResult()
+        val realPath=path.replace("'","")
+        val res = addJar(realPath).waitForResult()
         val hdfspath = res.resultSet(0).getString(0)
-        addApp(hdfspath, clss, alias)
+        addApp(hdfspath, alias, clss)
+
       case addAppPattern(add, app, path, wth, clss) =>
-        val res = addJar(path).waitForResult()
+        val realPath=path.replace("'","")
+        val res = addJar(realPath).waitForResult()
         val hdfspath = res.resultSet(0).getString(0)
-        addApp(hdfspath, clss, path)
+        addApp(hdfspath, clss, realPath)
       case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
         val futureReply = askCommand(securitizeCommand(sqlCommand)).map {
