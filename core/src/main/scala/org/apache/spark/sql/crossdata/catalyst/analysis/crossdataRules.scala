@@ -17,8 +17,14 @@ package org.apache.spark.sql.crossdata.catalyst.analysis
 
 import org.apache.spark.sql.catalyst.analysis._
 import org.apache.spark.sql.catalyst.expressions._
+import org.apache.spark.sql.catalyst.plans.logical
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.catalyst.rules._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import org.apache.spark.sql.crossdata.catalyst.ExtendedUnresolvedRelation
+import org.apache.spark.sql.crossdata.catalyst.globalindex.IndexUtils
+
+import scala.annotation.tailrec
 
 // SELECT sth as alias GROUP BY alias is allowed thanks to the rule
 object ResolveAggregateAlias extends Rule[LogicalPlan] {
@@ -93,5 +99,49 @@ object PrepareAggregateAlias extends Rule[LogicalPlan] {
       case _ => false
     }
   }
+
+}
+
+case class WrapRelationWithGlobalIndex(catalog: XDCatalog) extends Rule[LogicalPlan] {
+
+  override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
+
+    case pp if planWithAvailableIndex(pp) =>
+      plan resolveOperators {
+        case unresolvedRelation: UnresolvedRelation =>
+          ExtendedUnresolvedRelation(unresolvedRelation.tableIdentifier, unresolvedRelation)
+      }
+  }
+
+
+  def planWithAvailableIndex(plan: LogicalPlan): Boolean = {
+
+    //Get filters and escape projects to check if plan could be resolved using Indexes
+    @tailrec
+    def helper(filtersConditions: Seq[Expression], actual: LogicalPlan): Boolean = actual match {
+
+      case logical.Filter(condition, child: LogicalPlan) =>
+        helper(filtersConditions :+ condition, child)
+
+      case p@logical.Project(_, child: LogicalPlan) =>
+        helper(filtersConditions, child)
+
+      case u: UnresolvedRelation =>
+        //Check if table has index and if there are some Filter that have all its attributes indexed
+        catalog.indexMetadataByTableIdentifier(u.tableIdentifier).map { index =>
+          filtersConditions exists { condition =>
+            IndexUtils.areAllAttributeIndexedInExpr(condition, index.indexedCols)
+          }
+        } getOrElse {
+          false
+        }
+
+      case _ =>
+        false
+    }
+
+    helper(Seq.empty, plan)
+  }
+
 
 }

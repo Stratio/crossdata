@@ -17,7 +17,6 @@ package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 
@@ -39,8 +38,9 @@ private[crossdata] trait ExternalCatalogAPI extends XDAppsCatalog{
 
   def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable]
   def indexMetadata(indexIdentifier: IndexIdentifier): Option[CrossdataIndex]
-  def tableHasIndex(tableIdentifier: TableIdentifier): Boolean
-  def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex]
+  def indexMetadataByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex]
+  def tableHasIndex(tableIdentifier: TableIdentifier): Boolean =
+    indexMetadataByTableIdentifier(tableIdentifier).isDefined
 }
 
 

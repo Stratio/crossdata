@@ -168,9 +168,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   override def indexMetadata(tableIdentifier: IndexIdentifier): Option[CrossdataIndex]=
     persistentChainedLookup(_.lookupIndex(tableIdentifier))
 
-  override def tableHasIndex(tableIdentifier: TableIdentifier): Boolean = persistentCatalogs exists (_.tableHasIndex(tableIdentifier))
-
-  override def obtainTableIndex(tableIdentifier: TableIdentifier):Option[CrossdataIndex]=
+  override def indexMetadataByTableIdentifier(tableIdentifier: TableIdentifier):Option[CrossdataIndex]=
     persistentCatalogs map (_.obtainTableIndex(tableIdentifier)) collectFirst {
       case Some(index) =>index
     }
