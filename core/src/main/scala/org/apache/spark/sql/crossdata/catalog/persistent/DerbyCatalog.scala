@@ -45,7 +45,7 @@ object DerbyCatalog {
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
 
-  //IndexMetadataFields //TODO: To core-config
+  //IndexMetadataFields
   val IndexNameField = "indexName"
   val IndexTypeField = "indexType"
   val IndexedColsField = "indexedCols"
@@ -113,7 +113,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
     //Index support
     if(!indexTableExists(DB, jdbcConnection)) {
-      jdbcConnection.createStatement().executeUpdate(
+      jdbcConnection.createStatement().executeUpdate( //TODO: Relational way using other table for the columns??
         s"""|CREATE TABLE $DB.$TableWithIndexMetadata (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
@@ -125,7 +125,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
             |$OptionsField LONG VARCHAR,
             |$CrossdataVersionField VARCHAR(30),
             |UNIQUE ($IndexNameField, $IndexTypeField),
-            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin) //TODO: Multiple indexing??
     }
 
     jdbcConnection
@@ -352,34 +352,44 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
 
   override def dropTableMetadata(tableIdentifier: TableIdentifier): Unit =
-    connection.createStatement.executeUpdate(
+    executeSQLCommand(
       s"DELETE FROM $DB.$TableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'"
     )
 
   override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
-    connection.createStatement.executeUpdate(
+    executeSQLCommand(
       s"DELETE FROM $DB.$TableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'"
     )
 
   override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
-    connection.createStatement.executeUpdate(
+    executeSQLCommand(
       s"DELETE FROM $DB.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
     )
 
   override def dropIndexMetadata(tableIdentifier: TableIdentifier): Unit =
-    connection.createStatement.executeUpdate(
+    executeSQLCommand(
       s"DELETE FROM $DB.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     )
 
 
   override def dropAllTablesMetadata(): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithTableMetadata")
+    executeSQLCommand(s"DELETE FROM $DB.$TableWithTableMetadata")
 
   override def dropAllViewsMetadata(): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithViewMetadata")
+    executeSQLCommand(s"DELETE FROM $DB.$TableWithViewMetadata")
 
   override def dropAllIndexesMetadata(): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithIndexMetadata")
+    executeSQLCommand(s"DELETE FROM $DB.$TableWithIndexMetadata")
+
+  def executeSQLCommand(sql: String): Unit = {
+    val statement = connection.createStatement
+    try{
+      statement.executeUpdate(sql)
+    } finally {
+      statement.close()
+    }
+  }
+
 
   override def isAvailable: Boolean = true
 
