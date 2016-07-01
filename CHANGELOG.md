@@ -4,6 +4,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 ## 1.4.0 (Upcoming)
 * Upgrade to Elasticsearch 2.3
+* Upgrade to Spark 1.6.2
 
 ## 1.3.0 (June 2016)
 * Upgrade to Spark 1.6.1
