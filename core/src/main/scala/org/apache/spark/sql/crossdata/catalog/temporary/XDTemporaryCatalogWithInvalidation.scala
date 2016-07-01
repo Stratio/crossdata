@@ -29,7 +29,7 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
   * @param invalidator Cache invalidation implementation
   */
 class XDTemporaryCatalogWithInvalidation(
-                                          underlying: XDTemporaryCatalog,
+                                          val underlying: XDTemporaryCatalog,
                                           invalidator: CacheInvalidator
                                         ) extends XDTemporaryCatalog {
 

@@ -52,12 +52,18 @@ trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidati
   protected val topicName: String
   protected val hInstance: HazelcastInstance
 
-  val invalidationTopic = hInstance.getTopic[CacheInvalidationEvent](topicName)
+  lazy val invalidationTopic = {
+    val topic = hInstance.getTopic[CacheInvalidationEvent](topicName)
+    topic.addMessageListener(this)
+    topic
+  }
 
-  invalidationTopic.addMessageListener(this)
+
 
   override def onMessage(message: Message[CacheInvalidationEvent]): Unit =
-    Option(message.getMessageObject) foreach {
+    Option(message.getMessageObject).filterNot(
+      _ => message.getPublishingMember equals hInstance.getCluster.getLocalMember
+    ) foreach {
       case ResourceInvalidation(sessionId) => invalidateLocalCaches(sessionId)
       case ResourceInvalidationForAllSessions => invalidateAllLocalCaches
     }
@@ -87,8 +93,7 @@ class HazelcastSessionCatalogResourceManager(
     // AddMapCatalog for local/cache interaction
     val localCatalog = addNewMapCatalog(key)
 
-    //TODO: Make sure no newResource is invoked twice with the same session id.
-    // publishInvalidation(key) This can potentially invalidate the recently added map
+    publishInvalidation(key)
 
     // Add hazCatalog for detect metadata from other servers
     val (tableMap, tableMapUUID) = createRandomMap[TableIdentifier, CrossdataTable]
