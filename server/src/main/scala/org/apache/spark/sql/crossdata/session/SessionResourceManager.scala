@@ -70,7 +70,6 @@ trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidati
 
 }
 
-// TODO add listeners to propagate hazelcast changes (delete/updates) to the localCatalog
 class HazelcastSessionCatalogResourceManager(
                                               override protected val hInstance: HazelcastInstance,
                                               catalystConf: CatalystConf
@@ -90,6 +89,7 @@ class HazelcastSessionCatalogResourceManager(
   override def newResource(key: SessionID): Seq[XDTemporaryCatalog] = {
     // TODO try // TODO check if the session already exists?? and use it or it hsould not happen??
     //NO! IT SHOULDN'T HAPPEN BUT SOME PROTECTION IS STILL TODO
+
     // AddMapCatalog for local/cache interaction
     val localCatalog = addNewMapCatalog(key)
 
@@ -151,15 +151,9 @@ class HazelcastSessionCatalogResourceManager(
     localCatalog
   }
 
-  override def invalidateLocalCaches(key: SessionID): Unit = {
-    println(">"*10 +  "INVALIDATING CATALOG CACHE FOR SESSION: " + key) //TODO: remove this
-    sessionIDToMapCatalog remove key
-  }
+  override def invalidateLocalCaches(key: SessionID): Unit = sessionIDToMapCatalog remove key
 
-  override def invalidateAllLocalCaches: Unit = {
-    println(">"*10 +  "INVALIDATING CATALOG CACHE FOR ALL SESSIONS") //TODO: remove this
-    sessionIDToMapCatalog clear
-  }
+  override def invalidateAllLocalCaches: Unit = sessionIDToMapCatalog clear
 
 
   private def publishInvalidation(sessionID: Option[SessionID] = None): Unit =

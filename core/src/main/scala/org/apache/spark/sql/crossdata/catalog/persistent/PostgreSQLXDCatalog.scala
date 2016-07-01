@@ -60,7 +60,7 @@ object PostgreSQLXDCatalog {
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
 class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
-  extends PersistentCatalogWithCache(sqlContext, catalystConf) {
+  extends PersistentCatalogWithCache(catalystConf) {
 
   import PostgreSQLXDCatalog._
   import XDCatalog._
