@@ -31,11 +31,10 @@ import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.optimizer.Optimizer
-import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext._
+import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
-import org.apache.spark.sql.crossdata.catalog._
 import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias, WrapRelationWithGlobalIndex}
@@ -72,6 +71,7 @@ class XDContext protected (@transient val sc: SparkContext,
   def this(sc: SparkContext, config: Config) =
     this(sc, Some(config))
 
+  import XDContext._
 
   /* TODO: Remove the config attributes from the companion object!!!
      This only works because you can only have a SQLContext per running instance
