@@ -36,8 +36,6 @@ ITSERVICES:
       image: stratio/kafka:0.8.2.1
       env:
         - ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181
-  - CROSSDATA:
-      image: stratio/crossdata
 
 
 
