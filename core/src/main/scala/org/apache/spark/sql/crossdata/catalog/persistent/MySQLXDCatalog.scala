@@ -349,8 +349,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
   override def isAvailable: Boolean = Option(connection).isDefined
 
 
-
-  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = {
+  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit =
     try {
       connection.setAutoCommit(false)
       // check if the database-table exist in the persisted catalog
@@ -380,9 +379,9 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
         //TODO: Support change index metadata?
         sys.error("Index already exists")
       }
+    } finally {
+      connection.setAutoCommit(true)
     }
-  }
-
   override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
     connection.createStatement.executeUpdate(
       s"DELETE FROM $db.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"

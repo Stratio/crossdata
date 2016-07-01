@@ -16,11 +16,11 @@
 package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.sql.{Connection, DriverManager, ResultSet}
+
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
 
 import scala.annotation.tailrec
 
@@ -355,7 +355,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
   override def isAvailable: Boolean = Option(connection).isDefined
 
 
-  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = {
+  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit =
     try {
       connection.setAutoCommit(false)
       // check if the database-table exist in the persisted catalog
@@ -385,8 +385,10 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
         //TODO: Support change index metadata?
         sys.error("Index already exists")
       }
+    } finally {
+      connection.setAutoCommit(true)
     }
-  }
+
 
   override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
     connection.createStatement.executeUpdate(
