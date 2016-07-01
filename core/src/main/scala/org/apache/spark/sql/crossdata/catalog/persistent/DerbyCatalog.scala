@@ -20,11 +20,9 @@ import java.sql.{Connection, DriverManager, ResultSet}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.CrossdataVersion
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 
 import scala.annotation.tailrec
-import scala.util.Try
 
 // TODO refactor SQL catalog implementations
 object DerbyCatalog {
@@ -45,7 +43,7 @@ object DerbyCatalog {
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
 
-  //IndexMetadataFields
+  //IndexMetadataFields //TODO: To core-config
   val IndexNameField = "indexName"
   val IndexTypeField = "indexType"
   val IndexedColsField = "indexedCols"
@@ -282,7 +280,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     }
 
 
-  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = {
+  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit =
     try {
       connection.setAutoCommit(false)
       // check if the database-table exist in the persisted catalog
@@ -312,10 +310,12 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
         //TODO: Support change index metadata?
         sys.error("Index already exists")
       }
+    } finally {
+      connection.setAutoCommit(true)
     }
-  }
 
-  override def saveAppMetadata(crossdataApp: CrossdataApp): Unit ={
+
+  override def saveAppMetadata(crossdataApp: CrossdataApp): Unit =
     try {
       connection.setAutoCommit(false)
 
@@ -341,15 +341,11 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
         prepped.setString(1, crossdataApp.jar)
         prepped.setString(2, crossdataApp.appClass)
         prepped.execute()
-
       }
       connection.commit()
     } finally {
       connection.setAutoCommit(true)
     }
-
-  }
-
 
   override def dropTableMetadata(tableIdentifier: TableIdentifier): Unit =
     executeSQLCommand(
@@ -450,7 +446,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     resultSet.next()
   }
 
-  override def obtainTableIndex(tableIdentifier: TableIdentifier):Option[CrossdataIndex] = {
+  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier):Option[CrossdataIndex] = {
     val query=
       s"SELECT * FROM $DB.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     val preparedStatement = connection.prepareStatement(query)

@@ -16,6 +16,7 @@
 package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.sql.{Connection, DriverManager, ResultSet}
+
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
@@ -32,7 +33,7 @@ object PostgreSQLXDCatalog {
   val Table = "jdbc.db.table"
   val TableWithViewMetadata = "jdbc.db.view"
   val TableWithAppMetadata = "jdbc.db.app"
-  val TableWithIndexMetadata = "xdindexes"
+  val TableWithIndexMetadata = "jdbc.db.index"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
 
@@ -91,8 +92,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val jdbcConnection = DriverManager.getConnection(url, user, pass)
 
       // CREATE PERSISTENT METADATA TABLE
-      if(!schemaExists(db, jdbcConnection))
-        jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
+      jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA IF NOT EXISTS $db")
 
       jdbcConnection.createStatement().executeUpdate(
         s"""|CREATE TABLE IF NOT EXISTS $db.$table (
@@ -238,7 +238,6 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
   }
 
 
-
   override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$table WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
 
@@ -368,7 +367,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
   override def isAvailable: Boolean = Option(connection).isDefined
 
 
-  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = {
+  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit =
     try {
       connection.setAutoCommit(false)
       // check if the database-table exist in the persisted catalog
@@ -398,8 +397,10 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
         //TODO: Support change index metadata?
         sys.error("Index already exists")
       }
+    } finally {
+      connection.setAutoCommit(true)
     }
-  }
+
 
   override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
     connection.createStatement.executeUpdate(
@@ -445,7 +446,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       s"DELETE FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     )
 
-  override def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
+  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
     val query =
       s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     val preparedStatement = connection.prepareStatement(query)

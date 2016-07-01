@@ -21,7 +21,6 @@ import java.net.Socket
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{AppTypesafeDAO, IndexTypesafeDAO, TableTypesafeDAO, ViewTypesafeDAO}
@@ -187,10 +186,10 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
     //TODO this method must be changed when Stratio Commons provide a status connection of Zookeeper
     val value = XDContext.catalogConfig.getString("zookeeper.connectionString")
     val address = value.split(":")
-    Try(new Socket(address(0), address(1).toInt)).map(s => {
-      s.close;
+    Try(new Socket(address(0), address(1).toInt)).map { s =>
+      s.close()
       true
-    }).getOrElse(false)
+    }.getOrElse(false)
   }
 
   //TODO
@@ -230,7 +229,7 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
       index => index.crossdataIndex.tableIdentifier == tableIdentifier
     ) foreach (selectedIndex => indexDAO.dao.delete(selectedIndex.indexId))
 
-  override def obtainTableIndex(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
+  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
     if (indexDAO.dao.count > 0)
       indexDAO.dao.getAll().find(
         _.crossdataIndex.tableIdentifier == tableIdentifier
