@@ -37,7 +37,7 @@ ITSERVICES:
       env:
         - ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181
   - CROSSDATA:
-      image: stratio/crossdata-scala${target.replaceAll('\\.', '')}:TMP-${target}-${vars.version}
+      image: stratio/crossdata
 
 
 
