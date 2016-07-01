@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
+import java.util.UUID
+
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -23,14 +25,18 @@ import scala.collection.Seq
 @RunWith(classOf[JUnitRunner])
 class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
 
+  val Index1 = s"droptest${UUID.randomUUID.toString.replace("-", "")}"
+
+  val Index2 = s"droptest${UUID.randomUUID.toString.replace("-", "")}"
+
   protected override def beforeAll(): Unit = {
     super.beforeAll()
 
     val createTableQueryString1 =
-      s"""|CREATE EXTERNAL TABLE $Index.testDrop1 (id Integer, name String)
+      s"""|CREATE EXTERNAL TABLE $Index1.testDrop1 (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
-          |es.resource '$Index/testDrop1',
+          |es.resource '$Index1/testDrop1',
           |es.nodes '$ElasticHost',
           |es.port '$ElasticRestPort',
           |es.nativePort '$ElasticNativePort',
@@ -43,7 +49,7 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
       s"""|CREATE EXTERNAL TABLE testDrop2 (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
-          |es.resource '$Index/drop_table_example',
+          |es.resource '$Index2/drop_table_example',
           |es.nodes '$ElasticHost',
           |es.port '$ElasticRestPort',
           |es.nativePort '$ElasticNativePort',
@@ -57,17 +63,17 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
   "The ElasticSearch connector" should "execute a DROP EXTERNAL TABLE" in {
 
     //Precondition
-    xdContext.table(s"$Index.testDrop1") should not be null
+    xdContext.table(s"$Index1.testDrop1") should not be null
 
     val mappingName = "testDrop1"
 
     //DROP
-    val dropExternalTableQuery = s"DROP EXTERNAL TABLE $Index.testDrop1"
+    val dropExternalTableQuery = s"DROP EXTERNAL TABLE $Index1.$mappingName"
     sql(dropExternalTableQuery).collect() should be (Seq.empty)
 
     //Expectations
-    an[Exception] shouldBe thrownBy(xdContext.table(s"$Index.testDrop1"))
-    client.get.admin.indices.prepareTypesExists(Index).setTypes(mappingName).get.isExists shouldBe false
+    an[Exception] shouldBe thrownBy(xdContext.table(s"$Index1.testDrop1"))
+    client.get.admin.indices.prepareExists(Index1).get.isExists shouldBe false
   }
 
   "The ElasticSearch connector" should "execute a DROP EXTERNAL TABLE without specify database" in {
@@ -83,8 +89,7 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table("testDrop2"))
-    client.get.admin.indices.prepareTypesExists(Index).setTypes(mappingName).get.isExists shouldBe false
-
+    client.get.admin.indices.prepareExists(Index2).get.isExists shouldBe false
   }
 
 }

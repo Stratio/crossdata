@@ -93,7 +93,8 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
 
   /**
    * Validates the input parameters, defined in https://www.elastic.co/guide/en/elasticsearch/hadoop/current/configuration.html
-   * @param parameters a Map with the configurations parameters
+    *
+    * @param parameters a Map with the configurations parameters
    * @return the validated map.
    */
   private def params(parameters: Map[String, String]) = {
@@ -156,6 +157,17 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
     }
 
     val indexType = IndexAndType(index, typeName)
+
+    try {
+      ElasticSearchConnectionUtils.withClientDo(options) { client =>
+        if(!client.execute(indexExists(index)).await.isExists){
+          client.execute {
+            createIndex(index).mappings()
+          }.await
+        }
+      }
+    }
+
     try {
       ElasticSearchConnectionUtils.withClientDo(options) { client =>
         client.execute {
