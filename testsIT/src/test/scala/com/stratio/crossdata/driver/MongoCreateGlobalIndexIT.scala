@@ -38,7 +38,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     //Create test tables
     val createTable1 =
       s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String, other Integer)
-      USING $MongoSourceProvider
+          |USING $MongoSourceProvider
           |OPTIONS (
           |host '127.0.0.1:27017',
           |database 'globalIndexDb',
@@ -145,13 +145,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
   //TODO: More tests and remove this properties from here!!!!!!!!!!!
 
-"The insert in mongo doc with a global index" should "insert in ES too" in {
-    
-val ElasticHost: String = "172.17.0.2"
-    val ElasticRestPort = 9200
-    val ElasticNativePort = 9300
-    val ElasticClusterName: String = "elasticsearch"
-
+  "The insert in mongo doc with a global index" should "insert in ES too" in {
 
     val sentence =
       s"""|INSERT INTO globalIndexDb.proofGlobalIndex(id, name, comments)

@@ -19,20 +19,18 @@ import java.sql.{Date, Timestamp}
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
-import com.typesafe.config.Config
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.{StructType, _}
 
-import scala.annotation.tailrec
 import scala.language.implicitConversions
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
@@ -136,8 +134,8 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
         logInfo(s"Importing table ${tableId.unquotedString}")
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
         val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
-        import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
         import XDCatalog._
+        import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
         sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
       }
       val tableSeq = DDLUtils.tableIdentifierToSeq(tableId)
@@ -211,33 +209,16 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
 
       case Subquery(_, LogicalRelation(relation: BaseRelation, _)) =>
 
-        val schema = schemaFromUser map (DDLUtils.extractSchema(_, relation.schema)) getOrElse (relation.schema)
+        val schema = schemaFromUser map (DDLUtils.extractSchema(_, relation.schema)) getOrElse relation.schema
 
         relation match {
           case insertableRelation: InsertableRelation =>
             val dataframe = convertRows(sqlContext, parsedRows, schema)
-            if (sqlContext.catalog.tableHasIndex(tableIdentifier)) {
-              //insert into ES because of global index
-              val crossdataIndex = sqlContext.catalog.obtainTableIndex(tableIdentifier).get
-              val indexInsertCols = crossdataIndex.indexedCols.mkString(",") + "," + crossdataIndex.pk
 
-              var values: List[Any] = Nil
-
-              parsedRows.foreach { row =>
-                var indexInsertValues: List[Any] = Nil
-                indexInsertValues :::= List(row(schema.getFieldIndex(crossdataIndex.pk).getOrElse(0)))
-
-                crossdataIndex.indexedCols foreach { idxCol =>
-                  val pos = schema.getFieldIndex(idxCol).getOrElse(0)
-                  indexInsertValues :::= List(row(pos))
-                }
-
-                val value = indexInsertValues map (x => "'" + x + "'") mkString ","
-                values :::= List(value)
-              }
-              sqlContext.sql(
-                s"""INSERT INTO ${crossdataIndex.indexIdentifier.unquotedString} (${indexInsertCols}) VALUES ${values.map("(" + _ + ")").mkString(",")}""".stripMargin)
+            sqlContext.catalog.indexMetadataByTableIdentifier(tableIdentifier).foreach{ idxIdentifier =>
+              indexData(sqlContext, idxIdentifier, schema)
             }
+
             insertableRelation.insert(dataframe, overwrite = false)
 
           case hadoopFsRelation: HadoopFsRelation =>
@@ -260,6 +241,24 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
     }
 
     Row(parsedRows.length) :: Nil
+  }
+
+  /**
+    * Index data into related globalIndex
+    *
+    * @param sqlContext
+    */
+  private def indexData(sqlContext: SQLContext, crossdataIndex: CrossdataIndex, tableSchema: StructType): Unit = {
+
+    val columnsToIndex: Seq[String] = crossdataIndex.pk +: crossdataIndex.indexedCols.filter(tableSchema.getFieldIndex(_).isDefined)
+
+    val filteredParsedRows = parsedRows.map { row =>
+      columnsToIndex map { idxCol =>
+        row(tableSchema.getFieldIndex(idxCol).get)
+      }
+    }
+
+    InsertIntoTable(crossdataIndex.indexIdentifier.asTableIdentifier, filteredParsedRows, Some(columnsToIndex))
   }
 
   private def convertRows(sqlContext: SQLContext, rows: Seq[DDLUtils.RowValues], tableSchema: StructType): DataFrame = {

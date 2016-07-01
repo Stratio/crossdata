@@ -299,7 +299,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
     xdContext.catalog.persistIndex(crossdataIndex)
 
-    val res=xdContext.catalog.obtainTableIndex(tableIdentifier)
+    val res=xdContext.catalog.indexMetadataByTableIdentifier(tableIdentifier)
 
     res.get shouldBe a[CrossdataIndex]
     res.get.indexIdentifier shouldBe indexIdentifier

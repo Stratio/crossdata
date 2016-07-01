@@ -29,35 +29,29 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.stratio.crossdata.utils.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, NoSuchTableException, ResolveUpCast, UnresolvedAttribute, UnresolvedRelation}
-import org.apache.spark.sql.catalyst.expressions.{And, Attribute, AttributeReference, Contains, EqualTo, Expression, GreaterThan, GreaterThanOrEqual, In, IsNotNull, IsNull, LessThan, LessThanOrEqual, Literal, Or, Predicate, StartsWith, UnsafeRow}
-import org.apache.spark.sql.catalyst.optimizer.{DefaultOptimizer, Optimizer}
-import org.apache.spark.sql.catalyst.plans.logical
-import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.catalyst.rules.Rule
-import org.apache.spark.sql.catalyst.{CatalystConf, InternalRow, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataIndex, IndexIdentifier}
-import org.apache.spark.sql.crossdata.catalog._
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
+import org.apache.spark.sql.catalyst.optimizer.Optimizer
+import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
 import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
-import org.apache.spark.sql.crossdata.catalyst.ExtendedUnresolvedRelation
-import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
+import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias, WrapRelationWithGlobalIndex}
+import org.apache.spark.sql.crossdata.catalyst.optimizer.XDOptimizer
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.execution.datasources.{DDLUtils, ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
+import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.launcher.SparkJobLauncher
 import org.apache.spark.sql.crossdata.security.{Credentials, SecurityManager}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
-import org.apache.spark.sql.execution.{ExtractPythonUDFs, SparkPlan}
-import org.apache.spark.sql.execution.datasources.{LogicalRelation, PreInsertCastAndRename, PreWriteCheck}
-import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.types.{DataType, IntegerType, StructType}
+import org.apache.spark.sql.execution.ExtractPythonUDFs
+import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, Strategy, execution => sparkexecution}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
-import scala.annotation.tailrec
 import scala.util.{Failure, Success}
 
 /**
@@ -77,6 +71,7 @@ class XDContext protected (@transient val sc: SparkContext,
   def this(sc: SparkContext, config: Config) =
     this(sc, Some(config))
 
+  import XDContext._
 
   /* TODO: Remove the config attributes from the companion object!!!
      This only works because you can only have a SQLContext per running instance
@@ -86,7 +81,7 @@ class XDContext protected (@transient val sc: SparkContext,
      Config should be changed by a map and implicitly converted into `Config` whenever one of its
      methods is called.
      */
-  import XDContext.{catalogConfig, config, xdConfig}
+  import XDContext.{catalogConfig, xdConfig}
 
   xdConfig = userConfig.fold(config) { userConf =>
     userConf.withFallback(config)
@@ -137,8 +132,6 @@ class XDContext protected (@transient val sc: SparkContext,
     }
   }
 
-
-
   @transient
   protected[crossdata] lazy val securityManager = {
 
@@ -185,73 +178,7 @@ class XDContext protected (@transient val sc: SparkContext,
     constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
   }
 
-  object IndexUtils {
 
-    /**
-      * Return if all  attribute in the exprs are indexed columns
-      *
-      * @param condition filter.condition
-      * @param indexedCols
-      * @return
-      */
-    def areAllAttributeIndexedInExpr(condition: Expression, indexedCols: Seq[String]): Boolean = { //TODO: ES capabilities
-
-      @tailrec
-      def helper(remainExpr: Seq[Expression], allValids: Boolean): Boolean = {
-        if(remainExpr.isEmpty) allValids
-        else {
-          val (supportedOperation, foundAttr, isIndexed) = remainExpr.head match {
-            case predicate: Predicate => (isSupportedPredicate(predicate), false, false)
-            case UnresolvedAttribute(name)=> (true, true, indexedCols.contains(name.last))
-            case AttributeReference(name,_,_,_) => (true, true, indexedCols.contains(name))
-            case _ => (true, false, false)
-          }
-          if(supportedOperation) {
-            if (foundAttr) {
-              if (isIndexed) {
-                if (remainExpr.head.children.length > 0) helper(remainExpr.tail ++ remainExpr.head.children, true)
-                else helper(remainExpr.tail, true)
-              } else {
-                false
-              }
-            } else {
-              if (remainExpr.head.children.length > 0) helper(remainExpr.tail ++ remainExpr.head.children, allValids)
-              else helper(remainExpr.tail, allValids)
-            }
-          } else{
-            false
-          }
-        }
-      }
-
-      helper(Seq(condition), false)
-    }
-
-    /**
-      * Check if predicate is supported by ElasticSearch native queries to use the index
-      *
-      * @param predicate
-      * @return
-      */
-    def isSupportedPredicate(predicate: Predicate): Boolean = predicate match {
-      //TODO: Add more filters?? Reference: ElasticSearchQueryProcessor
-      case _: And => true
-      case _: Contains => true
-      case _: EqualTo => true
-      case _: GreaterThan => true
-      case _: GreaterThanOrEqual => true
-      case _: In => true
-      case _: IsNull => true
-      case _: IsNotNull => true
-      case _: LessThan => true
-      case _: LessThanOrEqual => true
-      case _: Or => true
-      case _: StartsWith => true
-
-      case _ => false
-    }
-
-  }
 
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
@@ -267,46 +194,7 @@ class XDContext protected (@transient val sc: SparkContext,
         PreWriteCheck(catalog)
       )
 
-      object XDResolveRelations extends Rule[LogicalPlan] {
 
-        def planWithAvailableIndex(plan: LogicalPlan): Boolean = {
-
-          //Get filters and escape projects to check if plan could be resolved using Indexes
-          @tailrec
-          def helper(filtersConditions: Seq[Expression], actual:LogicalPlan): Boolean = actual match {
-            case logical.Filter(condition, child: LogicalPlan) =>
-              helper(filtersConditions :+ condition, child)
-
-            case p @ logical.Project(_, child: LogicalPlan) =>
-              helper(filtersConditions, child)
-
-            case u: UnresolvedRelation =>
-              //Check if table has index and if there are some Filter that have all its attributes indexed
-              val index = catalog.obtainTableIndex(u.tableIdentifier)
-              if(index.isDefined){
-                val canBeResolvedByFilter = filtersConditions filter { condition =>
-                  IndexUtils.areAllAttributeIndexedInExpr(condition, index.get.indexedCols)
-                }
-                canBeResolvedByFilter.length > 0
-              } else{
-                false
-              }
-
-            case _ => false
-          }
-
-          helper(Seq(), plan)
-        }
-
-        override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
-
-          case  pp if planWithAvailableIndex(pp) =>
-            plan resolveOperators {
-              case unresolvedRelation: UnresolvedRelation =>
-                ExtendedUnresolvedRelation(unresolvedRelation.tableIdentifier, unresolvedRelation)
-            }
-        }
-      }
 
       val preparationRules = Seq(PrepareAggregateAlias)
 
@@ -316,7 +204,7 @@ class XDContext protected (@transient val sc: SparkContext,
           WindowsSubstitution),
         Batch("Preparation", fixedPoint, preparationRules : _*),
         Batch("Resolution", fixedPoint,
-          XDResolveRelations ::
+          WrapRelationWithGlobalIndex(catalog) ::
             ResolveRelations ::
             ResolveReferences ::
             ResolveGroupingAnalytics ::
@@ -343,140 +231,7 @@ class XDContext protected (@transient val sc: SparkContext,
     }
 
   @transient
-  override protected[sql] lazy val optimizer: Optimizer = XDOptimizer
-
-  object XDOptimizer extends Optimizer {
-
-    def convertStrategy(strategy: DefaultOptimizer.Strategy): Strategy = strategy.maxIterations match {
-      case 1 => Once
-      case n => FixedPoint(n)
-    }
-
-    def convertBatches(batch: DefaultOptimizer.Batch): XDOptimizer.Batch =
-      Batch(batch.name, convertStrategy(batch.strategy), batch.rules: _*)
-
-    override protected val batches: Seq[XDOptimizer.Batch] =
-      (DefaultOptimizer.batches map (convertBatches(_))) ++ Seq(Batch("Global indexes phase", FixedPoint(10), CheckGlobalIndexInFilters))
-  }
-
-  object CheckGlobalIndexInFilters extends Rule[LogicalPlan] {
-
-    private def analyze(plan: LogicalPlan): LogicalPlan = {
-      val analyzed = self.analyzer.execute(plan)
-      self.analyzer.checkAnalysis(analyzed)
-      analyzed
-    }
-
-    private def analyzeAndOptimize(plan: LogicalPlan): LogicalPlan = {
-      self.optimizer.execute(analyze(plan))
-    }
-
-    private def optimizeAndToSparkPlan(plan: LogicalPlan): SparkPlan = {
-      self.planner.plan(analyzeAndOptimize(plan)).next()
-    }
-
-    private def schemaToAttribute(schema: StructType): Seq[UnresolvedAttribute] =
-      schema.fields map {field => UnresolvedAttribute(field.name)}
-
-    private def resultPksToLiterals(rows: Array[Row], dataType:DataType): Seq[Literal] = // TODOrow changed
-      rows map { row =>
-        val valTransformed = row.toSeq.head // TODO changed
-        Literal.create(valTransformed, dataType)
-      } //TODO compound PK
-
-    private def buildIndexRequestLogicalPlan(condition: Expression, index: CrossdataIndex): LogicalPlan = {
-
-      val (logical,base) = self.catalog.lookupRelation(index.indexIdentifier.asTableIdentifier) match {
-        case Subquery(_, logicalRelation @ LogicalRelation(relation: BaseRelation, _)) => (logicalRelation,relation)
-      }
-
-      //We need to retrieve all the retrieve cols for use the filter
-      val pkAndColsIndexed: Seq[UnresolvedAttribute] = schemaToAttribute(DDLUtils.extractSchema(Seq(index.pk)++index.indexedCols, base.schema))
-
-      //Old attributes reference have to be updated
-      val convertedCondition = condition transform {
-        case UnresolvedAttribute(name) => (pkAndColsIndexed filter (_.name == name)).head
-        case AttributeReference(name, _, _, _) => (pkAndColsIndexed filter (_.name == name)).head
-      }
-
-      Filter(convertedCondition, Project(pkAndColsIndexed, logical))
-    }
-
-    def combineFiltersAndRelation(filters: Seq[LogicalPlan], relation: LogicalPlan): LogicalPlan =
-      filters.foldRight(relation){(filter, accum) => filter.withNewChildren(Seq(accum))}
-
-
-    def apply(plan: LogicalPlan): LogicalPlan = plan transform {
-
-      case FilterWithIndexLogicalPlan(filters, projects, ExtendedUnresolvedRelation(tableIdentifier, child)) =>
-        val crossdataIndex = self.catalog.asInstanceOf[XDCatalog].obtainTableIndex(tableIdentifier) getOrElse
-          (sys.error("Unexpected error. Can't find index for enhance query with indexes"))
-
-        //Change the filters that has indexed rows, with a Filter IN with ES results or LocalRelation if we don't have results
-        val newFilters: Seq[LogicalPlan] = filters map { filter =>
-          if(IndexUtils.areAllAttributeIndexedInExpr(filter.condition, crossdataIndex.indexedCols)) {
-            val indexLogicalPlan = buildIndexRequestLogicalPlan(filter.condition, crossdataIndex)
-            val indexedRows = XDDataFrame(self, indexLogicalPlan).collect() //TODO: Warning memory issues
-            if (indexedRows.length > 0) {
-
-              //Convert to query with filter IN
-              val lr = child.collectFirst{ case lr@ LogicalRelation(baseRelation, _) => lr }.get
-              val pkSchema = DDLUtils.extractSchema(Seq(crossdataIndex.pk), lr.schema)
-              val pkAttribute =  schemaToAttribute(pkSchema).head
-              analyzeAndOptimize(logical.Filter(In(pkAttribute, resultPksToLiterals(indexedRows,pkSchema.fields.head.dataType)),child))
-
-            } else {
-              LocalRelation(filter.output)
-            }
-          } else {
-            filter
-          }
-        }
-
-        //If LocalRelation appear there are no results
-        val noResults: Option[LocalRelation] = newFilters collectFirst {
-          case localRelation : LocalRelation => localRelation
-        }
-
-        noResults getOrElse {
-          //If projects exists, just remain the first in the tree + Filters + Relation
-          val combined: LogicalPlan = combineFiltersAndRelation(newFilters, child)
-          if(projects.length > 0){
-            analyzeAndOptimize(projects.head.withNewChildren(Seq(combined)))
-          } else {
-            analyzeAndOptimize(combined)
-          }
-        }
-
-    }
-
-
-    object FilterWithIndexLogicalPlan {
-      type ReturnType = (Seq[Filter], Seq[Project], ExtendedUnresolvedRelation)
-
-      def unapply(plan: LogicalPlan): Option[ReturnType] = plan match {
-        case f @ logical.Filter(condition, child: LogicalPlan) =>
-          recoverFilterAndProjects(Seq(f), Seq(), child)
-
-        case _ => None
-      }
-
-      @tailrec
-      def recoverFilterAndProjects(filters: Seq[logical.Filter], projects: Seq[logical.Project], actual:LogicalPlan): Option[ReturnType] = actual match {
-        case f @ logical.Filter(_, child: LogicalPlan) =>
-          recoverFilterAndProjects(filters :+ f, projects, child)
-
-        case p @ logical.Project(_, child: LogicalPlan) =>
-          recoverFilterAndProjects(filters, projects :+ p, child)
-
-        case u: ExtendedUnresolvedRelation =>
-          Some(filters, projects, u)
-
-        case _ => None
-      }
-    }
-  }
-
+  override protected[sql] lazy val optimizer: Optimizer = XDOptimizer(self)
 
   @transient
   class XDPlanner extends sparkexecution.SparkPlanner(this) with XDStrategies {
@@ -620,7 +375,6 @@ class XDContext protected (@transient val sc: SparkContext,
     */
   def checkCatalogConnection: Boolean =
     catalog.checkConnectivity
-
 
 
   def createDataFrame(rows: Seq[Row], schema: StructType): DataFrame =

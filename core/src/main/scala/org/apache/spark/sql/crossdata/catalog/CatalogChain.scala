@@ -58,11 +58,11 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
       case Some(res) => res
     }
 
+
   private def persistentChainedLookup[R](lookup: XDPersistentCatalog => Option[R]): Option[R] =
     persistentCatalogs.view map lookup collectFirst {
       case Some(res) => res
     }
-
 
   /**
    * TemporaryCatalog
@@ -168,10 +168,8 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   override def indexMetadata(tableIdentifier: IndexIdentifier): Option[CrossdataIndex]=
     persistentChainedLookup(_.lookupIndex(tableIdentifier))
 
-  override def tableHasIndex(tableIdentifier: TableIdentifier): Boolean = persistentCatalogs exists (_.tableHasIndex(tableIdentifier))
-
-  override def obtainTableIndex(tableIdentifier: TableIdentifier):Option[CrossdataIndex]=
-    persistentCatalogs map (_.obtainTableIndex(tableIdentifier)) collectFirst {
+  override def indexMetadataByTableIdentifier(tableIdentifier: TableIdentifier):Option[CrossdataIndex]=
+    persistentCatalogs map (_.lookupIndexByTableIdentifier(tableIdentifier)) collectFirst {
       case Some(index) =>index
     }
 
@@ -182,7 +180,6 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   override def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable] =
     persistentChainedLookup(_.lookupTable(tableIdentifier))
-
 
   override def refreshTable(tableIdent: TableIdentifier): Unit =
     persistentCatalogs.foreach(_.refreshCache(tableIdent))
@@ -265,7 +262,6 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   private def executeWithStrCatalogOrEmptyList[R](streamingCatalogOperation: XDStreamingCatalog => Seq[R]): Seq[R] =
     streamingCatalogs.toSeq.flatMap(streamingCatalogOperation)
-
 
   override def lookupApp(alias: String): Option[CrossdataApp] =
     persistentChainedLookup(_.getApp(alias))

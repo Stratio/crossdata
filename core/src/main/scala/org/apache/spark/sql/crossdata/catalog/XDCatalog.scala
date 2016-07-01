@@ -15,7 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.catalog
 
-
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
@@ -90,6 +89,3 @@ with StreamingCatalogAPI {
   def checkConnectivity: Boolean
 
 }
-
-
-
