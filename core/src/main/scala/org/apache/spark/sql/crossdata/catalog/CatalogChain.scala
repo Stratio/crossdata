@@ -132,11 +132,13 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     val strTable = tableIdentifier.unquotedString
     if (!tableExists(tableIdentifier)) throw new RuntimeException(s"Table $strTable can't be deleted because it doesn't exist")
     logInfo(s"Deleting table $strTable from catalog")
-    temporaryCatalogs foreach (_.dropTable(tableIdentifier))
-    persistentCatalogs foreach (_.dropTable(tableIdentifier))
+
     obtainTableIndex(tableIdentifier) map { index =>
       dropIndex(index.indexIdentifier)
     }
+
+    temporaryCatalogs foreach (_.dropTable(tableIdentifier))
+    persistentCatalogs foreach (_.dropTable(tableIdentifier))
   }
 
   override def dropAllTables(): Unit = {
@@ -164,6 +166,11 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     val strIndex = indexIdentifier.unquotedString
     if(indexMetadata(indexIdentifier).isEmpty) throw new RuntimeException(s"Index $strIndex can't be deleted because it doesn't exist")
     logInfo(s"Deleting index ${indexIdentifier.unquotedString} from catalog")
+
+    //First remove table that holds the index
+    if(tableExists(indexIdentifier.asTableIdentifier))
+      dropTable(indexIdentifier.asTableIdentifier)
+
     persistentCatalogs foreach(_.dropIndex(indexIdentifier))
   }
 

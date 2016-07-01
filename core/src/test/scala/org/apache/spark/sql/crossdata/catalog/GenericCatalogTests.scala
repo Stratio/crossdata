@@ -369,7 +369,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     res shouldBe None
 
     val resGenerated = xdContext.catalog.lookupTable(indexIdentifier.asTableIdentifier)
-    res shouldBe None
+    resGenerated shouldBe None
   }
 
   override protected def afterAll() {
