@@ -144,13 +144,4 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     resultsEquals3 shouldBe Array(Row("prueba"))
   }
 
-"The insert in mongo doc with a global index" should "insert in ES too" in {
-
-    val sentence =
-      s"""|INSERT INTO globalIndexDb.proofGlobalIndex(id, name, comments)
-          |VALUES( 1, "foo", "this is a proof of insert in a column that has a global index")
-          |""".stripMargin
-
-    sql(sentence)
-  }
 }
