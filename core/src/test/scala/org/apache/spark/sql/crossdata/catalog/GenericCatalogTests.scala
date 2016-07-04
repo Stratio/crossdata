@@ -261,6 +261,9 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val version="1.5.0"
     val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pk,dataSource,opts,version)
 
+    val crossdataTable = CrossdataTable(tableIdentifier.table, tableIdentifier.database, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
+
     xdContext.catalog.persistIndex(crossdataIndex)
 
     val res=xdContext.catalog.lookupIndex(indexIdentifier)
@@ -279,6 +282,8 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val version="1.5.0"
     val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pk,dataSource,opts,version)
 
+    val crossdataTable = CrossdataTable(tableIdentifier.table, tableIdentifier.database, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.persistIndex(crossdataIndex)
 
     xdContext.catalog.dropIndex(indexIdentifier)
@@ -297,6 +302,8 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val version="1.5.0"
     val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pk,dataSource,opts,version)
 
+    val crossdataTable = CrossdataTable(tableIdentifier.table, tableIdentifier.database, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.persistIndex(crossdataIndex)
 
     val res=xdContext.catalog.indexMetadataByTableIdentifier(tableIdentifier)
@@ -315,6 +322,8 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val version="1.5.0"
     val crossdataIndex=CrossdataIndex(tableIdentifier, indexIdentifier,indexedCols,pk,dataSource,opts,version)
 
+    val crossdataTable = CrossdataTable(tableIdentifier.table, tableIdentifier.database, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.persistIndex(crossdataIndex)
 
     xdContext.catalog.dropAllIndexes()
