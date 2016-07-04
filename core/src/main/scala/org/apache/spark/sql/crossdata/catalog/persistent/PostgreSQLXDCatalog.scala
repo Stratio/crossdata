@@ -92,7 +92,8 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val jdbcConnection = DriverManager.getConnection(url, user, pass)
 
       // CREATE PERSISTENT METADATA TABLE
-      jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA IF NOT EXISTS $db")
+      if(!schemaExists(db, jdbcConnection))
+        jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
 
       jdbcConnection.createStatement().executeUpdate(
         s"""|CREATE TABLE IF NOT EXISTS $db.$table (
