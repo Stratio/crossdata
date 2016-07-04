@@ -51,8 +51,8 @@ class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf:
   private val sessionIDToTableViewID: IMap[SessionID, (TableMapUUID, ViewMapUUID)] = hInstance.getMap(HazelcastCatalogMapId)
 
   // Returns the seq of XDTempCatalog for the new session
-  override def addSession(key: SessionID): Seq[XDTemporaryCatalog] = {
-    // TODO try // TODO check if the session already exists?? and use it or it hsould not happen??
+  override def addSession(key: SessionID): Seq[XDTemporaryCatalog] = { // TODO try
+
     // AddMapCatalog for local/cache interaction
     val localCatalog = addNewMapCatalog(key)
 
@@ -65,7 +65,6 @@ class HazelcastSessionCatalogManager(hInstance: HazelcastInstance, catalystConf:
     Seq(localCatalog, hazelcastCatalog)
   }
 
-  // TODO refactor
   override def getSession(key: SessionID): Try[Seq[XDTemporaryCatalog]] =
     for {
       (tableUUID, viewUUID) <- checkNotNull(sessionIDToTableViewID.get(key))

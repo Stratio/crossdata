@@ -24,7 +24,6 @@ object MongodbConnection {
 
   import MongodbConfigReader._
 
-  // TODO refactor datasource
   def withClientDo[T](config: Config)(code: MongoClient => T): T = {
     using(openClient(config)) {
       code

@@ -21,6 +21,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.Logging
 
+import scala.util.Try
+
 
 object CoreConfig {
 
@@ -55,8 +57,7 @@ object CoreConfig {
   val SecurityPasswordConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$PasswordConfigKey"
   val SecuritySessionConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$SessionConfigKey"
 
-  //TODO this is read only by the server, but the core should use it, shouldn't it?
-  val SparkSqlConfigPrefix = "config.spark.sql"
+  val SparkSqlConfigPrefix = "config.spark.sql" //WARNING!! XDServer is using this path to read its parameters
 }
 
 trait CoreConfig extends Logging {
@@ -102,9 +103,15 @@ trait CoreConfig extends Logging {
       }
     }
 
-    // TODO Improve implementation
     // System properties
-    defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
+    val systemPropertiesConfig =
+      Try(
+        ConfigFactory.parseProperties(System.getProperties).getConfig(ParentConfigName)
+      ).getOrElse(
+        ConfigFactory.parseProperties(System.getProperties)
+      )
+
+    defaultConfig = systemPropertiesConfig.withFallback(defaultConfig)
 
     ConfigFactory.load(defaultConfig)
   }
