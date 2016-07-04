@@ -44,7 +44,7 @@ case class XDOptimizer(xdContext: XDContext) extends Optimizer {
     Batch(batch.name, convertStrategy(batch.strategy), batch.rules: _*)
 
   override protected val batches: Seq[Batch] =
-    (DefaultOptimizer.batches map (convertBatches(_))) ++ Seq(Batch("Global indexes phase", FixedPoint(10), CheckGlobalIndexInFilters(xdContext)))
+    (DefaultOptimizer.batches map (convertBatches(_))) ++ Seq(Batch("Global indexes phase", Once, CheckGlobalIndexInFilters(xdContext)))
 }
 
 
@@ -53,7 +53,7 @@ case class CheckGlobalIndexInFilters(xdContext: XDContext) extends Rule[LogicalP
 
   def apply(plan: LogicalPlan): LogicalPlan = plan transform {
 
-    case FilterWithIndexLogicalPlan(filters, projects, ExtendedUnresolvedRelation(tableIdentifier, child)) =>
+    case FilterWithIndexLogicalPlan(filters, projects, ExtendedUnresolvedRelation(tableIdentifier, relation)) =>
 
       val crossdataIndex = {
         xdContext.catalog.indexMetadataByTableIdentifier(tableIdentifier)
@@ -69,11 +69,11 @@ case class CheckGlobalIndexInFilters(xdContext: XDContext) extends Rule[LogicalP
           if (indexedRows.nonEmpty) {
 
             //Convert to query with filter IN
-            val lr = child.collectFirst { case lr@LogicalRelation(baseRelation, _) => lr }.get
+            val lr = relation.collectFirst { case lr: LogicalRelation => lr }.get
             val pkSchema = DDLUtils.extractSchema(Seq(crossdataIndex.pk), lr.schema)
             val pkAttribute = schemaToAttribute(pkSchema).head
             analyzeAndOptimize(
-              logical.Filter(In(pkAttribute, resultPksToLiterals(indexedRows, pkSchema.fields.head.dataType)), child)
+              logical.Filter(In(pkAttribute, resultPksToLiterals(indexedRows, pkSchema.fields.head.dataType)), relation)
             )
 
           } else {
@@ -91,7 +91,7 @@ case class CheckGlobalIndexInFilters(xdContext: XDContext) extends Rule[LogicalP
 
       noResults getOrElse {
         //If projects exists, just remain the first in the tree + Filters + Relation
-        val combined: LogicalPlan = combineFiltersAndRelation(newFilters, child)
+        val combined: LogicalPlan = combineFiltersAndRelation(newFilters, relation)
         if (projects.nonEmpty) {
           analyzeAndOptimize(projects.head.withNewChildren(Seq(combined)))
         } else {
@@ -157,11 +157,16 @@ object FilterWithIndexLogicalPlan {
   }
 
   @tailrec
-  def recoverFilterAndProjects(filters: Seq[logical.Filter], projects: Seq[logical.Project], actual:LogicalPlan): Option[ReturnType] = actual match {
-    case f @ logical.Filter(_, child: LogicalPlan) =>
+  def recoverFilterAndProjects(
+                                filters: Seq[logical.Filter],
+                                projects: Seq[logical.Project],
+                                current: LogicalPlan
+                              ): Option[ReturnType] = current match {
+
+    case f@logical.Filter(_, child: LogicalPlan) =>
       recoverFilterAndProjects(filters :+ f, projects, child)
 
-    case p @ logical.Project(_, child: LogicalPlan) =>
+    case p@logical.Project(_, child: LogicalPlan) =>
       recoverFilterAndProjects(filters, projects :+ p, child)
 
     case u: ExtendedUnresolvedRelation =>
