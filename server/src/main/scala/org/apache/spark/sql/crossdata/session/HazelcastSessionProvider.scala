@@ -17,7 +17,6 @@ package org.apache.spark.sql.crossdata.session
 
 import com.hazelcast.config.{GroupConfig, XmlConfigBuilder}
 import com.hazelcast.core.Hazelcast
-import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
@@ -25,8 +24,6 @@ import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata._
-import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator
-import org.apache.spark.sql.crossdata.catalog.temporary.XDTemporaryCatalogWithInvalidation
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.config.CoreConfig
@@ -83,10 +80,7 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
   // TODO scalaWrapper // scalaHazel
   // TODO snapshot from (list(session) + addlistener)?? (
   private val sessionIDToSQLProps: java.util.Map[SessionID, Map[String,String]] = hInstance.getMap(SqlConfMapId)
-  private val sessionIDToTempCatalogs = new HazelcastSessionCatalogResourceManager(hInstance, sharedState.sqlConf)
-
-  private def catalogInvalidator(sessionID: SessionID): CacheInvalidator =
-    new HazelcastCacheInvalidator(sessionID, sessionIDToTempCatalogs.invalidationTopic)
+  private val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(hInstance, sharedState.sqlConf)
 
   // TODO addSessionsToAllMap && recieveSpecificOptions
   override def newSession(sessionID: SessionID): Try[XDSession] = // TODO try vs future
@@ -127,12 +121,8 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
                             sessionID: SessionID,
                             sqlConf: SQLConf,
                             xDTemporaryCatalogs: Seq[XDTemporaryCatalog]): XDSession = {
-
-    val (firstLevel, rest) = xDTemporaryCatalogs.splitAt(1)
-    val tempCatalogs = firstLevel.map(new XDTemporaryCatalogWithInvalidation(_, catalogInvalidator(sessionID))) ++ rest
-    val sessionState = new XDSessionState(sqlConf, tempCatalogs)
+    val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalogs)
     new XDSession(sharedState, sessionState)
-
   }
 
 }

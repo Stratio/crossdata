@@ -18,12 +18,14 @@ package org.apache.spark.sql.crossdata.session
 import java.util.UUID
 
 import com.hazelcast.core.{HazelcastInstance, IMap, Message, MessageListener}
+import com.stratio.crossdata.util.CacheInvalidator
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
+import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator
 import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator.{CacheInvalidationEvent, ResourceInvalidation, ResourceInvalidationForAllSessions}
-import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog, MapCatalog}
+import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog, XDTemporaryCatalogWithInvalidation}
 
 import scala.collection.mutable
 import scala.util.Try
@@ -59,7 +61,6 @@ trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidati
   }
 
 
-
   override def onMessage(message: Message[CacheInvalidationEvent]): Unit =
     Option(message.getMessageObject).filterNot(
       _ => message.getPublishingMember equals hInstance.getCluster.getLocalMember
@@ -70,7 +71,7 @@ trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidati
 
 }
 
-class HazelcastSessionCatalogResourceManager(
+class HazelcastSessionCatalogManager(
                                               override protected val hInstance: HazelcastInstance,
                                               catalystConf: CatalystConf
                                             ) extends HazelcastSessionResourceManager[Seq[XDTemporaryCatalog]] {
@@ -82,8 +83,11 @@ class HazelcastSessionCatalogResourceManager(
 
   override protected val topicName: String = "session-rec-catalog"
 
-  private val sessionIDToMapCatalog: mutable.Map[SessionID, MapCatalog] = mutable.Map.empty
+  private val sessionIDToMapCatalog: mutable.Map[SessionID, XDTemporaryCatalog] = mutable.Map.empty
   private val sessionIDToTableViewID: IMap[SessionID, (TableMapUUID, ViewMapUUID)] = hInstance.getMap(HazelcastCatalogMapId)
+
+  private def catalogInvalidator(sessionID: SessionID): CacheInvalidator =
+    new HazelcastCacheInvalidator(sessionID, invalidationTopic)
 
   // Returns the seq of XDTempCatalog for the new session
   override def newResource(key: SessionID): Seq[XDTemporaryCatalog] = {
@@ -145,8 +149,12 @@ class HazelcastSessionCatalogResourceManager(
     (hInstance.getMap[K, V](randomUUID.toString), randomUUID)
   }
 
-  private def addNewMapCatalog(sessionID: SessionID): HashmapCatalog = {
-    val localCatalog = new HashmapCatalog(catalystConf)
+  private def addNewMapCatalog(sessionID: SessionID): XDTemporaryCatalog = {
+    val localCatalog = new XDTemporaryCatalogWithInvalidation(
+      new HashmapCatalog(catalystConf),
+      catalogInvalidator(sessionID)
+    )
+
     sessionIDToMapCatalog.put(sessionID, localCatalog)
     localCatalog
   }
