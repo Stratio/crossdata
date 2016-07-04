@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver
+package com.stratio.crossdata.driver.globalindex
 
 import com.mongodb.casbah.MongoClient
 import com.sksamuel.elastic4s.ElasticClient

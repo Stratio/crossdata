@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver
+package com.stratio.crossdata.driver.globalindex
 
-import com.mongodb.DBObject
 import com.mongodb.casbah.commons.MongoDBObject
-import com.sksamuel.elastic4s.ElasticDsl
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.crossdata.ExecutionType
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
@@ -55,40 +52,6 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
       MongoDBObject("id" -> 13, "name" -> "prueba2", "comments" -> "one comment fail", "other" -> 5)
     )
 
-  }
-
-  protected override def afterAll(): Unit = {
-
-    mongoClient(mongoTestDatabase).dropDatabase()
-
-    elasticClient.execute{
-      deleteIndex(defaultIndexES)
-    }.await
-
-
-    super.afterAll()
-  }
-
-  "The Mongo connector" should "execute a CREATE GLOBAL INDEX with select *" in {
-
-    val sentence =
-      s"""|CREATE GLOBAL INDEX myIndex
-         |ON globalIndexDb.proofGlobalIndex (other)
-         |WITH PK id
-         |USING com.stratio.crossdata.connector.elasticsearch
-         |OPTIONS (
-         | es.nodes '$ElasticHost',
-         | es.port '$ElasticRestPort',
-         | es.nativePort '$ElasticNativePort',
-         | es.cluster '$ElasticClusterName'
-         |)""".stripMargin
-
-    sql(sentence)
-
-    val results = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
-
-    results should have length 0 //No indexed data
-
     elasticClient.execute {
       index into "gidx" / "myIndex" fields(
         "id" -> 11,
@@ -105,39 +68,81 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
       flush index "gidx"
     }.await
 
+    val sentence =
+      s"""|CREATE GLOBAL INDEX myIndex
+          |ON globalIndexDb.proofGlobalIndex (other)
+          |WITH PK id
+          |USING com.stratio.crossdata.connector.elasticsearch
+          |OPTIONS (
+          | es.nodes '$ElasticHost',
+          | es.port '$ElasticRestPort',
+          | es.nativePort '$ElasticNativePort',
+          | es.cluster '$ElasticClusterName'
+          |)""".stripMargin
+
+    sql(sentence)
+
+  }
+
+  protected override def afterAll(): Unit = {
+
+    mongoClient(mongoTestDatabase).dropDatabase()
+
+    elasticClient.execute{
+      deleteIndex(defaultIndexES)
+    }.await
+
+    super.afterAll()
+  }
+
+  it should "execute a select * where indexedFilter is greater than" in {
+
     val resultsAfter = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
 
     resultsAfter should have length 1
     resultsAfter shouldBe Array(Row(11, "prueba", "one comment", 12))
+  }
 
+  it should "execute a select * where indexedFilter equals to" in {
     val resultsEquals = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
 
     resultsEquals should have length 1
     resultsEquals shouldBe Array(Row(13, "prueba2", "one comment fail", 5))
+  }
 
+  it should "execute a select col where indexedFilter is greater than" in {
     val resultsAfter2 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
 
     resultsAfter2 should have length 1
     resultsAfter2 shouldBe Array(Row("prueba"))
+  }
 
+  it should "execute a select col where indexedFilter equals to" in {
     val resultsEquals2 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
 
     resultsEquals2 should have length 1
     resultsEquals2 shouldBe Array(Row("prueba2"))
+  }
 
+  it should "execute a select col where indexedFilter equals to using multiple projects via DDL" in {
     val resultsEquals3 = xdContext.table("globalIndexDb.proofGlobalIndex").select("name", "other").where($"other" equalTo 5).select("name").collect()
     resultsEquals3 should have length 1
     resultsEquals3 shouldBe Array(Row("prueba2"))
-
-    //Mix
-    //val resultsEquals3 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10 AND name LIKE '*prueba*'").collect()
-
-    //resultsEquals3 should have length 1
-    //resultsEquals3 shouldBe Array(Row("prueba2"))
-
   }
 
-  //TODO: More tests and remove this properties from here!!!!!!!!!!!
+  it should "execute a select indexedCol where indexedFilter equals to" in {
+    val resultsEquals2 = sql(s"select other from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
+
+    resultsEquals2 should have length 1
+    resultsEquals2 shouldBe Array(Row(5))
+  }
+
+  it should "support filters mixed with indexedCols" in {
+    val resultsEquals3 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10 AND name LIKE '*prueba*'").collect()
+
+    resultsEquals3 should have length 1
+    resultsEquals3 shouldBe Array(Row("prueba2"))
+  }
 
 "The insert in mongo doc with a global index" should "insert in ES too" in {
 
