@@ -32,7 +32,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
   protected override def beforeAll(): Unit = {
     super.beforeAll()
 
-    //Create test tables //TODO: REMOVE PARAMETEEEEEERS
+    //Create test tables
     val createTable1 =
       s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String, other Integer)
       USING $MongoSourceProvider
