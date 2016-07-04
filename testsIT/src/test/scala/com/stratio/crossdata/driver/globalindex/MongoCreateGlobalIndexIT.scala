@@ -37,7 +37,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
       s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String, other Integer)
       USING $MongoSourceProvider
           |OPTIONS (
-          |host '127.0.0.1:27017',
+          |host '$MongoHost:$MongoPort',
           |database 'globalIndexDb',
           |collection 'proofGlobalIndex'
           |)
