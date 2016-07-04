@@ -101,7 +101,6 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
       xdContext.tableNames() should contain (s"$Index.$Type")
       xdContext.tableNames() should not contain s"$Index.NewMapping"
     }
-
   }
 
   it should "fail when infer schema with bad es.resource" in {
@@ -158,7 +157,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
         sql("SHOW TABLES").count should be > 1l
         xdContext.tableNames().length should be > 1
 
-      }finally {
+      } finally {
         cleanTestData(client, "index_test")
       }
     }
@@ -187,8 +186,8 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
       //Experimentation
       an [RuntimeException] should be thrownBy sql(importQuery)
-    }
 
+    }
   }
 
   lazy val connectionOptions: Map[String, String] = Map(

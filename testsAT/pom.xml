@@ -13,6 +13,7 @@
     <artifactId>parent_2.10</artifactId>
     <name>Stratio Crossdata TestAT</name>
     <version>1.5.0-SNAPSHOT</version>
+
     <properties>
         <scala.binary.version>2.10</scala.binary.version>
         <scala.version>2.10.4</scala.version>
