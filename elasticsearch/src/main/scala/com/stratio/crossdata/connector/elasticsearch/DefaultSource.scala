@@ -1,27 +1,27 @@
 /**
-Licensed to Elasticsearch under one or more contributor
-license agreements. See the NOTICE file distributed with
-this work for additional information regarding copyright
-ownership. Elasticsearch licenses this file to you under
-the Apache License, Version 2.0 (the "License"); you may
-not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
-
-Modifications and adaptations - Copyright (C) 2015 Stratio (http://stratio.com)
+  * Licensed to Elasticsearch under one or more contributor
+  * license agreements. See the NOTICE file distributed with
+  * this work for additional information regarding copyright
+  * ownership. Elasticsearch licenses this file to you under
+  * the Apache License, Version 2.0 (the "License"); you may
+  * not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  **
+  *http://www.apache.org/licenses/LICENSE-2.0
+  **
+  *Unless required by applicable law or agreed to in writing,
+  *software distributed under the License is distributed on an
+  *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  *KIND, either express or implied.  See the License for the
+  *specific language governing permissions and limitations
+  *under the License.
+  **
+  *Modifications and adaptations - Copyright (C) 2015 Stratio (http://stratio.com)
 */
 package com.stratio.crossdata.connector.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.IndexType
+import com.sksamuel.elastic4s.{IndexAndType, IndexesAndType}
 import com.sksamuel.elastic4s.mappings._
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.TableInventory.Table
@@ -50,14 +50,12 @@ object DefaultSource {
 /**
  * This class is used by Spark to create a new  [[ElasticsearchXDRelation]]
  */
-class DefaultSource
-  extends RelationProvider
-  with SchemaRelationProvider
-  with CreatableRelationProvider
-  with TableInventory
-  with DataSourceRegister
-  with TableManipulation
-  with SparkLoggerComponent {
+class DefaultSource extends RelationProvider with SchemaRelationProvider
+                                              with CreatableRelationProvider
+                                              with TableInventory
+                                              with DataSourceRegister
+                                              with TableManipulation
+                                              with SparkLoggerComponent {
 
   import DefaultSource._
 
@@ -95,7 +93,8 @@ class DefaultSource
 
   /**
    * Validates the input parameters, defined in https://www.elastic.co/guide/en/elasticsearch/hadoop/current/configuration.html
-   * @param parameters a Map with the configurations parameters
+    *
+    * @param parameters a Map with the configurations parameters
    * @return the validated map.
    */
   private def params(parameters: Map[String, String]) = {
@@ -157,18 +156,29 @@ class DefaultSource
       }
     }
 
-    val indexType = IndexType(index, typeName)
+    val indexType = IndexAndType(index, typeName)
+
     try {
-      ElasticSearchConnectionUtils.withClientDo(options){ client =>
+      ElasticSearchConnectionUtils.withClientDo(options) { client =>
+        if(!client.execute(indexExists(index)).await.isExists){
+          client.execute {
+            createIndex(index).mappings()
+          }.await
+        }
+      }
+    }
+
+    try {
+      ElasticSearchConnectionUtils.withClientDo(options) { client =>
         client.execute {
-          put.mapping(indexType) as elasticSchema
+          putMapping(indexType) fields elasticSchema
         }.await
       }
       Option(Table(typeName, Option(index), Option(schema)))
     } catch {
       case e: Exception =>
         logError(e.getMessage, e)
-        sys.error(e.getMessage)
+        None
     }
   }
 
@@ -176,12 +186,12 @@ class DefaultSource
                                  options: Map[String, String]): Try[Unit] = {
 
     val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).get
-    val indexType = IndexType(index, typeName)
+    val indexType = IndexAndType(index, typeName)
 
     Try {
       ElasticSearchConnectionUtils.withClientDo(options){ client =>
         client.execute {
-          deleteMapping(indexType)
+          deleteIndex(index)
         }.await
       }
     }

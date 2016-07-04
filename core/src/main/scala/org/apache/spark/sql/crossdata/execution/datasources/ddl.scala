@@ -168,7 +168,7 @@ private[crossdata] case class DropExternalTable(tableIdentifier: TableIdentifier
         tableManipulation.dropExternalTable(sqlContext, crossadataTable.opts) map { result =>
           sqlContext.catalog.dropTable(tableIdentifier)
           Seq.empty
-        } getOrElse( sys.error("Impossible to drop external table") )
+        } getOrElse(sys.error("Impossible to drop external table") )
 
       case _ =>
         sys.error("The Datasource does not support DROP EXTERNAL TABLE command")

@@ -2,6 +2,11 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
+## 1.5.0 (Upcoming)
+
+## 1.4.0 (July 2016)
+* Upgrade to Elasticsearch 2.3
+
 ## 1.3.0 (June 2016)
 * Upgrade to Spark 1.6.1
 * Support for INSERT INTO
