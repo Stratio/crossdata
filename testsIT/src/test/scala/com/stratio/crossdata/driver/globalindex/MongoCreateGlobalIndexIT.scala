@@ -97,51 +97,51 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
   it should "execute a select * where indexedFilter is greater than" in {
 
-    val resultsAfter = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
+    val result = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
 
-    resultsAfter should have length 1
-    resultsAfter shouldBe Array(Row(11, "prueba", "one comment", 12))
+    result should have length 1
+    result shouldBe Array(Row(11, "prueba", "one comment", 12))
   }
 
   it should "execute a select * where indexedFilter equals to" in {
-    val resultsEquals = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
+    val result = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
 
-    resultsEquals should have length 1
-    resultsEquals shouldBe Array(Row(13, "prueba2", "one comment fail", 5))
+    result should have length 1
+    result shouldBe Array(Row(13, "prueba2", "one comment fail", 5))
   }
 
   it should "execute a select col where indexedFilter is greater than" in {
-    val resultsAfter2 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
+    val result = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
 
-    resultsAfter2 should have length 1
-    resultsAfter2 shouldBe Array(Row("prueba"))
+    result should have length 1
+    result shouldBe Array(Row("prueba"))
   }
 
   it should "execute a select col where indexedFilter equals to" in {
-    val resultsEquals2 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
+    val result = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
 
-    resultsEquals2 should have length 1
-    resultsEquals2 shouldBe Array(Row("prueba2"))
+    result should have length 1
+    result shouldBe Array(Row("prueba2"))
   }
 
   it should "execute a select col where indexedFilter equals to using multiple projects via DDL" in {
-    val resultsEquals3 = xdContext.table("globalIndexDb.proofGlobalIndex").select("name", "other").where($"other" equalTo 5).select("name").collect()
-    resultsEquals3 should have length 1
-    resultsEquals3 shouldBe Array(Row("prueba2"))
+    val result = xdContext.table("globalIndexDb.proofGlobalIndex").select("name", "other").where($"other" equalTo 5).select("name").collect()
+    result should have length 1
+    result shouldBe Array(Row("prueba2"))
   }
 
   it should "execute a select indexedCol where indexedFilter equals to" in {
-    val resultsEquals2 = sql(s"select other from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
+    val result = sql(s"select other from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
 
-    resultsEquals2 should have length 1
-    resultsEquals2 shouldBe Array(Row(5))
+    result should have length 1
+    result shouldBe Array(Row(5))
   }
 
   it should "support filters mixed with indexedCols" in {
-    val resultsEquals3 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10 AND name LIKE '%prueba%'").collect()
+    val result = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10 AND name LIKE '%prueba%'").collect()
 
-    resultsEquals3 should have length 1
-    resultsEquals3 shouldBe Array(Row("prueba"))
+    result should have length 1
+    result shouldBe Array(Row("prueba"))
   }
 
 }
