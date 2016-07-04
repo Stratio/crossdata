@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver
+package com.stratio.crossdata.driver.globalindex
 
-import com.mongodb.DBObject
 import com.mongodb.casbah.commons.MongoDBObject
-import com.sksamuel.elastic4s.ElasticDsl
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.crossdata.ExecutionType
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
@@ -68,6 +65,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     super.afterAll()
   }
+
 
   "The Mongo connector" should "execute a CREATE GLOBAL INDEX with select *" in {
 
