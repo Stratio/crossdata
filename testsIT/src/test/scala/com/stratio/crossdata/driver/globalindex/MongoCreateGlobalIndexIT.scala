@@ -32,7 +32,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
   protected override def beforeAll(): Unit = {
     super.beforeAll()
 
-    //Create test tables
+    //Create test tables //TODO: REMOVE PARAMETEEEEEERS
     val createTable1 =
       s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String, other Integer)
       USING $MongoSourceProvider
@@ -52,6 +52,20 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
       MongoDBObject("id" -> 13, "name" -> "prueba2", "comments" -> "one comment fail", "other" -> 5)
     )
 
+    val sentence =
+      s"""|CREATE GLOBAL INDEX myIndex
+          |ON globalIndexDb.proofGlobalIndex (other)
+          |WITH PK id
+          |USING com.stratio.crossdata.connector.elasticsearch
+          |OPTIONS (
+          | es.nodes '$ElasticHost',
+          | es.port '$ElasticRestPort',
+          | es.nativePort '$ElasticNativePort',
+          | es.cluster '$ElasticClusterName'
+          |)""".stripMargin
+
+    sql(sentence)
+
     elasticClient.execute {
       index into "gidx" / "myIndex" fields(
         "id" -> 11,
@@ -67,20 +81,6 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     elasticClient.execute {
       flush index "gidx"
     }.await
-
-    val sentence =
-      s"""|CREATE GLOBAL INDEX myIndex
-          |ON globalIndexDb.proofGlobalIndex (other)
-          |WITH PK id
-          |USING com.stratio.crossdata.connector.elasticsearch
-          |OPTIONS (
-          | es.nodes '$ElasticHost',
-          | es.port '$ElasticRestPort',
-          | es.nativePort '$ElasticNativePort',
-          | es.cluster '$ElasticClusterName'
-          |)""".stripMargin
-
-    sql(sentence)
 
   }
 
@@ -138,10 +138,10 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
   }
 
   it should "support filters mixed with indexedCols" in {
-    val resultsEquals3 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10 AND name LIKE '*prueba*'").collect()
+    val resultsEquals3 = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10 AND name LIKE '%prueba%'").collect()
 
     resultsEquals3 should have length 1
-    resultsEquals3 shouldBe Array(Row("prueba2"))
+    resultsEquals3 shouldBe Array(Row("prueba"))
   }
 
 "The insert in mongo doc with a global index" should "insert in ES too" in {
