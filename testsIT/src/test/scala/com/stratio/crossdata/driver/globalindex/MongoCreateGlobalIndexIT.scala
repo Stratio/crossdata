@@ -38,7 +38,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
       USING $MongoSourceProvider
           |OPTIONS (
           |host '$MongoHost:$MongoPort',
-          |database 'globalIndexDb',
+          |database '$mongoTestDatabase',
           |collection 'proofGlobalIndex'
           |)
       """.stripMargin.replaceAll("\n", " ")
