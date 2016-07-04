@@ -4,12 +4,15 @@ import java.util.UUID
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
-import com.hazelcast.config.{GroupConfig, XmlConfigBuilder}
+import com.hazelcast.config.Config
 import com.hazelcast.core.{Hazelcast, HazelcastInstance}
 import org.apache.spark.sql.catalyst.EmptyConf
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 import org.apache.spark.sql.crossdata.session.HazelcastSessionCatalogManagerSpec.{InvalidatedSession, ProbedHazelcastSessionCatalogManager}
 import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
+
+import scala.concurrent.duration._
 
 object HazelcastSessionCatalogManagerSpec {
 
@@ -56,6 +59,19 @@ class HazelcastSessionCatalogManagerSpec extends TestKit(ActorSystem("HZSessionC
 
       }
 
+      "be invalidated if the change consists on altering one of the managed in-memory catalogs" in {
+
+        catalogManager.newResource(sessionID)
+        expectMsg(InvalidatedSession(sessionID))
+
+        val catalog: XDTemporaryCatalog = catalogManager.getResource(sessionID).get.head
+        expectNoMsg()
+
+        catalog.dropAllTables()
+        expectMsg(InvalidatedSession(sessionID))
+
+      }
+
 
     }
 
@@ -63,11 +79,7 @@ class HazelcastSessionCatalogManagerSpec extends TestKit(ActorSystem("HZSessionC
 
   // Test plumbing
 
-  private def createHazelcastInstance: HazelcastInstance = {
-    val xmlConfig = new XmlConfigBuilder().build()
-    xmlConfig.setGroupConfig(new GroupConfig("test"))
-    Hazelcast.newHazelcastInstance(xmlConfig)
-  }
+  private def createHazelcastInstance: HazelcastInstance = Hazelcast.newHazelcastInstance(new Config())
 
   var catalogManager: HazelcastSessionCatalogManager = _
   var probedCatalogManager: HazelcastSessionCatalogManager = _

@@ -83,6 +83,8 @@ class HazelcastSessionCatalogManager(
 
   override protected val topicName: String = "session-rec-catalog"
 
+  invalidationTopic
+
   private val sessionIDToMapCatalog: mutable.Map[SessionID, XDTemporaryCatalog] = mutable.Map.empty
   private val sessionIDToTableViewID: IMap[SessionID, (TableMapUUID, ViewMapUUID)] = hInstance.getMap(HazelcastCatalogMapId)
 
