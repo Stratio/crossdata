@@ -74,7 +74,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
       case provider ~ ops =>
-        ImportTablesUsingWithOptions(provider.asInstanceOf[String], ops.getOrElse(Map.empty))
+        ImportTablesUsingWithOptions(provider, ops.getOrElse(Map.empty))
     }
 
   protected lazy val dropTable: Parser[LogicalPlan] =

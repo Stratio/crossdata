@@ -24,7 +24,7 @@ import org.apache.spark.sql.crossdata.XDSession
 import org.apache.spark.sql.crossdata.catalog.CatalogChain
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDTemporaryCatalog}
-import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog}
+import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog, XDTemporaryCatalogWithInvalidation}
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.junit.runner.RunWith
 import org.scalatest.Entry
@@ -49,7 +49,8 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     val tempCatalogs = tempCatalogsFromSession(session)
 
     tempCatalogs should have length 2
-    tempCatalogs.head shouldBe a[HashmapCatalog]
+    tempCatalogs.head shouldBe a[XDTemporaryCatalogWithInvalidation]
+    tempCatalogs.head.asInstanceOf[XDTemporaryCatalogWithInvalidation].underlying shouldBe a[HashmapCatalog]
     tempCatalogs(1) shouldBe a[HazelcastCatalog]
 
     hazelcastSessionProvider.close()
