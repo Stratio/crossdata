@@ -16,6 +16,7 @@
 package com.stratio.crossdata.driver.globalindex
 
 import com.sksamuel.elastic4s.ElasticDsl._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.IndexIdentifier
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.apache.spark.sql.crossdata.execution.datasources.CreateGlobalIndex
@@ -81,6 +82,8 @@ class CreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     typeExistResponse.isExists shouldBe true
 
+    xdContext.dropGlobalIndex(IndexIdentifier(indexName, CreateGlobalIndex.DefaultDatabaseName))
+
   }
 
 
@@ -101,8 +104,8 @@ class CreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     sql(createTable1)
 
     val sentence =
-      s"""|CREATE GLOBAL INDEX $indexName
-          |ON globalIndexDb.proofGlobalIndex (other)
+      s"""|CREATE GLOBAL INDEX fail_index
+          |ON $tempTableId (other)
           |WITH PK id
           |USING com.stratio.crossdata.connector.elasticsearch
           |OPTIONS (
@@ -114,7 +117,7 @@ class CreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     the [RuntimeException] thrownBy {
       sql(sentence)
-    } should have message s"Cannot create the index. Table $tempTableId doesn't exist or is temporary"
+    } should have message s"Cannot create the index. Table `$tempTableId` doesn't exist or is temporary"
 
   }
 }

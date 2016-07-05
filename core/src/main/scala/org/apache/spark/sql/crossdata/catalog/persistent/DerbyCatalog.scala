@@ -308,7 +308,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
         prepped.execute()
       } else {
         //TODO: Support change index metadata?
-        sys.error("Index already exists")
+        sys.error(s"A global index already exists in table ${crossdataIndex.tableIdentifier.unquotedString}")
       }
     } finally {
       connection.setAutoCommit(true)

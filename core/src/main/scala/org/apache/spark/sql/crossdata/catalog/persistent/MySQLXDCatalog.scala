@@ -19,9 +19,8 @@ import java.sql.{Connection, DriverManager, ResultSet}
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
 
 import scala.annotation.tailrec
 
@@ -389,7 +388,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
         prepped.execute()
       } else {
         //TODO: Support change index metadata?
-        sys.error("Index already exists")
+        sys.error(s"A global index already exists in table ${crossdataIndex.tableIdentifier.unquotedString}")
       }
     } finally {
       connection.setAutoCommit(true)
