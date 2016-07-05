@@ -22,13 +22,13 @@ import com.stratio.crossdata.connector.elasticsearch.ElasticSearchConnectionUtil
 import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
-import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, ProjectReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{Row, sources}
 import org.elasticsearch.action.search.SearchResponse
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 object ElasticSearchQueryProcessor {
 
@@ -68,9 +68,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       rows
     }
 
-    val plan = validatedNativePlan getOrElse( sys.error("Invalid native plan") )
-
-    val result: Try[Array[Row]] = plan match {
+    val result: Try[Array[Row]] = validatedNativePlan.map {
       case (baseLogicalPlan, limit) =>
         val requiredColumns = baseLogicalPlan match {
           case SimpleLogicalPlan(projects, _, _, _) =>
@@ -82,10 +80,10 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
         val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
 
-        withClientDo(parameters){ esClient =>
+        withClientDo(parameters) { esClient =>
           tryRows(requiredColumns, finalQuery, esClient)
         }
-    }
+    }.getOrElse(Failure(new RuntimeException("Invalid native plan")))
 
     result.toOption
   }
