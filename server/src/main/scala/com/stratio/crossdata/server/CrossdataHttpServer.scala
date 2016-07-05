@@ -65,12 +65,10 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
         }.runFold(Map.empty[String, Any])((map, tuple) => map + tuple)
 
-        val done = allPartsF.onSuccess {
-          case _ => logger.info("Recieved file")
-        }
-        // when processing have finished create a response for the user
 
+        // when processing have finished create a response for the user
         onSuccess(allPartsF) { allParts =>
+          logger.info("Recieved file")
           complete {
             val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
             val hdfsPath = writeJarToHdfs(hdfsConfig, path)
