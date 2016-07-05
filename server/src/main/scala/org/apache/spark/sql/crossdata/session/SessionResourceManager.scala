@@ -85,7 +85,7 @@ class HazelcastSessionCatalogManager(
 
   invalidationTopic
 
-  private val sessionIDToMapCatalog: mutable.Map[SessionID, XDTemporaryCatalog] = mutable.Map.empty
+  private val sessionIDToMapCatalog: mutable.Map[SessionID, XDTemporaryCatalogWithInvalidation] = mutable.Map.empty
   private val sessionIDToTableViewID: IMap[SessionID, (TableMapUUID, ViewMapUUID)] = hInstance.getMap(HazelcastCatalogMapId)
 
   private def catalogInvalidator(sessionID: SessionID): CacheInvalidator =
@@ -150,7 +150,7 @@ class HazelcastSessionCatalogManager(
     (hInstance.getMap[K, V](randomUUID.toString), randomUUID)
   }
 
-  private def addNewMapCatalog(sessionID: SessionID): XDTemporaryCatalog = {
+  private def addNewMapCatalog(sessionID: SessionID): XDTemporaryCatalogWithInvalidation = {
     val localCatalog = new XDTemporaryCatalogWithInvalidation(
       new HashmapCatalog(catalystConf),
       catalogInvalidator(sessionID)
