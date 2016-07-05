@@ -18,9 +18,17 @@ package org.apache.spark.sql.crossdata
 import java.util.UUID
 
 import com.typesafe.config.Config
+import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
+import org.apache.spark.sql.SQLConf
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
+import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
+import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
+import org.apache.spark.sql.crossdata.config.CoreConfig
 
-import scala.util.{Failure, Try}
+import scala.collection.mutable
+import scala.util.{Failure, Success, Try}
 
 object XDSessionProvider {
   type SessionID = UUID
@@ -54,21 +62,71 @@ abstract class XDSessionProvider(
 
 
 class SimpleSessionProvider(
-                           @transient override val sc: SparkContext,
-                           commonConfig: Option[Config] = None
-                           ) extends XDSessionProvider(sc,commonConfig){
+                             @transient override val sc: SparkContext,
+                             userConfig: Config
+                           ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig {
 
   import XDSessionProvider._
+
+  override lazy val logger = Logger.getLogger(classOf[SimpleSessionProvider])
+
+  private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
+
+  protected lazy val catalystConf: CatalystConf = {
+    import CoreConfig.CaseSensitive
+    val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
+    new SimpleCatalystConf(caseSensitive)
+  }
+
+  @transient
+  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(catalystConf, catalogConfig)
+
+  @transient
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(catalystConf, config)
+
+  private val sharedState = new XDSharedState(sc, Option(userConfig), externalCatalog, streamingCatalog)
+
+  private val sessionIDToSQLProps: mutable.Map[SessionID, SQLConf] = mutable.Map.empty
+  private val sessionIDToTempCatalog: mutable.Map[SessionID, XDTemporaryCatalog] = mutable.Map.empty
+
 
   private val errorMessage =
     "A distributed context must be used to manage XDServer sessions. Please, use SparkSessions instead"
 
-  override def newSession(sessionID: SessionID): Try[XDSession] = Failure(new UnsupportedOperationException(errorMessage))
+  override def newSession(sessionID: SessionID): Try[XDSession] =
+    Try {
+      val tempCatalog = new HashmapCatalog(catalystConf)
 
-  override def closeSession(sessionID: SessionID): Try[Unit] = Failure(new UnsupportedOperationException(errorMessage))
+      sessionIDToTempCatalog.put(sessionID, tempCatalog)
+      sessionIDToSQLProps.put(sessionID, sharedState.sqlConf)
 
-  override def session(sessionID: SessionID): Try[XDSession] = Failure(new UnsupportedOperationException(errorMessage))
+      buildSession(sharedState.sqlConf, tempCatalog)
+    }
 
-  override def close(): Unit = ()
+  override def closeSession(sessionID: SessionID): Try[Unit] =
+    Try {
+      sessionIDToSQLProps.remove(sessionID)
+      sessionIDToTempCatalog.remove(sessionID)
+    }
+
+  override def session(sessionID: SessionID): Try[XDSession] = {
+    for {
+      sqlConf <- sessionIDToSQLProps.get(sessionID)
+      tempCatalog <- sessionIDToTempCatalog.get(sessionID)
+    } yield buildSession(sqlConf, tempCatalog)
+  } map {
+    Success(_)
+  } getOrElse {
+    Failure(new RuntimeException(s"Cannot recover session with sessionId=$sessionID"))
+  }
+
+  override def close(): Unit = {
+    sessionIDToSQLProps.clear
+    sessionIDToTempCatalog.clear
+  }
+
+  private def buildSession(sqlConf: SQLConf, xDTemporaryCatalog: XDTemporaryCatalog): XDSession = {
+    val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalog :: Nil)
+    new XDSession(sharedState, sessionState)
+  }
 }
-
