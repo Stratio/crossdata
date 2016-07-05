@@ -23,6 +23,7 @@ import org.apache.spark.sql.crossdata.catalog.inmemory.MapCatalog
 import org.apache.spark.sql.crossdata.catalog.persistent.PersistentCatalogWithCache
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
 import org.apache.spark.sql.types._
 
 
@@ -331,6 +332,53 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val res=xdContext.catalog.lookupIndex(indexIdentifier)
     res shouldBe None
 
+  }
+
+  it should "remove an index associated to a table" in {
+
+    val tableIdentifier = TableIdentifier("testTable", Option("dbTest"))
+    val indexIdentifier = IndexIdentifier("myIndex", "gidx")
+
+    val table = CrossdataTable(tableIdentifier.table, tableIdentifier.database, None,
+      "com.stratio.crossdata.connector.mongodb")
+
+    val index = CrossdataIndex(tableIdentifier, indexIdentifier,
+      Seq(), "pk", "com.stratio.crossdata.connector.elasticsearch")
+
+    xdContext.catalog.persistTable(table, LocalRelation())
+    xdContext.catalog.persistIndex(index)
+
+    xdContext.catalog.dropTable(tableIdentifier)
+
+    val res = xdContext.catalog.lookupIndex(indexIdentifier)
+    res shouldBe None
+  }
+
+  it should "remove an index associated to a table and the table generated for the index" in {
+
+    val tableIdentifier = TableIdentifier("testTable", Option("dbTest"))
+    val indexIdentifier = IndexIdentifier("myIndex", "gidx")
+
+    val table = CrossdataTable(tableIdentifier.table, tableIdentifier.database, None,
+      "com.stratio.crossdata.connector.mongodb")
+
+    val index = CrossdataIndex(tableIdentifier, indexIdentifier,
+      Seq(), "pk", "com.stratio.crossdata.connector.elasticsearch")
+
+    val tableGenerated = CrossdataTable(indexIdentifier.asTableIdentifier.table, indexIdentifier.asTableIdentifier.database,
+      None, "com.stratio.crossdata.connector.elasticsearch")
+
+    xdContext.catalog.persistTable(table, LocalRelation())
+    xdContext.catalog.persistIndex(index)
+    xdContext.catalog.persistTable(tableGenerated, LocalRelation())
+
+    xdContext.catalog.dropTable(tableIdentifier)
+
+    val res = xdContext.catalog.lookupIndex(indexIdentifier)
+    res shouldBe None
+
+    val resGenerated = xdContext.catalog.lookupTable(indexIdentifier.asTableIdentifier)
+    resGenerated shouldBe None
   }
 
   override protected def afterAll() {
