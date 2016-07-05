@@ -34,7 +34,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     //Create test tables
     val createTable1 =
-      s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String, other Integer)
+      s"""|CREATE EXTERNAL TABLE $mongoTestDatabase.proofGlobalIndex (id Integer, name String, comments String, other Integer, another Integer)
       USING $MongoSourceProvider
           |OPTIONS (
           |host '$MongoHost:$MongoPort',
@@ -45,16 +45,16 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     sql(createTable1)
 
     mongoClient(mongoTestDatabase)("proofGlobalIndex").insert(
-      MongoDBObject("id" -> 11, "name" -> "prueba", "comments" -> "one comment", "other" -> 12)
+      MongoDBObject("id" -> 11, "name" -> "prueba", "comments" -> "one comment", "other" -> 12, "another" -> 12)
     )
 
     mongoClient(mongoTestDatabase)("proofGlobalIndex").insert(
-      MongoDBObject("id" -> 13, "name" -> "prueba2", "comments" -> "one comment fail", "other" -> 5)
+      MongoDBObject("id" -> 13, "name" -> "prueba2", "comments" -> "one comment fail", "other" -> 5, "another" -> 12)
     )
 
     val sentence =
       s"""|CREATE GLOBAL INDEX myIndex
-          |ON globalIndexDb.proofGlobalIndex (other)
+          |ON globalIndexDb.proofGlobalIndex (other, another)
           |WITH PK id
           |USING com.stratio.crossdata.connector.elasticsearch
           |OPTIONS (
@@ -69,12 +69,14 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     elasticClient.execute {
       index into "gidx" / "myIndex" fields(
         "id" -> 11,
+        "another" -> 12,
         "other"-> 12)
     }.await
 
     elasticClient.execute {
       index into "gidx" / "myIndex" fields(
         "id" -> 13,
+        "another" -> 12,
         "other"-> 5)
     }.await
 
@@ -100,14 +102,14 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
     val result = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
 
     result should have length 1
-    result shouldBe Array(Row(11, "prueba", "one comment", 12))
+    result shouldBe Array(Row(11, "prueba", "one comment", 12, 12))
   }
 
   it should "execute a select * where indexedFilter equals to" in {
     val result = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
 
     result should have length 1
-    result shouldBe Array(Row(13, "prueba2", "one comment fail", 5))
+    result shouldBe Array(Row(13, "prueba2", "one comment fail", 5, 12))
   }
 
   it should "execute a select col where indexedFilter is greater than" in {
@@ -139,6 +141,13 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
   it should "support filters mixed with indexedCols" in {
     val result = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10 AND name LIKE '%prueba%'").collect()
+
+    result should have length 1
+    result shouldBe Array(Row("prueba"))
+  }
+
+  it should "support filters using equals in two indexed columns" in {
+    val result = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other = another").collect()
 
     result should have length 1
     result shouldBe Array(Row("prueba"))
