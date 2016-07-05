@@ -19,8 +19,9 @@ import java.sql.{Connection, DriverManager, ResultSet}
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
+import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 
 import scala.annotation.tailrec
 
@@ -121,7 +122,20 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
             |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
 
-      //TODO: INDEX
+      //Index support
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE IF NOT EXISTS $db.$TableWithIndexMetadata (
+            |$DatabaseField VARCHAR(50),
+            |$TableNameField VARCHAR(50),
+            |$IndexNameField VARCHAR(50),
+            |$IndexTypeField VARCHAR(50),
+            |$IndexedColsField TEXT,
+            |$PKField VARCHAR(100),
+            |$DatasourceField TEXT,
+            |$OptionsField TEXT,
+            |$CrossdataVersionField VARCHAR(30),
+            |UNIQUE ($IndexNameField, $IndexTypeField),
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
       jdbcConnection
     } catch {
@@ -223,7 +237,6 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
     }
 
 
-
   override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
 
@@ -281,7 +294,6 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
     preparedStatement.executeQuery()
 
   }
-
 
 
   override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
@@ -382,6 +394,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
     } finally {
       connection.setAutoCommit(true)
     }
+
   override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
     connection.createStatement.executeUpdate(
       s"DELETE FROM $db.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"

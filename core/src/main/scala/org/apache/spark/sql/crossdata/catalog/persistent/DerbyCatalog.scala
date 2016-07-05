@@ -348,34 +348,44 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     }
 
   override def dropTableMetadata(tableIdentifier: TableIdentifier): Unit =
-    connection.createStatement.executeUpdate(
+    executeSQLCommand(
       s"DELETE FROM $DB.$TableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'"
     )
 
   override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
-    connection.createStatement.executeUpdate(
+    executeSQLCommand(
       s"DELETE FROM $DB.$TableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'"
     )
 
   override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
-    connection.createStatement.executeUpdate(
+    executeSQLCommand(
       s"DELETE FROM $DB.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
     )
 
   override def dropIndexMetadata(tableIdentifier: TableIdentifier): Unit =
-    connection.createStatement.executeUpdate(
+    executeSQLCommand(
       s"DELETE FROM $DB.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     )
 
 
   override def dropAllTablesMetadata(): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithTableMetadata")
+    executeSQLCommand(s"DELETE FROM $DB.$TableWithTableMetadata")
 
   override def dropAllViewsMetadata(): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithViewMetadata")
+    executeSQLCommand(s"DELETE FROM $DB.$TableWithViewMetadata")
 
   override def dropAllIndexesMetadata(): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithIndexMetadata")
+    executeSQLCommand(s"DELETE FROM $DB.$TableWithIndexMetadata")
+
+  def executeSQLCommand(sql: String): Unit = {
+    val statement = connection.createStatement
+    try{
+      statement.executeUpdate(sql)
+    } finally {
+      statement.close()
+    }
+  }
+
 
   override def isAvailable: Boolean = true
 

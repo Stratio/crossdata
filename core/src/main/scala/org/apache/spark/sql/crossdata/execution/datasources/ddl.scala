@@ -19,6 +19,7 @@ import java.sql.{Date, Timestamp}
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
+import com.typesafe.config.Config
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
@@ -31,6 +32,7 @@ import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.{StructType, _}
 
+import scala.annotation.tailrec
 import scala.language.implicitConversions
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
@@ -134,8 +136,8 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
         logInfo(s"Importing table ${tableId.unquotedString}")
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
         val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
-        import XDCatalog._
         import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
+        import XDCatalog._
         sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
       }
       val tableSeq = DDLUtils.tableIdentifierToSeq(tableId)
@@ -341,7 +343,6 @@ private[crossdata] case class AddJar(jarPath: String)
   }
 }
 
-
 private[crossdata] case class CreateGlobalIndex(
                                                  index: TableIdentifier,
                                                  tableIdent: TableIdentifier,
@@ -374,6 +375,7 @@ private[crossdata] case class CreateGlobalIndex(
       CrossdataIndex(tableIdent, finalIndex, cols, pk, indexProvider, options)
 
     }
+
 
   private def saveIndexMetadata(sqlContext: SQLContext, crossdataIndex: CrossdataIndex) = {
 

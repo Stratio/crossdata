@@ -68,9 +68,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       rows
     }
 
-    val plan = validatedNativePlan getOrElse( sys.error("Invalid native plan") )
-
-    val result: Try[Array[Row]] = plan match {
+    val result: Try[Array[Row]] = validatedNativePlan.map {
       case (baseLogicalPlan, limit) =>
         val requiredColumns = baseLogicalPlan match {
           case SimpleLogicalPlan(projects, _, _, _) =>
@@ -82,10 +80,10 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
         val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
 
-        withClientDo(parameters){ esClient =>
+        withClientDo(parameters) { esClient =>
           tryRows(requiredColumns, finalQuery, esClient)
         }
-    }
+    }.getOrElse(Failure(new RuntimeException("Invalid native plan")))
 
     result.toOption
   }
