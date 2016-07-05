@@ -39,7 +39,6 @@ abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XD
   val viewCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
 
   override final def relation(relationIdentifier: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
-    // TODO refactor (nonCachedLookup)
     (tableCache get relationIdentifier) orElse (viewCache get relationIdentifier) orElse {
       logInfo(s"PersistentCatalog: Looking up table ${relationIdentifier.unquotedString}")
       lookupTable(relationIdentifier) map { crossdataTable =>

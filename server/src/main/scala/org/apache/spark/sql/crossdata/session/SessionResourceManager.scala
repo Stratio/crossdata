@@ -93,7 +93,7 @@ class HazelcastSessionCatalogManager(
 
   // Returns the seq of XDTempCatalog for the new session
   override def newResource(key: SessionID): Seq[XDTemporaryCatalog] = {
-    // TODO try // TODO check if the session already exists?? and use it or it hsould not happen??
+
     //NO! IT SHOULDN'T HAPPEN BUT SOME PROTECTION IS STILL TODO
 
     // AddMapCatalog for local/cache interaction
@@ -110,7 +110,6 @@ class HazelcastSessionCatalogManager(
     Seq(localCatalog, hazelcastCatalog)
   }
 
-  // TODO refactor
   override def getResource(key: SessionID): Try[Seq[XDTemporaryCatalog]] =
     for {
       (tableUUID, viewUUID) <- checkNotNull(sessionIDToTableViewID.get(key))

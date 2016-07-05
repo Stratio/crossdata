@@ -23,7 +23,7 @@ import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 
 
 object XDSession{
-  // TODO It will be the main entryPoint, so we should add a XDSession builder to make it easier to work with.
+  // TODO Spark2.0. It will be the main entryPoint, so we should add a XDSession builder to make it easier to work with.
 }
 
 /**
@@ -41,16 +41,10 @@ class XDSession(
                  )
   extends XDContext(xdSharedState.sc) with Logging {
 
-
-  // TODO move context to sharedState => userConfig should be read before. Otherwise properties will be the same for all
-  // TODO we can't move XDContext to XDSession because RunnableCommand use XDContext instead of SparkSession.sessionCatalog
-
-  //TODO: +1 Use catalog for this session instead fix one
   override protected[sql] lazy val catalog: XDCatalog = {
     val catalogs: Seq[XDCatalogCommon] = (xdSessionState.temporaryCatalogs :+ externalCatalog) ++ streamingCatalog.toSeq
     CatalogChain(catalogs: _*)(this)
   }
 
-  // XDContext does not allow to override conf so far.
   override protected[sql] lazy val conf: SQLConf = xdSessionState.sqlConf
 }

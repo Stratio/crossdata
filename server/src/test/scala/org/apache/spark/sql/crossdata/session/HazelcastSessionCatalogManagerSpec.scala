@@ -27,7 +27,6 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 import org.apache.spark.sql.crossdata.session.HazelcastSessionCatalogManagerSpec.{InvalidatedSession, ProbedHazelcastSessionCatalogManager}
 import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
 
-import scala.concurrent.duration._
 
 object HazelcastSessionCatalogManagerSpec {
 

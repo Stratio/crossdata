@@ -35,7 +35,6 @@ object HazelcastSessionProvider {
   val SqlConfMapId = "sqlconfmap"
   val HazelcastCatalogMapId = "hazelcatalogmap"
 
-  // TODO this is not the right place
   def checkNotNull[T]: T => Try[T] =
     a => Option(a).map(Success(_)).getOrElse(Failure(new RuntimeException(s"Map not found")))
 
@@ -52,8 +51,6 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
 
   private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
 
-  // TODO replace with sqlConf (which extends CatalystConf)
-  // TODO @deprecated
   protected lazy val catalystConf: CatalystConf = {
     import CoreConfig.CaseSensitive
     val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
@@ -68,7 +65,7 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
 
 
 
-  private val sharedState = new XDSharedState(sc, Option(userConfig), externalCatalog, streamingCatalog)// TODO add sqlConf
+  private val sharedState = new XDSharedState(sc, Option(userConfig), externalCatalog, streamingCatalog)
 
   private val hInstance = {
     // TODO it should only use Hazelcast.newHazelcastInstance() which internally creates a xmlConfig and the group shouldn't be hardcoded (blocked by CD)
@@ -77,21 +74,17 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
     Hazelcast.newHazelcastInstance(xmlConfig)
   }
 
-  // TODO scalaWrapper // scalaHazel
-  // TODO snapshot from (list(session) + addlistener)?? (
   private val sessionIDToSQLProps: java.util.Map[SessionID, Map[String,String]] = hInstance.getMap(SqlConfMapId)
   private val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(hInstance, sharedState.sqlConf)
 
-  // TODO addSessionsToAllMap && recieveSpecificOptions
-  override def newSession(sessionID: SessionID): Try[XDSession] = // TODO try vs future
+  override def newSession(sessionID: SessionID): Try[XDSession] =
     Try {
       val tempCatalogs = sessionIDToTempCatalogs.newResource(sessionID)
-      sessionIDToSQLProps.put(sessionID, sharedState.sparkSQLProps) // TODO Imap and set
+      sessionIDToSQLProps.put(sessionID, sharedState.sparkSQLProps)
 
       buildSession(sessionID, sharedState.sqlConf, tempCatalogs)
     }
 
-  // TODO closeSession && removeFromAllCatalogs
   override def closeSession(sessionID: SessionID): Try[Unit] =
     for {
       _ <- checkNotNull(sessionIDToSQLProps.remove(sessionID))

@@ -133,7 +133,6 @@ trait XDAppsCatalog {
 
 trait XDStreamingCatalog extends XDCatalogCommon {
 
-  // TODO streaming replace duplicated methods (separate API from internals)
   /**
    * Ephemeral Table Functions
    */

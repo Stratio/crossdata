@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.stratio.crossdata.common.util.akka.KeepAlive
+package com.stratio.crossdata.common.util.akka.keepalive
 
 import akka.actor.{Actor, ActorRef, Props}
 import LiveMan.HeartBeat

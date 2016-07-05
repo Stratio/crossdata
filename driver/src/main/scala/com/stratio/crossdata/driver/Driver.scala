@@ -97,7 +97,7 @@ object Driver {
         val isConnected = driver.openSession().getOrElse {
           throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after ${Driver.InitializationTimeout}")
         }
-        if (!isConnected) { // TODO openSession().filter??
+        if (!isConnected) {
           throw new RuntimeException(s"The server has rejected the open session request")
         }
         setActiveDriver(driver)
@@ -113,7 +113,6 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
                      auth: Authentication = Driver.generateDefaultAuth) {
 
 
-  // TODO improve implementation
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
     def run() {
       Try(Driver.clearActiveContext)
@@ -414,9 +413,8 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   }
 
   private def closeSession(): Unit = {
-    // TODO ?
     proxyActor ! securitizeCommand(CloseSessionCommand())
-    sessionBeacon.foreach(system.stop(_))
+    sessionBeacon.foreach(system.stop)
   }
 
   private def securitizeCommand(command: Command): CommandEnvelope =

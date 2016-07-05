@@ -20,12 +20,12 @@ import java.sql.{Connection, DriverManager, ResultSet}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.CrossdataVersion
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 
 import scala.annotation.tailrec
 
 // TODO refactor SQL catalog implementations
+// TODO close resultSet
 object DerbyCatalog {
   val DB = "CROSSDATA"
   val TableWithTableMetadata = "xdtables"
@@ -53,7 +53,6 @@ object DerbyCatalog {
  *
  * @param catalystConf An implementation of the [[CatalystConf]].
  */
-// TODO synchronize methods
 class DerbyCatalog(override val catalystConf: CatalystConf)
   extends PersistentCatalogWithCache(catalystConf) {
 
@@ -109,24 +108,28 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
   override def lookupTable(tableIdentifier: ViewIdentifier): Option[CrossdataTable] = synchronized {
     val resultSet = selectMetadata(TableWithTableMetadata, tableIdentifier)
 
-    if (!resultSet.next) {
-      None
-    } else {
+    try {
+      if (!resultSet.next) {
+        None
+      } else {
 
-      val database = resultSet.getString(DatabaseField)
-      val table = resultSet.getString(TableNameField)
-      val schemaJSON = resultSet.getString(SchemaField)
-      val partitionColumn = resultSet.getString(PartitionColumnField)
-      val datasource = resultSet.getString(DatasourceField)
-      val optsJSON = resultSet.getString(OptionsField)
-      val version = resultSet.getString(CrossdataVersionField)
+        val database = resultSet.getString(DatabaseField)
+        val table = resultSet.getString(TableNameField)
+        val schemaJSON = resultSet.getString(SchemaField)
+        val partitionColumn = resultSet.getString(PartitionColumnField)
+        val datasource = resultSet.getString(DatasourceField)
+        val optsJSON = resultSet.getString(OptionsField)
+        val version = resultSet.getString(CrossdataVersionField)
 
-      resultSet.close()// TODO close it properly (try) and in any case
-      Some(
-        CrossdataTable(table, Some(database), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource,
-          deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
-      )
+        Some(
+          CrossdataTable(table, Some(database), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource,
+            deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
+        )
+      }
+    } finally {
+      resultSet.close()
     }
+
   }
 
   override def getApp(alias: String): Option[CrossdataApp] = {

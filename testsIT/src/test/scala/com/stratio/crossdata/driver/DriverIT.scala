@@ -48,8 +48,6 @@ class DriverIT extends EndToEndTest {
 
     driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
 
-
-    // TODO how to process metadata ops?
     val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
     result shouldBe an[SuccessfulSQLResult]
     result.hasError should be(false)

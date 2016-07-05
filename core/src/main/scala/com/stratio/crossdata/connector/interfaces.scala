@@ -91,8 +91,6 @@ trait TableInventory extends GenerateConnectorOptions{
    */
   def listTables(context: SQLContext, options: Map[String, String]): Seq[Table]
 
-  //TODO: Add operation for describing a concrete table.
-  //def fetchTableDescription(name: String, options: Map[String, String]): Table
 }
 
 object TableInventory {

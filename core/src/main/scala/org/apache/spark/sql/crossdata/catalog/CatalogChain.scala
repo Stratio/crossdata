@@ -23,8 +23,6 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, Crossdata
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
-import scala.annotation.tailrec
-
 
 object CatalogChain {
   def apply(catalogs: XDCatalogCommon*)(implicit xdContext: XDContext): CatalogChain = {
@@ -66,7 +64,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     val (relationOpt, previousCatalogs) = takeUntilRelationFound(lookup, temporaryCatalogs)
 
     if (relationOpt.isDefined) {
-      previousCatalogs.foreach(_.saveTable(tableIdentifier, relationOpt.get)) //TODO tableIdentifier should be available
+      previousCatalogs.foreach(_.saveTable(tableIdentifier, relationOpt.get))
       relationOpt
     } else {
       (persistentCatalogs ++: streamingCatalogs.toSeq).view map lookup collectFirst {
@@ -109,7 +107,6 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     temporaryCatalogs.foreach(_.saveView(viewIdentifier, logicalPlan, sql))
 
   // TODO throw an exception if there is no temp catalogs! Review CatalogChain
-  // TODO refactor => CrossdataTable without Option
   override def registerTable(tableIdent: ViewIdentifier, plan: LogicalPlan, crossdataTable: Option[CrossdataTable]): Unit =
     temporaryCatalogs.foreach(_.saveTable(tableIdent, plan, crossdataTable))
 
@@ -131,7 +128,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     chainedLookup(_.relation(tableIdent), tableIdent)
 
   override def lookupRelation(tableIdent: TableIdentifier, alias: Option[String]): LogicalPlan =
-    lookupRelationOpt(tableIdent) map { processAlias(tableIdent, _, alias)(conf)} getOrElse { // TODO streaming should take it into account, shouldn't it?
+    lookupRelationOpt(tableIdent) map { processAlias(tableIdent, _, alias)(conf)} getOrElse {
       log.debug(s"Relation not found: ${tableIdent.unquotedString}")
       sys.error(s"Relation not found: ${tableIdent.unquotedString}")
     }

@@ -333,8 +333,6 @@ class CassandraXDSourceRelation(tableRef: TableRef,
 
 }
 
-//TODO buildScan => CassandraTableScanRDD[CassandraSQLRow] => fetchTokenRange
-
 
 object CassandraXDSourceRelation {
 
