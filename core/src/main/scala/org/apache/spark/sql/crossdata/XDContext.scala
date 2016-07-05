@@ -33,11 +33,10 @@ import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, Compute
 import org.apache.spark.sql.catalyst.optimizer.Optimizer
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
-import org.apache.spark.sql.crossdata.catalog._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, IndexIdentifier}
 import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
+import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias, WrapRelationWithGlobalIndex}
 import org.apache.spark.sql.crossdata.catalyst.optimizer.XDOptimizer
 import org.apache.spark.sql.crossdata.config.CoreConfig
@@ -358,6 +357,16 @@ class XDContext protected (@transient val sc: SparkContext,
     cacheManager.clearCache()
     catalog.dropAllTables()
   }
+
+  /**
+    * Drops the global index in the persistent catalog.
+    * It applies only to metadata, so data do not be deleted.
+    *
+    * @param indexIdentifier the index to be dropped.
+    */
+  def dropGlobalIndex(indexIdentifier: IndexIdentifier): Unit =
+    catalog.dropIndex(indexIdentifier)
+
 
   /**
     * Imports tables from a DataSource in the persistent catalog.
