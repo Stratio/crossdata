@@ -85,7 +85,12 @@ class InsertGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     sql(s"INSERT INTO $mongoTableIdentifier VALUES ( 50, 'Samantha', 'Fox', 4),( 1, 'Charlie', 'Green', 5)")
 
+    elasticClient.execute{
+      flushIndex(defaultIndexES)
+    }.await
+
     mongoClient(mongoDB)(mongoCollection).count() shouldBe 2
+
     elasticClient.execute(search in defaultIndexES / indexName).await.getHits.totalHits() shouldBe 2
 
   }
