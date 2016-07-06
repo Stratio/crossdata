@@ -40,14 +40,14 @@ object HazelcastSessionProvider {
 
 }
 
-class HazelcastSessionProvider(@transient sc: SparkContext,
-                           userConfig: Config
+class HazelcastSessionProvider( @transient sc: SparkContext,
+                                userConfig: Config
                                 ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig { // TODO CoreConfig should not be a trait
 
   import HazelcastSessionProvider._
   import XDSharedState._
 
-  override lazy val logger = Logger.getLogger(classOf[BasicSessionProvider])
+  override lazy val logger = Logger.getLogger(classOf[HazelcastSessionProvider])
 
   private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
 
