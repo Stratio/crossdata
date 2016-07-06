@@ -34,6 +34,7 @@ object HazelcastSessionProvider {
 
   val SqlConfMapId = "sqlconfmap"
   val HazelcastCatalogMapId = "hazelcatalogmap"
+  val HazelcastConfigMapId = "hazelconfigmap"
 
   def checkNotNull[T]: T => Try[T] =
     a => Option(a).map(Success(_)).getOrElse(Failure(new RuntimeException(s"Map not found")))
