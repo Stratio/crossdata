@@ -23,9 +23,9 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class InsertGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
-  val mongoDB = "globalIndexDb"
+  val mongoDatabase = "globalIndexDb"
   val mongoCollection = "collection"
-  val mongoTableIdentifier = s"$mongoDB.$mongoCollection"
+  val mongoTableIdentifier = s"$mongoDatabase.$mongoCollection"
   val defaultIndexES = CreateGlobalIndex.DefaultDatabaseName
   val indexName = "myIndex"
 
@@ -38,7 +38,7 @@ class InsertGlobalIndexIT extends MongoAndElasticWithSharedContext {
           |USING $MongoSourceProvider
           |OPTIONS (
           |host '$MongoHost:$MongoPort',
-          |database '$mongoDB',
+          |database '$mongoDatabase',
           |collection '$mongoCollection'
           |)
       """.stripMargin.replaceAll("\n", " ")
@@ -49,7 +49,7 @@ class InsertGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
   protected override def afterAll(): Unit = {
 
-    mongoClient(mongoDB).dropDatabase()
+    mongoClient(mongoDatabase).dropDatabase()
 
     elasticClient.execute{
       deleteIndex(defaultIndexES)
@@ -89,7 +89,7 @@ class InsertGlobalIndexIT extends MongoAndElasticWithSharedContext {
       flushIndex(defaultIndexES)
     }.await
 
-    mongoClient(mongoDB)(mongoCollection).count() shouldBe 2
+    mongoClient(mongoDatabase)(mongoCollection).count() shouldBe 2
 
     elasticClient.execute(search in defaultIndexES / indexName).await.getHits.totalHits() shouldBe 2
 
