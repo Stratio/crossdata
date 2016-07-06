@@ -107,9 +107,15 @@ class BasicSessionProvider(
     }
 
   override def closeSession(sessionID: SessionID): Try[Unit] =
-    Try {
-      sessionIDToSQLProps.remove(sessionID)
-      sessionIDToTempCatalog.remove(sessionID)
+    {
+      for {
+        _ <- sessionIDToSQLProps.remove(sessionID)
+        _ <- sessionIDToTempCatalog.remove(sessionID)
+      } yield ()
+    } map {
+      Success(_)
+    } getOrElse {
+      Failure(new RuntimeException(s"Cannot close session with sessionId=$sessionID"))
     }
 
   override def session(sessionID: SessionID): Try[XDSession] = {
