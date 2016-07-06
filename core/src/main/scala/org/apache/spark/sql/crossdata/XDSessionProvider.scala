@@ -60,15 +60,17 @@ abstract class XDSessionProvider(
 
 }
 
-
-class SimpleSessionProvider(
+/**
+  * Session provider which store session info locally, so it can't be used when deploying several crossdata server
+  */
+class BasicSessionProvider(
                              @transient override val sc: SparkContext,
                              userConfig: Config
                            ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig {
 
   import XDSessionProvider._
 
-  override lazy val logger = Logger.getLogger(classOf[SimpleSessionProvider])
+  override lazy val logger = Logger.getLogger(classOf[BasicSessionProvider])
 
   private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
 

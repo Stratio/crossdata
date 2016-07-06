@@ -31,7 +31,7 @@ import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata
 import org.apache.spark.sql.crossdata.session.HazelcastSessionProvider
-import org.apache.spark.sql.crossdata.{SimpleSessionProvider, XDSessionProvider}
+import org.apache.spark.sql.crossdata.{BasicSessionProvider, XDSessionProvider}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
@@ -66,7 +66,7 @@ class CrossdataServer extends Daemon with ServerConfig {
       if (isHazelcastEnabled) {
       new HazelcastSessionProvider(sparkContext, config)
     } else {
-      new SimpleSessionProvider(sparkContext, config)
+      new BasicSessionProvider(sparkContext, config)
     }
 
 
