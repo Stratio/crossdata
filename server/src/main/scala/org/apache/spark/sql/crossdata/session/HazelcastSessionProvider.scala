@@ -15,7 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.session
 
-import com.hazelcast.config.{GroupConfig, XmlConfigBuilder, Config => HazelcastConfig}
+import com.hazelcast.config.{GroupConfig, XmlConfigBuilder}
 import com.hazelcast.core.Hazelcast
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
@@ -75,42 +75,45 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
   }
 
   private val sessionIDToSQLProps: java.util.Map[SessionID, Map[String,String]] = hInstance.getMap(SqlConfMapId)
-  private val sessionIDToTempCatalogs: SessionManager[SessionID, Seq[XDTemporaryCatalog]] = new HazelcastSessionCatalogManager(hInstance, sharedState.sqlConf)
+  private val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(hInstance, sharedState.sqlConf)
 
   override def newSession(sessionID: SessionID): Try[XDSession] =
     Try {
-      val tempCatalogs = sessionIDToTempCatalogs.addSession(sessionID)
+      val tempCatalogs = sessionIDToTempCatalogs.newResource(sessionID)
       sessionIDToSQLProps.put(sessionID, sharedState.sparkSQLProps)
 
-      buildSession(sharedState.sqlConf, tempCatalogs)
+      buildSession(sessionID, sharedState.sqlConf, tempCatalogs)
     }
 
   override def closeSession(sessionID: SessionID): Try[Unit] =
     for {
       _ <- checkNotNull(sessionIDToSQLProps.remove(sessionID))
-      _ <- sessionIDToTempCatalogs.removeSession(sessionID)
+      _ <- sessionIDToTempCatalogs.deleteSessionResource(sessionID)
     } yield ()
 
 
   // TODO take advantage of common utils pattern?
   override def session(sessionID: SessionID): Try[XDSession] =
     for {
-      tempCatalogMap <- sessionIDToTempCatalogs.getSession(sessionID)
+      tempCatalogMap <- sessionIDToTempCatalogs.getResource(sessionID)
       configMap <- checkNotNull(sessionIDToSQLProps.get(sessionID))
-      sess <- Try(buildSession(configMap, tempCatalogMap))
+      sess <- Try(buildSession(sessionID, configMap, tempCatalogMap))
     } yield {
       sess
     }
 
 
   override def close(): Unit = {
-    sessionIDToTempCatalogs.clearAllSessions()
+    sessionIDToTempCatalogs.clearAllSessionsResources()
     sessionIDToSQLProps.clear()
     hInstance.shutdown()
   }
 
 
-  private def buildSession(sqlConf: SQLConf, xDTemporaryCatalogs: Seq[XDTemporaryCatalog]): XDSession = {
+  private def buildSession(
+                            sessionID: SessionID,
+                            sqlConf: SQLConf,
+                            xDTemporaryCatalogs: Seq[XDTemporaryCatalog]): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalogs)
     new XDSession(sharedState, sessionState)
   }

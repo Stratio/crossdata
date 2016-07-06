@@ -37,6 +37,8 @@ ITSERVICES:
       env:
         - ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181
 
+
+
 ITPARAMETERS: >
     -Dcassandra.hosts.0=%%CASSANDRA
     -Dmongo.hosts.0=%%MONGODB

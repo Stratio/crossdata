@@ -23,7 +23,6 @@ target/
 .DS_Store
 **/xdhistory.txt
 checkpoint/
-project/
 **.BACKUP.*.*
 **.BASE.*.*
 **.LOCAL.*.*
