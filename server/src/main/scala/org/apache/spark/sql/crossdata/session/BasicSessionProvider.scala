@@ -30,7 +30,7 @@ import org.apache.spark.sql.crossdata.config.CoreConfig
 
 import scala.util.{Failure, Success, Try}
 
-object HazelcastSessionProvider {
+object BasicSessionProvider {
 
   val SqlConfMapId = "sqlconfmap"
   val HazelcastCatalogMapId = "hazelcatalogmap"
@@ -40,14 +40,14 @@ object HazelcastSessionProvider {
 
 }
 
-class HazelcastSessionProvider( @transient sc: SparkContext,
-                                userConfig: Config
+class BasicSessionProvider(@transient sc: SparkContext,
+                           userConfig: Config
                                 ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig { // TODO CoreConfig should not be a trait
 
-  import HazelcastSessionProvider._
+  import BasicSessionProvider._
   import XDSharedState._
 
-  override lazy val logger = Logger.getLogger(classOf[HazelcastSessionProvider])
+  override lazy val logger = Logger.getLogger(classOf[BasicSessionProvider])
 
   private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
 

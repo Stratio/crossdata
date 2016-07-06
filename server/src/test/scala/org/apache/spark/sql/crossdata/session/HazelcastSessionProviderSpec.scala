@@ -57,7 +57,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
   }
 
 
-  it should "provides a common persistent catalog and isolated catalogs" ignore {
+  it should "provides a common persistent catalog and isolated catalogs" in {
     // TODO we should share the persistentCatalog
 
     val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
