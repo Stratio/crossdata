@@ -62,12 +62,14 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
 
-    lazy val sessionProvider =
-      if (isHazelcastEnabled) {
-      new HazelcastSessionProvider(sparkContext, config)
-    } else {
-      new BasicSessionProvider(sparkContext, config)
+    sessionProviderOpt = Some {
+      if (isHazelcastEnabled)
+        new HazelcastSessionProvider(sparkContext, config)
+      else
+        new BasicSessionProvider(sparkContext, config)
     }
+
+    val sessionProvider = sessionProviderOpt.getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
 
 
     system = Some(ActorSystem(clusterName, config))
