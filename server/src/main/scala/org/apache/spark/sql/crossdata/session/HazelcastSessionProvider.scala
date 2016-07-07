@@ -75,20 +75,20 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
     Hazelcast.newHazelcastInstance(xmlConfig)
   }
 
-  private val sessionIDToSQLProps: java.util.Map[SessionID, Map[String,String]] = hInstance.getMap(SqlConfMapId)
+  private val sessionIDToSQLProps = new HazelcastSessionConfigManager(hInstance)
   private val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(hInstance, sharedState.sqlConf)
 
   override def newSession(sessionID: SessionID): Try[XDSession] =
     Try {
       val tempCatalogs = sessionIDToTempCatalogs.newResource(sessionID)
-      sessionIDToSQLProps.put(sessionID, sharedState.sparkSQLProps)
+      val config = sessionIDToSQLProps.newResource(sessionID, Some(sharedState.sparkSQLProps))
 
-      buildSession(sessionID, sharedState.sqlConf, tempCatalogs)
+      buildSession(sessionID, config, tempCatalogs)
     }
 
   override def closeSession(sessionID: SessionID): Try[Unit] =
     for {
-      _ <- checkNotNull(sessionIDToSQLProps.remove(sessionID))
+      _ <- checkNotNull(sessionIDToSQLProps.deleteSessionResource(sessionID))
       _ <- sessionIDToTempCatalogs.deleteSessionResource(sessionID)
     } yield ()
 
@@ -97,7 +97,7 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
   override def session(sessionID: SessionID): Try[XDSession] =
     for {
       tempCatalogMap <- sessionIDToTempCatalogs.getResource(sessionID)
-      configMap <- checkNotNull(sessionIDToSQLProps.get(sessionID))
+      configMap <- sessionIDToSQLProps.getResource(sessionID)
       sess <- Try(buildSession(sessionID, configMap, tempCatalogMap))
     } yield {
       sess
@@ -106,7 +106,7 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
 
   override def close(): Unit = {
     sessionIDToTempCatalogs.clearAllSessionsResources()
-    sessionIDToSQLProps.clear()
+    sessionIDToSQLProps.clearAllSessionsResources()
     hInstance.shutdown()
   }
 

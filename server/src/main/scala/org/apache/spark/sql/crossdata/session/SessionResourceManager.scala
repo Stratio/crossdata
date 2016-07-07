@@ -35,7 +35,7 @@ import scala.util.{Success, Try}
 trait SessionResourceManager[V] {
 
   //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
-  def newResource(key: SessionID): V
+  def newResource(key: SessionID, from: Option[V]): V
 
   def getResource(key: SessionID): Try[V]
 
@@ -105,7 +105,10 @@ class HazelcastSessionCatalogManager(
   private val sessionIDToTableViewID: IMap[SessionID, (TableMapUUID, ViewMapUUID)] = hInstance.getMap(HazelcastCatalogMapId)
 
   // Returns the seq of XDTempCatalog for the new session
-  override def newResource(key: SessionID): Seq[XDTemporaryCatalog] = {
+
+
+  //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
+  override def newResource(key: SessionID, from: Option[Seq[XDTemporaryCatalog]] = None): Seq[XDTemporaryCatalog] = {
 
     //NO! IT SHOULDN'T HAPPEN BUT SOME PROTECTION IS STILL TODO
 
@@ -186,14 +189,17 @@ class HazelcastSessionConfigManager(
 
   override protected val topicName: String = "session-rec-config"
 
+  invalidationTopic
 
   //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
-  override def newResource(key: SessionID): SQLConf = {
+  override def newResource(key: SessionID, from: Option[SQLConf] = None): SQLConf = {
     val (hzConfigMap, id) = createRandomMap[String, String]
     val conf = new HazelcastSQLConf(hzConfigMap, resourceInvalidator(key))
 
     sessionId2ConfigMapId.set(key, id)
     sessionId2Config += key -> conf
+
+    from.foreach(baseConf => hzConfigMap.putAll(baseConf.settings))
 
     publishInvalidation(key)
 

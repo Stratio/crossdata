@@ -43,7 +43,7 @@ object HazelcastSQLConf {
     }
 
     override def get(key: scala.Any): V = delegatedMaps.view.map(_.get(key)).find(_ != null).getOrElse {
-      NullBuilder().nullval
+      NullBuilder[V]().nullval
     }
 
     override def entrySet(): java.util.Set[Entry[K, V]] = (Set.empty[Entry[K,V]] /: delegatedMaps) {
@@ -57,7 +57,7 @@ object HazelcastSQLConf {
         case (prev, delegatedMap) =>
           val newRes = delegatedMap.put(key, value)
           prev orElse Option(newRes)
-      } getOrElse(NullBuilder().nullval)
+      } getOrElse(NullBuilder[V]().nullval)
     }
 
     override def clear(): Unit = {
