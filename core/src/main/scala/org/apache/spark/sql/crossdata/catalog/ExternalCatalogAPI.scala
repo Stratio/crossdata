@@ -33,7 +33,7 @@ private[crossdata] trait ExternalCatalogAPI extends XDAppsCatalog{
   def dropView(viewIdentifier: ViewIdentifier): Unit
   def dropAllViews(): Unit
 
-  def dropIndex(tableIdentifier: IndexIdentifier): Unit //Support multiple index per table?
+  def dropIndex(indexIdentifier: IndexIdentifier): Unit //Support multiple index per table?
   def dropAllIndexes(): Unit
 
   def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable]

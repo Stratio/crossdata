@@ -389,7 +389,7 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
         prepped.execute()
       } else {
         //TODO: Support change index metadata?
-        sys.error("Index already exists")
+        sys.error(s"A global index already exists in table ${crossdataIndex.tableIdentifier.unquotedString}")
       }
     } finally {
       connection.setAutoCommit(true)

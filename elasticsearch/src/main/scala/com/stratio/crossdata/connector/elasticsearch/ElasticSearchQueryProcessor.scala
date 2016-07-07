@@ -22,13 +22,13 @@ import com.stratio.crossdata.connector.elasticsearch.ElasticSearchConnectionUtil
 import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
-import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, ProjectReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{Row, sources}
 import org.elasticsearch.action.search.SearchResponse
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 object ElasticSearchQueryProcessor {
 

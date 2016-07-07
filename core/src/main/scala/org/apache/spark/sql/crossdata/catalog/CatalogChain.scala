@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.catalog
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp,CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
@@ -126,7 +126,12 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     persistentCatalogs.foreach(_.saveView(tableIdentifier, plan, sqlText))
 
   override def persistIndex(crossdataIndex: CrossdataIndex): Unit =
-    persistentCatalogs.foreach(_.saveIndex(crossdataIndex))
+    if (persistentChainedLookup(_.lookupTable(crossdataIndex.tableIdentifier)).isEmpty) {
+      throw new RuntimeException(s"Cannot create the index. Table ${crossdataIndex.tableIdentifier} doesn't exist or is temporary")
+    } else {
+      persistentCatalogs.foreach(_.saveIndex(crossdataIndex))
+    }
+
 
   override def dropTable(tableIdentifier: TableIdentifier): Unit = {
     val strTable = tableIdentifier.unquotedString
