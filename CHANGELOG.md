@@ -3,7 +3,7 @@
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
 ## 1.5.0 (upcoming)
-* Global index: Enhance queries with filter indexing the table data them into an external datasource (ElasticSearch)
+* Global index: use of inverted indices for speeding-up queries
 
 ## 1.3.0 (Jun 2016)
 * Upgrade to Spark 1.6.1
