@@ -2,7 +2,10 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
-## 1.3.0 (upcoming)
+## 1.5.0 (upcoming)
+* Global index: Enhance queries with filter indexing the table data them into an external datasource (ElasticSearch)
+
+## 1.3.0 (Jun 2016)
 * Upgrade to Spark 1.6.1
 * Support for INSERT INTO
 * Support for ADD JAR
