@@ -89,7 +89,8 @@ trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidati
 
 class HazelcastSessionCatalogManager(
                                       override protected val hInstance: HazelcastInstance,
-                                      catalystConf: CatalystConf
+                                      catalystConf: CatalystConf,
+                                      sessionInvalidator: Option[SessionID] => CacheInvalidator
                                     ) extends HazelcastSessionResourceManager[Seq[XDTemporaryCatalog]] {
 
   import HazelcastSessionProvider._
@@ -171,15 +172,22 @@ class HazelcastSessionCatalogManager(
     localCatalog
   }
 
-  override def invalidateLocalCaches(key: SessionID): Unit = sessionIDToMapCatalog remove key
+  override def invalidateLocalCaches(key: SessionID): Unit = {
+    sessionIDToMapCatalog remove key
+    sessionInvalidator(Some(key)) invalidateCache
+  }
 
-  override def invalidateAllLocalCaches: Unit = sessionIDToMapCatalog clear
+  override def invalidateAllLocalCaches: Unit = {
+    sessionIDToMapCatalog clear()
+    sessionInvalidator(None) invalidateCache
+  }
 
 }
 
 
 class HazelcastSessionConfigManager(
-                                     override protected val hInstance: HazelcastInstance
+                                     override protected val hInstance: HazelcastInstance,
+                                     sessionInvalidator: Option[SessionID] => CacheInvalidator
                                    ) extends HazelcastSessionResourceManager[SQLConf] {
 
   import HazelcastSessionProvider._
@@ -238,8 +246,14 @@ class HazelcastSessionConfigManager(
     publishInvalidation()
   }
 
-  override def invalidateAllLocalCaches: Unit = sessionId2Config.values.foreach(_.invalidateLocalCache)
+  override def invalidateAllLocalCaches: Unit = {
+    sessionId2Config.values.foreach(_.invalidateLocalCache)
+    sessionInvalidator(None) invalidateCache
+  }
 
-  override def invalidateLocalCaches(key: SessionID): Unit = sessionId2Config.get(key).foreach(_.invalidateLocalCache)
+  override def invalidateLocalCaches(key: SessionID): Unit = {
+    sessionId2Config.get(key).foreach(_.invalidateLocalCache)
+    sessionInvalidator(Some(key)) invalidateCache
+  }
 
 }

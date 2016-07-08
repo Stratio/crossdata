@@ -17,6 +17,7 @@ package org.apache.spark.sql.crossdata.session
 
 import com.hazelcast.config.{GroupConfig, XmlConfigBuilder}
 import com.hazelcast.core.Hazelcast
+import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
@@ -48,6 +49,15 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
   import HazelcastSessionProvider._
   import XDSharedState._
 
+  private val sessionsCache: collection.mutable.Map[SessionID, XDSession] = collection.mutable.Map.empty
+  private val sessionsCacheInvalidator =
+    (sessionId: Option[SessionID]) => new CacheInvalidator {
+      override def invalidateCache: Unit = sessionId match {
+        case None => sessionsCache clear()
+        case Some(sid) => sessionsCache -= sid
+      }
+    }
+
   override lazy val logger = Logger.getLogger(classOf[HazelcastSessionProvider])
 
   private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
@@ -75,36 +85,48 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
     Hazelcast.newHazelcastInstance(xmlConfig)
   }
 
-  private val sessionIDToSQLProps = new HazelcastSessionConfigManager(hInstance)
-  private val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(hInstance, sharedState.sqlConf)
+  private val sessionIDToSQLProps = new HazelcastSessionConfigManager(hInstance, sessionsCacheInvalidator)
+  private val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(
+    hInstance,
+    sharedState.sqlConf,
+    sessionsCacheInvalidator
+  )
 
   override def newSession(sessionID: SessionID): Try[XDSession] =
     Try {
       val tempCatalogs = sessionIDToTempCatalogs.newResource(sessionID)
       val config = sessionIDToSQLProps.newResource(sessionID, Some(sharedState.sparkSQLProps))
 
-      buildSession(sessionID, config, tempCatalogs)
+      val session = buildSession(sessionID, config, tempCatalogs)
+      sessionsCache += sessionID -> session
+
+      session
     }
 
   override def closeSession(sessionID: SessionID): Try[Unit] =
     for {
       _ <- checkNotNull(sessionIDToSQLProps.deleteSessionResource(sessionID))
       _ <- sessionIDToTempCatalogs.deleteSessionResource(sessionID)
-    } yield ()
+    } yield {
+      sessionsCache -= sessionID
+    }
 
 
   // TODO take advantage of common utils pattern?
   override def session(sessionID: SessionID): Try[XDSession] =
-    for {
-      tempCatalogMap <- sessionIDToTempCatalogs.getResource(sessionID)
-      configMap <- sessionIDToSQLProps.getResource(sessionID)
-      sess <- Try(buildSession(sessionID, configMap, tempCatalogMap))
-    } yield {
-      sess
+    sessionsCache.get(sessionID).map(Success(_)).getOrElse {
+      for {
+        tempCatalogMap <- sessionIDToTempCatalogs.getResource(sessionID)
+        configMap <- sessionIDToSQLProps.getResource(sessionID)
+        sess <- Try(buildSession(sessionID, configMap, tempCatalogMap))
+      } yield {
+        sess
+      }
     }
 
 
   override def close(): Unit = {
+    sessionsCache clear()
     sessionIDToTempCatalogs.clearAllSessionsResources()
     sessionIDToSQLProps.clearAllSessionsResources()
     hInstance.shutdown()
