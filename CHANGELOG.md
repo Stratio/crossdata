@@ -5,7 +5,10 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 ## 1.5.0 (upcoming)
 * Global index: use of inverted indices for speeding-up queries
 
-## 1.3.0 (Jun 2016)
+## 1.4.0 (July 2016)
+* Upgrade to Elasticsearch 2.3
+
+## 1.3.0 (June 2016)
 * Upgrade to Spark 1.6.1
 * Support for INSERT INTO
 * Support for ADD JAR
@@ -13,6 +16,8 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Encryption for the communication between client and server.
 * Added method to check communication between client ans server.
 * Upgrade Stratio spark-mongodb to 0.11.2
+* Upgrade Datastax spark-cassandra-connector to 1.6.0
+* Upgrade Elasticsearch-hadoop to 2.3
 * Improved communication between client and server.
 * Native jobs available in SparkUI
 * Improved native access to MongoDB

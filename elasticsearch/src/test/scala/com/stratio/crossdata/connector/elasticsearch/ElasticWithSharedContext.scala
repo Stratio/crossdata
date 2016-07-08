@@ -16,10 +16,9 @@
 package com.stratio.crossdata.connector.elasticsearch
 
 
-
 import java.util.UUID
 
-import com.sksamuel.elastic4s.ElasticClient
+import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.mappings.MappingDefinition
@@ -27,8 +26,8 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
-import org.elasticsearch.common.joda.time.DateTime
-import org.elasticsearch.common.settings.ImmutableSettings
+import org.elasticsearch.common.settings.Settings
+import org.joda.time.DateTime
 import org.scalatest.Suite
 
 import scala.util.Try
@@ -72,8 +71,9 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
   //Template steps: Override them
   override protected def prepareClient: Option[ClientParams] = Try {
     logInfo(s"Connection to elastic search, ElasticHost: $ElasticHost, ElasticNativePort:$ElasticNativePort, ElasticClusterName $ElasticClusterName")
-    val settings = ImmutableSettings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
-    val elasticClient = ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
+    val settings = Settings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
+    val uri = ElasticsearchClientUri(s"elasticsearch://$ElasticHost:$ElasticNativePort")
+    val elasticClient = ElasticClient.transport(settings, uri)
     createIndex(elasticClient, Index, typeMapping())
     elasticClient
   } toOption
@@ -89,7 +89,7 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
   }
 
   def typeMapping(): MappingDefinition ={
-    Type as(
+    Type fields (
       "id" typed IntegerType,
       "age" typed IntegerType,
       "description" typed StringType,

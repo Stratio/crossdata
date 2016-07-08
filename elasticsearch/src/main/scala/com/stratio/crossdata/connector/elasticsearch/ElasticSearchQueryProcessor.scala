@@ -22,10 +22,10 @@ import com.stratio.crossdata.connector.elasticsearch.ElasticSearchConnectionUtil
 import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
+import org.apache.spark.sql.{Row, sources}
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, ProjectReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{Row, sources}
 import org.elasticsearch.action.search.SearchResponse
 
 import scala.util.{Failure, Try}
@@ -101,15 +101,17 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       case sources.StringStartsWith(attribute, value) => prefixQuery(attribute, value.toLowerCase)
     }
 
+    import scala.collection.JavaConversions._
+
     val searchFilters = sFilters.collect {
-      case sources.EqualTo(attribute, value) => termFilter(attribute, value)
-      case sources.GreaterThan(attribute, value) => rangeFilter(attribute).gt(value)
-      case sources.GreaterThanOrEqual(attribute, value) => rangeFilter(attribute).gte(value.toString)
-      case sources.LessThan(attribute, value) => rangeFilter(attribute).lt(value)
-      case sources.LessThanOrEqual(attribute, value) => rangeFilter(attribute).lte(value.toString)
-      case sources.In(attribute, value) => termsFilter(attribute, value.toList: _*)
-      case sources.IsNotNull(attribute) => existsFilter(attribute)
-      case sources.IsNull(attribute) => missingFilter(attribute)
+      case sources.EqualTo(attribute, value) => termQuery(attribute, value)
+      case sources.GreaterThan(attribute, value) => rangeQuery(attribute).from(value).includeLower(false)
+      case sources.GreaterThanOrEqual(attribute, value) => rangeQuery(attribute).gte(value.toString)
+      case sources.LessThan(attribute, value) => rangeQuery(attribute).to(value).includeUpper(false)
+      case sources.LessThanOrEqual(attribute, value) => rangeQuery(attribute).lte(value.toString)
+      case sources.In(attribute, value) => termsQuery(attribute, value.map(_.asInstanceOf[AnyRef]): _*)
+      case sources.IsNotNull(attribute) => existsQuery(attribute)
+      case sources.IsNull(attribute) => must(not(existsQuery(attribute)))
     }
 
     val matchQuery = query bool must(matchers)
