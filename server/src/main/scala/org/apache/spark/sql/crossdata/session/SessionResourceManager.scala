@@ -90,7 +90,7 @@ trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidati
 class HazelcastSessionCatalogManager(
                                       override protected val hInstance: HazelcastInstance,
                                       catalystConf: CatalystConf,
-                                      sessionInvalidator: Option[SessionID] => CacheInvalidator
+                                      sessionInvalidator: Option[SessionID] => Option[CacheInvalidator] = (_ => None)
                                     ) extends HazelcastSessionResourceManager[Seq[XDTemporaryCatalog]] {
 
   import HazelcastSessionProvider._
@@ -174,12 +174,12 @@ class HazelcastSessionCatalogManager(
 
   override def invalidateLocalCaches(key: SessionID): Unit = {
     sessionIDToMapCatalog remove key
-    sessionInvalidator(Some(key)) invalidateCache
+    sessionInvalidator(Some(key)).foreach(_.invalidateCache)
   }
 
   override def invalidateAllLocalCaches: Unit = {
     sessionIDToMapCatalog clear()
-    sessionInvalidator(None) invalidateCache
+    sessionInvalidator(None).foreach(_.invalidateCache)
   }
 
 }
@@ -187,7 +187,7 @@ class HazelcastSessionCatalogManager(
 
 class HazelcastSessionConfigManager(
                                      override protected val hInstance: HazelcastInstance,
-                                     sessionInvalidator: Option[SessionID] => CacheInvalidator
+                                     sessionInvalidator: Option[SessionID] => Option[CacheInvalidator] = (_ => None)
                                    ) extends HazelcastSessionResourceManager[SQLConf] {
 
   import HazelcastSessionProvider._
@@ -248,12 +248,12 @@ class HazelcastSessionConfigManager(
 
   override def invalidateAllLocalCaches: Unit = {
     sessionId2Config.values.foreach(_.invalidateLocalCache)
-    sessionInvalidator(None) invalidateCache
+    sessionInvalidator(None).foreach(_.invalidateCache)
   }
 
   override def invalidateLocalCaches(key: SessionID): Unit = {
     sessionId2Config.get(key).foreach(_.invalidateLocalCache)
-    sessionInvalidator(Some(key)) invalidateCache
+    sessionInvalidator(Some(key)).foreach(_.invalidateCache)
   }
 
 }

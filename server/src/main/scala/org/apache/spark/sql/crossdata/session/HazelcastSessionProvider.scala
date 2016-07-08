@@ -51,10 +51,12 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
 
   private val sessionsCache: collection.mutable.Map[SessionID, XDSession] = collection.mutable.Map.empty
   private val sessionsCacheInvalidator =
-    (sessionId: Option[SessionID]) => new CacheInvalidator {
-      override def invalidateCache: Unit = sessionId match {
-        case None => sessionsCache clear()
-        case Some(sid) => sessionsCache -= sid
+    (sessionId: Option[SessionID]) => Some {
+      new CacheInvalidator {
+        override def invalidateCache: Unit = sessionId match {
+          case None => sessionsCache clear()
+          case Some(sid) => sessionsCache -= sid
+        }
       }
     }
 
