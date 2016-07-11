@@ -16,6 +16,7 @@
 package org.apache.spark.sql.crossdata.catalyst.optimizer
 
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.analysis.UnresolvedAttribute
 import org.apache.spark.sql.catalyst.expressions.{AttributeReference, Expression, In, Literal}
 import org.apache.spark.sql.catalyst.optimizer.{DefaultOptimizer, Optimizer}
@@ -33,18 +34,20 @@ import org.apache.spark.sql.types.{DataType, StructType}
 
 import scala.annotation.tailrec
 
-case class XDOptimizer(xdContext: XDContext) extends Optimizer {
+case class XDOptimizer(xdContext: XDContext, conf: CatalystConf) extends Optimizer(conf) {
 
-  def convertStrategy(strategy: DefaultOptimizer.Strategy): Strategy = strategy.maxIterations match {
+  val defaultOptimizer = DefaultOptimizer(conf)
+
+  def convertStrategy(strategy: defaultOptimizer.Strategy): Strategy = strategy.maxIterations match {
     case 1 => Once
     case n => FixedPoint(n)
   }
 
-  def convertBatches(batch: DefaultOptimizer.Batch): Batch =
+  def convertBatches(batch: defaultOptimizer.Batch): Batch =
     Batch(batch.name, convertStrategy(batch.strategy), batch.rules: _*)
 
-  override protected val batches: Seq[Batch] =
-    (DefaultOptimizer.batches map (convertBatches(_))) ++ Seq(Batch("Global indexes phase", Once, CheckGlobalIndexInFilters(xdContext)))
+  override val batches: List[Batch] =
+    (defaultOptimizer.batches map (convertBatches(_))) ++ Seq(Batch("Global indexes phase", Once, CheckGlobalIndexInFilters(xdContext)))
 }
 
 

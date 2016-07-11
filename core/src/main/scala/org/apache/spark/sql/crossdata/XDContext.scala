@@ -231,7 +231,7 @@ class XDContext protected (@transient val sc: SparkContext,
     }
 
   @transient
-  override protected[sql] lazy val optimizer: Optimizer = XDOptimizer(self)
+  override protected[sql] lazy val optimizer: Optimizer = XDOptimizer(self, catalystConf)
 
   @transient
   class XDPlanner extends sparkexecution.SparkPlanner(this) with XDStrategies {

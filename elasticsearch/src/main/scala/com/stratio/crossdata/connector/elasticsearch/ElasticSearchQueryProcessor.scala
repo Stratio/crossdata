@@ -57,7 +57,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
     def tryRows(requiredColumns: Seq[Attribute], finalQuery: SearchDefinition, esClient: ElasticClient): Try[Array[Row]] = {
       val rows: Try[Array[Row]] = Try {
-        val resp: SearchResponse = esClient.execute(finalQuery).await
+        val resp: SearchResponse = esClient.execute(finalQuery).await.original
         if (resp.getShardFailures.length > 0) {
           val errors = resp.getShardFailures map { failure => failure.reason() }
           throw new RuntimeException(errors mkString("Errors from ES:", ";\n", ""))
