@@ -23,6 +23,7 @@ import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.Publish
 import akka.http.scaladsl.model.Multipart
 import akka.http.scaladsl.model.Multipart.BodyPart
+import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.FileIO
@@ -45,41 +46,41 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
   lazy val logger = Logger.getLogger(classOf[CrossdataHttpServer])
   lazy val mediator = DistributedPubSubExtension(system).mediator
 
+  type SessionDirective[Session] = Directive[Tuple1[Session]]
+
   def route =
-    path("upload") {
-      entity(as[Multipart.FormData]) {
-        formData =>
-          // collect all parts of the multipart as it arrives into a map
-          var path = ""
-          val allPartsF: Future[Map[String, Any]] = formData.parts.mapAsync[(String, Any)](1) {
+    path("upload" / JavaUUID) { sessionUUID =>
+      entity(as[Multipart.FormData]) { formData =>
+        // collect all parts of the multipart as it arrives into a map
+        var path = ""
+        val allPartsF: Future[Map[String, Any]] = formData.parts.mapAsync[(String, Any)](1) {
 
-            case part: BodyPart if part.name == "fileChunk" =>
-              // stream into a file as the chunks of it arrives and return a future file to where it got stored
-              val file = new java.io.File(s"/tmp/${part.filename.getOrElse("uploadFile")}")
-              path = file.getAbsolutePath
-              logger.info("Uploading file...")
-              // TODO map is not used
-              part.entity.dataBytes.runWith(FileIO.toFile(file)).map(_ => part.name -> file)
+          case part: BodyPart if part.name == "fileChunk" =>
+            // stream into a file as the chunks of it arrives and return a future file to where it got stored
+            val file = new java.io.File(s"/tmp/${part.filename.getOrElse("uploadFile")}")
+            path = file.getAbsolutePath
+            logger.info("Uploading file...")
+            // TODO map is not used
+            part.entity.dataBytes.runWith(FileIO.toFile(file)).map(_ => part.name -> file)
 
-          }.runFold(Map.empty[String, Any])((map, tuple) => map + tuple)
+        }.runFold(Map.empty[String, Any])((map, tuple) => map + tuple)
 
-          val done = allPartsF.onSuccess {
-            case _ => logger.info("Recieved file")
+
+        // when processing have finished create a response for the user
+        onSuccess(allPartsF) { allParts =>
+          logger.info("Recieved file")
+          complete {
+            val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
+            val hdfsPath = writeJarToHdfs(hdfsConfig, path)
+            val session = Session(sessionUUID, null)
+            //Send a broadcast message to all servers
+            mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), session))
+            hdfsPath
           }
-
-          // when processing have finished create a response for the user
-          onSuccess(allPartsF) { allParts =>
-            complete {
-              val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
-              //Send a broadcast message to all servers
-              val hdfsPath = writeJarToHdfs(hdfsConfig, path)
-              mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), new Session(UUID.randomUUID(), serverActor)))
-              hdfsPath
-            }
-          }
+        }
       }
-    } ~
-      complete("Welcome to Crossdata HTTP Server")
+
+    } ~ complete("Welcome to Crossdata HTTP Server")
 
   private def writeJarToHdfs(hdfsConfig: Config, jar: String): String = {
     val user = hdfsConfig.getString("user")
