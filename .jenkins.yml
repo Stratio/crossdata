@@ -51,3 +51,4 @@ ITPARAMETERS: >
     -Dstreaming.catalog.zookeeper.connectionString=%%ZOOKEEPER:2181
     -Dstreaming.receiver.kafka.connection=%%KAFKA:9092
     -Dstreaming.receiver.zookeeper.connectionString=%%ZOOKEEPER:2181
+    -Dlauncher.sparkHome=/opt/sds/spark/
