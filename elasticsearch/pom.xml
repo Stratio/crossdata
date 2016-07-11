@@ -33,23 +33,13 @@
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
-        <elastic.datasource.version>2.3.2</elastic.datasource.version>
+        <elastic.datasource.version>2.3.3</elastic.datasource.version>
         <elastic4s.version>2.3.0</elastic4s.version>
         <jackson.elastic.version>2.7.3</jackson.elastic.version>
     </properties>
     <dependencies>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.3.2</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>2.2.0</version>
-        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

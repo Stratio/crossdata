@@ -16,7 +16,7 @@
 package com.stratio.crossdata.driver.globalindex
 
 import com.mongodb.casbah.MongoClient
-import com.sksamuel.elastic4s.ElasticClient
+import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
@@ -32,7 +32,7 @@ class MongoAndElasticWithSharedContext extends SharedXDContextTest with Constant
   lazy val elasticClient: ElasticClient = Try {
     logInfo(s"Connection to elastic search, ElasticHost: $ElasticHost, ElasticNativePort:$ElasticNativePort, ElasticClusterName $ElasticClusterName")
     val settings = Settings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
-    val elasticClient = ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
+    val elasticClient = ElasticClient.transport(settings, ElasticsearchClientUri(ElasticHost, ElasticNativePort))
     elasticClient
   } get
 
