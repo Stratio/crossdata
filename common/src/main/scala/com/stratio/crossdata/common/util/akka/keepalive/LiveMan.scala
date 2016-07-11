@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.stratio.crossdata.common.util.akka.KeepAlive
+package com.stratio.crossdata.common.util.akka.keepalive
 
 import akka.actor.{Actor, ActorRef, Cancellable}
 import LiveMan.HeartBeat
@@ -22,7 +22,7 @@ import LiveMan.HeartBeat
 import scala.concurrent.duration._
 
 object LiveMan {
-  private[KeepAlive] case class HeartBeat[ID](sourceId: ID)
+  private[keepalive] case class HeartBeat[ID](sourceId: ID)
 }
 
 /**

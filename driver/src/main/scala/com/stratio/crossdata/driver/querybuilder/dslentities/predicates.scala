@@ -61,7 +61,7 @@ with Predicate {
   override val tokenStr: String = "<>"
 }
 
-case class LessThan(left: Expression, right: Expression) extends BinaryExpression //TODO: Review
+case class LessThan(left: Expression, right: Expression) extends BinaryExpression
 with Predicate {
 
   override val tokenStr: String = "<"
@@ -72,7 +72,7 @@ with Predicate {
   }
 }
 
-case class LessThanOrEqual(left: Expression, right: Expression) extends BinaryExpression //TODO: Review
+case class LessThanOrEqual(left: Expression, right: Expression) extends BinaryExpression
 with Predicate {
 
   override val tokenStr: String = "<="
@@ -94,7 +94,7 @@ with Predicate {
   }
 }
 
-case class GreaterThanOrEqual(left: Expression, right: Expression) extends BinaryExpression //TODO: Review
+case class GreaterThanOrEqual(left: Expression, right: Expression) extends BinaryExpression
 with Predicate {
 
   override val tokenStr: String = ">="

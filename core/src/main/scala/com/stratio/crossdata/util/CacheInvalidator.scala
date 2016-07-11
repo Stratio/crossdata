@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.models
+package com.stratio.crossdata.util
 
-case class ConnectionHostModel(zkConnection: Seq[ConnectionModel], kafkaConnection: Seq[ConnectionModel]){
+trait CacheInvalidator {
 
-  def toPrettyString : String = ModelUtils.modelToJsonString(this)
+  def invalidateCache: Unit
+
 }

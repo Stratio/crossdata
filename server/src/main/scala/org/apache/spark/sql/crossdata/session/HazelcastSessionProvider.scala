@@ -15,7 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.session
 
-import com.hazelcast.config.{GroupConfig, XmlConfigBuilder, Config => HazelcastConfig}
+import com.hazelcast.config.{GroupConfig, XmlConfigBuilder}
 import com.hazelcast.core.Hazelcast
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
@@ -35,7 +35,6 @@ object HazelcastSessionProvider {
   val SqlConfMapId = "sqlconfmap"
   val HazelcastCatalogMapId = "hazelcatalogmap"
 
-  // TODO this is not the right place
   def checkNotNull[T]: T => Try[T] =
     a => Option(a).map(Success(_)).getOrElse(Failure(new RuntimeException(s"Map not found")))
 
@@ -52,8 +51,6 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
 
   private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
 
-  // TODO replace with sqlConf (which extends CatalystConf)
-  // TODO @deprecated
   protected lazy val catalystConf: CatalystConf = {
     import CoreConfig.CaseSensitive
     val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
@@ -68,7 +65,7 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
 
 
 
-  private val sharedState = new XDSharedState(sc, Option(userConfig), externalCatalog, streamingCatalog)// TODO add sqlConf
+  private val sharedState = new XDSharedState(sc, Option(userConfig), externalCatalog, streamingCatalog)
 
   private val hInstance = {
     // TODO it should only use Hazelcast.newHazelcastInstance() which internally creates a xmlConfig and the group shouldn't be hardcoded (blocked by CD)
@@ -77,46 +74,46 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
     Hazelcast.newHazelcastInstance(xmlConfig)
   }
 
-  // TODO scalaWrapper // scalaHazel
-  // TODO snapshot from (list(session) + addlistener)?? (
   private val sessionIDToSQLProps: java.util.Map[SessionID, Map[String,String]] = hInstance.getMap(SqlConfMapId)
-  private val sessionIDToTempCatalogs: SessionManager[SessionID, Seq[XDTemporaryCatalog]] = new HazelcastSessionCatalogManager(hInstance, sharedState.sqlConf)
-  // TODO addSessionsToAllMap && recieveSpecificOptions
-  override def newSession(sessionID: SessionID): Try[XDSession] = // TODO try vs future
-    Try {
-      val tempCatalogs = sessionIDToTempCatalogs.addSession(sessionID)
-      sessionIDToSQLProps.put(sessionID, sharedState.sparkSQLProps) // TODO Imap and set
+  private val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(hInstance, sharedState.sqlConf)
 
-      buildSession(sharedState.sqlConf, tempCatalogs)
+  override def newSession(sessionID: SessionID): Try[XDSession] =
+    Try {
+      val tempCatalogs = sessionIDToTempCatalogs.newResource(sessionID)
+      sessionIDToSQLProps.put(sessionID, sharedState.sparkSQLProps)
+
+      buildSession(sessionID, sharedState.sqlConf, tempCatalogs)
     }
 
-  // TODO closeSession && removeFromAllCatalogs
   override def closeSession(sessionID: SessionID): Try[Unit] =
     for {
       _ <- checkNotNull(sessionIDToSQLProps.remove(sessionID))
-      _ <- sessionIDToTempCatalogs.removeSession(sessionID)
+      _ <- sessionIDToTempCatalogs.deleteSessionResource(sessionID)
     } yield ()
 
 
   // TODO take advantage of common utils pattern?
   override def session(sessionID: SessionID): Try[XDSession] =
     for {
-      tempCatalogMap <- sessionIDToTempCatalogs.getSession(sessionID)
+      tempCatalogMap <- sessionIDToTempCatalogs.getResource(sessionID)
       configMap <- checkNotNull(sessionIDToSQLProps.get(sessionID))
-      sess <- Try(buildSession(configMap, tempCatalogMap))
+      sess <- Try(buildSession(sessionID, configMap, tempCatalogMap))
     } yield {
       sess
     }
 
 
   override def close(): Unit = {
-    sessionIDToTempCatalogs.clearAllSessions()
+    sessionIDToTempCatalogs.clearAllSessionsResources()
     sessionIDToSQLProps.clear()
     hInstance.shutdown()
   }
 
 
-  private def buildSession(sqlConf: SQLConf, xDTemporaryCatalogs: Seq[XDTemporaryCatalog]): XDSession = {
+  private def buildSession(
+                            sessionID: SessionID,
+                            sqlConf: SQLConf,
+                            xDTemporaryCatalogs: Seq[XDTemporaryCatalog]): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalogs)
     new XDSession(sharedState, sessionState)
   }

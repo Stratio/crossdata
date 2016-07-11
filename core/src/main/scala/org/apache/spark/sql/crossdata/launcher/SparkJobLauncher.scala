@@ -125,7 +125,7 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
       .addAppArgs(appArgs: _*)
       .setMaster(master)
       .setDeployMode("cluster")
-    // TODO startApplication(listener) since 1.6 preferred
+    // TODO startApplication(listener) since 1.6 preferred => Spark 2.0
     externalJars.foreach(sparkLauncher.addJar)
     sparkConf.map({ case (key, value) => sparkLauncher.setConf(key, value) })
     sparkLauncher.launch()

@@ -27,9 +27,7 @@ object XDSessionProvider {
 }
 
 // TODO It should share some of the XDContext fields. It will be possible when Spark 2.0 is released
-// TODO Crossdata server should create new session and close session when certain events happen
-
-//TODO sessionProvider should be threadSafe
+// TODO sessionProvider should be threadSafe
 abstract class XDSessionProvider(
                                   @transient val sc: SparkContext,
                                   protected val commonConfig: Option[Config] = None
@@ -38,6 +36,7 @@ abstract class XDSessionProvider(
   import XDSessionProvider._
 
 
+  //NOTE: DO NEVER KEEP THE RETURNED REFERENCE FOR SEVERAL USES!
   def session(sessionID: SessionID): Try[XDSession]
 
   def newSession(sessionID: SessionID): Try[XDSession]
@@ -55,8 +54,6 @@ abstract class XDSessionProvider(
 }
 
 
-// TODO use simplexdSharedContext in the XDSession builder by default
-// TODO SessionProvider(use delegateMethods) instead of error??
 class SimpleSessionProvider(
                            @transient override val sc: SparkContext,
                            commonConfig: Option[Config] = None

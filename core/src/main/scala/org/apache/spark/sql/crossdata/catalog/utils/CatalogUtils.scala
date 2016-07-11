@@ -44,7 +44,7 @@ object CatalogUtils extends Logging {
       val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf], classOf[Config])
       Option(constr.newInstance(catalystConf, serverConfig).asInstanceOf[XDStreamingCatalog])
     } else {
-      logError("Empty streaming catalog")
+      logWarning("There is no configured streaming catalog")
       None
     }
   }

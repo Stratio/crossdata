@@ -180,6 +180,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       val resultSet = selectMetadata(tableWithTableMetadata, TableIdentifier(crossdataTable.tableName, crossdataTable.dbName))
 
       if (!resultSet.isBeforeFirst) {
+        resultSet.close()
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $db.$tableWithTableMetadata (
               | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
@@ -193,7 +194,9 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
         prepped.setString(6, tableOptions)
         prepped.setString(7, CrossdataVersion)
         prepped.execute()
+        prepped.close()
       } else {
+        resultSet.close()
         val prepped =
           connection.prepareStatement(
             s"""|UPDATE $db.$tableWithTableMetadata
@@ -207,6 +210,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
         prepped.setString(4, tableOptions)
         prepped.setString(5, CrossdataVersion)
         prepped.execute()
+        prepped.close()
       }
       connection.commit()
 
@@ -238,6 +242,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
 
       if (!resultSet.isBeforeFirst) {
+        resultSet.close()
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $db.$tableWithViewMetadata (
               | $DatabaseField, $TableNameField, $SqlViewField, $CrossdataVersionField
@@ -248,7 +253,9 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
         prepped.setString(3, sqlText)
         prepped.setString(4, CrossdataVersion)
         prepped.execute()
+        prepped.close()
       } else {
+        resultSet.close()
         val prepped =
           connection.prepareStatement(
             s"""|UPDATE $db.$tableWithViewMetadata SET $SqlViewField=?
@@ -257,6 +264,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
 
         prepped.setString(1, sqlText)
         prepped.execute()
+        prepped.close()
       }
       connection.commit()
 
@@ -267,6 +275,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
   private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
+
     preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
     preparedStatement.setString(2, tableIdentifier.table)
     preparedStatement.executeQuery()
@@ -291,8 +300,10 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
       preparedStatement.setString(1, crossdataApp.appAlias)
       val resultSet = preparedStatement.executeQuery()
+      preparedStatement.close()
 
       if (!resultSet.next()) {
+        resultSet.close()
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $db.$tableWithAppJars (
               | $JarPath, $AppAlias, $AppClass
@@ -302,7 +313,9 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
         prepped.setString(2, crossdataApp.appAlias)
         prepped.setString(3, crossdataApp.appClass)
         prepped.execute()
+        prepped.close()
       } else {
+        resultSet.close()
         val prepped = connection.prepareStatement(
           s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, $AppClass=?
               |WHERE $AppAlias='${crossdataApp.appAlias}'
@@ -310,6 +323,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
         prepped.setString(1, crossdataApp.jar)
         prepped.setString(2, crossdataApp.appClass)
         prepped.execute()
+        prepped.close()
       }
       connection.commit()
     } finally {
@@ -323,13 +337,16 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
     val resultSet = preparedStatement.executeQuery()
 
     if (!resultSet.next) {
+      resultSet.close()
+      preparedStatement.close()
       None
     } else {
 
       val jar = resultSet.getString(JarPath)
       val alias = resultSet.getString(AppAlias)
       val clss = resultSet.getString(AppClass)
-
+      resultSet.close()
+      preparedStatement.close()
       Some(
         CrossdataApp(jar, alias, clss)
       )

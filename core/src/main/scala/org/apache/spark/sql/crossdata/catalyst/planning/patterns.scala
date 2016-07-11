@@ -53,7 +53,6 @@ object ExtendedPhysicalOperation extends PredicateHelper {
       case EvaluateNativeUDF(udf, child, attribute) =>
         collectProjectsAndFilters(child)
 
-      // TODO refactor. Having, udafs, etc...
       case Aggregate(groupingExpressions, aggregateExpression, child) =>
         collectProjectsAndFilters(child)
 

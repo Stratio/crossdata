@@ -48,8 +48,6 @@ class DriverIT extends EndToEndTest {
 
     driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
 
-
-    // TODO how to process metadata ops?
     val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
     result shouldBe an[SuccessfulSQLResult]
     result.hasError should be(false)
@@ -124,7 +122,7 @@ class DriverIT extends EndToEndTest {
     driver.stop()
   }
 
-  it should "be able to execute ADD JAR Command of an existent file" ignore { // TODO restore before merging session to master
+  it should "be able to execute ADD JAR Command of an existent file" in{ // TODO restore before merging session to master
     assumeCrossdataUpAndRunning
 
     val file = File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
@@ -146,37 +144,40 @@ class DriverIT extends EndToEndTest {
     result.hasError should equal(true)
   }
 
-  //TODO Uncomment when CD be ready
+  it should "be able to execute ADD APP Command of an existent file" in {
+    assumeCrossdataUpAndRunning
 
-//  it should "be able to execute ADD APP Command of an existent file" in {
-//    assumeCrossdataUpAndRunning
-//
-//    val filePath = getClass.getResource("/TestAddApp.jar").getPath
-//    val driver = Driver.getOrCreate()
-//    val result = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
-//    driver.sql("EXECUTE testApp(rain,bow)").waitForResult()
-//    driver.stop()
-//    result.hasError should equal(false)
-//
-//
-//  }
+    val filePath = getClass.getResource("/TestAddApp.jar").getPath
+    val driver = Driver.getOrCreate()
+    val result = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
+    driver.sql("EXECUTE testApp(rain,bow)").waitForResult()
+    driver.stop()
+    result.hasError should equal(false)
 
-  //TODO Uncomment when CD be ready
-//  it should "be able to execute ADD APP Command of an existent file with options" in {
-//    assumeCrossdataUpAndRunning
-//
-//    val filePath = getClass.getResource("/TestAddApp.jar").getPath
-//    val driver = Driver.getOrCreate()
-//    val addAppResult = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
-//    addAppResult.hasError should equal(false)
-//
-//    val executeResult = driver.sql("""EXECUTE testApp(rain,bow2) OPTIONS (executor.memory '20G')""").waitForResult()
-//
-//    executeResult.hasError should equal(false)
-//    executeResult.resultSet.length should equal(1)
-//    executeResult.resultSet(0).get(0) should equal("Spark app launched")
-//
-//    driver.stop()
-//  }
+
+  }
+
+  it should "be able to execute ADD APP Command of an existent file with options" in {
+    assumeCrossdataUpAndRunning
+
+    val filePath = getClass.getResource("/TestAddApp.jar").getPath
+    val driver = Driver.getOrCreate()
+    val addAppResult = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
+    addAppResult.hasError should equal(false)
+
+    val executeResult = driver.sql("""EXECUTE testApp(rain,bow2) OPTIONS (executor.memory '20G')""").waitForResult()
+
+    executeResult.hasError should equal(false)
+    executeResult.resultSet.length should equal(1)
+    executeResult.resultSet(0).get(0) should equal("Spark app launched")
+
+    driver.stop()
+  }
+
+
+
+
+
+
 
 }

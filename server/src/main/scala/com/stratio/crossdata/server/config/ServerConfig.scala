@@ -19,15 +19,15 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
-
-import scala.collection.JavaConversions._
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.config.CoreConfig
 
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.util.Try
 
 object ServerConfig {
+
   val ServerBasicConfig = "server-reference.conf"
   val ParentConfigName = "crossdata-server"
 
@@ -118,7 +118,14 @@ trait ServerConfig extends NumberActorConfig {
     }
 
     // System properties
-    defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
+    val systemPropertiesConfig =
+      Try(
+        ConfigFactory.parseProperties(System.getProperties).getConfig(ServerConfig.ParentConfigName)
+      ).getOrElse(
+        ConfigFactory.parseProperties(System.getProperties)
+      )
+
+    defaultConfig = systemPropertiesConfig.withFallback(defaultConfig)
 
     val finalConfig = {
       if (defaultConfig.hasPath("akka.cluster.server-nodes")) {
