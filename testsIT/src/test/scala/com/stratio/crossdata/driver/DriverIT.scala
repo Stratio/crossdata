@@ -124,7 +124,7 @@ class DriverIT extends EndToEndTest {
     driver.stop()
   }
 
-  it should "be able to execute ADD JAR Command of an existent file" ignore { // TODO restore before merging session to master
+  it should "be able to execute ADD JAR Command of an existent file" in{ // TODO restore before merging session to master
     assumeCrossdataUpAndRunning
 
     val file = File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
@@ -146,8 +146,6 @@ class DriverIT extends EndToEndTest {
     result.hasError should equal(true)
   }
 
-
-
   it should "be able to execute ADD APP Command of an existent file" in {
     assumeCrossdataUpAndRunning
 
@@ -160,7 +158,6 @@ class DriverIT extends EndToEndTest {
 
 
   }
-
 
   it should "be able to execute ADD APP Command of an existent file with options" in {
     assumeCrossdataUpAndRunning
@@ -178,5 +175,11 @@ class DriverIT extends EndToEndTest {
 
     driver.stop()
   }
+
+
+
+
+
+
 
 }

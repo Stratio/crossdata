@@ -183,8 +183,10 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
     preparedStatement.setString(1, crossdataTable.dbName.getOrElse(""))
     preparedStatement.setString(2, crossdataTable.tableName)
     val resultSet = preparedStatement.executeQuery()
+    preparedStatement.close()
 
     if (!resultSet.isBeforeFirst) {
+      resultSet.close()
       val prepped = connection.prepareStatement(
         s"""|INSERT INTO $db.$table (
             | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
@@ -198,8 +200,10 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       prepped.setString(6, tableOptions)
       prepped.setString(7, CrossdataVersion)
       prepped.execute()
+      prepped.close()
     }
     else {
+      resultSet.close()
       val prepped = connection.prepareStatement(
         s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
             |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
@@ -211,6 +215,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       prepped.setString(4, tableOptions)
       prepped.setString(5, CrossdataVersion)
       prepped.execute()
+      prepped.close()
     }
     connection.commit()
     connection.setAutoCommit(true)
@@ -244,6 +249,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
 
       if (!resultSet.isBeforeFirst) {
+        resultSet.close()
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $db.$tableWithViewMetadata (
               | $DatabaseField, $TableNameField, $SqlViewField, $CrossdataVersionField
@@ -254,7 +260,9 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
         prepped.setString(3, sqlText)
         prepped.setString(4, CrossdataVersion)
         prepped.execute()
+        prepped.close()
       } else {
+        resultSet.close()
         val prepped =
           connection.prepareStatement(
             s"""|UPDATE $db.$tableWithViewMetadata SET $SqlViewField=?
@@ -263,6 +271,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
 
         prepped.setString(1, sqlText)
         prepped.execute()
+        prepped.close()
       }
       connection.commit()
 
@@ -274,9 +283,13 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
   private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
-    preparedStatement.setString(2, tableIdentifier.table)
-    preparedStatement.executeQuery()
+    try {
+      preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
+      preparedStatement.setString(2, tableIdentifier.table)
+      preparedStatement.executeQuery()
+    }finally {
+      preparedStatement.close()
+    }
 
   }
 
@@ -298,8 +311,10 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
       preparedStatement.setString(1, crossdataApp.appAlias)
       val resultSet = preparedStatement.executeQuery()
+      preparedStatement.close()
 
       if (!resultSet.next()) {
+        resultSet.close()
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $db.$tableWithAppJars (
               | $JarPath, $AppAlias, $AppClass
@@ -309,7 +324,9 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
         prepped.setString(2, crossdataApp.appAlias)
         prepped.setString(3, crossdataApp.appClass)
         prepped.execute()
+        prepped.close()
       } else {
+        resultSet.close()
         val prepped = connection.prepareStatement(
           s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, $AppClass=?
               |WHERE $AppAlias='${crossdataApp.appAlias}'
@@ -317,6 +334,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
         prepped.setString(1, crossdataApp.jar)
         prepped.setString(2, crossdataApp.appClass)
         prepped.execute()
+        prepped.close()
       }
       connection.commit()
     } finally {
@@ -330,13 +348,16 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
     val resultSet = preparedStatement.executeQuery()
 
     if (!resultSet.next) {
+      resultSet.close()
+      preparedStatement.close()
       None
     } else {
 
       val jar = resultSet.getString(JarPath)
       val alias = resultSet.getString(AppAlias)
       val clss = resultSet.getString(AppClass)
-
+      resultSet.close()
+      preparedStatement.close()
       Some(
         CrossdataApp(jar, alias, clss)
       )
