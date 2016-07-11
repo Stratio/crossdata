@@ -325,15 +325,9 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
   private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $DB.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
-    try {
-      preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
-      preparedStatement.setString(2, tableIdentifier.table)
-      preparedStatement.executeQuery()
-    }finally {
-      preparedStatement.close()
-    }
-
-
+    preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
+    preparedStatement.setString(2, tableIdentifier.table)
+    preparedStatement.executeQuery()
   }
   private def schemaExists(schema: String, connection: Connection): Boolean = {
 

@@ -275,13 +275,10 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
   private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifier): ResultSet = {
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
-    try {
-      preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
-      preparedStatement.setString(2, tableIdentifier.table)
-      preparedStatement.executeQuery()
-    }finally {
-      preparedStatement.close()
-    }
+
+    preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
+    preparedStatement.setString(2, tableIdentifier.table)
+    preparedStatement.executeQuery()
 
   }
 
