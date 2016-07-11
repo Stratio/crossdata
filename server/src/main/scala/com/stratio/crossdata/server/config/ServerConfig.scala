@@ -53,10 +53,12 @@ object ServerConfig {
   val Host = "akka.remote.netty.tcp.hostname"
 
   // Jars Repo
-  val repoJars = "config.externalJarsRepo"
+  val RepoJars = "config.externalJarsRepo"
 
   // Http Server Port
-  val httpServerPort = "config.HttpServerPort"
+  val HttpServerPort = "config.HttpServerPort"
+
+  val IsHazelcastProviderEnabledProperty = "config.hazelcast.enabled"
 }
 
 trait ServerConfig extends NumberActorConfig {
@@ -79,6 +81,8 @@ trait ServerConfig extends NumberActorConfig {
         Seq(11 seconds, d) max // Alarm period need to be at least twice the hear beat period (5 seconds)
       case _ => 2 minute // Default value
     }
+
+  lazy val isHazelcastEnabled = config.getBoolean(ServerConfig.IsHazelcastProviderEnabledProperty)
 
   override val config: Config = {
 
