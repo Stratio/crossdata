@@ -102,6 +102,10 @@ class DriverConf extends Logging {
     hosts.head
   }
 
+  private[crossdata] def getCrossdataServerHttp: String = {
+    val hosts = finalSettings.getStringList(DriverConfigServerHttp).toList
+    hosts.head
+  }
   private[crossdata] def getFlattenTables: Boolean =
     finalSettings.getBoolean(DriverFlattenTables)
 
@@ -189,6 +193,7 @@ object DriverConf {
   val DriverConfigResource = "external.config.resource"
   val DriverConfigFile = "external.config.filename"
   val DriverConfigHosts = "config.cluster.hosts"
+  val DriverConfigServerHttp = "config.cluster.serverHttp"
   val DriverFlattenTables = "config.flatten-tables"
   val DriverClusterName = "config.cluster.name"
   val SSLEnabled = "akka.remote.netty.ssl.enable-ssl"

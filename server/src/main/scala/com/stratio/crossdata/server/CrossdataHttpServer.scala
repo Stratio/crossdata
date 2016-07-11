@@ -16,7 +16,6 @@
 package com.stratio.crossdata.server
 
 import java.io.File
-import java.util.UUID
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.contrib.pattern.DistributedPubSubExtension
@@ -53,11 +52,13 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
       entity(as[Multipart.FormData]) { formData =>
         // collect all parts of the multipart as it arrives into a map
         var path = ""
+        var file: java.io.File = null
+        //        var file:java.io.File
         val allPartsF: Future[Map[String, Any]] = formData.parts.mapAsync[(String, Any)](1) {
 
           case part: BodyPart if part.name == "fileChunk" =>
             // stream into a file as the chunks of it arrives and return a future file to where it got stored
-            val file = new java.io.File(s"/tmp/${part.filename.getOrElse("uploadFile")}")
+            file = new java.io.File(s"/tmp/${part.filename.getOrElse("uploadFile")}")
             path = file.getAbsolutePath
             logger.info("Uploading file...")
             // TODO map is not used
@@ -73,6 +74,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
             val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
             val hdfsPath = writeJarToHdfs(hdfsConfig, path)
             val session = Session(sessionUUID, null)
+            file.delete
             //Send a broadcast message to all servers
             mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), session))
             hdfsPath
