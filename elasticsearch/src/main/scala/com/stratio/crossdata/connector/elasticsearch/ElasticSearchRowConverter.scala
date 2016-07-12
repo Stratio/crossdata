@@ -33,9 +33,9 @@ import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.types.BooleanType
 import org.apache.spark.sql.types.DateType
 import org.apache.spark.sql.types.Decimal
-import org.elasticsearch.common.joda.time.DateTime
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.SearchHitField
+import org.joda.time.DateTime
 
 object ElasticSearchRowConverter {
 

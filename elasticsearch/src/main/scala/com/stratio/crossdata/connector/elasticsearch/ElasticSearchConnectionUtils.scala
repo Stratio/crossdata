@@ -22,7 +22,7 @@ import org.apache.spark.sql.types._
 import org.elasticsearch.client.IndicesAdminClient
 import org.elasticsearch.cluster.metadata.MappingMetaData
 import org.elasticsearch.common.collect.ImmutableOpenMap
-import org.elasticsearch.common.settings. ImmutableSettings
+import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 
 object ElasticSearchConnectionUtils {
@@ -45,8 +45,8 @@ object ElasticSearchConnectionUtils {
 
     val uri = ElasticsearchClientUri(s"elasticsearch://$host:$port")
 
-    val settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build()
-    ElasticClient.remote(settings, uri)
+    val settings = Settings.settingsBuilder().put("cluster.name", clusterName).build()
+    ElasticClient.transport(settings, uri)
   }
 
   def extractIndexAndType(options: Map[String, String]): Option[(String, String)] = {

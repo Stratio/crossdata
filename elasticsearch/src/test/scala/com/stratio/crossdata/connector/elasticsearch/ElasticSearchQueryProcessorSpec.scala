@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
-import com.sksamuel.elastic4s.{IndexesTypes, SearchDefinition}
+import com.sksamuel.elastic4s.{IndexAndTypes, IndexesAndTypes, SearchDefinition}
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.catalyst.expressions.{Attribute, PrettyAttribute}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
@@ -40,7 +40,7 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
     val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
     val filters: Array[SourceFilter] = Array()
 
-    val indexType = IndexesTypes("movies/movie")
+    val indexType = IndexAndTypes("movies/movie")
     val query = new SearchDefinition(indexType)
 
     //Experimentation
@@ -63,7 +63,7 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
     val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
     val filters: Array[SourceFilter] = Array(EqualTo("year", 1990))
 
-    val indexType = IndexesTypes("movies/movie")
+    val indexType = IndexAndTypes("movies/movie")
     val query = new SearchDefinition(indexType)
 
     //Experimentation
@@ -71,7 +71,7 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
 
     //Expectations
     result should not be null
-    result.toString().replace("\n", "").replace(" ", "") should be("{\"query\":{\"bool\":{}},\"post_filter\":{\"bool\":{\"must\":{\"term\":{\"year\":\"1990\"}}}},\"fields\":\"title\"}")
+    result.toString().replace("\n", "").replace(" ", "") should be("{\"query\":{\"bool\":{}},\"post_filter\":{\"bool\":{\"must\":{\"term\":{\"year\":1990}}}},\"fields\":\"title\"}")
   }
 
 
@@ -86,7 +86,7 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
     val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
     val filters: Array[SourceFilter] = Array(EqualTo("year", 1990), EqualTo("Name", "Lord"))
 
-    val indexType = IndexesTypes("movies/movie")
+    val indexType = IndexesAndTypes("movies/movie")
     val query = new SearchDefinition(indexType)
 
     //Experimentation
@@ -94,6 +94,6 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
 
     //Expectations
     result should not be null
-    result.toString().replace("\n", "").replace(" ", "") should be("{\"query\":{\"bool\":{}},\"post_filter\":{\"bool\":{\"must\":[{\"term\":{\"year\":\"1990\"}},{\"term\":{\"Name\":\"Lord\"}}]}},\"fields\":\"title\"}")
+    result.toString().replace("\n", "").replace(" ", "") should be("{\"query\":{\"bool\":{}},\"post_filter\":{\"bool\":{\"must\":[{\"term\":{\"year\":1990}},{\"term\":{\"Name\":\"Lord\"}}]}},\"fields\":\"title\"}")
   }
 }

@@ -18,7 +18,7 @@ package com.stratio.crossdata.connector.elasticsearch
 import java.util.Date
 
 import org.apache.spark.sql.crossdata.ExecutionType.Native
-import org.elasticsearch.common.joda.time.DateTime
+import org.joda.time.DateTime
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
