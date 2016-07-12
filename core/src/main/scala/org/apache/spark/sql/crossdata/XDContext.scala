@@ -360,7 +360,7 @@ class XDContext protected (@transient val sc: SparkContext,
 
   /**
     * Drops the global index in the persistent catalog.
-    * It applies only to metadata, so data do not be deleted.
+    * It applies only to metadata, so data won't be deleted.
     *
     * @param indexIdentifier the index to be dropped.
     */
