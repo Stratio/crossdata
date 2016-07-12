@@ -61,7 +61,8 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
           | es.nodes '$ElasticHost',
           | es.port '$ElasticRestPort',
           | es.nativePort '$ElasticNativePort',
-          | es.cluster '$ElasticClusterName'
+          | es.cluster '$ElasticClusterName',
+          | es.nodes.wan.only 'true'
           |)""".stripMargin
 
     sql(sentence)
