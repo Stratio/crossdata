@@ -19,7 +19,9 @@ import java.util.UUID
 
 import com.hazelcast.core.{HazelcastInstance, IMap, Message, MessageListener}
 import com.stratio.crossdata.util.CacheInvalidator
+import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
+import org.apache.spark.sql.crossdata.HazelcastSQLConf
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
@@ -28,12 +30,12 @@ import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidat
 import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog, XDTemporaryCatalogWithInvalidation}
 
 import scala.collection.mutable
-import scala.util.Try
+import scala.util.{Success, Try}
 
 trait SessionResourceManager[V] {
 
   //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
-  def newResource(key: SessionID): V
+  def newResource(key: SessionID, from: Option[V]): V
 
   def getResource(key: SessionID): Try[V]
 
@@ -60,7 +62,6 @@ trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidati
     topic
   }
 
-
   override def onMessage(message: Message[CacheInvalidationEvent]): Unit =
     Option(message.getMessageObject).filterNot(
       _ => message.getPublishingMember equals hInstance.getCluster.getLocalMember
@@ -69,12 +70,27 @@ trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidati
       case ResourceInvalidationForAllSessions => invalidateAllLocalCaches
     }
 
+  protected def createRandomMap[K, V]: (IMap[K, V], UUID) = {
+    val randomUUID = UUID.randomUUID()
+    (hInstance.getMap[K, V](randomUUID.toString), randomUUID)
+  }
+
+  protected def resourceInvalidator(sessionID: SessionID): CacheInvalidator =
+    new HazelcastCacheInvalidator(sessionID, invalidationTopic)
+
+  protected def publishInvalidation(sessionID: Option[SessionID] = None): Unit =
+    invalidationTopic publish {
+      sessionID.map(ResourceInvalidation(_)) getOrElse ResourceInvalidationForAllSessions
+    }
+
+  protected def publishInvalidation(sessionID: SessionID): Unit = publishInvalidation(Some(sessionID))
+
 }
 
 class HazelcastSessionCatalogManager(
-                                              override protected val hInstance: HazelcastInstance,
-                                              catalystConf: CatalystConf
-                                            ) extends HazelcastSessionResourceManager[Seq[XDTemporaryCatalog]] {
+                                      override protected val hInstance: HazelcastInstance,
+                                      catalystConf: CatalystConf
+                                    ) extends HazelcastSessionResourceManager[Seq[XDTemporaryCatalog]] {
 
   import HazelcastSessionProvider._
 
@@ -88,11 +104,11 @@ class HazelcastSessionCatalogManager(
   private val sessionIDToMapCatalog: mutable.Map[SessionID, XDTemporaryCatalogWithInvalidation] = mutable.Map.empty
   private val sessionIDToTableViewID: IMap[SessionID, (TableMapUUID, ViewMapUUID)] = hInstance.getMap(HazelcastCatalogMapId)
 
-  private def catalogInvalidator(sessionID: SessionID): CacheInvalidator =
-    new HazelcastCacheInvalidator(sessionID, invalidationTopic)
-
   // Returns the seq of XDTempCatalog for the new session
-  override def newResource(key: SessionID): Seq[XDTemporaryCatalog] = {
+
+
+  //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
+  override def newResource(key: SessionID, from: Option[Seq[XDTemporaryCatalog]] = None): Seq[XDTemporaryCatalog] = {
 
     //NO! IT SHOULDN'T HAPPEN BUT SOME PROTECTION IS STILL TODO
 
@@ -145,15 +161,10 @@ class HazelcastSessionCatalogManager(
     publishInvalidation()
   }
 
-  private def createRandomMap[K, V]: (IMap[K, V], UUID) = {
-    val randomUUID = UUID.randomUUID()
-    (hInstance.getMap[K, V](randomUUID.toString), randomUUID)
-  }
-
   private def addNewMapCatalog(sessionID: SessionID): XDTemporaryCatalogWithInvalidation = {
     val localCatalog = new XDTemporaryCatalogWithInvalidation(
       new HashmapCatalog(catalystConf),
-      catalogInvalidator(sessionID)
+      resourceInvalidator(sessionID)
     )
 
     sessionIDToMapCatalog.put(sessionID, localCatalog)
@@ -164,12 +175,71 @@ class HazelcastSessionCatalogManager(
 
   override def invalidateAllLocalCaches: Unit = sessionIDToMapCatalog clear
 
+}
 
-  private def publishInvalidation(sessionID: Option[SessionID] = None): Unit =
-    invalidationTopic publish {
-      sessionID.map(ResourceInvalidation(_)) getOrElse ResourceInvalidationForAllSessions
+
+class HazelcastSessionConfigManager(
+                                     override protected val hInstance: HazelcastInstance
+                                   ) extends HazelcastSessionResourceManager[SQLConf] {
+
+  import HazelcastSessionProvider._
+
+  private val sessionId2ConfigMapId: IMap[SessionID, UUID] = hInstance.getMap(HazelcastConfigMapId)
+  private val sessionId2Config: mutable.Map[SessionID, HazelcastSQLConf] = mutable.Map.empty
+
+  override protected val topicName: String = "session-rec-config"
+
+  invalidationTopic
+
+  //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
+  override def newResource(key: SessionID, from: Option[SQLConf] = None): SQLConf = {
+    val (hzConfigMap, id) = createRandomMap[String, String]
+    val conf = new HazelcastSQLConf(hzConfigMap, resourceInvalidator(key))
+
+    sessionId2ConfigMapId.set(key, id)
+    sessionId2Config += key -> conf
+
+    from.foreach(baseConf => hzConfigMap.putAll(baseConf.settings))
+
+    publishInvalidation(key)
+
+    conf
+  }
+
+  override def getResource(key: SessionID): Try[SQLConf] = sessionId2Config.get(key).map(Success(_)) getOrElse {
+    for (
+      configId <- checkNotNull(sessionId2ConfigMapId.get(key));
+      configMap <- checkNotNull(hInstance.getMap[String, String](configId.toString))
+    ) yield {
+      val conf = new HazelcastSQLConf(configMap, resourceInvalidator(key))
+      sessionId2Config += key -> conf
+      conf
     }
+  }
 
-  private def publishInvalidation(sessionID: SessionID): Unit = publishInvalidation(Some(sessionID))
+  override def deleteSessionResource(key: SessionID): Try[Unit] = {
+    sessionId2Config.remove(key)
+    for (
+      configId <- checkNotNull(sessionId2ConfigMapId.get(key));
+      configMap <- checkNotNull(hInstance.getMap[String, String](configId.toString))
+    ) yield {
+      configMap clear()
+      sessionId2ConfigMapId remove key
+      publishInvalidation(key)
+    }
+  }
+
+
+  override def clearAllSessionsResources(): Unit = {
+    import scala.collection.JavaConversions._
+    sessionId2Config clear()
+    sessionId2ConfigMapId.values foreach (configId => hInstance.getMap(configId.toString) clear)
+    sessionId2ConfigMapId clear()
+    publishInvalidation()
+  }
+
+  override def invalidateAllLocalCaches: Unit = sessionId2Config.values.foreach(_.invalidateLocalCache)
+
+  override def invalidateLocalCaches(key: SessionID): Unit = sessionId2Config.get(key).foreach(_.invalidateLocalCache)
 
 }
