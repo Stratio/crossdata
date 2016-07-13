@@ -184,7 +184,6 @@ class HazelcastSessionCatalogManager(
 
 }
 
-
 class HazelcastSessionConfigManager(
                                      override protected val hInstance: HazelcastInstance,
                                      sessionInvalidator: Option[SessionID] => Option[CacheInvalidator] = (_ => None)

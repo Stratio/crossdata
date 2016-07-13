@@ -32,6 +32,8 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDSessionProvider
 import org.apache.spark.sql.types.StructType
 
+import scala.util.{Failure, Success}
+
 object ResourceManagerActor {
   val AddJarTopic: String = "newJAR"
 
@@ -81,7 +83,15 @@ class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       logger.debug(s"Session identifier $session")
       //TODO  Maybe include job controller if it is necessary as in sql command
       if (addJarCommand.path.toLowerCase.startsWith("hdfs://")) {
-        sessionProvider.sc.addJar(addJarCommand.path)//sessionProvider.sc.addJar(addJarCommand.path, addJarCommand.toClassPath) // TODO addJar should not affect other sessions // add to runtime within the sc
+        sessionProvider.session(id) match {
+          case Success(xdSession) =>
+            xdSession.addJar(addJarCommand.path)
+          case Failure(error) =>
+            logger.warn(s"Received message with an unknown sessionId $id", error)
+            sender ! ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+        }
+
+        //sessionProvider.sc.addJar(addJarCommand.path)//sessionProvider.sc.addJar(addJarCommand.path, addJarCommand.toClassPath) // TODO addJar should not affect other sessions // add to runtime within the sc
         sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
       } else {
         sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exist or is not a hdfs file", Some(new Exception("File doesn't exist or is not a hdfs file"))))

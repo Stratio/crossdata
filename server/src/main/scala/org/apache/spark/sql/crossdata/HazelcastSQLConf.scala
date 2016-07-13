@@ -61,9 +61,15 @@ object HazelcastSQLConf {
       NullBuilder[V]().nullval
     }
 
-    override def entrySet(): java.util.Set[Entry[K, V]] = (Set.empty[Entry[K,V]] /: delegatedMaps) {
-      case (values, delegatedMap) => values ++ delegatedMap.entrySet()
-    }
+    override def entrySet(): java.util.Set[Entry[K, V]] = delegatedMaps.last.entrySet()
+    /**
+      * Note that this implementation assumes each level is contained by the next one, being the last one
+      * continent of every single preceding one. Otherwise, it'd be better to do something like:
+      *
+      * (Set.empty[Entry[K,V]] /: delegatedMaps) {
+      *     case (values, delegatedMap) => values ++ delegatedMap.entrySet()
+      * }
+      */
 
 
     override def put(key: K, value: V): V = {
@@ -98,9 +104,16 @@ object HazelcastSQLConf {
       delegatedMaps foreach (_.putAll(m))
     }
 
-    override def keySet(): java.util.Set[K] = (Set.empty[K] /: delegatedMaps) {
-      case (keys, delegatedMap) => keys ++ delegatedMap.keySet()
-    }
+    override def keySet(): java.util.Set[K] = delegatedMaps.last.keySet()
+
+    /**
+      * Note that this implementation assumes each level is contained by the next one, being the last one
+      * continent of every single preceding one. Otherwise, it'd be better to do something like:
+      *
+      * (Set.empty[K] /: delegatedMaps) {
+      *   case (keys, delegatedMap) => keys ++ delegatedMap.keySet()
+      * }
+      */
 
   }
 

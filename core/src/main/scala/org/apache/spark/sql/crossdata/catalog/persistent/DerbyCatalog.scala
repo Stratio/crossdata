@@ -100,6 +100,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
             |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
     }
+    //jdbcConnection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED)
 
     jdbcConnection
   }
@@ -132,19 +133,23 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
 
   }
 
-  override def getApp(alias: String): Option[CrossdataApp] = {
+  override def getApp(alias: String): Option[CrossdataApp] = synchronized {
 
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $DB.$TableWithAppJars WHERE $AppAlias= ?")
     preparedStatement.setString(1, alias)
     val resultSet: ResultSet = preparedStatement.executeQuery()
 
     if (!resultSet.next) {
+      resultSet.close()
+      preparedStatement.close()
       None
     } else {
+
       val jar = resultSet.getString(JarPath)
       val alias = resultSet.getString(AppAlias)
       val clss = resultSet.getString(AppClass)
-
+      resultSet.close()
+      preparedStatement.close()
       Some(
         CrossdataApp(jar, alias, clss)
       )
@@ -249,7 +254,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
     )
   }
 
-  override def saveAppMetadata(crossdataApp: CrossdataApp): Unit =
+  override def saveAppMetadata(crossdataApp: CrossdataApp): Unit = synchronized {
     try {
       connection.setAutoCommit(false)
 
@@ -258,6 +263,8 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
       val resultSet = preparedStatement.executeQuery()
 
       if (!resultSet.next()) {
+        preparedStatement.close()
+        resultSet.close()
         val prepped = connection.prepareStatement(
           s"""|INSERT INTO $DB.$TableWithAppJars (
               | $JarPath, $AppAlias, $AppClass
@@ -267,7 +274,10 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
         prepped.setString(2, crossdataApp.appAlias)
         prepped.setString(3, crossdataApp.appClass)
         prepped.execute()
+        prepped.close()
       } else {
+        preparedStatement.close()
+        resultSet.close()
         val prepped = connection.prepareStatement(
           s"""|UPDATE $DB.$TableWithAppJars SET $JarPath=?, $AppClass=?
               |WHERE $AppAlias='${crossdataApp.appAlias}'
@@ -275,11 +285,15 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
         prepped.setString(1, crossdataApp.jar)
         prepped.setString(2, crossdataApp.appClass)
         prepped.execute()
+        prepped.close()
       }
       connection.commit()
+
     } finally {
       connection.setAutoCommit(true)
+
     }
+  }
 
   override def dropAllTablesMetadata(): Unit = synchronized {
     connection.createStatement.executeUpdate(s"DELETE FROM $DB.$TableWithTableMetadata")
@@ -317,14 +331,17 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
     preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
     preparedStatement.setString(2, tableIdentifier.table)
     preparedStatement.executeQuery()
-
-
   }
   private def schemaExists(schema: String, connection: Connection): Boolean = {
+
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$DB'")
     val resultSet = preparedStatement.executeQuery()
-
-    resultSet.next()
+    try {
+      resultSet.next()
+    }finally{
+      preparedStatement.close()
+      resultSet.close()
+    }
   }
 
 }
