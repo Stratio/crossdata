@@ -126,7 +126,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     persistentCatalogs.foreach(_.saveView(tableIdentifier, plan, sqlText))
 
   override def persistIndex(crossdataIndex: CrossdataIndex): Unit =
-    if (persistentChainedLookup(_.lookupTable(crossdataIndex.tableIdentifier)).isEmpty) {
+    if (tableMetadata(crossdataIndex.tableIdentifier).isEmpty) {
       throw new RuntimeException(s"Cannot create the index. Table ${crossdataIndex.tableIdentifier} doesn't exist or is temporary")
     } else {
       persistentCatalogs.foreach(_.saveIndex(crossdataIndex))
