@@ -138,7 +138,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     if (!tableExists(tableIdentifier)) throw new RuntimeException(s"Table $strTable can't be deleted because it doesn't exist")
     logInfo(s"Deleting table $strTable from catalog")
 
-    indexMetadataByTableIdentifier(tableIdentifier) map { index =>
+    indexMetadataByTableIdentifier(tableIdentifier) foreach { index =>
       dropIndex(index.indexIdentifier)
     }
 
