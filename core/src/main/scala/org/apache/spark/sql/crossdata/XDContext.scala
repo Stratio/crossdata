@@ -81,7 +81,6 @@ class XDContext protected (@transient val sc: SparkContext,
      Config should be changed by a map and implicitly converted into `Config` whenever one of its
      methods is called.
      */
-  import XDContext.{catalogConfig, xdConfig}
 
   xdConfig = userConfig.fold(config) { userConf =>
     userConf.withFallback(config)
