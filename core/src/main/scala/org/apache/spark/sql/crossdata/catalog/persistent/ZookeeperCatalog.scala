@@ -206,6 +206,18 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
   override def dropAllIndexesMetadata(): Unit =
     indexDAO.dao.deleteAll
 
+
+  /*TODO: Pfcoperez suggestions
+  Something like:
+
+  val res = indexDAO.dao.getAll() find(_.crossdataIndex.indexIdentifier == indexIdentifier) map(_.crossdataIndex)
+    if(res.isEmpty) indexDAO.logger.warn("Index path doesn't exist")
+    res
+
+  might be safer and easier to read
+   */
+
+
   override def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] = {
     if (indexDAO.dao.count > 0)
       indexDAO.dao.getAll().find(

@@ -418,6 +418,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
   }
 
+  //TODO: Generic close statements in ALL the catalogs
   private def selectIndex(indexIdentifier: IndexIdentifier): ResultSet = {
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $DB.$TableWithIndexMetadata WHERE $IndexNameField= ? AND $IndexTypeField= ?")
     preparedStatement.setString(1, indexIdentifier.indexName)
