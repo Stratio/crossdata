@@ -22,6 +22,8 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, Crossdata
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
+import scala.util.Try
+
 
 object CatalogChain {
   def apply(catalogs: XDCatalogCommon*)(conf: CatalystConf): CatalogChain = {
@@ -176,7 +178,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     if(tableExists(indexIdentifier.asTableIdentifier))
       dropTable(indexIdentifier.asTableIdentifier)
 
-    persistentCatalogs foreach(_.dropIndex(indexIdentifier))
+    persistentCatalogs foreach(catalog => Try(catalog.dropIndex(indexIdentifier)))
   }
 
   override def indexMetadata(tableIdentifier: IndexIdentifier): Option[CrossdataIndex]=
