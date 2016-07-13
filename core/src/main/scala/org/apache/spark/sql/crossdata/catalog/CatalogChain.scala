@@ -185,7 +185,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     persistentChainedLookup(_.lookupIndex(tableIdentifier))
 
   override def indexMetadataByTableIdentifier(tableIdentifier: TableIdentifier):Option[CrossdataIndex]=
-    persistentCatalogs map (_.lookupIndexByTableIdentifier(tableIdentifier)) collectFirst {
+    persistentCatalogs.view map (_.lookupIndexByTableIdentifier(tableIdentifier)) collectFirst {
       case Some(index) =>index
     }
 
