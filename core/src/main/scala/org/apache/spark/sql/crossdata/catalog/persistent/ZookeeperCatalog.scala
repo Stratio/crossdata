@@ -21,11 +21,10 @@ import java.net.Socket
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
-import org.apache.spark.sql.crossdata.daos.impl.{AppTypesafeDAO, TableTypesafeDAO, ViewTypesafeDAO}
-import org.apache.spark.sql.crossdata.models.{AppModel, TableModel, ViewModel}
+import org.apache.spark.sql.crossdata.daos.impl.{AppTypesafeDAO, IndexTypesafeDAO, TableTypesafeDAO, ViewTypesafeDAO}
+import org.apache.spark.sql.crossdata.models.{AppModel, IndexModel, TableModel, ViewModel}
 
 import scala.util.Try
 
@@ -36,13 +35,14 @@ import scala.util.Try
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
 class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
-  extends PersistentCatalogWithCache(sqlContext, catalystConf){
+  extends PersistentCatalogWithCache(sqlContext, catalystConf) {
 
   import XDCatalog._
 
   @transient val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
   @transient val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
   @transient val appDAO = new AppTypesafeDAO(XDContext.catalogConfig)
+  @transient val indexDAO = new IndexTypesafeDAO(XDContext.catalogConfig)
 
 
   override def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
@@ -186,7 +186,56 @@ class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: Cataly
     //TODO this method must be changed when Stratio Commons provide a status connection of Zookeeper
     val value = XDContext.catalogConfig.getString("zookeeper.connectionString")
     val address = value.split(":")
-    Try(new Socket(address(0), address(1).toInt)).map(s => { s.close; true}).getOrElse(false)
+    Try(new Socket(address(0), address(1).toInt)).map { s =>
+      s.close()
+      true
+    }.getOrElse(false)
   }
 
+  //TODO
+  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit = {
+    val indexId = createId
+    indexDAO.dao.create(indexId, IndexModel(indexId, crossdataIndex))
+  }
+
+  override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
+    indexDAO.dao.getAll().filter(
+      index => index.crossdataIndex.indexIdentifier == indexIdentifier
+    ) foreach (selectedIndex => indexDAO.dao.delete(selectedIndex.indexId))
+
+  override def dropAllIndexesMetadata(): Unit =
+    indexDAO.dao.deleteAll
+
+  override def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] = {
+    if (indexDAO.dao.count > 0) {
+      val res = indexDAO.dao.getAll().find(
+        _.crossdataIndex.indexIdentifier == indexIdentifier
+      ) map (_.crossdataIndex)
+      if (res.isEmpty) indexDAO.logger.warn("Index path doesn't exist")
+      res
+
+    } else {
+      indexDAO.logger.warn("Index path doesn't exist")
+      None
+    }
+
+  }
+
+  override def dropIndexMetadata(tableIdentifier: TableIdentifier): Unit =
+    indexDAO.dao.getAll().filter(
+      index => index.crossdataIndex.tableIdentifier == tableIdentifier
+    ) foreach (selectedIndex => indexDAO.dao.delete(selectedIndex.indexId))
+
+  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
+    if (indexDAO.dao.count > 0) {
+      val res = indexDAO.dao.getAll().find(
+        _.crossdataIndex.tableIdentifier == tableIdentifier
+      ) map (_.crossdataIndex)
+      if (res.isEmpty) indexDAO.logger.warn("Index path doesn't exist")
+      res
+    } else {
+      indexDAO.logger.warn("Index path doesn't exist")
+      None
+    }
+  }
 }

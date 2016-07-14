@@ -30,14 +30,15 @@ import com.stratio.crossdata.utils.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
+import org.apache.spark.sql.catalyst.optimizer.Optimizer
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.XDContext.{SecurityAuditConfigKey, SecurityClassConfigKey, SecurityPasswordConfigKey, SecuritySessionConfigKey, SecurityUserConfigKey, StreamingCatalogClassConfigKey}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataApp
-import org.apache.spark.sql.crossdata.catalog._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, IndexIdentifier}
+import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
-import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias}
+import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias, WrapRelationWithGlobalIndex}
+import org.apache.spark.sql.crossdata.catalyst.optimizer.XDOptimizer
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
 import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
@@ -70,6 +71,7 @@ class XDContext protected (@transient val sc: SparkContext,
   def this(sc: SparkContext, config: Config) =
     this(sc, Some(config))
 
+  import XDContext._
 
   /* TODO: Remove the config attributes from the companion object!!!
      This only works because you can only have a SQLContext per running instance
@@ -79,8 +81,6 @@ class XDContext protected (@transient val sc: SparkContext,
      Config should be changed by a map and implicitly converted into `Config` whenever one of its
      methods is called.
      */
-
-  import XDContext.{catalogConfig, config, xdConfig}
 
   xdConfig = userConfig.fold(config) { userConf =>
     userConf.withFallback(config)
@@ -176,6 +176,9 @@ class XDContext protected (@transient val sc: SparkContext,
 
     constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
   }
+
+
+
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
     new Analyzer(catalog, functionRegistry, catalystConf) {
@@ -190,15 +193,18 @@ class XDContext protected (@transient val sc: SparkContext,
         PreWriteCheck(catalog)
       )
 
+
+
       val preparationRules = Seq(PrepareAggregateAlias)
 
       override lazy val batches: Seq[Batch] = Seq(
         Batch("Substitution", fixedPoint,
           CTESubstitution,
           WindowsSubstitution),
-        Batch("Preparation", fixedPoint, preparationRules: _*),
+        Batch("Preparation", fixedPoint, preparationRules : _*),
         Batch("Resolution", fixedPoint,
-          ResolveRelations ::
+          WrapRelationWithGlobalIndex(catalog) ::
+            ResolveRelations ::
             ResolveReferences ::
             ResolveGroupingAnalytics ::
             ResolvePivot ::
@@ -212,7 +218,7 @@ class XDContext protected (@transient val sc: SparkContext,
             ResolveAggregateFunctions ::
             DistinctAggregationRewriter(conf) ::
             HiveTypeCoercion.typeCoercionRules ++
-              extendedResolutionRules: _*),
+              extendedResolutionRules : _*),
         Batch("Nondeterministic", Once,
           PullOutNondeterministic,
           ComputeCurrentTime),
@@ -222,6 +228,9 @@ class XDContext protected (@transient val sc: SparkContext,
           CleanupAliases)
       )
     }
+
+  @transient
+  override protected[sql] lazy val optimizer: Optimizer = XDOptimizer(self, catalystConf)
 
   @transient
   class XDPlanner extends sparkexecution.SparkPlanner(this) with XDStrategies {
@@ -349,6 +358,16 @@ class XDContext protected (@transient val sc: SparkContext,
   }
 
   /**
+    * Drops the global index in the persistent catalog.
+    * It applies only to metadata, so data won't be deleted.
+    *
+    * @param indexIdentifier the index to be dropped.
+    */
+  def dropGlobalIndex(indexIdentifier: IndexIdentifier): Unit =
+    catalog.dropIndex(indexIdentifier)
+
+
+  /**
     * Imports tables from a DataSource in the persistent catalog.
     *
     * @param datasource
@@ -401,7 +420,6 @@ object XDContext extends CoreConfig {
   val SecurityConfigKey = "security"
   val SecurityManagerConfigKey = "manager"
   val ClassConfigKey = "class"
-
   val AuditConfigKey = "audit"
   val UserConfigKey = "user"
   val PasswordConfigKey = "password"

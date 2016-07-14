@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.daos
+package com.stratio.crossdata.util
 
-import java.util.UUID
+import scala.util.Try
 
-object DAOConstants {
 
-  val BaseZKPath = "stratio/crossdata"
-  val TablesPath = s"$BaseZKPath/tables"
-  val ViewsPath = s"$BaseZKPath/views"
-  val AppsPath = s"$BaseZKPath/apps"
-  val IndexesPath = s"$BaseZKPath/indexes"
-  val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
-  val EphemeralTableStatusPath = s"$BaseZKPath/ephemeraltablestatus"
-  val EphemeralQueriesPath = s"$BaseZKPath/ephemeralqueries"
+object using {
 
-  def createId: String = UUID.randomUUID.toString
+  type AutoClosable = {def close(): Unit}
+
+  def apply[A <: AutoClosable, B](resource: A)(code: A => B): B =
+    try {
+      code(resource)
+    }
+    finally {
+      Try(resource.close())
+    }
+
 }
+
