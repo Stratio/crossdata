@@ -148,7 +148,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     statement.executeUpdate(sql)
   }
 
-  def withConnectionWithoutCommit[T](f: Connection => T): T = {
+  private def withConnectionWithoutCommit[T](f: Connection => T): T = {
     try {
       connection.setAutoCommit(false)
       f(connection)
@@ -157,12 +157,12 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     }
   }
 
-  def withStatement[T](sql: String)(f: PreparedStatement => T)(implicit conn: Connection = connection): T =
+  private def withStatement[T](sql: String)(f: PreparedStatement => T)(implicit conn: Connection = connection): T =
     using(conn.prepareStatement(sql)) { statement =>
       f(statement)
     }
 
-  def withResultSet[T](prepared: PreparedStatement)(f: ResultSet => T): T = using(prepared.executeQuery()) { resultSet =>
+  private def withResultSet[T](prepared: PreparedStatement)(f: ResultSet => T): T = using(prepared.executeQuery()) { resultSet =>
     f(resultSet)
   }
 
