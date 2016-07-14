@@ -17,7 +17,9 @@ package org.apache.spark.sql.crossdata.session
 
 import java.util.UUID
 
-import com.typesafe.config.ConfigFactory
+import com.hazelcast.config.{Config => HZConfig}
+import com.typesafe.config.{Config, ConfigFactory}
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata.XDSession
@@ -38,7 +40,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
   val SparkSqlConfigString = "config.spark.sql.inMemoryColumnarStorage.batchSize=5000"
 
 
-  "HazelcastSessionProvider" should "provides new sessions whose properties are initialized properly" in {
+"HazelcastSessionProvider" should "provides new sessions whose properties are initialized properly" in {
 
     val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.parseString(SparkSqlConfigString))
 
@@ -148,6 +150,56 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     
   }
 
+  it should "provide the same cached instance when it hasn't been invalidated" in {
+
+    val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
+    val sessionID = UUID.randomUUID()
+
+    val refA = hazelcastSessionProvider.newSession(sessionID).get
+    val refB = hazelcastSessionProvider.session(sessionID).get
+
+    refA should be theSameInstanceAs refB
+
+    hazelcastSessionProvider.close()
+  }
+
+  testInvalidation("provide a new session instance after its invalidation by a SQLConf change")(
+    // This changes a setting  value using a second hazelcast peer
+    _.setConf("spark.sql.parquet.filterPushdown", "false")
+  )
+
+  testInvalidation("provide a new session instance after its invalidation by a Catalog change")(
+    // This changes a setting  value using a second hazelcast peer
+    _.catalog.unregisterTable(TableIdentifier("DUMMY_TABLE"))
+  )
+
+  def testInvalidation(testDescription: String)(invalidationAction: XDSession => Unit) =
+    it should testDescription in {
+      import HazelcastSessionProviderSpec._
+
+      // Two hazelcast peers shall be created
+      val hazelcastSessionProviderA = new HazelcastSessionProviderDefaultConf(xdContext.sc, ConfigFactory.empty())
+      val hazelcastSessionProviderB = new HazelcastSessionProviderDefaultConf(xdContext.sc, ConfigFactory.empty())
+
+      val sessionID = UUID.randomUUID()
+
+      val newSessionAtPeerA = hazelcastSessionProviderA.newSession(sessionID).get
+      val obtainedSessionFromPeerA = hazelcastSessionProviderA.session(sessionID).get
+
+      obtainedSessionFromPeerA should be theSameInstanceAs newSessionAtPeerA
+
+      val obtainedSessionFromPeerB = hazelcastSessionProviderB.session(sessionID).get
+
+      invalidationAction(obtainedSessionFromPeerB)
+
+      val obtainedSessionFromPeerAAfterChange = hazelcastSessionProviderA.session(sessionID).get
+
+      newSessionAtPeerA shouldNot be theSameInstanceAs obtainedSessionFromPeerAAfterChange
+
+      hazelcastSessionProviderA.close()
+      hazelcastSessionProviderB.close()
+    }
+
   private def tempCatalogsFromSession(session: XDSession): Seq[XDTemporaryCatalog] = {
     session.catalog shouldBe a[CatalogChain]
     session.catalog.asInstanceOf[CatalogChain].temporaryCatalogs
@@ -162,6 +214,18 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     val optSession = hazelcastSessionProvider.newSession(uuid).toOption
     optSession shouldBe defined
     optSession.get
+  }
+
+}
+
+object HazelcastSessionProviderSpec {
+
+  class HazelcastSessionProviderDefaultConf(
+                                                  sc: SparkContext,
+                                                  userConfig: Config) extends HazelcastSessionProvider(sc, userConfig) {
+
+    override protected def hInstanceConfig: HZConfig = new HZConfig()
+
   }
 
 }
