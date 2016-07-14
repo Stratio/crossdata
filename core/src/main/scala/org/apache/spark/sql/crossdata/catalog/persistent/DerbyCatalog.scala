@@ -15,8 +15,9 @@
  */
 package org.apache.spark.sql.crossdata.catalog.persistent
 
-import java.sql._
+import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet, Statement}
 
+import com.stratio.crossdata.util.using
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.CrossdataVersion
@@ -57,19 +58,6 @@ object DerbyCatalog {
 
 }
 
-object using {
-
-  type AutoClosable = {def close(): Unit}
-
-  def apply[A <: AutoClosable, B](resource: A)(code: A => B): B =
-    try {
-      code(resource)
-    }
-    finally {
-      Try(resource.close())
-    }
-
-}
 
 /**
   * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
