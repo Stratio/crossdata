@@ -118,9 +118,9 @@ case class CheckGlobalIndexInFilters(xdContext: XDContext) extends Rule[LogicalP
   private def schemaToAttribute(schema: StructType): Seq[UnresolvedAttribute] =
     schema.fields map {field => UnresolvedAttribute(field.name)}
 
-  private def resultPksToLiterals(rows: Array[Row], dataType:DataType): Seq[Literal] = // TODOrow changed
+  private def resultPksToLiterals(rows: Array[Row], dataType:DataType): Seq[Literal] =
     rows map { row =>
-      val valTransformed = row.get(0) // TODO changed
+      val valTransformed = row.get(0)
       Literal.create(valTransformed, dataType)
     } //TODO compound PK
 

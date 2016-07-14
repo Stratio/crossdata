@@ -476,8 +476,8 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
           val optsJSON = resultSet.getString(OptionsField)
           val version = resultSet.getString(CrossdataVersionField)
 
-          Option(
-            CrossdataIndex(TableIdentifier(table, Option(database)), IndexIdentifier(indexType, indexName),
+          Some(
+            CrossdataIndex(TableIdentifier(table, Some(database)), IndexIdentifier(indexType, indexName),
               deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
           )
         }
