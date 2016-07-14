@@ -120,7 +120,7 @@ case class CheckGlobalIndexInFilters(xdContext: XDContext) extends Rule[LogicalP
 
   private def resultPksToLiterals(rows: Array[Row], dataType:DataType): Seq[Literal] = // TODOrow changed
     rows map { row =>
-      val valTransformed = row.toSeq.head // TODO changed
+      val valTransformed = row.get(0) // TODO changed
       Literal.create(valTransformed, dataType)
     } //TODO compound PK
 
