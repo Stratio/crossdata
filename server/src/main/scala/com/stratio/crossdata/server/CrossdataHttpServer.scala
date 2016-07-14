@@ -52,13 +52,11 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
       entity(as[Multipart.FormData]) { formData =>
         // collect all parts of the multipart as it arrives into a map
         var path = ""
-        var file: java.io.File = null
-        //        var file:java.io.File
         val allPartsF: Future[Map[String, Any]] = formData.parts.mapAsync[(String, Any)](1) {
 
           case part: BodyPart if part.name == "fileChunk" =>
             // stream into a file as the chunks of it arrives and return a future file to where it got stored
-            file = new java.io.File(s"/tmp/${part.filename.getOrElse("uploadFile")}")
+            val file = new java.io.File(s"/tmp/${part.filename.getOrElse("uploadFile")}")
             path = file.getAbsolutePath
             logger.info("Uploading file...")
             // TODO map is not used
@@ -69,12 +67,18 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
         // when processing have finished create a response for the user
         onSuccess(allPartsF) { allParts =>
+
           logger.info("Recieved file")
           complete {
             val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
             val hdfsPath = writeJarToHdfs(hdfsConfig, path)
             val session = Session(sessionUUID, null)
-            file.delete
+            allParts.values.toSeq.foreach{
+              case file: File =>
+                file.delete
+                logger.info("Tmp file deleted")
+              case _ => logger.error("Problem deleting the temporary file.")
+            }
             //Send a broadcast message to all servers
             mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), session))
             hdfsPath
