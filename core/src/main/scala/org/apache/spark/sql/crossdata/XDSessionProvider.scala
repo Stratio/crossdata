@@ -134,7 +134,7 @@ class BasicSessionProvider(
     sessionIDToTempCatalog.clear
   }
 
-  private def buildSession(sqlConf: SQLConf, xDTemporaryCatalog: XDTemporaryCatalog): XDSession = {
+  private def buildSession(sqlConf: XDSQLConf, xDTemporaryCatalog: XDTemporaryCatalog): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalog :: Nil)
     new XDSession(sharedState, sessionState)
   }

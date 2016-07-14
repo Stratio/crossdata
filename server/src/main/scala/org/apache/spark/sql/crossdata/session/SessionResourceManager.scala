@@ -21,7 +21,7 @@ import com.hazelcast.core.{HazelcastInstance, IMap, Message, MessageListener}
 import com.stratio.crossdata.util.CacheInvalidator
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.HazelcastSQLConf
+import org.apache.spark.sql.crossdata.{HazelcastSQLConf, XDSQLConf}
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
@@ -199,7 +199,7 @@ class HazelcastSessionConfigManager(
   invalidationTopic
 
   //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
-  override def newResource(key: SessionID, from: Option[SQLConf] = None): SQLConf = {
+  override def newResource(key: SessionID, from: Option[SQLConf] = None): XDSQLConf = {
     val (hzConfigMap, id) = createRandomMap[String, String]
     val conf = new HazelcastSQLConf(hzConfigMap, resourceInvalidator(key))
 
@@ -213,7 +213,7 @@ class HazelcastSessionConfigManager(
     conf
   }
 
-  override def getResource(key: SessionID): Try[SQLConf] = sessionId2Config.get(key).map(Success(_)) getOrElse {
+  override def getResource(key: SessionID): Try[XDSQLConf] = sessionId2Config.get(key).map(Success(_)) getOrElse {
     for (
       configId <- checkNotNull(sessionId2ConfigMapId.get(key));
       configMap <- checkNotNull(hInstance.getMap[String, String](configId.toString))

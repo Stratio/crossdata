@@ -15,13 +15,12 @@
  */
 package org.apache.spark.sql.crossdata.session
 
-import com.hazelcast.config.{GroupConfig, XmlConfigBuilder}
+import com.hazelcast.config.{GroupConfig, XmlConfigBuilder, Config => HZConfig}
 import com.hazelcast.core.Hazelcast
 import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata._
@@ -42,7 +41,7 @@ object HazelcastSessionProvider {
 
 }
 
-class HazelcastSessionProvider( @transient sc: SparkContext,
+class HazelcastSessionProvider( sc: SparkContext,
                                 userConfig: Config
                                 ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig { // TODO CoreConfig should not be a trait
 
@@ -80,15 +79,17 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
 
   private val sharedState = new XDSharedState(sc, Option(userConfig), externalCatalog, streamingCatalog)
 
-  private val hInstance = {
-    // TODO it should only use Hazelcast.newHazelcastInstance() which internally creates a xmlConfig and the group shouldn't be hardcoded (blocked by CD)
+  protected def hInstanceConfig: HZConfig = {
+    // TODO it should only use Config() which internally creates a xmlConfig and the group shouldn't be hardcoded
+    // (blocked by CD)
     val xmlConfig = new XmlConfigBuilder().build()
     xmlConfig.setGroupConfig(new GroupConfig(scala.util.Properties.scalaPropOrElse("version.number", "unknown")))
-    Hazelcast.newHazelcastInstance(xmlConfig)
   }
 
-  private val sessionIDToSQLProps = new HazelcastSessionConfigManager(hInstance, sessionsCacheInvalidator)
-  private val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(
+  private val hInstance = Hazelcast.newHazelcastInstance(hInstanceConfig)
+
+  protected val sessionIDToSQLProps = new HazelcastSessionConfigManager(hInstance, sessionsCacheInvalidator)
+  protected val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(
     hInstance,
     sharedState.sqlConf,
     sessionsCacheInvalidator
@@ -137,7 +138,7 @@ class HazelcastSessionProvider( @transient sc: SparkContext,
 
   private def buildSession(
                             sessionID: SessionID,
-                            sqlConf: SQLConf,
+                            sqlConf: XDSQLConf,
                             xDTemporaryCatalogs: Seq[XDTemporaryCatalog]): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalogs)
     new XDSession(sharedState, sessionState)
