@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
-import java.util.UUID
+import java.util.{GregorianCalendar, UUID}
 
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -54,7 +54,8 @@ trait ElasticDataTypesWithSharedContext extends SharedXDContextWithDataTest with
     ESColumnMetadata("name", "STRING", "name" typed StringType index NotAnalyzed, () => "1", _ shouldBe a[java.lang.String]),
     ESColumnMetadata("enrolled", "BOOLEAN", "enrolled" typed BooleanType, () => false, _ shouldBe a[java.lang.Boolean]),
     //ESColumnMetadata("birthday", "DATE", "birthday" typed DateType, () => DateTime.parse(1980 + "-01-01T10:00:00-00:00").toDate, _ shouldBe a [java.sql.Date]), // TODO date should be timestamp (if not supported by elastic natively)
-    ESColumnMetadata("salary", "DOUBLE", "salary" typed DoubleType, () => 0.15, _ shouldBe a[java.lang.Double])
+    ESColumnMetadata("salary", "DOUBLE", "salary" typed DoubleType, () => 0.15, _ shouldBe a[java.lang.Double]),
+    ESColumnMetadata("timecol", "TIMESTAMP", "timecol" typed DateType, () => new java.sql.Timestamp(new GregorianCalendar(1970, 0, 1, 0, 0, 0).getTimeInMillis), _ shouldBe a[java.sql.Timestamp])
     //ESColumnMetadata("float", "FLOAT", "float" typed FloatType, () => 0.15, _ shouldBe a[java.lang.Float]), // TODO float not supported natively
     //ESColumnMetadata("binary", "BINARY", "binary" typed BinaryType, () => Array(Byte.MaxValue, Byte.MinValue), x => x.isInstanceOf[Array[Byte]] shouldBe true) // TODO native and spark ko
     //ESColumnMetadata("tinyint", "TINYINT", "tinyint" typed ByteType, () => Byte.MinValue, _ shouldBe a[java.lang.Byte]), // TODO native ko
