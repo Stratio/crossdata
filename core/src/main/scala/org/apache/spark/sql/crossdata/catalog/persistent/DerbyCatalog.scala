@@ -95,6 +95,13 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       statement.executeUpdate(sql)
     }
 
+    def schemaExists(schema: String, connection: Connection): Boolean =
+      withStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$schema'") { statement =>
+        withResultSet(statement) { resultSet =>
+          resultSet.next()
+        }
+      }(connection)
+
     // CREATE PERSISTENT METADATA TABLE
 
     if (!schemaExists(DB, jdbcConnection)) {
@@ -448,12 +455,6 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       }
     }
 
-  private def schemaExists(schema: String, connection: Connection): Boolean =
-    withStatement(s"SELECT * FROM SYS.SYSSCHEMAS WHERE schemaname='$schema'") { statement =>
-      withResultSet(statement) { resultSet =>
-        resultSet.next()
-      }
-    }
 
   private def indexTableExists(schema: String, connection: Connection): Boolean = tableSchemaExists(schema, TableWithIndexMetadata, connection)
 
@@ -465,7 +466,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
       withResultSet(statement) { resultSet =>
         resultSet.next()
       }
-    }
+    }(connection)
 
   override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
     val query =
