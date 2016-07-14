@@ -28,7 +28,7 @@ import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => Sourc
 import org.apache.spark.sql.types.StructType
 import org.elasticsearch.action.search.SearchResponse
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 object ElasticSearchQueryProcessor {
 
@@ -57,9 +57,9 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
     def tryRows(requiredColumns: Seq[Attribute], finalQuery: SearchDefinition, esClient: ElasticClient): Try[Array[Row]] = {
       val rows: Try[Array[Row]] = Try {
-        val resp = esClient.execute(finalQuery).await
-        if (resp.shardFailures.length > 0) {
-          val errors = resp.shardFailures map { failure => failure.reason() }
+        val resp: SearchResponse = esClient.execute(finalQuery).await.original
+        if (resp.getShardFailures.length > 0) {
+          val errors = resp.getShardFailures map { failure => failure.reason() }
           throw new RuntimeException(errors mkString("Errors from ES:", ";\n", ""))
         } else {
           ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
@@ -68,9 +68,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       rows
     }
 
-    val plan = validatedNativePlan getOrElse(sys.error("Invalid native plan") )
-
-    val result: Try[Array[Row]] = plan match {
+    val result: Try[Array[Row]] = validatedNativePlan.map {
       case (baseLogicalPlan, limit) =>
         val requiredColumns = baseLogicalPlan match {
           case SimpleLogicalPlan(projects, _, _, _) =>
@@ -82,10 +80,10 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
         val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
 
-        withClientDo(parameters){ esClient =>
+        withClientDo(parameters) { esClient =>
           tryRows(requiredColumns, finalQuery, esClient)
         }
-    }
+    }.getOrElse(Failure(new RuntimeException("Invalid native plan")))
 
     result.toOption
   }
