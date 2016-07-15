@@ -19,11 +19,15 @@ import java.util.Map.Entry
 
 import com.hazelcast.core.IMap
 import com.stratio.crossdata.util.CacheInvalidator
-import org.apache.spark.sql.SQLConf
 
-class HazelcastSQLConf(hazelcastMap: IMap[String, String], invalidator: CacheInvalidator) extends SQLConf {
+class HazelcastSQLConf(hazelcastMap: IMap[String, String], cacheInvalidator: CacheInvalidator) extends XDSQLConf {
 
   import HazelcastSQLConf._
+
+  private var enabledInvalidation = true
+
+  private val invalidator: () => CacheInvalidator =
+    () => if(enabledInvalidation) cacheInvalidator else disabledInvalidator
 
   def invalidateLocalCache: Unit = localMap.clear
 
@@ -33,9 +37,18 @@ class HazelcastSQLConf(hazelcastMap: IMap[String, String], invalidator: CacheInv
     new ChainedJavaMapWithWriteInvalidation[String, String](Seq(localMap, hazelcastMap), invalidator)
   }
 
+  override def enableCacheInvalidation(enable: Boolean): XDSQLConf = {
+    enabledInvalidation = enable
+    this
+  }
+
 }
 
 object HazelcastSQLConf {
+
+  private val disabledInvalidator: CacheInvalidator = new CacheInvalidator {
+    override def invalidateCache: Unit = ()
+  }
 
   private case class NullBuilder[T]() {
     private var pNull: T = _
@@ -44,7 +57,7 @@ object HazelcastSQLConf {
 
   class ChainedJavaMapWithWriteInvalidation[K,V](
                                                   private val delegatedMaps: Seq[java.util.Map[K,V]],
-                                                  private val invalidator: CacheInvalidator
+                                                  private val invalidator: () => CacheInvalidator
                                                 )
 
     extends java.util.Map[K,V] {
@@ -73,7 +86,7 @@ object HazelcastSQLConf {
 
 
     override def put(key: K, value: V): V = {
-      invalidator.invalidateCache
+      invalidator().invalidateCache
       (Option.empty[V] /: delegatedMaps) {
         case (prev, delegatedMap) =>
           val newRes = delegatedMap.put(key, value)
@@ -82,14 +95,14 @@ object HazelcastSQLConf {
     }
 
     override def clear(): Unit = {
-      invalidator.invalidateCache
+      invalidator().invalidateCache
       delegatedMaps foreach(_.clear)
     }
 
     override def size(): Int = delegatedMaps.maxBy(_.size).size
 
     override def remove(key: scala.Any): V = {
-      invalidator.invalidateCache
+      invalidator().invalidateCache
       delegatedMaps.map(_.remove(key)).head
     }
 
@@ -100,7 +113,7 @@ object HazelcastSQLConf {
     override def isEmpty: Boolean = delegatedMaps forall (_.isEmpty)
 
     override def putAll(m: java.util.Map[_ <: K, _ <: V]): Unit = {
-      invalidator.invalidateCache
+      invalidator().invalidateCache
       delegatedMaps foreach (_.putAll(m))
     }
 
