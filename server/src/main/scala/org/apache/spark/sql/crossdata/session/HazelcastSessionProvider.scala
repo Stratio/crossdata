@@ -48,7 +48,9 @@ class HazelcastSessionProvider( sc: SparkContext,
   import HazelcastSessionProvider._
   import XDSharedState._
 
-  private val sessionsCache: collection.mutable.Map[SessionID, XDSession] = collection.mutable.Map.empty
+  private val sessionsCache: collection.mutable.Map[SessionID, XDSession] =
+    new collection.mutable.HashMap[SessionID, XDSession] with collection.mutable.SynchronizedMap[SessionID, XDSession]
+
   private val sessionsCacheInvalidator =
     (sessionId: Option[SessionID]) => Some {
       new CacheInvalidator {
