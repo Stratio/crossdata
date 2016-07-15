@@ -23,8 +23,11 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
 
   "The Cassandra connector" should "execute natively create a External Table" in {
-    val createTableQUeryString =
-      s"""|CREATE EXTERNAL TABLE newtable (
+
+    val tableName = "newtable"
+
+    val createTableQueryString =
+      s"""|CREATE EXTERNAL TABLE $tableName (
           |id Integer,
           |name String,
           |booleanFile boolean,
@@ -37,7 +40,7 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
           |USING $SourceProvider
           |OPTIONS (
           |keyspace '$Catalog',
-          |table 'newtable',
+          |table '$tableName',
           |cluster '$ClusterName',
           |pushdown "true",
           |spark_cassandra_connection_host '$CassandraHost',
@@ -45,19 +48,23 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
           |)
       """.stripMargin.replaceAll("\n", " ")
     //Experimentation
-    val result = sql(createTableQUeryString).collect()
+    val result = sql(createTableQueryString).collect()
 
     //Expectations
-    val table = xdContext.table(s"newtable")
+    val table = xdContext.table(tableName)
     table should not be null
     table.schema.fieldNames should contain ("name")
 
-    client.get._1.getMetadata.getKeyspace(Catalog).getTable("newtable").getId should not be null
+    // In case that the table didn't exist, then this operation would throw a InvalidQueryException
+    val resultSet = client.get._2.execute(s"SELECT * FROM $Catalog.$tableName")
 
+    import scala.collection.JavaConversions._
+
+    resultSet.getColumnDefinitions.asList.map(cd => cd.getName) should contain ("name")
   }
 
   it should "execute natively create a External Table with no existing Keyspace" in {
-    val createTableQUeryString =
+    val createTableQueryString =
       s"""|CREATE EXTERNAL TABLE newkeyspace.othertable (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
@@ -72,7 +79,7 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
     try {
       //Experimentation
-      val result = sql(createTableQUeryString).collect()
+      val result = sql(createTableQueryString).collect()
 
       //Expectations
       val table = xdContext.table(s"newkeyspace.othertable")
@@ -85,7 +92,7 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
   }
 
   it should "fail execute natively create a External Table with no existing Keyspace without with_replication" in {
-    val createTableQUeryString =
+    val createTableQueryString =
       s"""|CREATE EXTERNAL TABLE NoKeyspaceCreatedBefore.newTable (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
@@ -99,7 +106,7 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
     //Experimentation
 
     the [IllegalArgumentException] thrownBy {
-      sql(createTableQUeryString).collect()
+      sql(createTableQueryString).collect()
     }  should have message "requirement failed: with_replication required when use CREATE EXTERNAL TABLE command"
 
   }

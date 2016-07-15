@@ -23,7 +23,7 @@
     <parent>
         <artifactId>parent_2.10</artifactId>
         <groupId>com.stratio.crossdata</groupId>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>1.5.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>crossdata-server_2.10</artifactId>
@@ -107,11 +107,6 @@
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
             <version>${hazelcast.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
         <!-- TESTS -->
         <dependency>

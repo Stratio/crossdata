@@ -31,6 +31,7 @@ import org.apache.spark.sql.sources.Filter
 private[sql] object ExtendedDataSourceStrategy extends Strategy with SparkLoggerComponent {
 
   def apply(plan: LogicalPlan): Seq[execution.SparkPlan] = plan match {
+    // TODO refactor => return None instead of check the aggregation
     case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: NativeFunctionExecutor, _))
       if plan.collectFirst { case _: Aggregate => false} getOrElse(true) =>
       pruneFilterProjectUdfs(

@@ -38,6 +38,11 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
                     crossdataCatalogConf: Map[String, String]): StreamingContext = {
     val sparkStreamingWindow = ephemeralTable.options.atomicWindow
     val sparkContext = SparkContext.getOrCreate(sparkConf)
+
+    // This value is managed only inside the scope of the Spark Driver.
+    // Therefore, this value never reaches the Spark workers.
+    val countdowns = collection.mutable.Map[String, Int]()
+
     val streamingContext = new StreamingContext(sparkContext, Seconds(sparkStreamingWindow))
 
     streamingContext.checkpoint(ephemeralTable.options.checkpointDirectory)
@@ -46,14 +51,33 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     val kafkaInput = new KafkaInput(kafkaOptions)
     val kafkaDStream = toWindowDStream(kafkaInput.createStream(streamingContext), ephemeralTable.options)
 
+    // DStream.foreachRDD is a method that is executed in the Spark Driver if and when an output action is not called
+    // over a RDD. Thus, the value countdowns can be used inside.
+    // More information here:
+    // http://spark.apache.org/docs/latest/streaming-programming-guide.html#design-patterns-for-using-foreachrdd
     kafkaDStream.foreachRDD { rdd =>
       if (rdd.take(1).length > 0) {
         val ephemeralQueries = CrossdataStatusHelper.queriesFromEphemeralTable(zookeeperConf, ephemeralTable.name)
 
         if (ephemeralQueries.nonEmpty) {
-          ephemeralQueries.foreach(ephemeralQuery =>
-            executeQuery(rdd, ephemeralQuery, ephemeralTable, kafkaOptions, zookeeperConf, crossdataCatalogConf)
-          )
+          ephemeralQueries.foreach( ephemeralQuery => {
+            val alias = ephemeralQuery.alias
+            if(!countdowns.contains(alias)){
+              countdowns.put(alias, (ephemeralQuery.window / sparkStreamingWindow))
+            }
+            countdowns.put(alias, countdowns.get(alias).getOrElse(0)-1)
+            logDebug(s"Countdowns: ${countdowns.mkString(", ")}")
+
+            countdowns.get(alias) foreach {
+              case 0 => {
+                countdowns.put(alias, (ephemeralQuery.window / sparkStreamingWindow))
+                logInfo(s"Executing streaming query $alias")
+                executeQuery(rdd, ephemeralQuery, ephemeralTable, kafkaOptions, zookeeperConf, crossdataCatalogConf)
+              }
+              case countdown =>
+                logDebug(s"Current countdown for $alias: $countdown")
+            }
+          })
         }
       }
     }
