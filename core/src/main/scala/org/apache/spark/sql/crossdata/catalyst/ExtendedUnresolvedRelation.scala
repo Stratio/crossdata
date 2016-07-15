@@ -13,20 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.daos
+package org.apache.spark.sql.crossdata.catalyst
 
-import java.util.UUID
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, UnaryNode}
 
-object DAOConstants {
-
-  val BaseZKPath = "stratio/crossdata"
-  val TablesPath = s"$BaseZKPath/tables"
-  val ViewsPath = s"$BaseZKPath/views"
-  val AppsPath = s"$BaseZKPath/apps"
-  val IndexesPath = s"$BaseZKPath/indexes"
-  val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
-  val EphemeralTableStatusPath = s"$BaseZKPath/ephemeraltablestatus"
-  val EphemeralQueriesPath = s"$BaseZKPath/ephemeralqueries"
-
-  def createId: String = UUID.randomUUID.toString
+case class ExtendedUnresolvedRelation(tableIdentifier: TableIdentifier, child: LogicalPlan) extends UnaryNode {
+  override def output: Seq[Attribute] = child.output
 }
