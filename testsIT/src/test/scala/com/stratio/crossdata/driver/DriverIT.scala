@@ -18,6 +18,7 @@ package com.stratio.crossdata.driver
 import java.nio.file.Paths
 
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.driver.test.Utils._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -29,131 +30,107 @@ import scala.reflect.io.File
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
 
-  "Crossdata" should "return an ErrorResult when running an unparseable query" in {
+  "CrossdataDriver" should "return an ErrorResult when running an unparseable query" in {
 
     assumeCrossdataUpAndRunning()
-    val driver = Driver.getOrCreate()
+    withDriverDo { driver =>
 
-    val result = driver.sql("select select").waitForResult(10 seconds)
-    result shouldBe an[ErrorSQLResult]
-    result.asInstanceOf[ErrorSQLResult].cause.isDefined shouldBe (true)
-    result.asInstanceOf[ErrorSQLResult].cause.get shouldBe a[Exception]
-    result.asInstanceOf[ErrorSQLResult].cause.get.getMessage should include regex "cannot resolve .*"
-    driver.stop()
+      val result = driver.sql("select select").waitForResult(10 seconds)
+      result shouldBe an[ErrorSQLResult]
+      result.asInstanceOf[ErrorSQLResult].cause.isDefined shouldBe (true)
+      result.asInstanceOf[ErrorSQLResult].cause.get shouldBe a[Exception]
+      result.asInstanceOf[ErrorSQLResult].cause.get.getMessage should include regex "cannot resolve .*"
+    }
   }
 
   it should "return a SuccessfulQueryResult when executing a select *" in {
     assumeCrossdataUpAndRunning()
-    val driver = Driver.getOrCreate()
+    withDriverDo { driver =>
 
-    driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
+      driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
 
-    val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
-    result shouldBe an[SuccessfulSQLResult]
-    result.hasError should be(false)
-    val rows = result.resultSet
-    rows should have length 2
-    rows(0) should have length 2
-    driver.stop()
+      val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
+      result shouldBe an[SuccessfulSQLResult]
+      result.hasError should be(false)
+      val rows = result.resultSet
+      rows should have length 2
+      rows(0) should have length 2
+    }
   }
 
   it should "get a list of tables" in {
     assumeCrossdataUpAndRunning
-    val driver = Driver.getOrCreate()
+    withDriverDo { driver =>
 
-    driver.sql(
-      s"CREATE TABLE db.jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
-    ).waitForResult()
+      driver.sql(
+        s"CREATE TABLE db.jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
+      ).waitForResult()
 
-    driver.sql(
-      s"CREATE TABLE jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
-    ).waitForResult()
+      driver.sql(
+        s"CREATE TABLE jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
+      ).waitForResult()
 
-    driver.listTables() should contain allOf(("jsonTable2", Some("db")), ("jsonTable2", None))
-    driver.stop()
+      driver.listTables() should contain allOf(("jsonTable2", Some("db")), ("jsonTable2", None))
+    }
   }
 
-  "Crossdata Driver" should "be able to close the connection and start it again" in {
-    assumeCrossdataUpAndRunning
-    var driver = Driver.getOrCreate()
-    val newDriver = Driver.getOrCreate()
 
-    driver should be theSameInstanceAs newDriver
-
-
-    driver.sql(s"SHOW TABLES")
-
-    driver.stop()
-
-    Thread.sleep(6000)
-
-    driver = Driver.getOrCreate()
-
-    val result = driver.sql(s"SHOW TABLES")
-
-    result.hasError should equal(false)
-    driver.stop()
-
-  }
 
   it should "indicates that the cluster is alive when there is a server up" in {
-    val driver = Driver.getOrCreate()
+    withDriverDo { driver =>
 
-    driver.isClusterAlive(6 seconds) shouldBe true
-    driver.stop()
+      driver.isClusterAlive(6 seconds) shouldBe true
+    }
   }
 
   it should "return the addresses of servers up and running" in {
-    val driver = Driver.getOrCreate()
+    withDriverDo { driver =>
 
-    val addresses = Await.result(driver.serversUp(), 6 seconds)
+      val addresses = Await.result(driver.serversUp(), 6 seconds)
 
-    addresses should have length 1
-    addresses.head.host shouldBe Some("127.0.0.1")
-    driver.stop()
+      addresses should have length 1
+      addresses.head.host shouldBe Some("127.0.0.1")
+    }
   }
 
   it should "return the current cluster state" in {
-    val driver = Driver.getOrCreate()
+    withDriverDo { driver =>
 
-    val clusterState = Await.result(driver.clusterState(), 6 seconds)
+      val clusterState = Await.result(driver.clusterState(), 6 seconds)
 
-    clusterState.getLeader.host shouldBe Some("127.0.0.1")
-    driver.stop()
+      clusterState.getLeader.host shouldBe Some("127.0.0.1")
+    }
   }
 
   it should "be able to execute ADD JAR Command of an existent file" in{ // TODO restore before merging session to master
     assumeCrossdataUpAndRunning
 
     val file = File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
-    val driver = Driver.getOrCreate()
-    val result = driver.addJar(file.path).waitForResult()
+    withDriverDo { driver =>
+      val result = driver.addJar(file.path).waitForResult()
+      file.delete()
+      result.hasError should equal(false)
+    }
 
-    driver.stop()
-    file.delete()
-
-    result.hasError should equal(false)
   }
 
   it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
 
-    val driver = Driver.getOrCreate()
-    val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
-    driver.stop()
-
-    result.hasError should equal(true)
+    withDriverDo { driver =>
+      val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
+      result.hasError should equal(true)
+    }
   }
 
   it should "be able to execute ADD APP Command of an existent file" in {
     assumeCrossdataUpAndRunning
 
     val filePath = getClass.getResource("/TestAddApp.jar").getPath
-    val driver = Driver.getOrCreate()
-    val result = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
-    driver.sql("EXECUTE testApp(rain,bow)").waitForResult()
-    driver.stop()
-    result.hasError should equal(false)
-
+    withDriverDo { driver =>
+      val result = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
+      driver.sql("EXECUTE testApp(rain,bow)").waitForResult()
+      result.hasError should equal(false)
+    }
 
   }
 
@@ -161,23 +138,19 @@ class DriverIT extends EndToEndTest {
     assumeCrossdataUpAndRunning
 
     val filePath = getClass.getResource("/TestAddApp.jar").getPath
-    val driver = Driver.getOrCreate()
-    val addAppResult = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
-    addAppResult.hasError should equal(false)
 
-    val executeResult = driver.sql("""EXECUTE testApp(rain,bow2) OPTIONS (executor.memory '20G')""").waitForResult()
+    withDriverDo { driver =>
+      val addAppResult = driver.addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp")).waitForResult()
+      addAppResult.hasError should equal(false)
 
-    executeResult.hasError should equal(false)
-    executeResult.resultSet.length should equal(1)
-    executeResult.resultSet(0).get(0) should equal("Spark app launched")
+      val executeResult = driver.sql("""EXECUTE testApp(rain,bow2) OPTIONS (executor.memory '20G')""").waitForResult()
 
-    driver.stop()
+      executeResult.hasError should equal(false)
+      executeResult.resultSet.length should equal(1)
+      executeResult.resultSet(0).get(0) should equal("Spark app launched")
+
+    }
   }
-
-
-
-
-
 
 
 }
