@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/Stratio/Crossdata/badge.svg?branch=master)](https://coveralls.io/github/Stratio/Crossdata?branch=master)
+
 Introduction
 ============
 [![GitterIL]( https://badges.gitter.im/Stratio/Crossdata.svg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)](https://gitter.im/Stratio/Crossdata)
