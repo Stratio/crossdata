@@ -153,4 +153,26 @@ class DriverIT extends EndToEndTest {
   }
 
 
+  it should "allow running multiple drivers per JVM" in {
+
+    val driverTable = "drvtable"
+    val anotherDriverTable = "anotherTable"
+
+    withDriverDo { driver =>
+      withDriverDo { anotherDriver =>
+        driver shouldNot be theSameInstanceAs anotherDriver
+        driver.listTables().size shouldBe anotherDriver.listTables().size
+
+        driver.sql(s"CREATE TEMPORARY TABLE $driverTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
+        driver.sql(s"SELECT * FROM $driverTable").waitForResult().resultSet should not be empty
+        anotherDriver.sql(s"SELECT * FROM $driverTable").waitForResult().hasError shouldBe true
+
+        anotherDriver.sql(s"CREATE TEMPORARY TABLE $anotherDriverTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
+        anotherDriver.sql(s"SELECT * FROM $anotherDriverTable").waitForResult().resultSet should not be empty
+        driver.sql(s"SELECT * FROM $anotherDriverTable").waitForResult().hasError shouldBe true
+
+      }
+    }
+  }
+
 }
