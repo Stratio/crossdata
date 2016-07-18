@@ -25,7 +25,6 @@ import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 import scala.annotation.tailrec
 
 // TODO refactor SQL catalog implementations
-// TODO close resultSet
 object DerbyCatalog {
   val DB = "CROSSDATA"
   val TableWithTableMetadata = "xdtables"
@@ -59,11 +58,11 @@ object DerbyCatalog {
 
 
 /**
- * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
- * Derby.
- *
- * @param catalystConf An implementation of the [[CatalystConf]].
- */
+  * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
+  * Derby.
+  *
+  * @param catalystConf An implementation of the [[CatalystConf]].
+  */
 class DerbyCatalog(override val catalystConf: CatalystConf)
   extends PersistentCatalogWithCache(catalystConf) {
 
@@ -143,12 +142,13 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
   }
 
 
-  def executeSQLCommand(sql: String): Unit = synchronized {using(connection.createStatement()) { statement =>
-    statement.executeUpdate(sql)
+  def executeSQLCommand(sql: String): Unit = synchronized {
+    using(connection.createStatement()) { statement =>
+      statement.executeUpdate(sql)
+    }
   }
-}
 
-  private def withConnectionWithoutCommit[T](f: Connection => T): T = synchronized{
+  private def withConnectionWithoutCommit[T](f: Connection => T): T = synchronized {
     try {
       connection.setAutoCommit(false)
       f(connection)
@@ -158,14 +158,17 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
   }
 
   private def withStatement[T](sql: String)(f: PreparedStatement => T)(implicit conn: Connection = connection): T =
-    synchronized {using(conn.prepareStatement(sql)) { statement =>
-      f(statement)
+    synchronized {
+      using(conn.prepareStatement(sql)) { statement =>
+        f(statement)
+      }
     }
-}
 
-  private def withResultSet[T](prepared: PreparedStatement)(f: ResultSet => T): T = synchronized{using(prepared.executeQuery()) { resultSet =>
-    f(resultSet)
-  }}
+  private def withResultSet[T](prepared: PreparedStatement)(f: ResultSet => T): T = synchronized {
+    using(prepared.executeQuery()) { resultSet =>
+      f(resultSet)
+    }
+  }
 
   override def lookupTable(tableIdentifier: ViewIdentifier): Option[CrossdataTable] =
     selectMetadata(TableWithTableMetadata, tableIdentifier) { resultSet =>
@@ -284,14 +287,14 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
     }
 
 
-
   override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
     withConnectionWithoutCommit { implicit conn =>
       selectMetadata(TableWithViewMetadata, tableIdentifier) { resultSet =>
         if (!resultSet.next()) {
-          withStatement(s"""|INSERT INTO $DB.$TableWithViewMetadata (
-                            | $DatabaseField, $TableNameField, $SqlViewField, $CrossdataVersionField
-                            |) VALUES (?,?,?,?)""".stripMargin) {statement2 =>
+          withStatement(
+            s"""|INSERT INTO $DB.$TableWithViewMetadata (
+                | $DatabaseField, $TableNameField, $SqlViewField, $CrossdataVersionField
+                |) VALUES (?,?,?,?)""".stripMargin) { statement2 =>
 
             statement2.setString(1, tableIdentifier.database.getOrElse(""))
             statement2.setString(2, tableIdentifier.table)
@@ -310,7 +313,6 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
         connection.commit()
       }
     }
-
 
 
   override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit =
@@ -404,7 +406,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
 
   override def isAvailable: Boolean = true
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = synchronized{
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = synchronized {
     @tailrec
     def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifier] = Set.empty): Set[TableIdentifier] = {
       if (next) {
