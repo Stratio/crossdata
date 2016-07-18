@@ -84,7 +84,7 @@ abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XD
 
   override final def saveTable(crossdataTable: CrossdataTable, table: LogicalPlan)(implicit sqlContext:SQLContext): Unit = {
 
-    val tableIdentifier = TableIdentifier(crossdataTable.tableIdentifier.table, crossdataTable.tableIdentifier.database)
+    val tableIdentifier = crossdataTable.tableIdentifier
     if (relation(tableIdentifier)(sqlContext).isDefined) {
       logWarning(s"The table $tableIdentifier already exists")
       throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
