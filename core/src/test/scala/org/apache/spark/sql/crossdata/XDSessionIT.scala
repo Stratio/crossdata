@@ -24,6 +24,7 @@ import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.execution.PersistDataSourceTable
+import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 import org.apache.spark.sql.execution.ExecutedCommand
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLConf, SaveMode}

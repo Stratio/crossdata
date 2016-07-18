@@ -20,6 +20,7 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
+import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 
 
 object XDSession{

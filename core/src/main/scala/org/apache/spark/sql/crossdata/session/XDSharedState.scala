@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata
-
+package org.apache.spark.sql.crossdata.session
 
 import com.typesafe.config.Config
 import org.apache.spark.SparkContext
@@ -36,9 +35,7 @@ object XDSharedState {
   }
 }
 
-// TODO refactor (move XDSharedState, XDSessionState and HazelcastSessionProvider to org.apache.spark.sql.crossdata.session)
-class XDSharedState( // TODO externalCatalog
-                     @transient val sc: SparkContext,
+class XDSharedState( @transient val sc: SparkContext,
                      userConfig: Option[Config] = None, // TODO this is server config. Probably should be core => the server should remove the config prefix (config.spark.sql...)
                      val externalCatalog: XDCatalogCommon,
                      val streamingCatalog: Option[XDStreamingCatalog]

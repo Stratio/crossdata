@@ -26,6 +26,7 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, X
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.config.CoreConfig
+import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}

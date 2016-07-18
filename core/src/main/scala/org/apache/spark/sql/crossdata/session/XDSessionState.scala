@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata
+package org.apache.spark.sql.crossdata.session
 
+import org.apache.spark.sql.crossdata.XDSQLConf
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
 class XDSessionState(val sqlConf: XDSQLConf, val temporaryCatalogs: Seq[XDTemporaryCatalog])
