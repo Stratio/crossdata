@@ -29,7 +29,7 @@ import org.scalatest.BeforeAndAfterAll
 
 import scala.util.Try
 
-class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeAndAfterAll {
+class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeAndAfterAll { //TODO: Rename to withoutSharedContext
 
   var client: MongoClient = MongoClient(MongoHost, MongoPort)
 

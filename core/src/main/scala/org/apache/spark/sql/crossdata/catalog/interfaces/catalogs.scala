@@ -19,7 +19,8 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog
+import XDCatalog.{CrossdataApp, CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
 object XDCatalogCommon {
@@ -107,15 +108,30 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def saveView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String)(implicit sqlContext: SQLContext): Unit
 
+  def saveIndex(crossdataIndex: CrossdataIndex): Unit
+
   def dropTable(tableIdentifier: TableIdentifier): Unit
 
   def dropView(viewIdentifier: ViewIdentifier): Unit
+
+  def dropIndex(indexIdentifier: IndexIdentifier): Unit
+
+  def tableHasIndex(tableIdentifier: TableIdentifier): Boolean =
+    lookupIndexByTableIdentifier(tableIdentifier).isDefined
+
+  def dropIndexesFromTable(tableIdentifier: TableIdentifier): Unit
 
   def dropAllTables(): Unit
 
   def dropAllViews(): Unit
 
+  def dropAllIndexes(): Unit
+
   def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable]
+
+  def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] //TODO: Index operations to trait
+
+  def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex]
 
   def getApp(alias: String): Option[CrossdataApp]
 

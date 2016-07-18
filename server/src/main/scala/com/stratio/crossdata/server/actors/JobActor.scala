@@ -28,7 +28,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame, XDSession}
 
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, ExecutionException}
 import scala.util.{Failure, Success}
 
 
@@ -124,6 +124,7 @@ class JobActor(
           requester ! queryRes
           self ! JobCompleted
         case Failure(_: CancellationException) => self ! JobCompleted // Job cancellation
+        case Failure(e: ExecutionException) => self ! JobFailed(e.getCause) // Spark exception
         case Failure(reason) => self ! JobFailed(reason) // Job failure
       }
 
