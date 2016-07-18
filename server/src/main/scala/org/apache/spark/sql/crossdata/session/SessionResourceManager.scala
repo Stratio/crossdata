@@ -21,7 +21,7 @@ import com.hazelcast.core.{HazelcastInstance, IMap, Message, MessageListener}
 import com.stratio.crossdata.util.CacheInvalidator
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.HazelcastSQLConf
+import org.apache.spark.sql.crossdata.{HazelcastSQLConf, XDSQLConf}
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
@@ -89,7 +89,8 @@ trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidati
 
 class HazelcastSessionCatalogManager(
                                       override protected val hInstance: HazelcastInstance,
-                                      catalystConf: CatalystConf
+                                      catalystConf: CatalystConf,
+                                      sessionInvalidator: Option[SessionID] => Option[CacheInvalidator] = (_ => None)
                                     ) extends HazelcastSessionResourceManager[Seq[XDTemporaryCatalog]] {
 
   import HazelcastSessionProvider._
@@ -171,15 +172,21 @@ class HazelcastSessionCatalogManager(
     localCatalog
   }
 
-  override def invalidateLocalCaches(key: SessionID): Unit = sessionIDToMapCatalog remove key
+  override def invalidateLocalCaches(key: SessionID): Unit = {
+    sessionIDToMapCatalog remove key
+    sessionInvalidator(Some(key)).foreach(_.invalidateCache)
+  }
 
-  override def invalidateAllLocalCaches: Unit = sessionIDToMapCatalog clear
+  override def invalidateAllLocalCaches: Unit = {
+    sessionIDToMapCatalog clear()
+    sessionInvalidator(None).foreach(_.invalidateCache)
+  }
 
 }
 
-
 class HazelcastSessionConfigManager(
-                                     override protected val hInstance: HazelcastInstance
+                                     override protected val hInstance: HazelcastInstance,
+                                     sessionInvalidator: Option[SessionID] => Option[CacheInvalidator] = (_ => None)
                                    ) extends HazelcastSessionResourceManager[SQLConf] {
 
   import HazelcastSessionProvider._
@@ -192,7 +199,7 @@ class HazelcastSessionConfigManager(
   invalidationTopic
 
   //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
-  override def newResource(key: SessionID, from: Option[SQLConf] = None): SQLConf = {
+  override def newResource(key: SessionID, from: Option[SQLConf] = None): XDSQLConf = {
     val (hzConfigMap, id) = createRandomMap[String, String]
     val conf = new HazelcastSQLConf(hzConfigMap, resourceInvalidator(key))
 
@@ -206,7 +213,7 @@ class HazelcastSessionConfigManager(
     conf
   }
 
-  override def getResource(key: SessionID): Try[SQLConf] = sessionId2Config.get(key).map(Success(_)) getOrElse {
+  override def getResource(key: SessionID): Try[XDSQLConf] = sessionId2Config.get(key).map(Success(_)) getOrElse {
     for (
       configId <- checkNotNull(sessionId2ConfigMapId.get(key));
       configMap <- checkNotNull(hInstance.getMap[String, String](configId.toString))
@@ -238,8 +245,14 @@ class HazelcastSessionConfigManager(
     publishInvalidation()
   }
 
-  override def invalidateAllLocalCaches: Unit = sessionId2Config.values.foreach(_.invalidateLocalCache)
+  override def invalidateAllLocalCaches: Unit = {
+    sessionId2Config.values.foreach(_.invalidateLocalCache)
+    sessionInvalidator(None).foreach(_.invalidateCache)
+  }
 
-  override def invalidateLocalCaches(key: SessionID): Unit = sessionId2Config.get(key).foreach(_.invalidateLocalCache)
+  override def invalidateLocalCaches(key: SessionID): Unit = {
+    sessionId2Config.get(key).foreach(_.invalidateLocalCache)
+    sessionInvalidator(Some(key)).foreach(_.invalidateCache)
+  }
 
 }

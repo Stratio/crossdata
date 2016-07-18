@@ -51,11 +51,11 @@ class HttpClient(ctx: HttpClientContext) {
   private val http = Http(actorSystem)
 
   def sendJarToHTTPServer(path: String, session: Session): Future[String] = {
-    val host = config.getCrossdataServerHost.split(':').head
+    val serverHttp = config.getCrossdataServerHttp
     val sessionUUID = session.id
     //val sessionActorRef = Serialization.serializedActorPath(session.clientRef)
     for (
-      request <- createRequest(s"http://$host:13422/upload/$sessionUUID", new File(path));
+      request <- createRequest(s"http://$serverHttp/upload/$sessionUUID", new File(path));
       response <- http.singleRequest(request) map {
         case res@HttpResponse(code, _, _, _) if (code != StatusCodes.OK) =>
           throw new RuntimeException(s"Request failed, response code: $code")

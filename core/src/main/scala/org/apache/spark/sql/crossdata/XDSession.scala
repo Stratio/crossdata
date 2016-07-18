@@ -47,5 +47,9 @@ class XDSession(
 
   }
 
-  override protected[sql] lazy val conf: SQLConf = xdSessionState.sqlConf
+  override protected[sql] lazy val conf: SQLConf = xdSessionState.sqlConf.enableCacheInvalidation(false)
+
+  xdSessionState.sqlConf.enableCacheInvalidation(true)
+
 }
+

@@ -16,7 +16,6 @@
 package com.stratio.crossdata.server
 
 import java.io.File
-import java.util.UUID
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.contrib.pattern.DistributedPubSubExtension
@@ -68,11 +67,18 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
         // when processing have finished create a response for the user
         onSuccess(allPartsF) { allParts =>
+
           logger.info("Recieved file")
           complete {
             val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
             val hdfsPath = writeJarToHdfs(hdfsConfig, path)
             val session = Session(sessionUUID, null)
+            allParts.values.toSeq.foreach{
+              case file: File =>
+                file.delete
+                logger.info("Tmp file deleted")
+              case _ => logger.error("Problem deleting the temporary file.")
+            }
             //Send a broadcast message to all servers
             mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), session))
             hdfsPath
