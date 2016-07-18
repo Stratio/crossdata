@@ -38,7 +38,7 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
     val columns = StructType(fields)
     val opts = Map("path" -> "/fake_path")
     val tableIdentifier = TableIdentifier(TableName)
-    val crossdataTable = CrossdataTable(tableIdentifier.table, tableIdentifier.database, Some(Columns), SourceDatasource, Array.empty, opts)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array.empty, opts)
 
     temporaryCatalog.relation(tableIdentifier) shouldBe empty
 
@@ -49,7 +49,7 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
 
   it should s"register a table with catalog and partitionColumns in $catalogName" in {
     val tableIdentifier = TableIdentifier(TableName, Some(Database))
-    val crossdataTable = CrossdataTable(TableName, Some(Database), Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
 
     temporaryCatalog.saveTable(tableIdentifier, null, Some(crossdataTable))
 
@@ -61,7 +61,7 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
   it should s"register a table with catalog and partitionColumns with multiple subdocuments as schema in $catalogName" in {
     temporaryCatalog.dropAllTables()
     val tableIdentifier = TableIdentifier(TableName, Some(Database))
-    val crossdataTable = CrossdataTable(TableName, Some(Database), Some(ColumnsWithSubColumns), SourceDatasource, Array.empty, OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(ColumnsWithSubColumns), SourceDatasource, Array.empty, OptsJSON)
 
     temporaryCatalog.saveTable(tableIdentifier, null, Some(crossdataTable))
 
@@ -74,8 +74,8 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
     val tableIdentifier1 = TableIdentifier(TableName, Some(Database))
     val tableIdentifier2 = TableIdentifier(TableName, None)
 
-    val crossdataTable1 = CrossdataTable(tableIdentifier1.table, tableIdentifier1.database, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
-    val crossdataTable2 = CrossdataTable(tableIdentifier2.table, tableIdentifier2.database, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
+    val crossdataTable1 = CrossdataTable(tableIdentifier1, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
+    val crossdataTable2 = CrossdataTable(tableIdentifier2, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
 
     temporaryCatalog.saveTable(tableIdentifier1, null, Some(crossdataTable1))
     temporaryCatalog.saveTable(tableIdentifier2, null, Some(crossdataTable2))

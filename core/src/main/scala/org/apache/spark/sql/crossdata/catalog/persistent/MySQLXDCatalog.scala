@@ -163,7 +163,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       val version = resultSet.getString(CrossdataVersionField)
 
       Some(
-        CrossdataTable(table, Some(database), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource, deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
+        CrossdataTable(TableIdentifier(table, Some(database)), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource, deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
       )
     }
   }
@@ -199,7 +199,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       connection.setAutoCommit(false)
 
       // check if the database-table exist in the persisted catalog
-      val resultSet = selectMetadata(tableWithTableMetadata, TableIdentifier(crossdataTable.tableName, crossdataTable.dbName))
+      val resultSet = selectMetadata(tableWithTableMetadata, crossdataTable.tableIdentifier)
 
       if (!resultSet.isBeforeFirst) {
         resultSet.close()
@@ -208,8 +208,8 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
               | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
-        prepped.setString(1, crossdataTable.dbName.getOrElse(""))
-        prepped.setString(2, crossdataTable.tableName)
+        prepped.setString(1, crossdataTable.tableIdentifier.database.getOrElse(""))
+        prepped.setString(2, crossdataTable.tableIdentifier.table)
         prepped.setString(3, tableSchema)
         prepped.setString(4, crossdataTable.datasource)
         prepped.setString(5, partitionColumn)
@@ -223,7 +223,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
           connection.prepareStatement(
             s"""|UPDATE $db.$tableWithTableMetadata
                 |SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-                |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
+                |WHERE $DatabaseField='${crossdataTable.tableIdentifier.database.getOrElse("")}' AND $TableNameField='${crossdataTable.tableIdentifier.table}';
        """.stripMargin.replaceAll("\n", " "))
 
         prepped.setString(1, tableSchema)

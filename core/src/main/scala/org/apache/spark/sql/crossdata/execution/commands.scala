@@ -48,7 +48,7 @@ private[crossdata] case class PersistDataSourceTable(
   override protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row] = {
 
 
-    val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
+    val tableIdentifier = crossdataTable.tableIdentifier
 
     if (crossdataContext.catalog.tableExists(tableIdentifier) && !allowExisting)
       throw new AnalysisException(s"Table ${tableIdentifier.unquotedString} already exists")
@@ -68,7 +68,7 @@ private[crossdata] case class RegisterDataSourceTable(
 
   override protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row] = {
 
-    val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
+    val tableIdentifier = crossdataTable.tableIdentifier
 
     crossdataContext.catalog.registerTable(
       tableIdentifier,
@@ -157,7 +157,7 @@ case class PersistSelectAsTable(
 
     if (createMetastoreTable) {
       val resolved = ResolvedDataSource(sqlContext, provider, partitionColumns, mode, options, df)
-      val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Some(resolved.relation.schema), provider, Array.empty[String], options)
+      val crossdataTable = CrossdataTable( TableIdentifier(tableIdent.table, tableIdent.database), Some(resolved.relation.schema), provider, Array.empty[String], options)
       crossdataContext.catalog.persistTable(crossdataTable, LogicalRelation(resolved.relation))
     }
 

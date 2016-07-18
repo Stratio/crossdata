@@ -92,7 +92,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
     val session = createNewSession(hazelcastSessionProvider, sessionId)
 
-    session.catalog.registerTable(tableIdent, LocalRelation(), Some(CrossdataTable("tab", None, None, "fakedatasource")))
+    session.catalog.registerTable(tableIdent, LocalRelation(), Some(CrossdataTable(tableIdent, None, "fakedatasource")))
 
     hazelcastSessionProvider.session(sessionId) should matchPattern {
       case Success(s: XDSession) if Try(s.catalog.lookupRelation(tableIdent)).isSuccess =>

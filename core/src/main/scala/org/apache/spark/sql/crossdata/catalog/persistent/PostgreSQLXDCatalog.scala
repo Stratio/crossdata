@@ -166,7 +166,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       val version = resultSet.getString(CrossdataVersionField)
 
       Some(
-        CrossdataTable(table, Some(database), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource, deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
+        CrossdataTable(TableIdentifier(table, Some(database)), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource, deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
       )
     }
   }
@@ -202,8 +202,8 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
 
     // check if the database-table exist in the persisted catalog
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement.setString(1, crossdataTable.dbName.getOrElse(""))
-    preparedStatement.setString(2, crossdataTable.tableName)
+    preparedStatement.setString(1, crossdataTable.tableIdentifier.database.getOrElse(""))
+    preparedStatement.setString(2, crossdataTable.tableIdentifier.table)
     val resultSet = preparedStatement.executeQuery()
     preparedStatement.close()
 
@@ -214,8 +214,8 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
             | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
             |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
-      prepped.setString(1, crossdataTable.dbName.getOrElse(""))
-      prepped.setString(2, crossdataTable.tableName)
+      prepped.setString(1, crossdataTable.tableIdentifier.database.getOrElse(""))
+      prepped.setString(2, crossdataTable.tableIdentifier.table)
       prepped.setString(3, tableSchema)
       prepped.setString(4, crossdataTable.datasource)
       prepped.setString(5, partitionColumn)
@@ -228,7 +228,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
       resultSet.close()
       val prepped = connection.prepareStatement(
         s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-            |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}';
+            |WHERE $DatabaseField='${crossdataTable.tableIdentifier.database.getOrElse("")}' AND $TableNameField='${crossdataTable.tableIdentifier.table}';
        """.stripMargin.replaceAll("\n", " "))
 
       prepped.setString(1, tableSchema)

@@ -56,7 +56,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   private val catalogs: Seq[XDCatalogCommon] = temporaryCatalogs ++: persistentCatalogs ++: streamingCatalogs.toSeq
 
   private implicit def crossdataTable2tableIdentifier(xdTable: CrossdataTable): TableIdentifier =
-    TableIdentifier(xdTable.tableName, xdTable.dbName)
+    xdTable.tableIdentifier
 
   /**
     * Apply the lookup function to each underlying catalog until a [[LogicalPlan]] is found. If the table is found in a

@@ -135,7 +135,7 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
       if (!ignoreTable) {
         logInfo(s"Importing table ${tableId.unquotedString}")
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
-        val crossdataTable = CrossdataTable(table.tableName, table.database, table.schema, datasource, Array.empty[String], optionsWithTable)
+        val crossdataTable = CrossdataTable(TableIdentifier(table.tableName, table.database), table.schema, datasource, Array.empty[String], optionsWithTable)
         import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
         sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
       }
@@ -450,7 +450,7 @@ private[crossdata] case class CreateGlobalIndex(
           val tableInventory = tableManipulation.createExternalTable(sqlContext, tableIdent.table, tableIdent.database, userSpecifiedSchema, options)
           tableInventory.map { tableInventory =>
             val optionsWithTable = tableManipulation.generateConnectorOpts(tableInventory, options)
-            val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
+            val crossdataTable = CrossdataTable(TableIdentifier(tableIdent.table, tableIdent.database), Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
             import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
             sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
           } getOrElse (throw new RuntimeException(s"External table can't be created"))

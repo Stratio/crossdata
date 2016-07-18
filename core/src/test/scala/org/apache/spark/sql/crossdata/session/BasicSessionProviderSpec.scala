@@ -86,7 +86,7 @@ class BasicSessionProviderSpec extends SharedXDContextTest {
 
     val session = createNewSession(basicSessionProvider, sessionId)
 
-    session.catalog.registerTable(tableIdent, LocalRelation(), Some(CrossdataTable("tab", None, None, "fakedatasource")))
+    session.catalog.registerTable(tableIdent, LocalRelation(), Some(CrossdataTable(TableIdentifier("tab", None), None, "fakedatasource")))
 
     basicSessionProvider.session(sessionId) should matchPattern {
       case Success(s: XDSession) if Try(s.catalog.lookupRelation(tableIdent)).isSuccess =>

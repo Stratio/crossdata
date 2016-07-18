@@ -182,7 +182,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
         val version = resultSet.getString(CrossdataVersionField)
 
         Some(
-          CrossdataTable(table, Some(database), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource,
+          CrossdataTable(TableIdentifier(table, Some(database)), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource,
             deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
         )
       }
@@ -247,7 +247,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
       val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
       // check if the database-table exist in the persisted catalog
-      selectMetadata(TableWithTableMetadata, TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)) { resultSet =>
+      selectMetadata(TableWithTableMetadata, crossdataTable.tableIdentifier) { resultSet =>
 
         if (!resultSet.next()) {
           withStatement(
@@ -255,8 +255,8 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
                 | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
                 |) VALUES (?,?,?,?,?,?,?)
         """.stripMargin) { statement2 =>
-            statement2.setString(1, crossdataTable.dbName.getOrElse(""))
-            statement2.setString(2, crossdataTable.tableName)
+            statement2.setString(1, crossdataTable.tableIdentifier.database.getOrElse(""))
+            statement2.setString(2, crossdataTable.tableIdentifier.table)
             statement2.setString(3, tableSchema)
             statement2.setString(4, crossdataTable.datasource)
             statement2.setString(5, partitionColumn)
@@ -269,7 +269,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
           withStatement(
             s"""|UPDATE $DB.$TableWithTableMetadata
                 |SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-                |WHERE $DatabaseField='${crossdataTable.dbName.getOrElse("")}' AND $TableNameField='${crossdataTable.tableName}'""".stripMargin) {
+                |WHERE $DatabaseField='${crossdataTable.tableIdentifier.database.getOrElse("")}' AND $TableNameField='${crossdataTable.tableIdentifier.table}'""".stripMargin) {
             statement2 =>
               statement2.setString(1, tableSchema)
               statement2.setString(2, crossdataTable.datasource)

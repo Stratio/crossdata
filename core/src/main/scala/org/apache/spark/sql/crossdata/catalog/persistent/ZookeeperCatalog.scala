@@ -52,8 +52,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
 
       findTable match {
         case Some(zkTable) =>
-          Option(CrossdataTable(zkTable.name,
-            zkTable.database,
+          Option(CrossdataTable(TableIdentifier(zkTable.name, zkTable.database),
             Option(deserializeUserSpecifiedSchema(zkTable.schema)),
             zkTable.dataSource,
             zkTable.partitionColumns.toArray,
@@ -114,10 +113,10 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
 
     tableDAO.dao.create(tableId,
       TableModel(tableId,
-        crossdataTable.tableName,
+        crossdataTable.tableIdentifier.table,
         serializeSchema(crossdataTable.schema.getOrElse(schemaNotFound())),
         crossdataTable.datasource,
-        crossdataTable.dbName,
+        crossdataTable.tableIdentifier.database,
         crossdataTable.partitionColumn,
         crossdataTable.opts))
   }
