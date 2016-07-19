@@ -18,7 +18,8 @@ package org.apache.spark.sql.crossdata.catalog.temporary
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.TableIdentifierNormalized
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
 import scala.collection.mutable
@@ -32,24 +33,24 @@ abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog
   private val tables: mutable.Map[String, LogicalPlan] = newMap
   private val views: mutable.Map[String, LogicalPlan] = newMap
 
-  implicit def tableIdent2string(tident: TableIdentifier): String = normalizeTableName(tident)
+  implicit def tableIdent2string(tident: TableIdentifierNormalized): String = normalizeTableName(tident)
 
-  override def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
+  override def relation(tableIdent: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
     (tables get tableIdent) orElse (views get tableIdent)
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifierNormalized] = {
     val dbName = databaseName.map(normalizeIdentifier)
     (tables ++ views).toSeq collect {
       case (k, _) if dbName.map(_ == k.split("\\.")(0)).getOrElse(true) =>
         k.split("\\.") match {
-          case Array(db, tb) => TableIdentifier(tb, Option(db))
-          case Array(tb) => TableIdentifier(tb)
+          case Array(db, tb) => TableIdentifierNormalized(tb, Option(db))
+          case Array(tb) => TableIdentifierNormalized(tb)
         }
     }
   }
 
   override def saveTable(
-                          tableIdentifier: ViewIdentifier,
+                          tableIdentifier: TableIdentifierNormalized,
                           plan: LogicalPlan,
                           crossdataTable: Option[CrossdataTable] = None): Unit = {
 
@@ -58,21 +59,21 @@ abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog
   }
 
   override def saveView(
-                         viewIdentifier: ViewIdentifier,
+                         viewIdentifier: ViewIdentifierNormalized,
                          plan: LogicalPlan,
                          query: Option[String] = None): Unit = {
     tables get viewIdentifier foreach (_ => dropTable(viewIdentifier))
     views put(normalizeTableName(viewIdentifier), plan)
   }
 
-  override def dropView(viewIdentifier: ViewIdentifier): Unit =
+  override def dropView(viewIdentifier: ViewIdentifierNormalized): Unit =
     views remove normalizeTableName(viewIdentifier)
 
   override def dropAllViews(): Unit = views clear
 
   override def dropAllTables(): Unit = tables clear
 
-  override def dropTable(tableIdentifier: TableIdentifier): Unit =
+  override def dropTable(tableIdentifier: TableIdentifierNormalized): Unit =
     tables remove normalizeTableName(tableIdentifier)
 
 }

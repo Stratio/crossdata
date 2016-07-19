@@ -19,6 +19,7 @@ import java.util.UUID
 
 import com.hazelcast.core.Hazelcast
 import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.crossdata.catalog.TableIdentifierNormalized
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 import org.junit.runner.RunWith
@@ -31,8 +32,8 @@ class HazelcastCatalogSpec extends {
 
   override lazy val temporaryCatalog: XDTemporaryCatalog = {
     val hInstance = Hazelcast.newHazelcastInstance
-    val tables = hInstance.getMap[TableIdentifier, CrossdataTable](UUID.randomUUID().toString)
-    val views = hInstance.getMap[TableIdentifier, String](UUID.randomUUID().toString)
+    val tables = hInstance.getMap[TableIdentifierNormalized, CrossdataTable](UUID.randomUUID().toString)
+    val views = hInstance.getMap[TableIdentifierNormalized, String](UUID.randomUUID().toString)
 
     new HazelcastCatalog(tables, views)(xdContext.conf)
   }

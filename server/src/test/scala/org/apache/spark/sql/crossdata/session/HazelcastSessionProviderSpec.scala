@@ -92,7 +92,9 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
     val session = createNewSession(hazelcastSessionProvider, sessionId)
 
-    session.catalog.registerTable(tableIdent, LocalRelation(), Some(CrossdataTable(tableIdent, None, "fakedatasource")))
+    import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
+
+    session.catalog.registerTable(tableIdent, LocalRelation(), Some(CrossdataTable(tableIdent.normalize(xdContext.catalog.conf), None, "fakedatasource")))
 
     hazelcastSessionProvider.session(sessionId) should matchPattern {
       case Success(s: XDSession) if Try(s.catalog.lookupRelation(tableIdent)).isSuccess =>

@@ -15,7 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.catalog.temporary
 
-import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.CatalogConstants
@@ -23,6 +23,8 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types._
+
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
 
 // TODO: WARNING It is only valid for HazelcastCatalog until we create the proper plan to make it generic. (null!!)
 trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants {
@@ -33,11 +35,13 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
 
   implicit var implicitContext: XDContext = _
 
+  implicit val conf: CatalystConf = xdContext.catalog.conf
+
   s"${catalogName}CatalogSpec" must "return a dataframe from a register table without catalog using json datasource" in {
     val fields = Seq[StructField](Field1, Field2)
     val columns = StructType(fields)
     val opts = Map("path" -> "/fake_path")
-    val tableIdentifier = TableIdentifier(TableName)
+    val tableIdentifier = TableIdentifier(TableName).normalize
     val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array.empty, opts)
 
     temporaryCatalog.relation(tableIdentifier) shouldBe empty
@@ -48,7 +52,7 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
   }
 
   it should s"register a table with catalog and partitionColumns in $catalogName" in {
-    val tableIdentifier = TableIdentifier(TableName, Some(Database))
+    val tableIdentifier = TableIdentifier(TableName, Some(Database)).normalize
     val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
 
     temporaryCatalog.saveTable(tableIdentifier, null, Some(crossdataTable))
@@ -60,7 +64,7 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
 
   it should s"register a table with catalog and partitionColumns with multiple subdocuments as schema in $catalogName" in {
     temporaryCatalog.dropAllTables()
-    val tableIdentifier = TableIdentifier(TableName, Some(Database))
+    val tableIdentifier = TableIdentifier(TableName, Some(Database)).normalize
     val crossdataTable = CrossdataTable(tableIdentifier, Some(ColumnsWithSubColumns), SourceDatasource, Array.empty, OptsJSON)
 
     temporaryCatalog.saveTable(tableIdentifier, null, Some(crossdataTable))
@@ -71,8 +75,8 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
 
   it should "returns list of tables" in {
     temporaryCatalog.dropAllTables()
-    val tableIdentifier1 = TableIdentifier(TableName, Some(Database))
-    val tableIdentifier2 = TableIdentifier(TableName, None)
+    val tableIdentifier1 = TableIdentifier(TableName, Some(Database)).normalize
+    val tableIdentifier2 = TableIdentifier(TableName, None).normalize
 
     val crossdataTable1 = CrossdataTable(tableIdentifier1, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
     val crossdataTable2 = CrossdataTable(tableIdentifier2, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
@@ -90,7 +94,7 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
   it should "not unregister tables that not exist" ignore {
     temporaryCatalog.dropAllTables()
 
-    val tableIdentifier = TableIdentifier(TableName, Some(Database))
+    val tableIdentifier = TableIdentifier(TableName, Some(Database)).normalize
 
     a[RuntimeException] shouldBe thrownBy {
       temporaryCatalog.dropTable(tableIdentifier)
@@ -98,7 +102,7 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
   }
 
   it should s"unregister view" in {
-    val viewIdentifier = TableIdentifier(ViewName, Option(Database))
+    val viewIdentifier = TableIdentifier(ViewName, Option(Database)).normalize
     val plan = new LocalRelation(Seq.empty)
     temporaryCatalog.saveView(viewIdentifier, plan, Some(sqlView))
     temporaryCatalog.dropView(viewIdentifier)

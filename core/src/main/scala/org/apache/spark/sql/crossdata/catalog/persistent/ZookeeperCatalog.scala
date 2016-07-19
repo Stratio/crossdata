@@ -20,7 +20,7 @@ import java.net.Socket
 
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog.{TableIdentifierNormalized, XDCatalog, persistent}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{AppTypesafeDAO, IndexTypesafeDAO, TableTypesafeDAO, ViewTypesafeDAO}
 import org.apache.spark.sql.crossdata.models.{AppModel, IndexModel, TableModel, ViewModel}
@@ -44,7 +44,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
   @transient val indexDAO = new IndexTypesafeDAO(XDContext.catalogConfig)
 
 
-  override def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable] = {
+  override def lookupTable(tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable] = {
     if (tableDAO.dao.count > 0) {
       val findTable = tableDAO.dao.getAll()
         .find(tableModel =>
@@ -52,7 +52,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
 
       findTable match {
         case Some(zkTable) =>
-          Option(CrossdataTable(TableIdentifier(zkTable.name, zkTable.database),
+          Option(CrossdataTable(TableIdentifierNormalized(zkTable.name, zkTable.database),
             Option(deserializeUserSpecifiedSchema(zkTable.schema)),
             zkTable.dataSource,
             zkTable.partitionColumns.toArray,
@@ -91,13 +91,13 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
   }
 
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifierNormalized] = {
     if (tableDAO.dao.count > 0) {
       tableDAO.dao.getAll()
         .flatMap(tableModel => {
-          databaseName.fold(Option(TableIdentifier(tableModel.name, tableModel.database))) { dbName =>
+          databaseName.fold(Option(TableIdentifierNormalized(tableModel.name, tableModel.database))) { dbName =>
             tableModel.database.flatMap(dbNameModel => {
-              if (dbName == dbNameModel) Option(TableIdentifier(tableModel.name, tableModel.database))
+              if (dbName == dbNameModel) Option(TableIdentifierNormalized(tableModel.name, tableModel.database))
               else None
             })
           }
@@ -133,7 +133,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
   }
 
 
-  override def dropTableMetadata(tableIdentifier: ViewIdentifier): Unit =
+  override def dropTableMetadata(tableIdentifier: ViewIdentifierNormalized): Unit =
     tableDAO.dao.getAll().filter {
       tableModel => tableIdentifier.table == tableModel.name && tableIdentifier.database == tableModel.database
     } foreach { tableModel =>
@@ -146,7 +146,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
     viewDAO.dao.getAll.foreach(view => viewDAO.dao.delete(view.id))
   }
 
-  override def lookupView(viewIdentifier: ViewIdentifier): Option[String] = {
+  override def lookupView(viewIdentifier: ViewIdentifierNormalized): Option[String] = {
     if (viewDAO.dao.count > 0) {
       val findView = viewDAO.dao.getAll()
         .find(viewModel => viewModel.name == viewIdentifier.table && viewModel.database == viewIdentifier.database)
@@ -164,13 +164,13 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
     }
   }
 
-  override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit = {
+  override def persistViewMetadata(tableIdentifier: TableIdentifierNormalized, sqlText: String): Unit = {
     val viewId = createId
     viewDAO.dao.create(viewId, ViewModel(viewId, tableIdentifier.table, tableIdentifier.database, sqlText))
   }
 
 
-  override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
+  override def dropViewMetadata(viewIdentifier: ViewIdentifierNormalized): Unit =
     viewDAO.dao.getAll().filter {
       view => view.name == viewIdentifier.table && view.database == viewIdentifier.database
     } foreach { selectedView =>
@@ -219,12 +219,12 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
 
   }
 
-  override def dropIndexMetadata(tableIdentifier: TableIdentifier): Unit =
+  override def dropIndexMetadata(tableIdentifier: TableIdentifierNormalized): Unit =
     indexDAO.dao.getAll().filter(
       index => index.crossdataIndex.tableIdentifier == tableIdentifier
     ) foreach (selectedIndex => indexDAO.dao.delete(selectedIndex.indexId))
 
-  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
+  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifierNormalized): Option[CrossdataIndex] = {
     if (indexDAO.dao.count > 0) {
       val res = indexDAO.dao.getAll().find(
         _.crossdataIndex.tableIdentifier == tableIdentifier

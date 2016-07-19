@@ -19,7 +19,8 @@ import com.stratio.crossdata.util.CacheInvalidator
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.TableIdentifierNormalized
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
 /**
@@ -34,19 +35,19 @@ class XDTemporaryCatalogWithInvalidation(
                                         ) extends XDTemporaryCatalog {
 
   override def saveTable(
-                          tableIdentifier: ViewIdentifier,
+                          tableIdentifier: ViewIdentifierNormalized,
                           plan: LogicalPlan,
                           crossdataTable: Option[CrossdataTable]): Unit = {
     invalidator.invalidateCache
     underlying.saveTable(tableIdentifier, plan, crossdataTable)
   }
 
-  override def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, query: Option[String]): Unit = {
+  override def saveView(viewIdentifier: ViewIdentifierNormalized, plan: LogicalPlan, query: Option[String]): Unit = {
     invalidator.invalidateCache
     underlying.saveView(viewIdentifier, plan, query)
   }
 
-  override def dropView(viewIdentifier: ViewIdentifier): Unit = {
+  override def dropView(viewIdentifier: ViewIdentifierNormalized): Unit = {
     invalidator.invalidateCache
     underlying.dropView(viewIdentifier)
   }
@@ -61,15 +62,15 @@ class XDTemporaryCatalogWithInvalidation(
     underlying.dropAllTables()
   }
 
-  override def dropTable(tableIdentifier: ViewIdentifier): Unit = {
+  override def dropTable(tableIdentifier: ViewIdentifierNormalized): Unit = {
     invalidator.invalidateCache
     underlying.dropTable(tableIdentifier)
   }
 
-  override def relation(tableIdent: ViewIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
+  override def relation(tableIdent: ViewIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
     underlying.relation(tableIdent)
 
   override def catalystConf: CatalystConf = underlying.catalystConf
   override def isAvailable: Boolean = underlying.isAvailable
-  override def allRelations(databaseName: Option[String]): Seq[ViewIdentifier] = underlying.allRelations(databaseName)
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifierNormalized] = underlying.allRelations(databaseName)
 }

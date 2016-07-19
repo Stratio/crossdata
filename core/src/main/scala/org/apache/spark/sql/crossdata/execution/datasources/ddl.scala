@@ -27,6 +27,7 @@ import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
@@ -36,6 +37,7 @@ import scala.annotation.tailrec
 import scala.language.implicitConversions
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
+import XDCatalogCommon._
 
 object DDLUtils {
 
@@ -135,7 +137,9 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
       if (!ignoreTable) {
         logInfo(s"Importing table ${tableId.unquotedString}")
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
-        val crossdataTable = CrossdataTable(TableIdentifier(table.tableName, table.database), table.schema, datasource, Array.empty[String], optionsWithTable)
+        import XDCatalogCommon._
+        val identifier = TableIdentifier(table.tableName, table.database).normalize(sqlContext.catalog.conf)
+        val crossdataTable = CrossdataTable(identifier, table.schema, datasource, Array.empty[String], optionsWithTable)
         import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
         sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
       }
@@ -379,7 +383,7 @@ private[crossdata] case class CreateGlobalIndex(
       //TODO: Change index name, for allowing multiple index ???
       CreateExternalTable(TableIdentifier(finalIndex.indexType, Option(finalIndex.indexName)), elasticSchema, indexProvider, options).run(sqlContext)
 
-      CrossdataIndex(tableIdent, finalIndex, cols, pk, indexProvider, options)
+      CrossdataIndex(tableIdent.normalize(sqlContext.catalog.conf), finalIndex, cols, pk, indexProvider, options)
 
     }
 
@@ -450,7 +454,8 @@ private[crossdata] case class CreateGlobalIndex(
           val tableInventory = tableManipulation.createExternalTable(sqlContext, tableIdent.table, tableIdent.database, userSpecifiedSchema, options)
           tableInventory.map { tableInventory =>
             val optionsWithTable = tableManipulation.generateConnectorOpts(tableInventory, options)
-            val crossdataTable = CrossdataTable(TableIdentifier(tableIdent.table, tableIdent.database), Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
+            val identifier = TableIdentifier(tableIdent.table, tableIdent.database).normalize(sqlContext.catalog.conf)
+            val crossdataTable = CrossdataTable(identifier, Option(userSpecifiedSchema), provider, Array.empty, optionsWithTable)
             import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
             sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
           } getOrElse (throw new RuntimeException(s"External table can't be created"))

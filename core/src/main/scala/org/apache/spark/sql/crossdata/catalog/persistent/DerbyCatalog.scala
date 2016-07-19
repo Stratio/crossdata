@@ -20,7 +20,7 @@ import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet}
 import com.stratio.crossdata.util.using
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.CrossdataVersion
-import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog.{TableIdentifierNormalized, XDCatalog, persistent}
 
 import scala.annotation.tailrec
 
@@ -170,7 +170,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
     }
   }
 
-  override def lookupTable(tableIdentifier: ViewIdentifier): Option[CrossdataTable] =
+  override def lookupTable(tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable] =
     selectMetadata(TableWithTableMetadata, tableIdentifier) { resultSet =>
       if (!resultSet.next) {
         None
@@ -185,7 +185,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
         val version = resultSet.getString(CrossdataVersionField)
 
         Some(
-          CrossdataTable(TableIdentifier(table, Some(database)), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource,
+          CrossdataTable(TableIdentifierNormalized(table, Some(database)), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource,
             deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
         )
       }
@@ -210,7 +210,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
     }
 
 
-  override def lookupView(viewIdentifier: ViewIdentifier): Option[String] =
+  override def lookupView(viewIdentifier: ViewIdentifierNormalized): Option[String] =
     selectMetadata(TableWithViewMetadata, viewIdentifier) { resultSet =>
       if (!resultSet.next)
         None
@@ -236,7 +236,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
         val version = resultSet.getString(CrossdataVersionField)
 
         Some(
-          CrossdataIndex(TableIdentifier(table, Some(database)), IndexIdentifier(indexType, indexName),
+          CrossdataIndex(TableIdentifierNormalized(table, Some(database)), IndexIdentifier(indexType, indexName),
             deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
         )
       }
@@ -287,7 +287,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
     }
 
 
-  override def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit =
+  override def persistViewMetadata(tableIdentifier: TableIdentifierNormalized, sqlText: String): Unit =
     withConnectionWithoutCommit { implicit conn =>
       selectMetadata(TableWithViewMetadata, tableIdentifier) { resultSet =>
         if (!resultSet.next()) {
@@ -373,12 +373,12 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
       }
     }
 
-  override def dropTableMetadata(tableIdentifier: TableIdentifier): Unit =
+  override def dropTableMetadata(tableIdentifier: TableIdentifierNormalized): Unit =
     executeSQLCommand(
       s"DELETE FROM $DB.$TableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'"
     )
 
-  override def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit =
+  override def dropViewMetadata(viewIdentifier: ViewIdentifierNormalized): Unit =
     executeSQLCommand(
       s"DELETE FROM $DB.$TableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'"
     )
@@ -388,7 +388,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
       s"DELETE FROM $DB.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
     )
 
-  override def dropIndexMetadata(tableIdentifier: TableIdentifier): Unit =
+  override def dropIndexMetadata(tableIdentifier: TableIdentifierNormalized): Unit =
     executeSQLCommand(
       s"DELETE FROM $DB.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     )
@@ -406,13 +406,13 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
 
   override def isAvailable: Boolean = true
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = synchronized {
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifierNormalized] = synchronized {
     @tailrec
-    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifier] = Set.empty): Set[TableIdentifier] = {
+    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifierNormalized] = Set.empty): Set[TableIdentifierNormalized] = {
       if (next) {
         val database = resultset.getString(DatabaseField)
         val table = resultset.getString(TableNameField)
-        val tableId = if (database.trim.isEmpty) TableIdentifier(table) else TableIdentifier(table, Option(database))
+        val tableId = if (database.trim.isEmpty) TableIdentifierNormalized(table) else TableIdentifierNormalized(table, Option(database))
         getSequenceAux(resultset, resultset.next(), set + tableId)
       } else {
         set
@@ -426,7 +426,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
     getSequenceAux(resultSet, resultSet.next).toSeq
   }
 
-  private def selectMetadata[T](targetTable: String, tableIdentifier: TableIdentifier)(f: ResultSet => T): T =
+  private def selectMetadata[T](targetTable: String, tableIdentifier: TableIdentifierNormalized)(f: ResultSet => T): T =
     withStatement(s"SELECT * FROM $DB.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?") { statement =>
       statement.setString(1, tableIdentifier.database.getOrElse(""))
       statement.setString(2, tableIdentifier.table)
@@ -460,7 +460,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
       }
     }(connection)
 
-  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
+  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifierNormalized): Option[CrossdataIndex] = {
     val query =
       s"SELECT * FROM $DB.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
 
@@ -481,7 +481,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
           val version = resultSet.getString(CrossdataVersionField)
 
           Some(
-            CrossdataIndex(TableIdentifier(table, Some(database)), IndexIdentifier(indexType, indexName),
+            CrossdataIndex(TableIdentifierNormalized(table, Some(database)), IndexIdentifier(indexType, indexName),
               deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
           )
         }

@@ -19,62 +19,60 @@ import com.hazelcast.core.IMap
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.TableIdentifierNormalized
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
 
 
 class HazelcastCatalog(
-                        private val tables: IMap[TableIdentifier, CrossdataTable],
-                        private val views: IMap[TableIdentifier, String]
+                        private val tables: IMap[TableIdentifierNormalized, CrossdataTable],
+                        private val views: IMap[TableIdentifierNormalized, String]
                       )(implicit val catalystConf: CatalystConf) extends XDTemporaryCatalog with Serializable {
 
   import XDCatalogCommon._
 
 
-  override def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
-    val normalizedTableIdent = tableIdent.normalize(catalystConf);
+  override def relation(tableIdent: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
     {
-      Option(tables.get(normalizedTableIdent)) map (CreateRelationUtil.createLogicalRelation(sqlContext, _))
+      Option(tables.get(tableIdent)) map (CreateRelationUtil.createLogicalRelation(sqlContext, _))
     } orElse {
-      Option(views.get(normalizedTableIdent)) map (sqlContext.sql(_).logicalPlan)
+      Option(views.get(tableIdent)) map (sqlContext.sql(_).logicalPlan)
     }
   }
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifierNormalized] = {
     import scala.collection.JavaConversions._
     val normalizedDBName = databaseName.map(normalizeIdentifier)
     val tableIdentSeq = (tables ++ views).keys.toSeq
     normalizedDBName.map { dbName =>
       tableIdentSeq.filter {
-        case TableIdentifier(_, Some(dIdent)) => dIdent == dbName
+        case TableIdentifierNormalized(_, Some(dIdent)) => dIdent == dbName
         case other => false
       }
     }.getOrElse(tableIdentSeq)
   }
 
-  override def saveTable(tableIdentifier: TableIdentifier, plan: LogicalPlan, crossdataTable: Option[CrossdataTable]): Unit = {
+  override def saveTable(tableIdentifier: TableIdentifierNormalized, plan: LogicalPlan, crossdataTable: Option[CrossdataTable]): Unit = {
     require(crossdataTable.isDefined, requireSerializablePlanMessage("CrossdataTable"))
 
-    val normalizedTableIdentifier = tableIdentifier.normalize
     // TODO add create/drop if not exists => fail if exists instead of override the table
-    Option(views get normalizedTableIdentifier) foreach (_ => dropView(normalizedTableIdentifier))
-    tables set(normalizedTableIdentifier, crossdataTable.get)
+    Option(views get tableIdentifier) foreach (_ => dropView(tableIdentifier))
+    tables set(tableIdentifier, crossdataTable.get)
   }
 
-  override def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, query: Option[String]): Unit = {
+  override def saveView(viewIdentifier: ViewIdentifierNormalized, plan: LogicalPlan, query: Option[String]): Unit = {
     require(query.isDefined, requireSerializablePlanMessage("query"))
 
-    val normalizedViewIdentifier = viewIdentifier.normalize
-    Option(tables get normalizedViewIdentifier) foreach (_ => dropTable(normalizedViewIdentifier))
-    views set(normalizedViewIdentifier, query.get)
+    Option(tables get viewIdentifier) foreach (_ => dropTable(viewIdentifier))
+    views set(viewIdentifier, query.get)
   }
 
-  override def dropTable(tableIdentifier: TableIdentifier): Unit =
-    tables remove tableIdentifier.normalize
+  override def dropTable(tableIdentifier: TableIdentifierNormalized): Unit =
+    tables remove tableIdentifier
 
-  override def dropView(viewIdentifier: ViewIdentifier): Unit =
-    views remove viewIdentifier.normalize
+  override def dropView(viewIdentifier: ViewIdentifierNormalized): Unit =
+    views remove viewIdentifier
 
   override def dropAllViews(): Unit = views clear()
 

@@ -19,26 +19,26 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog.{CrossdataApp, CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.{TableIdentifierNormalized, XDCatalog}
+import XDCatalog.{CrossdataApp, CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
 object XDCatalogCommon {
 
   implicit class RichTableIdentifier(tableIdentifier: TableIdentifier) {
-    def normalize(implicit conf: CatalystConf): TableIdentifier = {
+    def normalize(implicit conf: CatalystConf): TableIdentifierNormalized = {
       val normalizedDatabase = tableIdentifier.database.map(normalizeIdentifier(_,conf))
-      TableIdentifier(normalizeIdentifier(tableIdentifier.table, conf), normalizedDatabase)
+      TableIdentifierNormalized(normalizeIdentifier(tableIdentifier.table, conf), normalizedDatabase)
     }
   }
 
-  def normalizeTableIdentifier(tableIdent: TableIdentifier, conf: CatalystConf): TableIdentifier =
-    tableIdent.normalize(conf)
+  def normalizeTableName(tableIdent: TableIdentifierNormalized, conf: CatalystConf): String =
+    normalizeIdentifier(tableIdent.unquotedString, conf)
 
   def normalizeTableName(tableIdent: TableIdentifier, conf: CatalystConf): String =
     normalizeIdentifier(tableIdent.unquotedString, conf)
 
-  def normalizeIdentifier(identifier: String, conf: CatalystConf): String =
+  private def normalizeIdentifier(identifier: String, conf: CatalystConf): String =
     if (conf.caseSensitiveAnalysis) {
       identifier
     } else {
@@ -57,9 +57,9 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
 
   def catalystConf: CatalystConf
 
-  def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan]
+  def relation(tableIdent: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan]
 
-  def allRelations(databaseName: Option[String] = None): Seq[TableIdentifier]
+  def allRelations(databaseName: Option[String] = None): Seq[TableIdentifierNormalized]
 
   def isAvailable: Boolean
 
@@ -69,29 +69,33 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
     throw new RuntimeException(message)
   }
 
-  protected def normalizeTableName(tableIdent: TableIdentifier): String =
+  protected def normalizeTableName(tableIdent: TableIdentifierNormalized): String =
     XDCatalogCommon.normalizeTableName(tableIdent, catalystConf)
 
   protected def normalizeIdentifier(identifier: String): String =
     XDCatalogCommon.normalizeIdentifier(identifier, catalystConf)
+
+  import XDCatalogCommon._
+  protected def normalizeTableIdentifier(tableIdent: TableIdentifier): TableIdentifierNormalized =
+    tableIdent.normalize(catalystConf)
 
 }
 
 trait XDTemporaryCatalog extends XDCatalogCommon {
 
   def saveTable(
-                 tableIdentifier: TableIdentifier,
+                 tableIdentifier: TableIdentifierNormalized,
                  plan: LogicalPlan,
                  crossdataTable: Option[CrossdataTable] = None): Unit
 
   def saveView(
-                viewIdentifier: ViewIdentifier,
+                viewIdentifier: ViewIdentifierNormalized,
                 plan: LogicalPlan,
                 query: Option[String] = None): Unit
 
-  def dropTable(tableIdentifier: TableIdentifier): Unit
+  def dropTable(tableIdentifier: TableIdentifierNormalized): Unit
 
-  def dropView(viewIdentifier: ViewIdentifier): Unit
+  def dropView(viewIdentifier: ViewIdentifierNormalized): Unit
 
   def dropAllTables(): Unit
 
@@ -102,24 +106,24 @@ trait XDTemporaryCatalog extends XDCatalogCommon {
 
 trait XDPersistentCatalog extends XDCatalogCommon {
 
-  def refreshCache(tableIdent: TableIdentifier): Unit
+  def refreshCache(tableIdent: TableIdentifierNormalized): Unit
 
   def saveTable(crossdataTable: CrossdataTable, plan: LogicalPlan)(implicit sqlContext: SQLContext): Unit
 
-  def saveView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String)(implicit sqlContext: SQLContext): Unit
+  def saveView(tableIdentifier: ViewIdentifierNormalized, plan: LogicalPlan, sqlText: String)(implicit sqlContext: SQLContext): Unit
 
   def saveIndex(crossdataIndex: CrossdataIndex): Unit
 
-  def dropTable(tableIdentifier: TableIdentifier): Unit
+  def dropTable(tableIdentifier: TableIdentifierNormalized): Unit
 
-  def dropView(viewIdentifier: ViewIdentifier): Unit
+  def dropView(viewIdentifier: ViewIdentifierNormalized): Unit
 
   def dropIndex(indexIdentifier: IndexIdentifier): Unit
 
-  def tableHasIndex(tableIdentifier: TableIdentifier): Boolean =
+  def tableHasIndex(tableIdentifier: TableIdentifierNormalized): Boolean =
     lookupIndexByTableIdentifier(tableIdentifier).isDefined
 
-  def dropIndexesFromTable(tableIdentifier: TableIdentifier): Unit
+  def dropIndexesFromTable(tableIdentifier: TableIdentifierNormalized): Unit
 
   def dropAllTables(): Unit
 
@@ -127,11 +131,12 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def dropAllIndexes(): Unit
 
-  def lookupTable(tableIdentifier: TableIdentifier): Option[CrossdataTable]
+  def lookupTable(tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable]
 
+  //TODO: IndexIdentifier Normalized?????
   def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] //TODO: Index operations to trait
 
-  def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex]
+  def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifierNormalized): Option[CrossdataIndex]
 
   def getApp(alias: String): Option[CrossdataApp]
 
@@ -148,6 +153,8 @@ trait XDAppsCatalog {
 }
 
 trait XDStreamingCatalog extends XDCatalogCommon {
+
+  //TODO: TableIdentifier shouldn't be a String
 
   /**
    * Ephemeral Table Functions
