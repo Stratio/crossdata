@@ -40,6 +40,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val INSERT = Keyword("INSERT")
   protected val INTO = Keyword("INTO")
   protected val VALUES = Keyword("VALUES")
+  protected val GLOBAL = Keyword("GLOBAL")
+  protected val INDEX = Keyword("INDEX")
+  protected val ON = Keyword("ON")
+  protected val PK = Keyword("PK")
   //Streaming keywords
   protected val EPHEMERAL = Keyword("EPHEMERAL")
   protected val SHOW = Keyword("SHOW")
@@ -61,12 +65,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val EXECUTE = Keyword("EXECUTE")
 
 
-
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable | dropExternalTable |
-      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp | executeApp
-
+      createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp | executeApp | createGlobalIndex
 
   // TODO move to StreamingDdlParser
 
@@ -106,7 +108,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val arrayValues: Parser[Any] =
     ("[" ~> repsep(mapValues | token, ",") <~ "]") | ("[" ~> success(List()) <~ "]")
-
 
   protected lazy val tokenMap: Parser[(Any,Any)] = {
     (token <~ "-" <~ ">") ~ (arrayValues | token) ^^ {
@@ -167,14 +168,14 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val addJar: Parser[LogicalPlan] =
     ADD ~> JAR ~> restInput ^^ {
       case jarPath =>
-        AddJar(xDContext,jarPath.trim)
+        AddJar(jarPath.trim)
     }
 
 
 protected lazy val addApp: Parser[LogicalPlan] =
   (ADD ~> APP ~> stringLit) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
     case jarPath ~ alias ~ cname =>
-      AddApp(xDContext, jarPath.toString, cname, alias)
+      AddApp(jarPath.toString, cname, alias)
   }
 
 
@@ -182,7 +183,7 @@ protected lazy val addApp: Parser[LogicalPlan] =
     (EXECUTE ~> ident) ~ tableValues ~ (OPTIONS ~> options).? ^^ {
       case appName ~ arguments ~ opts =>
         val args=arguments map {arg=> arg.toString}
-        ExecuteApp(xDContext, appName, args, opts)
+        ExecuteApp(appName, args, opts)
     }
   /**
    * Streaming
@@ -312,6 +313,15 @@ protected lazy val addApp: Parser[LogicalPlan] =
         }
         Success(streamSql, streamingInfoInput(in))
       }
+    }
+  }
+
+  protected lazy val createGlobalIndex: Parser[LogicalPlan] = {
+
+    CREATE ~ GLOBAL ~ INDEX ~> tableIdentifier ~ (ON ~> tableIdentifier) ~ schemaValues ~ (WITH ~> PK ~> token) ~ (USING ~> className).? ~ (OPTIONS ~> options) ^^ {
+      case index ~ table ~ columns ~ pk ~ provider ~ opts =>
+
+        CreateGlobalIndex(index, table, columns, pk, provider, opts)
     }
   }
 

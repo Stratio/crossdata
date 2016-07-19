@@ -29,6 +29,8 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
 
   val Index2 = s"droptest${UUID.randomUUID.toString.replace("-", "")}"
 
+  val Index3 = s"droptest${UUID.randomUUID.toString.replace("-", "")}"
+
   protected override def beforeAll(): Unit = {
     super.beforeAll()
 
@@ -57,6 +59,32 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
           |)
       """.stripMargin.replaceAll("\n", " ")
     sql(createTableQueryString2).collect()
+
+    val createTableQueryString3 =
+      s"""|CREATE EXTERNAL TABLE testDrop3 (id Integer, name String)
+          |USING $SourceProvider
+          |OPTIONS (
+          |es.resource '$Index3/drop_table_example',
+          |es.nodes '$ElasticHost',
+          |es.port '$ElasticRestPort',
+          |es.nativePort '$ElasticNativePort',
+          |es.cluster '$ElasticClusterName'
+          |)
+      """.stripMargin.replaceAll("\n", " ")
+    sql(createTableQueryString3).collect()
+
+    val createTableQueryString4 =
+      s"""|CREATE EXTERNAL TABLE testDrop4 (id Integer, name String)
+          |USING $SourceProvider
+          |OPTIONS (
+          |es.resource '$Index3/drop_table_example2',
+          |es.nodes '$ElasticHost',
+          |es.port '$ElasticRestPort',
+          |es.nativePort '$ElasticNativePort',
+          |es.cluster '$ElasticClusterName'
+          |)
+      """.stripMargin.replaceAll("\n", " ")
+    sql(createTableQueryString4).collect()
 
   }
 
@@ -90,6 +118,26 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table("testDrop2"))
     client.get.admin.indices.prepareExists(Index2).get.isExists shouldBe false
+  }
+
+  it should "be unable to drop one table if there are more than one table living in the same index" in {
+
+    //Precondition
+    xdContext.table("testDrop3") should not be null
+    xdContext.table("testDrop4") should not be null
+
+    //DROP
+    val dropExternalTableQuery = "DROP EXTERNAL TABLE testDrop3"
+    an[Exception] shouldBe thrownBy(sql(dropExternalTableQuery))
+
+    val dropExternalTableQuery2 = "DROP EXTERNAL TABLE testDrop4"
+    an[Exception] shouldBe thrownBy(sql(dropExternalTableQuery2))
+
+    //Expectations
+    client.get.admin.indices.prepareExists(Index3).get.isExists shouldBe true
+    xdContext.table("testDrop3") should not be null
+    xdContext.table("testDrop4") should not be null
+
   }
 
 }

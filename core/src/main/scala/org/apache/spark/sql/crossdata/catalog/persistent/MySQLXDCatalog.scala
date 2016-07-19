@@ -33,6 +33,7 @@ object MySQLXDCatalog {
   val TableWithTableMetadata = "jdbc.db.table"
   val TableWithViewMetadata = "jdbc.db.view"
   val TableWithAppMetadata = "jdbc.db.app"
+  val TableWithIndexMetadata = "jdbc.db.indexes"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
   // CatalogFields
@@ -43,6 +44,12 @@ object MySQLXDCatalog {
   val PartitionColumnField = "partitionColumn"
   val OptionsField = "options"
   val CrossdataVersionField = "crossdataVersion"
+
+  //IndexMetadataFields
+  val IndexNameField = "indexName"
+  val IndexTypeField = "indexType"
+  val IndexedColsField = "indexedCols"
+  val PKField = "pk"
 
   // ViewMetadataFields (databaseField, tableNameField, sqlViewField, CrossdataVersionField
   val SqlViewField = "sqlView"
@@ -114,6 +121,21 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
             |$AppAlias VARCHAR(50),
             |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
+
+      //Index support
+      jdbcConnection.createStatement().executeUpdate(
+        s"""|CREATE TABLE IF NOT EXISTS $db.$TableWithIndexMetadata (
+            |$DatabaseField VARCHAR(50),
+            |$TableNameField VARCHAR(50),
+            |$IndexNameField VARCHAR(50),
+            |$IndexTypeField VARCHAR(50),
+            |$IndexedColsField TEXT,
+            |$PKField VARCHAR(100),
+            |$DatasourceField TEXT,
+            |$OptionsField TEXT,
+            |$CrossdataVersionField VARCHAR(30),
+            |UNIQUE ($IndexNameField, $IndexTypeField),
+            |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
       jdbcConnection
     } catch {
@@ -338,4 +360,108 @@ class MySQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Catalyst
 
   override def isAvailable: Boolean = Option(connection).isDefined
 
+
+  override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit =
+    try {
+      connection.setAutoCommit(false)
+      // check if the database-table exist in the persisted catalog
+      val resultSet = selectMetadata(TableWithIndexMetadata, crossdataIndex.tableIdentifier)
+
+      val serializedIndexedCols = serializeSeq(crossdataIndex.indexedCols)
+      val serializedOptions = serializeOptions(crossdataIndex.opts)
+
+      if (!resultSet.next()) {
+        val prepped = connection.prepareStatement(
+          s"""|INSERT INTO $db.$TableWithIndexMetadata (
+              | $DatabaseField, $TableNameField, $IndexNameField, $IndexTypeField, $IndexedColsField,
+              | $PKField, $DatasourceField, $OptionsField, $CrossdataVersionField
+              |) VALUES (?,?,?,?,?,?,?,?,?)
+       """.stripMargin)
+        prepped.setString(1, crossdataIndex.tableIdentifier.database.getOrElse(""))
+        prepped.setString(2, crossdataIndex.tableIdentifier.table)
+        prepped.setString(3, crossdataIndex.indexIdentifier.indexName)
+        prepped.setString(4, crossdataIndex.indexIdentifier.indexType)
+        prepped.setString(5, serializedIndexedCols)
+        prepped.setString(6, crossdataIndex.pk)
+        prepped.setString(7, crossdataIndex.datasource)
+        prepped.setString(8, serializedOptions)
+        prepped.setString(9, CrossdataVersion)
+        prepped.execute()
+      } else {
+        //TODO: Support change index metadata?
+        sys.error(s"A global index already exists in table ${crossdataIndex.tableIdentifier.unquotedString}")
+      }
+    } finally {
+      connection.setAutoCommit(true)
+    }
+
+  override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $db.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
+    )
+
+  override def dropAllIndexesMetadata(): Unit =
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$TableWithIndexMetadata")
+
+  override def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] = {
+    val resultSet = selectIndex(indexIdentifier)
+
+    if (!resultSet.next) {
+      None
+    } else {
+
+      val database = resultSet.getString(DatabaseField)
+      val table = resultSet.getString(TableNameField)
+      val indexName = resultSet.getString(IndexNameField)
+      val indexType = resultSet.getString(IndexTypeField)
+      val indexedCols = resultSet.getString(IndexedColsField)
+      val pk = resultSet.getString(PKField)
+      val datasource = resultSet.getString(DatasourceField)
+      val optsJSON = resultSet.getString(OptionsField)
+      val version = resultSet.getString(CrossdataVersionField)
+
+      Option(
+        CrossdataIndex(TableIdentifier(table, Option(database)), IndexIdentifier(indexType, indexName),
+          deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
+      )
+    }
+  }
+
+  private def selectIndex(indexIdentifier: IndexIdentifier): ResultSet = {
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $IndexNameField= ? AND $IndexTypeField= ?")
+    preparedStatement.setString(1, indexIdentifier.indexName)
+    preparedStatement.setString(2, indexIdentifier.indexType)
+    preparedStatement.executeQuery()
+  }
+
+  override def dropIndexMetadata(tableIdentifier: TableIdentifier): Unit =
+    connection.createStatement.executeUpdate(
+      s"DELETE FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
+    )
+
+  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex] = {
+    val query =
+      s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
+    val preparedStatement = connection.prepareStatement(query)
+    val resultSet = preparedStatement.executeQuery()
+    if (!resultSet.next) {
+      None
+    } else {
+
+      val database = resultSet.getString(DatabaseField)
+      val table = resultSet.getString(TableNameField)
+      val indexName = resultSet.getString(IndexNameField)
+      val indexType = resultSet.getString(IndexTypeField)
+      val indexedCols = resultSet.getString(IndexedColsField)
+      val pk = resultSet.getString(PKField)
+      val datasource = resultSet.getString(DatasourceField)
+      val optsJSON = resultSet.getString(OptionsField)
+      val version = resultSet.getString(CrossdataVersionField)
+
+      Option(
+        CrossdataIndex(TableIdentifier(table, Option(database)), IndexIdentifier(indexType, indexName),
+          deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
+      )
+    }
+  }
 }
