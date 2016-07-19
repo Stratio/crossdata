@@ -89,7 +89,7 @@ object BasicShell extends App {
   initialize(console)
 
   private def runConsole(console: ConsoleReader): Unit = {
-    val driver = Driver.getOrCreate()
+    val driver = Driver.newSession()
 
     console.println()
     console.println("+-----------------+-------------------------+---------------------------+")

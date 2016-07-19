@@ -27,7 +27,7 @@ import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
@@ -37,7 +37,6 @@ import scala.annotation.tailrec
 import scala.language.implicitConversions
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
-import XDCatalogCommon._
 
 object DDLUtils {
 
@@ -137,7 +136,6 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
       if (!ignoreTable) {
         logInfo(s"Importing table ${tableId.unquotedString}")
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
-        import XDCatalogCommon._
         val identifier = TableIdentifier(table.tableName, table.database).normalize(sqlContext.catalog.conf)
         val crossdataTable = CrossdataTable(identifier, table.schema, datasource, Array.empty[String], optionsWithTable)
         import org.apache.spark.sql.crossdata.util.CreateRelationUtil._

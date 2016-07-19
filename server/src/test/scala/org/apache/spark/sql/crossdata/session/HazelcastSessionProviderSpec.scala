@@ -194,6 +194,8 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
       invalidationAction(obtainedSessionFromPeerB)
 
+      Thread.sleep(500)
+
       val obtainedSessionFromPeerAAfterChange = hazelcastSessionProviderA.session(sessionID).get
 
       newSessionAtPeerA shouldNot be theSameInstanceAs obtainedSessionFromPeerAAfterChange

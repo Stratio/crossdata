@@ -19,10 +19,9 @@ import java.nio.file.Paths
 
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.JavaTableName
+import com.stratio.crossdata.driver.test.Utils._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
-import scala.collection.JavaConversions._
 
 @RunWith(classOf[JUnitRunner])
 class JavaDriverIT extends EndToEndTest{
@@ -31,32 +30,35 @@ class JavaDriverIT extends EndToEndTest{
   "JavaDriver (with default options)" should "get a list of tables" in {
 
     assumeCrossdataUpAndRunning()
-    val javadriver = new JavaDriver()
+    withJavaDriverDo { javaDriver =>
 
-    javadriver.sql(
-      s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
-    )
-    javadriver.sql(
-      s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
-    )
+      javaDriver.sql(
+        s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
+      )
+      javaDriver.sql(
+        s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
+      )
 
-    javadriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
-    javadriver.stop()
+      javaDriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
+    }
   }
 
   "JavaDriver (specifying serverHost, and flattened value)" should "return a list of tables " in {
 
     assumeCrossdataUpAndRunning()
-    val javaDriver = new JavaDriver(List("127.0.0.1:13420"), new DriverConf().setFlattenTables(true))
 
-    javaDriver.sql(
-      s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
-    )
-    javaDriver.sql(
-      s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
-    )
+    withJavaDriverDo { javaDriver =>
 
-    javaDriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
-    javaDriver.stop()
+      javaDriver.sql(
+        s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
+      )
+      javaDriver.sql(
+        s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
+      )
+
+      javaDriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
+    } (Some(new DriverConf().setFlattenTables(true)))
+
+
   }
 }
