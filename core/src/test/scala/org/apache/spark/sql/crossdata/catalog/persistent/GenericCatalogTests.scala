@@ -255,16 +255,16 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
   }
 
   it should "persist index in catalog" in {
-    val tableIdentifier = TableIdentifier("tableIndex")
-    val indexIdentifier = IndexIdentifier("global", "myIndex")
+    val tableIdentifier = TableIdentifier("tableIndex").normalize
+    val indexIdentifier = IndexIdentifier("global", "myIndex").normalize
     val indexedCols = Seq("colIndexed")
     val pk = "primaryCol"
     val dataSource = "mongo"
     val opts = Map[String, String]()
     val version = "1.5.0"
-    val crossdataIndex = CrossdataIndex(tableIdentifier.normalize, indexIdentifier, indexedCols, pk, dataSource, opts, version)
+    val crossdataIndex = CrossdataIndex(tableIdentifier, indexIdentifier, indexedCols, pk, dataSource, opts, version)
 
-    val crossdataTable = CrossdataTable(tableIdentifier.normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
 
     xdContext.catalog.persistIndex(crossdataIndex)
@@ -276,16 +276,16 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
   }
 
   it should "drop index from catalog" in {
-    val tableIdentifier = TableIdentifier("tableIndex2")
-    val indexIdentifier = IndexIdentifier("global2", "myIndex2")
+    val tableIdentifier = TableIdentifier("tableIndex2").normalize
+    val indexIdentifier = IndexIdentifier("global2", "myIndex2").normalize
     val indexedCols = Seq("colIndexed")
     val pk = "primaryCol"
     val dataSource = "mongo"
     val opts = Map[String, String]()
     val version = "1.5.0"
-    val crossdataIndex = CrossdataIndex(tableIdentifier.normalize, indexIdentifier, indexedCols, pk, dataSource, opts, version)
+    val crossdataIndex = CrossdataIndex(tableIdentifier, indexIdentifier, indexedCols, pk, dataSource, opts, version)
 
-    val crossdataTable = CrossdataTable(tableIdentifier.normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.persistIndex(crossdataIndex)
 
@@ -296,36 +296,36 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
   }
 
   it should "obtain index from catalog with tableIdentifier" in {
-    val tableIdentifier = TableIdentifier("tableIndex3")
-    val indexIdentifier = IndexIdentifier("global3", "myIndex3")
+    val tableIdentifier = TableIdentifier("tableIndex3").normalize
+    val indexIdentifier = IndexIdentifier("global3", "myIndex3").normalize
     val indexedCols = Seq("colIndexed")
     val pk = "primaryCol"
     val dataSource = "mongo"
     val opts = Map[String, String]()
     val version = "1.5.0"
-    val crossdataIndex = CrossdataIndex(tableIdentifier.normalize, indexIdentifier, indexedCols, pk, dataSource, opts, version)
+    val crossdataIndex = CrossdataIndex(tableIdentifier, indexIdentifier, indexedCols, pk, dataSource, opts, version)
 
-    val crossdataTable = CrossdataTable(tableIdentifier.normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.persistIndex(crossdataIndex)
 
-    val res = xdContext.catalog.indexMetadataByTableIdentifier(tableIdentifier)
+    val res = xdContext.catalog.indexMetadataByTableIdentifier(tableIdentifier.toTableIdentifier)
 
     res.get shouldBe a[CrossdataIndex]
     res.get.indexIdentifier shouldBe indexIdentifier
   }
 
   it should "drop all indexes" in {
-    val tableIdentifier = TableIdentifier("tableIndex4")
-    val indexIdentifier = IndexIdentifier("global4", "myIndex4")
+    val tableIdentifier = TableIdentifier("tableIndex4").normalize
+    val indexIdentifier = IndexIdentifier("global4", "myIndex4").normalize
     val indexedCols = Seq("colIndexed")
     val pk = "primaryCol"
     val dataSource = "mongo"
     val opts = Map[String, String]()
     val version = "1.5.0"
-    val crossdataIndex = CrossdataIndex(tableIdentifier.normalize, indexIdentifier, indexedCols, pk, dataSource, opts, version)
+    val crossdataIndex = CrossdataIndex(tableIdentifier, indexIdentifier, indexedCols, pk, dataSource, opts, version)
 
-    val crossdataTable = CrossdataTable(tableIdentifier.normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.persistIndex(crossdataIndex)
 
@@ -338,18 +338,18 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   it should "remove an index associated to a table" in {
 
-    val tableIdentifier = TableIdentifier("testTable", Option("dbTest"))
-    val indexIdentifier = IndexIdentifier("myIndex", "gidx")
+    val tableIdentifier = TableIdentifier("testTable", Option("dbTest")).normalize
+    val indexIdentifier = IndexIdentifier("myIndex", "gidx").normalize
 
-    val table = CrossdataTable(tableIdentifier.normalize, None, "com.stratio.crossdata.connector.mongodb")
+    val table = CrossdataTable(tableIdentifier, None, "com.stratio.crossdata.connector.mongodb")
 
-    val index = CrossdataIndex(tableIdentifier.normalize, indexIdentifier,
+    val index = CrossdataIndex(tableIdentifier, indexIdentifier,
       Seq(), "pk", "com.stratio.crossdata.connector.elasticsearch")
 
     xdContext.catalog.persistTable(table, LocalRelation())
     xdContext.catalog.persistIndex(index)
 
-    xdContext.catalog.dropTable(tableIdentifier)
+    xdContext.catalog.dropTable(tableIdentifier.toTableIdentifier)
 
     val res = xdContext.catalog.lookupIndex(indexIdentifier)
     res shouldBe None
@@ -357,27 +357,27 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   it should "remove an index associated to a table and the table generated for the index" in {
 
-    val tableIdentifier = TableIdentifier("testTable", Option("dbTest"))
-    val indexIdentifier = IndexIdentifier("myIndex", "gidx")
+    val tableIdentifier = TableIdentifier("testTable", Option("dbTest")).normalize
+    val indexIdentifier = IndexIdentifier("myIndex", "gidx").normalize
 
-    val table = CrossdataTable(tableIdentifier.normalize, None, "com.stratio.crossdata.connector.mongodb")
+    val table = CrossdataTable(tableIdentifier, None, "com.stratio.crossdata.connector.mongodb")
 
-    val index = CrossdataIndex(tableIdentifier.normalize, indexIdentifier,
+    val index = CrossdataIndex(tableIdentifier, indexIdentifier,
       Seq(), "pk", "com.stratio.crossdata.connector.elasticsearch")
 
-    val tableGenerated = CrossdataTable(indexIdentifier.asTableIdentifier.normalize,
+    val tableGenerated = CrossdataTable(indexIdentifier.asTableIdentifierNormalized,
       None, "com.stratio.crossdata.connector.elasticsearch")
 
     xdContext.catalog.persistTable(table, LocalRelation())
     xdContext.catalog.persistIndex(index)
     xdContext.catalog.persistTable(tableGenerated, LocalRelation())
 
-    xdContext.catalog.dropTable(tableIdentifier)
+    xdContext.catalog.dropTable(tableIdentifier.toTableIdentifier)
 
     val res = xdContext.catalog.lookupIndex(indexIdentifier)
     res shouldBe None
 
-    val resGenerated = xdContext.catalog.lookupTable(indexIdentifier.asTableIdentifier.normalize)
+    val resGenerated = xdContext.catalog.lookupTable(indexIdentifier.asTableIdentifierNormalized)
     resGenerated shouldBe None
   }
 

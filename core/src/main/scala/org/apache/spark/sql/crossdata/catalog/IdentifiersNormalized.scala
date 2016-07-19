@@ -16,6 +16,7 @@
 package org.apache.spark.sql.crossdata.catalog
 
 import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.IndexIdentifier
 
 case class TableIdentifierNormalized(table: String, database: Option[String]) {
   def this(table: String) = this(table, None)
@@ -32,4 +33,12 @@ case class TableIdentifierNormalized(table: String, database: Option[String]) {
 private[sql] object TableIdentifierNormalized {
   def apply(tableName: String): TableIdentifierNormalized = new TableIdentifierNormalized(tableName)
   def apply(tableIdentifier: TableIdentifier): TableIdentifierNormalized = new TableIdentifierNormalized(tableIdentifier.table, tableIdentifier.database)
+}
+
+case class IndexIdentifierNormalized(indexType: String, indexName: String) {
+  def quotedString: String = s"`$indexName`.`$indexType`"
+  def unquotedString: String = s"$indexName.$indexType"
+  override def toString: String = quotedString
+  def toIndexIdentifier: IndexIdentifier = IndexIdentifier(indexType, indexName)
+  def asTableIdentifierNormalized: TableIdentifierNormalized = TableIdentifierNormalized(indexType,Option(indexName))
 }

@@ -19,7 +19,7 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.{TableIdentifierNormalized, XDCatalog}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, XDCatalog}
 import XDCatalog.{CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDPersistentCatalog
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
@@ -126,7 +126,7 @@ abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XD
     dropIndexMetadata(tableIdentifier)
   }
 
-  override final def dropIndex(indexIdentifer: IndexIdentifier): Unit = {
+  override final def dropIndex(indexIdentifer: IndexIdentifierNormalized): Unit = {
 
     val found: Option[(TableIdentifierNormalized, CrossdataIndex)] = indexCache find { case(key,value) => value.indexIdentifier == indexIdentifer}
 
@@ -171,7 +171,7 @@ abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XD
 
   def dropViewMetadata(viewIdentifier: ViewIdentifierNormalized): Unit
 
-  def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit
+  def dropIndexMetadata(indexIdentifier: IndexIdentifierNormalized): Unit
 
   def dropIndexMetadata(tableIdentifier: TableIdentifierNormalized): Unit
 

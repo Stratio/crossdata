@@ -20,7 +20,7 @@ import java.net.Socket
 
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.{TableIdentifierNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, XDCatalog, persistent}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{AppTypesafeDAO, IndexTypesafeDAO, TableTypesafeDAO, ViewTypesafeDAO}
 import org.apache.spark.sql.crossdata.models.{AppModel, IndexModel, TableModel, ViewModel}
@@ -196,7 +196,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
     indexDAO.dao.create(indexId, IndexModel(indexId, crossdataIndex))
   }
 
-  override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
+  override def dropIndexMetadata(indexIdentifier: IndexIdentifierNormalized): Unit =
     indexDAO.dao.getAll().filter(
       index => index.crossdataIndex.indexIdentifier == indexIdentifier
     ) foreach (selectedIndex => indexDAO.dao.delete(selectedIndex.indexId))
@@ -204,7 +204,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
   override def dropAllIndexesMetadata(): Unit =
     indexDAO.dao.deleteAll
 
-  override def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] = {
+  override def lookupIndex(indexIdentifier: IndexIdentifierNormalized): Option[CrossdataIndex] = {
     if (indexDAO.dao.count > 0) {
       val res = indexDAO.dao.getAll().find(
         _.crossdataIndex.indexIdentifier == indexIdentifier

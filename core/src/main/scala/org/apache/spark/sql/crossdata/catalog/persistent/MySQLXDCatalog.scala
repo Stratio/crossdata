@@ -21,7 +21,7 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
-import org.apache.spark.sql.crossdata.catalog.{TableIdentifierNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, XDCatalog, persistent}
 
 import scala.annotation.tailrec
 
@@ -412,7 +412,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       connection.setAutoCommit(true)
     }
 
-  override def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit =
+  override def dropIndexMetadata(indexIdentifier: IndexIdentifierNormalized): Unit =
     connection.createStatement.executeUpdate(
       s"DELETE FROM $db.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
     )
@@ -420,7 +420,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
   override def dropAllIndexesMetadata(): Unit =
     connection.createStatement.executeUpdate(s"DELETE FROM $db.$TableWithIndexMetadata")
 
-  override def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] = {
+  override def lookupIndex(indexIdentifier: IndexIdentifierNormalized): Option[CrossdataIndex] = {
     val resultSet = selectIndex(indexIdentifier)
 
     if (!resultSet.next) {
@@ -438,13 +438,13 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       val version = resultSet.getString(CrossdataVersionField)
 
       Option(
-        CrossdataIndex(TableIdentifierNormalized(table, Option(database)), IndexIdentifier(indexType, indexName),
+        CrossdataIndex(TableIdentifierNormalized(table, Option(database)), IndexIdentifierNormalized(indexType, indexName),
           deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
       )
     }
   }
 
-  private def selectIndex(indexIdentifier: IndexIdentifier): ResultSet = {
+  private def selectIndex(indexIdentifier: IndexIdentifierNormalized): ResultSet = {
     val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $IndexNameField= ? AND $IndexTypeField= ?")
     preparedStatement.setString(1, indexIdentifier.indexName)
     preparedStatement.setString(2, indexIdentifier.indexType)
@@ -476,7 +476,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       val version = resultSet.getString(CrossdataVersionField)
 
       Option(
-        CrossdataIndex(TableIdentifierNormalized(table, Option(database)), IndexIdentifier(indexType, indexName),
+        CrossdataIndex(TableIdentifierNormalized(table, Option(database)), IndexIdentifierNormalized(indexType, indexName),
           deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
       )
     }

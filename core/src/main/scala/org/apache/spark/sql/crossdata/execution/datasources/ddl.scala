@@ -261,7 +261,7 @@ private[crossdata] case class InsertIntoTable(tableIdentifier: TableIdentifier, 
       }
     }
 
-    InsertIntoTable(crossdataIndex.indexIdentifier.asTableIdentifier, filteredParsedRows, Some(columnsToIndex)).run(sqlContext)
+    InsertIntoTable(crossdataIndex.indexIdentifier.asTableIdentifierNormalized.toTableIdentifier, filteredParsedRows, Some(columnsToIndex)).run(sqlContext)
   }
 
   private def convertRows(sqlContext: SQLContext, rows: Seq[DDLUtils.RowValues], tableSchema: StructType): DataFrame = {
@@ -365,7 +365,7 @@ private[crossdata] case class CreateGlobalIndex(
     Try {
       val indexProvider = provider getOrElse "com.stratio.crossdata.connector.elasticsearch"
 
-      val finalIndex = IndexIdentifier(index.table, index.database getOrElse DefaultDatabaseName)
+      val finalIndex = IndexIdentifier(index.table, index.database getOrElse DefaultDatabaseName).normalize(sqlContext.catalog.conf)
 
       val colsWithoutSchema = Seq(pk) ++ cols
 

@@ -19,7 +19,7 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.{TableIdentifierNormalized, XDCatalog}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, XDCatalog}
 import XDCatalog.{CrossdataApp, CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
@@ -29,6 +29,14 @@ object XDCatalogCommon {
     def normalize(implicit conf: CatalystConf): TableIdentifierNormalized = {
       val normalizedDatabase = tableIdentifier.database.map(normalizeIdentifier(_,conf))
       TableIdentifierNormalized(normalizeIdentifier(tableIdentifier.table, conf), normalizedDatabase)
+    }
+  }
+
+  implicit class RichIndexIdentifier(indexIdentifier: IndexIdentifier) {
+    def normalize(implicit conf: CatalystConf): IndexIdentifierNormalized = {
+      val normalizedIndexName = normalizeIdentifier(indexIdentifier.indexName, conf)
+      val normalizedIndexType = normalizeIdentifier(indexIdentifier.indexType, conf)
+      IndexIdentifierNormalized(normalizedIndexType, normalizedIndexName)
     }
   }
 
@@ -118,7 +126,7 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def dropView(viewIdentifier: ViewIdentifierNormalized): Unit
 
-  def dropIndex(indexIdentifier: IndexIdentifier): Unit
+  def dropIndex(indexIdentifier: IndexIdentifierNormalized): Unit
 
   def tableHasIndex(tableIdentifier: TableIdentifierNormalized): Boolean =
     lookupIndexByTableIdentifier(tableIdentifier).isDefined
@@ -133,8 +141,7 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def lookupTable(tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable]
 
-  //TODO: IndexIdentifier Normalized?????
-  def lookupIndex(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] //TODO: Index operations to trait
+  def lookupIndex(indexIdentifier: IndexIdentifierNormalized): Option[CrossdataIndex] //TODO: Index operations to trait
 
   def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifierNormalized): Option[CrossdataIndex]
 

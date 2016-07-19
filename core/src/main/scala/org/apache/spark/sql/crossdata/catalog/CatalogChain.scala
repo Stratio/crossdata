@@ -51,18 +51,19 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   import XDCatalogCommon._
 
-  override val conf: CatalystConf = xdContext.conf
+  override implicit val conf: CatalystConf = xdContext.conf
 
   private val catalogs: Seq[XDCatalogCommon] = temporaryCatalogs ++: persistentCatalogs ++: streamingCatalogs.toSeq
 
-  /*TODO?????private def normalize(tableIdentifier: TableIdentifier): TableIdentifier =
-    normalizeTableIdentifier(tableIdentifier, conf)*/
 
   private implicit def crossdataTable2tableIdentifier(xdTable: CrossdataTable): TableIdentifierNormalized =
     xdTable.tableIdentifier
 
   private def normalize(tableIdentifier: TableIdentifier): TableIdentifierNormalized =
-    tableIdentifier.normalize(conf)
+    tableIdentifier.normalize
+
+  private def normalize(indexIdentifier: IndexIdentifier): IndexIdentifierNormalized =
+    indexIdentifier.normalize
 
   /**
     * Apply the lookup function to each underlying catalog until a [[LogicalPlan]] is found. If the table is found in a
@@ -110,7 +111,6 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   /**
    * TemporaryCatalog
    */
-//TODO: normalized index
   override def registerView(viewIdentifier: ViewIdentifier, logicalPlan: LogicalPlan, sql: Option[String]): Unit =
     temporaryCatalogs.foreach(_.saveView(normalize(viewIdentifier), logicalPlan, sql))
 
@@ -183,7 +183,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     logInfo(s"Deleting table $strTable from catalog")
 
     indexMetadataByTableIdentifier(tableIdentifier) foreach { index =>
-      dropIndex(index.indexIdentifier)
+      dropIndex(index.indexIdentifier.toIndexIdentifier)
     }
 
     temporaryCatalogs foreach (_.dropTable(normalize(tableIdentifier)))
@@ -220,11 +220,11 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     if(tableExists(indexIdentifier.asTableIdentifier))
       dropTable(indexIdentifier.asTableIdentifier)
 
-    persistentCatalogs foreach(catalog => Try(catalog.dropIndex(indexIdentifier)))
+    persistentCatalogs foreach(catalog => Try(catalog.dropIndex(indexIdentifier.normalize)))
   }
 
   override def indexMetadata(indexIdentifier: IndexIdentifier): Option[CrossdataIndex]=
-    persistentChainedLookup(_.lookupIndex(indexIdentifier))
+    persistentChainedLookup(_.lookupIndex(indexIdentifier.normalize))
 
   override def indexMetadataByTableIdentifier(tableIdentifier: TableIdentifier):Option[CrossdataIndex]=
     persistentCatalogs.view map (_.lookupIndexByTableIdentifier(normalize(tableIdentifier))) collectFirst {

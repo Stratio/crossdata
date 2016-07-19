@@ -60,10 +60,8 @@ implicit def asXDCatalog (catalog: Catalog): XDCatalog = catalog.asInstanceOf[XD
                             datasource: String, partitionColumn: Array[String] = Array.empty,
                             opts: Map[String, String] = Map.empty, crossdataVersion: String = crossdata.CrossdataVersion)
 
-  //TODO: Normalizeeeeed!
 
-
-  case class CrossdataIndex(tableIdentifier: TableIdentifierNormalized, indexIdentifier: IndexIdentifier,
+  case class CrossdataIndex(tableIdentifier: TableIdentifierNormalized, indexIdentifier: IndexIdentifierNormalized,
                             indexedCols: Seq[String], pk: String, datasource: String,
                             opts: Map[String, String] = Map.empty, crossdataVersion: String = crossdata.CrossdataVersion)
 
