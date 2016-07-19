@@ -173,6 +173,9 @@ class DriverIT extends EndToEndTest {
         driver.sql(s"SELECT * FROM $anotherDriverTable").waitForResult().hasError shouldBe true
 
       }
+      // Once 'anotherDriver' closes its session, 'driver' should be still alive
+      driver.sql(s"SELECT * FROM $driverTable").waitForResult().resultSet should not be empty
+      driver.sql(s"SELECT * FROM $anotherDriverTable").waitForResult().hasError shouldBe true
     }
   }
 
