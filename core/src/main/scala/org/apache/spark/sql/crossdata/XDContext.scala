@@ -35,8 +35,9 @@ import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, IndexIdentifier}
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
-import org.apache.spark.sql.crossdata.catalog.inmemory.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
+import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
+import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias, WrapRelationWithGlobalIndex}
 import org.apache.spark.sql.crossdata.catalyst.optimizer.XDOptimizer
 import org.apache.spark.sql.crossdata.config.CoreConfig
@@ -52,7 +53,7 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext, Strategy, execution => 
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 /**
   * CrossdataContext leverages the features of [[SQLContext]]
@@ -88,8 +89,9 @@ class XDContext protected (@transient val sc: SparkContext,
 
   catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
 
-  private val catalystConf: CatalystConf = {
-    import XDContext.CaseSensitive
+  // TODO Spark 2.0 replace with sqlConf (which extends CatalystConf)
+  protected lazy val catalystConf: CatalystConf = {
+    import CoreConfig.CaseSensitive
     val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
     new SimpleCatalystConf(caseSensitive)
   }
@@ -97,86 +99,48 @@ class XDContext protected (@transient val sc: SparkContext,
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {
     val catalogs: List[XDCatalogCommon] =  temporaryCatalog :: externalCatalog :: streamingCatalog.toList
-    CatalogChain(catalogs:_*)(catalystConf)
+    CatalogChain(catalogs:_*)(self)
   }
 
   @transient
-  private lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(catalystConf)
+  protected lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(catalystConf)
 
   @transient
-  private lazy val externalCatalog: XDPersistentCatalog = {
-
-    import XDContext.DerbyClass
-    val externalCatalogName = if (catalogConfig.hasPath(XDContext.ClassConfigKey))
-      catalogConfig.getString(XDContext.ClassConfigKey)
-    else DerbyClass
-
-    val externalCatalogClass = Class.forName(externalCatalogName)
-    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[SQLContext], classOf[CatalystConf])
-
-    constr.newInstance(self, catalystConf).asInstanceOf[XDPersistentCatalog]
-  }
-
+  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(catalystConf, catalogConfig)
 
   @transient
-  private lazy val streamingCatalog: Option[XDStreamingCatalog] = {
-    if (xdConfig.hasPath(StreamingCatalogClassConfigKey)) {
-      val streamingCatalogClass = xdConfig.getString(StreamingCatalogClassConfigKey)
-      val xdStreamingCatalog = Class.forName(streamingCatalogClass)
-      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf])
-      Option(constr.newInstance(catalystConf).asInstanceOf[XDStreamingCatalog])
-    } else {
-      logError("Empty streaming catalog")
-      None
-    }
-  }
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(catalystConf, xdConfig)
+
 
   @transient
   protected[crossdata] lazy val securityManager = {
 
-    import XDContext.DefaultSecurityManager
+    import CoreConfig._
 
-    val securityClass = if (xdConfig.hasPath(SecurityClassConfigKey))
-      xdConfig.getString(SecurityClassConfigKey)
-    else DefaultSecurityManager
+    val securityClass = Try(xdConfig.getString(SecurityClassConfigKey)).getOrElse(DefaultSecurityManager)
 
-    val audit: java.lang.Boolean = if (xdConfig.hasPath(SecurityAuditConfigKey))
-      xdConfig.getBoolean(SecurityAuditConfigKey)
-    else false
+    val audit: java.lang.Boolean = {
+      if (xdConfig.hasPath(SecurityAuditConfigKey))
+        xdConfig.getBoolean(SecurityAuditConfigKey)
+      else
+        false
+    }
 
-    val userConfig = if (xdConfig.hasPath(SecurityUserConfigKey))
-      Some(xdConfig.getString(SecurityUserConfigKey))
-    else None
-
-    val passwordConfig = if (xdConfig.hasPath(SecurityPasswordConfigKey))
-      Some(xdConfig.getString(SecurityPasswordConfigKey))
-    else None
-
-    val sessionIdConfig = if (xdConfig.hasPath(SecuritySessionConfigKey))
-      Some(xdConfig.getString(SecuritySessionConfigKey))
-    else None
+    val userConfig = Try(xdConfig.getString(SecurityUserConfigKey)).toOption
+    val passwordConfig = Try(xdConfig.getString(SecurityPasswordConfigKey)).toOption
+    val sessionIdConfig = Try(xdConfig.getString(SecuritySessionConfigKey)).toOption
 
     val securityManagerClass = Class.forName(securityClass)
 
+    val fallbackCredentials = Credentials(
+      user = credentials.user.orElse(userConfig),
+      password = credentials.password.orElse(passwordConfig),
+      sessionId = credentials.sessionId.orElse(sessionIdConfig)
+    )
+
     val constr: Constructor[_] = securityManagerClass.getConstructor(classOf[Credentials], classOf[Boolean])
-
-    val fallbackCredentials = credentials.copy(
-      user = credentials.user match {
-        case Some(u) => Some(u)
-        case _ => userConfig
-      },
-      password = credentials.password match {
-        case Some(p) => Some(p)
-        case _ => passwordConfig
-      },
-      sessionId = credentials.sessionId match {
-        case Some(s) => Some(s)
-        case _ => sessionIdConfig
-      })
-
     constr.newInstance(fallbackCredentials, audit).asInstanceOf[SecurityManager]
   }
-
 
 
   @transient
@@ -192,7 +156,6 @@ class XDContext protected (@transient val sc: SparkContext,
       override val extendedCheckRules = Seq(
         PreWriteCheck(catalog)
       )
-
 
 
       val preparationRules = Seq(PrepareAggregateAlias)
@@ -280,7 +243,7 @@ class XDContext protected (@transient val sc: SparkContext,
     *
     * @param path The local path or hdfs path where SparkContext will take the JAR
     */
-  def addJar(path: String, toClasspath:Option[Boolean]=None) = {
+  def addJar(path: String, toClasspath: Option[Boolean] = None) = {
     super.addJar(path)
     if ((path.toLowerCase.startsWith("hdfs://")) && (toClasspath.getOrElse(true))){
       val hdfsIS: InputStream = HdfsUtils(xdConfig.getConfig(CoreConfig.HdfsKey)).getFile(path)
@@ -409,28 +372,6 @@ object XDContext extends CoreConfig {
   var xdConfig: Config = _
   //This is definitely NOT right and will only work as long a single instance of XDContext exits
   var catalogConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
-
-  val CaseSensitive = "caseSensitive"
-  val DerbyClass = "org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog"
-  val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
-  val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.persistent.ZookeeperCatalog"
-  val ZookeeperStreamingClass = "org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog"
-  val CatalogConfigKey = "catalog"
-  val StreamingConfigKey = "streaming"
-  val SecurityConfigKey = "security"
-  val SecurityManagerConfigKey = "manager"
-  val ClassConfigKey = "class"
-  val AuditConfigKey = "audit"
-  val UserConfigKey = "user"
-  val PasswordConfigKey = "password"
-  val SessionConfigKey = "session"
-  val CatalogClassConfigKey = s"$CatalogConfigKey.$ClassConfigKey"
-  val StreamingCatalogClassConfigKey = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
-  val SecurityClassConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
-  val SecurityAuditConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$AuditConfigKey"
-  val SecurityUserConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$UserConfigKey"
-  val SecurityPasswordConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$PasswordConfigKey"
-  val SecuritySessionConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$SessionConfigKey"
 
 
   @transient private val INSTANTIATION_LOCK = new Object()

@@ -21,6 +21,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.Logging
 
+import scala.util.Try
+
 
 object CoreConfig {
 
@@ -32,6 +34,30 @@ object CoreConfig {
   val LauncherKey= "launcher"
   val JarsRepo = "jars"
   val HdfsKey = "hdfs"
+
+  val CaseSensitive = "caseSensitive"
+  val DerbyClass = "org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog"
+  val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
+  val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.persistent.ZookeeperCatalog"
+  val ZookeeperStreamingClass = "org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog"
+  val StreamingConfigKey = "streaming"
+  val SecurityConfigKey = "security"
+  val SecurityManagerConfigKey = "manager"
+  val ClassConfigKey = "class"
+
+  val AuditConfigKey = "audit"
+  val UserConfigKey = "user"
+  val PasswordConfigKey = "password"
+  val SessionConfigKey = "session"
+  val CatalogClassConfigKey = s"$CatalogConfigKey.$ClassConfigKey"
+  val StreamingCatalogClassConfigKey = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
+  val SecurityClassConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
+  val SecurityAuditConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$AuditConfigKey"
+  val SecurityUserConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$UserConfigKey"
+  val SecurityPasswordConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$PasswordConfigKey"
+  val SecuritySessionConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$SessionConfigKey"
+
+  val SparkSqlConfigPrefix = "config.spark.sql" //WARNING!! XDServer is using this path to read its parameters
 }
 
 trait CoreConfig extends Logging {
@@ -77,9 +103,15 @@ trait CoreConfig extends Logging {
       }
     }
 
-    // TODO Improve implementation
     // System properties
-    defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
+    val systemPropertiesConfig =
+      Try(
+        ConfigFactory.parseProperties(System.getProperties).getConfig(ParentConfigName)
+      ).getOrElse(
+        ConfigFactory.parseProperties(System.getProperties)
+      )
+
+    defaultConfig = systemPropertiesConfig.withFallback(defaultConfig)
 
     ConfigFactory.load(defaultConfig)
   }

@@ -16,6 +16,7 @@
 package org.apache.spark.sql.crossdata.catalog.interfaces
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
@@ -23,6 +24,16 @@ import XDCatalog.{CrossdataApp, CrossdataIndex, CrossdataTable, IndexIdentifier,
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
 object XDCatalogCommon {
+
+  implicit class RichTableIdentifier(tableIdentifier: TableIdentifier) {
+    def normalize(implicit conf: CatalystConf): TableIdentifier = {
+      val normalizedDatabase = tableIdentifier.database.map(normalizeIdentifier(_,conf))
+      TableIdentifier(normalizeIdentifier(tableIdentifier.table, conf), normalizedDatabase)
+    }
+  }
+
+  def normalizeTableIdentifier(tableIdent: TableIdentifier, conf: CatalystConf): TableIdentifier =
+    tableIdent.normalize(conf)
 
   def normalizeTableName(tableIdent: TableIdentifier, conf: CatalystConf): String =
     normalizeIdentifier(tableIdent.unquotedString, conf)
@@ -33,19 +44,24 @@ object XDCatalogCommon {
     } else {
       identifier.toLowerCase
     }
+
+  def processAlias(tableIdentifier: TableIdentifier, lPlan: LogicalPlan, alias: Option[String])(conf: CatalystConf) = {
+    val tableWithQualifiers = Subquery(normalizeTableName(tableIdentifier, conf), lPlan)
+    // If an alias was specified by the lookup, wrap the plan in a subquery so that attributes are
+    // properly qualified with this alias.
+    alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
+  }
 }
 
 sealed trait XDCatalogCommon extends SparkLoggerComponent {
 
   def catalystConf: CatalystConf
 
-  def relation(tableIdent: TableIdentifier, alias: Option[String] = None): Option[LogicalPlan]
+  def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan]
 
-  def allRelations(databaseName: Option[String]): Seq[TableIdentifier]
+  def allRelations(databaseName: Option[String] = None): Seq[TableIdentifier]
 
   def isAvailable: Boolean
-
-  // TODO def isView(id: TableIdentifier): Boolean
 
   protected def notFound(resource: String) = {
     val message = s"$resource not found"
@@ -59,12 +75,6 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
   protected def normalizeIdentifier(identifier: String): String =
     XDCatalogCommon.normalizeIdentifier(identifier, catalystConf)
 
-  protected def processAlias( tableIdentifier: TableIdentifier, lPlan: LogicalPlan, alias: Option[String]) = {
-    val tableWithQualifiers = Subquery(normalizeTableName(tableIdentifier), lPlan)
-    // If an alias was specified by the lookup, wrap the plan in a subquery so that attributes are
-    // properly qualified with this alias.
-    alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
-  }
 }
 
 trait XDTemporaryCatalog extends XDCatalogCommon {
@@ -94,9 +104,9 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def refreshCache(tableIdent: TableIdentifier): Unit
 
-  def saveTable(crossdataTable: CrossdataTable, plan: LogicalPlan): Unit
+  def saveTable(crossdataTable: CrossdataTable, plan: LogicalPlan)(implicit sqlContext: SQLContext): Unit
 
-  def saveView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit
+  def saveView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String)(implicit sqlContext: SQLContext): Unit
 
   def saveIndex(crossdataIndex: CrossdataIndex): Unit
 
@@ -139,7 +149,6 @@ trait XDAppsCatalog {
 
 trait XDStreamingCatalog extends XDCatalogCommon {
 
-  // TODO streaming replace duplicated methods (separate API from internals)
   /**
    * Ephemeral Table Functions
    */

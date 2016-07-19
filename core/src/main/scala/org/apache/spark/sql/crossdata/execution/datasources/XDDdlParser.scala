@@ -24,7 +24,6 @@ import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.execution.datasources.DDLParser
 import org.apache.spark.sql.types._
 
-import scala.Option
 import scala.language.implicitConversions
 
 
@@ -70,8 +69,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     createTable | describeTable | refreshTable | importStart | dropTable | dropExternalTable |
       createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp | executeApp | createGlobalIndex
 
-  // TODO move to StreamingDdlParser
-
   protected lazy val streamingSentences: Parser[LogicalPlan] =
     describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropAllEphemeralQueries  | dropAllEphemeralTables |
       showEphemeralStatus | showEphemeralStatuses | startProcess | stopProcess |
@@ -81,7 +78,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
       case provider ~ ops =>
-        ImportTablesUsingWithOptions(provider.asInstanceOf[String], ops.getOrElse(Map.empty))
+        ImportTablesUsingWithOptions(provider, ops.getOrElse(Map.empty))
     }
 
   protected lazy val dropTable: Parser[LogicalPlan] =

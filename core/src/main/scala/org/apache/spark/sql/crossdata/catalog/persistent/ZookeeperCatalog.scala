@@ -18,7 +18,6 @@ package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.net.Socket
 
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
@@ -34,8 +33,8 @@ import scala.util.Try
   *
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
-class ZookeeperCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
-  extends PersistentCatalogWithCache(sqlContext, catalystConf) {
+class ZookeeperCatalog(override val catalystConf: CatalystConf)
+  extends PersistentCatalogWithCache(catalystConf){
 
   import XDCatalog._
 

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.server.config
+package org.apache.spark.sql.crossdata
 
-import scala.concurrent.duration.Duration
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
-case class ServerActorConfig(completedJobTTL: Duration, retryNoAttempts: Int, retryCountWindow: Duration)
+class XDSessionState(val sqlConf: XDSQLConf, val temporaryCatalogs: Seq[XDTemporaryCatalog])

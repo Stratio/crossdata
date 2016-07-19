@@ -15,33 +15,36 @@
  */
 package com.stratio.crossdata.server.actors
 
-import java.io.{File, InputStream}
-import java.lang.reflect.Method
-import java.net.{URL, URLClassLoader}
+/*
+  TODO: Fix this actor since adding session management has broken it
+ */
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import akka.cluster.Cluster
 import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.{Subscribe, SubscribeAck}
-import com.google.common.io.Files
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.server.actors.ServerActor.State
+import com.stratio.crossdata.server.actors.ServerActor.JobId
 import com.stratio.crossdata.server.config.ServerConfig
-import com.stratio.crossdata.utils.HdfsUtils
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.XDSessionProvider
 import org.apache.spark.sql.types.StructType
+
+import scala.util.{Failure, Success}
 
 object ResourceManagerActor {
   val AddJarTopic: String = "newJAR"
 
-  def props(cluster: Cluster, xdContext: XDContext): Props =
-    Props(new ResourceManagerActor(cluster, xdContext))
+  def props(cluster: Cluster, sessionProvider: XDSessionProvider): Props =
+    Props(new ResourceManagerActor(cluster, sessionProvider))
+
+  case class State(jobsById: Map[JobId, ActorRef])
+
 }
 
-class ResourceManagerActor(cluster: Cluster, xdContext: XDContext) extends Actor with ServerConfig {
+class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider) extends Actor with ServerConfig {
 
   import ResourceManagerActor._
 
@@ -80,7 +83,15 @@ class ResourceManagerActor(cluster: Cluster, xdContext: XDContext) extends Actor
       logger.debug(s"Session identifier $session")
       //TODO  Maybe include job controller if it is necessary as in sql command
       if (addJarCommand.path.toLowerCase.startsWith("hdfs://")) {
-        xdContext.addJar(addJarCommand.path,addJarCommand.toClassPath)
+        sessionProvider.session(id) match {
+          case Success(xdSession) =>
+            xdSession.addJar(addJarCommand.path)
+          case Failure(error) =>
+            logger.warn(s"Received message with an unknown sessionId $id", error)
+            sender ! ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+        }
+
+        //sessionProvider.sc.addJar(addJarCommand.path)//sessionProvider.sc.addJar(addJarCommand.path, addJarCommand.toClassPath) // TODO addJar should not affect other sessions // add to runtime within the sc
         sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
       } else {
         sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exist or is not a hdfs file", Some(new Exception("File doesn't exist or is not a hdfs file"))))

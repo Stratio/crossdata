@@ -41,7 +41,7 @@ class JavaDriverIT extends EndToEndTest{
     )
 
     javadriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
-
+    javadriver.stop()
   }
 
   "JavaDriver (specifying serverHost, and flattened value)" should "return a list of tables " in {
@@ -57,6 +57,6 @@ class JavaDriverIT extends EndToEndTest{
     )
 
     javaDriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
-
+    javaDriver.stop()
   }
 }

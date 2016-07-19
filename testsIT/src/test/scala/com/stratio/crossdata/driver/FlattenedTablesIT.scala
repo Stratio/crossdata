@@ -30,7 +30,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     val flattenedDriver = Driver.getOrCreate(new DriverConf().setFlattenTables(true))
 
     //Experimentation
-    val result:Seq[FieldMetadata] = flattenedDriver.describeTable(Some(Database), Collection)
+    val result: Seq[FieldMetadata] = flattenedDriver.describeTable(Some(Database), Collection)
 
     //Expectations
     result should contain (new FieldMetadata("address.zip", IntegerType))
@@ -38,7 +38,7 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     result should contain (new FieldMetadata("account.details.bank", StringType))
     result should contain (new FieldMetadata("grades.FP", DoubleType))
 
-    flattenedDriver.close()
+    flattenedDriver.stop()
   }
 
   it should " List table's description with nested fields Not flattened" in {
@@ -47,17 +47,17 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     val driver = Driver.getOrCreate()
 
     //Experimentation
-    val result:Seq[FieldMetadata] = driver.describeTable(Some(Database), Collection)
+    val result: Seq[FieldMetadata] = driver.describeTable(Some(Database), Collection)
 
     //Expectations
     val addressType = StructType(Seq(StructField("street", StringType), StructField("city", StringType), StructField("zip", IntegerType)))
     val detailAccount = StructType(Seq(StructField("bank", StringType), StructField("office", IntegerType)))
     val accountType = StructType(Seq(StructField("number", IntegerType), StructField("details", detailAccount)))
 
-    result should contain (new FieldMetadata("address", addressType))
-    result should contain (new FieldMetadata("account", accountType))
+    result should contain(new FieldMetadata("address", addressType))
+    result should contain(new FieldMetadata("account", accountType))
 
-    driver.close()
+    driver.stop()
   }
 
 
@@ -67,12 +67,12 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     val flattenedDriver = Driver.getOrCreate(new DriverConf().setFlattenTables(true))
 
     //Experimentation
-    val result= flattenedDriver.sql(s"SELECT address.street from $Database.$Collection").resultSet
+    val result = flattenedDriver.sql(s"SELECT address.street from $Database.$Collection").resultSet
 
     //Expectations
     result.head.toSeq(0).toString should fullyMatch regex "[0-9]+th Avenue"
 
-    flattenedDriver.close()
+    flattenedDriver.stop()
   }
 
   it should " Query with Flattened Fields On Filters" in {
@@ -81,12 +81,12 @@ class FlattenedTablesIT extends MongoWithSharedContext {
     val flattenedDriver = Driver.getOrCreate(new DriverConf().setFlattenTables(true))
 
     //Experimentation
-    val result= flattenedDriver.sql(s"SELECT description FROM $Database.$Collection WHERE address.street = '5th Avenue'").resultSet
+    val result = flattenedDriver.sql(s"SELECT description FROM $Database.$Collection WHERE address.street = '5th Avenue'").resultSet
 
     //Expectations
     result.head.toSeq(0).toString should be equals "description5"
 
-    flattenedDriver.close()
+    flattenedDriver.stop()
   }
 
 }

@@ -15,18 +15,17 @@
  */
 package org.apache.spark.sql.crossdata.catalog.persistent
 
-import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet, Statement}
+import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet}
 
 import com.stratio.crossdata.util.using
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.CrossdataVersion
 import org.apache.spark.sql.crossdata.catalog.{XDCatalog, persistent}
 
 import scala.annotation.tailrec
-import scala.util.Try
 
 // TODO refactor SQL catalog implementations
+// TODO close resultSet
 object DerbyCatalog {
   val DB = "CROSSDATA"
   val TableWithTableMetadata = "xdtables"
@@ -60,13 +59,13 @@ object DerbyCatalog {
 
 
 /**
-  * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
-  * Derby.
-  *
-  * @param catalystConf An implementation of the [[CatalystConf]].
-  */
-class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
-  extends PersistentCatalogWithCache(sqlContext, catalystConf) {
+ * Default implementation of the [[persistent.PersistentCatalogWithCache]] with persistence using
+ * Derby.
+ *
+ * @param catalystConf An implementation of the [[CatalystConf]].
+ */
+class DerbyCatalog(override val catalystConf: CatalystConf)
+  extends PersistentCatalogWithCache(catalystConf) {
 
   import DerbyCatalog._
   import XDCatalog._
@@ -144,11 +143,12 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
   }
 
 
-  def executeSQLCommand(sql: String): Unit = using(connection.createStatement()) { statement =>
+  def executeSQLCommand(sql: String): Unit = synchronized {using(connection.createStatement()) { statement =>
     statement.executeUpdate(sql)
   }
+}
 
-  private def withConnectionWithoutCommit[T](f: Connection => T): T = {
+  private def withConnectionWithoutCommit[T](f: Connection => T): T = synchronized{
     try {
       connection.setAutoCommit(false)
       f(connection)
@@ -158,13 +158,14 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
   }
 
   private def withStatement[T](sql: String)(f: PreparedStatement => T)(implicit conn: Connection = connection): T =
-    using(conn.prepareStatement(sql)) { statement =>
+    synchronized {using(conn.prepareStatement(sql)) { statement =>
       f(statement)
     }
+}
 
-  private def withResultSet[T](prepared: PreparedStatement)(f: ResultSet => T): T = using(prepared.executeQuery()) { resultSet =>
+  private def withResultSet[T](prepared: PreparedStatement)(f: ResultSet => T): T = synchronized{using(prepared.executeQuery()) { resultSet =>
     f(resultSet)
-  }
+  }}
 
   override def lookupTable(tableIdentifier: ViewIdentifier): Option[CrossdataTable] =
     selectMetadata(TableWithTableMetadata, tableIdentifier) { resultSet =>
@@ -311,6 +312,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
     }
 
 
+
   override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit =
     withConnectionWithoutCommit { implicit conn =>
 
@@ -402,7 +404,7 @@ class DerbyCatalog(sqlContext: SQLContext, override val catalystConf: CatalystCo
 
   override def isAvailable: Boolean = true
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
+  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = synchronized{
     @tailrec
     def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifier] = Set.empty): Set[TableIdentifier] = {
       if (next) {

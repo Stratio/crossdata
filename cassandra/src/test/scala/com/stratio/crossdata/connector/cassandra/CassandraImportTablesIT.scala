@@ -43,7 +43,6 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     importedTables.schema.fieldNames shouldBe Array("tableIdentifier", "ignored")
     importedTables.collect.length should be > 0
 
-    // TODO We need to create an unregister the table
     tableCountInHighschool should be > initialLength
 
   }

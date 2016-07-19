@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog.inmemory
+package org.apache.spark.sql.crossdata.catalog.temporary
 
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
@@ -33,10 +34,8 @@ abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog
 
   implicit def tableIdent2string(tident: TableIdentifier): String = normalizeTableName(tident)
 
-  override def relation(tableIdent: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
-    (tables get tableIdent) orElse (views get tableIdent) map {
-      processAlias(tableIdent, _, alias)
-    }
+  override def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
+    (tables get tableIdent) orElse (views get tableIdent)
 
   override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
     val dbName = databaseName.map(normalizeIdentifier)
