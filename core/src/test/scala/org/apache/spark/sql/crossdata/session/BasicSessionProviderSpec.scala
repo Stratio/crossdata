@@ -38,7 +38,7 @@ class BasicSessionProviderSpec extends SharedXDContextTest {
 
   val SparkSqlConfigString = "config.spark.sql.inMemoryColumnarStorage.batchSize=5000"
 
-  implicit val conf: CatalystConf = xdContext.catalog.conf
+  implicit lazy val conf: CatalystConf = xdContext.catalog.conf
 
 
   "BasicSessionProvider" should "provides new sessions whose properties are initialized properly" in {

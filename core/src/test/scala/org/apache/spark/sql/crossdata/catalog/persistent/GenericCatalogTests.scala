@@ -31,7 +31,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   def catalogName: String
 
-  implicit val conf: CatalystConf = xdContext.catalog.conf
+  implicit lazy val conf: CatalystConf = xdContext.catalog.conf
 
   implicit def catalogToPersistenceWithCache(catalog: XDCatalog): PersistentCatalogWithCache = {
     catalog.asInstanceOf[CatalogChain].persistentCatalogs.head.asInstanceOf[PersistentCatalogWithCache]

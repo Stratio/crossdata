@@ -40,7 +40,7 @@ class DropTableIT extends SharedXDContextTest {
     catalog.asInstanceOf[CatalogChain].persistentCatalogs.head.asInstanceOf[PersistentCatalogWithCache]
   }
 
-  implicit val conf: CatalystConf = xdContext.catalog.conf
+  implicit lazy val conf: CatalystConf = xdContext.catalog.conf
 
   "DropTable command" should "remove a table from Crossdata catalog" in {
 
