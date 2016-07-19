@@ -42,7 +42,9 @@ import cucumber.api.CucumberOptions;
 		"src/test/resources/features/Views/TemporaryViews.feature",
 		"src/test/resources/features/Views/Views.feature",
 		"src/test/resources/features/Views/DropViews.feature",
-        "src/test/resources/features/Catalog/DropPersistedTables.feature"
+        "src/test/resources/features/Catalog/DropPersistedTables.feature",
+		"src/test/resources/features/Cassandra/CassandraInsertInto.feature"
+
 
 })
 public class ATCassandraXDTest extends BaseTest {
@@ -92,14 +94,6 @@ public class ATCassandraXDTest extends BaseTest {
 
 	@AfterClass(groups = {"basic"})
 	public void cleanUp() {
-		cassandra.connect();
-		cassandra.dropKeyspace(catalog);
-		try {
-			cassandra.disconnect();
-		} catch (DBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 	}
 

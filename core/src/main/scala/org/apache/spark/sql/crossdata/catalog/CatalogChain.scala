@@ -19,9 +19,11 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
+
+import scala.util.Try
 
 
 object CatalogChain {
@@ -161,16 +163,30 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   override def persistView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit =
     persistentCatalogs.foreach(_.saveView(tableIdentifier, plan, sqlText))
 
+  override def persistIndex(crossdataIndex: CrossdataIndex): Unit =
+    if (tableMetadata(crossdataIndex.tableIdentifier).isEmpty) {
+      throw new RuntimeException(s"Cannot create the index. Table ${crossdataIndex.tableIdentifier} doesn't exist or is temporary")
+    } else {
+      persistentCatalogs.foreach(_.saveIndex(crossdataIndex))
+    }
+
+
   override def dropTable(tableIdentifier: TableIdentifier): Unit = {
     val strTable = tableIdentifier.unquotedString
     if (!tableExists(tableIdentifier)) throw new RuntimeException(s"Table $strTable can't be deleted because it doesn't exist")
     logInfo(s"Deleting table $strTable from catalog")
+
+    indexMetadataByTableIdentifier(tableIdentifier) foreach { index =>
+      dropIndex(index.indexIdentifier)
+    }
+
     temporaryCatalogs foreach (_.dropTable(tableIdentifier))
     persistentCatalogs foreach (_.dropTable(tableIdentifier))
   }
 
   override def dropAllTables(): Unit = {
     dropAllViews()
+    dropAllIndexes()
     temporaryCatalogs foreach (_.dropAllTables())
     persistentCatalogs foreach (_.dropAllTables())
   }
@@ -186,6 +202,32 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   override def dropAllViews(): Unit = {
     temporaryCatalogs foreach (_.dropAllViews())
     persistentCatalogs foreach (_.dropAllViews())
+  }
+
+
+  override def dropIndex(indexIdentifier: IndexIdentifier): Unit = {
+    val strIndex = indexIdentifier.unquotedString
+    if(indexMetadata(indexIdentifier).isEmpty) throw new RuntimeException(s"Index $strIndex can't be deleted because it doesn't exist")
+    logInfo(s"Deleting index ${indexIdentifier.unquotedString} from catalog")
+
+    //First remove table that holds the index
+    if(tableExists(indexIdentifier.asTableIdentifier))
+      dropTable(indexIdentifier.asTableIdentifier)
+
+    persistentCatalogs foreach(catalog => Try(catalog.dropIndex(indexIdentifier)))
+  }
+
+  override def indexMetadata(tableIdentifier: IndexIdentifier): Option[CrossdataIndex]=
+    persistentChainedLookup(_.lookupIndex(tableIdentifier))
+
+  override def indexMetadataByTableIdentifier(tableIdentifier: TableIdentifier):Option[CrossdataIndex]=
+    persistentCatalogs.view map (_.lookupIndexByTableIdentifier(tableIdentifier)) collectFirst {
+      case Some(index) =>index
+    }
+
+  override def dropAllIndexes(): Unit = {
+    persistentCatalogs foreach (_.dropAllIndexes())
+
   }
 
   override def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable] =
@@ -278,4 +320,5 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   override def persistAppMetadata(crossdataApp: CrossdataApp): Unit =
     persistentCatalogs.foreach(_.saveAppMetadata(crossdataApp))
+
 }

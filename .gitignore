@@ -27,6 +27,7 @@ checkpoint/
 **.BASE.*.*
 **.LOCAL.*.*
 **.REMOTE.*.*
+*.xml.bkp
 
 #hive ignores
 metastore_db/
