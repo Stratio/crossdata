@@ -21,10 +21,8 @@ class DriverStandaloneIT extends BaseXDTest {
 
   "Crossdata driver" should "fail with a timeout when there is no server" in {
 
-    a[RuntimeException] should be thrownBy Driver.getOrCreate()
-
     the [RuntimeException] thrownBy {
-      Driver.getOrCreate()
+      Driver.newSession()
     } should have message s"Cannot establish connection to XDServer: timed out after ${Driver.InitializationTimeout}"
 
   }
