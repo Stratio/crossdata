@@ -230,8 +230,15 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     xdContext.catalog.persistTableMetadata(crossdataTable1)
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     val tables = xdContext.catalog.getTables(None).toMap
-    tables(s"$Database.$TableName") shouldBe false
-    tables(TableName) shouldBe true
+
+    if(xdContext.catalystConf.caseSensitiveAnalysis){
+      tables(s"$Database.$TableName") shouldBe false
+      tables(TableName) shouldBe true
+    } else{
+      tables(s"${Database.toLowerCase}.${TableName.toLowerCase}") shouldBe false
+      tables(TableName.toLowerCase) shouldBe true
+    }
+
   }
 
   it should "describe a table persisted and non persisted with subcolumns" in {

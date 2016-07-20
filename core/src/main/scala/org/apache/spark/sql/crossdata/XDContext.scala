@@ -90,7 +90,7 @@ class XDContext protected (@transient val sc: SparkContext,
   catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
 
   // TODO Spark 2.0 replace with sqlConf (which extends CatalystConf)
-  protected lazy val catalystConf: CatalystConf = {
+  protected[sql] lazy val catalystConf: CatalystConf = {
     import CoreConfig.CaseSensitive
     val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
     new SimpleCatalystConf(caseSensitive)
