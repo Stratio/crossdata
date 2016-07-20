@@ -31,9 +31,9 @@ class XDCatalogCommonSpec extends BaseXDTest {
     val tableIdentifier = TableIdentifier(tableName, Some(dbName))
     import XDCatalogCommon._
 
-    tableIdentifier.normalize(new SimpleCatalystConf(true)) shouldBe TableIdentifier(tableName, Some(dbName))
+    tableIdentifier.normalize(new SimpleCatalystConf(true)) shouldBe TableIdentifierNormalized(tableName, Some(dbName))
 
-    tableIdentifier.normalize(new SimpleCatalystConf(false)) shouldBe TableIdentifier(tableName.toLowerCase, Some(dbName.toLowerCase))
+    tableIdentifier.normalize(new SimpleCatalystConf(false)) shouldBe TableIdentifierNormalized(tableName.toLowerCase, Some(dbName.toLowerCase))
 
   }
 }
