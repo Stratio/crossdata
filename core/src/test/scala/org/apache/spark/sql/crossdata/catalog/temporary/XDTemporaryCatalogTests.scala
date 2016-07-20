@@ -35,7 +35,7 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
 
   implicit var implicitContext: XDContext = _
 
-  implicit val conf: CatalystConf = xdContext.catalog.conf
+  implicit lazy val conf: CatalystConf = xdContext.catalog.conf
 
   s"${catalogName}CatalogSpec" must "return a dataframe from a register table without catalog using json datasource" in {
     val fields = Seq[StructField](Field1, Field2)
