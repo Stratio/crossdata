@@ -46,7 +46,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val columns = StructType(fields)
     val opts = Map("path" -> "/fake_path")
     val tableIdentifier = Seq(TableName)
-    val crossdataTable = CrossdataTable(TableIdentifier(TableName, None).normalize, Some(Columns), SourceDatasource, Array[String](), opts)
+    val crossdataTable = CrossdataTable(TableIdentifier(TableName, None).normalize, Some(Columns), SourceDatasource, Array.empty, opts)
     xdContext.catalog.persistTableMetadata(crossdataTable)
     val dataframe = xdContext.sql(s"SELECT * FROM $TableName")
 
@@ -56,7 +56,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
   it should s"persist a table with catalog and partitionColumns in $catalogName" in {
 
     val tableIdentifier = TableIdentifier(TableName, Some(Database))
-    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.tableExists(tableIdentifier) shouldBe true
 
@@ -86,7 +86,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
   it should s"persist a table with catalog and partitionColumns with multiple subdocuments as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = TableIdentifier(TableName, Some(Database))
-    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithSubColumns), SourceDatasource, Array.empty[String], OptsJSON)
+    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithSubColumns), SourceDatasource, Array.empty, OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
 
     xdContext.catalog.unregisterTable(tableIdentifier)
@@ -100,7 +100,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
   it should s"persist a table with catalog and partitionColumns with arrays as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = TableIdentifier(TableName, Some(Database))
-    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithArrayString), SourceDatasource, Array.empty[String], OptsJSON)
+    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithArrayString), SourceDatasource, Array.empty, OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
 
     xdContext.catalog.unregisterTable(tableIdentifier)
@@ -112,7 +112,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
   it should s"persist a table with catalog and partitionColumns with array of integers as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = TableIdentifier(TableName, Some(Database))
-    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithArrayInteger), SourceDatasource, Array.empty[String], OptsJSON)
+    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithArrayInteger), SourceDatasource, Array.empty, OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
 
     xdContext.catalog.unregisterTable(tableIdentifier)
@@ -126,7 +126,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     s"characters in Field names as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = TableIdentifier(TableName, Some(Database))
-    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithArrayWithSubdocuments), SourceDatasource, Array.empty[String], OptsJSON)
+    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithArrayWithSubdocuments), SourceDatasource, Array.empty, OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
 
     xdContext.catalog.unregisterTable(tableIdentifier)
@@ -141,7 +141,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     s"characters in Field names as schema in $catalogName" in {
     xdContext.catalog.dropAllTables()
     val tableIdentifier = TableIdentifier(TableName, Some(Database))
-    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithMapWithArrayWithSubdocuments), SourceDatasource, Array.empty[String], OptsJSON)
+    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithMapWithArrayWithSubdocuments), SourceDatasource, Array.empty, OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.unregisterTable(tableIdentifier)
     val schemaDF = xdContext.sql(s"DESCRIBE $Database.$TableName")
@@ -153,8 +153,8 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   it should "returns list of tables" in {
     xdContext.catalog.dropAllTables()
-    val crossdataTable1 = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
-    val crossdataTable2 = CrossdataTable(TableIdentifier(TableName, None).normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable1 = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
+    val crossdataTable2 = CrossdataTable(TableIdentifier(TableName, None).normalize, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
 
     xdContext.catalog.persistTableMetadata(crossdataTable1)
     xdContext.catalog.persistTableMetadata(crossdataTable2)
@@ -168,8 +168,8 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
   it should "drop tables" in {
     xdContext.catalog.dropAllTables()
 
-    val crossdataTable1 = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
-    val crossdataTable2 = CrossdataTable(TableIdentifier(TableName, None).normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable1 = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
+    val crossdataTable2 = CrossdataTable(TableIdentifier(TableName, None).normalize, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
     val tableIdentifier1 = TableIdentifier(TableName, Some(Database))
     val tableIdentifier2 = TableIdentifier(TableName)
     xdContext.catalog.persistTableMetadata(crossdataTable1)
@@ -197,7 +197,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   it should "check if tables map is correct with databaseName" in {
     xdContext.catalog.dropAllTables()
-    val crossdataTable1 = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable1 = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
     val tableIdentifier2 = TableIdentifier(TableName)
 
     xdContext.catalog.persistTableMetadata(crossdataTable1)
@@ -211,7 +211,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   it should "check if tables map is correct without databaseName " in {
     xdContext.catalog.dropAllTables()
-    val crossdataTable1 = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable1 = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
     val tableIdentifier2 = TableIdentifier(TableName)
 
     xdContext.catalog.persistTableMetadata(crossdataTable1)
@@ -225,7 +225,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   it should "check if persisted tables are marked as not temporary" in {
     xdContext.catalog.dropAllTables()
-    val crossdataTable1 = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable1 = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
     val tableIdentifier2 = TableIdentifier(TableName)
     xdContext.catalog.persistTableMetadata(crossdataTable1)
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
@@ -243,7 +243,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   it should "describe a table persisted and non persisted with subcolumns" in {
     xdContext.catalog.dropAllTables()
-    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithSubColumns), SourceDatasource, Array.empty[String], OptsJSON)
+    val crossdataTable = CrossdataTable(TableIdentifier(TableName, Some(Database)).normalize, Some(ColumnsWithSubColumns), SourceDatasource, Array.empty, OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.sql(s"DESCRIBE $Database.$TableName").count() should not be 0
   }
@@ -271,7 +271,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val version = "1.5.0"
     val crossdataIndex = CrossdataIndex(tableIdentifier, indexIdentifier, indexedCols, pk, dataSource, opts, version)
 
-    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
 
     xdContext.catalog.persistIndex(crossdataIndex)
@@ -292,7 +292,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val version = "1.5.0"
     val crossdataIndex = CrossdataIndex(tableIdentifier, indexIdentifier, indexedCols, pk, dataSource, opts, version)
 
-    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.persistIndex(crossdataIndex)
 
@@ -312,7 +312,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val version = "1.5.0"
     val crossdataIndex = CrossdataIndex(tableIdentifier, indexIdentifier, indexedCols, pk, dataSource, opts, version)
 
-    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.persistIndex(crossdataIndex)
 
@@ -332,7 +332,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     val version = "1.5.0"
     val crossdataIndex = CrossdataIndex(tableIdentifier, indexIdentifier, indexedCols, pk, dataSource, opts, version)
 
-    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
     xdContext.catalog.persistTableMetadata(crossdataTable)
     xdContext.catalog.persistIndex(crossdataIndex)
 
