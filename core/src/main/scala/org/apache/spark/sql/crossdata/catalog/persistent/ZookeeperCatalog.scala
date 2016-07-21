@@ -20,7 +20,7 @@ import java.net.Socket
 
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog._
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{AppTypesafeDAO, IndexTypesafeDAO, TableTypesafeDAO, ViewTypesafeDAO}
 import org.apache.spark.sql.crossdata.models.{AppModel, IndexModel, TableModel, ViewModel}
@@ -91,13 +91,13 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
   }
 
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifierNormalized] = {
+  override def allRelations(databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = {
     if (tableDAO.dao.count > 0) {
       tableDAO.dao.getAll()
         .flatMap(tableModel => {
           databaseName.fold(Option(TableIdentifierNormalized(tableModel.name, tableModel.database))) { dbName =>
             tableModel.database.flatMap(dbNameModel => {
-              if (dbName == dbNameModel) Option(TableIdentifierNormalized(tableModel.name, tableModel.database))
+              if (dbName.normalizedString == dbNameModel) Option(TableIdentifierNormalized(tableModel.name, tableModel.database))
               else None
             })
           }

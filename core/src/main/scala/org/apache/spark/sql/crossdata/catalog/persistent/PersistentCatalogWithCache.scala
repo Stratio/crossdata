@@ -21,7 +21,7 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, XDCatalog}
 import XDCatalog.{CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier, ViewIdentifierNormalized}
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDPersistentCatalog
+import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog}
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
 
 import scala.collection.mutable
@@ -36,7 +36,7 @@ abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XD
 
   import CreateRelationUtil._
 
-  val tableCache: mutable.Map[TableIdentifierNormalized, LogicalPlan] = mutable.Map.empty // TODO tableIdentifier should be normalized // TODO tests // do it in catalogChain?
+  val tableCache: mutable.Map[TableIdentifierNormalized, LogicalPlan] = mutable.Map.empty
   val viewCache: mutable.Map[TableIdentifierNormalized, LogicalPlan] = mutable.Map.empty
   val indexCache: mutable.Map[TableIdentifierNormalized, CrossdataIndex] = mutable.Map.empty
 
@@ -60,11 +60,12 @@ abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XD
   override final def refreshCache(tableIdent: ViewIdentifierNormalized): Unit = tableCache clear
 
   override final def saveView(viewIdentifier: ViewIdentifierNormalized, plan: LogicalPlan, sqlText: String)(implicit sqlContext:SQLContext): Unit = {
+    import XDCatalogCommon._
     def checkPlan(plan: LogicalPlan): Unit = {
       plan collect {
         case UnresolvedRelation(tIdent, _) => tIdent
       } foreach { tIdent =>
-        if (relation(normalizeTableIdentifier(tIdent))(sqlContext).isEmpty) {
+        if (relation(tIdent.normalize(catalystConf))(sqlContext).isEmpty) {
           throw new RuntimeException("Views only can be created with a previously persisted table")
         }
       }

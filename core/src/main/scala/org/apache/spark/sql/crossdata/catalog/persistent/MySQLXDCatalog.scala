@@ -21,7 +21,7 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
-import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog._
 
 import scala.annotation.tailrec
 
@@ -169,7 +169,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
   }
 
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifierNormalized] = {
+  override def allRelations(databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = {
     @tailrec
     def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifierNormalized] = Set.empty): Set[TableIdentifierNormalized] = {
       if (next) {
@@ -183,7 +183,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
     }
 
     val statement = connection.createStatement
-    val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
+    val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='${dbName.normalizedString}'")
     val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
 
     getSequenceAux(resultSet, resultSet.next).toSeq

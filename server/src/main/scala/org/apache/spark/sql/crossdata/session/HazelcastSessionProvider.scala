@@ -65,7 +65,7 @@ class HazelcastSessionProvider( sc: SparkContext,
   override lazy val logger = Logger.getLogger(classOf[HazelcastSessionProvider])
 
   private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
-  
+
   private lazy val sqlConf: SQLConf = configToSparkSQL(userConfig, new SQLConf)
 
   @transient

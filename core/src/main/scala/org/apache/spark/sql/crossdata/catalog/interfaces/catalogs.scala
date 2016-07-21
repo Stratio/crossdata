@@ -19,7 +19,7 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, XDCatalog}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, StringNormalized, TableIdentifierNormalized, XDCatalog}
 import XDCatalog.{CrossdataApp, CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
@@ -40,13 +40,14 @@ object XDCatalogCommon {
     }
   }
 
-  def normalizeTableName(tableIdent: TableIdentifierNormalized, conf: CatalystConf): String =
-    normalizeIdentifier(tableIdent.unquotedString, conf)
+  def stringifyTableIdentifierNormalized(tableIdent: TableIdentifierNormalized): String =
+    tableIdent.unquotedString
 
-  def normalizeTableName(tableIdent: TableIdentifier, conf: CatalystConf): String =
-    normalizeIdentifier(tableIdent.unquotedString, conf)
+  def normalizeTableIdentifier(tableIdent: TableIdentifier, conf: CatalystConf): String =
+    stringifyTableIdentifierNormalized(tableIdent.normalize(conf))
 
-  private def normalizeIdentifier(identifier: String, conf: CatalystConf): String =
+
+  def normalizeIdentifier(identifier: String, conf: CatalystConf): String =
     if (conf.caseSensitiveAnalysis) {
       identifier
     } else {
@@ -54,7 +55,7 @@ object XDCatalogCommon {
     }
 
   def processAlias(tableIdentifier: TableIdentifier, lPlan: LogicalPlan, alias: Option[String])(conf: CatalystConf) = {
-    val tableWithQualifiers = Subquery(normalizeTableName(tableIdentifier, conf), lPlan)
+    val tableWithQualifiers = Subquery(normalizeTableIdentifier(tableIdentifier, conf), lPlan)
     // If an alias was specified by the lookup, wrap the plan in a subquery so that attributes are
     // properly qualified with this alias.
     alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
@@ -67,7 +68,7 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
 
   def relation(tableIdent: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan]
 
-  def allRelations(databaseName: Option[String] = None): Seq[TableIdentifierNormalized]
+  def allRelations(databaseName: Option[StringNormalized] = None): Seq[TableIdentifierNormalized]
 
   def isAvailable: Boolean
 
@@ -77,15 +78,6 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
     throw new RuntimeException(message)
   }
 
-  protected def normalizeTableName(tableIdent: TableIdentifierNormalized): String =
-    XDCatalogCommon.normalizeTableName(tableIdent, catalystConf)
-
-  protected def normalizeIdentifier(identifier: String): String =
-    XDCatalogCommon.normalizeIdentifier(identifier, catalystConf)
-
-  import XDCatalogCommon._
-  protected def normalizeTableIdentifier(tableIdent: TableIdentifier): TableIdentifierNormalized =
-    tableIdent.normalize(catalystConf)
 
 }
 

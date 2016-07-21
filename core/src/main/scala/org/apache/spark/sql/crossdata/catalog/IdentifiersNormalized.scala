@@ -42,3 +42,7 @@ case class IndexIdentifierNormalized(indexType: String, indexName: String) {
   def toIndexIdentifier: IndexIdentifier = IndexIdentifier(indexType, indexName)
   def asTableIdentifierNormalized: TableIdentifierNormalized = TableIdentifierNormalized(indexType,Option(indexName))
 }
+
+case class StringNormalized(normalizedString: String){
+  override def toString = normalizedString
+}

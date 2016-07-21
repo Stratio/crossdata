@@ -19,7 +19,7 @@ import com.stratio.crossdata.util.CacheInvalidator
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.catalog.TableIdentifierNormalized
+import org.apache.spark.sql.crossdata.catalog.{StringNormalized, TableIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 
@@ -72,5 +72,5 @@ class XDTemporaryCatalogWithInvalidation(
 
   override def catalystConf: CatalystConf = underlying.catalystConf
   override def isAvailable: Boolean = underlying.isAvailable
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifierNormalized] = underlying.allRelations(databaseName)
+  override def allRelations(databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = underlying.allRelations(databaseName)
 }

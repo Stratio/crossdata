@@ -19,7 +19,7 @@ import com.hazelcast.core.IMap
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.TableIdentifierNormalized
+import org.apache.spark.sql.crossdata.catalog.{StringNormalized, TableIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
@@ -30,24 +30,21 @@ class HazelcastCatalog(
                         private val views: IMap[TableIdentifierNormalized, String]
                       )(implicit val catalystConf: CatalystConf) extends XDTemporaryCatalog with Serializable {
 
-  import XDCatalogCommon._
 
-
-  override def relation(tableIdent: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
+  override def relation(tableIdent: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
     {
       Option(tables.get(tableIdent)) map (CreateRelationUtil.createLogicalRelation(sqlContext, _))
     } orElse {
       Option(views.get(tableIdent)) map (sqlContext.sql(_).logicalPlan)
     }
-  }
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifierNormalized] = {
+
+  override def allRelations(databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = {
     import scala.collection.JavaConversions._
-    val normalizedDBName = databaseName.map(normalizeIdentifier)
     val tableIdentSeq = (tables ++ views).keys.toSeq
-    normalizedDBName.map { dbName =>
+    databaseName.map { dbName =>
       tableIdentSeq.filter {
-        case TableIdentifierNormalized(_, Some(dIdent)) => dIdent == dbName
+        case TableIdentifierNormalized(_, Some(dIdent)) => dIdent == dbName.normalizedString
         case other => false
       }
     }.getOrElse(tableIdentSeq)

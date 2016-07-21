@@ -18,12 +18,11 @@ package org.apache.spark.sql.crossdata.catalog.temporary
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.CatalogConstants
+import org.apache.spark.sql.crossdata.catalog.{CatalogConstants, StringNormalized}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types._
-
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
 
 // TODO: WARNING It is only valid for HazelcastCatalog until we create the proper plan to make it generic. (null!!)
@@ -84,7 +83,7 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
     temporaryCatalog.saveTable(tableIdentifier1, null, Some(crossdataTable1))
     temporaryCatalog.saveTable(tableIdentifier2, null, Some(crossdataTable2))
 
-    val tables = temporaryCatalog.allRelations(Some(Database))
+    val tables = temporaryCatalog.allRelations(Some(StringNormalized(normalizeIdentifier(Database, conf))))
     tables should have length 1
 
     val tables2 = temporaryCatalog.allRelations()

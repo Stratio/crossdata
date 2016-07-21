@@ -41,21 +41,6 @@ implicit def asXDCatalog (catalog: Catalog): XDCatalog = catalog.asInstanceOf[XD
     def asTableIdentifier: TableIdentifier = TableIdentifier(indexType,Option(indexName))
   }
 
-  import XDCatalogCommon._
-
-  object CrossdataTable{
-
-    def apply(tableIdentifier: TableIdentifier, catalystConf: CatalystConf, schema: Option[StructType],
-              datasource: String, opts: Map[String, String], crossdataVersion: String): CrossdataTable =
-      new CrossdataTable(tableIdentifier.normalize(catalystConf), schema, datasource, Array.empty, opts)
-
-
-    def apply(tableIdentifier: TableIdentifier, catalystConf: CatalystConf, schema: Option[StructType],
-              datasource: String, partitionColumn: Array[String],
-              opts: Map[String, String], crossdataVersion: String): CrossdataTable =
-      new CrossdataTable(tableIdentifier.normalize(catalystConf), schema, datasource, partitionColumn, opts, crossdataVersion)
-  }
-
   case class CrossdataTable(tableIdentifier: TableIdentifierNormalized, schema: Option[StructType],
                             datasource: String, partitionColumn: Array[String] = Array.empty,
                             opts: Map[String, String] = Map.empty, crossdataVersion: String = crossdata.CrossdataVersion)

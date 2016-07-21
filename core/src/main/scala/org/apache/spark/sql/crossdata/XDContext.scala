@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.stratio.crossdata.connector.FunctionInventory
 import com.stratio.crossdata.utils.HdfsUtils
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.optimizer.Optimizer
@@ -49,7 +49,7 @@ import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{execution => sparkexecution, _}
+import org.apache.spark.sql.{DataFrame, Row, SQLConf, SQLContext, Strategy, execution => sparkexecution}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
@@ -88,7 +88,7 @@ class XDContext protected (@transient val sc: SparkContext,
     userConf.withFallback(config)
   }
 
-  catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
+  catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
 
 
   override protected[sql] lazy val conf: SQLConf =

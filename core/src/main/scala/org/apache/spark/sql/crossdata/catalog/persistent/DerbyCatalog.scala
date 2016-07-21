@@ -20,7 +20,7 @@ import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet}
 import com.stratio.crossdata.util.using
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.CrossdataVersion
-import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog._
 
 import scala.annotation.tailrec
 
@@ -406,7 +406,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
 
   override def isAvailable: Boolean = true
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifierNormalized] = synchronized {
+  override def allRelations(databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = synchronized {
     @tailrec
     def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifierNormalized] = Set.empty): Set[TableIdentifierNormalized] = {
       if (next) {
@@ -420,7 +420,7 @@ class DerbyCatalog(override val catalystConf: CatalystConf)
     }
 
     val statement = connection.createStatement
-    val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
+    val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='${dbName.normalizedString}'")
     val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $DB.$TableWithTableMetadata $dbFilter")
 
     getSequenceAux(resultSet, resultSet.next).toSeq
