@@ -24,36 +24,9 @@ import org.apache.spark.sql.crossdata.config.CoreConfig
 import scala.collection.JavaConversions._
 
 
-object XDSharedState {
-
-   implicit def sqlPropsToSQLConf(sparkSQLProps: Map[String, String]): SQLConf = {
-    val sqlConf = new SQLConf
-    sparkSQLProps.foreach { case (key, value) =>
-      sqlConf.setConfString(key, value)
-    }
-    sqlConf
-  }
-}
-
-class XDSharedState( @transient val sc: SparkContext,
-                     userConfig: Option[Config] = None, // TODO this is server config. Probably should be core => the server should remove the config prefix (config.spark.sql...)
+final class XDSharedState(
+                           @transient val sc: SparkContext,
+                     val sqlConf: SQLConf,
                      val externalCatalog: XDCatalogCommon,
                      val streamingCatalog: Option[XDStreamingCatalog]
-                     ) {
-
-  import XDSharedState._
-
-  lazy val sparkSQLProps: Map[String,String] ={
-    userConfig.map{ conf =>
-      conf.entrySet()
-        .map(e => (e.getKey, e.getValue.unwrapped().toString))
-        .toMap
-        .filterKeys(_.startsWith(CoreConfig.SparkSqlConfigPrefix))
-        .map(e => (e._1.replace("config.", ""), e._2))
-    }.getOrElse(Map.empty)
-  }
-
-  lazy val sqlConf: SQLConf = sparkSQLProps
-
-
-}
+                     )

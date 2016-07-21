@@ -28,7 +28,7 @@ import scala.util.Try
 @RunWith(classOf[JUnitRunner])
 class ZookeeperStreamingCatalogIT extends SharedXDContextTest with CatalogConstants with ZookeeperStreamingDefaultTestConstants {
 
-  override val catalogConfig: Option[Config] = {
+  override val coreConfig: Option[Config] = {
     val zkResourceConfig =
       Try(ConfigFactory.load("core-reference.conf").getConfig(CoreConfig.ParentConfigName)).toOption
 

@@ -26,6 +26,7 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, X
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.config.CoreConfig
+import org.apache.spark.sql.crossdata.config.CoreConfig._
 import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 
 import scala.collection.mutable
@@ -75,20 +76,16 @@ class BasicSessionProvider(
   override lazy val logger = Logger.getLogger(classOf[BasicSessionProvider])
 
   private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
+  private lazy val sqlConf: SQLConf = configToSparkSQL(userConfig, new SQLConf)
 
-  protected lazy val catalystConf: CatalystConf = {
-    import CoreConfig.CaseSensitive
-    val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
-    new SimpleCatalystConf(caseSensitive)
-  }
 
   @transient
-  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(catalystConf, catalogConfig)
+  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(sqlConf, catalogConfig)
 
   @transient
-  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(catalystConf, config)
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(sqlConf, config)
 
-  private val sharedState = new XDSharedState(sc, Option(userConfig), externalCatalog, streamingCatalog)
+  private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
 
   private val sessionIDToSQLProps: mutable.Map[SessionID, SQLConf] = mutable.Map.empty
   private val sessionIDToTempCatalog: mutable.Map[SessionID, XDTemporaryCatalog] = mutable.Map.empty
@@ -99,7 +96,7 @@ class BasicSessionProvider(
 
   override def newSession(sessionID: SessionID): Try[XDSession] =
     Try {
-      val tempCatalog = new HashmapCatalog(catalystConf)
+      val tempCatalog = new HashmapCatalog(sqlConf)
 
       sessionIDToTempCatalog.put(sessionID, tempCatalog)
       sessionIDToSQLProps.put(sessionID, sharedState.sqlConf)

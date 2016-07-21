@@ -51,7 +51,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   import XDCatalogCommon._
 
-  override implicit val conf: CatalystConf = xdContext.catalystConf
+  override implicit val conf: CatalystConf = xdContext.conf
 
   private val catalogs: Seq[XDCatalogCommon] = temporaryCatalogs ++: persistentCatalogs ++: streamingCatalogs.toSeq
 

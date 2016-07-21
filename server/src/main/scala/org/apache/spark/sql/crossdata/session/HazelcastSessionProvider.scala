@@ -21,12 +21,14 @@ import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
+import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.config.CoreConfig
+import org.apache.spark.sql.crossdata.config.CoreConfig._
 
 import scala.util.{Failure, Success, Try}
 
@@ -46,7 +48,6 @@ class HazelcastSessionProvider( sc: SparkContext,
                                 ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig { // TODO CoreConfig should not be a trait
 
   import HazelcastSessionProvider._
-  import XDSharedState._
 
   private val sessionsCache: collection.mutable.Map[SessionID, XDSession] =
     new collection.mutable.HashMap[SessionID, XDSession] with collection.mutable.SynchronizedMap[SessionID, XDSession]
@@ -64,22 +65,18 @@ class HazelcastSessionProvider( sc: SparkContext,
   override lazy val logger = Logger.getLogger(classOf[HazelcastSessionProvider])
 
   private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
-
-  protected lazy val catalystConf: CatalystConf = {
-    import CoreConfig.CaseSensitive
-    val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
-    new SimpleCatalystConf(caseSensitive)
-  }
+  
+  private lazy val sqlConf: SQLConf = configToSparkSQL(userConfig, new SQLConf)
 
   @transient
-  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(catalystConf, catalogConfig)
+  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(sqlConf, catalogConfig)
 
   @transient
-  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(catalystConf, config)
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(sqlConf, config)
 
 
 
-  private val sharedState = new XDSharedState(sc, Option(userConfig), externalCatalog, streamingCatalog)
+  private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
 
   protected def hInstanceConfig: HZConfig = {
     // TODO it should only use Config() which internally creates a xmlConfig and the group shouldn't be hardcoded
@@ -100,7 +97,7 @@ class HazelcastSessionProvider( sc: SparkContext,
   override def newSession(sessionID: SessionID): Try[XDSession] =
     Try {
       val tempCatalogs = sessionIDToTempCatalogs.newResource(sessionID)
-      val config = sessionIDToSQLProps.newResource(sessionID, Some(sharedState.sparkSQLProps))
+      val config = sessionIDToSQLProps.newResource(sessionID, Some(sharedState.sqlConf))
 
       val session = buildSession(sessionID, config, tempCatalogs)
       sessionsCache += sessionID -> session

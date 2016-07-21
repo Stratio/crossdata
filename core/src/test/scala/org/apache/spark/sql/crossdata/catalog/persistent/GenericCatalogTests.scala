@@ -231,7 +231,7 @@ trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
     xdContext.catalog.registerTable(tableIdentifier2, LogicalRelation(new MockBaseRelation))
     val tables = xdContext.catalog.getTables(None).toMap
 
-    if(xdContext.catalystConf.caseSensitiveAnalysis){
+    if(xdContext.conf.caseSensitiveAnalysis){
       tables(s"$Database.$TableName") shouldBe false
       tables(TableName) shouldBe true
     } else{
