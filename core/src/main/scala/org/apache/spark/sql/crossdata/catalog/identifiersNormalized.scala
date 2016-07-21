@@ -32,7 +32,6 @@ case class TableIdentifierNormalized(table: String, database: Option[String]) {
 
 private[sql] object TableIdentifierNormalized {
   def apply(tableName: String): TableIdentifierNormalized = new TableIdentifierNormalized(tableName)
-  def apply(tableIdentifier: TableIdentifier): TableIdentifierNormalized = new TableIdentifierNormalized(tableIdentifier.table, tableIdentifier.database)
 }
 
 case class IndexIdentifierNormalized(indexType: String, indexName: String) {
