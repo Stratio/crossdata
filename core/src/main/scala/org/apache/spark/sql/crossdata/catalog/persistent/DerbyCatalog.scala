@@ -20,7 +20,7 @@ import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet}
 import com.stratio.crossdata.util.using
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.CrossdataVersion
-import org.apache.spark.sql.crossdata.catalog._
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, StringNormalized, XDCatalog, persistent}
 
 import scala.annotation.tailrec
 
