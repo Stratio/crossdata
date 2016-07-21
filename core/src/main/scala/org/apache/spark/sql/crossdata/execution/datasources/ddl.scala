@@ -137,7 +137,7 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
         logInfo(s"Importing table ${tableId.unquotedString}")
         val optionsWithTable = inventoryRelation.generateConnectorOpts(table, opts)
         val identifier = TableIdentifier(table.tableName, table.database).normalize(sqlContext.conf)
-        val crossdataTable = CrossdataTable(identifier, table.schema, datasource, Array.empty[String], optionsWithTable)
+        val crossdataTable = CrossdataTable(identifier, table.schema, datasource, Array.empty, optionsWithTable)
         import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
         sqlContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
       }
