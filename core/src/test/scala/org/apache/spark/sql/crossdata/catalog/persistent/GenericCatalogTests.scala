@@ -26,7 +26,7 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
 
-
+//TODO: We should do the tests on CatalogChain, not in Catalogs directly. Or do the both, but not allow the direct invoke to a catalog from the API
 trait GenericCatalogTests extends SharedXDContextTest with CatalogConstants {
 
   def catalogName: String
