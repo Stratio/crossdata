@@ -17,7 +17,7 @@ package org.apache.spark.sql.crossdata
 
 import java.util.UUID
 
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
@@ -75,7 +75,7 @@ class BasicSessionProvider(
 
   override lazy val logger = Logger.getLogger(classOf[BasicSessionProvider])
 
-  private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
+  private lazy val catalogConfig = Try(config.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
   private lazy val sqlConf: SQLConf = configToSparkSQL(userConfig, new SQLConf)
 
 

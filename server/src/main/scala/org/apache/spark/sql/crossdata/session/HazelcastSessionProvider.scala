@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.session
 import com.hazelcast.config.{GroupConfig, XmlConfigBuilder, Config => HZConfig}
 import com.hazelcast.core.Hazelcast
 import com.stratio.crossdata.util.CacheInvalidator
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
@@ -64,7 +64,7 @@ class HazelcastSessionProvider( sc: SparkContext,
 
   override lazy val logger = Logger.getLogger(classOf[HazelcastSessionProvider])
 
-  private lazy val catalogConfig = config.getConfig(CoreConfig.CatalogConfigKey)
+  private lazy val catalogConfig = Try(config.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
 
   private lazy val sqlConf: SQLConf = configToSparkSQL(userConfig, new SQLConf)
 
