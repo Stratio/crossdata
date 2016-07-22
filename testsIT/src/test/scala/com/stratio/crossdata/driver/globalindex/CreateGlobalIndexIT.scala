@@ -17,9 +17,9 @@ package com.stratio.crossdata.driver.globalindex
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.IndexIdentifier
+import org.apache.spark.sql.crossdata.catalyst.execution.CreateGlobalIndex
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.apache.spark.sql.crossdata.execution.datasources.CreateGlobalIndex
 
 @RunWith(classOf[JUnitRunner])
 class CreateGlobalIndexIT extends MongoAndElasticWithSharedContext {

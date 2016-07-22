@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.execution.datasources
+package org.apache.spark.sql.crossdata.catalyst.parser
 
 import java.util.UUID
 
-import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalyst.execution._
+import org.apache.spark.sql.crossdata.catalyst.streaming._
 import org.apache.spark.sql.execution.datasources.DDLParser
 import org.apache.spark.sql.types._
 

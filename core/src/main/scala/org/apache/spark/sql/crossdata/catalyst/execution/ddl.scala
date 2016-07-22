@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.execution.datasources
+package org.apache.spark.sql.crossdata.catalyst.execution
 
 import java.sql.{Date, Timestamp}
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
-import com.typesafe.config.Config
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
 import org.apache.spark.sql.execution.RunnableCommand
@@ -33,7 +31,6 @@ import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.sources.{BaseRelation, HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.{StructType, _}
 
-import scala.annotation.tailrec
 import scala.language.implicitConversions
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}

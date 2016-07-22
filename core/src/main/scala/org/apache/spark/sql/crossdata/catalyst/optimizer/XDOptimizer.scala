@@ -25,8 +25,8 @@ import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.catalyst.rules.Rule
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataIndex
 import org.apache.spark.sql.crossdata.catalyst.ExtendedUnresolvedRelation
+import org.apache.spark.sql.crossdata.catalyst.execution.DDLUtils
 import org.apache.spark.sql.crossdata.catalyst.globalindex.IndexUtils
-import org.apache.spark.sql.crossdata.execution.datasources.DDLUtils
 import org.apache.spark.sql.crossdata.{XDContext, XDDataFrame}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources.BaseRelation

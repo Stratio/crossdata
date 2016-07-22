@@ -38,12 +38,13 @@ import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
-import org.apache.spark.sql.crossdata.catalyst.XDFunctionRegistry
+import org.apache.spark.sql.crossdata.catalyst.{ExtractNativeUDFs, NativeUDF, XDFunctionRegistry}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias, WrapRelationWithGlobalIndex}
+import org.apache.spark.sql.crossdata.catalyst.execution.ImportTablesUsingWithOptions
 import org.apache.spark.sql.crossdata.catalyst.optimizer.XDOptimizer
+import org.apache.spark.sql.crossdata.catalyst.parser.XDDdlParser
+import org.apache.spark.sql.crossdata.catalyst.planning.{ExtendedDataSourceStrategy, XDStrategies}
 import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.execution.datasources.{ExtendedDataSourceStrategy, ImportTablesUsingWithOptions, XDDdlParser}
-import org.apache.spark.sql.crossdata.execution.{ExtractNativeUDFs, NativeUDF, XDStrategies}
 import org.apache.spark.sql.crossdata.launcher.SparkJobLauncher
 import org.apache.spark.sql.crossdata.security.{Credentials, SecurityManager}
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
