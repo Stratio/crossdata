@@ -178,11 +178,10 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
   def testInvalidation(testDescription: String)(invalidationAction: XDSession => Unit) =
     it should testDescription in {
-      import HazelcastSessionProviderSpec._
 
       // Two hazelcast peers shall be created
-      val hazelcastSessionProviderA = new HazelcastSessionProviderDefaultConf(xdContext.sc, ConfigFactory.empty())
-      val hazelcastSessionProviderB = new HazelcastSessionProviderDefaultConf(xdContext.sc, ConfigFactory.empty())
+      val hazelcastSessionProviderA = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
+      val hazelcastSessionProviderB = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
 
       val sessionID = UUID.randomUUID()
 
@@ -219,17 +218,6 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     val optSession = hazelcastSessionProvider.newSession(uuid).toOption
     optSession shouldBe defined
     optSession.get
-  }
-
-}
-
-object HazelcastSessionProviderSpec {
-
-  class HazelcastSessionProviderDefaultConf(
-                                                  sc: SparkContext,
-                                                  userConfig: Config) extends HazelcastSessionProvider(sc, userConfig) {
-    
-
   }
 
 }
