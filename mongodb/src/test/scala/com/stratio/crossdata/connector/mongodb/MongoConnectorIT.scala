@@ -162,14 +162,11 @@ class MongoConnectorIT extends MongoWithSharedContext {
   it should "import all user collections" in {
     assumeEnvironmentIsUpAndRunning
 
-    def tableCountInHighschool: Long = sql("SHOW TABLES").count()
-    val initialLength = tableCountInHighschool
-
     //This crates a new collection in the database which will not be initially registered at the Spark
     val client = MongoClient(MongoHost, MongoPort)(Database)(UnregisteredCollection).insert(MongoDBObject("id" -> 1))
 
-    // TODO import tables should return the tables registered
-    sql(
+    val result =
+      sql(
       s"""
          |IMPORT TABLES
          |USING $SourceProvider
@@ -179,9 +176,13 @@ class MongoConnectorIT extends MongoWithSharedContext {
          |)
       """.stripMargin)
 
-    // TODO We need to create an unregister table
-    // TODO We have to modify the test when the new catalog is ready
-    tableCountInHighschool should be > initialLength
+    val imported = result.collect().exists{ row =>
+      val tableFound = row.getSeq(row.fieldIndex("tableIdentifier")) == Seq(Database, UnregisteredCollection)
+      val isIgnored = row.getBoolean(row.fieldIndex("ignored"))
+      tableFound && !isIgnored
+    }
+
+    imported shouldBe true
 
   }
 

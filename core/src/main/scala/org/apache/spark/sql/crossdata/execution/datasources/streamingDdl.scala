@@ -20,8 +20,7 @@ import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.config.StreamingConfig
 import org.apache.spark.sql.crossdata.launcher.SparkJobLauncher
 import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralQueryModel, EphemeralStatusModel}
@@ -29,11 +28,11 @@ import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
 
-import scala.util.{Failure, Success}
-
-// TODO avoid this ec??
-
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
+
+import XDCatalogCommon._
 
 /**
  * Ephemeral Table Functions
@@ -49,7 +48,7 @@ private[crossdata] case class DescribeEphemeralTable(tableIdent: TableIdentifier
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] =
-    sqlContext.catalog.getEphemeralTable(tableIdent.unquotedString)
+    sqlContext.catalog.getEphemeralTable(normalizeTableIdentifier(tableIdent, sqlContext.conf))
       .map(ephTable => Seq(Row(ephTable.toPrettyString)))
       .getOrElse(throw new RuntimeException(s"${tableIdent.unquotedString} doesn't exist"))
 
@@ -95,7 +94,7 @@ private[crossdata] case class CreateEphemeralTable(tableIdent: TableIdentifier,
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val ephTable = StreamingConfig.createEphemeralTableModel(tableIdent.unquotedString, opts, userSchema)
+    val ephTable = StreamingConfig.createEphemeralTableModel(normalizeTableIdentifier(tableIdent, sqlContext.conf), opts, userSchema)
     sqlContext.catalog.createEphemeralTable(ephTable) match {
       case Right(table) => Seq(Row(table.toPrettyString))
       case Left(message) => sys.error(message)
@@ -118,7 +117,7 @@ private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.dropEphemeralTable(tableIdent.unquotedString)
+    sqlContext.catalog.dropEphemeralTable(normalizeTableIdentifier(tableIdent, sqlContext.conf))
     Seq(Row(tableIdent.unquotedString))
   }
 }
@@ -159,7 +158,7 @@ private[crossdata] case class ShowEphemeralStatus(tableIdent: TableIdentifier) e
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.getEphemeralStatus(tableIdent.unquotedString)
+    sqlContext.catalog.getEphemeralStatus(normalizeTableIdentifier(tableIdent, sqlContext.conf))
       .map(ephStatus => Seq(Row(ephStatus.status.toString)))
       .getOrElse(sys.error(s"${tableIdent.unquotedString} status doesn't exist"))
   }

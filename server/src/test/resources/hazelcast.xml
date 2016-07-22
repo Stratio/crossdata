@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+~ Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
+~
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~
+~ http://www.apache.org/licenses/LICENSE-2.0
+~
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+~
+~ Modifications and adaptations - Copyright (C) 2015 Stratio (http://stratio.com)
+-->
+<!--
+    The default Hazelcast configuration. This is used when no hazelcast.xml is present.
+    Please see the schema for how to configure Hazelcast at https://hazelcast.com/schema/config/hazelcast-config-3.7.xsd
+    or the documentation at https://hazelcast.org/documentation/
+-->
+<hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.6.xsd"
+           xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <group>
+        <name>crossdata</name>
+        <password>crossdata</password>
+    </group>
+    <properties>
+        <property name="hazelcast.logging.type">sl4j</property>
+    </properties>
+    <network>
+        <join>
+            <multicast enabled="false">
+            </multicast>
+            <tcp-ip enabled="true">
+                <member>127.0.0.1</member>
+            </tcp-ip>
+        </join>
+        <ssl enabled="false">
+            <factory-class-name>
+                com.hazelcast.nio.ssl.BasicSSLContextFactory
+            </factory-class-name>
+            <properties>
+                <property name="keyStore">keyStore</property>
+                <property name="keyStorePassword">keyStorePassword</property>
+                <property name="keyManagerAlgorithm">SunX509</property>
+                <property name="trustManagerAlgorithm">SunX509</property>
+                <property name="protocol">TLS</property>
+            </properties>
+        </ssl>
+        <symmetric-encryption enabled="false">
+            <!--
+               encryption algorithm such as
+               DES/ECB/PKCS5Padding,
+               PBEWithMD5AndDES,
+               AES/CBC/PKCS5Padding,
+               Blowfish,
+               DESede
+            -->
+            <algorithm>PBEWithMD5AndDES</algorithm>
+            <!-- salt value to use when generating the secret key -->
+            <salt>thesalt</salt>
+            <!-- pass phrase to use when generating the secret key -->
+            <password>thepass</password>
+            <!-- iteration count to use when generating the secret key -->
+            <iteration-count>19</iteration-count>
+        </symmetric-encryption>
+    </network>
+    <map name="default">
+        <!--
+            Number of backups. If 1 is set as the backup-count for example,
+            then all entries of the map will be copied to another JVM for
+            fail-safety. 0 means no backup.
+        -->
+        <backup-count>1</backup-count>
+        <!--
+            Number of async backups. 0 means no backup.
+        -->
+        <async-backup-count>0</async-backup-count>
+        <!--
+			Maximum number of seconds for each entry to stay in the map. Entries that are
+			older than <time-to-live-seconds> and not updated for <time-to-live-seconds>
+			will get automatically evicted from the map.
+			Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0.
+		-->
+        <time-to-live-seconds>0</time-to-live-seconds>
+        <!--
+			Maximum number of seconds for each entry to stay idle in the map. Entries that are
+			idle(not touched) for more than <max-idle-seconds> will get
+			automatically evicted from the map. Entry is touched if get, put or containsKey is called.
+			Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0.
+		-->
+        <max-idle-seconds>0</max-idle-seconds>
+        <!--
+            It is possible to enable backup reads (read local backup entries) by setting the value of
+            the read-backup-data property to true. Its default value is false for strong consistency.
+        -->
+        <read-backup-data>false</read-backup-data>
+    </map>
+</hazelcast>

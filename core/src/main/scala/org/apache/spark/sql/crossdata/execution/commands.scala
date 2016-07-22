@@ -21,6 +21,7 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog
 import XDCatalog.CrossdataTable
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil.createLogicalRelation
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
@@ -48,9 +49,9 @@ private[crossdata] case class PersistDataSourceTable(
   override protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row] = {
 
 
-    val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
+    val tableIdentifier = crossdataTable.tableIdentifier
 
-    if (crossdataContext.catalog.tableExists(tableIdentifier) && !allowExisting)
+    if (crossdataContext.catalog.tableExists(tableIdentifier.toTableIdentifier) && !allowExisting)
       throw new AnalysisException(s"Table ${tableIdentifier.unquotedString} already exists")
     else
       crossdataContext.catalog.persistTable(crossdataTable, createLogicalRelation(crossdataContext, crossdataTable))
@@ -68,11 +69,12 @@ private[crossdata] case class RegisterDataSourceTable(
 
   override protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row] = {
 
-    val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
+    val tableIdentifier = crossdataTable.tableIdentifier.toTableIdentifier
 
     crossdataContext.catalog.registerTable(
       tableIdentifier,
-      createLogicalRelation(crossdataContext, crossdataTable), Some(crossdataTable)
+      createLogicalRelation(crossdataContext, crossdataTable),
+      Some(crossdataTable)
     )
     Seq.empty[Row]
   }
@@ -156,7 +158,9 @@ case class PersistSelectAsTable(
 
     if (createMetastoreTable) {
       val resolved = ResolvedDataSource(sqlContext, provider, partitionColumns, mode, options, df)
-      val crossdataTable = CrossdataTable(tableIdent.table, tableIdent.database, Some(resolved.relation.schema), provider, Array.empty[String], options)
+      import XDCatalogCommon._
+      val identifier = TableIdentifier(tableIdent.table, tableIdent.database).normalize(crossdataContext.conf)
+      val crossdataTable = CrossdataTable(identifier, Some(resolved.relation.schema), provider, Array.empty, options)
       crossdataContext.catalog.persistTable(crossdataTable, LogicalRelation(resolved.relation))
     }
 

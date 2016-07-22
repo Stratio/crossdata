@@ -19,6 +19,7 @@ import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStat
 
 private[crossdata] trait StreamingCatalogAPI {
 
+  // TODO change streaming API to TableIdentifiers
   /**
     * Ephemeral Table Functions
     */

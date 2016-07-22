@@ -126,7 +126,7 @@ case class CheckGlobalIndexInFilters(xdContext: XDContext) extends Rule[LogicalP
 
   private def buildIndexRequestLogicalPlan(condition: Expression, index: CrossdataIndex): LogicalPlan = {
 
-    val logicalRelation = xdContext.catalog.lookupRelation(index.indexIdentifier.asTableIdentifier) match {
+    val logicalRelation = xdContext.catalog.lookupRelation(index.indexIdentifier.asTableIdentifierNormalized.toTableIdentifier) match {
       case Subquery(_, logicalRelation @ LogicalRelation(_: BaseRelation, _)) => logicalRelation
     }
 

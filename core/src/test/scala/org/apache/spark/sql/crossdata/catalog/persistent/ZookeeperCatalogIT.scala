@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package org.apache.spark.sql.crossdata.catalog.persistent
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
+import org.apache.spark.sql.crossdata.catalog.CatalogConstants
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.junit.runner.RunWith
@@ -28,7 +29,7 @@ class ZookeeperCatalogIT extends {
   val catalogName = "Zookeeper"
 } with SharedXDContextTest with CatalogConstants with GenericCatalogTests with ZookeeperDefaultTestConstants{
 
-  override val catalogConfig : Option[Config] = {
+  override val coreConfig : Option[Config] = {
     val zkResourceConfig =
       Try(ConfigFactory.load("zookeeper-catalog.conf").getConfig(CoreConfig.ParentConfigName)).toOption
 
