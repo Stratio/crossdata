@@ -118,7 +118,7 @@ class HazelcastSQLConfSpec extends TestKit(ActorSystem("HZSessionConfigTest"))
   // Test plumbing
 
   // TODO: Extract common class providing this kind of tests plumbing
-  private def createHazelcastInstance: HazelcastInstance = Hazelcast.newHazelcastInstance(new Config())
+  private def createHazelcastInstance: HazelcastInstance = Hazelcast.newHazelcastInstance()
 
   var configManager: HazelcastSessionConfigManager = _
   var probedConfigManager: ProbedHazelcastSessionConfigManager = _

@@ -229,7 +229,7 @@ object HazelcastSessionProviderSpec {
                                                   sc: SparkContext,
                                                   userConfig: Config) extends HazelcastSessionProvider(sc, userConfig) {
 
-    override protected val hInstance = Hazelcast.newHazelcastInstance()
+    override protected val hInstance = Hazelcast.newHazelcastInstance(new HZConfig())
 
   }
 
