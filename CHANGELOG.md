@@ -6,6 +6,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 * Global index: use of inverted indices for speeding-up queries
 * Added coveralls badge
+* Downgrade to Elasticsearch 2.0.2
 
 ## 1.4.0 (July 2016)
 
