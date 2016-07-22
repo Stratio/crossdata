@@ -18,6 +18,7 @@ package org.apache.spark.sql.crossdata.session
 import java.util.UUID
 
 import com.hazelcast.config.{Config => HZConfig}
+import com.hazelcast.core.Hazelcast
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.catalyst.TableIdentifier
@@ -228,7 +229,7 @@ object HazelcastSessionProviderSpec {
                                                   sc: SparkContext,
                                                   userConfig: Config) extends HazelcastSessionProvider(sc, userConfig) {
 
-    override protected def hInstanceConfig: HZConfig = new HZConfig()
+    override protected val hInstance = Hazelcast.newHazelcastInstance()
 
   }
 

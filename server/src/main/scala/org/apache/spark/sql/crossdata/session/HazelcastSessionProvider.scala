@@ -15,7 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.session
 
-import com.hazelcast.config.{GroupConfig, XmlConfigBuilder, Config => HZConfig}
 import com.hazelcast.core.Hazelcast
 import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.{Config, ConfigFactory}
@@ -78,14 +77,7 @@ class HazelcastSessionProvider( sc: SparkContext,
 
   private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
 
-  protected def hInstanceConfig: HZConfig = {
-    // TODO it should only use Config() which internally creates a xmlConfig and the group shouldn't be hardcoded
-    // (blocked by CD)
-    val xmlConfig = new XmlConfigBuilder().build()
-    xmlConfig.setGroupConfig(new GroupConfig(scala.util.Properties.scalaPropOrElse("version.number", "unknown")))
-  }
-
-  private val hInstance = Hazelcast.newHazelcastInstance(hInstanceConfig)
+  protected val hInstance = Hazelcast.newHazelcastInstance()
 
   protected val sessionIDToSQLProps = new HazelcastSessionConfigManager(hInstance, sessionsCacheInvalidator)
   protected val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(
