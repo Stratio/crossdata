@@ -30,8 +30,7 @@ import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata
-import org.apache.spark.sql.crossdata.session.HazelcastSessionProvider
-import org.apache.spark.sql.crossdata.{BasicSessionProvider, XDSessionProvider}
+import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, HazelcastSessionProvider, XDSessionProvider}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._

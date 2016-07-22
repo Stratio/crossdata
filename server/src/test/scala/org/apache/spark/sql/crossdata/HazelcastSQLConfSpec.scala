@@ -20,12 +20,11 @@ import java.util.UUID
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
-import com.hazelcast.config.Config
 import com.hazelcast.core.{Hazelcast, HazelcastInstance}
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.HazelcastSQLConfSpec.{InvalidatedSession, ProbedHazelcastSessionConfigManager}
-import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.session.HazelcastSessionConfigManager
+import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 object HazelcastSQLConfSpec {

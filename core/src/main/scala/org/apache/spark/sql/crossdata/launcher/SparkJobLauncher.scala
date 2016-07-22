@@ -20,13 +20,13 @@ import java.util.UUID
 
 import com.google.common.io.BaseEncoding
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import com.stratio.crossdata.utils.HdfsUtils
+import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.{Config, ConfigRenderOptions}
 import org.apache.spark.launcher.SparkLauncher
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.config.CoreConfig._
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
 import org.apache.spark.sql.crossdata.config.{CoreConfig, StreamingConstants}
-import org.apache.spark.sql.crossdata.config.CoreConfig._
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
 import scala.collection.JavaConversions._

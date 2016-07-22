@@ -24,7 +24,7 @@ import com.stratio.crossdata.test.BaseXDTest
 import com.stratio.datasource.mongodb.config.MongodbConfig
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.crossdata.XDSession
-import org.apache.spark.sql.crossdata.XDSessionProvider._
+import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
 import org.scalatest.BeforeAndAfterAll
 
 import scala.util.Try

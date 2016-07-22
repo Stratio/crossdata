@@ -25,7 +25,7 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
-import org.apache.spark.sql.crossdata.{BasicSessionProvider, XDSession, XDSessionProvider}
+import org.apache.spark.sql.crossdata.XDSession
 import org.junit.runner.RunWith
 import org.scalatest.Entry
 import org.scalatest.junit.JUnitRunner

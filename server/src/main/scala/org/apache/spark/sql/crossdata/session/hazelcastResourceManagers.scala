@@ -21,34 +21,18 @@ import com.hazelcast.core.{HazelcastInstance, IMap, Message, MessageListener}
 import com.stratio.crossdata.util.CacheInvalidator
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
+import XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.TableIdentifierNormalized
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
-import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator
-import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator.{CacheInvalidationEvent, ResourceInvalidation, ResourceInvalidationForAllSessions}
+import HazelcastCacheInvalidator.{CacheInvalidationEvent, ResourceInvalidation, ResourceInvalidationForAllSessions}
 import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog, XDTemporaryCatalogWithInvalidation}
 import org.apache.spark.sql.crossdata.{HazelcastSQLConf, XDSQLConf}
 
 import scala.collection.mutable
 import scala.util.{Success, Try}
 
-trait SessionResourceManager[V] {
 
-  //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
-  def newResource(key: SessionID, from: Option[V]): V
-
-  def getResource(key: SessionID): Try[V]
-
-  def deleteSessionResource(key: SessionID): Try[Unit]
-
-  def clearAllSessionsResources(): Unit
-
-  def invalidateLocalCaches(key: SessionID): Unit
-
-  def invalidateAllLocalCaches: Unit
-
-}
 
 
 trait HazelcastSessionResourceManager[V] extends MessageListener[CacheInvalidationEvent]

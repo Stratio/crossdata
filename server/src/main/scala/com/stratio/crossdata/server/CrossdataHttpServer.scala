@@ -29,7 +29,7 @@ import akka.stream.scaladsl.FileIO
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope}
 import com.stratio.crossdata.server.actors.ResourceManagerActor
-import com.stratio.crossdata.utils.HdfsUtils
+import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext

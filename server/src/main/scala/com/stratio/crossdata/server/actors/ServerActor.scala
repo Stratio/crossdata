@@ -30,7 +30,7 @@ import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJo
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.XDSessionProvider
+import org.apache.spark.sql.crossdata.session.XDSessionProvider
 import org.apache.spark.sql.types.StructType
 
 import scala.concurrent.duration._

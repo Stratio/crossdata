@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog.persistent
+package org.apache.spark.sql.crossdata.session
 
 import com.hazelcast.core.ITopic
 import com.stratio.crossdata.util.CacheInvalidator
-import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
-import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator.{CacheInvalidationEvent, ResourceInvalidation}
+import org.apache.spark.sql.crossdata.session.HazelcastCacheInvalidator.{CacheInvalidationEvent, ResourceInvalidation}
+import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
 
 object HazelcastCacheInvalidator {
 
