@@ -15,9 +15,6 @@
  */
 package com.stratio.crossdata.server.actors
 
-/*
-  TODO: Fix this actor since adding session management has broken it
- */
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.cluster.Cluster

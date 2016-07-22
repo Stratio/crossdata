@@ -20,15 +20,15 @@ import java.util.UUID
 import com.hazelcast.core.{HazelcastInstance, IMap, Message, MessageListener}
 import com.stratio.crossdata.util.CacheInvalidator
 import org.apache.spark.sql.SQLConf
-import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.{HazelcastSQLConf, XDSQLConf}
+import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.TableIdentifierNormalized
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier, ViewIdentifierNormalized}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator
 import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator.{CacheInvalidationEvent, ResourceInvalidation, ResourceInvalidationForAllSessions}
 import org.apache.spark.sql.crossdata.catalog.temporary.{HashmapCatalog, HazelcastCatalog, XDTemporaryCatalogWithInvalidation}
+import org.apache.spark.sql.crossdata.{HazelcastSQLConf, XDSQLConf}
 
 import scala.collection.mutable
 import scala.util.{Success, Try}
@@ -109,17 +109,14 @@ class HazelcastSessionCatalogManager(
   // Returns the seq of XDTempCatalog for the new session
 
 
-  //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
+  //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID. IT SHOULDN'T HAPPEN BUT SOME PROTECTION IS STILL TODO
   override def newResource(key: SessionID, from: Option[Seq[XDTemporaryCatalog]] = None): Seq[XDTemporaryCatalog] = {
-
-    //NO! IT SHOULDN'T HAPPEN BUT SOME PROTECTION IS STILL TODO
 
     // AddMapCatalog for local/cache interaction
     val localCatalog = addNewMapCatalog(key)
 
     publishInvalidation(key)
 
-    // Add hazCatalog for detect metadata from other servers
     val (tableMap, tableMapUUID) = createRandomMap[TableIdentifierNormalized, CrossdataTable]
     val (viewMap, viewMapUUID) = createRandomMap[ViewIdentifierNormalized, String]
     val hazelcastCatalog = new HazelcastCatalog(tableMap, viewMap)(catalystConf)

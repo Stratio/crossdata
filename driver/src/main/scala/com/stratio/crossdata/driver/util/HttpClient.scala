@@ -19,10 +19,9 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.stream.ActorMaterializer
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, _}
-import akka.serialization.Serialization
+import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Source}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.config.DriverConf
@@ -53,11 +52,11 @@ class HttpClient(ctx: HttpClientContext) {
   def sendJarToHTTPServer(path: String, session: Session): Future[String] = {
     val serverHttp = config.getCrossdataServerHttp
     val sessionUUID = session.id
-    //val sessionActorRef = Serialization.serializedActorPath(session.clientRef)
+
     for (
       request <- createRequest(s"http://$serverHttp/upload/$sessionUUID", new File(path));
       response <- http.singleRequest(request) map {
-        case res@HttpResponse(code, _, _, _) if (code != StatusCodes.OK) =>
+        case res@HttpResponse(code, _, _, _) if code != StatusCodes.OK =>
           throw new RuntimeException(s"Request failed, response code: $code")
         case other => other
       };
