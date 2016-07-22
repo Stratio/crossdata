@@ -229,6 +229,7 @@
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-testkit_${scala.binary.version}</artifactId>
                 <version>${akka.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -387,6 +388,7 @@
                         <exclude>**/org/apache/spark/sql/crossdata/test/XDTestUtils.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/catalyst/analysis/AnalysisTest.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/acceptance/TestXDContext.scala</exclude>
+                        <exclude>**/hazelcast.xml</exclude>
                         <exclude>**/testAT/**</exclude>
                         <exclude>**/unix/**</exclude>
                     </excludes>

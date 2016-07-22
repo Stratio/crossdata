@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog.inmemory
 
-import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+package com.stratio.crossdata.driver.actor
 
-import scala.collection.mutable
-import scala.collection.mutable.HashMap
+object ServerClusterClientParameters {
 
-class HashmapCatalog(override val catalystConf: CatalystConf) extends MapCatalog(catalystConf) {
+  val ServerPath = "/user/crossdata-server"
 
-  override protected def newMap: mutable.Map[String, LogicalPlan] = new HashMap[String, LogicalPlan]
+  val ClientMonitorName = "client-monitor"
+  val ClientMonitorPath = s"/user/$ClientMonitorName"
 
-  override def isAvailable: Boolean = true
+  val RemoteClientName = "remote-client"
+
 }

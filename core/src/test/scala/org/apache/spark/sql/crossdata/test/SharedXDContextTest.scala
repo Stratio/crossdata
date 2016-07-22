@@ -37,7 +37,7 @@ trait SharedXDContextTest extends XDTestUtils {
    */
   private var _ctx: org.apache.spark.sql.crossdata.test.TestXDContext = null
 
-  val catalogConfig : Option[Config] = None
+  val coreConfig: Option[Config] = None
 
   /**
    * The [[TestXDContext]] to use for all tests in this suite.
@@ -52,7 +52,7 @@ trait SharedXDContextTest extends XDTestUtils {
    */
   protected override def beforeAll(): Unit = {
     if (_ctx == null) {
-      _ctx = catalogConfig.fold(new TestXDContext()) { cConfig =>
+      _ctx = coreConfig.fold(new TestXDContext()) { cConfig =>
         new TestXDContext(cConfig)
       }
     }
@@ -76,6 +76,7 @@ trait SharedXDContextTest extends XDTestUtils {
 
   /**
    * Converts $"col name" into an Column.
+ *
    * @since 1.3.0
    */
   // This must be duplicated here to preserve binary compatibility with Spark < 1.5.

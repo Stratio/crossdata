@@ -5,7 +5,10 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 ## 1.5.0 (upcoming)
 
 * Global index: use of inverted indices for speeding-up queries
-* Added coveralls badge
+* Session management
+* Multitenant architecture: isolate metadata (catalog and configuration)
+* Multiple driver's instances per JVM
+
 
 ## 1.4.0 (July 2016)
 

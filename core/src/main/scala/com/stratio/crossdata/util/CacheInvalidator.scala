@@ -13,14 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog
+package com.stratio.crossdata.util
 
-import org.apache.spark.sql.crossdata.test.SharedXDContextTest
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+trait CacheInvalidator {
 
+  def invalidateCache: Unit
 
-@RunWith(classOf[JUnitRunner])
-class DerbyCatalogIT extends {
-  val catalogName = "Derby"
-} with SharedXDContextTest with CatalogConstants with GenericCatalogTests
+}

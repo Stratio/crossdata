@@ -16,12 +16,12 @@
 package org.apache.spark.sql.crossdata.catalog.persistent
 
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog.{CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDPersistentCatalog
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataIndex, CrossdataTable, ViewIdentifierNormalized}
+import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized}
 import org.apache.spark.sql.crossdata.util.CreateRelationUtil
 
 import scala.collection.mutable
@@ -31,17 +31,16 @@ import scala.collection.mutable
   * PersistentCatalog aims to provide a mechanism to persist the
   * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
   */
-abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: CatalystConf) extends XDPersistentCatalog
+abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XDPersistentCatalog
   with Serializable {
 
   import CreateRelationUtil._
 
-  val tableCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
-  val viewCache: mutable.Map[TableIdentifier, LogicalPlan] = mutable.Map.empty
-  val indexCache: mutable.Map[TableIdentifier, CrossdataIndex] = mutable.Map.empty
+  val tableCache: mutable.Map[TableIdentifierNormalized, LogicalPlan] = mutable.Map.empty
+  val viewCache: mutable.Map[TableIdentifierNormalized, LogicalPlan] = mutable.Map.empty
+  val indexCache: mutable.Map[TableIdentifierNormalized, CrossdataIndex] = mutable.Map.empty
 
-  override final def relation(relationIdentifier: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
-    // TODO refactor (nonCachedLookup)
+  override final def relation(relationIdentifier: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
     (tableCache get relationIdentifier) orElse (viewCache get relationIdentifier) orElse {
       logInfo(s"PersistentCatalog: Looking up table ${relationIdentifier.unquotedString}")
       lookupTable(relationIdentifier) map { crossdataTable =>
@@ -56,23 +55,24 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
         viewCache.put(relationIdentifier, viewPlan)
         viewPlan
       }
-    } map (processAlias(relationIdentifier, _, alias))
+    }
 
-  override final def refreshCache(tableIdent: ViewIdentifier): Unit = tableCache clear
+  override final def refreshCache(tableIdent: ViewIdentifierNormalized): Unit = tableCache clear
 
-  override final def saveView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit = {
+  override final def saveView(viewIdentifier: ViewIdentifierNormalized, plan: LogicalPlan, sqlText: String)(implicit sqlContext:SQLContext): Unit = {
+    import XDCatalogCommon._
     def checkPlan(plan: LogicalPlan): Unit = {
       plan collect {
         case UnresolvedRelation(tIdent, _) => tIdent
       } foreach { tIdent =>
-        if (relation(tIdent).isEmpty) {
+        if (relation(tIdent.normalize(catalystConf))(sqlContext).isEmpty) {
           throw new RuntimeException("Views only can be created with a previously persisted table")
         }
       }
     }
 
     checkPlan(plan)
-    if (relation(viewIdentifier).isDefined) {
+    if (relation(viewIdentifier)(sqlContext).isDefined) {
       val msg = s"The view ${viewIdentifier.unquotedString} already exists"
       logWarning(msg)
       throw new UnsupportedOperationException(msg)
@@ -83,14 +83,14 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
     }
   }
 
-  override final def saveTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit = {
+  override final def saveTable(crossdataTable: CrossdataTable, table: LogicalPlan)(implicit sqlContext:SQLContext): Unit = {
 
-    val tableIdentifier = TableIdentifier(crossdataTable.tableName, crossdataTable.dbName)
-    if (relation(tableIdentifier).isDefined) {
+    val tableIdentifier = crossdataTable.tableIdentifier
+    if (relation(tableIdentifier)(sqlContext).isDefined) {
       logWarning(s"The table $tableIdentifier already exists")
       throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
     } else {
-      logInfo(s"Persisting table ${crossdataTable.tableName}")
+      logInfo(s"Persisting table ${crossdataTable.tableIdentifier.table}")
       tableCache.put(tableIdentifier, table)
       persistTableMetadata(crossdataTable.copy(schema = Option(table.schema)))
     }
@@ -111,32 +111,32 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
 
   }
 
-  override final def dropTable(tableIdentifier: TableIdentifier): Unit = {
+  override final def dropTable(tableIdentifier: TableIdentifierNormalized): Unit = {
     tableCache remove tableIdentifier
     dropTableMetadata(tableIdentifier)
     dropIndexesFromTable(tableIdentifier)
   }
 
-  override final def dropView(viewIdentifier: ViewIdentifier): Unit = {
+  override final def dropView(viewIdentifier: ViewIdentifierNormalized): Unit = {
     viewCache remove viewIdentifier
     dropViewMetadata(viewIdentifier)
   }
 
-  override final def dropIndexesFromTable(tableIdentifier: TableIdentifier): Unit = {
+  override final def dropIndexesFromTable(tableIdentifier: TableIdentifierNormalized): Unit = {
     indexCache remove tableIdentifier
     dropIndexMetadata(tableIdentifier)
   }
 
-  override final def dropIndex(indexIdentifer: IndexIdentifier): Unit = {
+  override final def dropIndex(indexIdentifer: IndexIdentifierNormalized): Unit = {
 
-    val found: Option[(TableIdentifier, CrossdataIndex)] = indexCache find { case(key,value) => value.indexIdentifier == indexIdentifer}
+    val found: Option[(TableIdentifierNormalized, CrossdataIndex)] = indexCache find { case(key,value) => value.indexIdentifier == indexIdentifer}
 
     if(found.isDefined) indexCache remove found.get._1
 
     dropIndexMetadata(indexIdentifer)
   }
 
-  override final def tableHasIndex(tableIdentifier: TableIdentifier): Boolean =
+  override final def tableHasIndex(tableIdentifier: TableIdentifierNormalized): Boolean =
     indexCache.contains(tableIdentifier)
 
 
@@ -160,21 +160,21 @@ abstract class PersistentCatalogWithCache(sqlContext: SQLContext, catalystConf: 
   //New Methods
 
 
-  def lookupView(viewIdentifier: ViewIdentifier): Option[String]
+  def lookupView(viewIdentifier: ViewIdentifierNormalized): Option[String]
 
   def persistTableMetadata(crossdataTable: CrossdataTable): Unit
 
-  def persistViewMetadata(tableIdentifier: TableIdentifier, sqlText: String): Unit
+  def persistViewMetadata(tableIdentifier: TableIdentifierNormalized, sqlText: String): Unit
 
   def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit
 
-  def dropTableMetadata(tableIdentifier: TableIdentifier): Unit
+  def dropTableMetadata(tableIdentifier: TableIdentifierNormalized): Unit
 
-  def dropViewMetadata(viewIdentifier: ViewIdentifier): Unit
+  def dropViewMetadata(viewIdentifier: ViewIdentifierNormalized): Unit
 
-  def dropIndexMetadata(indexIdentifier: IndexIdentifier): Unit
+  def dropIndexMetadata(indexIdentifier: IndexIdentifierNormalized): Unit
 
-  def dropIndexMetadata(tableIdentifier: TableIdentifier): Unit
+  def dropIndexMetadata(tableIdentifier: TableIdentifierNormalized): Unit
 
   def dropAllViewsMetadata(): Unit
 

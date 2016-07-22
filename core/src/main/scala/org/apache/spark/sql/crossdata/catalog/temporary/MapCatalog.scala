@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.catalog.inmemory
+package org.apache.spark.sql.crossdata.catalog.temporary
 
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
+import org.apache.spark.sql.crossdata.catalog.{StringNormalized, TableIdentifierNormalized}
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier, ViewIdentifierNormalized}
+import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDTemporaryCatalog}
 
 import scala.collection.mutable
 
@@ -31,49 +33,46 @@ abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog
   private val tables: mutable.Map[String, LogicalPlan] = newMap
   private val views: mutable.Map[String, LogicalPlan] = newMap
 
-  implicit def tableIdent2string(tident: TableIdentifier): String = normalizeTableName(tident)
+  implicit def tableIdent2string(tident: TableIdentifierNormalized): String = XDCatalogCommon.stringifyTableIdentifierNormalized(tident)
 
-  override def relation(tableIdent: TableIdentifier, alias: Option[String]): Option[LogicalPlan] =
-    (tables get tableIdent) orElse (views get tableIdent) map {
-      processAlias(tableIdent, _, alias)
-    }
+  override def relation(tableIdent: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
+    (tables get tableIdent) orElse (views get tableIdent)
 
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = {
-    val dbName = databaseName.map(normalizeIdentifier)
+  override def allRelations(databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = {
     (tables ++ views).toSeq collect {
-      case (k, _) if dbName.map(_ == k.split("\\.")(0)).getOrElse(true) =>
+      case (k, _) if databaseName.map(_.normalizedString == k.split("\\.")(0)).getOrElse(true) =>
         k.split("\\.") match {
-          case Array(db, tb) => TableIdentifier(tb, Option(db))
-          case Array(tb) => TableIdentifier(tb)
+          case Array(db, tb) => TableIdentifierNormalized(tb, Option(db))
+          case Array(tb) => TableIdentifierNormalized(tb)
         }
     }
   }
 
   override def saveTable(
-                          tableIdentifier: ViewIdentifier,
+                          tableIdentifier: TableIdentifierNormalized,
                           plan: LogicalPlan,
                           crossdataTable: Option[CrossdataTable] = None): Unit = {
 
     views get tableIdentifier foreach (_ => dropView(tableIdentifier))
-    tables put(normalizeTableName(tableIdentifier), plan)
+    tables put(tableIdentifier, plan)
   }
 
   override def saveView(
-                         viewIdentifier: ViewIdentifier,
+                         viewIdentifier: ViewIdentifierNormalized,
                          plan: LogicalPlan,
                          query: Option[String] = None): Unit = {
     tables get viewIdentifier foreach (_ => dropTable(viewIdentifier))
-    views put(normalizeTableName(viewIdentifier), plan)
+    views put(viewIdentifier, plan)
   }
 
-  override def dropView(viewIdentifier: ViewIdentifier): Unit =
-    views remove normalizeTableName(viewIdentifier)
+  override def dropView(viewIdentifier: ViewIdentifierNormalized): Unit =
+    views remove viewIdentifier
 
   override def dropAllViews(): Unit = views clear
 
   override def dropAllTables(): Unit = tables clear
 
-  override def dropTable(tableIdentifier: TableIdentifier): Unit =
-    tables remove normalizeTableName(tableIdentifier)
+  override def dropTable(tableIdentifier: TableIdentifierNormalized): Unit =
+    tables remove tableIdentifier
 
 }
