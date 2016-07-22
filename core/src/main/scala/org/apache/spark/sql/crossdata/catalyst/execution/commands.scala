@@ -61,6 +61,25 @@ private[crossdata] case class PersistDataSourceTable(
 
 }
 
+private[crossdata] case class RegisterDataSourceTable(
+                                                       protected val crossdataTable: CrossdataTable,
+                                                       protected val allowExisting: Boolean
+                                                     ) extends DoCatalogDataSourceTable {
+
+  override protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row] = {
+
+    val tableIdentifier = crossdataTable.tableIdentifier.toTableIdentifier
+
+    crossdataContext.catalog.registerTable(
+      tableIdentifier,
+      createLogicalRelation(crossdataContext, crossdataTable),
+      Some(crossdataTable)
+    )
+    Seq.empty[Row]
+  }
+
+}
+
 private[crossdata] case class PersistSelectAsTable(
                                  tableIdent: TableIdentifier,
                                  provider: String,
@@ -156,25 +175,5 @@ private[crossdata] case class PersistSelectAsTable(
       case (l, r) => (if (l == r) " " else "!") + l + (" " * ((maxLeftSize - l.size) + 3)) + r
     }
   }
-}
-
-
-private[crossdata] case class RegisterDataSourceTable(
-                                                       protected val crossdataTable: CrossdataTable,
-                                                       protected val allowExisting: Boolean
-                                                     ) extends DoCatalogDataSourceTable {
-
-  override protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row] = {
-
-    val tableIdentifier = crossdataTable.tableIdentifier.toTableIdentifier
-
-    crossdataContext.catalog.registerTable(
-      tableIdentifier,
-      createLogicalRelation(crossdataContext, crossdataTable),
-      Some(crossdataTable)
-    )
-    Seq.empty[Row]
-  }
-
 }
 
