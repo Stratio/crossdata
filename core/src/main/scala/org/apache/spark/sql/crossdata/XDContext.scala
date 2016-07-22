@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.stratio.crossdata.connector.FunctionInventory
 import com.stratio.crossdata.utils.HdfsUtils
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.optimizer.Optimizer
@@ -49,7 +49,7 @@ import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Row, SQLContext, Strategy, execution => sparkexecution}
+import org.apache.spark.sql.{DataFrame, Row, SQLConf, SQLContext, Strategy, execution => sparkexecution}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkContext}
 
@@ -73,6 +73,7 @@ class XDContext protected (@transient val sc: SparkContext,
     this(sc, Some(config))
 
   import XDContext._
+  import CoreConfig._
 
   /* TODO: Remove the config attributes from the companion object!!!
      This only works because you can only have a SQLContext per running instance
@@ -87,14 +88,14 @@ class XDContext protected (@transient val sc: SparkContext,
     userConf.withFallback(config)
   }
 
-  catalogConfig = xdConfig.getConfig(CoreConfig.CatalogConfigKey)
+  catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
 
-  // TODO Spark 2.0 replace with sqlConf (which extends CatalystConf)
-  protected lazy val catalystConf: CatalystConf = {
-    import CoreConfig.CaseSensitive
-    val caseSensitive: Boolean = catalogConfig.getBoolean(CaseSensitive)
-    new SimpleCatalystConf(caseSensitive)
-  }
+
+  override protected[sql] lazy val conf: SQLConf =
+    userConfig.map{ coreConfig =>
+      configToSparkSQL(coreConfig, new SQLConf)
+    }.getOrElse(new SQLConf)
+
 
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {
@@ -103,13 +104,13 @@ class XDContext protected (@transient val sc: SparkContext,
   }
 
   @transient
-  protected lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(catalystConf)
+  protected lazy val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(conf)
 
   @transient
-  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(catalystConf, catalogConfig)
+  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(conf, catalogConfig)
 
   @transient
-  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(catalystConf, xdConfig)
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(conf, xdConfig)
 
 
   @transient
@@ -145,7 +146,7 @@ class XDContext protected (@transient val sc: SparkContext,
 
   @transient
   override protected[sql] lazy val analyzer: Analyzer =
-    new Analyzer(catalog, functionRegistry, catalystConf) {
+    new Analyzer(catalog, functionRegistry, conf) {
       override val extendedResolutionRules =
         ResolveAggregateAlias ::
           ExtractPythonUDFs ::
@@ -193,7 +194,7 @@ class XDContext protected (@transient val sc: SparkContext,
     }
 
   @transient
-  override protected[sql] lazy val optimizer: Optimizer = XDOptimizer(self, catalystConf)
+  override protected[sql] lazy val optimizer: Optimizer = XDOptimizer(self, conf)
 
   @transient
   class XDPlanner extends sparkexecution.SparkPlanner(this) with XDStrategies {

@@ -18,6 +18,7 @@ package org.apache.spark.sql.crossdata.session
 import java.util.UUID
 
 import com.hazelcast.config.{Config => HZConfig}
+import com.hazelcast.core.Hazelcast
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.catalyst.TableIdentifier
@@ -92,7 +93,9 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
     val session = createNewSession(hazelcastSessionProvider, sessionId)
 
-    session.catalog.registerTable(tableIdent, LocalRelation(), Some(CrossdataTable("tab", None, None, "fakedatasource")))
+    import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
+
+    session.catalog.registerTable(tableIdent, LocalRelation(), Some(CrossdataTable(tableIdent.normalize(xdContext.catalog.conf), None, "fakedatasource")))
 
     hazelcastSessionProvider.session(sessionId) should matchPattern {
       case Success(s: XDSession) if Try(s.catalog.lookupRelation(tableIdent)).isSuccess =>
@@ -175,11 +178,10 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
   def testInvalidation(testDescription: String)(invalidationAction: XDSession => Unit) =
     it should testDescription in {
-      import HazelcastSessionProviderSpec._
 
       // Two hazelcast peers shall be created
-      val hazelcastSessionProviderA = new HazelcastSessionProviderDefaultConf(xdContext.sc, ConfigFactory.empty())
-      val hazelcastSessionProviderB = new HazelcastSessionProviderDefaultConf(xdContext.sc, ConfigFactory.empty())
+      val hazelcastSessionProviderA = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
+      val hazelcastSessionProviderB = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
 
       val sessionID = UUID.randomUUID()
 
@@ -216,18 +218,6 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     val optSession = hazelcastSessionProvider.newSession(uuid).toOption
     optSession shouldBe defined
     optSession.get
-  }
-
-}
-
-object HazelcastSessionProviderSpec {
-
-  class HazelcastSessionProviderDefaultConf(
-                                                  sc: SparkContext,
-                                                  userConfig: Config) extends HazelcastSessionProvider(sc, userConfig) {
-
-    override protected def hInstanceConfig: HZConfig = new HZConfig()
-
   }
 
 }

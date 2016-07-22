@@ -23,7 +23,8 @@ import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{HazelcastSQLConf, XDSQLConf}
 import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
-import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier}
+import org.apache.spark.sql.crossdata.catalog.TableIdentifierNormalized
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataTable, ViewIdentifier, ViewIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator
 import org.apache.spark.sql.crossdata.catalog.persistent.HazelcastCacheInvalidator.{CacheInvalidationEvent, ResourceInvalidation, ResourceInvalidationForAllSessions}
@@ -119,8 +120,8 @@ class HazelcastSessionCatalogManager(
     publishInvalidation(key)
 
     // Add hazCatalog for detect metadata from other servers
-    val (tableMap, tableMapUUID) = createRandomMap[TableIdentifier, CrossdataTable]
-    val (viewMap, viewMapUUID) = createRandomMap[ViewIdentifier, String]
+    val (tableMap, tableMapUUID) = createRandomMap[TableIdentifierNormalized, CrossdataTable]
+    val (viewMap, viewMapUUID) = createRandomMap[ViewIdentifierNormalized, String]
     val hazelcastCatalog = new HazelcastCatalog(tableMap, viewMap)(catalystConf)
     sessionIDToTableViewID.set(key, (tableMapUUID, viewMapUUID))
 
@@ -130,8 +131,8 @@ class HazelcastSessionCatalogManager(
   override def getResource(key: SessionID): Try[Seq[XDTemporaryCatalog]] =
     for {
       (tableUUID, viewUUID) <- checkNotNull(sessionIDToTableViewID.get(key))
-      hazelcastTables <- checkNotNull(hInstance.getMap[TableIdentifier, CrossdataTable](tableUUID.toString))
-      hazelcastViews <- checkNotNull(hInstance.getMap[ViewIdentifier, String](viewUUID.toString))
+      hazelcastTables <- checkNotNull(hInstance.getMap[TableIdentifierNormalized, CrossdataTable](tableUUID.toString))
+      hazelcastViews <- checkNotNull(hInstance.getMap[ViewIdentifierNormalized, String](viewUUID.toString))
     } yield {
       val hazelcastCatalog = new HazelcastCatalog(hazelcastTables, hazelcastViews)(catalystConf)
       val mapCatalog = sessionIDToMapCatalog.getOrElse(key, addNewMapCatalog(key)) // local catalog could not exist

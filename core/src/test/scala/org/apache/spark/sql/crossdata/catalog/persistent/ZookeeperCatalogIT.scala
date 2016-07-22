@@ -29,7 +29,7 @@ class ZookeeperCatalogIT extends {
   val catalogName = "Zookeeper"
 } with SharedXDContextTest with CatalogConstants with GenericCatalogTests with ZookeeperDefaultTestConstants{
 
-  override val catalogConfig : Option[Config] = {
+  override val coreConfig : Option[Config] = {
     val zkResourceConfig =
       Try(ConfigFactory.load("zookeeper-catalog.conf").getConfig(CoreConfig.ParentConfigName)).toOption
 

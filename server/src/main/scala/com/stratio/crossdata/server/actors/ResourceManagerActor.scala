@@ -91,7 +91,7 @@ class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
             sender ! ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
         }
 
-        //sessionProvider.sc.addJar(addJarCommand.path)//sessionProvider.sc.addJar(addJarCommand.path, addJarCommand.toClassPath) // TODO addJar should not affect other sessions // add to runtime within the sc
+        // TODO addJar should not affect other sessions
         sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
       } else {
         sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exist or is not a hdfs file", Some(new Exception("File doesn't exist or is not a hdfs file"))))

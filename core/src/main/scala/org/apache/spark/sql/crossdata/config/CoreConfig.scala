@@ -20,6 +20,7 @@ import java.io.File
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.Logging
+import org.apache.spark.sql.SQLConf
 
 import scala.util.Try
 
@@ -35,7 +36,6 @@ object CoreConfig {
   val JarsRepo = "jars"
   val HdfsKey = "hdfs"
 
-  val CaseSensitive = "caseSensitive"
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog"
   val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
   val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.persistent.ZookeeperCatalog"
@@ -58,6 +58,30 @@ object CoreConfig {
   val SecuritySessionConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$SessionConfigKey"
 
   val SparkSqlConfigPrefix = "config.spark.sql" //WARNING!! XDServer is using this path to read its parameters
+
+
+  // WARNING: It only detects paths starting with "config.spark.sql"
+  def configToSparkSQL(config: Config, defaultSqlConf: SQLConf = new SQLConf): SQLConf = {
+
+    import scala.collection.JavaConversions._
+
+    val sparkSQLProps: Map[String,String] =
+      config.entrySet()
+        .map(e => (e.getKey, e.getValue.unwrapped().toString))
+        .toMap
+        .filterKeys(_.startsWith(CoreConfig.SparkSqlConfigPrefix))
+        .map(e => (e._1.replace("config.", ""), e._2))
+
+
+    def sqlPropsToSQLConf(sparkSQLProps: Map[String, String], sqlConf: SQLConf): SQLConf = {
+      sparkSQLProps.foreach { case (key, value) =>
+        sqlConf.setConfString(key, value)
+      }
+      sqlConf
+    }
+
+    sqlPropsToSQLConf(sparkSQLProps, defaultSqlConf)
+  }
 }
 
 trait CoreConfig extends Logging {

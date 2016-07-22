@@ -19,7 +19,8 @@ import com.typesafe.config.Config
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDStreamingCatalog
+import org.apache.spark.sql.crossdata.catalog.{StringNormalized, TableIdentifierNormalized}
+import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDStreamingCatalog}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.daos.impl._
 import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
@@ -41,8 +42,9 @@ class ZookeeperStreamingCatalog(val catalystConf: CatalystConf, serverConfig: Co
     new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
 
 
-  override def relation(tableIdent: TableIdentifier)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
-    val tableIdentifier: String = normalizeTableName(tableIdent)
+  override def relation(tableIdent: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
+    import XDCatalogCommon._
+    val tableIdentifier: String = stringifyTableIdentifierNormalized(tableIdent)
     if (futurize(existsEphemeralTable(tableIdentifier)))
       Some(StreamingRelation(tableIdentifier))
     else
@@ -53,7 +55,7 @@ class ZookeeperStreamingCatalog(val catalystConf: CatalystConf, serverConfig: Co
   override def isAvailable: Boolean = true
 
   // TODO It must not return the relations until the catalog can distinguish between real/ephemeral tables
-  override def allRelations(databaseName: Option[String]): Seq[TableIdentifier] = Seq.empty
+  override def allRelations(databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = Seq.empty
 
   private def futurize[P](operation: => P): P =
     Await.result(Future(operation), 5 seconds)

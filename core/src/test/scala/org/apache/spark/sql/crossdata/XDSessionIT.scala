@@ -24,6 +24,7 @@ import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.execution.PersistDataSourceTable
+import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 import org.apache.spark.sql.execution.ExecutedCommand
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLConf, SaveMode}
@@ -57,7 +58,7 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
       }
 
       new XDSession(
-        new XDSharedState(_sparkContext, Option(coreConfig), new DerbyCatalog(sqlConf), None),
+        new XDSharedState(_sparkContext,sqlConf, new DerbyCatalog(sqlConf), None),
         new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
       )
     }
@@ -184,7 +185,7 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
   private def createNewDefaultSession: XDSession = {
       val sqlConf = new SQLConf
       new XDSession(
-        new XDSharedState(_sparkContext, None, new DerbyCatalog(sqlConf), None),
+        new XDSharedState(_sparkContext, sqlConf, new DerbyCatalog(sqlConf), None),
         new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
       )
     }

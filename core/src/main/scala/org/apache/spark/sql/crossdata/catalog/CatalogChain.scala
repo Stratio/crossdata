@@ -51,12 +51,19 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   import XDCatalogCommon._
 
-  override val conf: CatalystConf = xdContext.conf
+  override implicit val conf: CatalystConf = xdContext.conf
 
   private val catalogs: Seq[XDCatalogCommon] = temporaryCatalogs ++: persistentCatalogs ++: streamingCatalogs.toSeq
 
-  private implicit def crossdataTable2tableIdentifier(xdTable: CrossdataTable): TableIdentifier =
-    TableIdentifier(xdTable.tableName, xdTable.dbName)
+
+  private implicit def crossdataTable2tableIdentifier(xdTable: CrossdataTable): TableIdentifierNormalized =
+    xdTable.tableIdentifier
+
+  private def normalize(tableIdentifier: TableIdentifier): TableIdentifierNormalized =
+    tableIdentifier.normalize
+
+  private def normalize(indexIdentifier: IndexIdentifier): IndexIdentifierNormalized =
+    indexIdentifier.normalize
 
   /**
     * Apply the lookup function to each underlying catalog until a [[LogicalPlan]] is found. If the table is found in a
@@ -66,7 +73,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     val (relationOpt, previousCatalogs) = takeUntilRelationFound(lookup, temporaryCatalogs)
 
     if (relationOpt.isDefined) {
-      previousCatalogs.foreach(_.saveTable(tableIdentifier, relationOpt.get))
+      previousCatalogs.foreach(_.saveTable(normalize(tableIdentifier), relationOpt.get))
       relationOpt
     } else {
       (persistentCatalogs ++: streamingCatalogs.toSeq).view map lookup collectFirst {
@@ -104,19 +111,18 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   /**
    * TemporaryCatalog
    */
-
   override def registerView(viewIdentifier: ViewIdentifier, logicalPlan: LogicalPlan, sql: Option[String]): Unit =
-    temporaryCatalogs.foreach(_.saveView(viewIdentifier, logicalPlan, sql))
+    temporaryCatalogs.foreach(_.saveView(normalize(viewIdentifier), logicalPlan, sql))
 
   // TODO throw an exception if there is no temp catalogs! Review CatalogChain
-  override def registerTable(tableIdent: ViewIdentifier, plan: LogicalPlan, crossdataTable: Option[CrossdataTable]): Unit =
-    temporaryCatalogs.foreach(_.saveTable(tableIdent, plan, crossdataTable))
+  override def registerTable(tableIdent: TableIdentifier, plan: LogicalPlan, crossdataTable: Option[CrossdataTable]): Unit =
+    temporaryCatalogs.foreach(_.saveTable(normalize(tableIdent), plan, crossdataTable))
 
   override def unregisterView(viewIdentifier: ViewIdentifier): Unit =
-    temporaryCatalogs.foreach(_.dropView(viewIdentifier))
+    temporaryCatalogs.foreach(_.dropView(normalize(viewIdentifier)))
 
   override def unregisterTable(tableIdent: TableIdentifier): Unit =
-    temporaryCatalogs.foreach(_.dropTable(tableIdent))
+    temporaryCatalogs.foreach(_.dropTable(normalize(tableIdent)))
 
   override def unregisterAllTables(): Unit =
     temporaryCatalogs.foreach(_.dropAllTables())
@@ -127,7 +133,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
    */
 
   private def lookupRelationOpt(tableIdent: TableIdentifier): Option[LogicalPlan] =
-    chainedLookup(_.relation(tableIdent), tableIdent)
+    chainedLookup(_.relation(normalize(tableIdent)), tableIdent)
 
   override def lookupRelation(tableIdent: TableIdentifier, alias: Option[String]): LogicalPlan =
     lookupRelationOpt(tableIdent) map { processAlias(tableIdent, _, alias)(conf)} getOrElse {
@@ -142,7 +148,7 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
     def getRelations(catalogSeq: Seq[XDCatalogCommon], isTemporary: Boolean): Seq[(String, Boolean)] = {
       catalogSeq.flatMap { cat =>
-        cat.allRelations(databaseName).map(normalizeTableName(_, conf) -> isTemporary)
+        cat.allRelations(databaseName.map( dbn => StringNormalized(XDCatalogCommon.normalizeIdentifier(dbn, conf)))).map(stringifyTableIdentifierNormalized(_) -> isTemporary)
       }
     }
     getRelations(temporaryCatalogs, isTemporary = true) ++ getRelations(persistentCatalogs, isTemporary = false)
@@ -160,11 +166,11 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   override def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit =
     persistentCatalogs.foreach(_.saveTable(crossdataTable, table))
 
-  override def persistView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit =
-    persistentCatalogs.foreach(_.saveView(tableIdentifier, plan, sqlText))
+  override def persistView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit =
+    persistentCatalogs.foreach(_.saveView(normalize(viewIdentifier), plan, sqlText))
 
   override def persistIndex(crossdataIndex: CrossdataIndex): Unit =
-    if (tableMetadata(crossdataIndex.tableIdentifier).isEmpty) {
+    if (tableMetadata(crossdataIndex.tableIdentifier.toTableIdentifier).isEmpty) {
       throw new RuntimeException(s"Cannot create the index. Table ${crossdataIndex.tableIdentifier} doesn't exist or is temporary")
     } else {
       persistentCatalogs.foreach(_.saveIndex(crossdataIndex))
@@ -177,11 +183,11 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     logInfo(s"Deleting table $strTable from catalog")
 
     indexMetadataByTableIdentifier(tableIdentifier) foreach { index =>
-      dropIndex(index.indexIdentifier)
+      dropIndex(index.indexIdentifier.toIndexIdentifier)
     }
 
-    temporaryCatalogs foreach (_.dropTable(tableIdentifier))
-    persistentCatalogs foreach (_.dropTable(tableIdentifier))
+    temporaryCatalogs foreach (_.dropTable(normalize(tableIdentifier)))
+    persistentCatalogs foreach (_.dropTable(normalize(tableIdentifier)))
   }
 
   override def dropAllTables(): Unit = {
@@ -195,8 +201,8 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     val strView = viewIdentifier.unquotedString
     if (lookupRelationOpt(viewIdentifier).isEmpty) throw new RuntimeException(s"View $strView can't be deleted because it doesn't exist")
     logInfo(s"Deleting view ${viewIdentifier.unquotedString} from catalog")
-    temporaryCatalogs foreach (_.dropView(viewIdentifier))
-    persistentCatalogs foreach (_.dropView(viewIdentifier))
+    temporaryCatalogs foreach (_.dropView(normalize(viewIdentifier)))
+    persistentCatalogs foreach (_.dropView(normalize(viewIdentifier)))
   }
 
   override def dropAllViews(): Unit = {
@@ -214,14 +220,14 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     if(tableExists(indexIdentifier.asTableIdentifier))
       dropTable(indexIdentifier.asTableIdentifier)
 
-    persistentCatalogs foreach(catalog => Try(catalog.dropIndex(indexIdentifier)))
+    persistentCatalogs foreach(catalog => Try(catalog.dropIndex(indexIdentifier.normalize)))
   }
 
-  override def indexMetadata(tableIdentifier: IndexIdentifier): Option[CrossdataIndex]=
-    persistentChainedLookup(_.lookupIndex(tableIdentifier))
+  override def indexMetadata(indexIdentifier: IndexIdentifier): Option[CrossdataIndex]=
+    persistentChainedLookup(_.lookupIndex(indexIdentifier.normalize))
 
   override def indexMetadataByTableIdentifier(tableIdentifier: TableIdentifier):Option[CrossdataIndex]=
-    persistentCatalogs.view map (_.lookupIndexByTableIdentifier(tableIdentifier)) collectFirst {
+    persistentCatalogs.view map (_.lookupIndexByTableIdentifier(normalize(tableIdentifier))) collectFirst {
       case Some(index) =>index
     }
 
@@ -231,10 +237,10 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
   }
 
   override def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable] =
-    persistentChainedLookup(_.lookupTable(tableIdentifier))
+    persistentChainedLookup(_.lookupTable(normalize(tableIdentifier)))
 
   override def refreshTable(tableIdent: TableIdentifier): Unit =
-    persistentCatalogs.foreach(_.refreshCache(tableIdent))
+    persistentCatalogs.foreach(_.refreshCache(normalize(tableIdent)))
 
   /**
    * StreamingCatalog

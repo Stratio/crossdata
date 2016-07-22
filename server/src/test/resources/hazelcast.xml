@@ -32,6 +32,13 @@
         <property name="hazelcast.logging.type">sl4j</property>
     </properties>
     <network>
+        <join>
+            <multicast enabled="false">
+            </multicast>
+            <tcp-ip enabled="true">
+                <member>127.0.0.1</member>
+            </tcp-ip>
+        </join>
         <ssl enabled="false">
             <factory-class-name>
                 com.hazelcast.nio.ssl.BasicSSLContextFactory

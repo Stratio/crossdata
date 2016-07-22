@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.session
 import java.util.UUID
 
 import com.typesafe.config.ConfigFactory
-import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
 import org.apache.spark.sql.crossdata.catalog.CatalogChain
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
@@ -31,11 +31,14 @@ import org.scalatest.Entry
 import org.scalatest.junit.JUnitRunner
 
 import scala.util.{Success, Try}
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
 
 @RunWith(classOf[JUnitRunner])
 class BasicSessionProviderSpec extends SharedXDContextTest {
 
   val SparkSqlConfigString = "config.spark.sql.inMemoryColumnarStorage.batchSize=5000"
+
+  implicit lazy val conf: CatalystConf = xdContext.catalog.conf
 
 
   "BasicSessionProvider" should "provides new sessions whose properties are initialized properly" in {
@@ -86,7 +89,7 @@ class BasicSessionProviderSpec extends SharedXDContextTest {
 
     val session = createNewSession(basicSessionProvider, sessionId)
 
-    session.catalog.registerTable(tableIdent, LocalRelation(), Some(CrossdataTable("tab", None, None, "fakedatasource")))
+    session.catalog.registerTable(tableIdent, LocalRelation(), Some(CrossdataTable(tableIdent.normalize, None, "fakedatasource")))
 
     basicSessionProvider.session(sessionId) should matchPattern {
       case Success(s: XDSession) if Try(s.catalog.lookupRelation(tableIdent)).isSuccess =>
