@@ -176,7 +176,6 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
       persistentCatalogs.foreach(_.saveIndex(crossdataIndex))
     }
 
-
   override def dropTable(tableIdentifier: TableIdentifier): Unit = {
     val strTable = tableIdentifier.unquotedString
     if (!tableExists(tableIdentifier)) throw new RuntimeException(s"Table $strTable can't be deleted because it doesn't exist")

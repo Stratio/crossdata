@@ -23,6 +23,7 @@ import org.apache.spark.sql.crossdata.catalog.temporary.MapCatalog
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, CatalogConstants, XDCatalog}
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.SimpleLogicalPlan
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
 

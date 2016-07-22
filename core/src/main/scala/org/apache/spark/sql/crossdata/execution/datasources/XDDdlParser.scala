@@ -69,6 +69,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     createTable | describeTable | refreshTable | importStart | dropTable | dropExternalTable |
       createView | createExternalTable | dropView | addJar | streamingSentences | insertIntoTable | addApp | executeApp | createGlobalIndex
 
+  // TODO move to StreamingDdlParser
   protected lazy val streamingSentences: Parser[LogicalPlan] =
     describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropAllEphemeralQueries  | dropAllEphemeralTables |
       showEphemeralStatus | showEphemeralStatuses | startProcess | stopProcess |

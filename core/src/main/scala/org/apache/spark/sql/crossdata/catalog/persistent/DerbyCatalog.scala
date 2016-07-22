@@ -23,6 +23,7 @@ import org.apache.spark.sql.crossdata.CrossdataVersion
 import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, StringNormalized, XDCatalog, persistent}
 
 import scala.annotation.tailrec
+import scala.util.Try
 
 // TODO refactor SQL catalog implementations
 object DerbyCatalog {
