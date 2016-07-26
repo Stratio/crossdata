@@ -13,15 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.execution.datasources
+package org.apache.spark.sql.crossdata.session
 
-import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.plans.logical.LeafNode
+import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
 
-case class StreamingRelation(ephemeralTableName: String) extends LeafNode {
-  override def output: Seq[Attribute] = Seq.empty
+import scala.util.Try
 
-  override def productElement(n: Int): Any = throw new IndexOutOfBoundsException
+trait SessionResourceManager[V] {
 
-  override def productArity: Int = 0
+  //NOTE: THIS METHOD SHOULD NEVER BE CALLED TWICE WITH THE SAME ID
+  def newResource(key: SessionID, from: Option[V]): V
+
+  def getResource(key: SessionID): Try[V]
+
+  def deleteSessionResource(key: SessionID): Try[Unit]
+
+  def clearAllSessionsResources(): Unit
+
+  def invalidateLocalCaches(key: SessionID): Unit
+
+  def invalidateAllLocalCaches: Unit
+
 }

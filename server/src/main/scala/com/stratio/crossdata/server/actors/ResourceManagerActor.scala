@@ -15,9 +15,6 @@
  */
 package com.stratio.crossdata.server.actors
 
-/*
-  TODO: Fix this actor since adding session management has broken it
- */
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.cluster.Cluster
@@ -29,7 +26,7 @@ import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.server.actors.ServerActor.JobId
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.XDSessionProvider
+import org.apache.spark.sql.crossdata.session.XDSessionProvider
 import org.apache.spark.sql.types.StructType
 
 import scala.util.{Failure, Success}

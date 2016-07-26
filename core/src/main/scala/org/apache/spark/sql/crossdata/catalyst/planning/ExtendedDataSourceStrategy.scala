@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.execution.datasources
+package org.apache.spark.sql.crossdata.catalyst.planning
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeFunctionExecutor
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.{InternalRow, expressions}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
-import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.crossdata.execution.NativeUDF
-import org.apache.spark.sql.{Strategy, execution, _}
+import org.apache.spark.sql.catalyst.{InternalRow, expressions}
+import org.apache.spark.sql.crossdata.catalyst.NativeUDF
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.Filter
+import org.apache.spark.sql.{Strategy, execution, _}
 
 private[sql] object ExtendedDataSourceStrategy extends Strategy with SparkLoggerComponent {
 

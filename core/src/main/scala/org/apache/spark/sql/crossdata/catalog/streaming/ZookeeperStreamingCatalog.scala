@@ -21,9 +21,9 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.catalog.{StringNormalized, TableIdentifierNormalized}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDStreamingCatalog}
+import org.apache.spark.sql.crossdata.catalyst.streaming.StreamingRelation
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.daos.impl._
-import org.apache.spark.sql.crossdata.execution.datasources.StreamingRelation
 import org.apache.spark.sql.crossdata.models._
 
 import scala.concurrent.ExecutionContext.Implicits.global

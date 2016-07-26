@@ -22,7 +22,7 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.hazelcast.config.Config
 import com.hazelcast.core.{Hazelcast, HazelcastInstance}
 import org.apache.spark.sql.catalyst.EmptyConf
-import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
+import XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 import org.apache.spark.sql.crossdata.session.HazelcastSessionCatalogManagerSpec.{InvalidatedSession, ProbedHazelcastSessionCatalogManager}
 import org.scalatest.{BeforeAndAfterAll, WordSpecLike}

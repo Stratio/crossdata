@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.utils
+package com.stratio.crossdata.util
 
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 

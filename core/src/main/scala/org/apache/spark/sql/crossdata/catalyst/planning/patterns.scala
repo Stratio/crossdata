@@ -26,7 +26,7 @@ import org.apache.spark.sql.catalyst.plans.logical.Aggregate
 import org.apache.spark.sql.catalyst.plans.logical.Filter
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.plans.logical.Project
-import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
+import org.apache.spark.sql.crossdata.catalyst.EvaluateNativeUDF
 
 
 object ExtendedPhysicalOperation extends PredicateHelper {

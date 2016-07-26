@@ -22,7 +22,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
-import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
+import XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils

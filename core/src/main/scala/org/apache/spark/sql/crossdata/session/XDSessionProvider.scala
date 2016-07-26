@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata
+package org.apache.spark.sql.crossdata.session
 
 import java.util.UUID
 
@@ -21,13 +21,12 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.crossdata.{XDSQLConf, XDSession}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.config.CoreConfig._
-import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}

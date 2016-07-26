@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.execution
+package org.apache.spark.sql.crossdata.catalyst.execution
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.EliminateSubQueries
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.XDCatalog
-import XDCatalog.CrossdataTable
+import org.apache.spark.sql._
+import org.apache.spark.sql.crossdata.catalog.XDCatalog.CrossdataTable
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
-import org.apache.spark.sql.crossdata.util.CreateRelationUtil.createLogicalRelation
+import org.apache.spark.sql.crossdata.util.CreateRelationUtil._
 import org.apache.spark.sql.execution.RunnableCommand
 import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedDataSource}
 import org.apache.spark.sql.sources.{HadoopFsRelation, InsertableRelation}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{AnalysisException, DataFrame, Row, SQLContext, SaveMode}
 
 private[crossdata] trait DoCatalogDataSourceTable extends RunnableCommand {
 
@@ -81,8 +80,7 @@ private[crossdata] case class RegisterDataSourceTable(
 
 }
 
-private[crossdata]
-case class PersistSelectAsTable(
+private[crossdata] case class PersistSelectAsTable(
                                  tableIdent: TableIdentifier,
                                  provider: String,
                                  partitionColumns: Array[String],
@@ -178,5 +176,4 @@ case class PersistSelectAsTable(
     }
   }
 }
-
 

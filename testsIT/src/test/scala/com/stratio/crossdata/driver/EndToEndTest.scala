@@ -20,7 +20,7 @@ import java.util.UUID
 import com.stratio.crossdata.server.CrossdataServer
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.crossdata.XDSession
-import org.apache.spark.sql.crossdata.XDSessionProvider.SessionID
+import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
 import org.scalatest.BeforeAndAfterAll
 
 trait EndToEndTest extends BaseXDTest with BeforeAndAfterAll {

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.execution.datasources
-
+package org.apache.spark.sql.crossdata.catalyst.streaming
 
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
+import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
 import org.apache.spark.sql.crossdata.config.StreamingConfig
 import org.apache.spark.sql.crossdata.launcher.SparkJobLauncher
 import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralQueryModel, EphemeralStatusModel}
@@ -30,9 +30,6 @@ import org.apache.spark.sql.{Row, SQLContext}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
-import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
-
-import XDCatalogCommon._
 
 /**
  * Ephemeral Table Functions

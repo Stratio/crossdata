@@ -22,8 +22,7 @@ import org.apache.spark.sql.catalyst.expressions
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.Aggregate
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
-import org.apache.spark.sql.crossdata.execution.NativeUDF
+import org.apache.spark.sql.crossdata.catalyst.{EvaluateNativeUDF, NativeUDF}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
