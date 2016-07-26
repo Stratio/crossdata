@@ -8,7 +8,7 @@ ITSERVICES:
       sleep: 5
       env:
         - CLUSTER=%%JUID
-        - OPTS="-Dnetwork.bind_host=%%OWNHOSTNAME"
+        - OPTS=-Dnetwork.bind_host=%%OWNHOSTNAME
   - SPARK:
       image: stratio/spark:1.6.1
       env:
