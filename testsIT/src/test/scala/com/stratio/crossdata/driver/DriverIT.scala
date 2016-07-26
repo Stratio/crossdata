@@ -30,7 +30,7 @@ import scala.reflect.io.File
 @RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
 
-  "CrossdataDriver" should "return an ErrorResult when running an unparseable query" in {
+  ignore "CrossdataDriver" should "return an ErrorResult when running an unparseable query" in {
 
     assumeCrossdataUpAndRunning()
     withDriverDo { driver =>
@@ -43,7 +43,7 @@ class DriverIT extends EndToEndTest {
     }
   }
 
-  it should "return a SuccessfulQueryResult when executing a select *" in {
+  ignore it should "return a SuccessfulQueryResult when executing a select *" in {
     assumeCrossdataUpAndRunning()
     withDriverDo { driver =>
 
@@ -58,7 +58,7 @@ class DriverIT extends EndToEndTest {
     }
   }
 
-  it should "get a list of tables" in {
+  ignore it should "get a list of tables" in {
     assumeCrossdataUpAndRunning
     withDriverDo { driver =>
 
@@ -76,14 +76,14 @@ class DriverIT extends EndToEndTest {
 
 
 
-  it should "indicates that the cluster is alive when there is a server up" in {
+  ignore it should "indicates that the cluster is alive when there is a server up" in {
     withDriverDo { driver =>
 
       driver.isClusterAlive(6 seconds) shouldBe true
     }
   }
 
-  it should "return the addresses of servers up and running" in {
+  ignore it should "return the addresses of servers up and running" in {
     withDriverDo { driver =>
 
       val addresses = Await.result(driver.serversUp(), 6 seconds)
@@ -93,7 +93,7 @@ class DriverIT extends EndToEndTest {
     }
   }
 
-  it should "return the current cluster state" in {
+  ignore it should "return the current cluster state" in {
     withDriverDo { driver =>
 
       val clusterState = Await.result(driver.clusterState(), 6 seconds)
@@ -102,7 +102,7 @@ class DriverIT extends EndToEndTest {
     }
   }
 
-  it should "be able to execute ADD JAR Command of an existent file" in {
+  ignore it should "be able to execute ADD JAR Command of an existent file" in {
     // TODO restore before merging session to master
     assumeCrossdataUpAndRunning
 
@@ -115,7 +115,7 @@ class DriverIT extends EndToEndTest {
 
   }
 
-  it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
+  ignore it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
 
     withDriverDo { driver =>
       val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()
@@ -123,7 +123,7 @@ class DriverIT extends EndToEndTest {
     }
   }
 
-  it should "be able to execute ADD APP Command of an existent file" in {
+  ignore it should "be able to execute ADD APP Command of an existent file" in {
     assumeCrossdataUpAndRunning
 
     val filePath = getClass.getResource("/TestAddApp.jar").getPath
@@ -135,7 +135,7 @@ class DriverIT extends EndToEndTest {
 
   }
 
-  it should "be able to execute ADD APP Command of an existent file with options" in {
+  ignore it should "be able to execute ADD APP Command of an existent file with options" in {
     assumeCrossdataUpAndRunning
 
     val filePath = getClass.getResource("/TestAddApp.jar").getPath
@@ -154,7 +154,7 @@ class DriverIT extends EndToEndTest {
   }
 
 
-  it should "allow running multiple drivers per JVM" in {
+  ignore it should "allow running multiple drivers per JVM" in {
 
     val driverTable = "drvtable"
     val anotherDriverTable = "anotherTable"
