@@ -32,37 +32,48 @@ import scala.util.{Failure, Try}
 
 object ElasticSearchQueryProcessor {
 
-  def apply(logicalPlan: LogicalPlan, parameters: Map[String, String], schemaProvided: Option[StructType] = None)
-                                          = new ElasticSearchQueryProcessor(logicalPlan, parameters, schemaProvided)
+  def apply(logicalPlan: LogicalPlan,
+            parameters: Map[String, String],
+            schemaProvided: Option[StructType] = None) =
+    new ElasticSearchQueryProcessor(logicalPlan, parameters, schemaProvided)
 }
 
 /**
- * Process the logicalPlan to generate the query results
- *
- * @param logicalPlan [[LogicalPlan]]] to be executed
- * @param parameters ElasticSearch Configuration Parameters
- * @param schemaProvided Spark used defined schema
- */
-class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: Map[String, String],
-                                  val schemaProvided: Option[StructType] = None) extends SparkLoggerComponent {
+  * Process the logicalPlan to generate the query results
+  *
+  * @param logicalPlan [[LogicalPlan]]] to be executed
+  * @param parameters ElasticSearch Configuration Parameters
+  * @param schemaProvided Spark used defined schema
+  */
+class ElasticSearchQueryProcessor(
+    val logicalPlan: LogicalPlan,
+    val parameters: Map[String, String],
+    val schemaProvided: Option[StructType] = None)
+    extends SparkLoggerComponent {
 
   type Limit = Option[Int]
 
   /**
-   * Executes the [[LogicalPlan]]] and query the ElasticSearch database
+    * Executes the [[LogicalPlan]]] and query the ElasticSearch database
     *
     * @return the query result
-   */
+    */
   def execute(): Option[Array[Row]] = {
 
-    def tryRows(requiredColumns: Seq[Attribute], finalQuery: SearchDefinition, esClient: ElasticClient): Try[Array[Row]] = {
+    def tryRows(requiredColumns: Seq[Attribute],
+                finalQuery: SearchDefinition,
+                esClient: ElasticClient): Try[Array[Row]] = {
       val rows: Try[Array[Row]] = Try {
         val resp: SearchResponse = esClient.execute(finalQuery).await.original
         if (resp.getShardFailures.length > 0) {
-          val errors = resp.getShardFailures map { failure => failure.reason() }
-          throw new RuntimeException(errors mkString("Errors from ES:", ";\n", ""))
+          val errors = resp.getShardFailures map { failure =>
+            failure.reason()
+          }
+          throw new RuntimeException(
+              errors mkString ("Errors from ES:", ";\n", ""))
         } else {
-          ElasticSearchRowConverter.asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
+          ElasticSearchRowConverter
+            .asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
         }
       }
       rows
@@ -78,7 +89,9 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
         val filters = baseLogicalPlan.filters
         val (esIndex, esType) = extractIndexAndType(parameters).get
 
-        val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
+        val finalQuery = buildNativeQuery(requiredColumns,
+                                          filters,
+                                          search in esIndex / esType)
 
         withClientDo(parameters) { esClient =>
           tryRows(requiredColumns, finalQuery, esClient)
@@ -88,53 +101,68 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
     result.toOption
   }
 
-
-  def buildNativeQuery(requiredColumns: Seq[Attribute], filters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
+  def buildNativeQuery(requiredColumns: Seq[Attribute],
+                       filters: Array[SourceFilter],
+                       query: SearchDefinition): SearchDefinition = {
     val queryWithFilters = buildFilters(filters, query)
     selectFields(requiredColumns, queryWithFilters)
   }
 
-  private def buildFilters(sFilters: Array[SourceFilter], query: SearchDefinition): SearchDefinition = {
+  private def buildFilters(sFilters: Array[SourceFilter],
+                           query: SearchDefinition): SearchDefinition = {
 
     val matchers = sFilters.collect {
-      case sources.StringContains(attribute, value) => termQuery(attribute, value.toLowerCase)
-      case sources.StringStartsWith(attribute, value) => prefixQuery(attribute, value.toLowerCase)
+      case sources.StringContains(attribute, value) =>
+        termQuery(attribute, value.toLowerCase)
+      case sources.StringStartsWith(attribute, value) =>
+        prefixQuery(attribute, value.toLowerCase)
     }
 
     import scala.collection.JavaConversions._
 
     val searchFilters = sFilters.collect {
       case sources.EqualTo(attribute, value) => termQuery(attribute, value)
-      case sources.GreaterThan(attribute, value) => rangeQuery(attribute).from(value).includeLower(false)
-      case sources.GreaterThanOrEqual(attribute, value) => rangeQuery(attribute).gte(value.toString)
-      case sources.LessThan(attribute, value) => rangeQuery(attribute).to(value).includeUpper(false)
-      case sources.LessThanOrEqual(attribute, value) => rangeQuery(attribute).lte(value.toString)
-      case sources.In(attribute, value) => termsQuery(attribute, value.map(_.asInstanceOf[AnyRef]): _*)
+      case sources.GreaterThan(attribute, value) =>
+        rangeQuery(attribute).from(value).includeLower(false)
+      case sources.GreaterThanOrEqual(attribute, value) =>
+        rangeQuery(attribute).gte(value.toString)
+      case sources.LessThan(attribute, value) =>
+        rangeQuery(attribute).to(value).includeUpper(false)
+      case sources.LessThanOrEqual(attribute, value) =>
+        rangeQuery(attribute).lte(value.toString)
+      case sources.In(attribute, value) =>
+        termsQuery(attribute, value.map(_.asInstanceOf[AnyRef]): _*)
       case sources.IsNotNull(attribute) => existsQuery(attribute)
       case sources.IsNull(attribute) => must(not(existsQuery(attribute)))
     }
 
     val matchQuery = query bool must(matchers)
 
-    val finalQuery = if (searchFilters.isEmpty)
-      matchQuery
-    else matchQuery postFilter bool {
-      must(searchFilters)
-    }
+    val finalQuery =
+      if (searchFilters.isEmpty)
+        matchQuery
+      else
+        matchQuery postFilter bool {
+          must(searchFilters)
+        }
 
-    log.debug("LogicalPlan transformed to the Elasticsearch query:" + finalQuery.toString())
+    log.debug(
+        "LogicalPlan transformed to the Elasticsearch query:" + finalQuery
+          .toString())
     finalQuery
 
   }
 
-  private def selectFields(fields: Seq[Attribute], query: SearchDefinition): SearchDefinition = {
-      val stringFields: Seq[String] = fields.map(_.name)
-      query.fields(stringFields.toList: _*)
+  private def selectFields(fields: Seq[Attribute],
+                           query: SearchDefinition): SearchDefinition = {
+    val stringFields: Seq[String] = fields.map(_.name)
+    query.fields(stringFields.toList: _*)
   }
 
-
   def validatedNativePlan: Option[(BaseLogicalPlan, Limit)] = {
-    lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
+    lazy val limit: Option[Int] = logicalPlan.collectFirst {
+      case Limit(Literal(num: Int, _), _) => num
+    }
 
     def findProjectsFilters(lplan: LogicalPlan): Option[BaseLogicalPlan] = {
       lplan match {
@@ -143,8 +171,14 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
           findProjectsFilters(child)
 
         case PhysicalOperation(projectList, filterList, _) =>
-          CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-            case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
+          CatalystToCrossdataAdapter.getConnectorLogicalPlan(
+              logicalPlan,
+              projectList,
+              filterList) match {
+            case (_,
+                  ProjectReport(exprIgnored),
+                  FilterReport(filtersIgnored, _))
+                if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
               None
             case (basePlan, _, _) =>
               Some(basePlan)
@@ -152,23 +186,26 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       }
     }
 
-    findProjectsFilters(logicalPlan).collect{ case bp if checkNativeFilters(bp.filters) => (bp, limit) }
+    findProjectsFilters(logicalPlan).collect {
+      case bp if checkNativeFilters(bp.filters) => (bp, limit)
+    }
   }
 
-  private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = filters.forall {
-    case _: sources.EqualTo => true
-    case _: sources.In => true
-    case _: sources.LessThan => true
-    case _: sources.GreaterThan => true
-    case _: sources.LessThanOrEqual => true
-    case _: sources.GreaterThanOrEqual => true
-    case _: sources.IsNull => true
-    case _: sources.IsNotNull => true
-    case _: sources.StringStartsWith => true
-    case _: sources.StringContains => true
-    case sources.And(left, right) => checkNativeFilters(Array(left, right))
-    // TODO add more filters (Not?)
-    case _ => false
+  private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean =
+    filters.forall {
+      case _: sources.EqualTo => true
+      case _: sources.In => true
+      case _: sources.LessThan => true
+      case _: sources.GreaterThan => true
+      case _: sources.LessThanOrEqual => true
+      case _: sources.GreaterThanOrEqual => true
+      case _: sources.IsNull => true
+      case _: sources.IsNotNull => true
+      case _: sources.StringStartsWith => true
+      case _: sources.StringContains => true
+      case sources.And(left, right) => checkNativeFilters(Array(left, right))
+      // TODO add more filters (Not?)
+      case _ => false
 
-  }
+    }
 }

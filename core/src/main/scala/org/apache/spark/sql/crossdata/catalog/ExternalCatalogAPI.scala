@@ -20,11 +20,12 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataIndex, CrossdataTable, IndexIdentifier, ViewIdentifier}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 
-
-private[crossdata] trait ExternalCatalogAPI extends XDAppsCatalog{
+private[crossdata] trait ExternalCatalogAPI extends XDAppsCatalog {
 
   def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit
-  def persistView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit
+  def persistView(viewIdentifier: ViewIdentifier,
+                  plan: LogicalPlan,
+                  sqlText: String): Unit
   def persistIndex(crossdataIndex: CrossdataIndex): Unit
 
   def dropTable(tableIdentifier: TableIdentifier): Unit
@@ -38,10 +39,8 @@ private[crossdata] trait ExternalCatalogAPI extends XDAppsCatalog{
 
   def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable]
   def indexMetadata(indexIdentifier: IndexIdentifier): Option[CrossdataIndex]
-  def indexMetadataByTableIdentifier(tableIdentifier: TableIdentifier): Option[CrossdataIndex]
+  def indexMetadataByTableIdentifier(
+      tableIdentifier: TableIdentifier): Option[CrossdataIndex]
   def tableHasGlobalIndex(tableIdentifier: TableIdentifier): Boolean =
     indexMetadataByTableIdentifier(tableIdentifier).isDefined
 }
-
-
-

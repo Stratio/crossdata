@@ -24,5 +24,7 @@ case class ViewModel(id: String,
                      version: String = crossdata.CrossdataVersion) {
 
   def getExtendedName: String =
-    database.fold(name) { databaseName => s"$databaseName.$name" }
+    database.fold(name) { databaseName =>
+      s"$databaseName.$name"
+    }
 }

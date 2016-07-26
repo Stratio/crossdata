@@ -27,11 +27,11 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
 import org.apache.spark.sql.crossdata.session.HazelcastSessionCatalogManagerSpec.{InvalidatedSession, ProbedHazelcastSessionCatalogManager}
 import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
 
-
 object HazelcastSessionCatalogManagerSpec {
 
-  private class ProbedHazelcastSessionCatalogManager(hInstance: HazelcastInstance)(implicit monitorActor: ActorRef)
-    extends HazelcastSessionCatalogManager(hInstance, EmptyConf) {
+  private class ProbedHazelcastSessionCatalogManager(
+      hInstance: HazelcastInstance)(implicit monitorActor: ActorRef)
+      extends HazelcastSessionCatalogManager(hInstance, EmptyConf) {
 
     override def invalidateLocalCaches(key: SessionID): Unit = {
       super.invalidateLocalCaches(key)
@@ -50,10 +50,11 @@ object HazelcastSessionCatalogManagerSpec {
 
 }
 
-class HazelcastSessionCatalogManagerSpec extends TestKit(ActorSystem("HZSessionCatalogTest"))
-  with WordSpecLike
-  with BeforeAndAfterAll
-  with ImplicitSender {
+class HazelcastSessionCatalogManagerSpec
+    extends TestKit(ActorSystem("HZSessionCatalogTest"))
+    with WordSpecLike
+    with BeforeAndAfterAll
+    with ImplicitSender {
 
   // Test description
 
@@ -78,7 +79,8 @@ class HazelcastSessionCatalogManagerSpec extends TestKit(ActorSystem("HZSessionC
         catalogManager.newResource(sessionID)
         expectMsg(InvalidatedSession(sessionID))
 
-        val catalog: XDTemporaryCatalog = catalogManager.getResource(sessionID).get.head
+        val catalog: XDTemporaryCatalog =
+          catalogManager.getResource(sessionID).get.head
         expectNoMsg()
 
         catalog.dropAllTables()
@@ -86,14 +88,14 @@ class HazelcastSessionCatalogManagerSpec extends TestKit(ActorSystem("HZSessionC
 
       }
 
-
     }
 
   }
 
   // Test plumbing
 
-  private def createHazelcastInstance: HazelcastInstance = Hazelcast.newHazelcastInstance(new Config())
+  private def createHazelcastInstance: HazelcastInstance =
+    Hazelcast.newHazelcastInstance(new Config())
 
   var catalogManager: HazelcastSessionCatalogManager = _
   var probedCatalogManager: HazelcastSessionCatalogManager = _

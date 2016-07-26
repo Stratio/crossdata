@@ -49,17 +49,24 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
     val xdSession1 = {
 
       val (coreConfig, sqlConf) = {
-        val sessionConfig: Map[String, AnyRef] = Map(XDTungstenProperty -> Boolean.TRUE)
+        val sessionConfig: Map[String, AnyRef] =
+          Map(XDTungstenProperty -> Boolean.TRUE)
         val coreConfig = ConfigFactory.parseMap(sessionConfig)
         val sqlConf = new SQLConf
 
-        sessionConfig.foreach { case (k, v) => sqlConf.setConfString(k.stripPrefix("config."), v.toString) }
+        sessionConfig.foreach {
+          case (k, v) =>
+            sqlConf.setConfString(k.stripPrefix("config."), v.toString)
+        }
         (coreConfig, sqlConf)
       }
 
       new XDSession(
-        new XDSharedState(_sparkContext,sqlConf, new DerbyCatalog(sqlConf), None),
-        new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
+          new XDSharedState(_sparkContext,
+                            sqlConf,
+                            new DerbyCatalog(sqlConf),
+                            None),
+          new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
       )
     }
 
@@ -83,15 +90,21 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
     val xdSession1 = createNewDefaultSession
     val xdSession2 = createNewDefaultSession
 
-    val df: DataFrame = xdSession2.createDataFrame(xdSession2.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
+    val df: DataFrame = xdSession2.createDataFrame(
+        xdSession2.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))),
+        StructType(Array(StructField("id", StringType))))
     df.registerTempTable(tempTableName)
 
     xdSession2.table(tempTableName).collect should not be empty
-    a [RuntimeException] shouldBe thrownBy{
+    a[RuntimeException] shouldBe thrownBy {
       xdSession1.table(tempTableName).collect should not be empty
     }
 
-    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$persTableName").saveAsTable(persTableName)
+    df.write
+      .format("json")
+      .mode(SaveMode.Overwrite)
+      .option("path", s"/tmp/$persTableName")
+      .saveAsTable(persTableName)
 
     xdSession2.table(persTableName).collect should not be empty
     xdSession1.table(persTableName).collect should not be empty
@@ -100,12 +113,13 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
 
   }
 
-
   "A XDSession" should "perform a collect with a collection" in {
 
     val xdSession = createNewDefaultSession
 
-    val df: DataFrame = xdSession.createDataFrame(xdSession.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
+    val df: DataFrame = xdSession.createDataFrame(
+        xdSession.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))),
+        StructType(Array(StructField("id", StringType))))
     df.registerTempTable("records")
 
     val result: Array[Row] = xdSession.sql("SELECT * FROM records").collect()
@@ -117,22 +131,28 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
 
     val xdSession = createNewDefaultSession
 
-    val df: DataFrame = xdSession.createDataFrame(xdSession.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
+    val df: DataFrame = xdSession.createDataFrame(
+        xdSession.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))),
+        StructType(Array(StructField("id", StringType))))
     df.registerTempTable("records")
 
     val dataframe = xdSession.sql("SELECT * FROM records")
     dataframe shouldBe a[XDDataFrame]
   }
 
-
   it must "plan a PersistDataSource when creating a table " in {
 
     val xdSession = createNewDefaultSession
 
-    val dataframe = xdSession.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/core-reference.conf").toURI()).toString}')")
+    val dataframe = xdSession.sql(
+        s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
+      .get(getClass.getResource("/core-reference.conf").toURI())
+      .toString}')")
     val sparkPlan = dataframe.queryExecution.sparkPlan
     xdSession.catalog.dropTable(TableIdentifier("jsonTable", None))
-    sparkPlan should matchPattern { case ExecutedCommand(_: PersistDataSourceTable) => }
+    sparkPlan should matchPattern {
+      case ExecutedCommand(_: PersistDataSourceTable) =>
+    }
 
   }
 
@@ -140,15 +160,24 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
 
     val xdSession = createNewDefaultSession
 
-    val t1: DataFrame = xdSession.createDataFrame(xdSession.sparkContext.parallelize((1 to 5)
-      .map(i => Row(s"val_$i", i))), StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
+    val t1: DataFrame =
+      xdSession.createDataFrame(xdSession.sparkContext.parallelize(
+                                    (1 to 5).map(i => Row(s"val_$i", i))),
+                                StructType(
+                                    Array(StructField("id", StringType),
+                                          StructField("value", IntegerType))))
     t1.registerTempTable("t1")
 
-    val t2: DataFrame = xdSession.createDataFrame(xdSession.sparkContext.parallelize((4 to 8)
-      .map(i => Row(s"val_$i", i))), StructType(Array(StructField("name", StringType), StructField("value", IntegerType))))
+    val t2: DataFrame =
+      xdSession.createDataFrame(xdSession.sparkContext.parallelize(
+                                    (4 to 8).map(i => Row(s"val_$i", i))),
+                                StructType(
+                                    Array(StructField("name", StringType),
+                                          StructField("value", IntegerType))))
     t2.registerTempTable("t2")
 
-    val dataFrame = xdSession.sql("SELECT t1.id, t2.name as name, t1.value as total FROM t1 INNER JOIN t2 ON t1.id = t2.name GROUP BY id, name, total")
+    val dataFrame = xdSession.sql(
+        "SELECT t1.id, t2.name as name, t1.value as total FROM t1 INNER JOIN t2 ON t1.id = t2.name GROUP BY id, name, total")
 
     dataFrame.show
 
@@ -160,11 +189,16 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
 
     val xdSession = createNewDefaultSession
 
-    val t1: DataFrame = xdSession.createDataFrame(xdSession.sparkContext.parallelize((1 to 5)
-      .map(i => Row(s"val_$i", i))), StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
+    val t1: DataFrame =
+      xdSession.createDataFrame(xdSession.sparkContext.parallelize(
+                                    (1 to 5).map(i => Row(s"val_$i", i))),
+                                StructType(
+                                    Array(StructField("id", StringType),
+                                          StructField("value", IntegerType))))
     t1.registerTempTable("t3")
 
-    val dataFrame = xdSession.sql("SELECT id as id, value as product FROM t3 GROUP BY id, product")
+    val dataFrame = xdSession.sql(
+        "SELECT id as id, value as product FROM t3 GROUP BY id, product")
 
     dataFrame.collect should have length 5
 
@@ -172,9 +206,12 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
 
   override protected def beforeAll(): Unit = {
     _sparkContext = new SparkContext(
-      "local[2]",
-      "test-xdsession",
-      new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.sql.shuffle.partitions", "3")
+        "local[2]",
+        "test-xdsession",
+        new SparkConf()
+          .set("spark.cores.max", "2")
+          .set("spark.sql.testkey", "true")
+          .set("spark.sql.shuffle.partitions", "3")
     )
   }
 
@@ -183,11 +220,14 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
   }
 
   private def createNewDefaultSession: XDSession = {
-      val sqlConf = new SQLConf
-      new XDSession(
-        new XDSharedState(_sparkContext, sqlConf, new DerbyCatalog(sqlConf), None),
+    val sqlConf = new SQLConf
+    new XDSession(
+        new XDSharedState(_sparkContext,
+                          sqlConf,
+                          new DerbyCatalog(sqlConf),
+                          None),
         new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
-      )
-    }
+    )
+  }
 
 }

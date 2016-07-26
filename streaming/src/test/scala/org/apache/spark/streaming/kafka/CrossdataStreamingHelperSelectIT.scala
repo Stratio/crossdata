@@ -31,31 +31,37 @@ import org.scalatest.junit.JUnitRunner
 import scala.language.postfixOps
 
 @RunWith(classOf[JUnitRunner])
-class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with CommonValues {
+class CrossdataStreamingHelperSelectIT
+    extends BaseSparkStreamingXDTest
+    with CommonValues {
 
-  private val sparkConf = new SparkConf().setMaster("local[2]").setAppName(this.getClass.getSimpleName)
-  private var sc : SparkContext = _
+  private val sparkConf = new SparkConf()
+    .setMaster("local[2]")
+    .setAppName(this.getClass.getSimpleName)
+  private var sc: SparkContext = _
   private var kafkaTestUtils: KafkaTestUtils = _
   private var zookeeperConf: Map[String, String] = _
   private var catalogConf: Map[String, String] = _
-  private var xDContext : XDContext = _
-  private var zookeeperStreamingCatalog : ZookeeperStreamingCatalog = _
+  private var xDContext: XDContext = _
+  private var zookeeperStreamingCatalog: ZookeeperStreamingCatalog = _
   private var consumer: ConsumerConnector = _
   private var ssc: StreamingContext = _
 
   override def beforeAll {
     sc = SparkContext.getOrCreate(sparkConf)
 
-    if (kafkaTestUtils == null){
+    if (kafkaTestUtils == null) {
       kafkaTestUtils = new KafkaTestUtils
       kafkaTestUtils.setup()
       zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress)
       catalogConf = parseZookeeperCatalogConfig(zookeeperConf)
       xDContext = XDContext.getOrCreate(sc, parseCatalogConfig(catalogConf))
-      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), XDContext.xdConfig)
+      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(
+          new SimpleCatalystConf(true),
+          XDContext.xdConfig)
     }
 
-    if (consumer == null){
+    if (consumer == null) {
       val props = new Properties()
       props.put("zookeeper.connect", kafkaTestUtils.zkAddress)
       props.put("group.id", GroupId)
@@ -71,7 +77,7 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
       consumer = null
     }
 
-    if(ssc != null){
+    if (ssc != null) {
       ssc.stop(stopSparkContext = true, stopGracefully = false)
       ssc.awaitTerminationOrTimeout(6000)
       ssc = null
@@ -83,7 +89,7 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
     }
   }
 
-/*
+  /*
   test("Crossdata streaming must save into the kafka output the sql results") {
 
     deletePath(checkpointDirectorySelect)
@@ -131,5 +137,5 @@ class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with Com
       case None => throw new Exception("Ephemeral table not created")
     }
   }
-*/
+ */
 }

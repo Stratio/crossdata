@@ -46,7 +46,6 @@ import scala.util.Try
  * =======================================================================================
  */
 
-
 object Driver {
 
   /**
@@ -58,7 +57,8 @@ object Driver {
 
   lazy val defaultDriverConf = new DriverConf
 
-  lazy val system = ActorSystem("CrossdataServerCluster", defaultDriverConf.finalSettings)
+  lazy val system =
+    ActorSystem("CrossdataServerCluster", defaultDriverConf.finalSettings)
 
   def newSession(): Driver = newSession(defaultDriverConf)
 
@@ -68,27 +68,34 @@ object Driver {
   def newSession(user: String, password: String): Driver =
     newSession(user, password, defaultDriverConf)
 
-  def newSession(user: String, password: String, driverConf: DriverConf): Driver =
+  def newSession(user: String,
+                 password: String,
+                 driverConf: DriverConf): Driver =
     newSession(driverConf, Authentication(user, password))
 
   def newSession(seedNodes: java.util.List[String]): Driver =
     newSession(seedNodes, defaultDriverConf)
 
-  def newSession(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
+  def newSession(seedNodes: java.util.List[String],
+                 driverConf: DriverConf): Driver =
     newSession(driverConf.setClusterContactPoint(seedNodes))
 
-  private[crossdata] def newSession(driverConf: DriverConf, authentication: Authentication): Driver = {
+  private[crossdata] def newSession(driverConf: DriverConf,
+                                    authentication: Authentication): Driver = {
     val driver = new Driver(driverConf, authentication)
     val isConnected = driver.openSession().getOrElse {
-      throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after ${Driver.InitializationTimeout}")
+      throw new RuntimeException(
+          s"Cannot establish connection to XDServer: timed out after ${Driver.InitializationTimeout}")
     }
     if (!isConnected) {
-      throw new RuntimeException(s"The server has rejected the open session request")
+      throw new RuntimeException(
+          s"The server has rejected the open session request")
     }
     driver
   }
 
-  private[driver] def generateDefaultAuth = new Authentication("crossdata", "stratio")
+  private[driver] def generateDefaultAuth =
+    new Authentication("crossdata", "stratio")
 
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
     def run() {
@@ -98,15 +105,15 @@ object Driver {
 
 }
 
-class Driver private(private[crossdata] val driverConf: DriverConf,
-                     auth: Authentication = Driver.generateDefaultAuth) {
+class Driver private (private[crossdata] val driverConf: DriverConf,
+                      auth: Authentication = Driver.generateDefaultAuth) {
 
   import Driver._
 
-  private lazy val driverSession = SessionManager.createSession(auth, proxyActor)
+  private lazy val driverSession =
+    SessionManager.createSession(auth, proxyActor)
 
   private lazy val logger = LoggerFactory.getLogger(classOf[Driver])
-
 
   private lazy val clusterClientActor = {
 
@@ -118,8 +125,10 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     val initialContacts = contactPoints.map(system.actorSelection).toSet
 
     logger.debug("Initial contacts: " + initialContacts)
-    val remoteClientName: String = ServerClusterClientParameters.RemoteClientName + UUID.randomUUID()
-    val actor = system.actorOf(ClusterClient.props(initialContacts), remoteClientName)
+    val remoteClientName: String = ServerClusterClientParameters.RemoteClientName + UUID
+        .randomUUID()
+    val actor =
+      system.actorOf(ClusterClient.props(initialContacts), remoteClientName)
     logger.debug(s"Cluster client actor created with name: $remoteClientName")
 
     actor
@@ -131,11 +140,11 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   }
 
   private val sessionBeaconProps = SessionBeaconActor.props(
-    driverSession.id,
-    5 seconds, /* This ins't configurable since it's simpler for the user
+      driverSession.id,
+      5 seconds, /* This ins't configurable since it's simpler for the user
                   to play just with alert period time at server side. */
-    clusterClientActor,
-    ServerClusterClientParameters.ClientMonitorPath
+      clusterClientActor,
+      ServerClusterClientParameters.ClientMonitorPath
   )
 
   private var sessionBeacon: Option[ActorRef] = None
@@ -159,37 +168,40 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     //TODO remove this part when servers broadcast bus was realized
     //Preparse query to know if it is an special command sent from the shell or other driver user that is not a query
     val addJarPattern = """(\s*add)(\s+jar\s+)(.*)""".r
-    val addAppWithAliasPattern ="""(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(.*)""".r
-    val addAppPattern ="""(\s*add)(\s+app\s+)(.*)(\s+with\s+)(.*)""".r
-    
-query match {
+    val addAppWithAliasPattern =
+      """(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(.*)""".r
+    val addAppPattern = """(\s*add)(\s+app\s+)(.*)(\s+with\s+)(.*)""".r
+
+    query match {
       case addJarPattern(add, jar, path) =>
         addJar(path.trim)
       case addAppWithAliasPattern(add, app, path, as, alias, wth, clss) =>
-        val realPath=path.replace("'","")
+        val realPath = path.replace("'", "")
         val res = addJar(realPath).waitForResult()
         val hdfspath = res.resultSet(0).getString(0)
         addApp(hdfspath, alias, clss)
 
       case addAppPattern(add, app, path, wth, clss) =>
-        val realPath=path.replace("'","")
+        val realPath = path.replace("'", "")
         val res = addJar(realPath).waitForResult()
         val hdfspath = res.resultSet(0).getString(0)
         addApp(hdfspath, clss, realPath)
       case _ =>
-        val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
+        val sqlCommand =
+          new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
         val futureReply = askCommand(securitizeCommand(sqlCommand)).map {
           case SQLReply(_, sqlResult) => sqlResult
-          case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
+          case other =>
+            throw new RuntimeException(s"SQLReply expected. Received: $other")
         }
         new SQLResponse(sqlCommand.requestId, futureReply) {
           // TODO cancel sync => 5 secs
           override def cancelCommand(): Unit =
-            askCommand(securitizeCommand(CancelQueryExecution(sqlCommand.queryId)))
+            askCommand(
+                securitizeCommand(CancelQueryExecution(sqlCommand.queryId)))
         }
     }
   }
-
 
   /**
     * Add Jar to the XD Context
@@ -197,21 +209,25 @@ query match {
     * @param path The path of the JAR
     * @return A SQLResponse with the id and the result set.
     */
-  def addJar(path: String, toClassPath:Option[Boolean]=None): SQLResponse = {
-    val addJarCommand = AddJARCommand(path,toClassPath=toClassPath)
+  def addJar(path: String, toClassPath: Option[Boolean] = None): SQLResponse = {
+    val addJarCommand = AddJARCommand(path, toClassPath = toClassPath)
     if (File(path).exists) {
       val futureReply = askCommand(securitizeCommand(addJarCommand)).map {
         case SQLReply(_, sqlResult) => sqlResult
-        case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
+        case other =>
+          throw new RuntimeException(s"SQLReply expected. Received: $other")
       }
       new SQLResponse(addJarCommand.requestId, futureReply)
     } else {
-        new SQLResponse(addJarCommand.requestId, Future(ErrorSQLResult("File doesn't exist")))
+      new SQLResponse(addJarCommand.requestId,
+                      Future(ErrorSQLResult("File doesn't exist")))
     }
   }
 
-  def addAppCommand(path: String, clss: String, alias: Option[String] = None): SQLResponse = {
-    val result = addJar(path,Option(false)).waitForResult()
+  def addAppCommand(path: String,
+                    clss: String,
+                    alias: Option[String] = None): SQLResponse = {
+    val result = addJar(path, Option(false)).waitForResult()
     val hdfsPath = result.resultSet(0).getString(0)
     addApp(hdfsPath, clss, alias.getOrElse(path))
   }
@@ -226,26 +242,30 @@ query match {
     val addAppCommand = AddAppCommand(path, alias, clss)
     val futureReply = askCommand(securitizeCommand(addAppCommand)).map {
       case SQLReply(_, sqlResult) => sqlResult
-      case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
+      case other =>
+        throw new RuntimeException(s"SQLReply expected. Received: $other")
     }
     new SQLResponse(addAppCommand.requestId, futureReply)
   }
 
-
-  def importTables(dataSourceProvider: String, options: Map[String, String]): SQLResponse =
+  def importTables(dataSourceProvider: String,
+                   options: Map[String, String]): SQLResponse =
     sql(
-      s"""|IMPORT TABLES
+        s"""|IMPORT TABLES
           |USING $dataSourceProvider
           |${mkOptionsStatement(options)}
        """.stripMargin
     )
 
-
   // TODO schema -> StructType insteadOf String
   // schema -> e.g "( name STRING, age INT )"
-  def createTable(name: String, dataSourceProvider: String, schema: Option[String], options: Map[String, String], isTemporary: Boolean = false): SQLResponse =
+  def createTable(name: String,
+                  dataSourceProvider: String,
+                  schema: Option[String],
+                  options: Map[String, String],
+                  isTemporary: Boolean = false): SQLResponse =
     sql(
-      s"""|CREATE ${if (isTemporary) "TEMPORARY" else ""} TABLE $name
+        s"""|CREATE ${if (isTemporary) "TEMPORARY" else ""} TABLE $name
           |USING $dataSourceProvider
           |${schema.getOrElse("")}
           |${mkOptionsStatement(options)}
@@ -254,10 +274,12 @@ query match {
 
   def dropTable(name: String, isTemporary: Boolean = false): SQLResponse = {
 
-    if (isTemporary) throw new UnsupportedOperationException("Drop temporary table is not supported yet")
+    if (isTemporary)
+      throw new UnsupportedOperationException(
+          "Drop temporary table is not supported yet")
 
     sql(
-      s"""|DROP ${if (isTemporary) "TEMPORARY" else ""}
+        s"""|DROP ${if (isTemporary) "TEMPORARY" else ""}
           |TABLE $name
        """.stripMargin
     )
@@ -265,7 +287,7 @@ query match {
 
   def dropAllTables(): SQLResponse = {
     sql(
-      s"""|DROP ALL TABLES""".stripMargin
+        s"""|DROP ALL TABLES""".stripMargin
     )
   }
 
@@ -274,13 +296,12 @@ query match {
     options.headOption.fold("")(_ => s" OPTIONS ( $opt ) ")
   }
 
-
-  private def askCommand(commandEnvelope: CommandEnvelope): Future[ServerReply] = {
+  private def askCommand(
+      commandEnvelope: CommandEnvelope): Future[ServerReply] = {
     val promise = Promise[ServerReply]()
-    proxyActor !(commandEnvelope, promise)
+    proxyActor ! (commandEnvelope, promise)
     promise.future
   }
-
 
   /**
     * Gets a list of tables from a database or all if the database is None
@@ -296,7 +317,8 @@ query match {
       }
     }
     import SQLResponse._
-    val sqlResult: SQLResult = sql(s"SHOW TABLES ${databaseName.fold("")("IN " + _)}")
+    val sqlResult: SQLResult = sql(
+        s"SHOW TABLES ${databaseName.fold("")("IN " + _)}")
     sqlResult match {
       case SuccessfulSQLResult(result, _) =>
         result.map(row => processTableName(row.getString(0)))
@@ -311,21 +333,25 @@ query match {
     * @param tableName The name of the table.
     * @return A sequence with the metadata of the fields of the table.
     */
-  def describeTable(database: Option[String], tableName: String): Seq[FieldMetadata] = {
+  def describeTable(database: Option[String],
+                    tableName: String): Seq[FieldMetadata] = {
 
-    def extractNameDataType: Row => (String, String) = row => (row.getString(0), row.getString(1))
+    def extractNameDataType: Row => (String, String) =
+      row => (row.getString(0), row.getString(1))
 
     import SQLResponse._
-    val sqlResult: SQLResult = sql(s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")
+    val sqlResult: SQLResult = sql(
+        s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")
 
     sqlResult match {
       case SuccessfulSQLResult(result, _) =>
-        result.map(extractNameDataType) flatMap { case (name, dataType) =>
-          if (!driverConf.getFlattenTables) {
-            FieldMetadata(name, DataTypesUtils.toDataType(dataType)) :: Nil
-          } else {
-            getFlattenedFields(name, DataTypesUtils.toDataType(dataType))
-          }
+        result.map(extractNameDataType) flatMap {
+          case (name, dataType) =>
+            if (!driverConf.getFlattenTables) {
+              FieldMetadata(name, DataTypesUtils.toDataType(dataType)) :: Nil
+            } else {
+              getFlattenedFields(name, DataTypesUtils.toDataType(dataType))
+            }
         } toSeq
 
       case other =>
@@ -333,8 +359,8 @@ query match {
     }
   }
 
-  def show(query: String) = sql(query).waitForResult().prettyResult.foreach(println)
-
+  def show(query: String) =
+    sql(query).waitForResult().prettyResult.foreach(println)
 
   /**
     * Gets the server/cluster state
@@ -344,7 +370,7 @@ query match {
     */
   def clusterState(): Future[CurrentClusterState] = {
     val promise = Promise[ServerReply]()
-    proxyActor !(securitizeCommand(ClusterStateCommand()), promise)
+    proxyActor ! (securitizeCommand(ClusterStateCommand()), promise)
     promise.future.mapTo[ClusterStateReply].map(_.clusterState)
   }
 
@@ -372,17 +398,17 @@ query match {
   def isClusterAlive(atMost: Duration = 3 seconds): Boolean =
     Try(Await.result(serversUp(), atMost)).map(_.nonEmpty).getOrElse(false)
 
-
   private def openSession(): Try[Boolean] = {
     import Driver._
 
     val res = Try {
       val promise = Promise[ServerReply]()
       proxyActor ! (securitizeCommand(OpenSessionCommand()), promise)
-      Await.result(promise.future.mapTo[OpenSessionReply].map(_.isOpen), InitializationTimeout)
+      Await.result(promise.future.mapTo[OpenSessionReply].map(_.isOpen),
+                   InitializationTimeout)
     }
 
-    if(res.isSuccess)
+    if (res.isSuccess)
       sessionBeacon = Some(system.actorOf(sessionBeaconProps))
 
     res
@@ -400,15 +426,17 @@ query match {
   private def securitizeCommand(command: Command): CommandEnvelope =
     new CommandEnvelope(command, driverSession)
 
-
-  private def getFlattenedFields(fieldName: String, dataType: DataType): Seq[FieldMetadata] = dataType match {
-    case structType: StructType =>
-      structType.flatMap(field => getFlattenedFields(s"$fieldName.${field.name}", field.dataType))
-    case ArrayType(etype, _) =>
-      getFlattenedFields(fieldName, etype)
-    case _ =>
-      FieldMetadata(fieldName, dataType) :: Nil
-  }
+  private def getFlattenedFields(fieldName: String,
+                                 dataType: DataType): Seq[FieldMetadata] =
+    dataType match {
+      case structType: StructType =>
+        structType.flatMap(field =>
+              getFlattenedFields(s"$fieldName.${field.name}", field.dataType))
+      case ArrayType(etype, _) =>
+        getFlattenedFields(fieldName, etype)
+      case _ =>
+        FieldMetadata(fieldName, dataType) :: Nil
+    }
 
   private def handleCommandError(result: SQLResult) = result match {
     case ErrorSQLResult(message, Some(cause)) =>

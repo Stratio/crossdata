@@ -49,8 +49,7 @@ class CassandraDropExternalTableIT extends CassandraWithSharedContext {
       """.stripMargin.replaceAll("\n", " ")
     sql(createTableQueryString1).collect()
 
-    val createTableQueryString2 =
-      s"""|CREATE EXTERNAL TABLE dropTable2 (
+    val createTableQueryString2 = s"""|CREATE EXTERNAL TABLE dropTable2 (
           |id Integer,
           |name String,
           |booleanFile boolean,
@@ -83,11 +82,13 @@ class CassandraDropExternalTableIT extends CassandraWithSharedContext {
 
     //DROP
     val dropExternalTableQuery = s"DROP EXTERNAL TABLE $Catalog.dropTable1"
-    sql(dropExternalTableQuery).collect() should be (Seq.empty)
+    sql(dropExternalTableQuery).collect() should be(Seq.empty)
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table(s"$Catalog.dropTable1"))
-    client.get._1.getMetadata.getKeyspace(Catalog).getTable(cassandraTableName) shouldBe null
+    client.get._1.getMetadata
+      .getKeyspace(Catalog)
+      .getTable(cassandraTableName) shouldBe null
 
   }
 
@@ -100,12 +101,14 @@ class CassandraDropExternalTableIT extends CassandraWithSharedContext {
 
     //DROP
     val dropExternalTableQuery = "DROP EXTERNAL TABLE dropTable2"
-    sql(dropExternalTableQuery).collect() should be (Seq.empty)
+    sql(dropExternalTableQuery).collect() should be(Seq.empty)
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table("dropTable2"))
-    client.get._1.getMetadata.getKeyspace(Catalog).getTable(cassandraTableName) shouldBe null
+    client.get._1.getMetadata
+      .getKeyspace(Catalog)
+      .getTable(cassandraTableName) shouldBe null
 
   }
-  
+
 }

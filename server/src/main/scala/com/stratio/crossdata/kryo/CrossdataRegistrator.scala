@@ -21,7 +21,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 
-class CrossdataRegistrator extends KryoRegistrator{
+class CrossdataRegistrator extends KryoRegistrator {
   override def registerClasses(kryo: Kryo): Unit = {
     kryo.register(Nil.getClass)
     kryo.register(StringType.getClass)

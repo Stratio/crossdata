@@ -39,11 +39,11 @@ class CassandraPKFiltersIT extends CassandraWithSharedContext {
   override val testData = List(List(FixedDate))
 
   override val defaultOptions = Map(
-    "table"    -> Table,
-    "keyspace" -> Catalog,
-    "cluster"  -> ClusterName,
-    "pushdown" -> "true",
-    "spark_cassandra_connection_host" -> CassandraHost
+      "table" -> Table,
+      "keyspace" -> Catalog,
+      "cluster" -> ClusterName,
+      "pushdown" -> "true",
+      "spark_cassandra_connection_host" -> CassandraHost
   )
 
   // PRIMARY KEY date
@@ -54,14 +54,9 @@ class CassandraPKFiltersIT extends CassandraWithSharedContext {
     val optimizedPlan = dataframe.queryExecution.optimizedPlan
     val schema = dataframe.schema
     val result = dataframe.collect(Native)
-    schema.fieldNames should equal (Seq(pk(0)))
+    schema.fieldNames should equal(Seq(pk(0)))
     result should have length 1
     result(0) should have length 1
   }
 
 }
-
-
-
-
-

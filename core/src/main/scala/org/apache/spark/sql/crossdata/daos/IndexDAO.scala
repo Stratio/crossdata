@@ -37,8 +37,11 @@ import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.models.IndexModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
-trait IndexDAO extends GenericDAOComponent[IndexModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+trait IndexDAO
+    extends GenericDAOComponent[IndexModel]
+    with TypesafeConfigComponent
+    with SparkLoggerComponent
+    with CrossdataSerializer {
 
   val indexID = "indexID"
 

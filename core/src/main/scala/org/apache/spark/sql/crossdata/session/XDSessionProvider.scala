@@ -38,12 +38,11 @@ object XDSessionProvider {
 // TODO It should share some of the XDContext fields. It will be possible when Spark 2.0 is released
 // TODO sessionProvider should be threadSafe
 abstract class XDSessionProvider(
-                                  @transient val sc: SparkContext,
-                                  protected val commonConfig: Option[Config] = None
-                                  ) {
+    @transient val sc: SparkContext,
+    protected val commonConfig: Option[Config] = None
+) {
 
   import XDSessionProvider._
-
 
   //NOTE: DO NEVER KEEP THE RETURNED REFERENCE FOR SEVERAL USES!
   def session(sessionID: SessionID): Try[XDSession]
@@ -66,29 +65,36 @@ abstract class XDSessionProvider(
   * Session provider which store session info locally, so it can't be used when deploying several crossdata server
   */
 class BasicSessionProvider(
-                             @transient override val sc: SparkContext,
-                             userConfig: Config
-                           ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig {
+    @transient override val sc: SparkContext,
+    userConfig: Config
+) extends XDSessionProvider(sc, Option(userConfig))
+    with CoreConfig {
 
   import XDSessionProvider._
 
   override lazy val logger = Logger.getLogger(classOf[BasicSessionProvider])
 
-  private lazy val catalogConfig = Try(config.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
+  private lazy val catalogConfig =
+    Try(config.getConfig(CoreConfig.CatalogConfigKey))
+      .getOrElse(ConfigFactory.empty())
   private lazy val sqlConf: SQLConf = configToSparkSQL(userConfig, new SQLConf)
 
+  @transient
+  protected lazy val externalCatalog: XDPersistentCatalog =
+    CatalogUtils.externalCatalog(sqlConf, catalogConfig)
 
   @transient
-  protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(sqlConf, catalogConfig)
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] =
+    CatalogUtils.streamingCatalog(sqlConf, config)
 
-  @transient
-  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(sqlConf, config)
+  private val sharedState =
+    new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
 
-  private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
-
-  private val sessionIDToSQLProps: mutable.Map[SessionID, SQLConf] = mutable.Map.empty
-  private val sessionIDToTempCatalog: mutable.Map[SessionID, XDTemporaryCatalog] = mutable.Map.empty
-
+  private val sessionIDToSQLProps: mutable.Map[SessionID, SQLConf] =
+    mutable.Map.empty
+  private val sessionIDToTempCatalog: mutable.Map[SessionID,
+                                                  XDTemporaryCatalog] =
+    mutable.Map.empty
 
   private val errorMessage =
     "A distributed context must be used to manage XDServer sessions. Please, use SparkSessions instead"
@@ -103,17 +109,18 @@ class BasicSessionProvider(
       buildSession(sharedState.sqlConf, tempCatalog)
     }
 
-  override def closeSession(sessionID: SessionID): Try[Unit] =
-    {
-      for {
-        _ <- sessionIDToSQLProps.remove(sessionID)
-        _ <- sessionIDToTempCatalog.remove(sessionID)
-      } yield ()
-    } map {
-      Success(_)
-    } getOrElse {
-      Failure(new RuntimeException(s"Cannot close session with sessionId=$sessionID"))
-    }
+  override def closeSession(sessionID: SessionID): Try[Unit] = {
+    for {
+      _ <- sessionIDToSQLProps.remove(sessionID)
+      _ <- sessionIDToTempCatalog.remove(sessionID)
+    } yield ()
+  } map {
+    Success(_)
+  } getOrElse {
+    Failure(
+        new RuntimeException(
+            s"Cannot close session with sessionId=$sessionID"))
+  }
 
   override def session(sessionID: SessionID): Try[XDSession] = {
     for {
@@ -123,7 +130,9 @@ class BasicSessionProvider(
   } map {
     Success(_)
   } getOrElse {
-    Failure(new RuntimeException(s"Cannot recover session with sessionId=$sessionID"))
+    Failure(
+        new RuntimeException(
+            s"Cannot recover session with sessionId=$sessionID"))
   }
 
   override def close(): Unit = {
@@ -131,7 +140,9 @@ class BasicSessionProvider(
     sessionIDToTempCatalog.clear
   }
 
-  private def buildSession(sqlConf: XDSQLConf, xDTemporaryCatalog: XDTemporaryCatalog): XDSession = {
+  private def buildSession(
+      sqlConf: XDSQLConf,
+      xDTemporaryCatalog: XDTemporaryCatalog): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalog :: Nil)
     new XDSession(sharedState, sessionState)
   }

@@ -33,5 +33,4 @@ class SecurityManagerIT extends SharedXDContextTest {
     assert(securityManager.credentials.sessionId === Some("1234"))
   }
 
-
 }

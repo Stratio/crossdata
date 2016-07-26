@@ -34,7 +34,9 @@ object KeepAliveMaster {
     * @param continueMonitoring `true` if the target actor should still be monitored after misses. Otherwise
     *                          it'll be forgotten by the master actor.
     */
-  case class DoCheck[ID](id: ID, period: FiniteDuration, continueMonitoring: Boolean = false)
+  case class DoCheck[ID](id: ID,
+                         period: FiniteDuration,
+                         continueMonitoring: Boolean = false)
 
   /**
     * Message sent to the monitor client when a heartbeat has been lost.
@@ -43,7 +45,8 @@ object KeepAliveMaster {
     */
   case class HeartbeatLost[T](id: T)
 
-  def props[ID](client: ActorRef): Props = Props(new KeepAliveMaster[ID](client))
+  def props[ID](client: ActorRef): Props =
+    Props(new KeepAliveMaster[ID](client))
 
 }
 
@@ -56,22 +59,21 @@ class KeepAliveMaster[ID](client: ActorRef) extends Actor {
 
   def receive(pending: Set[ID]): Receive = {
 
-    case HeartBeat(id: ID @ unchecked) =>
+    case HeartBeat(id: ID @unchecked) =>
       context.become(receive(pending - id))
 
-    case m @ DoCheck(id: ID @ unchecked, period, continue) =>
+    case m @ DoCheck(id: ID @unchecked, period, continue) =>
       import context.dispatcher
 
       val missing = pending contains id
 
-      if(missing) client ! HeartbeatLost(id)
+      if (missing) client ! HeartbeatLost(id)
 
-      if(!missing || continue) {
+      if (!missing || continue) {
         context.system.scheduler.scheduleOnce(period, self, m)
         context.become(receive(pending + id))
       }
 
   }
-
 
 }

@@ -24,9 +24,6 @@ import org.apache.spark.sql.types.StructType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-
-
-
 @RunWith(classOf[JUnitRunner])
 class UdafsIT extends SharedXDContextTest {
 
@@ -38,9 +35,13 @@ class UdafsIT extends SharedXDContextTest {
   "XDContext" should "resolve a query with the UDAF group_concat" in {
     val tempContext = _xdContext
 
-    val schema = StructType(Seq(StructField("name", StringType), StructField("age", IntegerType)))
+    val schema = StructType(
+        Seq(StructField("name", StringType), StructField("age", IntegerType)))
 
-    val df = _xdContext.createDataFrame(_xdContext.sc.parallelize(Seq(Row("Torcuato", 27), Row("Rosalinda", 34), Row("Arthur", 41))), schema)
+    val df = _xdContext.createDataFrame(
+        _xdContext.sc.parallelize(
+            Seq(Row("Torcuato", 27), Row("Rosalinda", 34), Row("Arthur", 41))),
+        schema)
 
     df.registerTempTable("udafs_test_gc")
 

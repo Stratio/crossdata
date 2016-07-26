@@ -38,9 +38,8 @@ class MongoCreateExternalTableIT extends MongoWithSharedContext {
     //Expectations
     val table = xdContext.table(s"$Database.newtable")
     table should not be null
-    table.schema.fieldNames should contain ("name")
+    table.schema.fieldNames should contain("name")
   }
-
 
   it should "execute a CREATE EXTERNAL TABLE with options" in {
 
@@ -61,8 +60,11 @@ class MongoCreateExternalTableIT extends MongoWithSharedContext {
     //Expectations
     val table = xdContext.table(s"$Database.cappedTable")
     table should not be null
-    table.schema.fieldNames should contain ("name")
-    this.client.get.getDB(Database).getCollection("cappedTable").isCapped should be (true)
+    table.schema.fieldNames should contain("name")
+    this.client.get
+      .getDB(Database)
+      .getCollection("cappedTable")
+      .isCapped should be(true)
   }
 
   it should "execute a CREATE EXTERNAL TABLE with a different tableName" in {
@@ -83,8 +85,9 @@ class MongoCreateExternalTableIT extends MongoWithSharedContext {
     //Expectations
     val table = xdContext.table("other")
     table should not be null
-    table.schema.fieldNames should contain ("name")
-    this.client.get.getDB(Database).getCollection("cTable").isCapped should be (true)
+    table.schema.fieldNames should contain("name")
+    this.client.get.getDB(Database).getCollection("cTable").isCapped should be(
+        true)
   }
 
   it should "execute a CREATE EXTERNAL TABLE without specific db and table options options" in {
@@ -103,8 +106,9 @@ class MongoCreateExternalTableIT extends MongoWithSharedContext {
     //Expectations
     val table = xdContext.table("dbase.tbase")
     table should not be null
-    table.schema.fieldNames should contain ("name")
-    this.client.get.getDB("dbase").getCollection("tbase").isCapped should be (true)
+    table.schema.fieldNames should contain("name")
+    this.client.get.getDB("dbase").getCollection("tbase").isCapped should be(
+        true)
 
     this.client.get.dropDatabase("dbase")
   }

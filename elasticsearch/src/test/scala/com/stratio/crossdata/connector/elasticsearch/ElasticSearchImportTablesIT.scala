@@ -19,7 +19,6 @@ import com.sksamuel.elastic4s.ElasticDsl._
 
 class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
-
   // IMPORT OPERATIONS
 
   it should "import all tables from a keyspace" in {
@@ -28,8 +27,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     val initialLength = tableCountInHighschool
     xdContext.dropAllTables()
 
-    val importQuery =
-      s"""
+    val importQuery = s"""
          |IMPORT TABLES
          |USING $SourceProvider
           |OPTIONS (
@@ -44,15 +42,14 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     sql(importQuery)
 
     //Expectations
-    tableCountInHighschool should be (1)
-    xdContext.tableNames() should contain (s"$Index.$Type")
+    tableCountInHighschool should be(1)
+    xdContext.tableNames() should contain(s"$Index.$Type")
   }
 
   it should "infer schema after import all tables from an Index" in {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
-    val importQuery =
-      s"""
+    val importQuery = s"""
          |IMPORT TABLES
          |USING $SourceProvider
           |OPTIONS (
@@ -68,7 +65,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     sql(importQuery)
 
     //Expectations
-    xdContext.tableNames() should contain (s"$Index.$Type")
+    xdContext.tableNames() should contain(s"$Index.$Type")
     xdContext.table(s"$Index.$Type").schema should have length 8
   }
 
@@ -76,13 +73,14 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    ElasticSearchConnectionUtils.withClientDo(connectionOptions){ client =>
-      client.execute { index into Index -> "NewMapping" fields {
-        "name" -> "luis"
-      }}
+    ElasticSearchConnectionUtils.withClientDo(connectionOptions) { client =>
+      client.execute {
+        index into Index -> "NewMapping" fields {
+          "name" -> "luis"
+        }
+      }
 
-      val importQuery =
-        s"""
+      val importQuery = s"""
            |IMPORT TABLES
            |USING $SourceProvider
            |OPTIONS (
@@ -98,7 +96,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
       sql(importQuery)
 
       //Expectations
-      xdContext.tableNames() should contain (s"$Index.$Type")
+      xdContext.tableNames() should contain(s"$Index.$Type")
       xdContext.tableNames() should not contain s"$Index.NewMapping"
     }
   }
@@ -107,13 +105,14 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    ElasticSearchConnectionUtils.withClientDo(connectionOptions){ client =>
-      client.execute { index into Index -> "NewMapping" fields {
-        "name" -> "luis"
-      }}
+    ElasticSearchConnectionUtils.withClientDo(connectionOptions) { client =>
+      client.execute {
+        index into Index -> "NewMapping" fields {
+          "name" -> "luis"
+        }
+      }
 
-      val importQuery =
-        s"""
+      val importQuery = s"""
            |IMPORT TABLES
            |USING $SourceProvider
            |OPTIONS (
@@ -126,7 +125,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
       """.stripMargin
 
       //Experimentation
-      an [IllegalArgumentException] should be thrownBy sql(importQuery)
+      an[IllegalArgumentException] should be thrownBy sql(importQuery)
     }
 
   }
@@ -135,11 +134,10 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    ElasticSearchConnectionUtils.withClientDo(connectionOptions){ client =>
-      createIndex(client,"index_test", typeMapping())
+    ElasticSearchConnectionUtils.withClientDo(connectionOptions) { client =>
+      createIndex(client, "index_test", typeMapping())
       try {
-        val importQuery =
-          s"""
+        val importQuery = s"""
              |IMPORT TABLES
              |USING $SourceProvider
              |OPTIONS (
@@ -167,13 +165,14 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    ElasticSearchConnectionUtils.withClientDo(connectionOptions){ client =>
-      client.execute { index into Index -> "NewMapping" fields {
-        "name" -> "luis"
-      }}
+    ElasticSearchConnectionUtils.withClientDo(connectionOptions) { client =>
+      client.execute {
+        index into Index -> "NewMapping" fields {
+          "name" -> "luis"
+        }
+      }
 
-      val importQuery =
-        s"""
+      val importQuery = s"""
            |IMPORT TABLES
            |USING $SourceProvider
            |OPTIONS (
@@ -185,15 +184,15 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
       """.stripMargin
 
       //Experimentation
-      an [RuntimeException] should be thrownBy sql(importQuery)
+      an[RuntimeException] should be thrownBy sql(importQuery)
 
     }
   }
 
   lazy val connectionOptions: Map[String, String] = Map(
-    "es.nodes" -> s"$ElasticHost",
-    "es.port" -> s"$ElasticRestPort",
-    "es.nativePort" -> s"$ElasticNativePort",
-    "es.cluster" -> s"$ElasticClusterName"
+      "es.nodes" -> s"$ElasticHost",
+      "es.port" -> s"$ElasticRestPort",
+      "es.nativePort" -> s"$ElasticNativePort",
+      "es.cluster" -> s"$ElasticClusterName"
   )
 }

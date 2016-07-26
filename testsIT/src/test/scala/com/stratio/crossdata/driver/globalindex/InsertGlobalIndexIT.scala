@@ -51,19 +51,16 @@ class InsertGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     mongoClient(mongoDatabase).dropDatabase()
 
-    elasticClient.execute{
+    elasticClient.execute {
       deleteIndex(defaultIndexES)
     }.await
-
 
     super.afterAll()
   }
 
-
   "Insertion" should "insert indexed columns into elasticsearch index" in {
 
-    val sentence =
-      s"""|CREATE GLOBAL INDEX $indexName
+    val sentence = s"""|CREATE GLOBAL INDEX $indexName
           |ON $mongoTableIdentifier (other)
           |WITH PK id
           |USING com.stratio.crossdata.connector.elasticsearch
@@ -77,22 +74,25 @@ class InsertGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     sql(sentence)
 
-    val typeExistResponse = elasticClient.execute{
+    val typeExistResponse = elasticClient.execute {
       typesExist(indexName).in(defaultIndexES)
     }.await
 
     typeExistResponse.isExists shouldBe true
 
-
     sql(s"INSERT INTO $mongoTableIdentifier VALUES ( 50, 'Samantha', 'Fox', 4),( 1, 'Charlie', 'Green', 5)")
 
-    elasticClient.execute{
+    elasticClient.execute {
       flushIndex(defaultIndexES)
     }.await
 
     mongoClient(mongoDatabase)(mongoCollection).count() shouldBe 2
 
-    elasticClient.execute(search in defaultIndexES / indexName).await.getHits.totalHits() shouldBe 2
+    elasticClient
+      .execute(search in defaultIndexES / indexName)
+      .await
+      .getHits
+      .totalHits() shouldBe 2
 
   }
 

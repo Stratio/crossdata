@@ -22,8 +22,11 @@ import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.models.EphemeralTableModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
-trait EphemeralTableMapDAO extends GenericDAOComponent[EphemeralTableModel]
-with MapConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+trait EphemeralTableMapDAO
+    extends GenericDAOComponent[EphemeralTableModel]
+    with MapConfigComponent
+    with SparkLoggerComponent
+    with CrossdataSerializer {
 
   override implicit val formats = json4sJacksonFormats
 

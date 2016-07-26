@@ -39,61 +39,66 @@ import org.joda.time.DateTime
 
 object ElasticSearchRowConverter {
 
-
-  def asRows(schema: StructType, array: Array[SearchHit], requiredFields: Seq[Attribute]): Array[Row] = {
+  def asRows(schema: StructType,
+             array: Array[SearchHit],
+             requiredFields: Seq[Attribute]): Array[Row] = {
     import scala.collection.JavaConverters._
     val schemaMap = schema.map(field => field.name -> field.dataType).toMap
 
     array map { hit =>
-      hitAsRow(hit.fields().asScala.toMap, schemaMap, requiredFields.map(_.name))
+      hitAsRow(hit.fields().asScala.toMap,
+               schemaMap,
+               requiredFields.map(_.name))
     }
   }
 
-  def hitAsRow(
-                hitFields: Map[String, SearchHitField],
-                schemaMap: Map[String, DataType],
-                requiredFields: Seq[String]): Row = {
-    val values: Seq[Any] = requiredFields.map {
-      name =>
-        hitFields.get(name).flatMap(v => Option(v)).map(
-          toSQL(_, schemaMap(name))).orNull
+  def hitAsRow(hitFields: Map[String, SearchHitField],
+               schemaMap: Map[String, DataType],
+               requiredFields: Seq[String]): Row = {
+    val values: Seq[Any] = requiredFields.map { name =>
+      hitFields
+        .get(name)
+        .flatMap(v => Option(v))
+        .map(toSQL(_, schemaMap(name)))
+        .orNull
     }
     Row.fromSeq(values)
   }
 
   def toSQL(value: SearchHitField, dataType: DataType): Any = {
 
-    Option(value).map { case value =>
-      //Assure value is mapped to schema constrained type.
-      enforceCorrectType(value.getValue, dataType)
+    Option(value).map {
+      case value =>
+        //Assure value is mapped to schema constrained type.
+        enforceCorrectType(value.getValue, dataType)
     }.orNull
   }
 
-
   protected def enforceCorrectType(value: Any, desiredType: DataType): Any = {
-      // TODO check if value==null
-      Option(desiredType).map {
-        case StringType => value.toString
-        case _ if value == "" => null // guard the non string type
-        case IntegerType => toInt(value)
-        case LongType => toLong(value)
-        case DoubleType => toDouble(value)
-        case DecimalType() => toDecimal(value)
-        case BooleanType => value.asInstanceOf[Boolean]
-        case TimestampType => toTimestamp(value)
-        case NullType => null
-        case DateType => toDate(value)
-        case _ =>
-          sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
-          value
-      }.orNull
+    // TODO check if value==null
+    Option(desiredType).map {
+      case StringType => value.toString
+      case _ if value == "" => null // guard the non string type
+      case IntegerType => toInt(value)
+      case LongType => toLong(value)
+      case DoubleType => toDouble(value)
+      case DecimalType() => toDecimal(value)
+      case BooleanType => value.asInstanceOf[Boolean]
+      case TimestampType => toTimestamp(value)
+      case NullType => null
+      case DateType => toDate(value)
+      case _ =>
+        sys.error(
+            s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
+        value
+    }.orNull
   }
 
   private def toInt(value: Any): Int = {
     import scala.language.reflectiveCalls
     value match {
       case value: String => value.toInt
-      case _ => value.asInstanceOf[ {def toInt: Int}].toInt
+      case _ => value.asInstanceOf[{ def toInt: Int }].toInt
     }
   }
 
@@ -116,7 +121,8 @@ object ElasticSearchRowConverter {
     value match {
       case value: java.lang.Integer => Decimal(value)
       case value: java.lang.Long => Decimal(value)
-      case value: java.math.BigInteger => Decimal(new java.math.BigDecimal(value))
+      case value: java.math.BigInteger =>
+        Decimal(new java.math.BigDecimal(value))
       case value: java.lang.Double => Decimal(value)
       case value: java.math.BigDecimal => Decimal(value)
     }
@@ -124,12 +130,14 @@ object ElasticSearchRowConverter {
 
   private def toTimestamp(value: Any): Timestamp = {
     value match {
-      case value : String =>
+      case value: String =>
         val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS")
         val parsedDate = dateFormat.parse(value)
         new java.sql.Timestamp(parsedDate.getTime)
       case value: java.util.Date => new Timestamp(value.getTime)
-      case _ => sys.error(s"Unsupported datatype conversion [${value.getClass}},Timestamp]")
+      case _ =>
+        sys.error(
+            s"Unsupported datatype conversion [${value.getClass}},Timestamp]")
     }
   }
 

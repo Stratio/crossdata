@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.connector.mongodb
 
-
 import com.mongodb.{BasicDBObject, QueryBuilder}
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
@@ -27,15 +26,18 @@ import org.scalatest.Suite
 
 import scala.util.Try
 
-trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefaultConstants with SparkLoggerComponent {
+trait MongoWithSharedContext
+    extends SharedXDContextWithDataTest
+    with MongoDefaultConstants
+    with SparkLoggerComponent {
   this: Suite =>
 
   override type ClientParams = MongoClient
   override val provider: String = SourceProvider
   override def defaultOptions = Map(
-    "host" -> s"$MongoHost:$MongoPort",
-    "database" -> s"$Database",
-    "collection" -> s"$Collection"
+      "host" -> s"$MongoHost:$MongoPort",
+      "database" -> s"$Database",
+      "collection" -> s"$Collection"
   )
 
   override protected def saveTestData: Unit = {
@@ -45,13 +47,15 @@ trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefau
     for (a <- 1 to 10) {
       collection.insert {
         MongoDBObject("id" -> a,
-          "age" -> (10 + a),
-          "description" -> s"description$a",
-          "enrolled" -> (a % 2 == 0),
-          "name" -> s"Name $a"
-        )
+                      "age" -> (10 + a),
+                      "description" -> s"description$a",
+                      "enrolled" -> (a % 2 == 0),
+                      "name" -> s"Name $a")
       }
-      collection.update(QueryBuilder.start("id").greaterThan(4).get, MongoDBObject(("$set", MongoDBObject(("optionalField", true)))), multi = true)
+      collection.update(
+          QueryBuilder.start("id").greaterThan(4).get,
+          MongoDBObject(("$set", MongoDBObject(("optionalField", true)))),
+          multi = true)
     }
 
   }
@@ -63,14 +67,18 @@ trait MongoWithSharedContext extends SharedXDContextWithDataTest with MongoDefau
     client(Database).dropDatabase()
   }
 
-  override protected def prepareClient: Option[ClientParams] = Try {
-    MongoClient(MongoHost, MongoPort)
-  } toOption
+  override protected def prepareClient: Option[ClientParams] =
+    Try {
+      MongoClient(MongoHost, MongoPort)
+    } toOption
 
-  override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
-    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Collection (id BIGINT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)")
+  override def sparkRegisterTableSQL: Seq[SparkTable] =
+    super.sparkRegisterTableSQL :+
+      str2sparkTableDesc(
+          s"CREATE TEMPORARY TABLE $Collection (id BIGINT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)")
 
-  override val runningError: String = "MongoDB and Spark must be up and running"
+  override val runningError: String =
+    "MongoDB and Spark must be up and running"
 
   val UnregisteredCollection = "unregistered"
 
@@ -85,7 +93,9 @@ sealed trait MongoDefaultConstants {
 
   //Config
   val MongoHost: String = {
-    Try(ConfigFactory.load().getStringList("mongo.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
+    Try(ConfigFactory.load().getStringList("mongo.hosts"))
+      .map(_.get(0))
+      .getOrElse("127.0.0.1")
   }
   val MongoPort = 27017
   val SourceProvider = "com.stratio.crossdata.connector.mongodb"
@@ -98,7 +108,7 @@ sealed trait MongoDefaultConstants {
 
   // Numeric types
   val float = 1.5f
-  val tinyint= 127 // Mongo store it like Byte
+  val tinyint = 127 // Mongo store it like Byte
   val smallint = 32767
 
   val byte = Byte.MaxValue
@@ -106,32 +116,38 @@ sealed trait MongoDefaultConstants {
   val date = new java.sql.Date(100000000)
 
   // Arrays
-  val arrayint = Seq(1,2,3)
-  val arraystring = Seq("a","b","c")
+  val arrayint = Seq(1, 2, 3)
+  val arraystring = Seq("a", "b", "c")
   val arraystruct = Seq(MongoDBObject("field1" -> 1, "field2" -> 2))
-  val arraystructwithdate = Seq(MongoDBObject("field1" -> date ,"field2" -> 3))
+  val arraystructwithdate = Seq(MongoDBObject("field1" -> date, "field2" -> 3))
 
   // Map
-  val mapintint = new BasicDBObject("1",1).append("2",2)
-  val mapstringint = new BasicDBObject("1",1).append("2",2)
-  val mapstringstring = new BasicDBObject("1","1").append("2","2")
-  val mapstruct = new BasicDBObject("mapstruct", MongoDBObject("structField1" -> date ,"structField2" -> 3))
+  val mapintint = new BasicDBObject("1", 1).append("2", 2)
+  val mapstringint = new BasicDBObject("1", 1).append("2", 2)
+  val mapstringstring = new BasicDBObject("1", "1").append("2", "2")
+  val mapstruct = new BasicDBObject(
+      "mapstruct",
+      MongoDBObject("structField1" -> date, "structField2" -> 3))
 
   // Struct
-  val struct = MongoDBObject("field1" -> 2 ,"field2" -> 3)
-  val structofstruct = MongoDBObject("field1" -> date ,"field2" -> 3, "struct1" -> MongoDBObject("structField1"-> "structfield1", "structField2" -> 2))
+  val struct = MongoDBObject("field1" -> 2, "field2" -> 3)
+  val structofstruct = MongoDBObject(
+      "field1" -> date,
+      "field2" -> 3,
+      "struct1" -> MongoDBObject("structField1" -> "structfield1",
+                                 "structField2" -> 2))
 
   // Complex compositions
   val arraystructarraystruct = Seq(
-    MongoDBObject(
-      "stringfield" -> "aa",
-      "arrayfield" -> Seq(MongoDBObject("field1" -> 1, "field2" -> 2), MongoDBObject("field1" -> -1, "field2" -> -2))
-    ),
-    MongoDBObject(
-      "stringfield" -> "bb",
-      "arrayfield" -> Seq(MongoDBObject("field1" -> 11, "field2" -> 22)
+      MongoDBObject(
+          "stringfield" -> "aa",
+          "arrayfield" -> Seq(MongoDBObject("field1" -> 1, "field2" -> 2),
+                              MongoDBObject("field1" -> -1, "field2" -> -2))
+      ),
+      MongoDBObject(
+          "stringfield" -> "bb",
+          "arrayfield" -> Seq(MongoDBObject("field1" -> 11, "field2" -> 22))
       )
-    )
   )
 
 }

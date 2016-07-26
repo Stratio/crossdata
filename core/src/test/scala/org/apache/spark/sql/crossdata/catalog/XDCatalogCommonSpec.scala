@@ -21,7 +21,6 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-
 @RunWith(classOf[JUnitRunner])
 class XDCatalogCommonSpec extends BaseXDTest {
 
@@ -31,9 +30,15 @@ class XDCatalogCommonSpec extends BaseXDTest {
     val tableIdentifier = TableIdentifier(tableName, Some(dbName))
     import XDCatalogCommon._
 
-    tableIdentifier.normalize(new SimpleCatalystConf(true)) shouldBe TableIdentifierNormalized(tableName, Some(dbName))
+    tableIdentifier
+      .normalize(new SimpleCatalystConf(true)) shouldBe TableIdentifierNormalized(
+        tableName,
+        Some(dbName))
 
-    tableIdentifier.normalize(new SimpleCatalystConf(false)) shouldBe TableIdentifierNormalized(tableName.toLowerCase, Some(dbName.toLowerCase))
+    tableIdentifier
+      .normalize(new SimpleCatalystConf(false)) shouldBe TableIdentifierNormalized(
+        tableName.toLowerCase,
+        Some(dbName.toLowerCase))
 
   }
 }

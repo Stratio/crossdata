@@ -29,8 +29,9 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 object HazelcastSQLConfSpec {
 
-  class ProbedHazelcastSessionConfigManager(hInstance: HazelcastInstance)(implicit monitorActor: ActorRef)
-    extends HazelcastSessionConfigManager(hInstance) {
+  class ProbedHazelcastSessionConfigManager(hInstance: HazelcastInstance)(
+      implicit monitorActor: ActorRef)
+      extends HazelcastSessionConfigManager(hInstance) {
 
     override def invalidateLocalCaches(key: SessionID): Unit = {
       super.invalidateLocalCaches(key)
@@ -50,12 +51,12 @@ object HazelcastSQLConfSpec {
 
 }
 
-class HazelcastSQLConfSpec extends TestKit(ActorSystem("HZSessionConfigTest"))
-  with WordSpecLike
-  with BeforeAndAfterAll
-  with ImplicitSender
-  with Matchers {
-
+class HazelcastSQLConfSpec
+    extends TestKit(ActorSystem("HZSessionConfigTest"))
+    with WordSpecLike
+    with BeforeAndAfterAll
+    with ImplicitSender
+    with Matchers {
 
   // Test description
 
@@ -98,26 +99,24 @@ class HazelcastSQLConfSpec extends TestKit(ActorSystem("HZSessionConfigTest"))
         val sqlConf: SQLConf = configManager.getResource(sessionID).get
         expectNoMsg()
 
-        sqlConf.setConfString("spark.sql.parquet.filterPushdown","false")
+        sqlConf.setConfString("spark.sql.parquet.filterPushdown", "false")
 
-        val sqlConfAtB: SQLConf = probedConfigManager.getResource(sessionID).get
-        sqlConfAtB.getConfString("spark.sql.parquet.filterPushdown") shouldBe "false"
+        val sqlConfAtB: SQLConf =
+          probedConfigManager.getResource(sessionID).get
+        sqlConfAtB
+          .getConfString("spark.sql.parquet.filterPushdown") shouldBe "false"
 
       }
 
-
     }
 
-
-
-
   }
-
 
   // Test plumbing
 
   // TODO: Extract common class providing this kind of tests plumbing
-  private def createHazelcastInstance: HazelcastInstance = Hazelcast.newHazelcastInstance()
+  private def createHazelcastInstance: HazelcastInstance =
+    Hazelcast.newHazelcastInstance()
 
   var configManager: HazelcastSessionConfigManager = _
   var probedConfigManager: ProbedHazelcastSessionConfigManager = _
@@ -132,6 +131,5 @@ class HazelcastSQLConfSpec extends TestKit(ActorSystem("HZSessionConfigTest"))
   }
 
   override protected def afterAll(): Unit = Hazelcast shutdownAll
-
 
 }

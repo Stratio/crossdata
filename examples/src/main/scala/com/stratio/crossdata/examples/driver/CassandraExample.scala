@@ -21,9 +21,8 @@ import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.examples.cassandra._
 
 /**
- * Driver example - Cassandra
- */
-
+  * Driver example - Cassandra
+  */
 sealed trait DefaultConstants {
   val ClusterName = "Test Cluster"
   val Catalog = "highschool"
@@ -32,8 +31,8 @@ sealed trait DefaultConstants {
   val SourceProvider = "cassandra"
   // Cassandra provider => org.apache.spark.sql.cassandra
   val CassandraOptions = Map(
-    "cluster" -> ClusterName,
-    "spark_cassandra_connection_host" -> CassandraHost
+      "cluster" -> ClusterName,
+      "spark_cassandra_connection_host" -> CassandraHost
   )
 }
 
@@ -43,10 +42,10 @@ object DriverExample extends App with DefaultConstants {
 
   var driver: Option[Driver] = None
 
-  val driverConf = new DriverConf().
-    setFlattenTables(false).
-    setTunnelTimeout(30).
-    setClusterContactPoint("127.0.0.1:13420", "127.0.0.1:13425")
+  val driverConf = new DriverConf()
+    .setFlattenTables(false)
+    .setTunnelTimeout(30)
+    .setClusterContactPoint("127.0.0.1:13420", "127.0.0.1:13425")
 
   try {
 
@@ -55,7 +54,9 @@ object DriverExample extends App with DefaultConstants {
     for {
       xdDriver <- driver
     } {
-      xdDriver.importTables(SourceProvider, CassandraOptions).waitForResult() match {
+      xdDriver
+        .importTables(SourceProvider, CassandraOptions)
+        .waitForResult() match {
         case result: SuccessfulSQLResult => println("Successful importation")
         case error: ErrorSQLResult => sys.error(error.message)
       }

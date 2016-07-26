@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class CassandraAggregationIT extends CassandraWithSharedContext {
 
-  val nativeErrorMessage =  "The operation cannot be executed without Spark"
+  val nativeErrorMessage = "The operation cannot be executed without Spark"
   // PRIMARY KEY id
   // CLUSTERING KEY age, comment
   // DEFAULT enrolled
@@ -44,7 +44,6 @@ class CassandraAggregationIT extends CassandraWithSharedContext {
       sql(s"SELECT count(*) as agg FROM $Table").collect(Native)
     } should have message nativeErrorMessage
   }
-
 
   it should "not execute natively a (SELECT count(*) FROM _ WHERE _)" in {
     assumeEnvironmentIsUpAndRunning

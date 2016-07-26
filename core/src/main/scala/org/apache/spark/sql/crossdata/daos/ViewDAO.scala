@@ -37,8 +37,11 @@ import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.models.{ViewModel, EphemeralTableModel}
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
-trait ViewDAO extends GenericDAOComponent[ViewModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+trait ViewDAO
+    extends GenericDAOComponent[ViewModel]
+    with TypesafeConfigComponent
+    with SparkLoggerComponent
+    with CrossdataSerializer {
 
   val viewID = "viewID"
 

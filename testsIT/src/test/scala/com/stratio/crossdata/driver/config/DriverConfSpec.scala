@@ -21,8 +21,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DriverConfSpec extends BaseXDTest{
-
+class DriverConfSpec extends BaseXDTest {
 
   "DriverConf" should "load default config" in {
     val conf = new DriverConf()
@@ -33,20 +32,25 @@ class DriverConfSpec extends BaseXDTest{
 
   it should "allow to write config programmatically" in {
     val conf = new DriverConf()
-    conf.set("config.cluster.name", ConfigValueFactory.fromAnyRef("CrossdataCluster"))
+    conf.set("config.cluster.name",
+             ConfigValueFactory.fromAnyRef("CrossdataCluster"))
 
     conf.get("config.cluster.name") shouldBe "CrossdataCluster"
   }
 
   it should "allow to set common properties" in {
-    val conf = new DriverConf().setTunnelTimeout(10).setClusterContactPoint("1.1.1.1:1000", "2.2.2.2:2000").setFlattenTables(true)
+    val conf = new DriverConf()
+      .setTunnelTimeout(10)
+      .setClusterContactPoint("1.1.1.1:1000", "2.2.2.2:2000")
+      .setFlattenTables(true)
 
     conf.getFlattenTables shouldBe true
     conf.getClusterContactPoint should have length 2
     conf.getClusterContactPoint should contain allOf
       ("akka.tcp://CrossdataServerCluster@1.1.1.1:1000/user/receptionist", "akka.tcp://CrossdataServerCluster@2.2.2.2:2000/user/receptionist")
 
-    conf.get("akka.contrib.cluster.receptionist.response-tunnel-receive-timeout") shouldBe 10000
+    conf.get(
+        "akka.contrib.cluster.receptionist.response-tunnel-receive-timeout") shouldBe 10000
   }
 
 }

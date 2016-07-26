@@ -97,7 +97,7 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
 
     //DROP
     val dropExternalTableQuery = s"DROP EXTERNAL TABLE $Index1.$mappingName"
-    sql(dropExternalTableQuery).collect() should be (Seq.empty)
+    sql(dropExternalTableQuery).collect() should be(Seq.empty)
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table(s"$Index1.testDrop1"))
@@ -113,7 +113,7 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
 
     //DROP
     val dropExternalTableQuery = "DROP EXTERNAL TABLE testDrop2"
-    sql(dropExternalTableQuery).collect() should be (Seq.empty)
+    sql(dropExternalTableQuery).collect() should be(Seq.empty)
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table("testDrop2"))

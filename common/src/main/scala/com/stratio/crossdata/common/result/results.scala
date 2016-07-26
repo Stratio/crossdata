@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 
-
 trait Result {
   def hasError: Boolean
 }
@@ -32,10 +31,10 @@ trait SQLResult extends Result {
   def schema: StructType
 
   /**
-   * NOTE: This method is based on the method org.apache.spark.sql.DataFrame#showString from Apache Spark.
-   *       For more information, go to http://spark.apache.org.
-   * Compose the string representing rows for output
-   */
+    * NOTE: This method is based on the method org.apache.spark.sql.DataFrame#showString from Apache Spark.
+    *       For more information, go to http://spark.apache.org.
+    * Compose the string representing rows for output
+    */
   def prettyResult: Array[String] = {
 
     val sb = new StringBuilder
@@ -43,13 +42,14 @@ trait SQLResult extends Result {
 
     // For array values, replace Seq and Array with square brackets
     // For cells that are beyond 20 characters, replace it with the first 17 and "..."
-    val rows: Seq[Seq[String]] = schema.fieldNames.toSeq +: resultSet.map { row =>
-      row.toSeq.map {
+    val rows: Seq[Seq[String]] = schema.fieldNames.toSeq +: resultSet.map {
+      row =>
+        row.toSeq.map {
           case null => "null"
           case array: Array[_] => array.mkString("[", ", ", "]")
           case seq: Seq[_] => seq.mkString("[", ", ", "]")
           case cell => cell.toString
-      }: Seq[String]
+        }: Seq[String]
     }
 
     // Initialise the width of each column to a minimum value of '3'
@@ -63,19 +63,22 @@ trait SQLResult extends Result {
     }
 
     // Create SeparateLine
-    val sep: String = colWidths.map("-" * _).addString(sb, "+", "+", "+\n").toString()
+    val sep: String =
+      colWidths.map("-" * _).addString(sb, "+", "+", "+\n").toString()
 
     // column names
-    rows.head.zipWithIndex.map { case (cell, i) =>
-      StringUtils.rightPad(cell, colWidths(i))
+    rows.head.zipWithIndex.map {
+      case (cell, i) =>
+        StringUtils.rightPad(cell, colWidths(i))
     }.addString(sb, "|", "|", "|\n")
 
     sb.append(sep)
 
     // data
     rows.tail.map {
-      _.zipWithIndex.map { case (cell, i) =>
-        StringUtils.rightPad(cell.toString, colWidths(i))
+      _.zipWithIndex.map {
+        case (cell, i) =>
+          StringUtils.rightPad(cell.toString, colWidths(i))
       }.addString(sb, "|", "|", "|\n")
     }
 
@@ -83,22 +86,19 @@ trait SQLResult extends Result {
   }
 }
 
-case class SuccessfulSQLResult(resultSet: Array[Row], schema: StructType) extends SQLResult {
+case class SuccessfulSQLResult(resultSet: Array[Row], schema: StructType)
+    extends SQLResult {
   val hasError = false
 }
 
-case class ErrorSQLResult(message: String, cause: Option[Throwable] = None) extends SQLResult {
+case class ErrorSQLResult(message: String, cause: Option[Throwable] = None)
+    extends SQLResult {
   val hasError = true
   override lazy val resultSet = throw mkException
   override lazy val schema = throw mkException
 
   private def mkException: Exception =
-    cause.map(throwable => new RuntimeException(message, throwable)).getOrElse(new RuntimeException(message))
+    cause
+      .map(throwable => new RuntimeException(message, throwable))
+      .getOrElse(new RuntimeException(message))
 }
-
-
-
-
-
-
-

@@ -15,4 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.security
 
-case class Credentials(user: Option[String] = None, password: Option[String] = None, sessionId: Option[String] = None)
+case class Credentials(user: Option[String] = None,
+                       password: Option[String] = None,
+                       sessionId: Option[String] = None)

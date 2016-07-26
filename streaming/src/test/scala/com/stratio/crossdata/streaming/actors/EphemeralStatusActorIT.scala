@@ -31,19 +31,22 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.time.SpanSugar._
 
 @RunWith(classOf[JUnitRunner])
-class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
-  with DefaultTimeout
-  with ImplicitSender
-  with WordSpecLike
-  with BeforeAndAfterAll
-  with CommonValues
-  with BeforeAndAfter
-  with ShouldMatchers
-  with TimeLimitedTests {
+class EphemeralStatusActorIT(_system: ActorSystem)
+    extends TestKit(_system)
+    with DefaultTimeout
+    with ImplicitSender
+    with WordSpecLike
+    with BeforeAndAfterAll
+    with CommonValues
+    with BeforeAndAfter
+    with ShouldMatchers
+    with TimeLimitedTests {
 
   def this() = this(ActorSystem("EphemeralStatusActor"))
 
-  val sparkConf = new SparkConf().setMaster("local[2]").setAppName(this.getClass.getSimpleName)
+  val sparkConf = new SparkConf()
+    .setMaster("local[2]")
+    .setAppName(this.getClass.getSimpleName)
   var sc = SparkContext.getOrCreate(sparkConf)
   var ssc: StreamingContext = _
   var zkTestServer: TestingServer = _
@@ -78,8 +81,12 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
 
   "EphemeralStatusActor" should {
     "set up with zookeeper configuration  and StreamingContext without any error" in {
-      _system.actorOf(Props(new EphemeralStatusActor(ssc,
-        Map("connectionString" -> zookeeperConnection), TableName)))
+      _system.actorOf(
+          Props(
+              new EphemeralStatusActor(
+                  ssc,
+                  Map("connectionString" -> zookeeperConnection),
+                  TableName)))
     }
   }
 
@@ -87,9 +94,12 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
 
     "AddListener the first message" in new CommonValues {
 
-      val ephemeralStatusActor =
-        _system.actorOf(Props(new EphemeralStatusActor(ssc,
-          Map("connectionString" -> zookeeperConnection), TableName)))
+      val ephemeralStatusActor = _system.actorOf(
+          Props(
+              new EphemeralStatusActor(
+                  ssc,
+                  Map("connectionString" -> zookeeperConnection),
+                  TableName)))
 
       ephemeralStatusActor ! EphemeralStatusActor.AddListener
 
@@ -98,9 +108,12 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
 
     "AddListener is the two messages" in new CommonValues {
 
-      val ephemeralStatusActor =
-        _system.actorOf(Props(new EphemeralStatusActor(ssc,
-          Map("connectionString" -> zookeeperConnection), TableName)))
+      val ephemeralStatusActor = _system.actorOf(
+          Props(
+              new EphemeralStatusActor(
+                  ssc,
+                  Map("connectionString" -> zookeeperConnection),
+                  TableName)))
 
       ephemeralStatusActor ! EphemeralStatusActor.AddListener
       expectMsg(new ListenerResponse(true))
@@ -111,9 +124,12 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
 
     "GetStatus return the status" in new CommonValues {
 
-      val ephemeralStatusActor =
-        _system.actorOf(Props(new EphemeralStatusActor(ssc,
-          Map("connectionString" -> zookeeperConnection), TableName)))
+      val ephemeralStatusActor = _system.actorOf(
+          Props(
+              new EphemeralStatusActor(
+                  ssc,
+                  Map("connectionString" -> zookeeperConnection),
+                  TableName)))
 
       ephemeralStatusActor ! EphemeralStatusActor.GetStatus
       expectMsg(new StatusResponse(EphemeralExecutionStatus.NotStarted))
@@ -121,9 +137,12 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
 
     "CheckStatus shoud make nothing" in new CommonValues {
 
-      val ephemeralStatusActor =
-        _system.actorOf(Props(new EphemeralStatusActor(ssc,
-          Map("connectionString" -> zookeeperConnection), TableName)))
+      val ephemeralStatusActor = _system.actorOf(
+          Props(
+              new EphemeralStatusActor(
+                  ssc,
+                  Map("connectionString" -> zookeeperConnection),
+                  TableName)))
 
       ephemeralStatusActor ! EphemeralStatusActor.CheckStatus
 
@@ -132,14 +151,18 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
 
     "SetStatus shoud change the status" in new CommonValues {
 
-      val ephemeralStatusActor =
-        _system.actorOf(Props(new EphemeralStatusActor(ssc,
-          Map("connectionString" -> zookeeperConnection), TableName)))
+      val ephemeralStatusActor = _system.actorOf(
+          Props(
+              new EphemeralStatusActor(
+                  ssc,
+                  Map("connectionString" -> zookeeperConnection),
+                  TableName)))
 
       ephemeralStatusActor ! EphemeralStatusActor.GetStatus
       expectMsg(new StatusResponse(EphemeralExecutionStatus.NotStarted))
 
-      ephemeralStatusActor ! EphemeralStatusActor.SetStatus(EphemeralExecutionStatus.Started)
+      ephemeralStatusActor ! EphemeralStatusActor.SetStatus(
+          EphemeralExecutionStatus.Started)
       expectMsg(new StatusResponse(EphemeralExecutionStatus.Started))
 
       ephemeralStatusActor ! EphemeralStatusActor.GetStatus
@@ -148,9 +171,12 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
 
     "GetStreamingStatus shoud return the correct streaming status" in new CommonValues {
 
-      val ephemeralStatusActor =
-        _system.actorOf(Props(new EphemeralStatusActor(ssc,
-          Map("connectionString" -> zookeeperConnection), TableName)))
+      val ephemeralStatusActor = _system.actorOf(
+          Props(
+              new EphemeralStatusActor(
+                  ssc,
+                  Map("connectionString" -> zookeeperConnection),
+                  TableName)))
 
       ephemeralStatusActor ! EphemeralStatusActor.GetStreamingStatus
       expectMsg(StreamingStatusResponse(StreamingContextState.INITIALIZED))
@@ -167,18 +193,23 @@ class EphemeralStatusActorIT(_system: ActorSystem) extends TestKit(_system)
 
     "CheckStatus shoud make StreamingContext stop when status is Stopping without Listener" in new CommonValues {
 
-      val ephemeralStatusActor =
-        _system.actorOf(Props(new EphemeralStatusActor(ssc,
-          Map("connectionString" -> zookeeperConnection), TableName)))
+      val ephemeralStatusActor = _system.actorOf(
+          Props(
+              new EphemeralStatusActor(
+                  ssc,
+                  Map("connectionString" -> zookeeperConnection),
+                  TableName)))
 
-      ephemeralStatusActor ! EphemeralStatusActor.SetStatus(EphemeralExecutionStatus.Started)
+      ephemeralStatusActor ! EphemeralStatusActor.SetStatus(
+          EphemeralExecutionStatus.Started)
       expectMsg(new StatusResponse(EphemeralExecutionStatus.Started))
       ssc.getState() should be(StreamingContextState.INITIALIZED)
 
       ephemeralStatusActor ! EphemeralStatusActor.GetStatus
       expectMsg(new StatusResponse(EphemeralExecutionStatus.Started))
 
-      ephemeralStatusActor ! EphemeralStatusActor.SetStatus(EphemeralExecutionStatus.Stopping)
+      ephemeralStatusActor ! EphemeralStatusActor.SetStatus(
+          EphemeralExecutionStatus.Stopping)
       expectMsg(new StatusResponse(EphemeralExecutionStatus.Stopping))
       ephemeralStatusActor ! EphemeralStatusActor.CheckStatus
       expectMsg(new StatusResponse(EphemeralExecutionStatus.Stopped))

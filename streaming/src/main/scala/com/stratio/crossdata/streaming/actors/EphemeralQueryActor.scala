@@ -23,8 +23,9 @@ import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
 
 import scala.util.Try
 
-class EphemeralQueryActor(zookeeperConfiguration: Map[String, String]) extends Actor
-with EphemeralQueriesMapDAO {
+class EphemeralQueryActor(zookeeperConfiguration: Map[String, String])
+    extends Actor
+    with EphemeralQueriesMapDAO {
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var streamingQueries: List[EphemeralQueryModel] = dao.getAll()
@@ -46,7 +47,8 @@ with EphemeralQueriesMapDAO {
   }
 
   private def doAddListener(): Unit = {
-    repository.addEntityListener(dao.entity, _ => streamingQueries = dao.getAll())
+    repository
+      .addEntityListener(dao.entity, _ => streamingQueries = dao.getAll())
     sender ! ListenerResponse(true)
   }
 }
@@ -57,8 +59,9 @@ object EphemeralQueryActor {
 
   case object AddListener
 
-  case class ListenerResponse(added : Boolean)
+  case class ListenerResponse(added: Boolean)
 
-  case class EphemeralQueriesResponse(streamingQueries: Seq[EphemeralQueryModel])
+  case class EphemeralQueriesResponse(
+      streamingQueries: Seq[EphemeralQueryModel])
 
 }

@@ -23,25 +23,30 @@ case class TableIdentifierNormalized(table: String, database: Option[String]) {
 
   override def toString: String = quotedString
 
-  def quotedString: String = database.map(db => s"`$db`.`$table`").getOrElse(s"`$table`")
+  def quotedString: String =
+    database.map(db => s"`$db`.`$table`").getOrElse(s"`$table`")
 
-  def unquotedString: String = database.map(db => s"$db.$table").getOrElse(table)
+  def unquotedString: String =
+    database.map(db => s"$db.$table").getOrElse(table)
 
   def toTableIdentifier: TableIdentifier = TableIdentifier(table, database)
 }
 
 private[sql] object TableIdentifierNormalized {
-  def apply(tableName: String): TableIdentifierNormalized = new TableIdentifierNormalized(tableName)
+  def apply(tableName: String): TableIdentifierNormalized =
+    new TableIdentifierNormalized(tableName)
 }
 
 case class IndexIdentifierNormalized(indexType: String, indexName: String) {
   def quotedString: String = s"`$indexName`.`$indexType`"
   def unquotedString: String = s"$indexName.$indexType"
   override def toString: String = quotedString
-  def toIndexIdentifier: IndexIdentifier = IndexIdentifier(indexType, indexName)
-  def asTableIdentifierNormalized: TableIdentifierNormalized = TableIdentifierNormalized(indexType,Option(indexName))
+  def toIndexIdentifier: IndexIdentifier =
+    IndexIdentifier(indexType, indexName)
+  def asTableIdentifierNormalized: TableIdentifierNormalized =
+    TableIdentifierNormalized(indexType, Option(indexName))
 }
 
-case class StringNormalized(normalizedString: String){
+case class StringNormalized(normalizedString: String) {
   override def toString = normalizedString
 }

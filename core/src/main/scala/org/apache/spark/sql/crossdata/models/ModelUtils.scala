@@ -20,5 +20,5 @@ import org.json4s.jackson.Serialization._
 
 object ModelUtils extends CrossdataSerializer {
 
-  def modelToJsonString[T <: AnyRef](model: T) : String = writePretty(model)
+  def modelToJsonString[T <: AnyRef](model: T): String = writePretty(model)
 }

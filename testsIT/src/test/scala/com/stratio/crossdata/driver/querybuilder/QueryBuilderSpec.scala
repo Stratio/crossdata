@@ -26,7 +26,6 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class QueryBuilderSpec extends BaseXDTest {
 
-
   "The Query Builder" should "be able to build a completed query using strings" in {
 
     val query = select("col, '1', max(col)") from "table inner join table2 on a = b" where "a = b" groupBy "col" having "a = b" orderBy "col ASC" limit 5
@@ -43,7 +42,6 @@ class QueryBuilderSpec extends BaseXDTest {
 
     compareAfterFormatting(query, expected)
   }
-
 
   it should "be able to add a where clause on a limited query" in {
 
@@ -70,7 +68,6 @@ class QueryBuilderSpec extends BaseXDTest {
 
     compareAfterFormatting(query, expected)
   }
-
 
   it should "be able to join several queries" in {
 
@@ -154,7 +151,6 @@ class QueryBuilderSpec extends BaseXDTest {
     val query_1 = select('c).from('table)
     val query = selectAll from query_1
 
-
     val expected = """
                      | SELECT * FROM
                      | ( SELECT c FROM table )
@@ -175,7 +171,8 @@ class QueryBuilderSpec extends BaseXDTest {
 
   it should "be able to build a query containing a subquery as a predicate" in {
 
-    val query = select('c + 4).from('table).where('col === (select('c) from 't))
+    val query =
+      select('c + 4).from('table).where('col === (select('c) from 't))
 
     val expected = """
                      | SELECT c + 4 FROM table
@@ -286,7 +283,7 @@ class QueryBuilderSpec extends BaseXDTest {
 
   it should "be able to maintain user associations" in {
 
-    val query = select (('a + 13) * ('hola + 2) + 5) from 'test
+    val query = select(('a + 13) * ('hola + 2) + 5) from 'test
 
     val expected = """
                      | SELECT ((a +  13) * (hola + 2)) + 5
@@ -296,10 +293,9 @@ class QueryBuilderSpec extends BaseXDTest {
     compareAfterFormatting(query, expected)
   }
 
-
   it should "be able to support aliases" in {
 
-    val query = select ('a as 'alias) from ('test as 'talias, (selectAll from 'table) as 'qalias)
+    val query = select('a as 'alias) from ('test as 'talias, (selectAll from 'table) as 'qalias)
 
     val expected = """
                      | SELECT a AS alias
@@ -309,16 +305,15 @@ class QueryBuilderSpec extends BaseXDTest {
     compareAfterFormatting(query, expected)
   }
 
-
   /*
   This test is here as documentation. Actually, its testing Scala since
   a mathematical precedence order is guaranteed by Scala's method names precedence table.
 
   Check "Programming in Scala: A comprehensive step-by-step guide", M.Ordersky,
   Section "5.8 - Operator precedence and associativity".
-  */
+   */
   it should "make use of Scala's method names precedence rules" in {
-    val query = select ('a, 'c - 'd * 'a) from 'test
+    val query = select('a, 'c - 'd * 'a) from 'test
 
     val expected = "SELECT a, c - (d * a) FROM test"
 
@@ -326,7 +321,7 @@ class QueryBuilderSpec extends BaseXDTest {
   }
 
   it should "keep operator precedence provided by the user through the use of parenthesis" in {
-    val query = select ('a, 'b * ( 'c - 'd )) from 'test
+    val query = select('a, 'b * ('c - 'd)) from 'test
 
     val expected = "SELECT a, b * (c - d) FROM test"
 
@@ -335,18 +330,19 @@ class QueryBuilderSpec extends BaseXDTest {
 
   it should "generate correct queries using arithmetic operators" in {
 
-    val arithmeticExpressions = ('a + 'b)::('c - 'd)::('e * 'f)::('g / 'h)::('i % 'j)::Nil
-    val baseQuery = select (arithmeticExpressions:_*) from 'test
+    val arithmeticExpressions = ('a + 'b) :: ('c - 'd) :: ('e * 'f) :: ('g / 'h) :: ('i % 'j) :: Nil
+    val baseQuery = select(arithmeticExpressions: _*) from 'test
 
-    val query = (baseQuery /: arithmeticExpressions) {
-      (q, op) => q.where(op === 'ref)
+    val query = (baseQuery /: arithmeticExpressions) { (q, op) =>
+      q.where(op === 'ref)
     }
 
-    val expectedExpressions = "a + b"::"c - d"::"e * f"::"g / h"::"i % j"::Nil
+    val expectedExpressions = "a + b" :: "c - d" :: "e * f" :: "g / h" :: "i % j" :: Nil
     val expected = s"""
                    |SELECT ${expectedExpressions mkString ", "}
                    |FROM test
-                   |WHERE ${expectedExpressions.map(exp => s"($exp = ref)") mkString " AND "}
+                   |WHERE ${expectedExpressions
+                        .map(exp => s"($exp = ref)") mkString " AND "}
                    |""".stripMargin
 
     compareAfterFormatting(query, expected)
@@ -358,22 +354,33 @@ class QueryBuilderSpec extends BaseXDTest {
     val selQueryStr = "SELECT a FROM sourceTable"
 
     Seq(
-      (insert into 'test select 'a from 'sourceTable, s"INSERT INTO test $selQueryStr"),
-      (insert overwrite 'test select 'a from 'sourceTable, s"INSERT OVERWRITE test $selQueryStr")
-    ) foreach { case (query, expected) =>
-      compareAfterFormatting(query, expected)
+        (insert into 'test select 'a from 'sourceTable,
+         s"INSERT INTO test $selQueryStr"),
+        (insert overwrite 'test select 'a from 'sourceTable,
+         s"INSERT OVERWRITE test $selQueryStr")
+    ) foreach {
+      case (query, expected) =>
+        compareAfterFormatting(query, expected)
     }
 
   }
 
   it should "be able to support common functions in the select expression" in {
     val query = select(
-      distinct('col), countDistinct('col), sumDistinct('col),
-      count(querybuilder.all), approxCountDistinct('col, 0.95),
-      avg('col), min('col), max('col), sum('col), abs('col)
-    ) from 'table
+          distinct('col),
+          countDistinct('col),
+          sumDistinct('col),
+          count(querybuilder.all),
+          approxCountDistinct('col, 0.95),
+          avg('col),
+          min('col),
+          max('col),
+          sum('col),
+          abs('col)
+      ) from 'table
 
-    val expected = """
+    val expected =
+      """
                      | SELECT DISTINCT col, count( DISTINCT col), sum( DISTINCT col),
                      | count(*), APPROXIMATE (0.95) count ( DISTINCT col),
                      | avg(col), min(col), max(col), sum(col), abs(col)
@@ -383,21 +390,18 @@ class QueryBuilderSpec extends BaseXDTest {
     compareAfterFormatting(query, expected)
   }
 
-
   it should "be able to allow different order selections" in {
 
-    val queryAsc = selectAll from 'table orderBy('col asc)
-    val queryDesc = selectAll from 'table sortBy('col desc)
+    val queryAsc = selectAll from 'table orderBy ('col asc)
+    val queryDesc = selectAll from 'table sortBy ('col desc)
 
-    val expectedAsc =
-      """
+    val expectedAsc = """
         | SELECT *
         | FROM table
         | ORDER BY col ASC
       """
 
-    val expectedDesc =
-      """
+    val expectedDesc = """
         | SELECT *
         | FROM table
         | SORT BY col DESC
@@ -408,10 +412,9 @@ class QueryBuilderSpec extends BaseXDTest {
 
   }
 
-
   it should "be able to support comparison predicates" in {
 
-    val query = selectAll from 'table where( !('a < 5 && 'a <= 5 && 'a > 5 && 'a >=5 && 'a === 5 && 'a <> 5 || false))
+    val query = selectAll from 'table where (!('a < 5 && 'a <= 5 && 'a > 5 && 'a >= 5 && 'a === 5 && 'a <> 5 || false))
 
     val expected =
       """
@@ -426,7 +429,7 @@ class QueryBuilderSpec extends BaseXDTest {
 
   it should "be able to support common predicates" in {
 
-    val query = selectAll from 'table where ( ('a in (2,3,4)) && ('b like "%R") && ('b isNull) && ('b isNotNull))
+    val query = selectAll from 'table where (('a in (2, 3, 4)) && ('b like "%R") && ('b isNull) && ('b isNotNull))
 
     val expected =
       """
@@ -439,12 +442,13 @@ class QueryBuilderSpec extends BaseXDTest {
 
   }
 
-
   it should "be able to support SparkSQL types" in {
 
-    val timestampVal = new Timestamp(new GregorianCalendar(1970,0,1,0,0,0).getTimeInMillis)
+    val timestampVal =
+      new Timestamp(new GregorianCalendar(1970, 0, 1, 0, 0, 0).getTimeInMillis)
 
-    val query = selectAll from 'table where ( ('a <> "string") &&  ('a <> 5f) && ('a <> true) && ('a <> timestampVal) && ('a <> new java.math.BigDecimal(1)))
+    val query = selectAll from 'table where (('a <> "string") && ('a <> 5f) && ('a <> true) && ('a <> timestampVal) && ('a <> new java.math.BigDecimal(
+                  1)))
 
     val expected =
       """
@@ -461,13 +465,10 @@ class QueryBuilderSpec extends BaseXDTest {
     formatOutput(query.build) should be(formatOutput(expected))
   }
 
-
   def formatOutput(query: String): String =
-    query.stripMargin.replaceAll(System.lineSeparator(), " ").trim.replaceAll(" +", " ")
-
-
-
-
-
+    query.stripMargin
+      .replaceAll(System.lineSeparator(), " ")
+      .trim
+      .replaceAll(" +", " ")
 
 }

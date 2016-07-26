@@ -37,9 +37,7 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
   val client = prepareEnvironment()
 
   withCrossdataContext { xdContext =>
-
-    xdContext.sql(
-      s"""|CREATE TEMPORARY TABLE $Type
+    xdContext.sql(s"""|CREATE TEMPORARY TABLE $Type
           |(id INT, age INT, description STRING, enrolled BOOLEAN, name STRING)
           |USING $SourceProvider
           |OPTIONS (
@@ -57,8 +55,13 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
 
     // Spark
     xdContext.sql(s"SELECT name as b FROM $Type WHERE age > 1 limit 7").show(5)
-    xdContext.sql(s"SELECT description as b FROM $Type WHERE description = 'Comment 4'").show(5)
-    xdContext.sql(s"SELECT description as b FROM $Type WHERE description = 'Comment 2' AND id = 2").show(5)
+    xdContext
+      .sql(
+          s"SELECT description as b FROM $Type WHERE description = 'Comment 4'")
+      .show(5)
+    xdContext
+      .sql(s"SELECT description as b FROM $Type WHERE description = 'Comment 2' AND id = 2")
+      .show(5)
 
   }
 
@@ -66,9 +69,8 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
 
   private def withCrossdataContext(commands: XDContext => Unit) = {
 
-    val sparkConf = new SparkConf().
-      setAppName("ElasticsearchExample").
-      setMaster("local[4]")
+    val sparkConf =
+      new SparkConf().setAppName("ElasticsearchExample").setMaster("local[4]")
 
     val sc = new SparkContext(sparkConf)
     try {
@@ -92,7 +94,10 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
   }
 
   private def createClient(): ElasticClient = {
-    val settings = ImmutableSettings.settingsBuilder().put("cluster.name", s"$ElasticClusterName").build
+    val settings = ImmutableSettings
+      .settingsBuilder()
+      .put("cluster.name", s"$ElasticClusterName")
+      .build
     ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
   }
 
@@ -100,14 +105,14 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
 
     client.execute {
       create index s"$Index" mappings (
-        s"$Type" as (
-          "id" typed IntegerType,
-          "age" typed IntegerType,
-          "description" typed StringType,
-          "enrolled" typed BooleanType,
-          "name" typed StringType
+          s"$Type" as (
+              "id" typed IntegerType,
+              "age" typed IntegerType,
+              "description" typed StringType,
+              "enrolled" typed BooleanType,
+              "name" typed StringType
           )
-        )
+      )
     }.await
 
     client.execute {
@@ -117,11 +122,11 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
     for (a <- 1 to 10) {
       client.execute {
         index into s"$Index" / s"$Type" fields (
-          "id" -> a,
-          "age" -> (10 + a),
-          "description" -> s"Comment $a",
-          "enrolled" -> (a % 2 ==0),
-          "name" -> s"Name $a"
+            "id" -> a,
+            "age" -> (10 + a),
+            "description" -> s"Comment $a",
+            "enrolled" -> (a % 2 == 0),
+            "name" -> s"Name $a"
         )
       }.await
     }
@@ -145,4 +150,3 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
   }
 
 }
-

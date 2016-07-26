@@ -25,24 +25,35 @@ import org.apache.spark.sql.crossdata.config.CoreConfig
 
 object CatalogUtils extends Logging {
 
-  protected[crossdata] def externalCatalog(catalystConf: CatalystConf, config: Config): XDPersistentCatalog = {
+  protected[crossdata] def externalCatalog(
+      catalystConf: CatalystConf,
+      config: Config): XDPersistentCatalog = {
     import CoreConfig.DerbyClass
-    val externalCatalogName = if (config.hasPath(CoreConfig.ClassConfigKey))
-      config.getString(CoreConfig.ClassConfigKey)
-    else DerbyClass
+    val externalCatalogName =
+      if (config.hasPath(CoreConfig.ClassConfigKey))
+        config.getString(CoreConfig.ClassConfigKey)
+      else DerbyClass
 
     val externalCatalogClass = Class.forName(externalCatalogName)
-    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[CatalystConf])
+    val constr: Constructor[_] =
+      externalCatalogClass.getConstructor(classOf[CatalystConf])
 
     constr.newInstance(catalystConf).asInstanceOf[XDPersistentCatalog]
   }
 
-  protected[crossdata] def streamingCatalog(catalystConf: CatalystConf, serverConfig: Config): Option[XDStreamingCatalog] = {
+  protected[crossdata] def streamingCatalog(
+      catalystConf: CatalystConf,
+      serverConfig: Config): Option[XDStreamingCatalog] = {
     if (serverConfig.hasPath(CoreConfig.StreamingCatalogClassConfigKey)) {
-      val streamingCatalogClass = serverConfig.getString(CoreConfig.StreamingCatalogClassConfigKey)
+      val streamingCatalogClass =
+        serverConfig.getString(CoreConfig.StreamingCatalogClassConfigKey)
       val xdStreamingCatalog = Class.forName(streamingCatalogClass)
-      val constr: Constructor[_] = xdStreamingCatalog.getConstructor(classOf[CatalystConf], classOf[Config])
-      Option(constr.newInstance(catalystConf, serverConfig).asInstanceOf[XDStreamingCatalog])
+      val constr: Constructor[_] = xdStreamingCatalog
+        .getConstructor(classOf[CatalystConf], classOf[Config])
+      Option(
+          constr
+            .newInstance(catalystConf, serverConfig)
+            .asInstanceOf[XDStreamingCatalog])
     } else {
       logWarning("There is no configured streaming catalog")
       None

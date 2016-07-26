@@ -28,4 +28,3 @@ object SessionManager {
 }
 
 case class Authentication(user: String, password: String)
-

@@ -35,7 +35,8 @@ import JoinType._
 case class Join(private val left: Relation,
                 private val right: Relation,
                 private val joinType: JoinType,
-                private val condition: Option[Expression] = None) extends Relation {
+                private val condition: Option[Expression] = None)
+    extends Relation {
 
   def on(condition: String): Relation = on(XDQLStatement(condition))
 
@@ -43,5 +44,7 @@ case class Join(private val left: Relation,
     Join(left, right, joinType, Some(condition))
 
   override private[querybuilder] def toXDQL: String =
-    s"${left.toXDQL} $joinType ${right.toXDQL}" + condition.map(c => s" ON ${c.toXDQL}").getOrElse("")
+    s"${left.toXDQL} $joinType ${right.toXDQL}" + condition
+      .map(c => s" ON ${c.toXDQL}")
+      .getOrElse("")
 }

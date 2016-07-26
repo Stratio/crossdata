@@ -26,13 +26,14 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-
 @RunWith(classOf[JUnitRunner])
 class InsensitiveCatalogIT extends DerbyCatalogIT {
 
-  override val coreConfig : Option[Config] =
-    Some(ConfigFactory.empty().withValue(s"config.${SQLConf.CASE_SENSITIVE.key}", ConfigValueFactory.fromAnyRef(false)))
-
+  override val coreConfig: Option[Config] = Some(
+      ConfigFactory
+        .empty()
+        .withValue(s"config.${SQLConf.CASE_SENSITIVE.key}",
+                   ConfigValueFactory.fromAnyRef(false)))
 
   it should s"persist a table and retrieve it changing some letters to upper case in $catalogName" in {
 
@@ -40,7 +41,11 @@ class InsensitiveCatalogIT extends DerbyCatalogIT {
     import XDCatalogCommon._
     val tableIdentifier = TableIdentifier(tableNameOriginal, Some(Database))
     val tableNormalized = tableIdentifier.normalize
-    val crossdataTable = CrossdataTable(tableNormalized, Some(Columns), SourceDatasource, Array[String](Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableNormalized,
+                                        Some(Columns),
+                                        SourceDatasource,
+                                        Array[String](Field1Name),
+                                        OptsJSON)
 
     xdContext.catalog.persistTable(crossdataTable, OneRowRelation)
     xdContext.catalog.tableExists(tableIdentifier) shouldBe true

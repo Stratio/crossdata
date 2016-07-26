@@ -34,15 +34,16 @@ class DriverConf extends Logging {
   private val userSettings = new ConcurrentHashMap[String, ConfigValue]()
 
   private[crossdata] lazy val finalSettings: Config =
-    userSettings.foldLeft(typesafeConf) { case (prevConfig, keyValue) =>
-      prevConfig.withValue(keyValue._1, keyValue._2)
+    userSettings.foldLeft(typesafeConf) {
+      case (prevConfig, keyValue) =>
+        prevConfig.withValue(keyValue._1, keyValue._2)
     }
 
   /**
-   * Adds a generic key-value
-   * akka => e.g akka.loglevel = "INFO"
-   * driverConfig => e.g config.cluster.actor = "my-server-actor"
-   */
+    * Adds a generic key-value
+    * akka => e.g akka.loglevel = "INFO"
+    * driverConfig => e.g config.cluster.actor = "my-server-actor"
+    */
   def set(key: String, value: ConfigValue): DriverConf = {
     userSettings.put(key, value)
     this
@@ -54,28 +55,32 @@ class DriverConf extends Logging {
   }
 
   /**
-   * @param hostAndPort e.g 127.0.0.1:13420
-   */
+    * @param hostAndPort e.g 127.0.0.1:13420
+    */
   def setClusterContactPoint(hostAndPort: String*): DriverConf = {
-    userSettings.put(DriverConfigHosts, ConfigValueFactory.fromIterable(hostAndPort))
+    userSettings
+      .put(DriverConfigHosts, ConfigValueFactory.fromIterable(hostAndPort))
     this
   }
 
   /**
-   * @param hostAndPort e.g 127.0.0.1:13420
-   */
+    * @param hostAndPort e.g 127.0.0.1:13420
+    */
   def setClusterContactPoint(hostAndPort: java.util.List[String]): DriverConf = {
-    userSettings.put(DriverConfigHosts, ConfigValueFactory.fromIterable(hostAndPort))
+    userSettings
+      .put(DriverConfigHosts, ConfigValueFactory.fromIterable(hostAndPort))
     this
   }
 
   def setFlattenTables(flatten: Boolean): DriverConf = {
-    userSettings.put(DriverFlattenTables, ConfigValueFactory.fromAnyRef(flatten))
+    userSettings
+      .put(DriverFlattenTables, ConfigValueFactory.fromAnyRef(flatten))
     this
   }
 
   def setTunnelTimeout(seconds: Int): DriverConf = {
-    userSettings.put(AkkaClusterRecepcionistTunnelTimeout, ConfigValueFactory.fromAnyRef(seconds * 1000))
+    userSettings.put(AkkaClusterRecepcionistTunnelTimeout,
+                     ConfigValueFactory.fromAnyRef(seconds * 1000))
     this
   }
 
@@ -90,7 +95,7 @@ class DriverConf extends Logging {
   private[crossdata] def getClusterContactPoint: List[String] = {
     val hosts = finalSettings.getStringList(DriverConfigHosts).toList
     val clusterName = finalSettings.getString(DriverClusterName)
-    val ssl= Try(finalSettings.getBoolean(SSLEnabled)).getOrElse(false)
+    val ssl = Try(finalSettings.getBoolean(SSLEnabled)).getOrElse(false)
     if (ssl)
       hosts map (host => s"akka.ssl.tcp://$clusterName@$host$ActorsPath")
     else
@@ -109,28 +114,34 @@ class DriverConf extends Logging {
   private[crossdata] def getFlattenTables: Boolean =
     finalSettings.getBoolean(DriverFlattenTables)
 
-
   private val typesafeConf: Config = {
 
-    val defaultConfig = ConfigFactory.load(DriverConfigDefault).getConfig(ParentConfigName)
+    val defaultConfig =
+      ConfigFactory.load(DriverConfigDefault).getConfig(ParentConfigName)
 
     //Get the driver-application.conf properties if exists in resources
     val configWithResource: Config = {
 
       val configResource = defaultConfig.getString(DriverConfigResource)
-      val resource = DriverConf.getClass.getClassLoader.getResource(configResource)
+      val resource =
+        DriverConf.getClass.getClassLoader.getResource(configResource)
       Option(resource).fold {
-        logger.warn("User resource (" + configResource + ") haven't been found")
+        logger.warn(
+            "User resource (" + configResource + ") haven't been found")
         val file = new File(configResource)
         if (file.exists()) {
-          val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
+          val userConfig =
+            ConfigFactory.parseFile(file).getConfig(ParentConfigName)
           userConfig.withFallback(defaultConfig)
         } else {
-          logger.warn("User file (" + configResource + ") haven't been found in classpath")
+          logger.warn(
+              "User file (" + configResource + ") haven't been found in classpath")
           defaultConfig
         }
       } { resTemp =>
-        val userConfig = ConfigFactory.parseResources(configResource).getConfig(ParentConfigName)
+        val userConfig = ConfigFactory
+          .parseResources(configResource)
+          .getConfig(ParentConfigName)
         userConfig.withFallback(defaultConfig)
       }
     }
@@ -139,7 +150,8 @@ class DriverConf extends Logging {
     val finalConfig: Config = {
 
       val configFile = {
-        val envConfigFile = Option(System.getProperties.getProperty(DriverConfigFile))
+        val envConfigFile = Option(
+            System.getProperties.getProperty(DriverConfigFile))
         envConfigFile.getOrElse(defaultConfig.getString(DriverConfigFile))
       }
 
@@ -148,7 +160,8 @@ class DriverConf extends Logging {
       } else {
         val file = new File(configFile)
         if (file.exists()) {
-          val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
+          val userConfig =
+            ConfigFactory.parseFile(file).getConfig(ParentConfigName)
           userConfig.withFallback(configWithResource)
         } else {
           logger.warn("User file (" + configFile + ") haven't been found")
@@ -158,33 +171,36 @@ class DriverConf extends Logging {
     }
 
     // System properties
-    val systemPropertiesConfig =
-      Try(
-        ConfigFactory.parseProperties(System.getProperties).getConfig(ParentConfigName)
-      ).getOrElse(
+    val systemPropertiesConfig = Try(
+        ConfigFactory
+          .parseProperties(System.getProperties)
+          .getConfig(ParentConfigName)
+    ).getOrElse(
         ConfigFactory.parseProperties(System.getProperties)
-      )
+    )
 
-    val finalConfigWithSystemProperties = systemPropertiesConfig.withFallback(finalConfig)
+    val finalConfigWithSystemProperties =
+      systemPropertiesConfig.withFallback(finalConfig)
 
     val finalConfigWithEnvVars = {
       if (finalConfigWithSystemProperties.hasPath("config.cluster.servers")) {
-        val serverNodes = finalConfigWithSystemProperties.getString("config.cluster.servers")
+        val serverNodes =
+          finalConfigWithSystemProperties.getString("config.cluster.servers")
         defaultConfig.withValue(
-          DriverConfigHosts,
-          ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
+            DriverConfigHosts,
+            ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
       } else {
         finalConfigWithSystemProperties
       }
     }
 
-    logger.debug(s"Cluster.hosts = ${finalConfigWithEnvVars.getAnyRef(DriverConfigHosts)}")
+    logger.debug(
+        s"Cluster.hosts = ${finalConfigWithEnvVars.getAnyRef(DriverConfigHosts)}")
 
     ConfigFactory.load(finalConfigWithEnvVars)
   }
 
 }
-
 
 object DriverConf {
   val ActorsPath = "/user/receptionist"
@@ -197,5 +213,6 @@ object DriverConf {
   val DriverFlattenTables = "config.flatten-tables"
   val DriverClusterName = "config.cluster.name"
   val SSLEnabled = "akka.remote.netty.ssl.enable-ssl"
-  val AkkaClusterRecepcionistTunnelTimeout = "akka.contrib.cluster.receptionist.response-tunnel-receive-timeout"
+  val AkkaClusterRecepcionistTunnelTimeout =
+    "akka.contrib.cluster.receptionist.response-tunnel-receive-timeout"
 }

@@ -42,8 +42,8 @@ class StreamingDdlIT extends SharedXDContextTest with StreamingDDLTestConstants{
   }
 
   /**
-   * Parser tests
-   */
+ * Parser tests
+ */
   "StreamingDDLParser" should "parse an add ephemeral query" in {
     val logicalPlan = xdContext.ddlParser.parse(s"ADD $Sql WITH WINDOW $Window SEC AS $QueryName")
     logicalPlan shouldBe AddEphemeralQuery(EphemeralTableName, Sql, QueryName, Window)
@@ -79,8 +79,8 @@ class StreamingDdlIT extends SharedXDContextTest with StreamingDDLTestConstants{
   }
 
   /**
-   * Command tests
-   */
+ * Command tests
+ */
   "StreamingCommand" should "allow to describe ephemeral tables" in {
 
     val ephTableIdentifier = TableIdentifier(EphemeralTableName, Some("db"))
@@ -383,11 +383,11 @@ class StreamingDdlIT extends SharedXDContextTest with StreamingDDLTestConstants{
   }
 
   /**
-   * Stop the underlying [[org.apache.spark.SparkContext]], if any.
-   */
+ * Stop the underlying [[org.apache.spark.SparkContext]], if any.
+ */
   protected override def afterAll(): Unit = {
     xdContext.streamingCatalog.foreach(_.dropAllEphemeralTables())
     super.afterAll()
   }
 }
-*/
+ */

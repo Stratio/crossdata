@@ -28,14 +28,14 @@ import org.scalatest.mock.MockitoSugar
 @RunWith(classOf[JUnitRunner])
 class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
 
-
   "A ElasticSearchQueryProcessor " should "build a Match All query in ES" in {
     //Fixture
 
     val logicalPlan: LogicalPlan = mock[LogicalPlan]
     val parameters = mock[Map[String, String]]
     val structType = Option(mock[StructType])
-    val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
+    val queryProcessor =
+      ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
 
     val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
     val filters: Array[SourceFilter] = Array()
@@ -44,13 +44,14 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
     val query = new SearchDefinition(indexType)
 
     //Experimentation
-    val result = queryProcessor.buildNativeQuery(requiredColums, filters, query)
+    val result =
+      queryProcessor.buildNativeQuery(requiredColums, filters, query)
 
     //Expectations
     result should not be null
-    result.toString().replace("\n", "").replace(" ", "") should be("{\"query\":{\"bool\":{}},\"fields\":\"title\"}")
+    result.toString().replace("\n", "").replace(" ", "") should be(
+        "{\"query\":{\"bool\":{}},\"fields\":\"title\"}")
   }
-
 
   it should "build a Simple Filter query in ES" in {
     //Fixture
@@ -58,7 +59,8 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
     val logicalPlan: LogicalPlan = mock[LogicalPlan]
     val parameters = mock[Map[String, String]]
     val structType = Option(mock[StructType])
-    val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
+    val queryProcessor =
+      ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
 
     val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
     val filters: Array[SourceFilter] = Array(EqualTo("year", 1990))
@@ -67,13 +69,14 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
     val query = new SearchDefinition(indexType)
 
     //Experimentation
-    val result = queryProcessor.buildNativeQuery(requiredColums, filters, query)
+    val result =
+      queryProcessor.buildNativeQuery(requiredColums, filters, query)
 
     //Expectations
     result should not be null
-    result.toString().replace("\n", "").replace(" ", "") should be("{\"query\":{\"bool\":{}},\"post_filter\":{\"bool\":{\"must\":{\"term\":{\"year\":1990}}}},\"fields\":\"title\"}")
+    result.toString().replace("\n", "").replace(" ", "") should be(
+        "{\"query\":{\"bool\":{}},\"post_filter\":{\"bool\":{\"must\":{\"term\":{\"year\":1990}}}},\"fields\":\"title\"}")
   }
-
 
   it should "build a AND Query" in {
     //Fixture
@@ -81,19 +84,23 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
     val logicalPlan: LogicalPlan = mock[LogicalPlan]
     val parameters = mock[Map[String, String]]
     val structType = Option(mock[StructType])
-    val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
+    val queryProcessor =
+      ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
 
     val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
-    val filters: Array[SourceFilter] = Array(EqualTo("year", 1990), EqualTo("Name", "Lord"))
+    val filters: Array[SourceFilter] =
+      Array(EqualTo("year", 1990), EqualTo("Name", "Lord"))
 
     val indexType = IndexesAndTypes("movies/movie")
     val query = new SearchDefinition(indexType)
 
     //Experimentation
-    val result = queryProcessor.buildNativeQuery(requiredColums, filters, query)
+    val result =
+      queryProcessor.buildNativeQuery(requiredColums, filters, query)
 
     //Expectations
     result should not be null
-    result.toString().replace("\n", "").replace(" ", "") should be("{\"query\":{\"bool\":{}},\"post_filter\":{\"bool\":{\"must\":[{\"term\":{\"year\":1990}},{\"term\":{\"Name\":\"Lord\"}}]}},\"fields\":\"title\"}")
+    result.toString().replace("\n", "").replace(" ", "") should be(
+        "{\"query\":{\"bool\":{}},\"post_filter\":{\"bool\":{\"must\":[{\"term\":{\"year\":1990}},{\"term\":{\"Name\":\"Lord\"}}]}},\"fields\":\"title\"}")
   }
 }

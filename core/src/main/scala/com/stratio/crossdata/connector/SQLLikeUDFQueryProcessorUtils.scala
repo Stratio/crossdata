@@ -29,32 +29,39 @@ object SQLLikeUDFQueryProcessorUtils {
   }
 }
 
-trait SQLLikeUDFQueryProcessorUtils {
-  self: SQLLikeQueryProcessorUtils =>
-
+trait SQLLikeUDFQueryProcessorUtils { self: SQLLikeQueryProcessorUtils =>
 
   import SQLLikeUDFQueryProcessorUtils.ContextWithUDFs
 
   override type ProcessingContext <: ContextWithUDFs
 
-  override def quoteString(in: Any)(implicit context: ProcessingContext): String = in match {
-    case s @ (_:String | _: Timestamp) => s"'$s'"
+  override def quoteString(in: Any)(
+      implicit context: ProcessingContext): String = in match {
+    case s @ (_: String | _: Timestamp) => s"'$s'"
     case a: Attribute => expandAttribute(a.toString)
     case other => other.toString
   }
 
   // UDFs are string references in both filters and projects => lookup in udfsMap
-  def expandAttribute(att: String)(implicit context: ProcessingContext): String = {
-    implicit val udfs = context.asInstanceOf[SQLLikeUDFQueryProcessorUtils#ProcessingContext].udfs
-    udfs get(att) map { udf =>
+  def expandAttribute(att: String)(
+      implicit context: ProcessingContext): String = {
+    implicit val udfs = context
+      .asInstanceOf[SQLLikeUDFQueryProcessorUtils#ProcessingContext]
+      .udfs
+    udfs get (att) map { udf =>
       val actualParams = udf.children.collect { //TODO: Add type checker (maybe not here)
-        case at: AttributeReference if(udfs contains at.toString) => expandAttribute(at.toString)
+        case at: AttributeReference if (udfs contains at.toString) =>
+          expandAttribute(at.toString)
         case at: AttributeReference => at.name
-        case lit @ Literal(_, DataTypes.StringType) => quoteString(lit.toString)
+        case lit @ Literal(_, DataTypes.StringType) =>
+          quoteString(lit.toString)
         case lit: Literal => lit.toString
       } mkString ","
       s"${udf.name}($actualParams)"
-    } getOrElse att.split("#").head.trim // TODO: Try a more sophisticated way...
+    } getOrElse att
+      .split("#")
+      .head
+      .trim // TODO: Try a more sophisticated way...
   }
 
 }

@@ -28,7 +28,6 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-
 package org.apache.spark.sql.crossdata.daos
 
 import com.stratio.common.utils.components.config.impl.TypesafeConfigComponent
@@ -38,8 +37,11 @@ import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.models.TableModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
-trait TableDAO extends GenericDAOComponent[TableModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+trait TableDAO
+    extends GenericDAOComponent[TableModel]
+    with TypesafeConfigComponent
+    with SparkLoggerComponent
+    with CrossdataSerializer {
 
   override implicit val formats = json4sJacksonFormats
 

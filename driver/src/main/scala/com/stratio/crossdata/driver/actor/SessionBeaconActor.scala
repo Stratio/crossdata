@@ -26,12 +26,15 @@ import scala.concurrent.duration.FiniteDuration
 
 object SessionBeaconActor {
 
-  def props(
-             sessionId: UUID,
-             period: FiniteDuration,
-             clusterClientActor: ActorRef,
-             clusterPath: String): Props =
-    Props(new SessionBeaconActor(sessionId, period, clusterClientActor, clusterPath))
+  def props(sessionId: UUID,
+            period: FiniteDuration,
+            clusterClientActor: ActorRef,
+            clusterPath: String): Props =
+    Props(
+        new SessionBeaconActor(sessionId,
+                               period,
+                               clusterClientActor,
+                               clusterPath))
 
 }
 
@@ -39,11 +42,12 @@ object SessionBeaconActor {
   * This actor is used by the driver provide the cluster with proof of life for the current session.
   * Check [[LiveMan]] for more details.
   */
-class SessionBeaconActor private (
-                     override val keepAliveId: UUID,
-                     override val period: FiniteDuration,
-                     clusterClientActor: ActorRef,
-                     clusterPath: String) extends Actor with LiveMan[UUID] {
+class SessionBeaconActor private (override val keepAliveId: UUID,
+                                  override val period: FiniteDuration,
+                                  clusterClientActor: ActorRef,
+                                  clusterPath: String)
+    extends Actor
+    with LiveMan[UUID] {
 
   override def receive: Receive = PartialFunction.empty
   override val master: ActorRef = clusterClientActor

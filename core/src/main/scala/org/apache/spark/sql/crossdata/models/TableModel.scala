@@ -27,7 +27,9 @@ case class TableModel(id: String,
                       version: String = crossdata.CrossdataVersion) {
 
   def getExtendedName: String =
-    database.fold(name) { databaseName => s"$databaseName.$name" }
+    database.fold(name) { databaseName =>
+      s"$databaseName.$name"
+    }
 
-  def toPrettyString : String = ModelUtils.modelToJsonString(this)
+  def toPrettyString: String = ModelUtils.modelToJsonString(this)
 }

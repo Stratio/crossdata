@@ -23,10 +23,9 @@ import org.apache.spark.sql.crossdata.config.CoreConfig
 
 import scala.collection.JavaConversions._
 
-
 final class XDSharedState(
-                           @transient val sc: SparkContext,
-                           val sqlConf: SQLConf,
-                           val externalCatalog: XDCatalogCommon,
-                           val streamingCatalog: Option[XDStreamingCatalog]
-                         )
+    @transient val sc: SparkContext,
+    val sqlConf: SQLConf,
+    val externalCatalog: XDCatalogCommon,
+    val streamingCatalog: Option[XDStreamingCatalog]
+)

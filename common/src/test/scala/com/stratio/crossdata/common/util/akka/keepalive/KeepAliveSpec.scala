@@ -23,32 +23,34 @@ import org.scalatest.{FlatSpecLike, Matchers}
 
 import scala.concurrent.duration._
 
+class KeepAliveSpec
+    extends TestKit(ActorSystem("KeepAliveSpec"))
+    with FlatSpecLike
+    with Matchers {
 
-class KeepAliveSpec extends TestKit(ActorSystem("KeepAliveSpec"))
-  with FlatSpecLike with Matchers {
-
-  class MonitoredActor(override val keepAliveId: Int, override val master: ActorRef) extends LiveMan[Int] {
+  class MonitoredActor(override val keepAliveId: Int,
+                       override val master: ActorRef)
+      extends LiveMan[Int] {
     override val period: FiniteDuration = 100 milliseconds
 
     override def receive: Receive = PartialFunction.empty
   }
 
-
   "A LiveMan Actor" should "periodically send HearBeat message providing its id" in {
 
     val kaId = 1
 
-    val liveMan: ActorRef = system.actorOf(Props(new MonitoredActor(kaId, testActor)))
+    val liveMan: ActorRef =
+      system.actorOf(Props(new MonitoredActor(kaId, testActor)))
     expectMsg(HeartBeat(kaId))
 
     system.stop(liveMan)
   }
 
-
-
   "A Master Actor" should "detect when a LiveManActor stops beating" in {
 
-    val master: ActorRef = system.actorOf(KeepAliveMaster.props[Int](testActor))
+    val master: ActorRef =
+      system.actorOf(KeepAliveMaster.props[Int](testActor))
 
     val liveMen: Seq[(Int, ActorRef)] = (1 to 5) map { idx =>
       master ! DoCheck(idx, 200 milliseconds)
@@ -74,7 +76,7 @@ class KeepAliveSpec extends TestKit(ActorSystem("KeepAliveSpec"))
     system.stop(lastActor)
 
     expectMsg(500 milliseconds, HeartbeatLost(lastId))
-    
+
     liveMen foreach {
       case (_, monitoredActor) => system.stop(monitoredActor)
     }
@@ -82,6 +84,5 @@ class KeepAliveSpec extends TestKit(ActorSystem("KeepAliveSpec"))
     system.stop(master)
 
   }
-
 
 }

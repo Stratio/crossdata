@@ -19,12 +19,13 @@ object DummySecurityManager {
   val UniqueReply = "Authorized"
 }
 
-class DummySecurityManager(credentials: Credentials, audit: Boolean) extends SecurityManager(credentials, audit) {
+class DummySecurityManager(credentials: Credentials, audit: Boolean)
+    extends SecurityManager(credentials, audit) {
 
   import org.apache.spark.sql.crossdata.security.DummySecurityManager._
 
   override def authorize(resource: Any): AuthorizationReply = {
-    if(audit) logInfo(s"DUMMY SECURITY MANAGER: $UniqueReply")
+    if (audit) logInfo(s"DUMMY SECURITY MANAGER: $UniqueReply")
     new AuthorizationReply(true, Some(UniqueReply))
   }
 

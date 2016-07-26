@@ -28,12 +28,12 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
-class SQLResultSpec extends BaseXDTest  with MockitoSugar{
+class SQLResultSpec extends BaseXDTest with MockitoSugar {
 
   "An error result" should "have an empty result" in {
     val error = ErrorSQLResult("message")
-    error.hasError should be (true)
-    a [RuntimeException] should be thrownBy error.resultSet
+    error.hasError should be(true)
+    a[RuntimeException] should be thrownBy error.resultSet
   }
 
   "An SuccessfulQueryResult " should "have a resultSet" in {
@@ -51,7 +51,7 @@ class SQLResultSpec extends BaseXDTest  with MockitoSugar{
 
     res should not be (null)
     res should be equals Array(row)
-    hasError should be (false)
+    hasError should be(false)
   }
 
 }

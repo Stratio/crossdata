@@ -31,18 +31,19 @@ import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.catalyst.util.sideBySide
 import org.apache.spark.sql.types.StringType
 
-trait AnalysisTest extends BaseXDTest{
+trait AnalysisTest extends BaseXDTest {
 
-  val testRelation = LocalRelation(
-    AttributeReference("col1", StringType)(),
-    AttributeReference("col2", StringType)())
+  val testRelation = LocalRelation(AttributeReference("col1", StringType)(),
+                                   AttributeReference("col2", StringType)())
 
   val caseSensitiveAnalyzer = {
     val caseSensitiveConf = new SimpleCatalystConf(true)
     val caseSensitiveCatalog = new SimpleCatalog(caseSensitiveConf)
     caseSensitiveCatalog.registerTable(TableIdentifier("table"), testRelation)
 
-    new Analyzer(caseSensitiveCatalog, EmptyFunctionRegistry, caseSensitiveConf) {
+    new Analyzer(caseSensitiveCatalog,
+                 EmptyFunctionRegistry,
+                 caseSensitiveConf) {
       override val extendedResolutionRules = ResolveAggregateAlias :: Nil
     }
   }
@@ -68,10 +69,10 @@ trait AnalysisTest extends BaseXDTest{
     val normalized1 = normalizeExprIds(plan1)
     val normalized2 = normalizeExprIds(plan2)
     if (normalized1 != normalized2) {
-      fail(
-        s"""
+      fail(s"""
            |== FAIL: Plans do not match ===
-           |${sideBySide(normalized1.treeString, normalized2.treeString).mkString("\n")}
+           |${sideBySide(normalized1.treeString, normalized2.treeString)
+            .mkString("\n")}
          """.stripMargin)
     }
   }
