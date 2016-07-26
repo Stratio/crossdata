@@ -3,6 +3,12 @@ CROSSBUILD:
   - '2.11'
 
 ITSERVICES:
+  - ELASTICSEARCH:
+      image: itzg/elasticsearch:2.x
+      sleep: 5
+      env:
+        - CLUSTER=%%JUID
+        - OPTS=-Dnetwork.bind_host=%%OWNHOSTNAME
   - SPARK:
       image: stratio/spark:1.6.1
       env:
@@ -17,11 +23,6 @@ ITSERVICES:
       env:
         - SPARK_MODE=slave
         - SPARK_MASTER_HOST=%%SPARK#0
-  - ELASTICSEARCH:
-      image: itzg/elasticsearch:2.x
-      sleep: 5
-      env:
-        - CLUSTER=%%JUID
   - CASSANDRA:
       image: stratio/cassandra-lucene-index:2.2.5.3
       sleep: 10
