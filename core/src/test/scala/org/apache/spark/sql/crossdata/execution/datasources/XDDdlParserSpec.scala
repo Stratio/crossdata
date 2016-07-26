@@ -18,6 +18,8 @@ package org.apache.spark.sql.crossdata.execution.datasources
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalyst.execution._
+import org.apache.spark.sql.crossdata.catalyst.parser.XDDdlParser
 import org.apache.spark.sql.execution.datasources.{CreateTableUsing, DescribeCommand, RefreshTable}
 import org.apache.spark.sql.types.StructType
 import org.junit.runner.RunWith

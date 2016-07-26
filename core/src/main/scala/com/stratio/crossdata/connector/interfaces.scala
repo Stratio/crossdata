@@ -19,7 +19,7 @@ import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.execution.NativeUDF
+import org.apache.spark.sql.crossdata.catalyst.NativeUDF
 import org.apache.spark.sql.sources.{DataSourceRegister, Filter}
 import org.apache.spark.sql.types.{DataType, StructType}
 
@@ -91,8 +91,6 @@ trait TableInventory extends GenerateConnectorOptions{
    */
   def listTables(context: SQLContext, options: Map[String, String]): Seq[Table]
 
-  //TODO: Add operation for describing a concrete table.
-  //def fetchTableDescription(name: String, options: Map[String, String]): Table
 }
 
 object TableInventory {

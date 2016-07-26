@@ -19,10 +19,11 @@ package com.stratio.crossdata.driver.actor
 import java.util.UUID
 
 import akka.actor.{Actor, ActorRef, Props}
-import akka.pattern.pipe
 import akka.contrib.pattern.ClusterClient
+import akka.pattern.pipe
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
 import com.stratio.crossdata.driver.util.HttpClient
@@ -34,9 +35,7 @@ import scala.concurrent.{Future, Promise}
 import scala.util.matching.Regex
 
 object ProxyActor {
-  val ServerPath = "/user/crossdata-server"
   val DefaultName = "proxy-actor"
-  val RemoteClientName = "remote-client"
 
   def props(clusterClientActor: ActorRef, driver: Driver): Props =
     Props(new ProxyActor(clusterClientActor, driver))
@@ -74,40 +73,35 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
   // Process messages from the Crossdata Driver.
   def sendToServer(promisesByIds: PromisesByIds): Receive = {
 
-    /** TODO: This is a dirty trick to keep temporary tables synchronized at each XDContext
-    it should be fixed as soon as Spark version is updated to 1.6 since it'll enable.
-    WARNING: This disables creation cancellation commands and exposes the system behaviour to client-side code.
-    */
-    case secureSQLCommand @ CommandEnvelope(sqlCommand @ SQLCommand(sql @ catalogOpExp(), _, _, _), _) =>
-      logger.info(s"Sending temporary catalog entry creation query to all servers: $sql")
-      clusterClientActor ! ClusterClient.SendToAll(ProxyActor.ServerPath, secureSQLCommand)
-
     case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
-      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, secureSQLCommand, localAffinity = false)
+      clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(aCmd @ AddJARCommand(path, _, _, _), _) =>
+    case secureSQLCommand @ CommandEnvelope(addJARCommand @ AddJARCommand(path, _, _, _), session) =>
       import context.dispatcher
-      val shipmentResponse: Future[SQLReply] = sendJarToServers(aCmd,path)
+      val shipmentResponse: Future[SQLReply] = sendJarToServers(addJARCommand, path, session)
       shipmentResponse pipeTo sender
 
-    case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss, _), _) =>
-      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath,secureSQLCommand, localAffinity=false)
-
-    case CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
+    case secureSQLCommand @ CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
       logger.debug(s"Send cluster state with requestID=${clusterStateCommand.requestId}")
-      clusterClientActor ! ClusterClient.Send(ProxyActor.ServerPath, clusterStateCommand, localAffinity = false)
+      clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
+
+    case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss, _), _) =>
+      clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath,secureSQLCommand, localAffinity=false)
+
+    case secureSQLCommand @ CommandEnvelope(_: OpenSessionCommand | _: CloseSessionCommand, _) =>
+      clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = true)
 
     case sqlCommand: SQLCommand =>
       logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
   }
 
 
-  def sendJarToServers(aCmd:Command,path:String): Future[SQLReply] ={
+  def sendJarToServers(command: Command, path: String, session:Session): Future[SQLReply] = {
     import scala.concurrent.ExecutionContext.Implicits.global
-    httpClient.sendJarToHTTPServer(path) map { response =>
+    httpClient.sendJarToHTTPServer(path, session) map { response =>
       SQLReply(
-        aCmd.requestId,
+        command.requestId,
         SuccessfulSQLResult(Array(Row(response)), StructType(StructField("filepath", StringType) :: Nil))
       )
     } recover {
@@ -115,7 +109,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
         val msg = s"Error trying to send JAR through HTTP: ${failureCause.getMessage}"
         logger.error(msg)
         SQLReply(
-          aCmd.requestId,
+          command.requestId,
           ErrorSQLResult(msg)
         )
     }
@@ -130,7 +124,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
           context.become(start(promisesByIds.copy(promisesByIds.promises - reply.requestId)))
           reply match {
             case reply @ SQLReply(_, result) =>
-              logger.info(s"Successful SQL execution: ${result}")
+              logger.info(s"Successful SQL execution: $result")
               p.success(reply)
             // TODO review query cancelation
             case reply @ QueryCancelledReply(id) =>
@@ -138,6 +132,9 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
               p.success(reply)
             case reply @ ClusterStateReply(_, clusterState) =>
               logger.debug(s"Cluster snapshot received $clusterState")
+              p.success(reply)
+            case reply @ OpenSessionReply(_, isOpen) =>
+              logger.debug(s"Open session reply received: open=$isOpen")
               p.success(reply)
             case _ =>
               p.failure(new RuntimeException(s"Unknown message: $reply"))

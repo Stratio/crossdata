@@ -19,22 +19,30 @@
 package org.apache.spark.sql.crossdata.test
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLConf, SQLContext}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 
+object TestXDContext{
+
+  val DefaultTestSparkConf: SparkConf = new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.sql.shuffle.partitions", "3")
+
+}
+
+import TestXDContext._
+
 /**
- * A special [[SQLContext]] prepared for testing.
- */
-private[sql] class TestXDContext private(sc: SparkContext, catalogConfig: Config)
-  extends XDContext(sc, catalogConfig) {
+  * A special [[SQLContext]] prepared for testing.
+  */
+private[sql] class TestXDContext private(sc: SparkContext, coreConfig: Config)
+  extends XDContext(sc, coreConfig) {
 
   def this() {
     this(new SparkContext(
       "local[2]",
       "test-xd-context",
-      new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.sql.shuffle.partitions", "3")
+      DefaultTestSparkConf
     ), ConfigFactory.empty())
   }
 
@@ -42,7 +50,7 @@ private[sql] class TestXDContext private(sc: SparkContext, catalogConfig: Config
     this(new SparkContext(
       "local[2]",
       "test-xd-context",
-      new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.sql.shuffle.partitions", "3")
+      DefaultTestSparkConf
     ), catalogConfig)
   }
 

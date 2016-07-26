@@ -23,7 +23,7 @@ import org.apache.spark.sql.execution.datasources.{LogicalRelation, ResolvedData
 import org.apache.spark.sql.sources.{HadoopFsRelationProvider, RelationProvider, SchemaRelationProvider}
 
 object CreateRelationUtil extends SparkLoggerComponent{
-  //TODO: Possible bad use or design of this at ddl.scala
+
   protected[crossdata] def createLogicalRelation(sqlContext: SQLContext, crossdataTable: CrossdataTable): LogicalRelation = {
 
     /** Although table schema is inferred and persisted in XDCatalog, the schema can't be specified in some cases because

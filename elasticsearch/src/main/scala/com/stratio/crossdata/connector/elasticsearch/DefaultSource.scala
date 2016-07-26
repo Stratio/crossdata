@@ -21,7 +21,7 @@
 package com.stratio.crossdata.connector.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.{IndexAndType, IndexesAndType}
+import com.sksamuel.elastic4s.IndexAndTypes
 import com.sksamuel.elastic4s.mappings._
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.TableInventory.Table
@@ -156,7 +156,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
       }
     }
 
-    val indexType = IndexAndType(index, typeName)
+    val indexType = IndexAndTypes(index, typeName)
 
     try {
       ElasticSearchConnectionUtils.withClientDo(options) { client =>
@@ -186,8 +186,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
                                  options: Map[String, String]): Try[Unit] = {
 
     if(ElasticSearchConnectionUtils.numberOfTypes(options) == 1) {
-      val (index, typeName) = ElasticSearchConnectionUtils.extractIndexAndType(options).get
-      val indexType = IndexAndType(index, typeName)
+      val (index, _) = ElasticSearchConnectionUtils.extractIndexAndType(options).get
 
       Try {
         ElasticSearchConnectionUtils.withClientDo(options){ client =>

@@ -25,8 +25,8 @@ import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelatio
 import org.apache.spark.sql.catalyst.expressions.aggregate.Count
 import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Expression, Literal, NamedExpression}
 import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Limit, LogicalPlan}
+import org.apache.spark.sql.crossdata.catalyst.NativeUDF
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter._
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.{Row, sources}

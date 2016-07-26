@@ -16,17 +16,18 @@
 package com.stratio.crossdata.streaming.test
 
 import java.io.File
-import java.nio.file.{Paths, Files}
+import java.nio.file.{Files, Paths}
 
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
 import org.apache.commons.io.FileUtils
-import org.apache.spark.sql.crossdata.XDContext._
+import org.apache.spark.sql.crossdata.config.CoreConfig._
 import org.apache.spark.sql.crossdata.models._
 
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try, Random}
+import scala.util.{Failure, Random, Success, Try}
 
-trait CommonValues {
+trait CommonValues extends SparkLoggerComponent{
 
   /**
    * Kafka Options

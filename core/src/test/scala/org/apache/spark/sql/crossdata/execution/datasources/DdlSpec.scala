@@ -19,6 +19,7 @@ import java.sql.{Date, Timestamp}
 import java.text.SimpleDateFormat
 
 import com.stratio.crossdata.test.BaseXDTest
+import org.apache.spark.sql.crossdata.catalyst.execution.DDLUtils
 import org.apache.spark.sql.types.{MapType, _}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
