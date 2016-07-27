@@ -50,7 +50,7 @@ object DriverExample extends App with DefaultConstants {
 
   try {
 
-    driver = Option(Driver.getOrCreate(driverConf))
+    driver = Option(Driver.newSession(driverConf))
 
     for {
       xdDriver <- driver
@@ -64,7 +64,8 @@ object DriverExample extends App with DefaultConstants {
     }
 
   } finally {
-    driver.foreach(_.stop())
+    driver.foreach(_.closeSession())
+    Driver.shutdown()
     cleanEnvironment(cluster, session)
   }
 

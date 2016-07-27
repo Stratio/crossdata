@@ -56,9 +56,9 @@ object Driver {
 
   val InitializationTimeout: Duration = 10 seconds
 
-  lazy val defaultDriverConf = new DriverConf
+  private lazy val defaultDriverConf = new DriverConf
 
-  lazy val system = ActorSystem("CrossdataServerCluster", defaultDriverConf.finalSettings)
+  private lazy val system = ActorSystem("CrossdataServerCluster", defaultDriverConf.finalSettings)
 
   def newSession(): Driver = newSession(defaultDriverConf)
 
@@ -76,6 +76,14 @@ object Driver {
 
   def newSession(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
     newSession(driverConf.setClusterContactPoint(seedNodes))
+
+  /**
+    * Stops the underlying actor system.
+    * WARNING! It should be called once all active sessions have been closed. After the shutdown, new session cannot be created.
+    */
+  def shutdown(): Unit = {
+      if (!system.isTerminated) system.shutdown()
+  }
 
   private[crossdata] def newSession(driverConf: DriverConf, authentication: Authentication): Driver = {
     val driver = new Driver(driverConf, authentication)
@@ -161,18 +169,18 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     val addJarPattern = """(\s*add)(\s+jar\s+)(.*)""".r
     val addAppWithAliasPattern ="""(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(.*)""".r
     val addAppPattern ="""(\s*add)(\s+app\s+)(.*)(\s+with\s+)(.*)""".r
-    
-query match {
+
+    query match {
       case addJarPattern(add, jar, path) =>
         addJar(path.trim)
       case addAppWithAliasPattern(add, app, path, as, alias, wth, clss) =>
-        val realPath=path.replace("'","")
+        val realPath = path.replace("'", "")
         val res = addJar(realPath).waitForResult()
         val hdfspath = res.resultSet(0).getString(0)
         addApp(hdfspath, alias, clss)
 
       case addAppPattern(add, app, path, wth, clss) =>
-        val realPath=path.replace("'","")
+        val realPath = path.replace("'", "")
         val res = addJar(realPath).waitForResult()
         val hdfspath = res.resultSet(0).getString(0)
         addApp(hdfspath, clss, realPath)
