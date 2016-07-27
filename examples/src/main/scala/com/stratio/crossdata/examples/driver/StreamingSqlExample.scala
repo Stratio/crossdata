@@ -29,7 +29,7 @@ object StreamingSqlExample
 
   val (cluster, session) = prepareEnvironment()
 
-  val driver = Driver.getOrCreate(
+  val driver = Driver.newSession(
       new DriverConf().setClusterContactPoint("127.0.0.1:13420"))
 
   val importQuery = s"""|IMPORT TABLES
@@ -85,7 +85,8 @@ object StreamingSqlExample
   } finally {
     driver.sql(s"DROP ALL EPHEMERAL QUERIES").waitForResult()
     driver.sql(s"DROP TABLE $Catalog.$Table").waitForResult()
-    driver.stop()
+    driver.closeSession()
+    Driver.shutdown()
     cleanEnvironment(cluster, session)
   }
 

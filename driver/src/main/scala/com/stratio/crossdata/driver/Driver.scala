@@ -55,9 +55,9 @@ object Driver {
 
   val InitializationTimeout: Duration = 10 seconds
 
-  lazy val defaultDriverConf = new DriverConf
+  private lazy val defaultDriverConf = new DriverConf
 
-  lazy val system =
+  private lazy val system =
     ActorSystem("CrossdataServerCluster", defaultDriverConf.finalSettings)
 
   def newSession(): Driver = newSession(defaultDriverConf)
@@ -79,6 +79,14 @@ object Driver {
   def newSession(seedNodes: java.util.List[String],
                  driverConf: DriverConf): Driver =
     newSession(driverConf.setClusterContactPoint(seedNodes))
+
+  /**
+    * Stops the underlying actor system.
+    * WARNING! It should be called once all active sessions have been closed. After the shutdown, new session cannot be created.
+    */
+  def shutdown(): Unit = {
+    if (!system.isTerminated) system.shutdown()
+  }
 
   private[crossdata] def newSession(driverConf: DriverConf,
                                     authentication: Authentication): Driver = {

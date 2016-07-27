@@ -20,7 +20,7 @@ import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.mappings.FieldType._
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
-import org.elasticsearch.common.settings.ImmutableSettings
+import org.elasticsearch.common.settings.Settings
 
 sealed trait ElasticsearchDefaultConstants {
   val Index = "highschool"
@@ -94,18 +94,19 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
   }
 
   private def createClient(): ElasticClient = {
-    val settings = ImmutableSettings
+    val settings = Settings
       .settingsBuilder()
       .put("cluster.name", s"$ElasticClusterName")
       .build
-    ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
+    ElasticClient.transport(
+        settings,
+        ElasticsearchClientUri(ElasticHost, ElasticNativePort))
   }
 
   private def buildTable(client: ElasticClient): Unit = {
-
     client.execute {
       create index s"$Index" mappings (
-          s"$Type" as (
+          mapping(s"$Type") fields (
               "id" typed IntegerType,
               "age" typed IntegerType,
               "description" typed StringType,
@@ -113,10 +114,6 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
               "name" typed StringType
           )
       )
-    }.await
-
-    client.execute {
-      search in s"$Index" / s"$Type"
     }.await
 
     for (a <- 1 to 10) {
@@ -130,12 +127,6 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
         )
       }.await
     }
-
-    Thread.sleep(2000)
-
-    client.execute {
-      search in s"$Index" / s"$Type"
-    }.await
 
   }
 
