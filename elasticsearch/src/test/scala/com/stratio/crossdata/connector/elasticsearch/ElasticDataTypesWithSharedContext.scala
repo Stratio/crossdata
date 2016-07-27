@@ -17,7 +17,7 @@ package com.stratio.crossdata.connector.elasticsearch
 
 import java.util.{GregorianCalendar, UUID}
 
-import com.sksamuel.elastic4s.ElasticClient
+import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.mappings.{MappingDefinition, TypedFieldDefinition}
@@ -25,9 +25,9 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
-import org.elasticsearch.common.settings.ImmutableSettings
+import org.elasticsearch.common.settings.Settings
 import org.scalatest.Suite
-
+import org.joda.time.DateTime
 import scala.util.Try
 
 
@@ -83,8 +83,8 @@ trait ElasticDataTypesWithSharedContext extends SharedXDContextWithDataTest with
   //Template steps: Override them
   override protected def prepareClient: Option[ClientParams] = Try {
     logInfo(s"Connection to elastic search, ElasticHost: $ElasticHost, ElasticNativePort:$ElasticNativePort, ElasticClusterName $ElasticClusterName")
-    val settings = ImmutableSettings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
-    val elasticClient = ElasticClient.remote(settings, ElasticHost, ElasticNativePort)
+    val settings = Settings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
+    val elasticClient = ElasticClient.transport(settings, ElasticsearchClientUri(ElasticHost, ElasticNativePort))
     createIndex(elasticClient, Index, typeMapping())
     elasticClient
   } toOption
@@ -108,7 +108,7 @@ trait ElasticDataTypesWithSharedContext extends SharedXDContextWithDataTest with
   }
 
   def typeMapping(): MappingDefinition ={
-    Type as(
+    mapping(Type) fields (
       dataTest.map(_.elasticType) :_*
       )
   }
