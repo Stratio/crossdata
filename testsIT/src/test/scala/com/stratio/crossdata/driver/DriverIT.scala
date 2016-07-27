@@ -27,6 +27,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.reflect.io.File
 
+@RunWith(classOf[JUnitRunner])
 class DriverIT extends EndToEndTest {
 
   "CrossdataDriver" should "return an ErrorResult when running an unparseable query" in {
