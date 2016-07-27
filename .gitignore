@@ -1,6 +1,7 @@
 .classpath
 .project
 .settings
+.ensime*
 *.log
 nbproject/
 build.xml
@@ -22,7 +23,11 @@ target/
 .DS_Store
 **/xdhistory.txt
 checkpoint/
-project/
+**.BACKUP.*.*
+**.BASE.*.*
+**.LOCAL.*.*
+**.REMOTE.*.*
+*.xml.bkp
 
 #hive ignores
 metastore_db/

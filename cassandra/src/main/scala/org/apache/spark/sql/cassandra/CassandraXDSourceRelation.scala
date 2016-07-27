@@ -39,7 +39,7 @@ import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.expressions.aggregate.Count
 import org.apache.spark.sql.catalyst.expressions.{Alias, AttributeReference, GenericRowWithSchema, Literal}
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.crossdata.execution.{EvaluateNativeUDF, NativeUDF}
+import org.apache.spark.sql.crossdata.catalyst.{EvaluateNativeUDF, NativeUDF}
 import org.apache.spark.sql.sources.{BaseRelation, Filter, InsertableRelation, PrunedFilteredScan}
 import org.apache.spark.sql.types.{StructType, _}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
@@ -104,18 +104,7 @@ class CassandraXDSourceRelation(tableRef: TableRef,
 
   // ~~ NativeScan implementation 
 
-  lazy val tableDef = {
-    val tableName = tableRef.table
-    val keyspaceName = tableRef.keyspace
-    Schema.fromCassandra(connector, Some(keyspaceName), Some(tableName)).tables.headOption match {
-      case Some(t) => t
-      case None =>
-        val metadata: Metadata = connector.withClusterDo(_.getMetadata)
-        val suggestions = NameTools.getSuggestions(metadata, keyspaceName, tableName)
-        val errorMessage = NameTools.getErrorString(keyspaceName, tableName, suggestions)
-        throw new IOException(errorMessage)
-    }
-  }
+  lazy val tableDef = Schema.tableFromCassandra(connector, tableRef.keyspace, tableRef.table)
 
   override def schema: StructType = {
     userSpecifiedSchema.getOrElse(StructType(tableDef.columns.map(toStructField)))
@@ -332,8 +321,6 @@ class CassandraXDSourceRelation(tableRef: TableRef,
   }
 
 }
-
-//TODO buildScan => CassandraTableScanRDD[CassandraSQLRow] => fetchTokenRange
 
 
 object CassandraXDSourceRelation {

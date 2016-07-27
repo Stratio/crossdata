@@ -23,7 +23,7 @@
     <parent>
         <artifactId>parent_2.10</artifactId>
         <groupId>com.stratio.crossdata</groupId>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>1.5.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>crossdata-server_2.10</artifactId>
@@ -31,6 +31,10 @@
     <name>Server</name>
     <description>Crossdata Server</description>
     <url>http://stratio.github.io/crossdata/</url>
+
+    <properties>
+        <hazelcast.version>3.6.3</hazelcast.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -41,7 +45,6 @@
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-core_${scala.binary.version}</artifactId>
         </dependency>
-        <!--TODO remove connector dependencies if the server is executed on Spark cluster-->
         <dependency>
             <groupId>com.stratio.crossdata.connector</groupId>
             <artifactId>crossdata-cassandra_${scala.binary.version}</artifactId>
@@ -101,9 +104,9 @@
             <version>${common.utils.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>${hazelcast.version}</version>
         </dependency>
         <!-- TESTS -->
         <dependency>

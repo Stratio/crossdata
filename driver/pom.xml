@@ -23,7 +23,7 @@
     <parent>
         <artifactId>parent_2.10</artifactId>
         <groupId>com.stratio.crossdata</groupId>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>1.5.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>crossdata-driver_2.10</artifactId>
@@ -231,8 +231,6 @@
                                     <include>io.netty:netty-all</include>
                                     <include>io.netty:netty</include>
                                     <include>com.google.protobuf:protobuf-java</include>
-                                    <include>org.slf4j:slf4j-api</include>
-                                    <include>org.slf4j:slf4j-log4j12</include>
                                     <include>log4j:log4j:jar</include>
                                     <include>org.scala-lang:scala-library</include>
                                     <include>org.scala-lang:scala-reflect</include>

@@ -17,6 +17,7 @@ package com.stratio.crossdata.connector.cassandra
 
 
 import com.datastax.driver.core.ResultSet
+import com.datastax.spark.connector.CassandraRowMetadata
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.cassandra.CassandraAttributeRole.{CassandraAttributeRole, ClusteringKey, Function, Indexed, NonIndexed, PartitionKey, Unknown}
 import com.stratio.crossdata.connector.{SQLLikeQueryProcessorUtils, SQLLikeUDFQueryProcessorUtils}
@@ -24,8 +25,8 @@ import org.apache.spark.sql.cassandra.{CassandraSQLRow, CassandraXDSourceRelatio
 import org.apache.spark.sql.catalyst.expressions.aggregate.Count
 import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Expression, Literal, NamedExpression}
 import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Limit, LogicalPlan}
+import org.apache.spark.sql.crossdata.catalyst.NativeUDF
 import org.apache.spark.sql.crossdata.catalyst.planning.ExtendedPhysicalOperation
-import org.apache.spark.sql.crossdata.execution.NativeUDF
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter._
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
 import org.apache.spark.sql.{Row, sources}
@@ -231,7 +232,8 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
 
   private[this] def sparkResultFromCassandra(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
     import scala.collection.JavaConversions._
-    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, requiredColumns)).toArray
+    val cassandraRowMetadata = CassandraRowMetadata.fromColumnNames(requiredColumns)
+    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, cassandraRowMetadata)).toArray
   }
 
 }

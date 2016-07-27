@@ -22,8 +22,7 @@ import org.apache.spark.sql.catalyst.expressions
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.Aggregate
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.crossdata.execution.EvaluateNativeUDF
-import org.apache.spark.sql.crossdata.execution.NativeUDF
+import org.apache.spark.sql.crossdata.catalyst.{EvaluateNativeUDF, NativeUDF}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
 import org.apache.spark.sql.sources.{Filter => SourceFilter}
@@ -103,7 +102,7 @@ object CatalystToCrossdataAdapter {
       case c: GetArrayItem if itemAccess2att contains c =>
         c.references.map(Found -> relation.attributeMap(_)).toSeq :+ (Requested -> itemAccess2att(c))
 
-      // TODO should these expressions be ignored? We are ommitting expressions within structfields
+      // TODO should these expressions be ignored? We are omitting expressions within structfields
       case c: GetStructField  => c.references flatMap {
         case x => Seq(Requested -> relation.attributeMap(x))
       } toSeq

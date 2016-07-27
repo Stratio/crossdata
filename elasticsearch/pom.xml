@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>parent_2.10</artifactId>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>1.5.0-SNAPSHOT</version>
     </parent>
     <groupId>com.stratio.crossdata.connector</groupId>
     <artifactId>crossdata-elasticsearch_2.10</artifactId>
@@ -33,29 +33,24 @@
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
-        <elastic.datasource.version>2.3.0</elastic.datasource.version>
-        <elastic4s.version>1.7.4</elastic4s.version>
+        <elastic.datasource.version>2.3.3</elastic.datasource.version>
+        <elastic4s.version>2.0.1</elastic4s.version>
+        <jackson.elastic.version>2.5.3</jackson.elastic.version>
     </properties>
     <dependencies>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.3.2</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>2.2.0</version>
-        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.7.3</version>
+            <version>${jackson.elastic.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.elastic.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-core_${scala.binary.version}</artifactId>

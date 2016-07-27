@@ -56,7 +56,7 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
       zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress)
       catalogConf = parseZookeeperCatalogConfig(zookeeperConf)
       xDContext = XDContext.getOrCreate(sc, parseCatalogConfig(catalogConf))
-      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true))
+      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), XDContext.xdConfig) //TODO Replace XDContext.xdConfig when refactoring CoreConfig
     }
 
     if (consumer == null) {
@@ -110,7 +110,7 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
     zookeeperStreamingCatalog.getEphemeralTable(TableNameProject) match {
       case Some(ephemeralTable) =>
         ssc = CrossdataStreamingHelper.createContext(ephemeralTable, sparkConf, zookeeperConf, catalogConf)
-        val valuesToSent = Array( """{"name": "a"}""", """{"name": "c"}""")
+        val valuesToSent = Array("""{"name": "a"}""", """{"name": "c"}""")
         kafkaTestUtils.createTopic(TopicTestProject)
         kafkaTestUtils.sendMessages(TopicTestProject, valuesToSent)
         val resultList = new mutable.MutableList[String]()

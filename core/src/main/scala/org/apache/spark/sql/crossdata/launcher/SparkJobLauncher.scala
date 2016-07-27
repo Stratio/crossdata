@@ -20,13 +20,13 @@ import java.util.UUID
 
 import com.google.common.io.BaseEncoding
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import com.stratio.crossdata.utils.HdfsUtils
+import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.{Config, ConfigRenderOptions}
 import org.apache.spark.launcher.SparkLauncher
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.config.CoreConfig._
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
 import org.apache.spark.sql.crossdata.config.{CoreConfig, StreamingConstants}
-import org.apache.spark.sql.crossdata.config.CoreConfig._
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
 import scala.collection.JavaConversions._
@@ -125,7 +125,7 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
       .addAppArgs(appArgs: _*)
       .setMaster(master)
       .setDeployMode("cluster")
-    // TODO startApplication(listener) since 1.6 preferred
+    // TODO startApplication(listener) since 1.6 preferred => Spark 2.0
     externalJars.foreach(sparkLauncher.addJar)
     sparkConf.map({ case (key, value) => sparkLauncher.setConf(key, value) })
     sparkLauncher.launch()
