@@ -29,21 +29,21 @@ import com.stratio.crossdata.connector.FunctionInventory
 import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
+import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.optimizer.Optimizer
-import org.apache.spark.sql.catalyst.plans.logical.LocalRelation
-import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, LogicalPlan}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, IndexIdentifier}
-import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
-import org.apache.spark.sql.crossdata.catalyst.{ExtractNativeUDFs, NativeUDF, XDFunctionRegistry}
+import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias, WrapRelationWithGlobalIndex}
 import org.apache.spark.sql.crossdata.catalyst.execution.ImportTablesUsingWithOptions
 import org.apache.spark.sql.crossdata.catalyst.optimizer.XDOptimizer
 import org.apache.spark.sql.crossdata.catalyst.parser.XDDdlParser
 import org.apache.spark.sql.crossdata.catalyst.planning.{ExtendedDataSourceStrategy, XDStrategies}
+import org.apache.spark.sql.crossdata.catalyst.{ExtractNativeUDFs, NativeUDF, XDFunctionRegistry}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.launcher.SparkJobLauncher
 import org.apache.spark.sql.crossdata.security.{Credentials, SecurityManager}
@@ -74,8 +74,8 @@ class XDContext protected (@transient val sc: SparkContext,
   def this(sc: SparkContext, config: Config) =
     this(sc, Some(config))
 
-  import XDContext._
   import CoreConfig._
+  import XDContext._
 
   /* TODO: Remove the config attributes from the companion object!!!
      This only works because you can only have a SQLContext per running instance
@@ -92,6 +92,11 @@ class XDContext protected (@transient val sc: SparkContext,
 
   catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
 
+
+  override protected[sql] def executeSql(sql: String): org.apache.spark.sql.execution.QueryExecution = executePlan(parseSql(sql))
+
+  override protected[sql] def executePlan(plan: LogicalPlan): sparkexecution.QueryExecution =
+    new XDQueryExecution(this, plan)
 
   override protected[sql] lazy val conf: SQLConf =
     userConfig.map{ coreConfig =>
