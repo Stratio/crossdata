@@ -25,46 +25,53 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class MongoDotsNotationIT extends MongoDataTypesCollection {
 
-
   it should "supports Projection with DOT notation using Spark" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT bigint, structofstruct.field1 FROM ${SharedXDContextTypesTest.dataTypesTableName}").collect(ExecutionType.Spark)
+    val sparkRow = sql(
+        s"SELECT bigint, structofstruct.field1 FROM ${SharedXDContextTypesTest.dataTypesTableName}")
+      .collect(ExecutionType.Spark)
 
-    sparkRow.head.schema.size should be (2)
-    sparkRow.head.schema.head.isInstanceOf[StructField] should be (true)
+    sparkRow.head.schema.size should be(2)
+    sparkRow.head.schema.head.isInstanceOf[StructField] should be(true)
   }
 
   it should "supports Projection with DOT notation with no ExecutionType defined" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT bigint, structofstruct.field1 FROM ${SharedXDContextTypesTest.dataTypesTableName}").collect()
+    val sparkRow = sql(
+        s"SELECT bigint, structofstruct.field1 FROM ${SharedXDContextTypesTest.dataTypesTableName}")
+      .collect()
 
-    sparkRow.head.schema.size should be (2)
-    sparkRow.head.schema.head.isInstanceOf[StructField] should be (true)
+    sparkRow.head.schema.size should be(2)
+    sparkRow.head.schema.head.isInstanceOf[StructField] should be(true)
   }
 
   it should "Does not supports Projection with DOT notation in Native" in {
     assumeEnvironmentIsUpAndRunning
 
-    val df = sql(s"SELECT bigint, structofstruct.field1 FROM ${SharedXDContextTypesTest.dataTypesTableName}")
+    val df = sql(
+        s"SELECT bigint, structofstruct.field1 FROM ${SharedXDContextTypesTest.dataTypesTableName}")
 
-    an [CrossdataException] should be thrownBy df.collect(ExecutionType.Native)
+    an[CrossdataException] should be thrownBy df.collect(ExecutionType.Native)
   }
 
   it should "supports Filters with DOT notation with no ExecutionType defined" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT int FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE struct.field2=3").collect()
+    val sparkRow = sql(
+        s"SELECT int FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE struct.field2=3")
+      .collect()
 
-    sparkRow.length should be (10)
+    sparkRow.length should be(10)
   }
 
   it should "Does not supports Filters with DOT notation in Native" in {
     assumeEnvironmentIsUpAndRunning
 
-    val df = sql(s"SELECT int FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE struct.field2=3")
+    val df = sql(
+        s"SELECT int FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE struct.field2=3")
 
-    an [CrossdataException] should be thrownBy df.collect(ExecutionType.Native)
+    an[CrossdataException] should be thrownBy df.collect(ExecutionType.Native)
   }
 }

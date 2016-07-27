@@ -20,12 +20,15 @@ import com.stratio.crossdata.driver.querybuilder.{CrossdataSQLStatement, Express
 sealed trait Identifier extends Expression with Relation
 
 /**
- * Identifier for tables and columns
- */
+  * Identifier for tables and columns
+  */
 case class EntityIdentifier(id: String) extends Identifier {
   override private[querybuilder] def toXDQL: String = id
 }
 
-case class AliasIdentifier(underlyingEntity: CrossdataSQLStatement, alias: String) extends Identifier {
-  override private[querybuilder] def toXDQL: String = s" ${underlyingEntity.toXDQL} AS $alias"
+case class AliasIdentifier(underlyingEntity: CrossdataSQLStatement,
+                           alias: String)
+    extends Identifier {
+  override private[querybuilder] def toXDQL: String =
+    s" ${underlyingEntity.toXDQL} AS $alias"
 }

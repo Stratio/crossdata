@@ -24,7 +24,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class CreateTableStatementSpec extends  BaseXDTest {
+class CreateTableStatementSpec extends BaseXDTest {
 
   val Keyspace = "testKeyspace"
   val Table = "testTable"
@@ -33,9 +33,9 @@ class CreateTableStatementSpec extends  BaseXDTest {
 
   "A CreateTableStatementSpec" should "Build a simple CreateExternalTableStatement " in {
 
-
     val schema: StructType = StructType(Seq(idField, nameField))
-    val options: Map[String, String] = Map("keyspace" -> Keyspace, "primary_key_string" ->"id")
+    val options: Map[String, String] =
+      Map("keyspace" -> Keyspace, "primary_key_string" -> "id")
     val stm = new CreateTableStatement(Table, schema, options)
 
     //Experimentation
@@ -43,14 +43,15 @@ class CreateTableStatementSpec extends  BaseXDTest {
 
     //Expectations
     print(query)
-    query should be(s"CREATE TABLE $Keyspace.$Table (id int, name varchar, PRIMARY KEY (id))")
+    query should be(
+        s"CREATE TABLE $Keyspace.$Table (id int, name varchar, PRIMARY KEY (id))")
   }
 
   it should "Build a CreateExternalTableStatement with a Composed PrimKey" in {
 
-
     val schema: StructType = StructType(Seq(idField, nameField))
-    val options: Map[String, String] = Map("keyspace" -> Keyspace, "primary_key_string" ->"id, name")
+    val options: Map[String, String] =
+      Map("keyspace" -> Keyspace, "primary_key_string" -> "id, name")
     val stm = new CreateTableStatement(Table, schema, options)
 
     //Experimentation
@@ -58,6 +59,7 @@ class CreateTableStatementSpec extends  BaseXDTest {
 
     //Expectations
     print(query)
-    query should be(s"CREATE TABLE $Keyspace.$Table (id int, name varchar, PRIMARY KEY (id, name))")
+    query should be(
+        s"CREATE TABLE $Keyspace.$Table (id int, name varchar, PRIMARY KEY (id, name))")
   }
 }

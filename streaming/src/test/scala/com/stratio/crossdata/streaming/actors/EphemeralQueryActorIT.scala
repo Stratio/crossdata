@@ -28,12 +28,13 @@ import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
 import org.scalatest.time.SpanSugar._
 
 @RunWith(classOf[JUnitRunner])
-class EphemeralQueryActorIT(_system: ActorSystem) extends TestKit(_system)
-with DefaultTimeout
-with ImplicitSender
-with WordSpecLike
-with BeforeAndAfterAll
-with TimeLimitedTests {
+class EphemeralQueryActorIT(_system: ActorSystem)
+    extends TestKit(_system)
+    with DefaultTimeout
+    with ImplicitSender
+    with WordSpecLike
+    with BeforeAndAfterAll
+    with TimeLimitedTests {
 
   def this() = this(ActorSystem("EphemeralQueryActor"))
 
@@ -55,7 +56,8 @@ with TimeLimitedTests {
 
   "EphemeralQueryActor" should {
     "set up with zookeeper configuration without any error" in {
-      _system.actorOf(Props(new EphemeralQueryActor(Map("connectionString" -> zookeeperConnection))))
+      _system.actorOf(Props(new EphemeralQueryActor(
+                  Map("connectionString" -> zookeeperConnection))))
     }
   }
 
@@ -63,8 +65,8 @@ with TimeLimitedTests {
 
     "AddListener the first message" in new CommonValues {
 
-      val ephemeralQueryActor =
-        _system.actorOf(Props(new EphemeralQueryActor(Map("connectionString" -> zookeeperConnection))))
+      val ephemeralQueryActor = _system.actorOf(Props(new EphemeralQueryActor(
+                  Map("connectionString" -> zookeeperConnection))))
 
       ephemeralQueryActor ! EphemeralQueryActor.AddListener
 
@@ -73,8 +75,8 @@ with TimeLimitedTests {
 
     "AddListener the not be the first message" in new CommonValues {
 
-      val ephemeralQueryActor =
-        _system.actorOf(Props(new EphemeralQueryActor(Map("connectionString" -> zookeeperConnection))))
+      val ephemeralQueryActor = _system.actorOf(Props(new EphemeralQueryActor(
+                  Map("connectionString" -> zookeeperConnection))))
 
       ephemeralQueryActor ! EphemeralQueryActor.GetQueries
 
@@ -83,8 +85,8 @@ with TimeLimitedTests {
 
     "GetQueries is the second message" in new CommonValues {
 
-      val ephemeralQueryActor =
-        _system.actorOf(Props(new EphemeralQueryActor(Map("connectionString" -> zookeeperConnection))))
+      val ephemeralQueryActor = _system.actorOf(Props(new EphemeralQueryActor(
+                  Map("connectionString" -> zookeeperConnection))))
 
       ephemeralQueryActor ! EphemeralQueryActor.AddListener
       expectMsg(new ListenerResponse(true))

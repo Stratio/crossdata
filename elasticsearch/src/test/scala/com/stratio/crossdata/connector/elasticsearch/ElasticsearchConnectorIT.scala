@@ -34,10 +34,18 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     val result = dataframe.collect(Native)
 
     result should have length 10
-    schema.fieldNames should equal (Seq("id", "age", "description", "enrolled", "name", "optionalField", "birthday", "salary", "ageInMilis"))
+    schema.fieldNames should equal(
+        Seq("id",
+            "age",
+            "description",
+            "enrolled",
+            "name",
+            "optionalField",
+            "birthday",
+            "salary",
+            "ageInMilis"))
     result.head.toSeq(4).toString should fullyMatch regex "Name [0-9]+"
   }
-
 
   it should "select with projections" in {
     assumeEnvironmentIsUpAndRunning
@@ -50,7 +58,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     val result = dataframe.collect(Native)
 
     result should have length 10
-    schema.fieldNames should equal (Seq("name", "age"))
+    schema.fieldNames should equal(Seq("name", "age"))
     result.head.toSeq(0).toString should fullyMatch regex "Name [0-9]+"
   }
 
@@ -63,7 +71,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 1
-    result(0).get(0) should be (1)
+    result(0).get(0) should be(1)
   }
 
   it should "select with simple filter and projection" in {
@@ -75,10 +83,9 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 1
-    result(0).get(0) should be ("Name 2")
-    result(0).get(1) should be (12)
+    result(0).get(0) should be("Name 2")
+    result(0).get(1) should be(12)
   }
-
 
   it should "select with LT filter" in {
     assumeEnvironmentIsUpAndRunning
@@ -89,7 +96,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 4
-    result(0).get(0).toString.toInt should be <5
+    result(0).get(0).toString.toInt should be < 5
   }
 
   it should "select with LTE filter" in {
@@ -125,9 +132,8 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 5
-    result(0).get(0).toString.toInt  should be > 5
+    result(0).get(0).toString.toInt should be > 5
   }
-
 
   it should "select with IN filter" in {
     assumeEnvironmentIsUpAndRunning
@@ -138,10 +144,9 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 2
-    result(0).get(0).toString.toInt should (be (3) or be (4))
+    result(0).get(0).toString.toInt should (be(3) or be(4))
     result.head.toSeq(1).toString should fullyMatch regex "Name [3,4]+"
   }
-
 
   it should "select with Null filter" in {
     assumeEnvironmentIsUpAndRunning
@@ -152,7 +157,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 5
-    result(0).get(0).toString.toInt % 2 should not be  0
+    result(0).get(0).toString.toInt % 2 should not be 0
     result.head.toSeq(1).toString should fullyMatch regex "Name [1,3,5,7,9]+"
   }
 
@@ -160,12 +165,13 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe = sql(s"SELECT id, name FROM $Type where enrolled Is Not Null")
+    val dataframe =
+      sql(s"SELECT id, name FROM $Type where enrolled Is Not Null")
 
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 5
-    result(0).get(0).toString.toInt % 2 should be (0)
+    result(0).get(0).toString.toInt % 2 should be(0)
     result.head.toSeq(1).toString should fullyMatch regex "Name [2,4,6,8,10]+"
   }
 
@@ -173,13 +179,14 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe = sql(s"SELECT name, age FROM $Type where id > 2 AND age = 13")
+    val dataframe =
+      sql(s"SELECT name, age FROM $Type where id > 2 AND age = 13")
 
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 1
-    result(0).get(0) should be ("Name 3")
-    result(0).get(1) should be (13)
+    result(0).get(0) should be("Name 3")
+    result(0).get(1) should be(13)
   }
 
   it should "select with Equals String" in {
@@ -191,48 +198,50 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 1
-    result(0).get(0) should be ("Name 3")
-    result(0).get(1) should be (13)
+    result(0).get(0) should be("Name 3")
+    result(0).get(1) should be(13)
   }
 
   it should "select with Like String" in {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe = sql(s"SELECT name, age FROM $Type where name like 'Name 3'")
+    val dataframe =
+      sql(s"SELECT name, age FROM $Type where name like 'Name 3'")
 
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 1
-    result(0).get(0) should be ("Name 3")
-    result(0).get(1) should be (13)
+    result(0).get(0) should be("Name 3")
+    result(0).get(1) should be(13)
   }
 
   it should "select with Like %String%" in {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe = sql(s"SELECT name, age FROM $Type where description like '%name3%'")
+    val dataframe =
+      sql(s"SELECT name, age FROM $Type where description like '%name3%'")
 
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 1
-    result(0).get(0) should be ("Name 3")
-    result(0).get(1) should be (13)
+    result(0).get(0) should be("Name 3")
+    result(0).get(1) should be(13)
   }
 
   it should "select with Like String%" in {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe = sql(s"SELECT name, age FROM $Type where description like '4des%'")
+    val dataframe =
+      sql(s"SELECT name, age FROM $Type where description like '4des%'")
 
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 1
-    result(0).get(0) should be ("Name 4")
+    result(0).get(0) should be("Name 4")
   }
-
 
   it should "test retrieve a date value" in {
     assumeEnvironmentIsUpAndRunning
@@ -245,7 +254,8 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     val result = dataframe.collect(Native)
 
     result should have length 1
-    result(0).getDate(1) should be (DateTime.parse((1981)+"-01-01T10:00:00-00:00").toDate)
+    result(0).getDate(1) should be(
+        DateTime.parse((1981) + "-01-01T10:00:00-00:00").toDate)
   }
 
   //TODO add support for dates in query?
@@ -253,13 +263,13 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe = sql(s"SELECT name, age FROM $Type where birthday = '1984-01-01T10:00:00-00:00'")
+    val dataframe = sql(
+        s"SELECT name, age FROM $Type where birthday = '1984-01-01T10:00:00-00:00'")
 
     //Expectations
     val result = dataframe.collect(Native)
     result should have length 1
-    result(0).get(0) should be ("Name 4")
-    result(0).get(1) should be (14)
+    result(0).get(0) should be("Name 4")
+    result(0).get(1) should be(14)
   }
 }
-

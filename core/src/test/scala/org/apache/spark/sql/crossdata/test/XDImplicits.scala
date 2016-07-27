@@ -18,7 +18,6 @@
 
 package org.apache.spark.sql.crossdata.test
 
-
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.SpecificMutableRow
@@ -31,31 +30,33 @@ import scala.language.implicitConversions
 import scala.reflect.runtime.universe.TypeTag
 
 /**
- * A collection of implicit methods for converting common Scala objects into [[org.apache.spark.sql.crossdata.XDDataFrame]]s.
- */
+  * A collection of implicit methods for converting common Scala objects into [[org.apache.spark.sql.crossdata.XDDataFrame]]s.
+  */
 private[sql] abstract class XDImplicits {
 
   protected def _xdContext: XDContext
 
   /**
-   * An implicit conversion that turns a Scala `Symbol` into a Column.
-   * @since 1.3.0
-   */
+    * An implicit conversion that turns a Scala `Symbol` into a Column.
+    * @since 1.3.0
+    */
   implicit def symbolToColumn(s: Symbol): ColumnName = new ColumnName(s.name)
 
   /**
-   * Creates a DataFrame from an RDD of Product (e.g. case classes, tuples).
-   * @since 1.3.0
-   */
-  implicit def rddToDataFrameHolder[A <: Product : TypeTag](rdd: RDD[A]): DataFrameHolder = {
+    * Creates a DataFrame from an RDD of Product (e.g. case classes, tuples).
+    * @since 1.3.0
+    */
+  implicit def rddToDataFrameHolder[A <: Product: TypeTag](
+      rdd: RDD[A]): DataFrameHolder = {
     DataFrameHolder(_xdContext.createDataFrame(rdd))
   }
 
   /**
-   * Creates a DataFrame from a local Seq of Product.
-   * @since 1.3.0
-   */
-  implicit def localSeqToDataFrameHolder[A <: Product : TypeTag](data: Seq[A]): DataFrameHolder = {
+    * Creates a DataFrame from a local Seq of Product.
+    * @since 1.3.0
+    */
+  implicit def localSeqToDataFrameHolder[A <: Product: TypeTag](
+      data: Seq[A]): DataFrameHolder = {
     DataFrameHolder(_xdContext.createDataFrame(data))
   }
 
@@ -64,9 +65,9 @@ private[sql] abstract class XDImplicits {
   // because of [[DoubleRDDFunctions]].
 
   /**
-   * Creates a single column DataFrame from an RDD[Int].
-   * @since 1.3.0
-   */
+    * Creates a single column DataFrame from an RDD[Int].
+    * @since 1.3.0
+    */
   implicit def intRddToDataFrameHolder(data: RDD[Int]): DataFrameHolder = {
     val dataType = IntegerType
     val rows = data.mapPartitions { iter =>
@@ -77,13 +78,15 @@ private[sql] abstract class XDImplicits {
       }
     }
     DataFrameHolder(
-      _xdContext.internalCreateDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
+        _xdContext.internalCreateDataFrame(
+            rows,
+            StructType(StructField("_1", dataType) :: Nil)))
   }
 
   /**
-   * Creates a single column DataFrame from an RDD[Long].
-   * @since 1.3.0
-   */
+    * Creates a single column DataFrame from an RDD[Long].
+    * @since 1.3.0
+    */
   implicit def longRddToDataFrameHolder(data: RDD[Long]): DataFrameHolder = {
     val dataType = LongType
     val rows = data.mapPartitions { iter =>
@@ -94,13 +97,15 @@ private[sql] abstract class XDImplicits {
       }
     }
     DataFrameHolder(
-      _xdContext.internalCreateDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
+        _xdContext.internalCreateDataFrame(
+            rows,
+            StructType(StructField("_1", dataType) :: Nil)))
   }
 
   /**
-   * Creates a single column DataFrame from an RDD[String].
-   * @since 1.3.0
-   */
+    * Creates a single column DataFrame from an RDD[String].
+    * @since 1.3.0
+    */
   implicit def stringRddToDataFrameHolder(data: RDD[String]): DataFrameHolder = {
     val dataType = StringType
     val rows = data.mapPartitions { iter =>
@@ -111,8 +116,8 @@ private[sql] abstract class XDImplicits {
       }
     }
     DataFrameHolder(
-      _xdContext.internalCreateDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
+        _xdContext.internalCreateDataFrame(
+            rows,
+            StructType(StructField("_1", dataType) :: Nil)))
   }
 }
-
-

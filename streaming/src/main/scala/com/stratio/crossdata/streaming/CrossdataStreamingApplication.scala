@@ -25,41 +25,57 @@ import org.json4s.jackson.Serialization._
 
 import scala.util.{Failure, Success, Try}
 
-object CrossdataStreamingApplication extends SparkLoggerComponent with CrossdataSerializer {
+object CrossdataStreamingApplication
+    extends SparkLoggerComponent
+    with CrossdataSerializer {
 
   val EphemeralTableNameIndex = 0
   val StreamingCatalogConfigurationIndex = 1
   val CrossdataCatalogIndex = 2
 
   def main(args: Array[String]): Unit = {
-    assert(args.length == 3, s"Invalid number of params: ${args.length}, args: $args")
+    assert(args.length == 3,
+           s"Invalid number of params: ${args.length}, args: $args")
     Try {
       val ephemeralTableName = args(EphemeralTableNameIndex)
 
-      val zookConfigurationRendered = new String(BaseEncoding.base64().decode(args(StreamingCatalogConfigurationIndex)))
+      val zookConfigurationRendered = new String(
+          BaseEncoding
+            .base64()
+            .decode(args(StreamingCatalogConfigurationIndex)))
 
       val zookeeperConf = parseConf(zookConfigurationRendered).getOrElse {
-          val message = s"Error parsing zookeeper argument -> $zookConfigurationRendered"
-          logger.error(message)
-          throw new IllegalArgumentException(message)
-        }
-
-      val xdCatalogConfRendered = new String(BaseEncoding.base64().decode(args(CrossdataCatalogIndex)))
-
-      val xdCatalogConf = parseConf(xdCatalogConfRendered).getOrElse {
-        val message = s"Error parsing XDCatalog argument -> $xdCatalogConfRendered"
+        val message =
+          s"Error parsing zookeeper argument -> $zookConfigurationRendered"
         logger.error(message)
         throw new IllegalArgumentException(message)
       }
 
-      val crossdataStreaming = new CrossdataStreaming(ephemeralTableName, typeSafeConfigToMapString(zookeeperConf), typeSafeConfigToMapString(xdCatalogConf))
+      val xdCatalogConfRendered =
+        new String(BaseEncoding.base64().decode(args(CrossdataCatalogIndex)))
+
+      val xdCatalogConf = parseConf(xdCatalogConfRendered).getOrElse {
+        val message =
+          s"Error parsing XDCatalog argument -> $xdCatalogConfRendered"
+        logger.error(message)
+        throw new IllegalArgumentException(message)
+      }
+
+      val crossdataStreaming =
+        new CrossdataStreaming(ephemeralTableName,
+                               typeSafeConfigToMapString(zookeeperConf),
+                               typeSafeConfigToMapString(xdCatalogConf))
       crossdataStreaming.init() match {
         case Success(_) =>
-          logger.info(s"Ephemeral Table Finished correctly: $ephemeralTableName")
+          logger.info(
+              s"Ephemeral Table Finished correctly: $ephemeralTableName")
           CrossdataStatusHelper.close()
         case Failure(exception) =>
           logger.error(exception.getMessage, exception)
-          CrossdataStatusHelper.setEphemeralStatus(EphemeralExecutionStatus.Error, typeSafeConfigToMapString(zookeeperConf), ephemeralTableName)
+          CrossdataStatusHelper.setEphemeralStatus(
+              EphemeralExecutionStatus.Error,
+              typeSafeConfigToMapString(zookeeperConf),
+              ephemeralTableName)
           CrossdataStatusHelper.close()
           sys.exit(-1)
       }
@@ -73,7 +89,8 @@ object CrossdataStreamingApplication extends SparkLoggerComponent with Crossdata
     }
   }
 
-  private[streaming] def parseMapArguments(serializedMap: String): Try[Map[String, String]] =
+  private[streaming] def parseMapArguments(
+      serializedMap: String): Try[Map[String, String]] =
     Try(read[Map[String, String]](serializedMap))
 
   private def parseConf(renderedConfig: String): Try[Config] =
@@ -81,13 +98,18 @@ object CrossdataStreamingApplication extends SparkLoggerComponent with Crossdata
       ConfigFactory.parseString(renderedConfig)
     }
 
-  private def typeSafeConfigToMapString(config: Config, path: Option[String]= None): Map[String, String] = {
+  private def typeSafeConfigToMapString(
+      config: Config,
+      path: Option[String] = None): Map[String, String] = {
     import scala.collection.JavaConversions._
     val conf = path.map(config.getConfig).getOrElse(config)
-    conf.entrySet().toSeq.map( e =>
-      (s"${path.fold("")(_+".")+ e.getKey}", conf.getAnyRef(e.getKey).toString)
-    ).toMap
+    conf
+      .entrySet()
+      .toSeq
+      .map(e =>
+            (s"${path.fold("")(_ + ".") + e.getKey}",
+             conf.getAnyRef(e.getKey).toString))
+      .toMap
   }
-
 
 }

@@ -32,32 +32,39 @@ class KafkaInput(options: KafkaOptionsModel) {
     val groupId = Map(getGroupId)
 
     KafkaUtils.createStream[String, String, StringDecoder, StringDecoder](
-      ssc,
-      connection ++ groupId ++ kafkaParams,
-      getTopics,
-      storageLevel(options.storageLevel))
+        ssc,
+        connection ++ groupId ++ kafkaParams,
+        getTopics,
+        storageLevel(options.storageLevel))
   }
 
-  private[streaming] def getConnection : (String, String) = {
+  private[streaming] def getConnection: (String, String) = {
 
-    val connectionChain = (
-      for(zkConnection <- options.connection.zkConnection) yield (s"${zkConnection.host}:${zkConnection.port}")
-      ).mkString(",")
+    val connectionChain =
+      (for (zkConnection <- options.connection.zkConnection)
+        yield ( s"${zkConnection.host}:${zkConnection.port}")).mkString(",")
 
-    (ZookeeperConnectionKey, if(connectionChain.isEmpty) s"$DefaultHost:$DefaultConsumerPort" else connectionChain)
+    (ZookeeperConnectionKey,
+     if (connectionChain.isEmpty) s"$DefaultHost:$DefaultConsumerPort"
+     else connectionChain)
   }
 
-  private[streaming] def getGroupId : (String, String) = (GroupIdKey, options.groupId)
+  private[streaming] def getGroupId: (String, String) =
+    (GroupIdKey, options.groupId)
 
-  private[streaming] def getTopics : Map[String, Int] = {
+  private[streaming] def getTopics: Map[String, Int] = {
     if (options.topics.isEmpty) {
-      throw new IllegalStateException(s"Invalid configuration, topics must be declared.")
+      throw new IllegalStateException(
+          s"Invalid configuration, topics must be declared.")
     } else {
-     options.topics.map(topicModel => (topicModel.name, topicModel.numPartitions)).toMap
+      options.topics
+        .map(topicModel => (topicModel.name, topicModel.numPartitions))
+        .toMap
     }
   }
 
-  private[streaming] def storageLevel(sparkStorageLevel: String): StorageLevel = {
+  private[streaming] def storageLevel(
+      sparkStorageLevel: String): StorageLevel = {
     StorageLevel.fromString(sparkStorageLevel)
   }
 

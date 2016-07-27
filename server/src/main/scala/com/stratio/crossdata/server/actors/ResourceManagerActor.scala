@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.server.actors
 
-
 import akka.actor.{Actor, ActorRef, Props}
 import akka.cluster.Cluster
 import akka.contrib.pattern.DistributedPubSubExtension
@@ -41,7 +40,10 @@ object ResourceManagerActor {
 
 }
 
-class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider) extends Actor with ServerConfig {
+class ResourceManagerActor(cluster: Cluster,
+                           sessionProvider: XDSessionProvider)
+    extends Actor
+    with ServerConfig {
 
   import ResourceManagerActor._
 
@@ -75,8 +77,10 @@ class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
   def AddJarMessages(st: State): Receive = {
-    case CommandEnvelope(addJarCommand: AddJARCommand, session@Session(id, requester)) =>
-      logger.debug(s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
+    case CommandEnvelope(addJarCommand: AddJARCommand,
+                         session @ Session(id, requester)) =>
+      logger.debug(
+          s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
       //TODO  Maybe include job controller if it is necessary as in sql command
       if (addJarCommand.path.toLowerCase.startsWith("hdfs://")) {
@@ -84,19 +88,24 @@ class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
           case Success(xdSession) =>
             xdSession.addJar(addJarCommand.path)
           case Failure(error) =>
-            logger.warn(s"Received message with an unknown sessionId $id", error)
-            sender ! ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+            logger
+              .warn(s"Received message with an unknown sessionId $id", error)
+            sender ! ErrorSQLResult(
+                s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
         }
 
         // TODO addJar should not affect other sessions
-        sender ! SQLReply(addJarCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
+        sender ! SQLReply(addJarCommand.requestId,
+                          SuccessfulSQLResult(Array.empty, new StructType()))
       } else {
-        sender ! SQLReply(addJarCommand.requestId, ErrorSQLResult("File doesn't exist or is not a hdfs file", Some(new Exception("File doesn't exist or is not a hdfs file"))))
+        sender ! SQLReply(
+            addJarCommand.requestId,
+            ErrorSQLResult(
+                "File doesn't exist or is not a hdfs file",
+                Some(new Exception(
+                        "File doesn't exist or is not a hdfs file"))))
       }
     case _ =>
   }
-
-
-
 
 }

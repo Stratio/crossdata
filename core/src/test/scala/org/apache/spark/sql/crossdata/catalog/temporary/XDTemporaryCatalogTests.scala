@@ -26,7 +26,9 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
 
 // TODO: WARNING It is only valid for HazelcastCatalog until we create the proper plan to make it generic. (null!!)
-trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants {
+trait XDTemporaryCatalogTests
+    extends SharedXDContextTest
+    with CatalogConstants {
 
   def catalogName: String
 
@@ -41,7 +43,11 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
     val columns = StructType(fields)
     val opts = Map("path" -> "/fake_path")
     val tableIdentifier = TableIdentifier(TableName).normalize
-    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array.empty, opts)
+    val crossdataTable = CrossdataTable(tableIdentifier,
+                                        Some(Columns),
+                                        SourceDatasource,
+                                        Array.empty,
+                                        opts)
 
     temporaryCatalog.relation(tableIdentifier) shouldBe empty
 
@@ -52,38 +58,53 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
 
   it should s"register a table with catalog and partitionColumns in $catalogName" in {
     val tableIdentifier = TableIdentifier(TableName, Some(Database)).normalize
-    val crossdataTable = CrossdataTable(tableIdentifier, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier,
+                                        Some(Columns),
+                                        SourceDatasource,
+                                        Array(Field1Name),
+                                        OptsJSON)
 
     temporaryCatalog.saveTable(tableIdentifier, null, Some(crossdataTable))
 
     temporaryCatalog.relation(tableIdentifier) shouldBe defined
 
   }
-
 
   it should s"register a table with catalog and partitionColumns with multiple subdocuments as schema in $catalogName" in {
     temporaryCatalog.dropAllTables()
     val tableIdentifier = TableIdentifier(TableName, Some(Database)).normalize
-    val crossdataTable = CrossdataTable(tableIdentifier, Some(ColumnsWithSubColumns), SourceDatasource, Array.empty, OptsJSON)
+    val crossdataTable = CrossdataTable(tableIdentifier,
+                                        Some(ColumnsWithSubColumns),
+                                        SourceDatasource,
+                                        Array.empty,
+                                        OptsJSON)
 
     temporaryCatalog.saveTable(tableIdentifier, null, Some(crossdataTable))
 
     temporaryCatalog.relation(tableIdentifier) shouldBe defined
   }
-
 
   it should "returns list of tables" in {
     temporaryCatalog.dropAllTables()
     val tableIdentifier1 = TableIdentifier(TableName, Some(Database)).normalize
     val tableIdentifier2 = TableIdentifier(TableName, None).normalize
 
-    val crossdataTable1 = CrossdataTable(tableIdentifier1, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
-    val crossdataTable2 = CrossdataTable(tableIdentifier2, Some(Columns), SourceDatasource, Array(Field1Name), OptsJSON)
+    val crossdataTable1 = CrossdataTable(tableIdentifier1,
+                                         Some(Columns),
+                                         SourceDatasource,
+                                         Array(Field1Name),
+                                         OptsJSON)
+    val crossdataTable2 = CrossdataTable(tableIdentifier2,
+                                         Some(Columns),
+                                         SourceDatasource,
+                                         Array(Field1Name),
+                                         OptsJSON)
 
     temporaryCatalog.saveTable(tableIdentifier1, null, Some(crossdataTable1))
     temporaryCatalog.saveTable(tableIdentifier2, null, Some(crossdataTable2))
 
-    val tables = temporaryCatalog.allRelations(Some(StringNormalized(normalizeIdentifier(Database, conf))))
+    val tables = temporaryCatalog.allRelations(
+        Some(StringNormalized(normalizeIdentifier(Database, conf))))
     tables should have length 1
 
     val tables2 = temporaryCatalog.allRelations()
@@ -107,7 +128,6 @@ trait XDTemporaryCatalogTests extends SharedXDContextTest with CatalogConstants 
     temporaryCatalog.dropView(viewIdentifier)
     temporaryCatalog.relation(viewIdentifier) shouldBe empty
   }
-
 
   protected override def beforeAll(): Unit = {
     super.beforeAll()

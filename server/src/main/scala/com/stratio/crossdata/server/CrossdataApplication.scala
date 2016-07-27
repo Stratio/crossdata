@@ -28,9 +28,9 @@ object CrossdataApplication extends App {
   crossdataServer.destroy()
 
   /**
-   * This method make a command loop.
-   * @return  nothing.
-   * */
+    * This method make a command loop.
+    * @return  nothing.
+    * */
   @tailrec
   private def commandLoop(): Unit = {
     Console.readLine() match {

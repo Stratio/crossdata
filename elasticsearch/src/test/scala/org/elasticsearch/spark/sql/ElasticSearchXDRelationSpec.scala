@@ -26,7 +26,6 @@ import org.scalatest.mock.MockitoSugar
 @RunWith(classOf[JUnitRunner])
 class ElasticSearchXDRelationSpec extends BaseXDTest with MockitoSugar {
 
-
   "An ElasticSearchXDRelation " should "support Limit Node" in {
     //Fixture
     val logicalStep = mock[Filter]
@@ -38,7 +37,7 @@ class ElasticSearchXDRelationSpec extends BaseXDTest with MockitoSugar {
     val result = esRelation.isSupported(logicalStep, wholeLogicalPlan)
 
     //Expectations
-    result should be (true)
+    result should be(true)
   }
 
   it should "support LeafNode Node" in {
@@ -52,7 +51,7 @@ class ElasticSearchXDRelationSpec extends BaseXDTest with MockitoSugar {
     val result = esRelation.isSupported(logicalStep, wholeLogicalPlan)
 
     //Expectations
-    result should be (true)
+    result should be(true)
   }
 
   it should "support Project Node" in {
@@ -66,7 +65,7 @@ class ElasticSearchXDRelationSpec extends BaseXDTest with MockitoSugar {
     val result = esRelation.isSupported(logicalStep, wholeLogicalPlan)
 
     //Expectations
-    result should be (true)
+    result should be(true)
   }
 
   def buildElasticSearchRelation(): ElasticsearchXDRelation = {

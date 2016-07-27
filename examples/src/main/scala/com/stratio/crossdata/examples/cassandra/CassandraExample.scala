@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.examples.cassandra
 
-
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -24,9 +23,7 @@ object CassandraExample extends App with CassandraDefaultConstants {
   val (cluster, session) = prepareEnvironment()
 
   withCrossdataContext { xdContext =>
-
-    xdContext.sql(
-      s"""|CREATE TEMPORARY TABLE $Table
+    xdContext.sql(s"""|CREATE TEMPORARY TABLE $Table
           |USING $SourceProvider
           |OPTIONS (
           |table '$Table',
@@ -39,11 +36,15 @@ object CassandraExample extends App with CassandraDefaultConstants {
 
     // Native queries
     xdContext.sql(s"SELECT comment as b FROM $Table WHERE id = 1").show(5)
-    xdContext.sql(s"SELECT comment as b FROM $Table WHERE id IN(1,2,3,4,5,6,7,8,9,10) limit 2").show(5)
+    xdContext
+      .sql(s"SELECT comment as b FROM $Table WHERE id IN(1,2,3,4,5,6,7,8,9,10) limit 2")
+      .show(5)
     xdContext.sql(s"SELECT *  FROM $Table ").show(5)
 
     // Spark queries
-    xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 'Comment 5' AND id = 5").show(5)
+    xdContext
+      .sql(s"SELECT comment as b FROM $Table WHERE comment = 'Comment 5' AND id = 5")
+      .show(5)
 
   }
 
@@ -51,9 +52,8 @@ object CassandraExample extends App with CassandraDefaultConstants {
 
   private def withCrossdataContext(commands: XDContext => Unit) = {
 
-    val sparkConf = new SparkConf().
-      setAppName("CassandraExample").
-      setMaster("local[4]")
+    val sparkConf =
+      new SparkConf().setAppName("CassandraExample").setMaster("local[4]")
 
     val sc = new SparkContext(sparkConf)
     try {
@@ -64,8 +64,4 @@ object CassandraExample extends App with CassandraDefaultConstants {
     }
   }
 
-
-
-
 }
-

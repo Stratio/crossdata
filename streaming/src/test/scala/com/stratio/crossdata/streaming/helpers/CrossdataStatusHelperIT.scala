@@ -24,7 +24,6 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-
 @RunWith(classOf[JUnitRunner])
 class CrossdataStatusHelperIT extends BaseStreamingXDTest with CommonValues {
 
@@ -44,10 +43,15 @@ class CrossdataStatusHelperIT extends BaseStreamingXDTest with CommonValues {
 
   "CrossdataStatusHelperIT" should "create a StatusActor without errors" in {
 
-    val sparkConf = new SparkConf().setMaster("local[2]").setAppName(this.getClass.getSimpleName)
+    val sparkConf = new SparkConf()
+      .setMaster("local[2]")
+      .setAppName(this.getClass.getSimpleName)
     val sc = SparkContext.getOrCreate(sparkConf)
     val ssc = new StreamingContext(sc, Milliseconds(1000))
-    val result = CrossdataStatusHelper.initStatusActor(ssc, Map("connectionString" -> zookeeperConnection), TableName)
+    val result = CrossdataStatusHelper.initStatusActor(
+        ssc,
+        Map("connectionString" -> zookeeperConnection),
+        TableName)
     val expected = true
 
     result.isDefined should be(expected)
@@ -58,7 +62,8 @@ class CrossdataStatusHelperIT extends BaseStreamingXDTest with CommonValues {
 
   "CrossdataStatusHelperIT" should "create a QueryActor without errors" in {
 
-    val result = CrossdataStatusHelper.createEphemeralQueryActor(Map("connectionString" -> zookeeperConnection))
+    val result = CrossdataStatusHelper.createEphemeralQueryActor(
+        Map("connectionString" -> zookeeperConnection))
     val expected = true
 
     result.isDefined should be(expected)
@@ -66,8 +71,9 @@ class CrossdataStatusHelperIT extends BaseStreamingXDTest with CommonValues {
 
   "CrossdataStatusHelperIT" should "create a QueryActor and return the queries" in {
 
-    val result =
-      CrossdataStatusHelper.queriesFromEphemeralTable(Map("connectionString" -> zookeeperConnection), TableName)
+    val result = CrossdataStatusHelper.queriesFromEphemeralTable(
+        Map("connectionString" -> zookeeperConnection),
+        TableName)
     val expected = Seq.empty[EphemeralQueryModel]
 
     result should be(expected)

@@ -18,8 +18,9 @@ package com.stratio.crossdata.driver.querybuilder.dslentities
 import com.stratio.crossdata.driver.querybuilder.{BinaryExpression, Expression, Predicate}
 
 // Logical predicates
-case class And(left: Expression, right: Expression) extends BinaryExpression
-with Predicate {
+case class And(left: Expression, right: Expression)
+    extends BinaryExpression
+    with Predicate {
 
   override val tokenStr = "AND"
 
@@ -31,8 +32,9 @@ with Predicate {
   }
 }
 
-case class Or(left: Expression, right: Expression) extends BinaryExpression
-with Predicate {
+case class Or(left: Expression, right: Expression)
+    extends BinaryExpression
+    with Predicate {
 
   override val tokenStr = "OR"
 
@@ -51,18 +53,21 @@ private[dslentities] trait EqualityCheckers extends BinaryExpression {
 }
 
 // Comparison predicates
-case class Equal(left: Expression, right: Expression) extends EqualityCheckers
-with Predicate {
+case class Equal(left: Expression, right: Expression)
+    extends EqualityCheckers
+    with Predicate {
   override val tokenStr: String = "="
 }
 
-case class Different(left: Expression, right: Expression) extends EqualityCheckers
-with Predicate {
+case class Different(left: Expression, right: Expression)
+    extends EqualityCheckers
+    with Predicate {
   override val tokenStr: String = "<>"
 }
 
-case class LessThan(left: Expression, right: Expression) extends BinaryExpression
-with Predicate {
+case class LessThan(left: Expression, right: Expression)
+    extends BinaryExpression
+    with Predicate {
 
   override val tokenStr: String = "<"
 
@@ -72,8 +77,9 @@ with Predicate {
   }
 }
 
-case class LessThanOrEqual(left: Expression, right: Expression) extends BinaryExpression
-with Predicate {
+case class LessThanOrEqual(left: Expression, right: Expression)
+    extends BinaryExpression
+    with Predicate {
 
   override val tokenStr: String = "<="
 
@@ -83,8 +89,9 @@ with Predicate {
   }
 }
 
-case class GreaterThan(left: Expression, right: Expression) extends BinaryExpression //TODO: Review
-with Predicate {
+case class GreaterThan(left: Expression, right: Expression)
+    extends BinaryExpression //TODO: Review
+    with Predicate {
 
   override val tokenStr: String = ">"
 
@@ -94,8 +101,9 @@ with Predicate {
   }
 }
 
-case class GreaterThanOrEqual(left: Expression, right: Expression) extends BinaryExpression
-with Predicate {
+case class GreaterThanOrEqual(left: Expression, right: Expression)
+    extends BinaryExpression
+    with Predicate {
 
   override val tokenStr: String = ">="
 
@@ -106,17 +114,24 @@ with Predicate {
 }
 
 case class IsNull(expr: Expression) extends Predicate {
-  override private[querybuilder] def toXDQL: String = s" ${expr.toXDQL} IS NULL"
+  override private[querybuilder] def toXDQL: String =
+    s" ${expr.toXDQL} IS NULL"
 }
 
 case class IsNotNull(expr: Expression) extends Predicate {
-  override private[querybuilder] def toXDQL: String = s" ${expr.toXDQL} IS NOT NULL"
+  override private[querybuilder] def toXDQL: String =
+    s" ${expr.toXDQL} IS NOT NULL"
 }
 
-case class In(left: Expression, right: Expression*) extends Expression with Predicate {
-  override private[querybuilder] def toXDQL: String = s" ${left.toXDQL} IN ${right map (_.toXDQL) mkString("(", ",", ")")}"
+case class In(left: Expression, right: Expression*)
+    extends Expression
+    with Predicate {
+  override private[querybuilder] def toXDQL: String =
+    s" ${left.toXDQL} IN ${right map (_.toXDQL) mkString ("(", ",", ")")}"
 }
 
-case class Like(left: Expression, right: Expression) extends BinaryExpression with Predicate {
+case class Like(left: Expression, right: Expression)
+    extends BinaryExpression
+    with Predicate {
   override val tokenStr = "LIKE"
 }

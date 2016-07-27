@@ -28,24 +28,35 @@ class CrossdataStreamingSpec extends BaseStreamingXDTest with CommonValues {
   implicit val timeout: Timeout = Timeout(15.seconds)
 
   "CrossdataStreaming" should "return a empty Sparkconf according to the table options" in {
-    val XDStreaming = new CrossdataStreaming(TableName, Map.empty[String, String], Map.empty[String, String])
-    val configuration = XDStreaming.configToSparkConf(ephemeralTableModelWithoutSparkOptions).getAll
+    val XDStreaming = new CrossdataStreaming(TableName,
+                                             Map.empty[String, String],
+                                             Map.empty[String, String])
+    val configuration = XDStreaming
+      .configToSparkConf(ephemeralTableModelWithoutSparkOptions)
+      .getAll
     val expected = Array.empty[(String, String)]
 
     configuration should be(expected)
   }
 
   "CrossdataStreaming" should "return Sparkconf according to the table options" in {
-    val XDStreaming = new CrossdataStreaming(TableName, Map.empty[String, String], Map.empty[String, String])
-    val configuration = XDStreaming.configToSparkConf(ephemeralTableModelWithSparkOptions).getAll
+    val XDStreaming = new CrossdataStreaming(TableName,
+                                             Map.empty[String, String],
+                                             Map.empty[String, String])
+    val configuration =
+      XDStreaming.configToSparkConf(ephemeralTableModelWithSparkOptions).getAll
     val expected = Array(("spark.defaultParallelism", "50"))
 
     configuration should be(expected)
   }
 
   "CrossdataStreaming" should "return Sparkconf according to the table options with prefix" in {
-    val XDStreaming = new CrossdataStreaming(TableName, Map.empty[String, String], Map.empty[String, String])
-    val configuration = XDStreaming.configToSparkConf(ephemeralTableModelWithSparkOptionsPrefix).getAll
+    val XDStreaming = new CrossdataStreaming(TableName,
+                                             Map.empty[String, String],
+                                             Map.empty[String, String])
+    val configuration = XDStreaming
+      .configToSparkConf(ephemeralTableModelWithSparkOptionsPrefix)
+      .getAll
     val expected = Array(("spark.defaultParallelism", "50"))
 
     configuration should be(expected)

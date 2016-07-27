@@ -28,7 +28,7 @@ import scala.util.Try
 class CrossdataStreaming(ephemeralTableName: String,
                          streamingCatalogConfig: Map[String, String],
                          crossdataCatalogConfiguration: Map[String, String])
-  extends EphemeralTableMapDAO {
+    extends EphemeralTableMapDAO {
 
   private val zookeeperCatalogConfig = streamingCatalogConfig.collect {
     case (key, value) if key.startsWith(ZooKeeperStreamingCatalogPath) =>
@@ -39,26 +39,28 @@ class CrossdataStreaming(ephemeralTableName: String,
 
   def init(): Try[Any] = {
     Try {
-      val ephemeralTable = dao.get(ephemeralTableName)
-        .getOrElse(throw new IllegalStateException("Ephemeral table not found"))
+      val ephemeralTable = dao
+        .get(ephemeralTableName)
+        .getOrElse(
+            throw new IllegalStateException("Ephemeral table not found"))
       val sparkConfig = configToSparkConf(ephemeralTable)
 
-      val ssc = StreamingContext.getOrCreate(ephemeralTable.options.checkpointDirectory,
-        () => {
+      val ssc = StreamingContext
+        .getOrCreate(ephemeralTable.options.checkpointDirectory, () => {
           CrossdataStreamingHelper.createContext(ephemeralTable,
-            sparkConfig,
-            zookeeperCatalogConfig,
-            crossdataCatalogConfiguration
-          )
+                                                 sparkConfig,
+                                                 zookeeperCatalogConfig,
+                                                 crossdataCatalogConfiguration)
         })
 
-      CrossdataStatusHelper.initStatusActor(ssc, zookeeperCatalogConfig, ephemeralTable.name)
+      CrossdataStatusHelper
+        .initStatusActor(ssc, zookeeperCatalogConfig, ephemeralTable.name)
 
       logger.info(s"Started Ephemeral Table: $ephemeralTableName")
       CrossdataStatusHelper.setEphemeralStatus(
-        EphemeralExecutionStatus.Started,
-        zookeeperCatalogConfig,
-        ephemeralTableName
+          EphemeralExecutionStatus.Started,
+          zookeeperCatalogConfig,
+          ephemeralTableName
       )
 
       ssc.start()
@@ -66,13 +68,15 @@ class CrossdataStreaming(ephemeralTableName: String,
     }
   }
 
-  private[streaming] def configToSparkConf(ephemeralTable: EphemeralTableModel): SparkConf =
+  private[streaming] def configToSparkConf(
+      ephemeralTable: EphemeralTableModel): SparkConf =
     new SparkConf().setAll(setPrefixSpark(ephemeralTable.options.sparkOptions))
 
-  private[streaming] def setPrefixSpark(sparkConfig: Map[String, String]): Map[String, String] =
-    sparkConfig.map { case entry@(key, value) =>
-      if (key.startsWith(SparkPrefixName)) entry
-      else (s"$SparkPrefixName.$key", value)
+  private[streaming] def setPrefixSpark(
+      sparkConfig: Map[String, String]): Map[String, String] =
+    sparkConfig.map {
+      case entry @ (key, value) =>
+        if (key.startsWith(SparkPrefixName)) entry
+        else (s"$SparkPrefixName.$key", value)
     }
 }
-

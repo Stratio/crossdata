@@ -49,24 +49,30 @@ trait Literals {
   implicit def double2Literal(d: Double): Literal = Literal(d)
   implicit def string2Literal(s: String): Literal = Literal(s)
   implicit def date2Literal(d: Date): Literal = Literal(d)
-  implicit def bigDecimal2Literal(d: BigDecimal): Literal = Literal(d.underlying())
-  implicit def bigDecimal2Literal(d: java.math.BigDecimal): Literal = Literal(d)
+  implicit def bigDecimal2Literal(d: BigDecimal): Literal =
+    Literal(d.underlying())
+  implicit def bigDecimal2Literal(d: java.math.BigDecimal): Literal =
+    Literal(d)
   implicit def timestamp2Literal(t: Timestamp): Literal = Literal(t)
   implicit def binary2Literal(a: Array[Byte]): Literal = Literal(a)
 }
 
 trait Identifiers {
-  implicit def symbol2Identifier(s: Symbol): Identifier = EntityIdentifier(s.name)
+  implicit def symbol2Identifier(s: Symbol): Identifier =
+    EntityIdentifier(s.name)
 }
 
 trait InitialSelectPhrases {
-  def select(projections: Expression*): ProjectedSelect = selectImp(projections)
+  def select(projections: Expression*): ProjectedSelect =
+    selectImp(projections)
 
-  def select(projections: String): ProjectedSelect = selectImp(XDQLStatement(projections)::Nil)
+  def select(projections: String): ProjectedSelect =
+    selectImp(XDQLStatement(projections) :: Nil)
 
-  def selectAll: ProjectedSelect = selectImp(AsteriskExpression()::Nil)
+  def selectAll: ProjectedSelect = selectImp(AsteriskExpression() :: Nil)
 
-  protected def selectImp(projections: Seq[Expression]): ProjectedSelect = new ProjectedSelect(projections:_*)(x => x)
+  protected def selectImp(projections: Seq[Expression]): ProjectedSelect =
+    new ProjectedSelect(projections: _*)(x => x)
 
 }
 
@@ -85,7 +91,8 @@ trait ExpressionOperators {
 
   def countDistinct(e: Expression*): Expression = CountDistinct(e: _*)
 
-  def approxCountDistinct(e: Expression, rsd: Double): Expression = ApproxCountDistinct(e, rsd)
+  def approxCountDistinct(e: Expression, rsd: Double): Expression =
+    ApproxCountDistinct(e, rsd)
 
   def avg(e: Expression): Expression = Avg(e)
 
@@ -98,7 +105,9 @@ trait ExpressionOperators {
   def all: Expression = AsteriskExpression()
 }
 
-package object querybuilder extends InitialSelectPhrases with InitialInsertPhrases
-  with Literals
-  with Identifiers
-  with ExpressionOperators
+package object querybuilder
+    extends InitialSelectPhrases
+    with InitialInsertPhrases
+    with Literals
+    with Identifiers
+    with ExpressionOperators

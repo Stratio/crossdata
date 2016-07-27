@@ -22,7 +22,6 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class XDMetricsSourceSpec extends BaseXDTest {
 
-
   "A logical plan (select *) with native relation" should "return a native relation" in {
 
     val xdms = new XDMetricsSource()
@@ -31,8 +30,8 @@ class XDMetricsSourceSpec extends BaseXDTest {
     xdms.registerGauge("testName")
 
     //Expectations
-    xdms.metricRegistry.getGauges.keySet() should contain ("metricName.testName")
+    xdms.metricRegistry.getGauges.keySet() should contain(
+        "metricName.testName")
   }
-
 
 }

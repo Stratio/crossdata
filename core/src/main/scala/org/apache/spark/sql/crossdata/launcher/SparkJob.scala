@@ -22,7 +22,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
-class SparkJob(sparkLauncher: SparkLauncher)(implicit executionContext: ExecutionContext) extends SparkLoggerComponent{
+class SparkJob(sparkLauncher: SparkLauncher)(
+    implicit executionContext: ExecutionContext)
+    extends SparkLoggerComponent {
 
   def submit(): Unit =
     Future[(Int, Process)] {

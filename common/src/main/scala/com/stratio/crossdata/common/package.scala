@@ -19,6 +19,8 @@ import scala.io.Source
 
 package object crossdata {
 
-  lazy val CrossdataVersion = Source.fromInputStream(getClass.getResourceAsStream("/crossdata.version")).mkString
+  lazy val CrossdataVersion = Source
+    .fromInputStream(getClass.getResourceAsStream("/crossdata.version"))
+    .mkString
 
 }

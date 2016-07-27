@@ -50,20 +50,16 @@ class CreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     mongoClient(mongoTestDatabase).dropDatabase()
 
-    elasticClient.execute{
+    elasticClient.execute {
       deleteIndex(defaultIndexES)
     }.await
-
 
     super.afterAll()
   }
 
-
   "Create global index" should "create an associated index in Elasticsearch" in {
 
-
-    val sentence =
-      s"""|CREATE GLOBAL INDEX $indexName
+    val sentence = s"""|CREATE GLOBAL INDEX $indexName
           |ON globalIndexDb.proofGlobalIndex (other)
           |WITH PK id
           |USING com.stratio.crossdata.connector.elasticsearch
@@ -76,16 +72,16 @@ class CreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     sql(sentence)
 
-    val typeExistResponse = elasticClient.execute{
+    val typeExistResponse = elasticClient.execute {
       typesExist(indexName).in(defaultIndexES)
     }.await
 
     typeExistResponse.isExists shouldBe true
 
-    xdContext.dropGlobalIndex(IndexIdentifier(indexName, CreateGlobalIndex.DefaultDatabaseName))
+    xdContext.dropGlobalIndex(
+        IndexIdentifier(indexName, CreateGlobalIndex.DefaultDatabaseName))
 
   }
-
 
   it should "fail if the target table is temporary" in {
 
@@ -103,8 +99,7 @@ class CreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     sql(createTable1)
 
-    val sentence =
-      s"""|CREATE GLOBAL INDEX fail_index
+    val sentence = s"""|CREATE GLOBAL INDEX fail_index
           |ON $tempTableId (other)
           |WITH PK id
           |USING com.stratio.crossdata.connector.elasticsearch
@@ -115,7 +110,7 @@ class CreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
           | es.cluster '$ElasticClusterName'
           |)""".stripMargin
 
-    the [RuntimeException] thrownBy {
+    the[RuntimeException] thrownBy {
       sql(sentence)
     } should have message s"Cannot create the index. Table `$tempTableId` doesn't exist or is temporary"
 

@@ -23,8 +23,11 @@ import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.json4s.Formats
 
-trait EphemeralQueriesDAO extends GenericDAOComponent[EphemeralQueryModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+trait EphemeralQueriesDAO
+    extends GenericDAOComponent[EphemeralQueryModel]
+    with TypesafeConfigComponent
+    with SparkLoggerComponent
+    with CrossdataSerializer {
 
   private val jacksonFormats: Formats = json4sJacksonFormats
   override implicit val formats = jacksonFormats

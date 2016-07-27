@@ -20,8 +20,7 @@ import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.types.StructType
 import org.elasticsearch.hadoop.cfg.ConfigurationOptions
-import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
-;
+import org.elasticsearch.hadoop.cfg.ConfigurationOptions._;
 
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
@@ -31,12 +30,13 @@ import org.mockito.Mockito._
 @RunWith(classOf[JUnitRunner])
 class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
 
-
   "A DefaultSource " should "build a ElasticSearchXDRelation without schema" in {
     //Fixture
     val defaultDatasource = new DefaultSource()
     val sqlContext = mock[SQLContext]
-    val parameters = Map[String, String] {ConfigurationOptions.ES_RESOURCE -> "index/type"}
+    val parameters = Map[String, String] {
+      ConfigurationOptions.ES_RESOURCE -> "index/type"
+    }
 
     //Experimentation
     val result = defaultDatasource.createRelation(sqlContext, parameters)
@@ -50,10 +50,13 @@ class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
     val defaultDatasource = new DefaultSource()
     val sqlContext = mock[SQLContext]
     val schema = mock[StructType]
-    val parameters = Map[String, String] {ConfigurationOptions.ES_RESOURCE -> "index/type"}
+    val parameters = Map[String, String] {
+      ConfigurationOptions.ES_RESOURCE -> "index/type"
+    }
 
     //Experimentation
-    val result = defaultDatasource.createRelation(sqlContext, parameters, schema)
+    val result =
+      defaultDatasource.createRelation(sqlContext, parameters, schema)
 
     //Expectations
     result should not be null
@@ -68,12 +71,13 @@ class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
     val userOpts: Map[String, String] = Map(ES_HOST -> "localhost")
 
     //Experimentation
-    val result:Map[String, String] = defaultDatasource.generateConnectorOpts(item, userOpts)
+    val result: Map[String, String] =
+      defaultDatasource.generateConnectorOpts(item, userOpts)
 
     //Expectations
     result should not be null
-    result.get(ES_RESOURCE).get should be ("index/type")
-    result.get(ES_HOST).get should be ("localhost")
+    result.get(ES_RESOURCE).get should be("index/type")
+    result.get(ES_HOST).get should be("localhost")
 
   }
 }

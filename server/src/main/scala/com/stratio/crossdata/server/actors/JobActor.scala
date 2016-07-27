@@ -31,16 +31,15 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, ExecutionException}
 import scala.util.{Failure, Success}
 
-
 object JobActor {
 
   trait JobStatus
   object JobStatus {
     case object Idle extends JobStatus
-    case object Running  extends JobStatus
+    case object Running extends JobStatus
     case object Completed extends JobStatus
     case object Cancelled extends JobStatus
-    case class  Failed(reason: Throwable) extends JobStatus
+    case class Failed(reason: Throwable) extends JobStatus
   }
 
   trait JobEvent
@@ -64,8 +63,9 @@ object JobActor {
     case object StartJob
   }
 
-  case class Task(command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration])
-
+  case class Task(command: SQLCommand,
+                  requester: ActorRef,
+                  timeout: Option[FiniteDuration])
 
   /**
     * The [[JobActor]] state is directly given by the running task which can be: None (Idle st) or a Running, Completed,
@@ -74,30 +74,35 @@ object JobActor {
     */
   case class State(runningTask: Option[Cancellable[SQLReply]]) {
     import JobStatus._
-    def getStatus: JobStatus = runningTask map { task =>
-      task.future.value map {
-        case Success(_) => Completed
-        case Failure(_: CancellationException) => Cancelled
-        case Failure(err) => Failed(err)
-      } getOrElse Running
-    } getOrElse Idle
+    def getStatus: JobStatus =
+      runningTask map { task =>
+        task.future.value map {
+          case Success(_) => Completed
+          case Failure(_: CancellationException) => Cancelled
+          case Failure(err) => Failed(err)
+        } getOrElse Running
+      } getOrElse Idle
   }
 
-  def props(xdSession: XDSession, command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration]): Props =
+  def props(xdSession: XDSession,
+            command: SQLCommand,
+            requester: ActorRef,
+            timeout: Option[FiniteDuration]): Props =
     Props(new JobActor(xdSession, Task(command, requester, timeout)))
 
   /**
     * Executor class which runs each command in a brand new thread each time
     */
-  class ProlificExecutor extends Executor { override def execute(command: Runnable): Unit = new Thread(command) start }
+  class ProlificExecutor extends Executor {
+    override def execute(command: Runnable): Unit = new Thread(command) start
+  }
 
 }
 
 class JobActor(
-                val xdContext: XDContext,
-                val task: Task
-              ) extends Actor {
-
+    val xdContext: XDContext,
+    val task: Task
+) extends Actor {
 
   import JobActor.JobStatus._
   import JobActor.State
@@ -108,12 +113,10 @@ class JobActor(
 
   override def receive: Receive = receive(State(None))
 
-
   private def receive(st: State): Receive = {
 
     // Commands
     case StartJob if st.getStatus == Idle =>
-
       logger.debug(s"Starting Job under ${context.parent.path}")
 
       import context.dispatcher
@@ -123,11 +126,12 @@ class JobActor(
         case Success(queryRes) =>
           requester ! queryRes
           self ! JobCompleted
-        case Failure(_: CancellationException) => self ! JobCompleted // Job cancellation
-        case Failure(e: ExecutionException) => self ! JobFailed(e.getCause) // Spark exception
+        case Failure(_: CancellationException) =>
+          self ! JobCompleted // Job cancellation
+        case Failure(e: ExecutionException) =>
+          self ! JobFailed(e.getCause) // Spark exception
         case Failure(reason) => self ! JobFailed(reason) // Job failure
       }
-
 
       val isRunning = runningTask.future.value.isEmpty
 
@@ -138,7 +142,7 @@ class JobActor(
       context.become(receive(st.copy(runningTask = Some(runningTask))))
 
     case CancelJob =>
-      st.runningTask.foreach{ tsk =>
+      st.runningTask.foreach { tsk =>
         logger.debug(s"Cancelling ${self.path}'s task ")
         tsk.cancel()
       }
@@ -151,7 +155,9 @@ class JobActor(
     case event @ JobFailed(e) if sender == self =>
       logger.debug(s"Task failed at ${self.path}")
       context.parent ! event
-      requester ! SQLReply(command.requestId, ErrorSQLResult(e.getMessage, Some(new Exception(e.getMessage))))
+      requester ! SQLReply(
+          command.requestId,
+          ErrorSQLResult(e.getMessage, Some(new Exception(e.getMessage))))
       throw e //Let It Crash: It'll be managed by its supervisor
     case JobCompleted if sender == self =>
       logger.debug(s"Completed or cancelled ${self.path} task")
@@ -160,13 +166,16 @@ class JobActor(
 
   private def launchTask: Cancellable[SQLReply] = {
 
-    implicit val _: ExecutionContext = ExecutionContext.fromExecutor(new ProlificExecutor)
+    implicit val _: ExecutionContext =
+      ExecutionContext.fromExecutor(new ProlificExecutor)
 
     Cancellable {
       val df = xdContext.sql(command.sql)
-      val rows = if (command.flattenResults)
-        df.asInstanceOf[XDDataFrame].flattenedCollect() //TODO: Replace this cast by an implicit conversion
-      else df.collect()
+      val rows =
+        if (command.flattenResults)
+          df.asInstanceOf[XDDataFrame]
+            .flattenedCollect() //TODO: Replace this cast by an implicit conversion
+        else df.collect()
 
       SQLReply(command.requestId, SuccessfulSQLResult(rows, df.schema))
     }

@@ -27,11 +27,11 @@ import org.apache.spark.sql.crossdata.models._
 import scala.language.postfixOps
 import scala.util.{Failure, Random, Success, Try}
 
-trait CommonValues extends SparkLoggerComponent{
+trait CommonValues extends SparkLoggerComponent {
 
   /**
-   * Kafka Options
-   */
+    * Kafka Options
+    */
   val ConsumerHost = "localhost"
   val ProducerHost = "localhost"
   val HostStream = "127.0.0.1"
@@ -43,43 +43,42 @@ trait CommonValues extends SparkLoggerComponent{
   val PartitionOutputEmpty = None
   val PartitionOutput = Some("1")
   val additionalOptionsEmpty = Map.empty[String, String]
-  val additionalOptionsStream = Map("auto.offset.reset" -> "smallest", "batchSize" -> "100")
+  val additionalOptionsStream =
+    Map("auto.offset.reset" -> "smallest", "batchSize" -> "100")
   val StorageLevel = "MEMORY_ONLY_SER"
   val StorageStreamLevel = "MEMORY_ONLY"
   val connectionHostModel = ConnectionHostModel(
-    Seq(ConnectionModel(ConsumerHost, ConsumerPort.toInt)),
-    Seq(ConnectionModel(ProducerHost, ProducerPort.toInt)))
+      Seq(ConnectionModel(ConsumerHost, ConsumerPort.toInt)),
+      Seq(ConnectionModel(ProducerHost, ProducerPort.toInt)))
   val topicModel = TopicModel(TopicTest)
 
   val kafkaOptionsModel = KafkaOptionsModel(connectionHostModel,
-    Seq(topicModel),
-    GroupId,
-    PartitionOutputEmpty,
-    additionalOptionsEmpty,
-    StorageLevel
-  )
-  val kafkaOptionsModelEmptyConnection = KafkaOptionsModel(ConnectionHostModel(Seq(), Seq()),
-    Seq(topicModel),
-    GroupId,
-    PartitionOutputEmpty,
-    additionalOptionsEmpty,
-    StorageLevel
-  )
+                                            Seq(topicModel),
+                                            GroupId,
+                                            PartitionOutputEmpty,
+                                            additionalOptionsEmpty,
+                                            StorageLevel)
+  val kafkaOptionsModelEmptyConnection = KafkaOptionsModel(
+      ConnectionHostModel(Seq(), Seq()),
+      Seq(topicModel),
+      GroupId,
+      PartitionOutputEmpty,
+      additionalOptionsEmpty,
+      StorageLevel)
 
-  val kafkaOptionsModelEmptyTopics = KafkaOptionsModel(connectionHostModel,
-    Seq(),
-    s"$GroupId-${Random.nextInt(10000)}",
-    PartitionOutputEmpty,
-    additionalOptionsEmpty,
-    StorageLevel
-  )
+  val kafkaOptionsModelEmptyTopics = KafkaOptionsModel(
+      connectionHostModel,
+      Seq(),
+      s"$GroupId-${Random.nextInt(10000)}",
+      PartitionOutputEmpty,
+      additionalOptionsEmpty,
+      StorageLevel)
   val kafkaStreamModel = KafkaOptionsModel(connectionHostModel,
-    Seq(topicModel),
-    GroupId,
-    PartitionOutputEmpty,
-    additionalOptionsStream,
-    StorageStreamLevel
-  )
+                                           Seq(topicModel),
+                                           GroupId,
+                                           PartitionOutputEmpty,
+                                           additionalOptionsStream,
+                                           StorageStreamLevel)
 
   val zookeeperConfEmpty = Map.empty[String, String]
   val zookeeperConfError = Map("a" -> "c", "a.b" -> "c")
@@ -88,109 +87,119 @@ trait CommonValues extends SparkLoggerComponent{
   val AliasName = "alias"
   val Sql = s"select * from $TableName"
   val queryModel = EphemeralQueryModel(TableName, Sql, AliasName)
-  val queryOptionsModel = EphemeralQueryModel(TableName, Sql, AliasName, 5, Map("option" -> "value"))
+  val queryOptionsModel =
+    EphemeralQueryModel(TableName, Sql, AliasName, 5, Map("option" -> "value"))
 
   val ephemeralOptionsEmptySparkOptions = EphemeralOptionsModel(
-    kafkaOptionsModel,
-    EphemeralOptionsModel.DefaultAtomicWindow,
-    EphemeralOptionsModel.DefaultMaxWindow,
-    EphemeralOutputFormat.ROW,
-    s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableName",
-    Map.empty
+      kafkaOptionsModel,
+      EphemeralOptionsModel.DefaultAtomicWindow,
+      EphemeralOptionsModel.DefaultMaxWindow,
+      EphemeralOutputFormat.ROW,
+      s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableName",
+      Map.empty
   )
   val ephemeralOptionsWithSparkOptions = EphemeralOptionsModel(
-    kafkaOptionsModel,
-    EphemeralOptionsModel.DefaultAtomicWindow,
-    EphemeralOptionsModel.DefaultMaxWindow,
-    EphemeralOutputFormat.ROW,
-    s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableName",
-    Map("spark.defaultParallelism" -> "50")
+      kafkaOptionsModel,
+      EphemeralOptionsModel.DefaultAtomicWindow,
+      EphemeralOptionsModel.DefaultMaxWindow,
+      EphemeralOutputFormat.ROW,
+      s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableName",
+      Map("spark.defaultParallelism" -> "50")
   )
   val ephemeralOptionsWithSparkOptionsPrefix = EphemeralOptionsModel(
-    kafkaOptionsModel,
-    EphemeralOptionsModel.DefaultAtomicWindow,
-    EphemeralOptionsModel.DefaultMaxWindow,
-    EphemeralOutputFormat.ROW,
-    s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableName",
-    Map("defaultParallelism" -> "50")
+      kafkaOptionsModel,
+      EphemeralOptionsModel.DefaultAtomicWindow,
+      EphemeralOptionsModel.DefaultMaxWindow,
+      EphemeralOutputFormat.ROW,
+      s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableName",
+      Map("defaultParallelism" -> "50")
   )
   val ephemeralOptionsStreamKafka = EphemeralOptionsModel(
-    kafkaStreamModel,
-    EphemeralOptionsModel.DefaultAtomicWindow,
-    EphemeralOptionsModel.DefaultMaxWindow,
-    EphemeralOutputFormat.ROW,
-    s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableName",
-    Map.empty
+      kafkaStreamModel,
+      EphemeralOptionsModel.DefaultAtomicWindow,
+      EphemeralOptionsModel.DefaultMaxWindow,
+      EphemeralOutputFormat.ROW,
+      s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableName",
+      Map.empty
   )
-  val ephemeralTableModelWithoutSparkOptions = EphemeralTableModel(TableName, ephemeralOptionsEmptySparkOptions)
-  val ephemeralTableModelStreamKafkaOptions = EphemeralTableModel(TableName, ephemeralOptionsStreamKafka)
-  val ephemeralTableModelWithSparkOptions = EphemeralTableModel(TableName, ephemeralOptionsWithSparkOptions)
-  val ephemeralTableModelWithSparkOptionsPrefix = EphemeralTableModel(TableName, ephemeralOptionsWithSparkOptionsPrefix)
+  val ephemeralTableModelWithoutSparkOptions =
+    EphemeralTableModel(TableName, ephemeralOptionsEmptySparkOptions)
+  val ephemeralTableModelStreamKafkaOptions =
+    EphemeralTableModel(TableName, ephemeralOptionsStreamKafka)
+  val ephemeralTableModelWithSparkOptions =
+    EphemeralTableModel(TableName, ephemeralOptionsWithSparkOptions)
+  val ephemeralTableModelWithSparkOptionsPrefix =
+    EphemeralTableModel(TableName, ephemeralOptionsWithSparkOptionsPrefix)
 
   /**
-   * Select query
-   */
+    * Select query
+    */
   val TableNameSelect = "tabletestselect"
   val TopicTestSelect = "topictestselect"
   val AliasNameSelect = "aliasselect"
   val SqlSelect = s"select * from $TableNameSelect"
-  val querySelectModel = EphemeralQueryModel(TableNameSelect, SqlSelect, AliasNameSelect)
+  val querySelectModel =
+    EphemeralQueryModel(TableNameSelect, SqlSelect, AliasNameSelect)
   val topicModelSelect = TopicModel(TopicTestSelect)
   val kafkaStreamModelSelect = KafkaOptionsModel(connectionHostModel,
-    Seq(topicModelSelect),
-    GroupId,
-    PartitionOutputEmpty,
-    additionalOptionsStream,
-    StorageStreamLevel
-  )
-  val checkpointDirectorySelect = s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableNameSelect"
+                                                 Seq(topicModelSelect),
+                                                 GroupId,
+                                                 PartitionOutputEmpty,
+                                                 additionalOptionsStream,
+                                                 StorageStreamLevel)
+  val checkpointDirectorySelect =
+    s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableNameSelect"
   val ephemeralOptionsStreamKafkaSelect = EphemeralOptionsModel(
-    kafkaStreamModelSelect,
-    EphemeralOptionsModel.DefaultAtomicWindow,
-    EphemeralOptionsModel.DefaultMaxWindow,
-    EphemeralOutputFormat.ROW,
-    s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableNameSelect",
-    Map.empty
+      kafkaStreamModelSelect,
+      EphemeralOptionsModel.DefaultAtomicWindow,
+      EphemeralOptionsModel.DefaultMaxWindow,
+      EphemeralOutputFormat.ROW,
+      s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableNameSelect",
+      Map.empty
   )
   val ephemeralTableModelStreamKafkaOptionsSelect =
     EphemeralTableModel(TableNameSelect, ephemeralOptionsStreamKafkaSelect)
 
   /**
-   * Projected query
-   */
+    * Projected query
+    */
   val TableNameProject = "tabletestproject"
   val TopicTestProject = "topicTestproject"
   val AliasNameProject = "aliasproject"
   val SqlProjected = s"select name from $TableNameProject"
-  val queryProjectedModel = EphemeralQueryModel(TableNameProject, SqlProjected, AliasNameProject)
+  val queryProjectedModel =
+    EphemeralQueryModel(TableNameProject, SqlProjected, AliasNameProject)
   val topicModelProject = TopicModel(TopicTestProject)
   val kafkaStreamModelProject = KafkaOptionsModel(connectionHostModel,
-    Seq(topicModelProject),
-    GroupId,
-    PartitionOutputEmpty,
-    additionalOptionsStream,
-    StorageStreamLevel
-  )
-  val checkpointDirectoryProject = s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableNameProject"
+                                                  Seq(topicModelProject),
+                                                  GroupId,
+                                                  PartitionOutputEmpty,
+                                                  additionalOptionsStream,
+                                                  StorageStreamLevel)
+  val checkpointDirectoryProject =
+    s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableNameProject"
   val ephemeralOptionsStreamKafkaProject = EphemeralOptionsModel(
-    kafkaStreamModelProject,
-    EphemeralOptionsModel.DefaultAtomicWindow,
-    EphemeralOptionsModel.DefaultMaxWindow,
-    EphemeralOutputFormat.ROW,
-    s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableNameProject",
-    Map.empty
+      kafkaStreamModelProject,
+      EphemeralOptionsModel.DefaultAtomicWindow,
+      EphemeralOptionsModel.DefaultMaxWindow,
+      EphemeralOutputFormat.ROW,
+      s"${EphemeralOptionsModel.DefaultCheckpointDirectory}/$TableNameProject",
+      Map.empty
   )
   val ephemeralTableModelStreamKafkaOptionsProject =
     EphemeralTableModel(TableNameProject, ephemeralOptionsStreamKafkaProject)
 
-  def parseZookeeperCatalogConfig(zookeeperConf: Map[String, String]): Map[String, String] = {
+  def parseZookeeperCatalogConfig(
+      zookeeperConf: Map[String, String]): Map[String, String] = {
     Map(CatalogClassConfigKey -> ZookeeperClass) ++
       Map(StreamingCatalogClassConfigKey -> ZookeeperStreamingClass) ++
-      zookeeperConf.map { case (key, value) =>
-        s"$CatalogConfigKey.$ZookeeperPrefixName.$key" -> value
+      zookeeperConf.map {
+        case (key, value) =>
+          s"$CatalogConfigKey.$ZookeeperPrefixName.$key" -> value
       } ++
-      zookeeperConf.map { case (key, value) =>
-        s"$StreamingConfigKey.$CatalogConfigKey.$ZookeeperPrefixName.$key" -> value
+      zookeeperConf.map {
+        case (key, value) =>
+          s"$StreamingConfigKey.$CatalogConfigKey.$ZookeeperPrefixName.$key" -> value
       }
   }
 

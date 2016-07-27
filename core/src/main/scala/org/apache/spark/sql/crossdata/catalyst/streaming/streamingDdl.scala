@@ -32,34 +32,40 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 /**
- * Ephemeral Table Functions
- */
-
-private[crossdata] case class DescribeEphemeralTable(tableIdent: TableIdentifier) extends LogicalPlan with RunnableCommand {
+  * Ephemeral Table Functions
+  */
+private[crossdata] case class DescribeEphemeralTable(
+    tableIdent: TableIdentifier)
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("Ephemeral table", StringType, nullable = false))
+        Seq(StructField("Ephemeral table", StringType, nullable = false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] =
-    sqlContext.catalog.getEphemeralTable(normalizeTableIdentifier(tableIdent, sqlContext.conf))
+    sqlContext.catalog
+      .getEphemeralTable(normalizeTableIdentifier(tableIdent, sqlContext.conf))
       .map(ephTable => Seq(Row(ephTable.toPrettyString)))
-      .getOrElse(throw new RuntimeException(s"${tableIdent.unquotedString} doesn't exist"))
+      .getOrElse(throw new RuntimeException(
+              s"${tableIdent.unquotedString} doesn't exist"))
 
 }
 
-
-private[crossdata] case object ShowEphemeralTables extends LogicalPlan with RunnableCommand {
+private[crossdata] case object ShowEphemeralTables
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
-    val schema = StructType(Seq(
-      StructField("name", StringType, nullable = false),
-      StructField("status", StringType, nullable = false),
-      StructField("atomicWindow", IntegerType, nullable = false)
-    ))
+    val schema = StructType(
+        Seq(
+            StructField("name", StringType, nullable = false),
+            StructField("status", StringType, nullable = false),
+            StructField("atomicWindow", IntegerType, nullable = false)
+        ))
     schema.toAttributes
   }
 
@@ -67,31 +73,39 @@ private[crossdata] case object ShowEphemeralTables extends LogicalPlan with Runn
     val catalog = sqlContext.catalog
 
     val tables = catalog.getAllEphemeralTables
-    val status = tables.map(etm => catalog.getEphemeralStatus(etm.name).map(_.status))
+    val status =
+      tables.map(etm => catalog.getEphemeralStatus(etm.name).map(_.status))
 
-    tables zip status map { case (tableModel, tableStatus) =>
-      Row(tableModel.name, tableStatus.mkString, tableModel.options.atomicWindow)
+    tables zip status map {
+      case (tableModel, tableStatus) =>
+        Row(tableModel.name,
+            tableStatus.mkString,
+            tableModel.options.atomicWindow)
     }
 
   }
 }
 
-
-private[crossdata] case class CreateEphemeralTable(tableIdent: TableIdentifier,
-                                                   userSchema: Option[StructType],
-                                                   opts: Map[String, String])
-  extends LogicalPlan with RunnableCommand {
+private[crossdata] case class CreateEphemeralTable(
+    tableIdent: TableIdentifier,
+    userSchema: Option[StructType],
+    opts: Map[String, String])
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("Ephemeral table", StringType, nullable = false))
+        Seq(StructField("Ephemeral table", StringType, nullable = false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    val ephTable = StreamingConfig.createEphemeralTableModel(normalizeTableIdentifier(tableIdent, sqlContext.conf), opts, userSchema)
+    val ephTable = StreamingConfig.createEphemeralTableModel(
+        normalizeTableIdentifier(tableIdent, sqlContext.conf),
+        opts,
+        userSchema)
     sqlContext.catalog.createEphemeralTable(ephTable) match {
       case Right(table) => Seq(Row(table.toPrettyString))
       case Left(message) => sys.error(message)
@@ -100,36 +114,36 @@ private[crossdata] case class CreateEphemeralTable(tableIdent: TableIdentifier,
 
 }
 
-
-
-
 private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
-  extends LogicalPlan with RunnableCommand {
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("Dropped table", StringType, false))
+        Seq(StructField("Dropped table", StringType, false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.dropEphemeralTable(normalizeTableIdentifier(tableIdent, sqlContext.conf))
+    sqlContext.catalog.dropEphemeralTable(
+        normalizeTableIdentifier(tableIdent, sqlContext.conf))
     Seq(Row(tableIdent.unquotedString))
   }
 }
 
-private[crossdata] case object DropAllEphemeralTables extends LogicalPlan with RunnableCommand {
+private[crossdata] case object DropAllEphemeralTables
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("Dropped tables", StringType, false))
+        Seq(StructField("Dropped tables", StringType, false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-
 
     val catalog = sqlContext.catalog
 
@@ -137,37 +151,43 @@ private[crossdata] case object DropAllEphemeralTables extends LogicalPlan with R
     catalog.dropAllEphemeralTables
     ephTables.map(eTable => Row(eTable.name))
 
-
   }
 }
 
 /**
- * Ephemeral Table Status Functions
- */
-
-private[crossdata] case class ShowEphemeralStatus(tableIdent: TableIdentifier) extends LogicalPlan with RunnableCommand {
+  * Ephemeral Table Status Functions
+  */
+private[crossdata] case class ShowEphemeralStatus(tableIdent: TableIdentifier)
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField(s"status", StringType, nullable = false))
+        Seq(StructField(s"status", StringType, nullable = false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.getEphemeralStatus(normalizeTableIdentifier(tableIdent, sqlContext.conf))
+    sqlContext.catalog
+      .getEphemeralStatus(
+          normalizeTableIdentifier(tableIdent, sqlContext.conf))
       .map(ephStatus => Seq(Row(ephStatus.status.toString)))
-      .getOrElse(sys.error(s"${tableIdent.unquotedString} status doesn't exist"))
+      .getOrElse(
+          sys.error(s"${tableIdent.unquotedString} status doesn't exist"))
   }
 }
 
-private[crossdata] case object ShowAllEphemeralStatuses extends LogicalPlan with RunnableCommand {
+private[crossdata] case object ShowAllEphemeralStatuses
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
-    val schema = StructType(Seq(
-      StructField("name", StringType, nullable = false),
-      StructField("status", StringType, nullable = false)
-    ))
+    val schema = StructType(
+        Seq(
+            StructField("name", StringType, nullable = false),
+            StructField("status", StringType, nullable = false)
+        ))
     schema.toAttributes
   }
 
@@ -178,18 +198,22 @@ private[crossdata] case object ShowAllEphemeralStatuses extends LogicalPlan with
 
 }
 
-private[crossdata] case class StartProcess(tableIdentifier: String) extends LogicalPlan with RunnableCommand {
+private[crossdata] case class StartProcess(tableIdentifier: String)
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
-    val schema = StructType(Seq(
-      StructField("infoMessage", StringType, nullable = true)
-    ))
+    val schema = StructType(
+        Seq(
+            StructField("infoMessage", StringType, nullable = true)
+        ))
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     val xdContext = sqlContext.asInstanceOf[XDContext]
-    val sparkJob = SparkJobLauncher.getSparkStreamingJob(xdContext, XDContext.xdConfig, tableIdentifier)
+    val sparkJob = SparkJobLauncher
+      .getSparkStreamingJob(xdContext, XDContext.xdConfig, tableIdentifier)
 
     sparkJob match {
       case Failure(exception) =>
@@ -205,7 +229,9 @@ private[crossdata] case class StartProcess(tableIdentifier: String) extends Logi
   }
 }
 
-private[crossdata] case class StopProcess(tableIdentifier: String) extends LogicalPlan with RunnableCommand {
+private[crossdata] case class StopProcess(tableIdentifier: String)
+    extends LogicalPlan
+    with RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     val xdContext = sqlContext.asInstanceOf[XDContext]
@@ -215,11 +241,13 @@ private[crossdata] case class StopProcess(tableIdentifier: String) extends Logic
       case Some(currentStatus) =>
         if (currentStatus == EphemeralExecutionStatus.Started || currentStatus == EphemeralExecutionStatus.Starting) {
           xdContext.catalog.updateEphemeralStatus(
-            tableIdentifier,
-            EphemeralStatusModel(tableIdentifier, EphemeralExecutionStatus.Stopping)
+              tableIdentifier,
+              EphemeralStatusModel(tableIdentifier,
+                                   EphemeralExecutionStatus.Stopping)
           )
         } else {
-          sys.error(s"Cannot stop process. $tableIdentifier status is $currentStatus")
+          sys.error(
+              s"Cannot stop process. $tableIdentifier status is $currentStatus")
         }
       case None =>
         sys.error(s"Process $tableIdentifier not found")
@@ -229,15 +257,16 @@ private[crossdata] case class StopProcess(tableIdentifier: String) extends Logic
 }
 
 /**
- * Ephemeral Queries Functions
- */
-
-private[crossdata] case class ShowEphemeralQueries(tableIdentifier: Option[String] = None)
-  extends LogicalPlan with RunnableCommand {
+  * Ephemeral Queries Functions
+  */
+private[crossdata] case class ShowEphemeralQueries(
+    tableIdentifier: Option[String] = None)
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("Ephemeral query", StringType, nullable = false))
+        Seq(StructField("Ephemeral query", StringType, nullable = false))
     )
     schema.toAttributes
   }
@@ -245,31 +274,37 @@ private[crossdata] case class ShowEphemeralQueries(tableIdentifier: Option[Strin
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
     val queries = sqlContext.catalog.getAllEphemeralQueries
-    val filteredQueries = tableIdentifier.map(table =>
-      queries.filter(eqm => eqm.ephemeralTableName == table)
-    ).getOrElse(queries)
+    val filteredQueries = tableIdentifier
+      .map(table => queries.filter(eqm => eqm.ephemeralTableName == table))
+      .getOrElse(queries)
     filteredQueries.map(q => Row(q.toPrettyString))
 
   }
 }
 
-
 private[crossdata] case class AddEphemeralQuery(ephemeralTablename: String,
                                                 sql: String,
                                                 alias: String,
                                                 window: Int,
-                                                opts: Map[String, String] = Map.empty)
-  extends LogicalPlan with RunnableCommand {
+                                                opts: Map[String, String] =
+                                                  Map.empty)
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("Ephemeral query", StringType, nullable = false))
+        Seq(StructField("Ephemeral query", StringType, nullable = false))
     )
     schema.toAttributes
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.createEphemeralQuery(EphemeralQueryModel(ephemeralTablename, sql, alias, window, opts)) match {
+    sqlContext.catalog
+      .createEphemeralQuery(EphemeralQueryModel(ephemeralTablename,
+                                                sql,
+                                                alias,
+                                                window,
+                                                opts)) match {
       case Left(errorMessage) => sys.error(errorMessage)
       case Right(query) => Seq(Row(query.toPrettyString))
     }
@@ -278,11 +313,12 @@ private[crossdata] case class AddEphemeralQuery(ephemeralTablename: String,
 }
 
 private[crossdata] case class DropEphemeralQuery(queryIdent: String)
-  extends LogicalPlan with RunnableCommand {
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("Dropped query", StringType, nullable = false))
+        Seq(StructField("Dropped query", StringType, nullable = false))
     )
     schema.toAttributes
   }
@@ -293,11 +329,14 @@ private[crossdata] case class DropEphemeralQuery(queryIdent: String)
   }
 }
 
-private[crossdata] case class DropAllEphemeralQueries(tableName: Option[String] = None) extends LogicalPlan with RunnableCommand {
+private[crossdata] case class DropAllEphemeralQueries(
+    tableName: Option[String] = None)
+    extends LogicalPlan
+    with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
-      Seq(StructField("Dropped query", StringType, nullable = false))
+        Seq(StructField("Dropped query", StringType, nullable = false))
     )
     schema.toAttributes
   }
@@ -308,8 +347,10 @@ private[crossdata] case class DropAllEphemeralQueries(tableName: Option[String] 
 
     val filteredQueryAliases = {
       val queries = catalog.getAllEphemeralQueries
-      tableName.map(tname => queries.filter(eqm => eqm.ephemeralTableName == tname))
-        .getOrElse(queries).map(q => q.alias)
+      tableName
+        .map(tname => queries.filter(eqm => eqm.ephemeralTableName == tname))
+        .getOrElse(queries)
+        .map(q => q.alias)
     }
 
     filteredQueryAliases.map { queryAlias =>
@@ -319,6 +360,3 @@ private[crossdata] case class DropAllEphemeralQueries(tableName: Option[String] 
 
   }
 }
-
-
-

@@ -15,7 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.config
 
-
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
 import org.apache.spark.sql.crossdata.models._
@@ -26,27 +25,46 @@ object StreamingConfig extends CoreConfig {
 
   override lazy val logger = Logger.getLogger("StreamingConfig")
 
-  lazy val streamingConfig = config.getConfig(StreamingConstants.StreamingConfPath)
+  lazy val streamingConfig =
+    config.getConfig(StreamingConstants.StreamingConfPath)
 
-  lazy val streamingConfigMap: Map[String, String] =
-    streamingConfig.entrySet().map(entry => (entry.getKey, streamingConfig.getAnyRef(entry.getKey).toString)).toMap
+  lazy val streamingConfigMap: Map[String, String] = streamingConfig
+    .entrySet()
+    .map(entry =>
+          (entry.getKey, streamingConfig.getAnyRef(entry.getKey).toString))
+    .toMap
 
-  def createEphemeralTableModel(ident: String, opts : Map[String, String], userSchema: Option[StructType] = None) : EphemeralTableModel = {
+  def createEphemeralTableModel(
+      ident: String,
+      opts: Map[String, String],
+      userSchema: Option[StructType] = None): EphemeralTableModel = {
 
     val finalOptions = getEphemeralTableOptions(ident, opts)
 
-    val connectionsModel = ConnectionHostModel(extractConnection(finalOptions, ZKConnection), extractConnection(finalOptions, KafkaConnection))
+    val connectionsModel = ConnectionHostModel(
+        extractConnection(finalOptions, ZKConnection),
+        extractConnection(finalOptions, KafkaConnection))
 
     val topics = finalOptions(KafkaTopic)
-      .split(",").map(_.split(":")).map{
-      case l if l.size == 2 => TopicModel(l(0), l(1).toInt)
-    }.toSeq
+      .split(",")
+      .map(_.split(":"))
+      .map {
+        case l if l.size == 2 => TopicModel(l(0), l(1).toInt)
+      }
+      .toSeq
 
     val groupId = finalOptions(KafkaGroupId)
     val partition = finalOptions.get(KafkaPartition)
-    val kafkaAdditionalOptions = finalOptions.filter{case (k, v) => k.startsWith(KafkaAdditionalOptionsKey)}
+    val kafkaAdditionalOptions = finalOptions.filter {
+      case (k, v) => k.startsWith(KafkaAdditionalOptionsKey)
+    }
     val storageLevel = finalOptions(ReceiverStorageLevel)
-    val kafkaOptions = KafkaOptionsModel(connectionsModel, topics, groupId, partition, kafkaAdditionalOptions, storageLevel)
+    val kafkaOptions = KafkaOptionsModel(connectionsModel,
+                                         topics,
+                                         groupId,
+                                         partition,
+                                         kafkaAdditionalOptions,
+                                         storageLevel)
     val minW = finalOptions(AtomicWindow).toInt
     val maxW = finalOptions(MaxWindow).toInt
     val outFormat = finalOptions(OutputFormat) match {
@@ -55,15 +73,23 @@ object StreamingConfig extends CoreConfig {
     }
 
     val checkpointDirectory = s"${finalOptions(CheckpointDirectory)}/$ident"
-    val sparkOpts = finalOptions.filter{case (k, v) => k.startsWith(SparkConfPath)}
+    val sparkOpts = finalOptions.filter {
+      case (k, v) => k.startsWith(SparkConfPath)
+    }
     validateSparkConfig(sparkOpts)
 
-    val ephemeralOptions = EphemeralOptionsModel(kafkaOptions, minW, maxW, outFormat, checkpointDirectory, sparkOpts)
+    val ephemeralOptions = EphemeralOptionsModel(kafkaOptions,
+                                                 minW,
+                                                 maxW,
+                                                 outFormat,
+                                                 checkpointDirectory,
+                                                 sparkOpts)
 
     EphemeralTableModel(ident, ephemeralOptions, userSchema)
   }
 
-  def extractConnection(options: Map[String, String], connection: String): Seq[ConnectionModel] = {
+  def extractConnection(options: Map[String, String],
+                        connection: String): Seq[ConnectionModel] = {
     options(connection).split(",").map {
       case c if c.split(":").length == 2 => {
         val host_port = c.split(":")
@@ -72,10 +98,11 @@ object StreamingConfig extends CoreConfig {
     }
   }
 
+  private def getEphemeralTableOptions(
+      ephTable: String,
+      opts: Map[String, String]): Map[String, String] = {
 
-  private def getEphemeralTableOptions(ephTable: String, opts : Map[String, String]): Map[String, String] = {
-
-    listMandatoryEphemeralTableKeys.foreach{ mandatoryOption =>
+    listMandatoryEphemeralTableKeys.foreach { mandatoryOption =>
       if (opts.get(mandatoryOption).isEmpty) notFound(mandatoryOption)
     }
     streamingConfigMap ++ opts
@@ -88,11 +115,11 @@ object StreamingConfig extends CoreConfig {
   }
 
   private def validateSparkConfig(config: Map[String, String]): Unit = {
-    config.get(SparkCoresMax).foreach{ maxCores =>
-      if (maxCores.toInt < 2) throw new RuntimeException(s"At least 2 cores are required to launch streaming applications")
+    config.get(SparkCoresMax).foreach { maxCores =>
+      if (maxCores.toInt < 2)
+        throw new RuntimeException(
+            s"At least 2 cores are required to launch streaming applications")
     }
   }
 
 }
-
-

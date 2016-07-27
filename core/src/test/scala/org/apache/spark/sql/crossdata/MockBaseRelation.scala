@@ -23,5 +23,6 @@ class MockBaseRelation extends BaseRelation with Serializable {
 
   override def sqlContext: SQLContext = ???
 
-  override def schema: StructType = StructType(List(StructField("id", IntegerType)))
+  override def schema: StructType =
+    StructType(List(StructField("id", IntegerType)))
 }

@@ -31,20 +31,25 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Try
 
-class ZookeeperStreamingCatalog(val catalystConf: CatalystConf, serverConfig: Config) extends XDStreamingCatalog {
+class ZookeeperStreamingCatalog(val catalystConf: CatalystConf,
+                                serverConfig: Config)
+    extends XDStreamingCatalog {
 
-  private[spark] val streamingConfig = serverConfig.getConfig(CoreConfig.StreamingConfigKey)
-  private[spark] val ephemeralTableDAO =
-    new EphemeralTableTypesafeDAO(streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
-  private[spark] val ephemeralQueriesDAO =
-    new EphemeralQueriesTypesafeDAO(streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
+  private[spark] val streamingConfig =
+    serverConfig.getConfig(CoreConfig.StreamingConfigKey)
+  private[spark] val ephemeralTableDAO = new EphemeralTableTypesafeDAO(
+      streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
+  private[spark] val ephemeralQueriesDAO = new EphemeralQueriesTypesafeDAO(
+      streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
   private[spark] val ephemeralTableStatusDAO =
-    new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
+    new EphemeralTableStatusTypesafeDAO(
+        streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
 
-
-  override def relation(tableIdent: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
+  override def relation(tableIdent: TableIdentifierNormalized)(
+      implicit sqlContext: SQLContext): Option[LogicalPlan] = {
     import XDCatalogCommon._
-    val tableIdentifier: String = stringifyTableIdentifierNormalized(tableIdent)
+    val tableIdentifier: String = stringifyTableIdentifierNormalized(
+        tableIdent)
     if (futurize(existsEphemeralTable(tableIdentifier)))
       Some(StreamingRelation(tableIdentifier))
     else
@@ -55,39 +60,49 @@ class ZookeeperStreamingCatalog(val catalystConf: CatalystConf, serverConfig: Co
   override def isAvailable: Boolean = true
 
   // TODO It must not return the relations until the catalog can distinguish between real/ephemeral tables
-  override def allRelations(databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = Seq.empty
+  override def allRelations(
+      databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] =
+    Seq.empty
 
   private def futurize[P](operation: => P): P =
     Await.result(Future(operation), 5 seconds)
 
   /**
-   * Ephemeral Table Functions
-   */
+    * Ephemeral Table Functions
+    */
   override def existsEphemeralTable(tableIdentifier: String): Boolean =
     futurize(ephemeralTableDAO.dao.exists(tableIdentifier))
 
-  override def getEphemeralTable(tableIdentifier: String): Option[EphemeralTableModel] =
+  override def getEphemeralTable(
+      tableIdentifier: String): Option[EphemeralTableModel] =
     futurize(ephemeralTableDAO.dao.get(tableIdentifier))
 
-  override def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel] =
+  override def createEphemeralTable(ephemeralTable: EphemeralTableModel)
+    : Either[String, EphemeralTableModel] =
     if (!existsEphemeralTable(ephemeralTable.name)) {
-      createEphemeralStatus(ephemeralTable.name, EphemeralStatusModel(ephemeralTable.name, EphemeralExecutionStatus.NotStarted))
+      createEphemeralStatus(
+          ephemeralTable.name,
+          EphemeralStatusModel(ephemeralTable.name,
+                               EphemeralExecutionStatus.NotStarted))
       Right(ephemeralTableDAO.dao.upsert(ephemeralTable.name, ephemeralTable))
-    }
-    else Left("Ephemeral table exists")
-
+    } else Left("Ephemeral table exists")
 
   override def dropEphemeralTable(tableIdentifier: String): Unit = {
-    val isRunning = ephemeralTableStatusDAO.dao.get(tableIdentifier).map { tableStatus =>
-      tableStatus.status == EphemeralExecutionStatus.Started || tableStatus.status == EphemeralExecutionStatus.Starting
+    val isRunning = ephemeralTableStatusDAO.dao.get(tableIdentifier).map {
+      tableStatus =>
+        tableStatus.status == EphemeralExecutionStatus.Started || tableStatus.status == EphemeralExecutionStatus.Starting
     } getOrElse notFound(tableIdentifier)
 
-    if (isRunning) throw new RuntimeException("The ephemeral is running. The process should be stopped first using 'Stop <tableIdentifier>'")
+    if (isRunning)
+      throw new RuntimeException(
+          "The ephemeral is running. The process should be stopped first using 'Stop <tableIdentifier>'")
 
     ephemeralTableDAO.dao.delete(tableIdentifier)
     ephemeralTableStatusDAO.dao.delete(tableIdentifier)
 
-    ephemeralQueriesDAO.dao.getAll().filter(_.ephemeralTableName == tableIdentifier) foreach { query =>
+    ephemeralQueriesDAO.dao
+      .getAll()
+      .filter(_.ephemeralTableName == tableIdentifier) foreach { query =>
       ephemeralQueriesDAO.dao.delete(query.alias)
     }
   }
@@ -104,19 +119,21 @@ class ZookeeperStreamingCatalog(val catalystConf: CatalystConf, serverConfig: Co
   override def getAllEphemeralTables: Seq[EphemeralTableModel] =
     ephemeralTableDAO.dao.getAll()
 
-
   /**
-   * Ephemeral Queries Functions
-   */
+    * Ephemeral Queries Functions
+    */
   override def existsEphemeralQuery(queryAlias: String): Boolean =
     ephemeralQueriesDAO.dao.exists(queryAlias)
 
-  override def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel] =
+  override def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel)
+    : Either[String, EphemeralQueryModel] =
     if (!existsEphemeralQuery(ephemeralQuery.alias))
-      Right(ephemeralQueriesDAO.dao.upsert(ephemeralQuery.alias, ephemeralQuery))
+      Right(
+          ephemeralQueriesDAO.dao.upsert(ephemeralQuery.alias, ephemeralQuery))
     else Left("Ephemeral query exists")
 
-  override def getEphemeralQuery(queryAlias: String): Option[EphemeralQueryModel] =
+  override def getEphemeralQuery(
+      queryAlias: String): Option[EphemeralQueryModel] =
     ephemeralQueriesDAO.dao.get(queryAlias)
 
   override def getAllEphemeralQueries: Seq[EphemeralQueryModel] =
@@ -125,25 +142,30 @@ class ZookeeperStreamingCatalog(val catalystConf: CatalystConf, serverConfig: Co
   override def dropEphemeralQuery(queryAlias: String): Unit =
     ephemeralQueriesDAO.dao.delete(queryAlias)
 
-  override def dropAllEphemeralQueries(): Unit = ephemeralQueriesDAO.dao.deleteAll
+  override def dropAllEphemeralQueries(): Unit =
+    ephemeralQueriesDAO.dao.deleteAll
 
   /**
-   * Ephemeral Status Functions
-   */
-  override def createEphemeralStatus(tableIdentifier: String,
-                                     ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel =
+    * Ephemeral Status Functions
+    */
+  override def createEphemeralStatus(
+      tableIdentifier: String,
+      ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel =
     ephemeralTableStatusDAO.dao.upsert(tableIdentifier, ephemeralStatusModel)
 
-  override def getEphemeralStatus(tableIdentifier: String): Option[EphemeralStatusModel] =
+  override def getEphemeralStatus(
+      tableIdentifier: String): Option[EphemeralStatusModel] =
     ephemeralTableStatusDAO.dao.get(tableIdentifier)
 
   override def getAllEphemeralStatuses: Seq[EphemeralStatusModel] =
     ephemeralTableStatusDAO.dao.getAll()
 
-  override def updateEphemeralStatus(tableIdentifier: String, status: EphemeralStatusModel): Unit =
+  override def updateEphemeralStatus(tableIdentifier: String,
+                                     status: EphemeralStatusModel): Unit =
     ephemeralTableStatusDAO.dao.update(tableIdentifier, status)
 
-  override protected[crossdata] def dropEphemeralStatus(tableIdentifier: String): Unit =
+  override protected[crossdata] def dropEphemeralStatus(
+      tableIdentifier: String): Unit =
     ephemeralTableStatusDAO.dao.delete(tableIdentifier)
 
   override protected[crossdata] def dropAllEphemeralStatus(): Unit =

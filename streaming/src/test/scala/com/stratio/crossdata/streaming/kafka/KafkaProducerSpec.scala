@@ -29,7 +29,8 @@ class KafkaProducerSpec extends BaseStreamingXDTest with CommonValues {
 
   "KafkaProducer" should "return a correct key" in {
     val result = KafkaProducer.getKey(connectionHostModel)
-    val expected = """ConnectionHostModel([ConnectionModel(localhost,2181)],[ConnectionModel(localhost,9042)])"""
+    val expected =
+      """ConnectionHostModel([ConnectionModel(localhost,2181)],[ConnectionModel(localhost,9042)])"""
 
     result should be(expected)
   }
@@ -61,28 +62,43 @@ class KafkaProducerSpec extends BaseStreamingXDTest with CommonValues {
   }
 
   "KafkaProducer" should "return default producer with empty connection" in {
-    val result = KafkaProducer.getProducer(kafkaOptionsModelEmptyConnection).config.brokerList
+    val result = KafkaProducer
+      .getProducer(kafkaOptionsModelEmptyConnection)
+      .config
+      .brokerList
     val expected = "127.0.0.1:9092"
 
     result should be(expected)
   }
 
   "KafkaProducer" should "return additional params" in {
-    val result = KafkaProducer.getProducer(kafkaStreamModel).config.props.containsKey("batch.num.messages")
+    val result = KafkaProducer
+      .getProducer(kafkaStreamModel)
+      .config
+      .props
+      .containsKey("batch.num.messages")
     val expected = true
 
     result should be(expected)
   }
 
   "KafkaProducer" should "return a correct additional param" in {
-    val result = KafkaProducer.getProducer(kafkaStreamModel).config.props.getString("batch.num.messages")
+    val result = KafkaProducer
+      .getProducer(kafkaStreamModel)
+      .config
+      .props
+      .getString("batch.num.messages")
     val expected = "100"
 
     result should be(expected)
   }
 
   "KafkaProducer" should "return empty params" in {
-    val result = KafkaProducer.getProducer(kafkaOptionsModel).config.props.containsKey("batch.num.messages")
+    val result = KafkaProducer
+      .getProducer(kafkaOptionsModel)
+      .config
+      .props
+      .containsKey("batch.num.messages")
     val expected = false
 
     result should be(expected)

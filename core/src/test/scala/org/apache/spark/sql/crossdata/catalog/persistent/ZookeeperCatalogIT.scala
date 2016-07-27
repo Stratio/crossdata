@@ -27,15 +27,21 @@ import scala.util.Try
 @RunWith(classOf[JUnitRunner])
 class ZookeeperCatalogIT extends {
   val catalogName = "Zookeeper"
-} with SharedXDContextTest with CatalogConstants with GenericCatalogTests with ZookeeperDefaultTestConstants{
+} with SharedXDContextTest with CatalogConstants with GenericCatalogTests
+with ZookeeperDefaultTestConstants {
 
-  override val coreConfig : Option[Config] = {
-    val zkResourceConfig =
-      Try(ConfigFactory.load("zookeeper-catalog.conf").getConfig(CoreConfig.ParentConfigName)).toOption
+  override val coreConfig: Option[Config] = {
+    val zkResourceConfig = Try(
+        ConfigFactory
+          .load("zookeeper-catalog.conf")
+          .getConfig(CoreConfig.ParentConfigName)).toOption
 
-    ZookeeperConnection.fold(zkResourceConfig) {connectionString =>
-      zkResourceConfig.flatMap(resourceConfig =>
-        Option(resourceConfig.withValue(ZookeeperConnectionKey, ConfigValueFactory.fromAnyRef(connectionString))))
+    ZookeeperConnection.fold(zkResourceConfig) { connectionString =>
+      zkResourceConfig.flatMap(
+          resourceConfig =>
+            Option(resourceConfig.withValue(
+                    ZookeeperConnectionKey,
+                    ConfigValueFactory.fromAnyRef(connectionString))))
     }
   }
 
@@ -43,6 +49,6 @@ class ZookeeperCatalogIT extends {
 
 sealed trait ZookeeperDefaultTestConstants {
   val ZookeeperConnectionKey = "catalog.zookeeper.connectionString"
-  val ZookeeperConnection: Option[String] =
-    Try(ConfigFactory.load().getString(ZookeeperConnectionKey)).toOption
+  val ZookeeperConnection: Option[String] = Try(
+      ConfigFactory.load().getString(ZookeeperConnectionKey)).toOption
 }

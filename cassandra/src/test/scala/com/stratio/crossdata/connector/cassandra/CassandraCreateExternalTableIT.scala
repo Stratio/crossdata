@@ -21,13 +21,11 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
-
   "The Cassandra connector" should "execute natively create a External Table" in {
 
     val tableName = "newtable"
 
-    val createTableQueryString =
-      s"""|CREATE EXTERNAL TABLE $tableName (
+    val createTableQueryString = s"""|CREATE EXTERNAL TABLE $tableName (
           |id Integer,
           |name String,
           |booleanFile boolean,
@@ -53,14 +51,15 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
     //Expectations
     val table = xdContext.table(tableName)
     table should not be null
-    table.schema.fieldNames should contain ("name")
+    table.schema.fieldNames should contain("name")
 
     // In case that the table didn't exist, then this operation would throw a InvalidQueryException
     val resultSet = client.get._2.execute(s"SELECT * FROM $Catalog.$tableName")
 
     import scala.collection.JavaConversions._
 
-    resultSet.getColumnDefinitions.asList.map(cd => cd.getName) should contain ("name")
+    resultSet.getColumnDefinitions.asList.map(cd => cd.getName) should contain(
+        "name")
   }
 
   it should "execute natively create a External Table with no existing Keyspace" in {
@@ -85,7 +84,7 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
       val table = xdContext.table(s"newkeyspace.othertable")
       table should not be null
       table.schema.fieldNames should contain("name")
-    }finally {
+    } finally {
       //AFTER
       client.get._2.execute(s"DROP KEYSPACE newkeyspace")
     }
@@ -105,11 +104,10 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
       """.stripMargin.replaceAll("\n", " ")
     //Experimentation
 
-    the [IllegalArgumentException] thrownBy {
+    the[IllegalArgumentException] thrownBy {
       sql(createTableQueryString).collect()
-    }  should have message "requirement failed: with_replication required when use CREATE EXTERNAL TABLE command"
+    } should have message "requirement failed: with_replication required when use CREATE EXTERNAL TABLE command"
 
   }
 
-  
 }

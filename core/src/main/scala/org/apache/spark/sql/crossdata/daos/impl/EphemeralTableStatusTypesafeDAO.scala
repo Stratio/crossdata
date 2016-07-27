@@ -18,7 +18,8 @@ package org.apache.spark.sql.crossdata.daos.impl
 import com.typesafe.config.Config
 import org.apache.spark.sql.crossdata.daos.EphemeralTableStatusDAO
 
-class EphemeralTableStatusTypesafeDAO (configuration: Config) extends EphemeralTableStatusDAO {
+class EphemeralTableStatusTypesafeDAO(configuration: Config)
+    extends EphemeralTableStatusDAO {
 
   override val config = new TypesafeConfig(Option(configuration))
 

@@ -25,7 +25,7 @@ package object cassandra {
     val Catalog = "highschool"
     val Table = "students"
     val CassandraHost = "127.0.0.1"
-    val SourceProvider = "com.stratio.crossdata.connector.cassandra"// Cassandra provider => org.apache.spark.sql.cassandra
+    val SourceProvider = "com.stratio.crossdata.connector.cassandra" // Cassandra provider => org.apache.spark.sql.cassandra
   }
 
   def prepareEnvironment(): (Cluster, Session) = {
@@ -46,12 +46,15 @@ package object cassandra {
 
   private def buildTable(session: Session): Unit = {
 
-    session.execute(s"CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
-    session.execute(s"CREATE TABLE $Catalog.$Table (id int PRIMARY KEY, age int, comment text, enrolled boolean, name text)")
+    session.execute(
+        s"CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
+    session.execute(
+        s"CREATE TABLE $Catalog.$Table (id int PRIMARY KEY, age int, comment text, enrolled boolean, name text)")
 
     for (a <- 1 to 10) {
-      session.execute("INSERT INTO " + Catalog + "." + Table + " (id, age, comment, enrolled, name) VALUES " +
-        "(" + a + ", " + (10 + a) + ", 'Comment " + a + "', " + (a % 2 == 0) + ", 'Name " + a + "')")
+      session.execute(
+          "INSERT INTO " + Catalog + "." + Table + " (id, age, comment, enrolled, name) VALUES " +
+            "(" + a + ", " + (10 + a) + ", 'Comment " + a + "', " + (a % 2 == 0) + ", 'Name " + a + "')")
     }
   }
 

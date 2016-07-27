@@ -29,61 +29,63 @@ private[crossdata] trait Command {
   private[crossdata] val requestId = UUID.randomUUID()
 }
 
-private[crossdata] case class SQLCommand private(sql: String,
-                                                 queryId: UUID = UUID.randomUUID(),
-                                                 flattenResults: Boolean = false,
-                                                 timeout: Option[FiniteDuration] = None
-                                                ) extends Command {
+private[crossdata] case class SQLCommand private (
+    sql: String,
+    queryId: UUID = UUID.randomUUID(),
+    flattenResults: Boolean = false,
+    timeout: Option[FiniteDuration] = None)
+    extends Command {
 
   def this(query: String,
            retrieveColNames: Boolean,
-           timeoutDuration: FiniteDuration
-          ) = this(sql = query, flattenResults = retrieveColNames, timeout = Option(timeoutDuration))
+           timeoutDuration: FiniteDuration) =
+    this(sql = query,
+         flattenResults = retrieveColNames,
+         timeout = Option(timeoutDuration))
 
-  def this(query: String,
-           retrieveColNames: Boolean
-          ) = this(sql = query, flattenResults = retrieveColNames, timeout = None)
+  def this(query: String, retrieveColNames: Boolean) =
+    this(sql = query, flattenResults = retrieveColNames, timeout = None)
 
 }
 
-
-case class AddJARCommand(path: String, hdfsConfig: Option[Config] = None,
-                         timeout: Option[FiniteDuration] = None, toClassPath:Option[Boolean]= None
-                        ) extends Command {
+case class AddJARCommand(path: String,
+                         hdfsConfig: Option[Config] = None,
+                         timeout: Option[FiniteDuration] = None,
+                         toClassPath: Option[Boolean] = None)
+    extends Command {
   def this(
-            jarpath: String,
-            timeout: FiniteDuration
-          ) = this(path = jarpath, timeout = Option(timeout))
-
+      jarpath: String,
+      timeout: FiniteDuration
+  ) = this(path = jarpath, timeout = Option(timeout))
 
   def this(jarpath: String) = this(path = jarpath)
 
   def this(
-            jarpath: String,
-            hdfsConf: Config
-          ) = this(path = jarpath, hdfsConfig = Option(hdfsConf))
+      jarpath: String,
+      hdfsConf: Config
+  ) = this(path = jarpath, hdfsConfig = Option(hdfsConf))
 
-  def this (jarpath: String,
-            toClassPath: Boolean
-           ) = this(path = jarpath, toClassPath = Option(toClassPath))
+  def this(jarpath: String, toClassPath: Boolean) =
+    this(path = jarpath, toClassPath = Option(toClassPath))
 }
 
-case class AddAppCommand(path: String,alias:String,clss:String,
-                         timeout: Option[FiniteDuration] = None
-                        ) extends Command {
+case class AddAppCommand(path: String,
+                         alias: String,
+                         clss: String,
+                         timeout: Option[FiniteDuration] = None)
+    extends Command {
   def this(
-            jarpath: String,
-            alias:String,
-            clss:String,
-            timeout: FiniteDuration
-          ) = this(path = jarpath, alias,clss, timeout = Option(timeout))
+      jarpath: String,
+      alias: String,
+      clss: String,
+      timeout: FiniteDuration
+  ) = this(path = jarpath, alias, clss, timeout = Option(timeout))
 
   def this(
-            jarpath: String,
-            alias:String,
-            clss:String
-          )= this(jarpath, alias,clss,None)
-
+      jarpath: String,
+      alias: String,
+      clss: String
+  ) = this(jarpath, alias, clss, None)
 
 }
 case class ClusterStateCommand() extends Command
@@ -96,23 +98,31 @@ trait ControlCommand extends Command
 
 private[crossdata] case class GetJobStatus() extends ControlCommand
 
-private[crossdata] case class CancelQueryExecution(queryId: UUID) extends ControlCommand
+private[crossdata] case class CancelQueryExecution(queryId: UUID)
+    extends ControlCommand
 
 private[crossdata] case class CommandEnvelope(cmd: Command, session: Session)
-
 
 // Server -> Driver messages
 private[crossdata] trait ServerReply {
   def requestId: UUID
 }
 
-private[crossdata] case class QueryCancelledReply(requestId: UUID) extends ServerReply
+private[crossdata] case class QueryCancelledReply(requestId: UUID)
+    extends ServerReply
 
-private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
+private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult)
+    extends ServerReply
 
-private[crossdata] case class ClusterStateReply(requestId: UUID, clusterState: CurrentClusterState) extends ServerReply
+private[crossdata] case class ClusterStateReply(
+    requestId: UUID,
+    clusterState: CurrentClusterState)
+    extends ServerReply
 
-private[crossdata] case class OpenSessionReply(requestId: UUID, isOpen: Boolean) extends ServerReply
+private[crossdata] case class OpenSessionReply(requestId: UUID,
+                                               isOpen: Boolean)
+    extends ServerReply
 
-private[crossdata] case class AddHdfsFileReply(requestId: UUID, hdfsRoute: String) extends ServerReply
-
+private[crossdata] case class AddHdfsFileReply(requestId: UUID,
+                                               hdfsRoute: String)
+    extends ServerReply

@@ -15,7 +15,6 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
-
 import java.util.UUID
 
 import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
@@ -32,32 +31,37 @@ import org.scalatest.Suite
 
 import scala.util.Try
 
-
-trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticSearchDefaultConstants with SparkLoggerComponent {
+trait ElasticWithSharedContext
+    extends SharedXDContextWithDataTest
+    with ElasticSearchDefaultConstants
+    with SparkLoggerComponent {
   this: Suite =>
 
   override type ClientParams = ElasticClient
   override val provider: String = SourceProvider
 
   override val defaultOptions = Map(
-    "resource" -> s"$Index/$Type",
-    "es.nodes" -> s"$ElasticHost",
-    "es.port" -> s"$ElasticRestPort",
-    "es.nativePort" -> s"$ElasticNativePort",
-    "es.cluster" -> s"$ElasticClusterName"
+      "resource" -> s"$Index/$Type",
+      "es.nodes" -> s"$ElasticHost",
+      "es.port" -> s"$ElasticRestPort",
+      "es.nativePort" -> s"$ElasticNativePort",
+      "es.cluster" -> s"$ElasticClusterName"
   )
 
   override protected def saveTestData: Unit = for (a <- 1 to 10) {
     client.get.execute {
-      index into Index / Type fields(
-        "id" -> a,
-        "age" -> (10 + a),
-        "description" -> s"A ${a}description about the Name$a",
-        "enrolled" -> (if (a % 2 == 0) true else null),
-        "name" -> s"Name $a",
-        "birthday" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").toDate,
-        "salary" -> a * 1000.5,
-        "ageInMilis" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").getMillis)
+      index into Index / Type fields ("id" -> a,
+          "age" -> (10 + a),
+          "description" -> s"A ${a}description about the Name$a",
+          "enrolled" -> (if (a % 2 == 0) true else null),
+          "name" -> s"Name $a",
+          "birthday" -> DateTime
+            .parse((1980 + a) + "-01-01T10:00:00-00:00")
+            .toDate,
+          "salary" -> a * 1000.5,
+          "ageInMilis" -> DateTime
+            .parse((1980 + a) + "-01-01T10:00:00-00:00")
+            .getMillis)
     }.await
     client.get.execute {
       flush index Index
@@ -69,39 +73,51 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
   override protected def cleanTestData: Unit = cleanTestData(client.get, Index)
 
   //Template steps: Override them
-  override protected def prepareClient: Option[ClientParams] = Try {
-    logInfo(s"Connection to elastic search, ElasticHost: $ElasticHost, ElasticNativePort:$ElasticNativePort, ElasticClusterName $ElasticClusterName")
-    val settings = Settings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
-    val uri = ElasticsearchClientUri(s"elasticsearch://$ElasticHost:$ElasticNativePort")
-    val elasticClient = ElasticClient.transport(settings, uri)
-    createIndex(elasticClient, Index, typeMapping())
-    elasticClient
-  } toOption
+  override protected def prepareClient: Option[ClientParams] =
+    Try {
+      logInfo(
+          s"Connection to elastic search, ElasticHost: $ElasticHost, ElasticNativePort:$ElasticNativePort, ElasticClusterName $ElasticClusterName")
+      val settings = Settings
+        .settingsBuilder()
+        .put("cluster.name", ElasticClusterName)
+        .build()
+      val uri = ElasticsearchClientUri(
+          s"elasticsearch://$ElasticHost:$ElasticNativePort")
+      val elasticClient = ElasticClient.transport(settings, uri)
+      createIndex(elasticClient, Index, typeMapping())
+      elasticClient
+    } toOption
 
-  override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
-    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN, birthday DATE, salary DOUBLE, ageInMilis LONG)")
+  override def sparkRegisterTableSQL: Seq[SparkTable] =
+    super.sparkRegisterTableSQL :+
+      str2sparkTableDesc(
+          s"CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN, birthday DATE, salary DOUBLE, ageInMilis LONG)")
 
-  override val runningError: String = "ElasticSearch and Spark must be up and running"
+  override val runningError: String =
+    "ElasticSearch and Spark must be up and running"
 
-  def createIndex(elasticClient: ElasticClient, indexName:String, mappings:MappingDefinition): Unit ={
-    val command = Option(mappings).fold(create index indexName)(create index indexName mappings _)
-    elasticClient.execute {command}.await
+  def createIndex(elasticClient: ElasticClient,
+                  indexName: String,
+                  mappings: MappingDefinition): Unit = {
+    val command = Option(mappings).fold(create index indexName)(
+        create index indexName mappings _)
+    elasticClient.execute { command }.await
   }
 
-  def typeMapping(): MappingDefinition ={
+  def typeMapping(): MappingDefinition = {
     Type fields (
-      "id" typed IntegerType,
-      "age" typed IntegerType,
-      "description" typed StringType,
-      "enrolled" typed BooleanType,
-      "name" typed StringType index NotAnalyzed,
-      "birthday" typed DateType,
-      "salary" typed DoubleType,
-      "ageInMilis" typed LongType
-      )
+        "id" typed IntegerType,
+        "age" typed IntegerType,
+        "description" typed StringType,
+        "enrolled" typed BooleanType,
+        "name" typed StringType index NotAnalyzed,
+        "birthday" typed DateType,
+        "salary" typed DoubleType,
+        "ageInMilis" typed LongType
+    )
   }
 
-  def cleanTestData(elasticClient: ElasticClient, indexName:String): Unit = {
+  def cleanTestData(elasticClient: ElasticClient, indexName: String): Unit = {
     elasticClient.execute {
       deleteIndex(indexName)
     }
@@ -109,15 +125,17 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
 
 }
 
-
 trait ElasticSearchDefaultConstants {
   private lazy val config = ConfigFactory.load()
   val Index = s"highschool${UUID.randomUUID.toString.replaceAll("-", "")}"
   val Type = s"students${UUID.randomUUID.toString.replaceAll("-", "")}"
-  val ElasticHost: String = Try(config.getStringList("elasticsearch.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
+  val ElasticHost: String = Try(config.getStringList("elasticsearch.hosts"))
+    .map(_.get(0))
+    .getOrElse("127.0.0.1")
   val ElasticRestPort = 9200
   val ElasticNativePort = 9300
   val SourceProvider = "com.stratio.crossdata.connector.elasticsearch"
-  val ElasticClusterName: String = Try(config.getString("elasticsearch.cluster")).getOrElse("esCluster")
+  val ElasticClusterName: String =
+    Try(config.getString("elasticsearch.cluster")).getOrElse("esCluster")
 
 }

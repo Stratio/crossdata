@@ -28,7 +28,7 @@ class ViewsIT extends SharedXDContextTest {
     val sqlContext = _xdContext
     import sqlContext.implicits._
 
-    val df  = sqlContext.sparkContext.parallelize(1 to 5).toDF
+    val df = sqlContext.sparkContext.parallelize(1 to 5).toDF
     df.registerTempTable("person")
     sql("CREATE TEMPORARY VIEW vn AS SELECT * FROM person WHERE _1 < 3")
 
@@ -50,7 +50,5 @@ class ViewsIT extends SharedXDContextTest {
     }
 
   }
-
-
 
 }

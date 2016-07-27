@@ -37,8 +37,11 @@ import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.models.{AppModel, ViewModel}
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
-trait AppDAO extends GenericDAOComponent[AppModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+trait AppDAO
+    extends GenericDAOComponent[AppModel]
+    with TypesafeConfigComponent
+    with SparkLoggerComponent
+    with CrossdataSerializer {
 
   val appID = "appID"
 

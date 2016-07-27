@@ -25,9 +25,7 @@ object MongoExample extends App with MongoDefaultConstants {
   val mongoClient = prepareEnvironment()
 
   withCrossdataContext { xdContext =>
-
-    xdContext.sql(
-      s"""|CREATE TEMPORARY TABLE $Collection
+    xdContext.sql(s"""|CREATE TEMPORARY TABLE $Collection
           |(id STRING, age INT, description STRING, enrolled BOOLEAN, name STRING)
           |USING $MongoConnector
           |OPTIONS (
@@ -44,13 +42,16 @@ object MongoExample extends App with MongoDefaultConstants {
     //xdContext.sql(s"SELECT name as b, age FROM $Collection WHERE age > 12 limit 4").show(5)
     //xdContext.sql(s"SELECT id, age FROM $Collection WHERE age BETWEEN 13 AND 14 OR age = 15 OR (age = 11 AND id = '1')").show(5)
     //xdContext.sql(s"SELECT id, age FROM $Collection WHERE id LIKE '1%'").show(5)
-    xdContext.sql(s"SELECT id, name FROM $Collection WHERE name LIKE '%ame%'").show(5)
-
+    xdContext
+      .sql(s"SELECT id, name FROM $Collection WHERE name LIKE '%ame%'")
+      .show(5)
 
     //Spark
-    xdContext.sql(s"SELECT count(*), avg(age) FROM $Collection GROUP BY enrolled").show(5)
+    xdContext
+      .sql(s"SELECT count(*), avg(age) FROM $Collection GROUP BY enrolled")
+      .show(5)
 
-    /* TODO CREATE TABLE AS SELECT EXAMPLE
+  /* TODO CREATE TABLE AS SELECT EXAMPLE
     xdContext.sql(
       s"""|CREATE TABLE newTable
           |USING $SourceProvider
@@ -67,9 +68,8 @@ object MongoExample extends App with MongoDefaultConstants {
 
   private def withCrossdataContext(commands: XDContext => Unit) = {
 
-    val sparkConf = new SparkConf().
-      setAppName("MongoExample").
-      setMaster("local[4]")
+    val sparkConf =
+      new SparkConf().setAppName("MongoExample").setMaster("local[4]")
 
     val sc = new SparkContext(sparkConf)
     try {
@@ -82,7 +82,7 @@ object MongoExample extends App with MongoDefaultConstants {
   }
 
   def prepareEnvironment(): MongoClient = {
-    val mongoClient = MongoClient(MongoHost,MongoPort)
+    val mongoClient = MongoClient(MongoHost, MongoPort)
     populateTable(mongoClient)
     mongoClient
   }
@@ -92,18 +92,16 @@ object MongoExample extends App with MongoDefaultConstants {
     mongoClient.close()
   }
 
-
   private def populateTable(client: MongoClient): Unit = {
 
     val collection = client(Database)(Collection)
     for (a <- 1 to 10) {
-      collection.insert{
+      collection.insert {
         MongoDBObject("id" -> a.toString,
-                      "age" -> (10+a),
+                      "age" -> (10 + a),
                       "description" -> s"description $a",
-                      "enrolled" -> (a % 2 == 0 ),
-                      "name" -> s"Name $a"
-        )
+                      "enrolled" -> (a % 2 == 0),
+                      "name" -> s"Name $a")
       }
     }
   }
@@ -112,6 +110,5 @@ object MongoExample extends App with MongoDefaultConstants {
     val collection = client(Database)(Collection)
     collection.dropCollection()
   }
-
 
 }

@@ -23,23 +23,26 @@ import org.scalatest.junit.JUnitRunner
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class CassandraTypesIT extends CassandraWithSharedContext with SharedXDContextTypesTest {
+class CassandraTypesIT
+    extends CassandraWithSharedContext
+    with SharedXDContextTypesTest {
 
   //Prepare test
 
-  override val emptyTypesSetError: String = "Type test entries should have been already inserted"
+  override val emptyTypesSetError: String =
+    "Type test entries should have been already inserted"
 
   override def saveTypesData: Int = {
     val session = client.get._2
 
     val tableDDL: Seq[String] =
-      s"CREATE TYPE $Catalog.STRUCT (field1 INT, field2 INT)"::
-        s"CREATE TYPE $Catalog.STRUCT1 (structField1 VARCHAR, structField2 INT)"::
-        s"CREATE TYPE $Catalog.STRUCT_DATE (field1 TIMESTAMP, field2 INT)"::
-        s"CREATE TYPE $Catalog.STRUCT_STRUCT (field1 TIMESTAMP, field2 INT, struct1 frozen<STRUCT1>)"::
-        s"CREATE TYPE $Catalog.STRUCT_DATE1 (structField1 TIMESTAMP, structField2 INT)"::
-        s"CREATE TYPE $Catalog.STRUCT_ARRAY_STRUCT (stringfield VARCHAR, arrayfield LIST<frozen<STRUCT>>)"::
-        s"""
+      s"CREATE TYPE $Catalog.STRUCT (field1 INT, field2 INT)" ::
+        s"CREATE TYPE $Catalog.STRUCT1 (structField1 VARCHAR, structField2 INT)" ::
+          s"CREATE TYPE $Catalog.STRUCT_DATE (field1 TIMESTAMP, field2 INT)" ::
+            s"CREATE TYPE $Catalog.STRUCT_STRUCT (field1 TIMESTAMP, field2 INT, struct1 frozen<STRUCT1>)" ::
+              s"CREATE TYPE $Catalog.STRUCT_DATE1 (structField1 TIMESTAMP, structField2 INT)" ::
+                s"CREATE TYPE $Catalog.STRUCT_ARRAY_STRUCT (stringfield VARCHAR, arrayfield LIST<frozen<STRUCT>>)" ::
+                  s"""
            |CREATE TABLE $Catalog.$TypesTable
            |(
            |  id INT,
@@ -71,12 +74,11 @@ class CassandraTypesIT extends CassandraWithSharedContext with SharedXDContextTy
            |  mapstruct MAP<VARCHAR, frozen<STRUCT_DATE1>>,
            |  arraystructarraystruct LIST<frozen<STRUCT_ARRAY_STRUCT>>
            |)
-      """.stripMargin::Nil
+      """.stripMargin :: Nil
 
     tableDDL.foreach(session.execute)
 
-    val dataQuery =
-      s"""|
+    val dataQuery = s"""|
           |INSERT INTO $Catalog.$TypesTable (
           |  id, int, bigint, long, string, boolean, double, float, decimalInt, decimalLong,
           |  decimalDouble, decimalFloat, date, timestamp, tinyint, smallint, binary,
@@ -98,23 +100,30 @@ class CassandraTypesIT extends CassandraWithSharedContext with SharedXDContextTy
 
   }
 
-  override protected def typesSet: Seq[SparkSQLColDef] = super.typesSet flatMap {
-    case SparkSQLColDef(_, "TINYINT", _) | SparkSQLColDef(_, "SMALLINT", _) => Nil
-    case SparkSQLColDef(name, "DATE", typeChecker) =>
-      SparkSQLColDef(name, "TIMESTAMP", _.isInstanceOf[java.sql.Timestamp])::Nil
-    case SparkSQLColDef(name, sqlClause, typeChecker) if name contains "struct" =>
-      SparkSQLColDef(name, sqlClause.replace("DATE", "TIMESTAMP"), typeChecker)::Nil
-    case other =>
-      other::Nil
-  }
+  override protected def typesSet: Seq[SparkSQLColDef] =
+    super.typesSet flatMap {
+      case SparkSQLColDef(_, "TINYINT", _) |
+          SparkSQLColDef(_, "SMALLINT", _) =>
+        Nil
+      case SparkSQLColDef(name, "DATE", typeChecker) =>
+        SparkSQLColDef(name, "TIMESTAMP", _.isInstanceOf[java.sql.Timestamp]) :: Nil
+      case SparkSQLColDef(name, sqlClause, typeChecker)
+          if name contains "struct" =>
+        SparkSQLColDef(name,
+                       sqlClause.replace("DATE", "TIMESTAMP"),
+                       typeChecker) :: Nil
+      case other =>
+        other :: Nil
+    }
 
-  override def sparkAdditionalKeyColumns: Seq[SparkSQLColDef] = Seq(SparkSQLColDef("id", "INT"))
+  override def sparkAdditionalKeyColumns: Seq[SparkSQLColDef] =
+    Seq(SparkSQLColDef("id", "INT"))
   override def dataTypesSparkOptions: Map[String, String] = Map(
-    "table"    -> TypesTable,
-    "keyspace" -> Catalog,
-    "cluster"  -> ClusterName,
-    "pushdown" -> "true",
-    "spark_cassandra_connection_host" -> CassandraHost
+      "table" -> TypesTable,
+      "keyspace" -> Catalog,
+      "cluster" -> ClusterName,
+      "pushdown" -> "true",
+      "spark_cassandra_connection_host" -> CassandraHost
   )
 
   //Perform test

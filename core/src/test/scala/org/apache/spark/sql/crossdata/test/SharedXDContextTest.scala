@@ -25,31 +25,30 @@ import org.apache.spark.sql.{ColumnName, DataFrame}
 import scala.language.implicitConversions
 
 /**
- * Helper trait for SQL test suites where all tests share a single [[TestXDContext]].
- */
+  * Helper trait for SQL test suites where all tests share a single [[TestXDContext]].
+  */
 trait SharedXDContextTest extends XDTestUtils {
 
   /**
-   * The [[TestXDContext]] to use for all tests in this suite.
-   *
-   * By default, the underlying [[org.apache.spark.SparkContext]] will be run in local
-   * mode with the default test configurations.
-   */
+    * The [[TestXDContext]] to use for all tests in this suite.
+    *
+    * By default, the underlying [[org.apache.spark.SparkContext]] will be run in local
+    * mode with the default test configurations.
+    */
   private var _ctx: org.apache.spark.sql.crossdata.test.TestXDContext = null
 
   val coreConfig: Option[Config] = None
 
   /**
-   * The [[TestXDContext]] to use for all tests in this suite.
-   */
-
+    * The [[TestXDContext]] to use for all tests in this suite.
+    */
   protected def xdContext: TestXDContext = _ctx
 
   protected override def _xdContext: XDContext = _ctx
 
   /**
-   * Initialize the [[TestXDContext]].
-   */
+    * Initialize the [[TestXDContext]].
+    */
   protected override def beforeAll(): Unit = {
     if (_ctx == null) {
       _ctx = coreConfig.fold(new TestXDContext()) { cConfig =>
@@ -61,8 +60,8 @@ trait SharedXDContextTest extends XDTestUtils {
   }
 
   /**
-   * Stop the underlying [[org.apache.spark.SparkContext]], if any.
-   */
+    * Stop the underlying [[org.apache.spark.SparkContext]], if any.
+    */
   protected override def afterAll(): Unit = {
     try {
       if (_ctx != null) {
@@ -75,10 +74,10 @@ trait SharedXDContextTest extends XDTestUtils {
   }
 
   /**
-   * Converts $"col name" into an Column.
- *
-   * @since 1.3.0
-   */
+    * Converts $"col name" into an Column.
+    *
+    * @since 1.3.0
+    */
   // This must be duplicated here to preserve binary compatibility with Spark < 1.5.
   implicit class StringToColumn(val sc: StringContext) {
     def $(args: Any*): ColumnName = {
@@ -86,6 +85,7 @@ trait SharedXDContextTest extends XDTestUtils {
     }
   }
 
-  implicit def dataFrameToXDFrame(dataFrame: DataFrame): XDDataFrame = new XDDataFrame(dataFrame.sqlContext, dataFrame.queryExecution.logical)
+  implicit def dataFrameToXDFrame(dataFrame: DataFrame): XDDataFrame =
+    new XDDataFrame(dataFrame.sqlContext, dataFrame.queryExecution.logical)
 
 }

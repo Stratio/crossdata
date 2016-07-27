@@ -31,7 +31,6 @@ object ServerConfig {
   val ServerBasicConfig = "server-reference.conf"
   val ParentConfigName = "crossdata-server"
 
-
   val SparkSqlConfigPrefix = CoreConfig.SparkSqlConfigPrefix
 
   val ClientExpectedHeartbeatPeriod = "config.client.ExpectedHeartbeatPeriod"
@@ -68,12 +67,15 @@ trait ServerConfig extends NumberActorConfig {
   lazy val clusterName = config.getString(ServerConfig.ServerClusterNameKey)
   lazy val actorName = config.getString(ServerConfig.ServerActorNameKey)
 
-  lazy val retryNoAttempts: Int = Try(config.getInt(ServerConfig.ServerRetryMaxAttempts)).getOrElse(0)
+  lazy val retryNoAttempts: Int =
+    Try(config.getInt(ServerConfig.ServerRetryMaxAttempts)).getOrElse(0)
   lazy val retryCountWindow: Duration = Try(
-    config.getDuration(ServerConfig.ServerRetryCountWindow, TimeUnit.MILLISECONDS)
-  ) map (Duration(_, TimeUnit.MILLISECONDS)) getOrElse (Duration.Inf)
+        config.getDuration(ServerConfig.ServerRetryCountWindow,
+                           TimeUnit.MILLISECONDS)
+    ) map (Duration(_, TimeUnit.MILLISECONDS)) getOrElse (Duration.Inf)
 
-  lazy val completedJobTTL: Duration = extractDurationField(ServerConfig.FinishedJobTTL)
+  lazy val completedJobTTL: Duration = extractDurationField(
+      ServerConfig.FinishedJobTTL)
 
   lazy val expectedClientHeartbeatPeriod: FiniteDuration =
     extractDurationField(ServerConfig.ClientExpectedHeartbeatPeriod) match {
@@ -82,30 +84,44 @@ trait ServerConfig extends NumberActorConfig {
       case _ => 2 minute // Default value
     }
 
-  lazy val isHazelcastEnabled = config.getBoolean(ServerConfig.IsHazelcastProviderEnabledProperty)
+  lazy val isHazelcastEnabled =
+    config.getBoolean(ServerConfig.IsHazelcastProviderEnabledProperty)
 
   override val config: Config = {
 
-    var defaultConfig = ConfigFactory.load(ServerConfig.ServerBasicConfig).getConfig(ServerConfig.ParentConfigName)
-    val envConfigFile = Option(System.getProperties.getProperty(ServerConfig.ServerUserConfigFile))
-    val configFile = envConfigFile.getOrElse(defaultConfig.getString(ServerConfig.ServerUserConfigFile))
-    val configResource = defaultConfig.getString(ServerConfig.ServerUserConfigResource)
+    var defaultConfig = ConfigFactory
+      .load(ServerConfig.ServerBasicConfig)
+      .getConfig(ServerConfig.ParentConfigName)
+    val envConfigFile = Option(
+        System.getProperties.getProperty(ServerConfig.ServerUserConfigFile))
+    val configFile = envConfigFile.getOrElse(
+        defaultConfig.getString(ServerConfig.ServerUserConfigFile))
+    val configResource =
+      defaultConfig.getString(ServerConfig.ServerUserConfigResource)
 
     if (configResource != "") {
-      val resource = ServerConfig.getClass.getClassLoader.getResource(configResource)
+      val resource =
+        ServerConfig.getClass.getClassLoader.getResource(configResource)
       if (resource != null) {
-        val userConfig = ConfigFactory.parseResources(configResource).getConfig(ServerConfig.ParentConfigName)
+        val userConfig = ConfigFactory
+          .parseResources(configResource)
+          .getConfig(ServerConfig.ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
-        logger.info("User resource (" + configResource + ") found in resources")
+        logger.info(
+            "User resource (" + configResource + ") found in resources")
       } else {
         logger.warn("User resource (" + configResource + ") hasn't been found")
         val file = new File(configResource)
         if (file.exists()) {
-          val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.ParentConfigName)
+          val userConfig = ConfigFactory
+            .parseFile(file)
+            .getConfig(ServerConfig.ParentConfigName)
           defaultConfig = userConfig.withFallback(defaultConfig)
-          logger.info("User resource (" + configResource + ") found in classpath")
+          logger.info(
+              "User resource (" + configResource + ") found in classpath")
         } else {
-          logger.warn("User file (" + configResource + ") hasn't been found in classpath")
+          logger.warn(
+              "User file (" + configResource + ") hasn't been found in classpath")
         }
       }
     }
@@ -113,7 +129,9 @@ trait ServerConfig extends NumberActorConfig {
     if (configFile != "") {
       val file = new File(configFile)
       if (file.exists()) {
-        val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.ParentConfigName)
+        val userConfig = ConfigFactory
+          .parseFile(file)
+          .getConfig(ServerConfig.ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
         logger.info("External file (" + configFile + ") found")
       } else {
@@ -122,12 +140,13 @@ trait ServerConfig extends NumberActorConfig {
     }
 
     // System properties
-    val systemPropertiesConfig =
-      Try(
-        ConfigFactory.parseProperties(System.getProperties).getConfig(ServerConfig.ParentConfigName)
-      ).getOrElse(
+    val systemPropertiesConfig = Try(
+        ConfigFactory
+          .parseProperties(System.getProperties)
+          .getConfig(ServerConfig.ParentConfigName)
+    ).getOrElse(
         ConfigFactory.parseProperties(System.getProperties)
-      )
+    )
 
     defaultConfig = systemPropertiesConfig.withFallback(defaultConfig)
 
@@ -135,8 +154,8 @@ trait ServerConfig extends NumberActorConfig {
       if (defaultConfig.hasPath("akka.cluster.server-nodes")) {
         val serverNodes = defaultConfig.getString("akka.cluster.server-nodes")
         defaultConfig.withValue(
-          "akka.cluster.seed-nodes",
-          ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
+            "akka.cluster.seed-nodes",
+            ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
       } else {
         defaultConfig
       }
@@ -145,9 +164,9 @@ trait ServerConfig extends NumberActorConfig {
     ConfigFactory.load(finalConfig)
   }
 
-  private def extractDurationField(key: String): Duration = Try(
-    config.getDuration(key, TimeUnit.MILLISECONDS)
-  ) map (FiniteDuration(_, TimeUnit.MILLISECONDS)) getOrElse (Duration.Inf)
+  private def extractDurationField(key: String): Duration =
+    Try(
+        config.getDuration(key, TimeUnit.MILLISECONDS)
+    ) map (FiniteDuration(_, TimeUnit.MILLISECONDS)) getOrElse (Duration.Inf)
 
 }
-

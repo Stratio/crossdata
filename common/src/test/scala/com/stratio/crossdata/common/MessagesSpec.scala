@@ -24,7 +24,9 @@ class MessagesSpec extends BaseXDTest {
 
   "A SQLCommand" should "generate random uuids" in {
 
-    new SQLCommand("a", false).requestId should not be new SQLCommand("a", false).requestId
+    new SQLCommand("a", false).requestId should not be new SQLCommand(
+        "a",
+        false).requestId
 
   }
 

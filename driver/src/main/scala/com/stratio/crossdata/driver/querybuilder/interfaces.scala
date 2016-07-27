@@ -25,7 +25,8 @@ trait CrossdataSQLStatement {
 }
 
 object Expression {
-  implicit def exp2sortorder(exp: Expression): SortOrder = SortOrder(exp, Ascending)
+  implicit def exp2sortorder(exp: Expression): SortOrder =
+    SortOrder(exp, Ascending)
 }
 
 trait Expression extends CrossdataSQLStatement {
@@ -68,16 +69,13 @@ trait Expression extends CrossdataSQLStatement {
 
   def desc: SortOrder = SortOrder(this, Descending)
 
-
   def in(list: Expression*): Predicate = In(this, list: _*)
 
   def like(other: Expression): Predicate = Like(this, other)
 
-
   def isNull: Predicate = IsNull(this)
 
   def isNotNull: Predicate = IsNotNull(this)
-
 
   def as(alias: String): Identifier = AliasIdentifier(this, alias)
 
@@ -87,22 +85,24 @@ trait Expression extends CrossdataSQLStatement {
 
 trait Predicate extends Expression
 
-
 trait Relation extends CrossdataSQLStatement {
 
   def join(other: Relation): Join = innerJoin(other)
 
   def innerJoin(other: Relation): Join = Join(this, other, JoinType.Inner)
 
-  def leftOuterJoin(other: Relation): Join = Join(this, other, JoinType.LeftOuter)
+  def leftOuterJoin(other: Relation): Join =
+    Join(this, other, JoinType.LeftOuter)
 
-  def rightOuterJoin(other: Relation): Join = Join(this, other, JoinType.RightOuter)
+  def rightOuterJoin(other: Relation): Join =
+    Join(this, other, JoinType.RightOuter)
 
-  def fullOuterJoin(other: Relation): Join = Join(this, other, JoinType.FullOuter)
+  def fullOuterJoin(other: Relation): Join =
+    Join(this, other, JoinType.FullOuter)
 
-  def leftSemiJoin(other: Relation): Join = Join(this, other, JoinType.LeftSemi)
+  def leftSemiJoin(other: Relation): Join =
+    Join(this, other, JoinType.LeftSemi)
 }
-
 
 trait UnaryExpression extends Expression {
 

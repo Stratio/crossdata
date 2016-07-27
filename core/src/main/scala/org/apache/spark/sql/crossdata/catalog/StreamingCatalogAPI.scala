@@ -25,11 +25,12 @@ private[crossdata] trait StreamingCatalogAPI {
     */
   def existsEphemeralTable(tableIdentifier: String): Boolean
 
-  def getEphemeralTable(tableIdentifier: String) : Option[EphemeralTableModel]
+  def getEphemeralTable(tableIdentifier: String): Option[EphemeralTableModel]
 
-  def getAllEphemeralTables : Seq[EphemeralTableModel]
+  def getAllEphemeralTables: Seq[EphemeralTableModel]
 
-  def createEphemeralTable(ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel]
+  def createEphemeralTable(
+      ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel]
 
   def dropEphemeralTable(tableIdentifier: String): Unit
 
@@ -38,13 +39,18 @@ private[crossdata] trait StreamingCatalogAPI {
   /**
     * Ephemeral Status Functions
     */
-  protected[crossdata] def createEphemeralStatus(tableIdentifier: String, ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel
+  protected[crossdata] def createEphemeralStatus(
+      tableIdentifier: String,
+      ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel
 
-  protected[crossdata] def getEphemeralStatus(tableIdentifier: String) : Option[EphemeralStatusModel]
+  protected[crossdata] def getEphemeralStatus(
+      tableIdentifier: String): Option[EphemeralStatusModel]
 
-  protected[crossdata] def getAllEphemeralStatuses : Seq[EphemeralStatusModel]
+  protected[crossdata] def getAllEphemeralStatuses: Seq[EphemeralStatusModel]
 
-  protected[crossdata] def updateEphemeralStatus(tableIdentifier: String, status: EphemeralStatusModel) : Unit
+  protected[crossdata] def updateEphemeralStatus(
+      tableIdentifier: String,
+      status: EphemeralStatusModel): Unit
 
   protected[crossdata] def dropEphemeralStatus(tableIdentifier: String): Unit
 
@@ -55,11 +61,12 @@ private[crossdata] trait StreamingCatalogAPI {
     */
   def existsEphemeralQuery(queryAlias: String): Boolean
 
-  def getEphemeralQuery(queryAlias: String) : Option[EphemeralQueryModel]
+  def getEphemeralQuery(queryAlias: String): Option[EphemeralQueryModel]
 
-  def getAllEphemeralQueries : Seq[EphemeralQueryModel]
+  def getAllEphemeralQueries: Seq[EphemeralQueryModel]
 
-  def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel]
+  def createEphemeralQuery(
+      ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel]
 
   def dropEphemeralQuery(queryAlias: String): Unit
 

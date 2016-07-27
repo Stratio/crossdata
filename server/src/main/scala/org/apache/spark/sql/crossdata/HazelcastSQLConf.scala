@@ -20,21 +20,26 @@ import java.util.Map.Entry
 import com.hazelcast.core.IMap
 import com.stratio.crossdata.util.CacheInvalidator
 
-class HazelcastSQLConf(hazelcastMap: IMap[String, String], cacheInvalidator: CacheInvalidator) extends XDSQLConf {
+class HazelcastSQLConf(hazelcastMap: IMap[String, String],
+                       cacheInvalidator: CacheInvalidator)
+    extends XDSQLConf {
 
   import HazelcastSQLConf._
 
   private var enabledInvalidation = true
 
-  private val invalidator: () => CacheInvalidator =
-    () => if(enabledInvalidation) cacheInvalidator else disabledInvalidator
+  private val invalidator: () => CacheInvalidator = () =>
+    if (enabledInvalidation) cacheInvalidator else disabledInvalidator
 
   def invalidateLocalCache: Unit = localMap.clear
 
-  private val localMap =  java.util.Collections.synchronizedMap(new java.util.HashMap[String, String]())
+  private val localMap = java.util.Collections
+    .synchronizedMap(new java.util.HashMap[String, String]())
 
   override protected[spark] val settings = {
-    new ChainedJavaMapWithWriteInvalidation[String, String](Seq(localMap, hazelcastMap), invalidator)
+    new ChainedJavaMapWithWriteInvalidation[String, String](
+        Seq(localMap, hazelcastMap),
+        invalidator)
   }
 
   override def enableCacheInvalidation(enable: Boolean): XDSQLConf = {
@@ -55,26 +60,28 @@ object HazelcastSQLConf {
     lazy val nullval = pNull
   }
 
-  class ChainedJavaMapWithWriteInvalidation[K,V](
-                                                  private val delegatedMaps: Seq[java.util.Map[K,V]],
-                                                  private val invalidator: () => CacheInvalidator
-                                                )
-
-    extends java.util.Map[K,V] {
+  class ChainedJavaMapWithWriteInvalidation[K, V](
+      private val delegatedMaps: Seq[java.util.Map[K, V]],
+      private val invalidator: () => CacheInvalidator
+  ) extends java.util.Map[K, V] {
 
     require(!delegatedMaps.isEmpty)
 
     import scala.collection.JavaConversions._
 
-    override def values(): java.util.Collection[V] = (Set.empty[V] /: delegatedMaps) {
-      case (values, delegatedMap) => values ++ delegatedMap.values
-    }
+    override def values(): java.util.Collection[V] =
+      (Set.empty[V] /: delegatedMaps) {
+        case (values, delegatedMap) => values ++ delegatedMap.values
+      }
 
-    override def get(key: scala.Any): V = delegatedMaps.view.map(_.get(key)).find(_ != null).getOrElse {
-      NullBuilder[V]().nullval
-    }
+    override def get(key: scala.Any): V =
+      delegatedMaps.view.map(_.get(key)).find(_ != null).getOrElse {
+        NullBuilder[V]().nullval
+      }
 
-    override def entrySet(): java.util.Set[Entry[K, V]] = delegatedMaps.last.entrySet()
+    override def entrySet(): java.util.Set[Entry[K, V]] =
+      delegatedMaps.last.entrySet()
+
     /**
       * Note that this implementation assumes each level is contained by the next one, being the last one
       * continent of every single preceding one. Otherwise, it'd be better to do something like:
@@ -83,20 +90,18 @@ object HazelcastSQLConf {
       *     case (values, delegatedMap) => values ++ delegatedMap.entrySet()
       * }
       */
-
-
     override def put(key: K, value: V): V = {
       invalidator().invalidateCache
       (Option.empty[V] /: delegatedMaps) {
         case (prev, delegatedMap) =>
           val newRes = delegatedMap.put(key, value)
           prev orElse Option(newRes)
-      } getOrElse(NullBuilder[V]().nullval)
+      } getOrElse (NullBuilder[V]().nullval)
     }
 
     override def clear(): Unit = {
       invalidator().invalidateCache
-      delegatedMaps foreach(_.clear)
+      delegatedMaps foreach (_.clear)
     }
 
     override def size(): Int = delegatedMaps.maxBy(_.size).size
@@ -106,9 +111,11 @@ object HazelcastSQLConf {
       delegatedMaps.map(_.remove(key)).head
     }
 
-    override def containsKey(key: scala.Any): Boolean = delegatedMaps.view exists (_.containsKey(key))
+    override def containsKey(key: scala.Any): Boolean =
+      delegatedMaps.view exists (_.containsKey(key))
 
-    override def containsValue(value: scala.Any): Boolean = delegatedMaps.view exists (_.containsValue(value))
+    override def containsValue(value: scala.Any): Boolean =
+      delegatedMaps.view exists (_.containsValue(value))
 
     override def isEmpty: Boolean = delegatedMaps forall (_.isEmpty)
 
@@ -120,13 +127,13 @@ object HazelcastSQLConf {
     override def keySet(): java.util.Set[K] = delegatedMaps.last.keySet()
 
     /**
-      * Note that this implementation assumes each level is contained by the next one, being the last one
-      * continent of every single preceding one. Otherwise, it'd be better to do something like:
-      *
-      * (Set.empty[K] /: delegatedMaps) {
-      *   case (keys, delegatedMap) => keys ++ delegatedMap.keySet()
-      * }
-      */
+    * Note that this implementation assumes each level is contained by the next one, being the last one
+    * continent of every single preceding one. Otherwise, it'd be better to do something like:
+    *
+    * (Set.empty[K] /: delegatedMaps) {
+    *   case (keys, delegatedMap) => keys ++ delegatedMap.keySet()
+    * }
+    */
 
   }
 

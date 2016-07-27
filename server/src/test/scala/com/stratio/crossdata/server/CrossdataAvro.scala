@@ -30,8 +30,10 @@ class CrossdataAvro extends SharedXDContextTest with ServerConfig {
 
   "Crossdata" should "execute avro queries" in {
 
-    try{
-      sql(s"CREATE TABLE test USING com.databricks.spark.avro OPTIONS (path '${Paths.get(getClass.getResource("/test.avro").toURI()).toString}')")
+    try {
+      sql(s"CREATE TABLE test USING com.databricks.spark.avro OPTIONS (path '${Paths
+        .get(getClass.getResource("/test.avro").toURI())
+        .toString}')")
       val result = sql("SELECT * FROM test").collect()
       result should have length 3
       result.head should have length 12

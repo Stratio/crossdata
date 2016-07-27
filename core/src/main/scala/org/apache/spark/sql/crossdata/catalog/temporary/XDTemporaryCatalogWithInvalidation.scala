@@ -30,19 +30,20 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.XDTemporaryCatalog
   * @param invalidator Cache invalidation implementation
   */
 class XDTemporaryCatalogWithInvalidation(
-                                          val underlying: XDTemporaryCatalog,
-                                          invalidator: CacheInvalidator
-                                        ) extends XDTemporaryCatalog {
+    val underlying: XDTemporaryCatalog,
+    invalidator: CacheInvalidator
+) extends XDTemporaryCatalog {
 
-  override def saveTable(
-                          tableIdentifier: ViewIdentifierNormalized,
-                          plan: LogicalPlan,
-                          crossdataTable: Option[CrossdataTable]): Unit = {
+  override def saveTable(tableIdentifier: ViewIdentifierNormalized,
+                         plan: LogicalPlan,
+                         crossdataTable: Option[CrossdataTable]): Unit = {
     invalidator.invalidateCache
     underlying.saveTable(tableIdentifier, plan, crossdataTable)
   }
 
-  override def saveView(viewIdentifier: ViewIdentifierNormalized, plan: LogicalPlan, query: Option[String]): Unit = {
+  override def saveView(viewIdentifier: ViewIdentifierNormalized,
+                        plan: LogicalPlan,
+                        query: Option[String]): Unit = {
     invalidator.invalidateCache
     underlying.saveView(viewIdentifier, plan, query)
   }
@@ -67,10 +68,13 @@ class XDTemporaryCatalogWithInvalidation(
     underlying.dropTable(tableIdentifier)
   }
 
-  override def relation(tableIdent: ViewIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] =
+  override def relation(tableIdent: ViewIdentifierNormalized)(
+      implicit sqlContext: SQLContext): Option[LogicalPlan] =
     underlying.relation(tableIdent)
 
   override def catalystConf: CatalystConf = underlying.catalystConf
   override def isAvailable: Boolean = underlying.isAvailable
-  override def allRelations(databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = underlying.allRelations(databaseName)
+  override def allRelations(
+      databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] =
+    underlying.allRelations(databaseName)
 }

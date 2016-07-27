@@ -38,7 +38,9 @@ class XDContextIT extends SharedXDContextTest {
 
   "A XDContext" should "perform a collect with a collection" in {
 
-    val df: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
+    val df: DataFrame = xdContext.createDataFrame(
+        xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))),
+        StructType(Array(StructField("id", StringType))))
     df.registerTempTable("records")
 
     val result: Array[Row] = xdContext.sql("SELECT * FROM records").collect()
@@ -48,33 +50,48 @@ class XDContextIT extends SharedXDContextTest {
 
   it must "return a XDDataFrame when executing a SQL query" in {
 
-    val df: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
+    val df: DataFrame = xdContext.createDataFrame(
+        xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))),
+        StructType(Array(StructField("id", StringType))))
     df.registerTempTable("records")
 
     val dataframe = xdContext.sql("SELECT * FROM records")
     dataframe shouldBe a[XDDataFrame]
   }
 
-
   it must "plan a PersistDataSource when creating a table " in {
-    val dataframe = xdContext.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/core-reference.conf").toURI()).toString}')")
+    val dataframe = xdContext.sql(
+        s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
+      .get(getClass.getResource("/core-reference.conf").toURI())
+      .toString}')")
     val sparkPlan = dataframe.queryExecution.sparkPlan
     xdContext.catalog.dropTable(TableIdentifier("jsonTable", None))
-    sparkPlan should matchPattern { case ExecutedCommand(_: PersistDataSourceTable) => }
+    sparkPlan should matchPattern {
+      case ExecutedCommand(_: PersistDataSourceTable) =>
+    }
 
   }
 
   it must "plan a query with conflicted column names between two tables resolving by alias preference" in {
 
-    val t1: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((1 to 5)
-      .map(i => Row(s"val_$i", i))), StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
+    val t1: DataFrame =
+      xdContext.createDataFrame(xdContext.sparkContext.parallelize(
+                                    (1 to 5).map(i => Row(s"val_$i", i))),
+                                StructType(
+                                    Array(StructField("id", StringType),
+                                          StructField("value", IntegerType))))
     t1.registerTempTable("t1")
 
-    val t2: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((4 to 8)
-      .map(i => Row(s"val_$i", i))), StructType(Array(StructField("name", StringType), StructField("value", IntegerType))))
+    val t2: DataFrame =
+      xdContext.createDataFrame(xdContext.sparkContext.parallelize(
+                                    (4 to 8).map(i => Row(s"val_$i", i))),
+                                StructType(
+                                    Array(StructField("name", StringType),
+                                          StructField("value", IntegerType))))
     t2.registerTempTable("t2")
 
-    val dataFrame = xdContext.sql("SELECT t1.id, t2.name as name, t1.value as total FROM t1 INNER JOIN t2 ON t1.id = t2.name GROUP BY id, name, total")
+    val dataFrame = xdContext.sql(
+        "SELECT t1.id, t2.name as name, t1.value as total FROM t1 INNER JOIN t2 ON t1.id = t2.name GROUP BY id, name, total")
 
     dataFrame.show
 
@@ -84,11 +101,16 @@ class XDContextIT extends SharedXDContextTest {
 
   it must "plan a query with aliased attributes in the group by clause" in {
 
-    val t1: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((1 to 5)
-      .map(i => Row(s"val_$i", i))), StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
+    val t1: DataFrame =
+      xdContext.createDataFrame(xdContext.sparkContext.parallelize(
+                                    (1 to 5).map(i => Row(s"val_$i", i))),
+                                StructType(
+                                    Array(StructField("id", StringType),
+                                          StructField("value", IntegerType))))
     t1.registerTempTable("t3")
 
-    val dataFrame = xdContext.sql("SELECT id as id, value as product FROM t3 GROUP BY id, product")
+    val dataFrame = xdContext.sql(
+        "SELECT id as id, value as product FROM t3 GROUP BY id, product")
 
     dataFrame.collect should have length 5
 
@@ -102,6 +124,5 @@ class XDContextIT extends SharedXDContextTest {
 //    xdContext.executeApp("app1", Seq("hi", "world"))
 //
 //  }
-
 
 }

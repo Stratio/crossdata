@@ -24,9 +24,7 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 import scala.concurrent.duration.Duration
 
-
-class JavaDriver private(driverConf: DriverConf,
-                         auth: Authentication) {
+class JavaDriver private (driverConf: DriverConf, auth: Authentication) {
 
   def this(driverConf: DriverConf) =
     this(driverConf, Driver.generateDefaultAuth)
@@ -45,66 +43,74 @@ class JavaDriver private(driverConf: DriverConf,
   def this(seedNodes: java.util.List[String]) =
     this(seedNodes, new DriverConf)
 
-
   private lazy val logger = LoggerFactory.getLogger(classOf[JavaDriver])
 
   private val scalaDriver = Driver.newSession(driverConf, auth)
 
   /**
-   * Sync execution with defaults: timeout 10 sec, nr-retries 2
-   */
+    * Sync execution with defaults: timeout 10 sec, nr-retries 2
+    */
   def sql(sqlText: String): SQLResult =
     scalaDriver.sql(sqlText).waitForResult()
 
   def sql(sqlText: String, timeoutDuration: Duration): SQLResult =
     scalaDriver.sql(sqlText).waitForResult(timeoutDuration)
 
-
-  def importTables(dataSourceProvider: String, options: java.util.Map[String, String]): SQLResult =
+  def importTables(dataSourceProvider: String,
+                   options: java.util.Map[String, String]): SQLResult =
     scalaDriver.importTables(dataSourceProvider, options.toMap)
 
-  def createTable(name: String, dataSourceProvider: String, schema: Option[String], options: java.util.Map[String, String], isTemporary: Boolean): SQLResult =
-    scalaDriver.createTable(name, dataSourceProvider, schema, options.toMap, isTemporary).waitForResult()
+  def createTable(name: String,
+                  dataSourceProvider: String,
+                  schema: Option[String],
+                  options: java.util.Map[String, String],
+                  isTemporary: Boolean): SQLResult =
+    scalaDriver
+      .createTable(name,
+                   dataSourceProvider,
+                   schema,
+                   options.toMap,
+                   isTemporary)
+      .waitForResult()
 
   def dropTable(name: String, isTemporary: Boolean = false): SQLResult =
     scalaDriver.dropTable(name, isTemporary)
 
-
   def listTables(): java.util.List[JavaTableName] =
-    scalaDriver.listTables(None).map { case (table, database) => new JavaTableName(table, database.getOrElse("")) }
-
+    scalaDriver.listTables(None).map {
+      case (table, database) =>
+        new JavaTableName(table, database.getOrElse(""))
+    }
 
   def listTables(database: String): java.util.List[JavaTableName] =
-    scalaDriver.listTables(Some(database)).map { case (table, database) => new JavaTableName(table, database.getOrElse("")) }
+    scalaDriver.listTables(Some(database)).map {
+      case (table, database) =>
+        new JavaTableName(table, database.getOrElse(""))
+    }
 
-
-  def describeTable(database: String, tableName: String): java.util.List[FieldMetadata] =
+  def describeTable(database: String,
+                    tableName: String): java.util.List[FieldMetadata] =
     scalaDriver.describeTable(Some(database), tableName)
-
 
   def describeTable(tableName: String): java.util.List[FieldMetadata] =
     scalaDriver.describeTable(None, tableName)
-
 
   def show(sqlText: String): Unit =
     scalaDriver.show(sqlText)
 
   /**
-   * Indicates if the cluster is alive or not
-   *
-   * @since 1.3
-   * @return whether at least one member of the cluster is alive or not
-   */
+    * Indicates if the cluster is alive or not
+    *
+    * @since 1.3
+    * @return whether at least one member of the cluster is alive or not
+    */
   def isClusterAlive(): Boolean =
     scalaDriver.isClusterAlive()
 
   def closeSession(): Unit =
     scalaDriver.closeSession()
 
-
-  def addJar(path:String): Unit =
+  def addJar(path: String): Unit =
     scalaDriver.addJar(path)
 
-
 }
-

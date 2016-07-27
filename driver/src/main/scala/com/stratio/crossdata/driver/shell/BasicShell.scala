@@ -31,7 +31,8 @@ object BasicShell extends App {
 
   val logger = Logger.getLogger(getClass)
 
-  val HistoryPath = Some(System.getProperty("user.home")).getOrElse(".").concat("/.crossdata/")
+  val HistoryPath =
+    Some(System.getProperty("user.home")).getOrElse(".").concat("/.crossdata/")
   val HistoryFile = "history.txt"
   val PersistentHistory = new File(HistoryPath.concat(HistoryFile))
 
@@ -42,7 +43,6 @@ object BasicShell extends App {
 
   createHistoryDirectory(HistoryPath)
 
-
   private def getLine(reader: ConsoleReader): Option[String] =
     Try(reader.readLine).recoverWith {
       case uie: UserInterruptException =>
@@ -50,13 +50,12 @@ object BasicShell extends App {
         Failure(uie)
     } toOption
 
-
   private def checkEnd(line: Option[String]): Boolean =
     line.isEmpty || {
       val trimmedLine = line.get
-      trimmedLine.equalsIgnoreCase("exit") || trimmedLine.equalsIgnoreCase("quit")
+      trimmedLine.equalsIgnoreCase("exit") || trimmedLine.equalsIgnoreCase(
+          "quit")
     }
-
 
   private def close(console: ConsoleReader): Unit = {
     logger.info("Saving history...")
@@ -68,7 +67,7 @@ object BasicShell extends App {
   }
 
   def loadHistory(console: ConsoleReader): Unit = {
-    if(PersistentHistory.exists){
+    if (PersistentHistory.exists) {
       logger.info("Loading history...")
       console.setHistory(new FileHistory(PersistentHistory))
     } else {
@@ -85,16 +84,18 @@ object BasicShell extends App {
     loadHistory(console)
   }
 
-
   initialize(console)
 
   private def runConsole(console: ConsoleReader): Unit = {
     val driver = Driver.newSession()
 
     console.println()
-    console.println("+-----------------+-------------------------+---------------------------+")
-    console.println(s"| CROSSDATA ${crossdata.CrossdataVersion} | Powered by Apache Spark | Easy access to big things |")
-    console.println("+-----------------+-------------------------+---------------------------+")
+    console.println(
+        "+-----------------+-------------------------+---------------------------+")
+    console.println(
+        s"| CROSSDATA ${crossdata.CrossdataVersion} | Powered by Apache Spark | Easy access to big things |")
+    console.println(
+        "+-----------------+-------------------------+---------------------------+")
     console.println()
     console.flush
 
@@ -125,7 +126,7 @@ object BasicShell extends App {
 
   runConsole(console)
 
-  sys addShutdownHook{
+  sys addShutdownHook {
     close(console)
   }
 

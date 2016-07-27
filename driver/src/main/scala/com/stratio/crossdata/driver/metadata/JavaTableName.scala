@@ -16,9 +16,10 @@
 package com.stratio.crossdata.driver.metadata
 
 /**
- * database can be empty ("")
- */
-class JavaTableName(val tableName: java.lang.String, val database: java.lang.String) {
+  * database can be empty ("")
+  */
+class JavaTableName(val tableName: java.lang.String,
+                    val database: java.lang.String) {
 
   override def equals(other: Any): Boolean = other match {
     case that: JavaTableName =>

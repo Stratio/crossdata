@@ -68,11 +68,10 @@ object MySQLXDCatalog {
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
 class MySQLXDCatalog(override val catalystConf: CatalystConf)
-  extends PersistentCatalogWithCache(catalystConf) {
+    extends PersistentCatalogWithCache(catalystConf) {
 
   import MySQLXDCatalog._
   import XDCatalog._
-
 
   private val config = XDContext.catalogConfig
   private val db = config.getString(Database)
@@ -93,11 +92,14 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
 
       // CREATE PERSISTENT METADATA TABLE
 
-      jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA IF NOT EXISTS $db")
+      jdbcConnection
+        .createStatement()
+        .executeUpdate(s"CREATE SCHEMA IF NOT EXISTS $db")
 
-
-      jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithTableMetadata (
+      jdbcConnection
+        .createStatement()
+        .executeUpdate(
+            s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithTableMetadata (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
             |$SchemaField TEXT,
@@ -107,24 +109,29 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
             |$CrossdataVersionField TEXT,
             |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
-      jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
+      jdbcConnection
+        .createStatement()
+        .executeUpdate(
+            s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
             |$SqlViewField TEXT,
             |$CrossdataVersionField VARCHAR(30),
             |PRIMARY KEY ($DatabaseField,$TableNameField))""".stripMargin)
 
-      jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE $db.$tableWithAppJars (
+      jdbcConnection
+        .createStatement()
+        .executeUpdate(s"""|CREATE TABLE $db.$tableWithAppJars (
             |$JarPath VARCHAR(100),
             |$AppAlias VARCHAR(50),
             |$AppClass VARCHAR(100),
             |PRIMARY KEY ($AppAlias))""".stripMargin)
 
       //Index support
-      jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE IF NOT EXISTS $db.$TableWithIndexMetadata (
+      jdbcConnection
+        .createStatement()
+        .executeUpdate(
+            s"""|CREATE TABLE IF NOT EXISTS $db.$TableWithIndexMetadata (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
             |$IndexNameField VARCHAR(50),
@@ -145,8 +152,8 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
     }
   }
 
-
-  override def lookupTable(tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable] = {
+  override def lookupTable(
+      tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable] = {
 
     val resultSet = selectMetadata(tableWithTableMetadata, tableIdentifier)
 
@@ -163,19 +170,29 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       val version = resultSet.getString(CrossdataVersionField)
 
       Some(
-        CrossdataTable(TableIdentifierNormalized(table, Some(database)), Option(deserializeUserSpecifiedSchema(schemaJSON)), datasource, deserializePartitionColumn(partitionColumn), deserializeOptions(optsJSON), version)
+          CrossdataTable(TableIdentifierNormalized(table, Some(database)),
+                         Option(deserializeUserSpecifiedSchema(schemaJSON)),
+                         datasource,
+                         deserializePartitionColumn(partitionColumn),
+                         deserializeOptions(optsJSON),
+                         version)
       )
     }
   }
 
-
-  override def allRelations(databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = {
+  override def allRelations(databaseName: Option[StringNormalized])
+    : Seq[TableIdentifierNormalized] = {
     @tailrec
-    def getSequenceAux(resultset: ResultSet, next: Boolean, set: Set[TableIdentifierNormalized] = Set.empty): Set[TableIdentifierNormalized] = {
+    def getSequenceAux(resultset: ResultSet,
+                       next: Boolean,
+                       set: Set[TableIdentifierNormalized] = Set.empty)
+      : Set[TableIdentifierNormalized] = {
       if (next) {
         val database = resultset.getString(DatabaseField)
         val table = resultset.getString(TableNameField)
-        val tableId = if (database.trim.isEmpty) TableIdentifierNormalized(table) else TableIdentifierNormalized(table, Option(database))
+        val tableId =
+          if (database.trim.isEmpty) TableIdentifierNormalized(table)
+          else TableIdentifierNormalized(table, Option(database))
         getSequenceAux(resultset, resultset.next(), set + tableId)
       } else {
         set
@@ -183,8 +200,10 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
     }
 
     val statement = connection.createStatement
-    val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='${dbName.normalizedString}'")
-    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
+    val dbFilter = databaseName.fold("")(dbName =>
+          s"WHERE $DatabaseField ='${dbName.normalizedString}'")
+    val resultSet = statement.executeQuery(
+        s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
 
     getSequenceAux(resultSet, resultSet.next).toSeq
   }
@@ -192,23 +211,27 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
     try {
 
-      val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(schemaNotFound()))
+      val tableSchema = serializeSchema(
+          crossdataTable.schema.getOrElse(schemaNotFound()))
       val tableOptions = serializeOptions(crossdataTable.opts)
-      val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
+      val partitionColumn = serializePartitionColumn(
+          crossdataTable.partitionColumn)
 
       connection.setAutoCommit(false)
 
       // check if the database-table exist in the persisted catalog
-      val resultSet = selectMetadata(tableWithTableMetadata, crossdataTable.tableIdentifier)
+      val resultSet =
+        selectMetadata(tableWithTableMetadata, crossdataTable.tableIdentifier)
 
       if (!resultSet.isBeforeFirst) {
         resultSet.close()
         val prepped = connection.prepareStatement(
-          s"""|INSERT INTO $db.$tableWithTableMetadata (
+            s"""|INSERT INTO $db.$tableWithTableMetadata (
               | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
-        prepped.setString(1, crossdataTable.tableIdentifier.database.getOrElse(""))
+        prepped
+          .setString(1, crossdataTable.tableIdentifier.database.getOrElse(""))
         prepped.setString(2, crossdataTable.tableIdentifier.table)
         prepped.setString(3, tableSchema)
         prepped.setString(4, crossdataTable.datasource)
@@ -219,11 +242,11 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
         prepped.close()
       } else {
         resultSet.close()
-        val prepped =
-          connection.prepareStatement(
+        val prepped = connection.prepareStatement(
             s"""|UPDATE $db.$tableWithTableMetadata
                 |SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-                |WHERE $DatabaseField='${crossdataTable.tableIdentifier.database.getOrElse("")}' AND $TableNameField='${crossdataTable.tableIdentifier.table}';
+                |WHERE $DatabaseField='${crossdataTable.tableIdentifier.database
+             .getOrElse("")}' AND $TableNameField='${crossdataTable.tableIdentifier.table}';
        """.stripMargin.replaceAll("\n", " "))
 
         prepped.setString(1, tableSchema)
@@ -240,15 +263,18 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       connection.setAutoCommit(true)
     }
 
-
-  override def dropTableMetadata(tableIdentifier: ViewIdentifierNormalized): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database.getOrElse("")}'")
+  override def dropTableMetadata(
+      tableIdentifier: ViewIdentifierNormalized): Unit =
+    connection.createStatement.executeUpdate(
+        s"DELETE FROM $db.$tableWithTableMetadata WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database
+      .getOrElse("")}'")
 
   override def dropAllTablesMetadata(): Unit =
-    connection.createStatement.executeUpdate(s"TRUNCATE $db.$tableWithTableMetadata")
+    connection.createStatement.executeUpdate(
+        s"TRUNCATE $db.$tableWithTableMetadata")
 
-
-  override def lookupView(tableIdentifier: TableIdentifierNormalized): Option[String] = {
+  override def lookupView(
+      tableIdentifier: TableIdentifierNormalized): Option[String] = {
     val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
     if (!resultSet.isBeforeFirst) {
       None
@@ -258,7 +284,8 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
     }
   }
 
-  override def persistViewMetadata(tableIdentifier: TableIdentifierNormalized, sqlText: String): Unit =
+  override def persistViewMetadata(tableIdentifier: TableIdentifierNormalized,
+                                   sqlText: String): Unit =
     try {
       connection.setAutoCommit(false)
       val resultSet = selectMetadata(tableWithViewMetadata, tableIdentifier)
@@ -266,7 +293,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       if (!resultSet.isBeforeFirst) {
         resultSet.close()
         val prepped = connection.prepareStatement(
-          s"""|INSERT INTO $db.$tableWithViewMetadata (
+            s"""|INSERT INTO $db.$tableWithViewMetadata (
               | $DatabaseField, $TableNameField, $SqlViewField, $CrossdataVersionField
               |) VALUES (?,?,?,?)
        """.stripMargin)
@@ -278,10 +305,10 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
         prepped.close()
       } else {
         resultSet.close()
-        val prepped =
-          connection.prepareStatement(
+        val prepped = connection.prepareStatement(
             s"""|UPDATE $db.$tableWithViewMetadata SET $SqlViewField=?
-                |WHERE $DatabaseField='${tableIdentifier.database.getOrElse("")}' AND $TableNameField='${tableIdentifier.table}'
+                |WHERE $DatabaseField='${tableIdentifier.database
+             .getOrElse("")}' AND $TableNameField='${tableIdentifier.table}'
              """.stripMargin.replaceAll("\n", " "))
 
         prepped.setString(1, sqlText)
@@ -294,9 +321,12 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       connection.setAutoCommit(true)
     }
 
-  private def selectMetadata(targetTable: String, tableIdentifier: TableIdentifierNormalized): ResultSet = {
+  private def selectMetadata(
+      targetTable: String,
+      tableIdentifier: TableIdentifierNormalized): ResultSet = {
 
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
+    val preparedStatement = connection.prepareStatement(
+        s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
 
     preparedStatement.setString(1, tableIdentifier.database.getOrElse(""))
     preparedStatement.setString(2, tableIdentifier.table)
@@ -304,30 +334,31 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
 
   }
 
-
-  override def dropViewMetadata(viewIdentifier: ViewIdentifierNormalized): Unit =
+  override def dropViewMetadata(
+      viewIdentifier: ViewIdentifierNormalized): Unit =
     connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database.getOrElse("")}'")
-
+        s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database
+      .getOrElse("")}'")
 
   override def dropAllViewsMetadata(): Unit = {
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
+    connection.createStatement.executeUpdate(
+        s"DELETE FROM $db.$tableWithViewMetadata")
   }
-
 
   override def saveAppMetadata(crossdataApp: CrossdataApp): Unit =
     try {
       connection.setAutoCommit(false)
 
-      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
+      val preparedStatement = connection.prepareStatement(
+          s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
       preparedStatement.setString(1, crossdataApp.appAlias)
       val resultSet = preparedStatement.executeQuery()
       preparedStatement.close()
 
       if (!resultSet.next()) {
         resultSet.close()
-        val prepped = connection.prepareStatement(
-          s"""|INSERT INTO $db.$tableWithAppJars (
+        val prepped =
+          connection.prepareStatement(s"""|INSERT INTO $db.$tableWithAppJars (
               | $JarPath, $AppAlias, $AppClass
               |) VALUES (?,?,?)
          """.stripMargin)
@@ -339,7 +370,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       } else {
         resultSet.close()
         val prepped = connection.prepareStatement(
-          s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, $AppClass=?
+            s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, $AppClass=?
               |WHERE $AppAlias='${crossdataApp.appAlias}'
          """.stripMargin)
         prepped.setString(1, crossdataApp.jar)
@@ -354,7 +385,8 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
 
   override def getApp(alias: String): Option[CrossdataApp] = {
 
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
+    val preparedStatement = connection.prepareStatement(
+        s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
     preparedStatement.setString(1, alias)
     val resultSet = preparedStatement.executeQuery()
 
@@ -370,31 +402,32 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       resultSet.close()
       preparedStatement.close()
       Some(
-        CrossdataApp(jar, alias, clss)
+          CrossdataApp(jar, alias, clss)
       )
     }
   }
 
   override def isAvailable: Boolean = Option(connection).isDefined
 
-
   override def persistIndexMetadata(crossdataIndex: CrossdataIndex): Unit =
     try {
       connection.setAutoCommit(false)
       // check if the database-table exist in the persisted catalog
-      val resultSet = selectMetadata(TableWithIndexMetadata, crossdataIndex.tableIdentifier)
+      val resultSet =
+        selectMetadata(TableWithIndexMetadata, crossdataIndex.tableIdentifier)
 
       val serializedIndexedCols = serializeSeq(crossdataIndex.indexedCols)
       val serializedOptions = serializeOptions(crossdataIndex.opts)
 
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
-          s"""|INSERT INTO $db.$TableWithIndexMetadata (
+            s"""|INSERT INTO $db.$TableWithIndexMetadata (
               | $DatabaseField, $TableNameField, $IndexNameField, $IndexTypeField, $IndexedColsField,
               | $PKField, $DatasourceField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?,?,?)
        """.stripMargin)
-        prepped.setString(1, crossdataIndex.tableIdentifier.database.getOrElse(""))
+        prepped
+          .setString(1, crossdataIndex.tableIdentifier.database.getOrElse(""))
         prepped.setString(2, crossdataIndex.tableIdentifier.table)
         prepped.setString(3, crossdataIndex.indexIdentifier.indexName)
         prepped.setString(4, crossdataIndex.indexIdentifier.indexType)
@@ -406,21 +439,25 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
         prepped.execute()
       } else {
         //TODO: Support change index metadata?
-        sys.error(s"A global index already exists in table ${crossdataIndex.tableIdentifier.unquotedString}")
+        sys.error(
+            s"A global index already exists in table ${crossdataIndex.tableIdentifier.unquotedString}")
       }
     } finally {
       connection.setAutoCommit(true)
     }
 
-  override def dropIndexMetadata(indexIdentifier: IndexIdentifierNormalized): Unit =
+  override def dropIndexMetadata(
+      indexIdentifier: IndexIdentifierNormalized): Unit =
     connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
+        s"DELETE FROM $db.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
     )
 
   override def dropAllIndexesMetadata(): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$TableWithIndexMetadata")
+    connection.createStatement.executeUpdate(
+        s"DELETE FROM $db.$TableWithIndexMetadata")
 
-  override def lookupIndex(indexIdentifier: IndexIdentifierNormalized): Option[CrossdataIndex] = {
+  override def lookupIndex(
+      indexIdentifier: IndexIdentifierNormalized): Option[CrossdataIndex] = {
     val resultSet = selectIndex(indexIdentifier)
 
     if (!resultSet.next) {
@@ -438,27 +475,38 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       val version = resultSet.getString(CrossdataVersionField)
 
       Option(
-        CrossdataIndex(TableIdentifierNormalized(table, Option(database)), IndexIdentifierNormalized(indexType, indexName),
-          deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
+          CrossdataIndex(TableIdentifierNormalized(table, Option(database)),
+                         IndexIdentifierNormalized(indexType, indexName),
+                         deserializeSeq(indexedCols),
+                         pk,
+                         datasource,
+                         deserializeOptions(optsJSON),
+                         version)
       )
     }
   }
 
-  private def selectIndex(indexIdentifier: IndexIdentifierNormalized): ResultSet = {
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $IndexNameField= ? AND $IndexTypeField= ?")
+  private def selectIndex(
+      indexIdentifier: IndexIdentifierNormalized): ResultSet = {
+    val preparedStatement = connection.prepareStatement(
+        s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $IndexNameField= ? AND $IndexTypeField= ?")
     preparedStatement.setString(1, indexIdentifier.indexName)
     preparedStatement.setString(2, indexIdentifier.indexType)
     preparedStatement.executeQuery()
   }
 
-  override def dropIndexMetadata(tableIdentifier: TableIdentifierNormalized): Unit =
+  override def dropIndexMetadata(
+      tableIdentifier: TableIdentifierNormalized): Unit =
     connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
+        s"DELETE FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database
+          .getOrElse("")}'"
     )
 
-  override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifierNormalized): Option[CrossdataIndex] = {
+  override def lookupIndexByTableIdentifier(
+      tableIdentifier: TableIdentifierNormalized): Option[CrossdataIndex] = {
     val query =
-      s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
+      s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database
+        .getOrElse("")}'"
     val preparedStatement = connection.prepareStatement(query)
     val resultSet = preparedStatement.executeQuery()
     if (!resultSet.next) {
@@ -476,8 +524,13 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
       val version = resultSet.getString(CrossdataVersionField)
 
       Option(
-        CrossdataIndex(TableIdentifierNormalized(table, Option(database)), IndexIdentifierNormalized(indexType, indexName),
-          deserializeSeq(indexedCols), pk, datasource, deserializeOptions(optsJSON), version)
+          CrossdataIndex(TableIdentifierNormalized(table, Option(database)),
+                         IndexIdentifierNormalized(indexType, indexName),
+                         deserializeSeq(indexedCols),
+                         pk,
+                         datasource,
+                         deserializeOptions(optsJSON),
+                         version)
       )
     }
   }

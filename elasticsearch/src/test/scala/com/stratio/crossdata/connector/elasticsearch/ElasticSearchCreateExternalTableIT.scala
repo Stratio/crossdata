@@ -41,9 +41,13 @@ class ElasticSearchCreateExternalTableIT extends ElasticWithSharedContext {
     //Expectations
     val table = xdContext.table(s"$Index.newtable")
     table should not be null
-    table.schema.fieldNames should contain ("title")
+    table.schema.fieldNames should contain("title")
 
-    client.get.admin.indices.prepareTypesExists(Index).setTypes(Type).get.isExists shouldBe true
+    client.get.admin.indices
+      .prepareTypesExists(Index)
+      .setTypes(Type)
+      .get
+      .isExists shouldBe true
   }
 
   it should "create an external table without es.resource" in {
@@ -59,14 +63,18 @@ class ElasticSearchCreateExternalTableIT extends ElasticWithSharedContext {
           |)
       """.stripMargin.replaceAll("\n", " ")
 
-      sql(createTableQUeryString).collect()
+    sql(createTableQUeryString).collect()
 
     //Expectations
     val table = xdContext.table(s"$Index.newtable2")
     table should not be null
-    table.schema.fieldNames should contain ("city")
+    table.schema.fieldNames should contain("city")
 
-    client.get.admin.indices.prepareTypesExists(Index).setTypes("newtable2").get.isExists shouldBe true
+    client.get.admin.indices
+      .prepareTypesExists(Index)
+      .setTypes("newtable2")
+      .get
+      .isExists shouldBe true
 
   }
 

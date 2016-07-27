@@ -27,15 +27,15 @@ import org.apache.spark.sql.types._
 
 import scala.language.implicitConversions
 
-
-class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) extends DDLParser(parseQuery) {
+class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext)
+    extends DDLParser(parseQuery) {
 
   protected val IMPORT = Keyword("IMPORT")
   protected val TABLES = Keyword("TABLES")
   protected val DROP = Keyword("DROP")
   protected val VIEW = Keyword("VIEW")
   protected val EXTERNAL = Keyword("EXTERNAL")
-  protected val ADD =Keyword("ADD")
+  protected val ADD = Keyword("ADD")
   protected val JAR = Keyword("JAR")
   protected val INSERT = Keyword("INSERT")
   protected val INTO = Keyword("INTO")
@@ -64,7 +64,6 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   protected val APP = Keyword("APP")
   protected val EXECUTE = Keyword("EXECUTE")
 
-
   override protected lazy val ddl: Parser[LogicalPlan] =
 
     createTable | describeTable | refreshTable | importStart | dropTable | dropExternalTable |
@@ -72,10 +71,9 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   // TODO move to StreamingDdlParser
   protected lazy val streamingSentences: Parser[LogicalPlan] =
-    describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropAllEphemeralQueries  | dropAllEphemeralTables |
+    describeEphemeralTable | showEphemeralTables | createEphemeralTable | dropAllEphemeralQueries | dropAllEphemeralTables |
       showEphemeralStatus | showEphemeralStatuses | startProcess | stopProcess |
       showEphemeralQueries | addEphemeralQuery | dropEphemeralQuery | dropEphemeralTable | dropAllTables
-
 
   protected lazy val importStart: Parser[LogicalPlan] =
     IMPORT ~> TABLES ~> (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
@@ -101,14 +99,18 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
   }
 
-  protected lazy val schemaValues: Parser[Seq[String]] = "(" ~> repsep(token, ",") <~ ")"
+  protected lazy val schemaValues: Parser[Seq[String]] = "(" ~> repsep(
+        token,
+        ",") <~ ")"
 
-  protected lazy val tableValues: Parser[Seq[Any]] = "(" ~> repsep(mapValues | arrayValues | token, ",") <~ ")"
+  protected lazy val tableValues: Parser[Seq[Any]] = "(" ~> repsep(
+        mapValues | arrayValues | token,
+        ",") <~ ")"
 
   protected lazy val arrayValues: Parser[Any] =
     ("[" ~> repsep(mapValues | token, ",") <~ "]") | ("[" ~> success(List()) <~ "]")
 
-  protected lazy val tokenMap: Parser[(Any,Any)] = {
+  protected lazy val tokenMap: Parser[(Any, Any)] = {
     (token <~ "-" <~ ">") ~ (arrayValues | token) ^^ {
       case key ~ value => (key, value)
     }
@@ -116,25 +118,24 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
 
   protected lazy val mapValues: Parser[Map[Any, Any]] =
     "(" ~> repsep(tokenMap, ",") <~ ")" ^^ {
-      case pairs => Map(pairs:_*)
+      case pairs => Map(pairs: _*)
     } | "(" ~> success(Map.empty[Any, Any]) <~ ")"
-
 
   def token: Parser[String] = {
     import lexical.Token
     elem("token", _.isInstanceOf[Token]) ^^ (_.chars)
   }
 
-
   protected lazy val insertIntoTable: Parser[LogicalPlan] =
-    INSERT ~> INTO ~> tableIdentifier ~ schemaValues.? ~ (VALUES ~> repsep(tableValues,","))  ^^ {
+    INSERT ~> INTO ~> tableIdentifier ~ schemaValues.? ~ (VALUES ~> repsep(
+            tableValues,
+            ",")) ^^ {
       case tableId ~ schemaValues ~ tableValues =>
-        if(schemaValues.isDefined)
+        if (schemaValues.isDefined)
           InsertIntoTable(tableId, tableValues, schemaValues)
         else
           InsertIntoTable(tableId, tableValues)
     }
-
 
   protected lazy val dropView: Parser[LogicalPlan] =
     DROP ~> VIEW ~> tableIdentifier ^^ {
@@ -170,24 +171,24 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
         AddJar(jarPath.trim)
     }
 
-
-protected lazy val addApp: Parser[LogicalPlan] =
-  (ADD ~> APP ~> stringLit) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
-    case jarPath ~ alias ~ cname =>
-      AddApp(jarPath.toString, cname, alias)
-  }
-
+  protected lazy val addApp: Parser[LogicalPlan] =
+    (ADD ~> APP ~> stringLit) ~ (AS ~> ident).? ~ (WITH ~> className) ^^ {
+      case jarPath ~ alias ~ cname =>
+        AddApp(jarPath.toString, cname, alias)
+    }
 
   protected lazy val executeApp: Parser[LogicalPlan] =
     (EXECUTE ~> ident) ~ tableValues ~ (OPTIONS ~> options).? ^^ {
       case appName ~ arguments ~ opts =>
-        val args=arguments map {arg=> arg.toString}
+        val args = arguments map { arg =>
+          arg.toString
+        }
         ExecuteApp(appName, args, opts)
     }
-  /**
-   * Streaming
-   */
 
+  /**
+    * Streaming
+    */
   protected lazy val startProcess: Parser[LogicalPlan] = {
     (START ~> tableIdentifier) ^^ {
       case table => StartProcess(table.unquotedString)
@@ -201,9 +202,8 @@ protected lazy val addApp: Parser[LogicalPlan] =
   }
 
   /**
-   * Ephemeral Table Functions
-   */
-
+    * Ephemeral Table Functions
+    */
   protected lazy val describeEphemeralTable: Parser[LogicalPlan] = {
     (DESCRIBE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ^^ {
       case tableIdent => DescribeEphemeralTable(tableIdent)
@@ -219,7 +219,8 @@ protected lazy val addApp: Parser[LogicalPlan] =
   protected lazy val createEphemeralTable: Parser[LogicalPlan] = {
     (CREATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ tableCols.? ~ (OPTIONS ~> options) ^^ {
       case tableIdent ~ columns ~ opts => {
-        val userSpecifiedSchema = columns.flatMap(fields => Some(StructType(fields)))
+        val userSpecifiedSchema =
+          columns.flatMap(fields => Some(StructType(fields)))
         CreateEphemeralTable(tableIdent, userSpecifiedSchema, opts)
       }
     }
@@ -238,9 +239,8 @@ protected lazy val addApp: Parser[LogicalPlan] =
   }
 
   /**
-   * Ephemeral Table Status Functions
-   */
-
+    * Ephemeral Table Status Functions
+    */
   protected lazy val showEphemeralStatus: Parser[LogicalPlan] = {
     (SHOW ~ EPHEMERAL ~ STATUS ~ IN ~> tableIdentifier) ^^ {
       case tableIdent => ShowEphemeralStatus(tableIdent)
@@ -254,11 +254,10 @@ protected lazy val addApp: Parser[LogicalPlan] =
   }
 
   /**
-   * Ephemeral Queries Functions
-   */
-
+    * Ephemeral Queries Functions
+    */
   protected lazy val showEphemeralQueries: Parser[LogicalPlan] = {
-    (SHOW ~ EPHEMERAL ~ QUERIES ~> ( IN ~> ident).? ) ^^ {
+    (SHOW ~ EPHEMERAL ~ QUERIES ~> (IN ~> ident).?) ^^ {
       case queryIdent => ShowEphemeralQueries(queryIdent)
     }
   }
@@ -272,15 +271,20 @@ protected lazy val addApp: Parser[LogicalPlan] =
             xDContext.catalog.lookupRelation(tableIdent, alias)
         }
 
-        val ephTables: Seq[String] = queryTables.collect{
+        val ephTables: Seq[String] = queryTables.collect {
           case StreamingRelation(ephTableName) => ephTableName
         }
 
         ephTables.distinct match {
           case Seq(eTableName) =>
-            AddEphemeralQuery(eTableName, streamQl, topIdent.getOrElse(UUID.randomUUID().toString), new Integer(litN))
+            AddEphemeralQuery(eTableName,
+                              streamQl,
+                              topIdent.getOrElse(UUID.randomUUID().toString),
+                              new Integer(litN))
           case tableNames =>
-            sys.error(s"Expected an ephemeral table within the query, but found ${tableNames.mkString(",")}")
+            sys.error(
+                s"Expected an ephemeral table within the query, but found ${tableNames
+              .mkString(",")}")
         }
     }
   }
@@ -292,8 +296,9 @@ protected lazy val addApp: Parser[LogicalPlan] =
   }
 
   protected lazy val dropAllEphemeralQueries: Parser[LogicalPlan] = {
-    (DROP ~ ALL ~ EPHEMERAL ~ QUERIES ~> (IN ~> tableIdentifier).? ) ^^ {
-      case tableIdent => DropAllEphemeralQueries(tableIdent.map(_.unquotedString))
+    (DROP ~ ALL ~ EPHEMERAL ~ QUERIES ~> (IN ~> tableIdentifier).?) ^^ {
+      case tableIdent =>
+        DropAllEphemeralQueries(tableIdent.map(_.unquotedString))
     }
   }
 
@@ -304,10 +309,15 @@ protected lazy val addApp: Parser[LogicalPlan] =
       if (indexOfWithWindow <= 0) {
         restInput(in)
       } else {
-        val streamSql = in.source.subSequence(in.offset, indexOfWithWindow).toString.trim
+        val streamSql =
+          in.source.subSequence(in.offset, indexOfWithWindow).toString.trim
 
         def streamingInfoInput(inpt: Input): Input = {
-          val startsWithWindow = inpt.source.subSequence(inpt.offset, inpt.source.length()).toString.trim.startsWith("WITH WINDOW")
+          val startsWithWindow = inpt.source
+            .subSequence(inpt.offset, inpt.source.length())
+            .toString
+            .trim
+            .startsWith("WITH WINDOW")
           if (startsWithWindow) inpt else streamingInfoInput(inpt.rest)
         }
         Success(streamSql, streamingInfoInput(in))
@@ -319,7 +329,6 @@ protected lazy val addApp: Parser[LogicalPlan] =
 
     CREATE ~ GLOBAL ~ INDEX ~> tableIdentifier ~ (ON ~> tableIdentifier) ~ schemaValues ~ (WITH ~> PK ~> token) ~ (USING ~> className).? ~ (OPTIONS ~> options) ^^ {
       case index ~ table ~ columns ~ pk ~ provider ~ opts =>
-
         CreateGlobalIndex(index, table, columns, pk, provider, opts)
     }
   }

@@ -17,7 +17,6 @@
 
 package com.stratio.crossdata.connector.cassandra
 
-
 import java.util.Collection
 
 import com.datastax.driver.core.{KeyspaceMetadata, TableMetadata}
@@ -36,59 +35,63 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 import scala.util.Try
 
-
-
 /**
- * Cassandra data source extends [[org.apache.spark.sql.sources.RelationProvider]], [[org.apache.spark.sql.sources.SchemaRelationProvider]]
- * and [[org.apache.spark.sql.sources.CreatableRelationProvider]].
- *
- * It's used internally by Spark SQL to create Relation for a table which specifies the Cassandra data source
- * e.g.
- *
- *      CREATE TEMPORARY TABLE tmpTable
- *      USING org.apache.spark.sql.cassandra
- *      OPTIONS (
- *       table "table",
- *       keyspace "keyspace",
- *       cluster "test_cluster",
- *       pushdown "true",
- *       spark_cassandra_input_page_row_size "10",
- *       spark_cassandra_output_consistency_level "ONE",
- *       spark_cassandra_connection_timeout_ms "1000"
- *      )
- */
-class DefaultSource extends CassandraConnectorDS with TableInventory with FunctionInventory with DataSourceRegister with TableManipulation {
+  * Cassandra data source extends [[org.apache.spark.sql.sources.RelationProvider]], [[org.apache.spark.sql.sources.SchemaRelationProvider]]
+  * and [[org.apache.spark.sql.sources.CreatableRelationProvider]].
+  *
+  * It's used internally by Spark SQL to create Relation for a table which specifies the Cassandra data source
+  * e.g.
+  *
+  *      CREATE TEMPORARY TABLE tmpTable
+  *      USING org.apache.spark.sql.cassandra
+  *      OPTIONS (
+  *       table "table",
+  *       keyspace "keyspace",
+  *       cluster "test_cluster",
+  *       pushdown "true",
+  *       spark_cassandra_input_page_row_size "10",
+  *       spark_cassandra_output_consistency_level "ONE",
+  *       spark_cassandra_connection_timeout_ms "1000"
+  *      )
+  */
+class DefaultSource
+    extends CassandraConnectorDS
+    with TableInventory
+    with FunctionInventory
+    with DataSourceRegister
+    with TableManipulation {
 
   import CassandraConnectorDS._
 
   override def shortName(): String = "cassandra"
 
   /**
-   * Creates a new relation for a cassandra table.
-   * The parameters map stores table level data. User can specify vale for following keys
-   *
-   *    table        -- table name, required
-   *    keyspace       -- keyspace name, required
-   *    cluster        -- cluster name, optional, default name is "default"
-   *    pushdown      -- true/false, optional, default is true
-   *    Cassandra connection settings  -- optional, e.g. spark_cassandra_connection_timeout_ms
-   *    Cassandra Read Settings        -- optional, e.g. spark_cassandra_input_page_row_size
-   *    Cassandra Write settings       -- optional, e.g. spark_cassandra_output_consistency_level
-   *
-   * When push_down is true, some filters are pushed down to CQL.
-   *
-   */
-  override def createRelation(sqlContext: SQLContext,
-                              parameters: Map[String, String]): BaseRelation = {
+    * Creates a new relation for a cassandra table.
+    * The parameters map stores table level data. User can specify vale for following keys
+    *
+    *    table        -- table name, required
+    *    keyspace       -- keyspace name, required
+    *    cluster        -- cluster name, optional, default name is "default"
+    *    pushdown      -- true/false, optional, default is true
+    *    Cassandra connection settings  -- optional, e.g. spark_cassandra_connection_timeout_ms
+    *    Cassandra Read Settings        -- optional, e.g. spark_cassandra_input_page_row_size
+    *    Cassandra Write settings       -- optional, e.g. spark_cassandra_output_consistency_level
+    *
+    * When push_down is true, some filters are pushed down to CQL.
+    *
+    */
+  override def createRelation(
+      sqlContext: SQLContext,
+      parameters: Map[String, String]): BaseRelation = {
 
     val (tableRef, options) = TableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options)
   }
 
   /**
-   * Creates a new relation for a cassandra table given table, keyspace, cluster and push_down
-   * as parameters and explicitly pass schema [[StructType]] as a parameter
-   */
+    * Creates a new relation for a cassandra table given table, keyspace, cluster and push_down
+    * as parameters and explicitly pass schema [[StructType]] as a parameter
+    */
   override def createRelation(sqlContext: SQLContext,
                               parameters: Map[String, String],
                               schema: StructType): BaseRelation = {
@@ -98,9 +101,9 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
   }
 
   /**
-   * Creates a new relation for a cassandra table given table, keyspace, cluster, push_down and schema
-   * as parameters. It saves the data to the Cassandra table depends on [[SaveMode]]
-   */
+    * Creates a new relation for a cassandra table given table, keyspace, cluster, push_down and schema
+    * as parameters. It saves the data to the Cassandra table depends on [[SaveMode]]
+    */
   override def createRelation(sqlContext: SQLContext,
                               mode: SaveMode,
                               parameters: Map[String, String],
@@ -117,7 +120,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
           table.insert(data, overwrite = false)
         } else {
           throw new UnsupportedOperationException(
-            s"""'SaveMode is set to ErrorIfExists and Table
+              s"""'SaveMode is set to ErrorIfExists and Table
                |${tableRef.keyspace + "." + tableRef.table} already exists and contains data.
                |Perhaps you meant to set the DataFrame write mode to Append?
                |Example: df.write.format.options.mode(SaveMode.Append).save()" '""".stripMargin)
@@ -131,27 +134,36 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
     CassandraXDSourceRelation(tableRef, sqlContext, options)
   }
 
-
-
   override def nativeBuiltinFunctions: Seq[UDF] = {
     //TODO: Complete the built-in function inventory
     Seq(
-      UDF("now", None, StructType(Nil), StringType),
-      UDF("dateOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.TimestampType),
-      UDF("unixTimestampOf", None, StructType(StructField("date", StringType, false)::Nil), DataTypes.LongType)
+        UDF("now", None, StructType(Nil), StringType),
+        UDF("dateOf",
+            None,
+            StructType(StructField("date", StringType, false) :: Nil),
+            DataTypes.TimestampType),
+        UDF("unixTimestampOf",
+            None,
+            StructType(StructField("date", StringType, false) :: Nil),
+            DataTypes.LongType)
     )
 
   }
 
-  override def createExternalTable(context: SQLContext,
-                                   tableName: String,
-                                   databaseName: Option[String],
-                                   schema: StructType,
-                                   options: Map[String, String]): Option[Table] = {
-    val keyspace: String = options.get(CassandraDataSourceKeyspaceNameProperty).orElse(databaseName).
-      getOrElse(throw new RuntimeException(s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command"))
+  override def createExternalTable(
+      context: SQLContext,
+      tableName: String,
+      databaseName: Option[String],
+      schema: StructType,
+      options: Map[String, String]): Option[Table] = {
+    val keyspace: String = options
+      .get(CassandraDataSourceKeyspaceNameProperty)
+      .orElse(databaseName)
+      .getOrElse(throw new RuntimeException(
+              s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command"))
 
-    val table: String = options.getOrElse(CassandraDataSourceTableNameProperty, tableName)
+    val table: String =
+      options.getOrElse(CassandraDataSourceTableNameProperty, tableName)
 
     try {
       buildCassandraConnector(context, options).withSessionDo { s =>
@@ -175,7 +187,8 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
   override def dropExternalTable(context: SQLContext,
                                  options: Map[String, String]): Try[Unit] = {
 
-    val keyspace: String = options.get(CassandraDataSourceKeyspaceNameProperty).get
+    val keyspace: String =
+      options.get(CassandraDataSourceKeyspaceNameProperty).get
     val table: String = options.get(CassandraDataSourceTableNameProperty).get
 
     Try {
@@ -187,53 +200,65 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   //-----------MetadataInventory-----------------
 
-
   import collection.JavaConversions._
 
-  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
+  override def listTables(context: SQLContext,
+                          options: Map[String, String]): Seq[Table] = {
 
     if (options.contains(CassandraDataSourceTableNameProperty))
-      require(options.contains(CassandraDataSourceKeyspaceNameProperty), s"$CassandraDataSourceKeyspaceNameProperty required when use $CassandraDataSourceTableNameProperty")
+      require(
+          options.contains(CassandraDataSourceKeyspaceNameProperty),
+          s"$CassandraDataSourceKeyspaceNameProperty required when use $CassandraDataSourceTableNameProperty")
 
     buildCassandraConnector(context, options).withSessionDo { s =>
-      val keyspaces = options.get(CassandraDataSourceKeyspaceNameProperty).fold(s.getCluster.getMetadata.getKeyspaces){
-        keySpaceName => s.getCluster.getMetadata.getKeyspace(keySpaceName) :: Nil
-      }
+      val keyspaces = options
+        .get(CassandraDataSourceKeyspaceNameProperty)
+        .fold(s.getCluster.getMetadata.getKeyspaces) { keySpaceName =>
+          s.getCluster.getMetadata.getKeyspace(keySpaceName) :: Nil
+        }
 
-      val tablesIt: Iterable[Table] = for(
-        ksMeta: KeyspaceMetadata <- keyspaces;
-        tMeta: TableMetadata <- pickTables(ksMeta, options)) yield tableMeta2Table(tMeta)
+      val tablesIt: Iterable[Table] =
+        for (ksMeta: KeyspaceMetadata <- keyspaces;
+             tMeta: TableMetadata <- pickTables(ksMeta, options))
+          yield tableMeta2Table(tMeta)
       tablesIt.toSeq
     }
   }
 
+  private def buildCassandraConnector(
+      context: SQLContext,
+      options: Map[String, String]): CassandraConnector = {
 
-  private def buildCassandraConnector(context: SQLContext, options: Map[String, String]): CassandraConnector = {
-
-    val conParams = (CassandraDataSourceClusterNameProperty::CassandraConnectionHostProperty::Nil) map { opName =>
-      if(!options.contains(opName)) sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
-      else options(opName)
+    val conParams = (CassandraDataSourceClusterNameProperty :: CassandraConnectionHostProperty :: Nil) map {
+      opName =>
+        if (!options.contains(opName))
+          sys.error(s"""Option "$opName" is mandatory for IMPORT CATALOG""")
+        else options(opName)
     }
     val (clusterName, host) = (conParams zip conParams.tail) head
 
     val cfg: SparkConf = context.sparkContext.getConf.clone()
     for (prop <- CassandraConnectorDS.confProperties;
-         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop")) cfg.set(prop, clusterLevelValue)
+         clusterLevelValue <- context.getAllConfs.get(s"$clusterName/$prop"))
+      cfg.set(prop, clusterLevelValue)
     cfg.set("spark.cassandra.connection.host", host)
 
     CassandraConnector(cfg)
   }
 
-  private def pickTables(ksMeta: KeyspaceMetadata, options: Map[String, String]): Collection[TableMetadata] = {
-    options.get(CassandraDataSourceTableNameProperty).fold(ksMeta.getTables) { tableName =>
-      ksMeta.getTable(tableName) :: Nil
+  private def pickTables(
+      ksMeta: KeyspaceMetadata,
+      options: Map[String, String]): Collection[TableMetadata] = {
+    options.get(CassandraDataSourceTableNameProperty).fold(ksMeta.getTables) {
+      tableName =>
+        ksMeta.getTable(tableName) :: Nil
     }
   }
 
   /**
-   * @param tMeta C* Metadata for a given table
-   * @return A table description obtained after translate its C* meta data.
-   */
+    * @param tMeta C* Metadata for a given table
+    * @return A table description obtained after translate its C* meta data.
+    */
   private def tableMeta2Table(tMeta: TableMetadata): Table =
     Table(tMeta.getName, Some(tMeta.getKeyspace.getName))
 
@@ -241,13 +266,17 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 
   //Avoids importing system tables
   override def exclusionFilter(t: TableInventory.Table): Boolean =
-    t.database.exists( dbName => systemTableRegex.findFirstIn(dbName).isEmpty)
+    t.database.exists(dbName => systemTableRegex.findFirstIn(dbName).isEmpty)
 
-
-  override def generateConnectorOpts(item: Table, opts: Map[String, String] = Map.empty): Map[String, String] = Map(
-    CassandraDataSourceTableNameProperty -> item.tableName,
-    CassandraDataSourceKeyspaceNameProperty -> item.database.get
-  ) ++ opts.filterKeys(Set(CassandraConnectionHostProperty, CassandraDataSourceClusterNameProperty).contains(_))
+  override def generateConnectorOpts(
+      item: Table,
+      opts: Map[String, String] = Map.empty): Map[String, String] =
+    Map(
+        CassandraDataSourceTableNameProperty -> item.tableName,
+        CassandraDataSourceKeyspaceNameProperty -> item.database.get
+    ) ++ opts.filterKeys(
+        Set(CassandraConnectionHostProperty,
+            CassandraDataSourceClusterNameProperty).contains(_))
 
   //------------MetadataInventory-----------------
 }
@@ -255,8 +284,7 @@ class DefaultSource extends CassandraConnectorDS with TableInventory with Functi
 object DefaultSource {
 
   val CassandraConnectionHostProperty = "spark_cassandra_connection_host"
-  val CassandraDataSourcePrimaryKeyStringProperty ="primary_key_string"
-  val CassandraDataSourceKeyspaceReplicationStringProperty ="with_replication"
+  val CassandraDataSourcePrimaryKeyStringProperty = "primary_key_string"
+  val CassandraDataSourceKeyspaceReplicationStringProperty = "with_replication"
 
 }
-

@@ -19,18 +19,20 @@ import com.stratio.crossdata.driver.Driver
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.examples.cassandra._
 
-
 /**
- * Driver example - Join Kafka and Cassandra - Output to Kafka
- */
-object StreamingSqlExample extends App with CassandraDefaultConstants with StreamingDefaultConstants{
+  * Driver example - Join Kafka and Cassandra - Output to Kafka
+  */
+object StreamingSqlExample
+    extends App
+    with CassandraDefaultConstants
+    with StreamingDefaultConstants {
 
   val (cluster, session) = prepareEnvironment()
 
-  val driver = Driver.newSession(new DriverConf().setClusterContactPoint("127.0.0.1:13420"))
+  val driver = Driver.newSession(
+      new DriverConf().setClusterContactPoint("127.0.0.1:13420"))
 
-  val importQuery =
-    s"""|IMPORT TABLES
+  val importQuery = s"""|IMPORT TABLES
         |USING $SourceProvider
         |OPTIONS (
         | cluster "$ClusterName",
@@ -38,15 +40,14 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
         |)
       """.stripMargin
 
-  val createEphemeralTable =
-    s"""|CREATE EPHEMERAL TABLE $EphemeralTableName
+  val createEphemeralTable = s"""|CREATE EPHEMERAL TABLE $EphemeralTableName
         |OPTIONS (
         | receiver.kafka.topic '$InputTopic:$NumPartitionsToConsume',
         | receiver.kafka.groupId 'xd1'
         |)
       """.stripMargin
 
-  try{
+  try {
     // Imports tables from Cassandra cluster
     driver.sql(importQuery).waitForResult()
 
@@ -54,8 +55,8 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
     driver.sql(createEphemeralTable).waitForResult()
 
     // Adds a streaming query. It will be executed when the streaming process is running
-    driver.sql(s"SELECT count(*) FROM $EphemeralTableName WITH WINDOW 5 SECS AS outputTopic")
-   
+    driver.sql(
+        s"SELECT count(*) FROM $EphemeralTableName WITH WINDOW 5 SECS AS outputTopic")
 
     // Starts the streaming process associated to the ephemeral table
     driver.sql(s"START $EphemeralTableName")
@@ -64,14 +65,12 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
     // Example: kafka-console-producer.sh --broker-list localhost:9092 --topic <input-topic>
     // Input events format: {"id": 1, "msg": "Hello world", "city": "Tolomango"}
 
-
     // WARNING: Then, you could start a Kafka consumer in order to read the processed data from queryAlias/outputTopic
     // Example: kafka-console-consumer.sh --zookeeper localhost:2181 --topic <query-alias>
 
     // Later, we can add a query to join batch and streaming sources, which output will be other Kafka topic
     // NOTE: In order to produce results, you should add ids matching the id's range of Cassandra table (1 to 10)
-    driver.sql(
-      s"""
+    driver.sql(s"""
          |SELECT name FROM $EphemeralTableName INNER JOIN $Catalog.$Table
          |ON $EphemeralTableName.id = $Table.id
          |WITH WINDOW 10 SECS AS joinTopic
@@ -91,11 +90,9 @@ object StreamingSqlExample extends App with CassandraDefaultConstants with Strea
     cleanEnvironment(cluster, session)
   }
 
-
 }
 
-
-trait StreamingDefaultConstants{
+trait StreamingDefaultConstants {
   val EphemeralTableName = "t"
   val InputTopic = "ephtable"
   val NumPartitionsToConsume = "1"

@@ -33,11 +33,11 @@ import org.apache.spark.sql.types.{TimestampType => SparkSqlTimestampType}
 
 object CassandraUtils {
 
-
   /** Returns natural Cassandra type for representing data of the given Spark SQL type */
   def fromSparkSqlType(dataType: SparkSqlDataType): ColumnType[_] = {
 
-    def unsupportedType() = throw new IllegalArgumentException(s"Unsupported type: $dataType")
+    def unsupportedType() =
+      throw new IllegalArgumentException(s"Unsupported type: $dataType")
 
     dataType match {
       case ByteType => IntType

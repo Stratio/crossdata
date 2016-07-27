@@ -27,11 +27,12 @@ import scala.util.Try
 
 case class HdfsUtils(dfs: FileSystem, userName: String) {
 
-  def getFiles(path: String): Array[FileStatus] = dfs.listStatus(new Path(path))
+  def getFiles(path: String): Array[FileStatus] =
+    dfs.listStatus(new Path(path))
 
   def getFile(filename: String): InputStream = dfs.open(new Path(filename))
 
-  def fileExist(fileName:String): Boolean = dfs.exists(new Path(fileName))
+  def fileExist(fileName: String): Boolean = dfs.exists(new Path(fileName))
 
   def delete(path: String): Unit = {
     dfs.delete(new Path(path), true)
@@ -53,16 +54,17 @@ object HdfsUtils extends SLF4JLogging {
   private final val DefaultFSProperty = "fs.defaultFS"
   private final val HdfsDefaultPort = 9000
 
-  def apply(user: String, namenode:String): HdfsUtils = {
+  def apply(user: String, namenode: String): HdfsUtils = {
     val conf = new Configuration()
     conf.set(DefaultFSProperty, namenode)
-    log.debug(s"Configuring HDFS with master: ${conf.get(DefaultFSProperty)} and user: $user")
+    log.debug(
+        s"Configuring HDFS with master: ${conf.get(DefaultFSProperty)} and user: $user")
     val defaultUri = FileSystem.getDefaultUri(conf)
     new HdfsUtils(FileSystem.get(defaultUri, conf, user), user)
   }
 
   def apply(config: Config): HdfsUtils = {
-    val namenode=config.getString("namenode")
+    val namenode = config.getString("namenode")
     val user = config.getString("user")
     apply(user, namenode)
   }

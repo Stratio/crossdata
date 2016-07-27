@@ -28,8 +28,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     def tableCountInHighschool: Long = xdContext.sql("SHOW TABLES").count
     val initialLength = tableCountInHighschool
 
-    val importQuery =
-      s"""
+    val importQuery = s"""
           |IMPORT TABLES
           |USING $SourceProvider
           |OPTIONS (
@@ -40,7 +39,8 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
     val importedTables = xdContext.sql(importQuery)
 
-    importedTables.schema.fieldNames shouldBe Array("tableIdentifier", "ignored")
+    importedTables.schema.fieldNames shouldBe Array("tableIdentifier",
+                                                    "ignored")
     importedTables.collect.length should be > 0
 
     tableCountInHighschool should be > initialLength
@@ -51,8 +51,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     val (cluster, session) = createOtherTables
-    val importQuery =
-      s"""
+    val importQuery = s"""
          |IMPORT TABLES
          |USING $SourceProvider
          |OPTIONS (
@@ -78,8 +77,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
     val (cluster, session) = createOtherTables
 
-    val importQuery =
-      s"""
+    val importQuery = s"""
       |IMPORT TABLES
       |USING $SourceProvider
       |OPTIONS (
@@ -93,11 +91,11 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
       xdContext.dropAllTables()
       val importedTables = sql(importQuery)
       // imported tables shouldn't be ignored (schema is (tableName, ignored)
-      importedTables.collect().forall( row => row.getBoolean(1)) shouldBe false
+      importedTables.collect().forall(row => row.getBoolean(1)) shouldBe false
       // imported tables should be ignored after importing twice
-      sql(importQuery).collect().forall( row => row.getBoolean(1)) shouldBe true
-      xdContext.tableNames()  should  contain (s"$Catalog.$Table")
-      xdContext.tableNames()  should  not contain "NewKeyspace.NewTable"
+      sql(importQuery).collect().forall(row => row.getBoolean(1)) shouldBe true
+      xdContext.tableNames() should contain(s"$Catalog.$Table")
+      xdContext.tableNames() should not contain "NewKeyspace.NewTable"
     } finally {
       cleanOtherTables(cluster, session)
     }
@@ -107,8 +105,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    val importQuery =
-      s"""
+    val importQuery = s"""
           |IMPORT TABLES
           |USING $SourceProvider
           |OPTIONS (
@@ -131,8 +128,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    val importQuery =
-      s"""
+    val importQuery = s"""
           |IMPORT TABLES
           |USING $SourceProvider
           |OPTIONS (
@@ -143,18 +139,18 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     """.stripMargin
 
     //Experimentation
-    an [IllegalArgumentException] should be thrownBy sql(importQuery)
+    an[IllegalArgumentException] should be thrownBy sql(importQuery)
   }
 
   val wrongImportTablesSentences = List(
-    s"""
+      s"""
        |IMPORT TABLES
        |USING $SourceProvider
        |OPTIONS (
        | cluster "$ClusterName"
        |)
     """.stripMargin,
-    s"""
+      s"""
        |IMPORT TABLES
        |USING $SourceProvider
        |OPTIONS (
@@ -170,33 +166,32 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     }
   }
 
+  def createOtherTables(): (Cluster, Session) = {
+    val (cluster, session) = prepareClient.get
 
-  def createOtherTables(): (Cluster, Session) ={
-    val  (cluster, session) =  prepareClient.get
-
-    session.execute(s"CREATE KEYSPACE NewKeyspace WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
-    session.execute(s"CREATE TABLE NewKeyspace.NewTable (id int, coolstuff text, PRIMARY KEY (id))")
+    session.execute(
+        s"CREATE KEYSPACE NewKeyspace WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}  AND durable_writes = true;")
+    session.execute(
+        s"CREATE TABLE NewKeyspace.NewTable (id int, coolstuff text, PRIMARY KEY (id))")
 
     (cluster, session)
   }
 
-  def cleanOtherTables(cluster:Cluster, session:Session): Unit ={
+  def cleanOtherTables(cluster: Cluster, session: Session): Unit = {
     session.execute(s"DROP KEYSPACE NewKeyspace")
 
     session.close()
     cluster.close()
   }
 
-
   it should "infer schema after import One table from a keyspace using API" in {
     assumeEnvironmentIsUpAndRunning
     xdContext.dropAllTables()
 
-    val options = Map(
-      "cluster" -> ClusterName,
-      "keyspace" -> Catalog,
-      "table" -> Table,
-      "spark_cassandra_connection_host" -> CassandraHost)
+    val options = Map("cluster" -> ClusterName,
+                      "keyspace" -> Catalog,
+                      "table" -> Table,
+                      "spark_cassandra_connection_host" -> CassandraHost)
 
     //Experimentation
     xdContext.importTables(SourceProvider, options)
@@ -206,9 +201,3 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
     xdContext.tableNames() should not contain "highschool.teachers"
   }
 }
-
-
-
-
-
-

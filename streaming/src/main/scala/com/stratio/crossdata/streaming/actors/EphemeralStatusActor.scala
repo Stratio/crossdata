@@ -28,10 +28,12 @@ import scala.concurrent.duration._
 
 class EphemeralStatusActor(streamingContext: StreamingContext,
                            zookeeperConfiguration: Map[String, String],
-                           ephemeralTableName: String) extends Actor
-with EphemeralTableStatusMapDAO {
+                           ephemeralTableName: String)
+    extends Actor
+    with EphemeralTableStatusMapDAO {
 
-  val ephemeralTMDao = new EphemeralTableMapDAO(Map(ZookeeperPrefixName -> zookeeperConfiguration))
+  val ephemeralTMDao = new EphemeralTableMapDAO(
+      Map(ZookeeperPrefixName -> zookeeperConfiguration))
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var ephemeralStatus: Option[EphemeralStatusModel] = getRepositoryStatusTable
   var cancellableCheckStatus: Option[Cancellable] = None
@@ -60,9 +62,13 @@ with EphemeralTableStatusMapDAO {
       case Some(tableModel) => tableModel.options.atomicWindow * 1000
       case None => EphemeralOptionsModel.DefaultAtomicWindow * 1000
     }
-    cancellableCheckStatus = Option(cancellableCheckStatus.fold(
-      context.system.scheduler.schedule(delayMs milliseconds, delayMs milliseconds, self, CheckStatus)(context.dispatcher)
-    )(identity))
+    cancellableCheckStatus = Option(
+        cancellableCheckStatus.fold(
+            context.system.scheduler.schedule(delayMs milliseconds,
+                                              delayMs milliseconds,
+                                              self,
+                                              CheckStatus)(context.dispatcher)
+        )(identity))
   }
 
   override def postStop(): Unit = {
@@ -75,7 +81,7 @@ with EphemeralTableStatusMapDAO {
   }
 
   private[streaming] def doCheckStatus(): Unit =
-  // TODO check if the status can be read from ephemeralStatus insteadof getRepository...; the listener should work
+    // TODO check if the status can be read from ephemeralStatus insteadof getRepository...; the listener should work
     getRepositoryStatusTable.foreach { statusModel =>
       if (statusModel.status == EphemeralExecutionStatus.Stopping) {
         // TODO add an actor containing status and query actor in order to exit gracefully
@@ -86,17 +92,28 @@ with EphemeralTableStatusMapDAO {
       }
     }
 
-  private[streaming] def doSetStatus(newStatus: EphemeralExecutionStatus.Value): Unit = {
+  private[streaming] def doSetStatus(
+      newStatus: EphemeralExecutionStatus.Value): Unit = {
 
-    val startTime = if (newStatus == EphemeralExecutionStatus.Started) Option(DateTime.now.getMillis) else None
-    val stopTime = if (newStatus == EphemeralExecutionStatus.Stopped) Option(DateTime.now.getMillis) else None
+    val startTime =
+      if (newStatus == EphemeralExecutionStatus.Started)
+        Option(DateTime.now.getMillis)
+      else None
+    val stopTime =
+      if (newStatus == EphemeralExecutionStatus.Stopped)
+        Option(DateTime.now.getMillis)
+      else None
     val resultStatus = ephemeralStatus.fold(
-      dao.create(ephemeralTableName, EphemeralStatusModel(ephemeralTableName, newStatus, startTime, stopTime))
+        dao.create(ephemeralTableName,
+                   EphemeralStatusModel(ephemeralTableName,
+                                        newStatus,
+                                        startTime,
+                                        stopTime))
     ) { ephStatus =>
       val newStatusModel = ephStatus.copy(
-        status = newStatus,
-        stoppedTime = stopTime,
-        startedTime = startTime.orElse(ephStatus.startedTime)
+          status = newStatus,
+          stoppedTime = stopTime,
+          startedTime = startTime.orElse(ephStatus.startedTime)
       )
       dao.upsert(ephemeralTableName, newStatusModel)
     }
@@ -108,18 +125,21 @@ with EphemeralTableStatusMapDAO {
 
   private[streaming] def doAddListener(): Unit = {
     repository.addListener[EphemeralStatusModel](
-      dao.entity,
-      ephemeralTableName,
-      (newEphemeralStatus: EphemeralStatusModel, _) => ephemeralStatus = Option(newEphemeralStatus)
+        dao.entity,
+        ephemeralTableName,
+        (newEphemeralStatus: EphemeralStatusModel,
+         _) => ephemeralStatus = Option(newEphemeralStatus)
     )
 
     sender ! ListenerResponse(true)
   }
 
-  private[streaming] def getRepositoryStatusTable: Option[EphemeralStatusModel] = dao.get(ephemeralTableName)
+  private[streaming] def getRepositoryStatusTable: Option[EphemeralStatusModel] =
+    dao.get(ephemeralTableName)
 
-  private[streaming] def getStatusFromTable(ephemeralTable: Option[EphemeralStatusModel])
-  : EphemeralExecutionStatus.Value = {
+  private[streaming] def getStatusFromTable(
+      ephemeralTable: Option[EphemeralStatusModel])
+    : EphemeralExecutionStatus.Value = {
     ephemeralTable.fold(EphemeralExecutionStatus.NotStarted) { tableStatus =>
       tableStatus.status
     }
@@ -139,7 +159,8 @@ with EphemeralTableStatusMapDAO {
     }
   }
 
-  private[streaming] def doGetStreamingStatus(): Unit = sender ! StreamingStatusResponse(streamingContext.getState())
+  private[streaming] def doGetStreamingStatus(): Unit =
+    sender ! StreamingStatusResponse(streamingContext.getState())
 }
 
 object EphemeralStatusActor {

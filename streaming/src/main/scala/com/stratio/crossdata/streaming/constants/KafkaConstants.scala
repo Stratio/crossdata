@@ -18,8 +18,8 @@ package com.stratio.crossdata.streaming.constants
 object KafkaConstants {
 
   /**
-   * Default parameters
-   */
+    * Default parameters
+    */
   val DefaultPartition = 1
   val DefaultConsumerPort = "2181"
   val DefaultProducerPort = "9092"
@@ -27,14 +27,14 @@ object KafkaConstants {
   val DefaultSerializer = "kafka.serializer.StringEncoder"
 
   /**
-   * Kafka Spark consumer keys
-   */
+    * Kafka Spark consumer keys
+    */
   val ZookeeperConnectionKey = "zookeeper.connect"
   val GroupIdKey = "group.id"
 
   /**
-   * Kafka native producer keys
-   */
+    * Kafka native producer keys
+    */
   val SerializerKey = "serializer.class"
   val BrokerListKey = "metadata.broker.list"
   val PartitionKey = "partition"
@@ -46,11 +46,10 @@ object KafkaConstants {
   val MaxRetriesKey = "maxRetries"
   val ClientIdKey = "clientId"
 
-  val producerProperties = Map(
-    RequiredAckKey -> "request.required.acks",
-    CompressionCodecKey -> "compression.codec",
-    ProducerTypeKey -> "producer.type",
-    BatchSizeKey -> "batch.num.messages",
-    MaxRetriesKey -> "message.send.max.retries",
-    ClientIdKey -> "client.id")
+  val producerProperties = Map(RequiredAckKey -> "request.required.acks",
+                               CompressionCodecKey -> "compression.codec",
+                               ProducerTypeKey -> "producer.type",
+                               BatchSizeKey -> "batch.num.messages",
+                               MaxRetriesKey -> "message.send.max.retries",
+                               ClientIdKey -> "client.id")
 }

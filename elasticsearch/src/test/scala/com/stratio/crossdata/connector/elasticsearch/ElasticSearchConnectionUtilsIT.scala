@@ -19,36 +19,36 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with ElasticSearchDefaultConstants {
-  
+class ElasticSearchConnectionUtilsIT
+    extends ElasticWithSharedContext
+    with ElasticSearchDefaultConstants {
+
   "ElasticSearchConnectionUtils" should "build a native ES Connection" in {
     assumeEnvironmentIsUpAndRunning
     val options: Map[String, String] = Map(
-      "es.nodes" -> s"$ElasticHost",
-      "es.port" -> s"$ElasticRestPort",
-      "es.nativePort" -> s"$ElasticNativePort",
-      "es.cluster" -> s"$ElasticClusterName"
+        "es.nodes" -> s"$ElasticHost",
+        "es.port" -> s"$ElasticRestPort",
+        "es.nativePort" -> s"$ElasticNativePort",
+        "es.cluster" -> s"$ElasticClusterName"
     )
 
     //Experimentation
-    ElasticSearchConnectionUtils.withClientDo(options){ client =>
-
+    ElasticSearchConnectionUtils.withClientDo(options) { client =>
       //Expectations
       client should not be (null)
     }
 
   }
 
-
   it should "list ElasticSearch Tables in One Index" in {
     assumeEnvironmentIsUpAndRunning
 
     val options: Map[String, String] = Map(
-      "es.nodes" -> s"$ElasticHost",
-      "es.port" -> s"$ElasticRestPort",
-      "es.nativePort" -> s"$ElasticNativePort",
-      "es.cluster" -> s"$ElasticClusterName",
-      "es.index" -> s"$Index"
+        "es.nodes" -> s"$ElasticHost",
+        "es.port" -> s"$ElasticRestPort",
+        "es.nativePort" -> s"$ElasticNativePort",
+        "es.cluster" -> s"$ElasticClusterName",
+        "es.index" -> s"$Index"
     )
 
     //Experimentation
@@ -56,8 +56,8 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
 
     //Expectations
     types should not be (null)
-    types.size should be (1)
-    types(0).schema.get.size should be (8)
+    types.size should be(1)
+    types(0).schema.get.size should be(8)
 
   }
 
@@ -65,14 +65,14 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     assumeEnvironmentIsUpAndRunning
 
     val options: Map[String, String] = Map(
-      "es.nodes" -> s"$ElasticHost",
-      "es.port" -> s"$ElasticRestPort",
-      "es.nativePort" -> s"$ElasticNativePort",
-      "es.cluster" -> s"$ElasticClusterName"
+        "es.nodes" -> s"$ElasticHost",
+        "es.port" -> s"$ElasticRestPort",
+        "es.nativePort" -> s"$ElasticNativePort",
+        "es.cluster" -> s"$ElasticClusterName"
     )
 
-    ElasticSearchConnectionUtils.withClientDo(options){ client =>
-      createIndex(client,"index_test",  typeMapping())
+    ElasticSearchConnectionUtils.withClientDo(options) { client =>
+      createIndex(client, "index_test", typeMapping())
       try {
         //Experimentation
         val types = ElasticSearchConnectionUtils.listTypes(options)
@@ -87,20 +87,19 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
 
   }
 
-
   it should "list tables on an empty index" in {
     assumeEnvironmentIsUpAndRunning
 
     val options: Map[String, String] = Map(
-      "es.nodes" -> s"$ElasticHost",
-      "es.port" -> s"$ElasticRestPort",
-      "es.nativePort" -> s"$ElasticNativePort",
-      "es.cluster" -> s"$ElasticClusterName",
-      "es.index" -> "empty_index"
+        "es.nodes" -> s"$ElasticHost",
+        "es.port" -> s"$ElasticRestPort",
+        "es.nativePort" -> s"$ElasticNativePort",
+        "es.cluster" -> s"$ElasticClusterName",
+        "es.index" -> "empty_index"
     )
 
-    ElasticSearchConnectionUtils.withClientDo(options){ client =>
-      createIndex(client,"empty_index",  null)
+    ElasticSearchConnectionUtils.withClientDo(options) { client =>
+      createIndex(client, "empty_index", null)
 
       try {
         //Experimentation
@@ -108,7 +107,7 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
 
         //Expectations
         types should not be null
-        types.size should be (0)
+        types.size should be(0)
       } finally {
         cleanTestData(client, "empty_index")
       }

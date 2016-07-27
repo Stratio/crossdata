@@ -22,8 +22,11 @@ import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.models.EphemeralTableModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
-trait EphemeralTableDAO extends GenericDAOComponent[EphemeralTableModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+trait EphemeralTableDAO
+    extends GenericDAOComponent[EphemeralTableModel]
+    with TypesafeConfigComponent
+    with SparkLoggerComponent
+    with CrossdataSerializer {
 
   val ephemeralTableIdField = "EphemeralTableID"
 

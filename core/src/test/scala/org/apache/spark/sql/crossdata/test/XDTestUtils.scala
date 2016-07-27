@@ -32,56 +32,53 @@ import scala.language.implicitConversions
 import scala.util.Try
 
 /**
- * Helper trait that should be extended by all SQL test suites.
- *
- * This allows subclasses to plugin a custom [[SQLContext]]. It comes with test data
- * prepared in advance as well as all implicit conversions used extensively by dataframes.
- * To use implicit methods, import `testImplicits._` instead of through the [[SQLContext]].
- *
- * Subclasses should *not* create [[SQLContext]]s in the test suite constructor, which is
- * prone to leaving multiple overlapping [[org.apache.spark.SparkContext]]s in the same JVM.
- */
-trait XDTestUtils
-  extends BaseXDTest
-  with BeforeAndAfterAll {
-  self =>
+  * Helper trait that should be extended by all SQL test suites.
+  *
+  * This allows subclasses to plugin a custom [[SQLContext]]. It comes with test data
+  * prepared in advance as well as all implicit conversions used extensively by dataframes.
+  * To use implicit methods, import `testImplicits._` instead of through the [[SQLContext]].
+  *
+  * Subclasses should *not* create [[SQLContext]]s in the test suite constructor, which is
+  * prone to leaving multiple overlapping [[org.apache.spark.SparkContext]]s in the same JVM.
+  */
+trait XDTestUtils extends BaseXDTest with BeforeAndAfterAll { self =>
 
   protected def _xdContext: XDContext
 
   // Shorthand for running a query using our SQLContext
   protected lazy val sql = _xdContext.sql _
 
-
   /**
-   * The Hadoop configuration used by the active [[SQLContext]].
-   */
+    * The Hadoop configuration used by the active [[SQLContext]].
+    */
   protected def configuration: Configuration = {
     _xdContext.sparkContext.hadoopConfiguration
   }
 
   /**
-   * A helper object for importing SQL implicits.
-   *
-   * Note that the alternative of importing `sqlContext.implicits._` is not possible here.
-   * This is because we create the [[SQLContext]] immediately before the first test is run,
-   * but the implicits import is needed in the constructor.
-   */
+    * A helper object for importing SQL implicits.
+    *
+    * Note that the alternative of importing `sqlContext.implicits._` is not possible here.
+    * This is because we create the [[SQLContext]] immediately before the first test is run,
+    * but the implicits import is needed in the constructor.
+    */
   protected object testImplicits extends XDImplicits {
     protected override def _xdContext: XDContext = self._xdContext
   }
 
-
   /**
-   * Sets all SQL configurations specified in `pairs`, calls `f`, and then restore all SQL
-   * configurations.
-   *
-   * @todo Probably this method should be moved to a more general place
-   */
+    * Sets all SQL configurations specified in `pairs`, calls `f`, and then restore all SQL
+    * configurations.
+    *
+    * @todo Probably this method should be moved to a more general place
+    */
   protected def withSQLConf(pairs: (String, String)*)(f: => Unit): Unit = {
     val (keys, values) = pairs.unzip
-    val currentValues = keys.map(key => Try(_xdContext.conf.getConfString(key)).toOption)
+    val currentValues =
+      keys.map(key => Try(_xdContext.conf.getConfString(key)).toOption)
     (keys, values).zipped.foreach(_xdContext.conf.setConfString)
-    try f finally {
+    try f
+    finally {
       keys.zip(currentValues).foreach {
         case (key, Some(value)) => _xdContext.conf.setConfString(key, value)
         case (key, None) => _xdContext.conf.unsetConf(key)
@@ -90,34 +87,36 @@ trait XDTestUtils
   }
 
   /**
-   * Generates a temporary path without creating the actual file/directory, then pass it to `f`. If
-   * a file/directory is created there by `f`, it will be delete after `f` returns.
-   *
-   * @todo Probably this method should be moved to a more general place
-   */
+    * Generates a temporary path without creating the actual file/directory, then pass it to `f`. If
+    * a file/directory is created there by `f`, it will be delete after `f` returns.
+    *
+    * @todo Probably this method should be moved to a more general place
+    */
   protected def withTempPath(f: File => Unit): Unit = {
     val path = Utils.createTempDir()
     path.delete()
-    try f(path) finally Utils.deleteRecursively(path)
+    try f(path)
+    finally Utils.deleteRecursively(path)
   }
 
   /**
-   * Creates a temporary directory, which is then passed to `f` and will be deleted after `f`
-   * returns.
-   *
-   * @todo Probably this method should be moved to a more general place
-   */
+    * Creates a temporary directory, which is then passed to `f` and will be deleted after `f`
+    * returns.
+    *
+    * @todo Probably this method should be moved to a more general place
+    */
   protected def withTempDir(f: File => Unit): Unit = {
     val dir = Utils.createTempDir().getCanonicalFile
-    try f(dir) finally Utils.deleteRecursively(dir)
+    try f(dir)
+    finally Utils.deleteRecursively(dir)
   }
 
-
   /**
-   * Turn a logical plan into a [[DataFrame]]. This should be removed once we have an easier
-   * way to construct [[XDDataFrame]] directly out of local data without relying on implicits.
-   */
-  protected implicit def logicalPlanToSparkQuery(plan: LogicalPlan): DataFrame = {
+    * Turn a logical plan into a [[DataFrame]]. This should be removed once we have an easier
+    * way to construct [[XDDataFrame]] directly out of local data without relying on implicits.
+    */
+  protected implicit def logicalPlanToSparkQuery(
+      plan: LogicalPlan): DataFrame = {
     XDDataFrame(_xdContext, plan)
   }
 }

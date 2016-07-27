@@ -20,7 +20,6 @@ import org.scalatest.junit.JUnitRunner
 
 import scala.collection.Seq
 
-
 @RunWith(classOf[JUnitRunner])
 class MongoDropExternalTableIT extends MongoWithSharedContext {
 
@@ -37,7 +36,7 @@ class MongoDropExternalTableIT extends MongoWithSharedContext {
           |collection 'drop1'
           |)
       """.stripMargin.replaceAll("\n", " ")
-      sql(createTable1).collect()
+    sql(createTable1).collect()
 
     val createTable2 =
       s"""|CREATE EXTERNAL TABLE drop2 (id Integer, name String)
@@ -51,7 +50,6 @@ class MongoDropExternalTableIT extends MongoWithSharedContext {
     sql(createTable2).collect()
   }
 
-
   "The Mongo connector" should "execute a DROP EXTERNAL TABLE" in {
 
     //Precondition
@@ -61,11 +59,12 @@ class MongoDropExternalTableIT extends MongoWithSharedContext {
 
     //DROP
     val dropExternalTableQuery = s"DROP EXTERNAL TABLE $Database.drop1"
-    sql(dropExternalTableQuery).collect() should be (Seq.empty)
+    sql(dropExternalTableQuery).collect() should be(Seq.empty)
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table(s"$Database.drop1"))
-    this.client.get.getDB(Database).collectionExists(mongoTableName) should be (false)
+    this.client.get.getDB(Database).collectionExists(mongoTableName) should be(
+        false)
 
   }
 
@@ -78,11 +77,12 @@ class MongoDropExternalTableIT extends MongoWithSharedContext {
 
     //DROP
     val dropExternalTableQuery = "DROP EXTERNAL TABLE drop2"
-    sql(dropExternalTableQuery).collect() should be (Seq.empty)
+    sql(dropExternalTableQuery).collect() should be(Seq.empty)
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table("drop2"))
-    this.client.get.getDB(Database).collectionExists(mongoTableName) should be (false)
+    this.client.get.getDB(Database).collectionExists(mongoTableName) should be(
+        false)
 
   }
 

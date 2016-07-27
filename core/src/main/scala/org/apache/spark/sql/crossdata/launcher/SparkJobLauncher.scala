@@ -35,30 +35,54 @@ import scala.util.{Properties, Try}
 
 object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
 
-  def getSparkStreamingJob(xdContext: XDContext, crossdataConfig: Config, ephemeralTableName: String)
-                          (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
+  def getSparkStreamingJob(xdContext: XDContext,
+                           crossdataConfig: Config,
+                           ephemeralTableName: String)(
+      implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
     val streamingConfig = crossdataConfig.getConfig(StreamingConfPath)
-    val launcherConfig=crossdataConfig.getConfig(LauncherKey)
-    val sparkHome =
-      Properties.envOrNone("SPARK_HOME").orElse(Try(launcherConfig.getString(SparkHomeKey)).toOption).getOrElse(
-        throw new RuntimeException("You must set the $SPARK_HOME path in configuration or environment")
+    val launcherConfig = crossdataConfig.getConfig(LauncherKey)
+    val sparkHome = Properties
+      .envOrNone("SPARK_HOME")
+      .orElse(Try(launcherConfig.getString(SparkHomeKey)).toOption)
+      .getOrElse(
+          throw new RuntimeException(
+              "You must set the $SPARK_HOME path in configuration or environment")
       )
 
-    val eTable = xdContext.catalog.getEphemeralTable(ephemeralTableName).getOrElse(notFound(ephemeralTableName))
+    val eTable = xdContext.catalog
+      .getEphemeralTable(ephemeralTableName)
+      .getOrElse(notFound(ephemeralTableName))
     val appName = s"${eTable.name}_${UUID.randomUUID()}"
-    val zkConfigEncoded: String = encode(render(streamingConfig, ZooKeeperStreamingCatalogPath))
-    val catalogConfigEncoded: String = encode(render(crossdataConfig, CoreConfig.CatalogConfigKey))
+    val zkConfigEncoded: String =
+      encode(render(streamingConfig, ZooKeeperStreamingCatalogPath))
+    val catalogConfigEncoded: String =
+      encode(render(crossdataConfig, CoreConfig.CatalogConfigKey))
     val appArgs = Seq(eTable.name, zkConfigEncoded, catalogConfigEncoded)
     val master = streamingConfig.getString(SparkMasterKey)
     val jar = streamingConfig.getString(AppJarKey)
-    val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq).getOrElse(Seq.empty)
+    val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq)
+      .getOrElse(Seq.empty)
     val sparkConfig: Map[String, String] = sparkConf(streamingConfig)
     if (master.toLowerCase.contains("mesos")) {
       val hdfsPath = getHdfsPath(crossdataConfig, jar)
-      getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, hdfsPath, sparkConfig, jars)(executionContext)
+      getJob(sparkHome,
+             StreamingConstants.MainClass,
+             appArgs,
+             appName,
+             master,
+             hdfsPath,
+             sparkConfig,
+             jars)(executionContext)
 
     } else {
-      getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, jar, sparkConfig, jars)(executionContext)
+      getJob(sparkHome,
+             StreamingConstants.MainClass,
+             appArgs,
+             appName,
+             master,
+             jar,
+             sparkConfig,
+             jars)(executionContext)
     }
 
   }
@@ -86,22 +110,32 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
     s"hdfs://$hdfsMaster/$destPath/$jarName"
   }
 
-  def getSparkJob(launcherConfig:Config, master: String, main: String, args: Seq[String], jar: String, appName: String, submitOptions: Option[Map[String, String]])
-                 (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
+  def getSparkJob(launcherConfig: Config,
+                  master: String,
+                  main: String,
+                  args: Seq[String],
+                  jar: String,
+                  appName: String,
+                  submitOptions: Option[Map[String, String]])(
+      implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
 
-   val sparkHome =
-      Properties.envOrNone("SPARK_HOME").orElse(Try(launcherConfig.getString(SparkHomeKey)).toOption).getOrElse(
-        throw new RuntimeException("You must set the $SPARK_HOME path in configuration or environment")
+    val sparkHome = Properties
+      .envOrNone("SPARK_HOME")
+      .orElse(Try(launcherConfig.getString(SparkHomeKey)).toOption)
+      .getOrElse(
+          throw new RuntimeException(
+              "You must set the $SPARK_HOME path in configuration or environment")
       )
 
     //due to the parser doesn't allow middle-score symbol and spark submit properties are all with that, we are using '.' instead of '-'. So now we map to '-' again
     val sparkConfig = submitOptions.getOrElse(Map.empty) map {
       case (k, v) =>
-        val key=k.replaceAll("\\.", "-")
-        ("spark."+key, v)
+        val key = k.replaceAll("\\.", "-")
+        ("spark." + key, v)
     }
 
-    getJob(sparkHome, main, args, appName, master, jar, sparkConfig)(executionContext)
+    getJob(sparkHome, main, args, appName, master, jar, sparkConfig)(
+        executionContext)
   }
 
   def launchJob(sparkJob: SparkJob): Unit = {
@@ -115,8 +149,8 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
                      master: String,
                      jar: String,
                      sparkConf: Map[String, String] = Map.empty,
-                     externalJars: Seq[String] = Seq.empty
-                    )(executionContext: ExecutionContext): SparkJob = {
+                     externalJars: Seq[String] = Seq.empty)(
+      executionContext: ExecutionContext): SparkJob = {
     val sparkLauncher = new SparkLauncher()
       .setSparkHome(sparkHome)
       .setAppName(appName)
@@ -137,15 +171,26 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
   private def sparkConf(streamingConfig: Config): Map[String, String] =
     typeSafeConfigToMapString(streamingConfig, Option(SparkConfPath))
 
-
-  private def typeSafeConfigToMapString(config: Config, path: Option[String] = None): Map[String, String] = {
+  private def typeSafeConfigToMapString(
+      config: Config,
+      path: Option[String] = None): Map[String, String] = {
     val conf = path.map(config.getConfig).getOrElse(config)
-    conf.entrySet().toSeq.map(e =>
-      (s"${path.fold("")(_ + ".") + e.getKey}", conf.getAnyRef(e.getKey).toString)
-    ).toMap
+    conf
+      .entrySet()
+      .toSeq
+      .map(e =>
+            (s"${path.fold("")(_ + ".") + e.getKey}",
+             conf.getAnyRef(e.getKey).toString))
+      .toMap
   }
 
-  private def render(config: Config, path: String): String = config.getConfig(path).atPath(path).root.render(ConfigRenderOptions.concise)
+  private def render(config: Config, path: String): String =
+    config
+      .getConfig(path)
+      .atPath(path)
+      .root
+      .render(ConfigRenderOptions.concise)
 
-  private def encode(value: String): String = BaseEncoding.base64().encode(value.getBytes)
+  private def encode(value: String): String =
+    BaseEncoding.base64().encode(value.getBytes)
 }

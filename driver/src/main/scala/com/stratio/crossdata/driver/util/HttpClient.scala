@@ -53,27 +53,30 @@ class HttpClient(ctx: HttpClientContext) {
     val serverHttp = config.getCrossdataServerHttp
     val sessionUUID = session.id
 
-    for (
-      request <- createRequest(s"http://$serverHttp/upload/$sessionUUID", new File(path));
-      response <- http.singleRequest(request) map {
-        case res@HttpResponse(code, _, _, _) if code != StatusCodes.OK =>
-          throw new RuntimeException(s"Request failed, response code: $code")
-        case other => other
-      };
-      strictEntity <- response.entity.toStrict(5 seconds)
-    ) yield strictEntity.data.decodeString("UTF-8")
+    for (request <- createRequest(s"http://$serverHttp/upload/$sessionUUID",
+                                  new File(path));
+         response <- http.singleRequest(request) map {
+                      case res @ HttpResponse(code, _, _, _)
+                          if code != StatusCodes.OK =>
+                        throw new RuntimeException(
+                            s"Request failed, response code: $code")
+                      case other => other
+                    };
+         strictEntity <- response.entity.toStrict(5 seconds))
+      yield strictEntity.data.decodeString("UTF-8")
   }
 
   private def createEntity(file: File): Future[RequestEntity] = {
     require(file.exists())
     val fileIO = FileIO.fromFile(file)
-    val formData =
-      Multipart.FormData(
+    val formData = Multipart.FormData(
         Source.single(
-          Multipart.FormData.BodyPart(
-            "fileChunk",
-            HttpEntity(ContentTypes.`application/octet-stream`, file.length(), fileIO),
-            Map("filename" -> file.getName))))
+            Multipart.FormData.BodyPart(
+                "fileChunk",
+                HttpEntity(ContentTypes.`application/octet-stream`,
+                           file.length(),
+                           fileIO),
+                Map("filename" -> file.getName))))
     Marshal(formData).to[RequestEntity]
   }
 

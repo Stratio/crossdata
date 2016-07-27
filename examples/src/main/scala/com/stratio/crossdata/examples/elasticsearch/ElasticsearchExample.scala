@@ -37,9 +37,7 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
   val client = prepareEnvironment()
 
   withCrossdataContext { xdContext =>
-
-    xdContext.sql(
-      s"""|CREATE TEMPORARY TABLE $Type
+    xdContext.sql(s"""|CREATE TEMPORARY TABLE $Type
           |(id INT, age INT, description STRING, enrolled BOOLEAN, name STRING)
           |USING $SourceProvider
           |OPTIONS (
@@ -57,8 +55,13 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
 
     // Spark
     xdContext.sql(s"SELECT name as b FROM $Type WHERE age > 1 limit 7").show(5)
-    xdContext.sql(s"SELECT description as b FROM $Type WHERE description = 'Comment 4'").show(5)
-    xdContext.sql(s"SELECT description as b FROM $Type WHERE description = 'Comment 2' AND id = 2").show(5)
+    xdContext
+      .sql(
+          s"SELECT description as b FROM $Type WHERE description = 'Comment 4'")
+      .show(5)
+    xdContext
+      .sql(s"SELECT description as b FROM $Type WHERE description = 'Comment 2' AND id = 2")
+      .show(5)
 
   }
 
@@ -66,9 +69,8 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
 
   private def withCrossdataContext(commands: XDContext => Unit) = {
 
-    val sparkConf = new SparkConf().
-      setAppName("ElasticsearchExample").
-      setMaster("local[4]")
+    val sparkConf =
+      new SparkConf().setAppName("ElasticsearchExample").setMaster("local[4]")
 
     val sc = new SparkContext(sparkConf)
     try {
@@ -92,32 +94,37 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
   }
 
   private def createClient(): ElasticClient = {
-    val settings = Settings.settingsBuilder().put("cluster.name", s"$ElasticClusterName").build
-    ElasticClient.transport(settings, ElasticsearchClientUri(ElasticHost, ElasticNativePort))
+    val settings = Settings
+      .settingsBuilder()
+      .put("cluster.name", s"$ElasticClusterName")
+      .build
+    ElasticClient.transport(
+        settings,
+        ElasticsearchClientUri(ElasticHost, ElasticNativePort))
   }
 
   private def buildTable(client: ElasticClient): Unit = {
     client.execute {
       create index s"$Index" mappings (
-        mapping(s"$Type") fields(
-          "id" typed IntegerType,
-          "age" typed IntegerType,
-          "description" typed StringType,
-          "enrolled" typed BooleanType,
-          "name" typed StringType
+          mapping(s"$Type") fields (
+              "id" typed IntegerType,
+              "age" typed IntegerType,
+              "description" typed StringType,
+              "enrolled" typed BooleanType,
+              "name" typed StringType
           )
-        )
+      )
     }.await
 
     for (a <- 1 to 10) {
       client.execute {
-        index into s"$Index" / s"$Type" fields(
-          "id" -> a,
-          "age" -> (10 + a),
-          "description" -> s"Comment $a",
-          "enrolled" -> (a % 2 == 0),
-          "name" -> s"Name $a"
-          )
+        index into s"$Index" / s"$Type" fields (
+            "id" -> a,
+            "age" -> (10 + a),
+            "description" -> s"Comment $a",
+            "enrolled" -> (a % 2 == 0),
+            "name" -> s"Name $a"
+        )
       }.await
     }
 
@@ -134,4 +141,3 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
   }
 
 }
-
