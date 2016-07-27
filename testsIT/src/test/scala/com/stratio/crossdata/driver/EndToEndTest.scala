@@ -15,23 +15,31 @@
  */
 package com.stratio.crossdata.driver
 
+import java.util.UUID
+
 import com.stratio.crossdata.server.CrossdataServer
 import com.stratio.crossdata.test.BaseXDTest
+import org.apache.spark.sql.crossdata.XDSession
+import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
 import org.scalatest.BeforeAndAfterAll
 
 trait EndToEndTest extends BaseXDTest with BeforeAndAfterAll {
 
   var crossdataServer: Option[CrossdataServer] = None
+  var crossdataSession: Option[XDSession] = None
+  val SessionID: SessionID = UUID.randomUUID()
 
   def init() = {
     crossdataServer = Some(new CrossdataServer)
     crossdataServer.foreach(_.init(null))
     crossdataServer.foreach(_.start())
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID)))
 
   }
 
   def stop() = {
-    crossdataServer.get.xdContext.get.dropAllTables()
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.session(SessionID).get.dropAllTables()))
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.closeSession(SessionID)))
     crossdataServer.foreach(_.stop())
     crossdataServer.foreach(_.destroy())
   }

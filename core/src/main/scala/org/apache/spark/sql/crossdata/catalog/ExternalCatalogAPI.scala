@@ -24,7 +24,7 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
 private[crossdata] trait ExternalCatalogAPI extends XDAppsCatalog{
 
   def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit
-  def persistView(tableIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit
+  def persistView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit
   def persistIndex(crossdataIndex: CrossdataIndex): Unit
 
   def dropTable(tableIdentifier: TableIdentifier): Unit

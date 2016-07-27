@@ -17,6 +17,7 @@ package com.stratio.crossdata.driver
 
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.FieldMetadata
+import com.stratio.crossdata.driver.test.Utils._
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -24,69 +25,71 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class FlattenedTablesIT extends MongoWithSharedContext {
 
+  implicit val configWithFlattening: Option[DriverConf] = Some(new DriverConf().setFlattenTables(true))
+
   "The Driver" should " List table's description with nested and array fields flattened" in {
     assumeCrossdataUpAndRunning
 
-    val flattenedDriver = Driver.getOrCreate(new DriverConf().setFlattenTables(true))
+    withDriverDo { flattenedDriver =>
 
-    //Experimentation
-    val result:Seq[FieldMetadata] = flattenedDriver.describeTable(Some(Database), Collection)
+      //Experimentation
+      val result: Seq[FieldMetadata] = flattenedDriver.describeTable(Some(Database), Collection)
 
-    //Expectations
-    result should contain (new FieldMetadata("address.zip", IntegerType))
-    result should contain (new FieldMetadata("account.details.bank", StringType))
-    result should contain (new FieldMetadata("account.details.bank", StringType))
-    result should contain (new FieldMetadata("grades.FP", DoubleType))
+      //Expectations
+      result should contain(new FieldMetadata("address.zip", IntegerType))
+      result should contain(new FieldMetadata("account.details.bank", StringType))
+      result should contain(new FieldMetadata("account.details.bank", StringType))
+      result should contain(new FieldMetadata("grades.FP", DoubleType))
 
-    flattenedDriver.close()
+    }
   }
 
   it should " List table's description with nested fields Not flattened" in {
     assumeCrossdataUpAndRunning
 
-    val driver = Driver.getOrCreate()
+    withDriverDo { flattenedDriver =>
 
-    //Experimentation
-    val result:Seq[FieldMetadata] = driver.describeTable(Some(Database), Collection)
+      //Experimentation
+      val result: Seq[FieldMetadata] = flattenedDriver.describeTable(Some(Database), Collection)
 
-    //Expectations
-    val addressType = StructType(Seq(StructField("street", StringType), StructField("city", StringType), StructField("zip", IntegerType)))
-    val detailAccount = StructType(Seq(StructField("bank", StringType), StructField("office", IntegerType)))
-    val accountType = StructType(Seq(StructField("number", IntegerType), StructField("details", detailAccount)))
+      //Expectations
+      val addressType = StructType(Seq(StructField("street", StringType), StructField("city", StringType), StructField("zip", IntegerType)))
+      val detailAccount = StructType(Seq(StructField("bank", StringType), StructField("office", IntegerType)))
+      val accountType = StructType(Seq(StructField("number", IntegerType), StructField("details", detailAccount)))
 
-    result should contain (new FieldMetadata("address", addressType))
-    result should contain (new FieldMetadata("account", accountType))
+      result should contain(new FieldMetadata("address", addressType))
+      result should contain(new FieldMetadata("account", accountType))
 
-    driver.close()
+    } (Some(new DriverConf().setFlattenTables(false)))
   }
 
 
   it should " Query with Flattened Fields" in {
     assumeCrossdataUpAndRunning
 
-    val flattenedDriver = Driver.getOrCreate(new DriverConf().setFlattenTables(true))
+    withDriverDo { flattenedDriver =>
 
-    //Experimentation
-    val result= flattenedDriver.sql(s"SELECT address.street from $Database.$Collection").resultSet
+      //Experimentation
+      val result = flattenedDriver.sql(s"SELECT address.street from $Database.$Collection").resultSet
 
-    //Expectations
-    result.head.toSeq(0).toString should fullyMatch regex "[0-9]+th Avenue"
+      //Expectations
+      result.head.toSeq(0).toString should fullyMatch regex "[0-9]+th Avenue"
 
-    flattenedDriver.close()
+    }
   }
 
   it should " Query with Flattened Fields On Filters" in {
     assumeCrossdataUpAndRunning
 
-    val flattenedDriver = Driver.getOrCreate(new DriverConf().setFlattenTables(true))
+    withDriverDo { flattenedDriver =>
 
-    //Experimentation
-    val result= flattenedDriver.sql(s"SELECT description FROM $Database.$Collection WHERE address.street = '5th Avenue'").resultSet
+      //Experimentation
+      val result = flattenedDriver.sql(s"SELECT description FROM $Database.$Collection WHERE address.street = '5th Avenue'").resultSet
 
-    //Expectations
-    result.head.toSeq(0).toString should be equals "description5"
+      //Expectations
+      result.head.toSeq(0).toString should be equals "description5"
 
-    flattenedDriver.close()
+    }
   }
 
 }

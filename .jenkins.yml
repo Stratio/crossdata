@@ -37,13 +37,14 @@ ITSERVICES:
       env:
         - ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181
 
+
+
 ITPARAMETERS: >
     -Dcassandra.hosts.0=%%CASSANDRA
     -Dmongo.hosts.0=%%MONGODB
     -Delasticsearch.hosts.0=%%ELASTICSEARCH
     -Delasticsearch.cluster=%%JUID
     -Dspark.master=spark://%%SPARK:7077
-    -Dlauncher.sparkHome=
     -Dhdfs.namenode=hdfs://%%HADOOP:8020
     -Dhdfs.user="Stratio"
     -Djars.externalJars="/root"
@@ -51,3 +52,4 @@ ITPARAMETERS: >
     -Dstreaming.catalog.zookeeper.connectionString=%%ZOOKEEPER:2181
     -Dstreaming.receiver.kafka.connection=%%KAFKA:9092
     -Dstreaming.receiver.zookeeper.connectionString=%%ZOOKEEPER:2181
+    -Dlauncher.sparkHome=/opt/sds/spark/
