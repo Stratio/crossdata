@@ -35,6 +35,7 @@
     <properties>
         <crossdata.version>${project.version}</crossdata.version>
         <scala.binary.version>2.10</scala.binary.version>
+        <guava.version>18.0</guava.version>
     </properties>
 
     <dependencies>
@@ -58,17 +59,23 @@
             <artifactId>crossdata-elasticsearch_${scala.binary.version}</artifactId>
             <version>${crossdata.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-driver_${scala.binary.version}</artifactId>
             <version>${crossdata.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
+        <directory>${project.basedir}/target/${scala.binary.version}</directory>
+        <outputDirectory>${project.build.directory}/classes</outputDirectory>
+        <testOutputDirectory>${project.build.directory}/test-classes</testOutputDirectory>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
