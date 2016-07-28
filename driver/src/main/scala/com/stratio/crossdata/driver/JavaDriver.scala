@@ -34,7 +34,12 @@ class JavaDriver private(driverConf: DriverConf,
   def this() = this(new DriverConf)
 
   def this(user: String, password: String, driverConf: DriverConf) =
-    this(driverConf, Authentication(user, password))
+    this(driverConf, Authentication(user, Some(password)))
+
+
+  def this(user: String, driverConf: DriverConf) =
+    this(driverConf, Authentication(user))
+
 
   def this(user: String, password: String) =
     this(user, password, new DriverConf)
