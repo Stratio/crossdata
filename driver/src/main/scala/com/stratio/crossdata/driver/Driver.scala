@@ -69,7 +69,7 @@ object Driver {
     newSession(user, password, defaultDriverConf)
 
   def newSession(user: String, password: String, driverConf: DriverConf): Driver =
-    newSession(driverConf, Authentication(user, Some(password)))
+    newSession(driverConf, Authentication(user, Option(password)))
 
   def newSession(seedNodes: java.util.List[String]): Driver =
     newSession(seedNodes, defaultDriverConf)

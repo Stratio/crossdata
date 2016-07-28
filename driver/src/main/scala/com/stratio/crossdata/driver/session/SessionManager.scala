@@ -27,7 +27,4 @@ object SessionManager {
 
 }
 
-case class Authentication(user: String, password: Option[String]=None)
-
-
-
+case class Authentication(user: String, password: Option[String] = None)
