@@ -30,7 +30,7 @@ object PostgreSQLXDCatalog {
   val Driver = "jdbc.driver"
   val Url = "jdbc.url"
   val Database = "jdbc.db.name"
-  val Table = "jdbc.db.table"
+  val TableWithTableMetadataConfig = "jdbc.db.table"
   val TableWithViewMetadataConfig = "jdbc.db.view"
   val TableWithAppMetadataConfig = "jdbc.db.app"
   val TableWithIndexMetadataConfig = "jdbc.db.index"
@@ -76,7 +76,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
   private val config = XDContext.catalogConfig
 
   private val db = config.getString(Database)
-  private val table = config.getString(Table)
+  private val table = config.getString(TableWithTableMetadataConfig)
   private val tableWithViewMetadata = config.getString(TableWithViewMetadataConfig)
   private val tableWithAppJars = config.getString(TableWithAppMetadataConfig)
   private val tableWithIndexMetadata = config.getString(TableWithIndexMetadataConfig)

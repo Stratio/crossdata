@@ -33,7 +33,7 @@ object MySQLXDCatalog {
   val TableWithTableMetadataConfig = "jdbc.db.table"
   val TableWithViewMetadataConfig = "jdbc.db.view"
   val TableWithAppMetadataConfig = "jdbc.db.app"
-  val TableWithIndexMetadataConfig = "jdbc.db.indexes"
+  val TableWithIndexMetadataConfig = "jdbc.db.index"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
 
