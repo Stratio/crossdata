@@ -25,8 +25,6 @@ import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 trait EphemeralTableDAO extends GenericDAOComponent[EphemeralTableModel]
 with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
 
-  val ephemeralTableIdField = "EphemeralTableID"
-
   override implicit val formats = json4sJacksonFormats
 
   override val dao: DAO = new GenericDAO(Option(EphemeralTablesPath))

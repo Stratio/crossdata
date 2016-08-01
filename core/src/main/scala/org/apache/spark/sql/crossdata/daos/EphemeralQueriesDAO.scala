@@ -26,8 +26,7 @@ import org.json4s.Formats
 trait EphemeralQueriesDAO extends GenericDAOComponent[EphemeralQueryModel]
 with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
 
-  private val jacksonFormats: Formats = json4sJacksonFormats
-  override implicit val formats = jacksonFormats
+  override implicit val formats = json4sJacksonFormats
 
   override val dao: DAO = new GenericDAO(Option(EphemeralQueriesPath))
 }

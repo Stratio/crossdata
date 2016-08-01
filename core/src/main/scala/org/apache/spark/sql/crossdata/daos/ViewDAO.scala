@@ -40,7 +40,6 @@ import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 trait ViewDAO extends GenericDAOComponent[ViewModel]
 with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
 
-  val viewID = "viewID"
 
   override implicit val formats = json4sJacksonFormats
 
