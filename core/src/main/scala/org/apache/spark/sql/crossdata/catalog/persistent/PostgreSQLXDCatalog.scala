@@ -77,7 +77,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: Cat
   import PostgreSQLXDCatalog._
   import XDCatalog._
 
-  private val config = XDContext.catalogConfig
+  protected[crossdata] val config = XDContext.catalogConfig
 
   private val db = config.getString(Database)
   private val tablesPrefix = Try(s"${config.getString(ClusterNameConfig)}_") getOrElse ("") //clustername_

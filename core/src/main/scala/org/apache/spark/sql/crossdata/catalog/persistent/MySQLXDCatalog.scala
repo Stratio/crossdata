@@ -28,12 +28,12 @@ import scala.util.Try
 
 object MySQLXDCatalog {
   // SQLConfig
-  val Driver = "jdbc.driver"
-  val Url = "jdbc.url"
-  val Database = "jdbc.db.name"
-  val User = "jdbc.db.user"
-  val Pass = "jdbc.db.pass"
-  val ClusterNameConfig = "clustername"
+  val Driver = "crossdata-core.jdbc.driver"
+  val Url = "crossdata-core.jdbc.url"
+  val Database = "crossdata-core.jdbc.db.name"
+  val User = "crossdata-core.jdbc.db.user"
+  val Pass = "crossdata-core.jdbc.db.pass"
+  val ClusterNameConfig = "crossdata-core.catalog.clustername"
 
   //Default tables
   val DefaultTablesMetadataTable = "crossdataTables"
@@ -79,13 +79,13 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
   import XDCatalog._
 
 
-  private val config = XDContext.catalogConfig
-  private val db = config.getString(Database)
-  private val tablesPrefix = Try(s"${config.getString(ClusterNameConfig)}_") getOrElse ("") //clustername_
-  private val tableWithTableMetadata = s"${tablesPrefix}_$DefaultTablesMetadataTable"
-  private val tableWithViewMetadata = s"${tablesPrefix}_$DefaultViewsMetadataTable"
-  private val tableWithAppJars = s"${tablesPrefix}_$DefaultAppsMetadataTable"
-  private val tableWithIndexMetadata = s"${tablesPrefix}_$DefaultIndexesMetadataTable"
+  protected[crossdata] lazy val config = XDContext.catalogConfig
+  protected[crossdata] lazy val db = config.getString(Database)
+  protected[crossdata] lazy val tablesPrefix = Try(s"${config.getString(ClusterNameConfig)}_") getOrElse ("") //clustername_
+  protected[crossdata] lazy val tableWithTableMetadata = s"$tablesPrefix$DefaultTablesMetadataTable"
+  protected[crossdata] lazy val tableWithViewMetadata = s"$tablesPrefix$DefaultViewsMetadataTable"
+  protected[crossdata] lazy val tableWithAppJars = s"$tablesPrefix$DefaultAppsMetadataTable"
+  protected[crossdata] lazy val tableWithIndexMetadata = s"$tablesPrefix$DefaultIndexesMetadataTable"
 
   @transient lazy val connection: Connection = {
 
