@@ -42,5 +42,5 @@ with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer 
 
   override implicit val formats = json4sJacksonFormats
 
-  override val dao: DAO = new GenericDAO(Option(IndexesPath))
+  override val dao: DAO = new GenericDAO(Option(config.getString(ClusterNameConfig,"")+"_"+IndexesPath))
 }

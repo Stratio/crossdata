@@ -19,6 +19,8 @@ import java.util.UUID
 
 object DAOConstants {
 
+  val ClusterNameConfig = "catalog.clustername"
+
   val BaseZKPath = "stratio/crossdata"
   val TablesPath = s"$BaseZKPath/tables"
   val ViewsPath = s"$BaseZKPath/views"

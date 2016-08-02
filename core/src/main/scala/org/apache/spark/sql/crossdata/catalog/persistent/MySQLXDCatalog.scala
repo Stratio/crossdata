@@ -21,21 +21,25 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
-import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, StringNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, StringNormalized, TableIdentifierNormalized, XDCatalog, persistent}
 
 import scala.annotation.tailrec
+import scala.util.Try
 
 object MySQLXDCatalog {
   // SQLConfig
   val Driver = "jdbc.driver"
   val Url = "jdbc.url"
   val Database = "jdbc.db.name"
-  val TableWithTableMetadataConfig = "jdbc.db.table"
-  val TableWithViewMetadataConfig = "jdbc.db.view"
-  val TableWithAppMetadataConfig = "jdbc.db.app"
-  val TableWithIndexMetadataConfig = "jdbc.db.index"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
+  val ClusterNameConfig = "clustername"
+
+  //Default tables
+  val DefaultTablesMetadataTable = "crossdataTables"
+  val DefaultViewsMetadataTable = "crossdataViews"
+  val DefaultAppsMetadataTable = "crossdataJars"
+  val DefaultIndexesMetadataTable = "crossdataIndexes"
 
   // CatalogFields
   val DatabaseField = "db"
@@ -77,10 +81,11 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
 
   private val config = XDContext.catalogConfig
   private val db = config.getString(Database)
-  private val tableWithTableMetadata = config.getString(TableWithTableMetadataConfig)
-  private val tableWithViewMetadata = config.getString(TableWithViewMetadataConfig)
-  private val tableWithAppJars = config.getString(TableWithAppMetadataConfig)
-  private val tableWithIndexMetadata = config.getString(TableWithIndexMetadataConfig)
+  private val tablesPrefix = Try(s"${config.getString(ClusterNameConfig)}_") getOrElse ("") //clustername_
+  private val tableWithTableMetadata = s"${tablesPrefix}_$DefaultTablesMetadataTable"
+  private val tableWithViewMetadata = s"${tablesPrefix}_$DefaultViewsMetadataTable"
+  private val tableWithAppJars = s"${tablesPrefix}_$DefaultAppsMetadataTable"
+  private val tableWithIndexMetadata = s"${tablesPrefix}_$DefaultIndexesMetadataTable"
 
   @transient lazy val connection: Connection = {
 
