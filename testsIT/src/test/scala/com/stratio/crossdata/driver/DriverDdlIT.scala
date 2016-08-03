@@ -17,6 +17,7 @@ package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
+import com.stratio.crossdata.driver.test.Utils
 import com.stratio.datasource.mongodb.config.MongodbConfig
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -26,54 +27,59 @@ import scala.language.postfixOps
 @RunWith(classOf[JUnitRunner])
 class DriverDdlIT extends MongoWithSharedContext {
 
+  import Utils._
+
   it should "allow to import tables" in {
-    val driver = Driver.getOrCreate()
 
-    val mongoImportOptions = Map(
-      MongodbConfig.Host -> s"$MongoHost:$MongoPort",
-      MongodbConfig.Database -> Database,
-      MongodbConfig.Collection -> Collection
-    )
-    driver.importTables("mongodb", mongoImportOptions).resultSet.head.getSeq(0) shouldBe Seq(Database,Collection)
-
+    withDriverDo { driver =>
+      val mongoImportOptions = Map(
+        MongodbConfig.Host -> s"$MongoHost:$MongoPort",
+        MongodbConfig.Database -> Database,
+        MongodbConfig.Collection -> Collection
+      )
+      driver.importTables("mongodb", mongoImportOptions).resultSet.head.getSeq(0) shouldBe Seq(Database, Collection)
+    }
   }
 
   it should "allow to create tables" in {
 
-    val driver = Driver.getOrCreate()
+    withDriverDo { driver =>
 
-    val crtTableResult = driver.createTable(
-      name = "crtTable",
-      dataSourceProvider = "org.apache.spark.sql.json",
-      schema = None,
-      options = Map("path" -> Paths.get(getClass.getResource("/tabletest.json").toURI).toString),
-      isTemporary = true).resultSet
+      val crtTableResult = driver.createTable(
+        name = "crtTable",
+        dataSourceProvider = "org.apache.spark.sql.json",
+        schema = None,
+        options = Map("path" -> Paths.get(getClass.getResource("/tabletest.json").toURI).toString),
+        isTemporary = true).resultSet
 
-    driver.listTables() should contain("crtTable", None)
+      driver.listTables() should contain("crtTable", None)
+    }
   }
 
   it should "allow to drop tables" in {
-    val driver = Driver.getOrCreate()
+    withDriverDo { driver =>
 
-    driver.sql(
-      s"CREATE TEMPORARY TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
-    ).waitForResult()
+      driver.sql(
+        s"CREATE TEMPORARY TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
+      ).waitForResult()
 
-    driver.dropTable("jsonTable3").waitForResult()
+      driver.dropTable("jsonTable3").waitForResult()
 
-    driver.listTables() should not contain ("jsonTable3", None)
+      driver.listTables() should not contain("jsonTable3", None)
+    }
   }
 
   it should "allow to drop all tables" in {
-    val driver = Driver.getOrCreate()
+    withDriverDo { driver =>
 
-    driver.sql(
-      s"CREATE TEMPORARY TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
-    ).waitForResult()
+      driver.sql(
+        s"CREATE TEMPORARY TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
+      ).waitForResult()
 
-    driver.dropAllTables().waitForResult()
+      driver.dropAllTables().waitForResult()
 
-    driver.listTables() should not contain ("jsonTable3", None)
+      driver.listTables() should not contain("jsonTable3", None)
+    }
   }
 
 }

@@ -39,7 +39,7 @@ import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.expressions.aggregate.Count
 import org.apache.spark.sql.catalyst.expressions.{Alias, AttributeReference, GenericRowWithSchema, Literal}
 import org.apache.spark.sql.catalyst.plans.logical._
-import org.apache.spark.sql.crossdata.execution.{EvaluateNativeUDF, NativeUDF}
+import org.apache.spark.sql.crossdata.catalyst.{EvaluateNativeUDF, NativeUDF}
 import org.apache.spark.sql.sources.{BaseRelation, Filter, InsertableRelation, PrunedFilteredScan}
 import org.apache.spark.sql.types.{StructType, _}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, sources}
@@ -321,8 +321,6 @@ class CassandraXDSourceRelation(tableRef: TableRef,
   }
 
 }
-
-//TODO buildScan => CassandraTableScanRDD[CassandraSQLRow] => fetchTokenRange
 
 
 object CassandraXDSourceRelation {

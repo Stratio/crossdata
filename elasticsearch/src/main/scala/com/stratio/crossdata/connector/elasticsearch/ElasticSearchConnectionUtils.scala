@@ -80,6 +80,15 @@ object ElasticSearchConnectionUtils {
 
   }
 
+  def numberOfTypes(options: Map[String, String]): Int = {
+    val adminClient = buildClient(options).admin.indices()
+
+    val indexType: Option[(String, String)] =  extractIndexAndType(options)
+    val index = indexType.map(_._1).orElse(options.get(ElasticIndex)) getOrElse sys.error("Index not found")
+
+    adminClient.prepareGetIndex().addIndices(index).get().mappings().get(index).size()
+  }
+
   private def listIndexTypes(adminClient: IndicesAdminClient, indexName: String, typeName: Option[String] = None): Seq[Table] = {
 
     val elasticBuilder = adminClient.prepareGetIndex().addIndices(indexName)

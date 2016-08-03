@@ -19,6 +19,8 @@ import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.catalyst.parser.XDDdlParser
+import org.apache.spark.sql.crossdata.catalyst.streaming._
 import org.apache.spark.sql.crossdata.config.StreamingConfig
 import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
 import org.apache.spark.sql.types.{StringType, StructField, StructType}

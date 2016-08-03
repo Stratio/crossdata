@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>parent_2.10</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <version>1.6.0-SNAPSHOT</version>
     </parent>
     <groupId>com.stratio.crossdata.connector</groupId>
     <artifactId>crossdata-mongodb_2.10</artifactId>
@@ -35,7 +35,6 @@
         <mongodb.datasource.version>0.11.2</mongodb.datasource.version>
     </properties>
 
-    <!--TODO exclude spark dependencies from crossdata-ng-->
     <dependencies>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>

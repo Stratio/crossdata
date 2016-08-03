@@ -23,9 +23,9 @@ class MongoCreateExternalTableIT extends MongoWithSharedContext {
 
   "The Mongo connector" should "execute a CREATE EXTERNAL TABLE" in {
 
-    val createTableQUeryString =
+    val createTableQueryString =
       s"""|CREATE EXTERNAL TABLE $Database.newtable (id Integer, name String)
-      USING $SourceProvider
+          |USING $SourceProvider
           |OPTIONS (
           |host '$MongoHost:$MongoPort',
           |database '$Database',
@@ -33,7 +33,7 @@ class MongoCreateExternalTableIT extends MongoWithSharedContext {
           |)
       """.stripMargin.replaceAll("\n", " ")
     //Experimentation
-    val result = sql(createTableQUeryString).collect()
+    val result = sql(createTableQueryString).collect()
 
     //Expectations
     val table = xdContext.table(s"$Database.newtable")

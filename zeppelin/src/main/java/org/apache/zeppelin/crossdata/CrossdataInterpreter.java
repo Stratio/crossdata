@@ -70,7 +70,7 @@ public class CrossdataInterpreter extends Interpreter {
 
     @Override
     public void close() {
-        driver.stop();
+        driver.closeSession();
     }
 
 

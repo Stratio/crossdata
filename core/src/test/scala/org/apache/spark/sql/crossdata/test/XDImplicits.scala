@@ -24,7 +24,7 @@ import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.SpecificMutableRow
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.types.{StructField, _}
-import org.apache.spark.sql.{ColumnName, DataFrameHolder, Row}
+import org.apache.spark.sql.{ColumnName, DataFrameHolder}
 import org.apache.spark.unsafe.types.UTF8String
 
 import scala.language.implicitConversions
@@ -34,7 +34,7 @@ import scala.reflect.runtime.universe.TypeTag
  * A collection of implicit methods for converting common Scala objects into [[org.apache.spark.sql.crossdata.XDDataFrame]]s.
  */
 private[sql] abstract class XDImplicits {
-  // TODO update with Spark 1.5
+
   protected def _xdContext: XDContext
 
   /**

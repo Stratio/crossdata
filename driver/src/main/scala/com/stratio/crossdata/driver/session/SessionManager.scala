@@ -23,9 +23,8 @@ import com.stratio.crossdata.common.security.Session
 object SessionManager {
 
   def createSession(auth: Authentication, clientRef: ActorRef): Session =
-    Session(UUID.randomUUID.toString, clientRef)
+    Session(UUID.randomUUID, clientRef)
 
 }
 
-case class Authentication(user: String, password: String)
-
+case class Authentication(user: String, password: Option[String] = None)

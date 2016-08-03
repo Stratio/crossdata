@@ -88,6 +88,10 @@ case class AddAppCommand(path: String,alias:String,clss:String,
 }
 case class ClusterStateCommand() extends Command
 
+case class OpenSessionCommand() extends Command
+
+case class CloseSessionCommand() extends Command
+
 trait ControlCommand extends Command
 
 private[crossdata] case class GetJobStatus() extends ControlCommand
@@ -106,8 +110,9 @@ private[crossdata] case class QueryCancelledReply(requestId: UUID) extends Serve
 
 private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
 
-
 private[crossdata] case class ClusterStateReply(requestId: UUID, clusterState: CurrentClusterState) extends ServerReply
+
+private[crossdata] case class OpenSessionReply(requestId: UUID, isOpen: Boolean) extends ServerReply
 
 private[crossdata] case class AddHdfsFileReply(requestId: UUID, hdfsRoute: String) extends ServerReply
 

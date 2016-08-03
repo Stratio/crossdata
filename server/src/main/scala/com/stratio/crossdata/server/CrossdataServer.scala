@@ -24,12 +24,13 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
 import akka.stream.ActorMaterializer
+import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
-import com.stratio.crossdata.server.config.{ServerActorConfig, ServerConfig}
+import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata
-import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, HazelcastSessionProvider, XDSessionProvider}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
@@ -41,7 +42,7 @@ class CrossdataServer extends Daemon with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
   var system: Option[ActorSystem] = None
-  var xdContext: Option[XDContext] = None
+  var sessionProviderOpt: Option[XDSessionProvider] = None
   var bindingFuture: Option[Future[ServerBinding]] = None
 
   override def init(p1: DaemonContext): Unit = ()
@@ -58,31 +59,35 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     val filteredSparkParams = metricsPath.fold(sparkParams)(m => checkMetricsFile(sparkParams, m.get))
 
-    xdContext = {
-      val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
-      Some(new XDContext(sparkContext))
+    val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
+
+    sessionProviderOpt = Some {
+      if (isHazelcastEnabled)
+        new HazelcastSessionProvider(sparkContext, config)
+      else
+        new BasicSessionProvider(sparkContext, config)
     }
 
-    require(xdContext.isDefined, "Crossdata context must be started")
+    val sessionProvider = sessionProviderOpt.getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
 
-    //Check if the catalog is "on line"
-    val ctx=xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started"))
-    require(ctx.checkCatalogConnection,"Crossdata Server cannot be started because there isn't a connection with the Catalog")
 
     system = Some(ActorSystem(clusterName, config))
 
-    val serverActorConfig = ServerActorConfig(completedJobTTL, retryNoAttempts, retryCountWindow)
 
     system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
       val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
       val serverActor = actorSystem.actorOf(
         RoundRobinPool(minServerActorInstances, Some(resizer)).props(
-          Props(classOf[ServerActor],
+          Props(
+            classOf[ServerActor],
             Cluster(actorSystem),
-            xdContext.getOrElse(throw new RuntimeException("Crossdata context cannot be started")),
-            serverActorConfig)),
+            sessionProvider)),
         actorName)
-      val resourceManagerActor=actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem),xdContext.get))
+
+      val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
+      ClusterReceptionistExtension(actorSystem).registerService(clientMonitor)
+
+      val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
       ClusterReceptionistExtension(actorSystem).registerService(serverActor)
       ClusterReceptionistExtension(actorSystem).registerService(resourceManagerActor)
 
@@ -90,8 +95,7 @@ class CrossdataServer extends Daemon with ServerConfig {
       implicit val materializer = ActorMaterializer()
       val httpServerActor = new CrossdataHttpServer(config, serverActor, actorSystem)
       val host = config.getString(ServerConfig.Host)
-      val port = config.getInt(ServerConfig.httpServerPort)
-      // TODO RestPort should be configurable
+      val port = config.getInt(ServerConfig.HttpServerPort)
       bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))
     }
 
@@ -109,7 +113,9 @@ class CrossdataServer extends Daemon with ServerConfig {
   }
 
   override def stop(): Unit = {
-    xdContext.foreach(_.sc.stop())
+    sessionProviderOpt.foreach(_.close())
+
+    sessionProviderOpt.foreach(_.sc.stop())
 
     system.foreach { actSystem =>
       implicit val exContext = actSystem.dispatcher

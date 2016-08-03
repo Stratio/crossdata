@@ -34,7 +34,12 @@ class JavaDriver private(driverConf: DriverConf,
   def this() = this(new DriverConf)
 
   def this(user: String, password: String, driverConf: DriverConf) =
-    this(driverConf, Authentication(user, password))
+    this(driverConf, Authentication(user, Option(password)))
+
+
+  def this(user: String, driverConf: DriverConf) =
+    this(driverConf, Authentication(user))
+
 
   def this(user: String, password: String) =
     this(user, password, new DriverConf)
@@ -48,7 +53,7 @@ class JavaDriver private(driverConf: DriverConf,
 
   private lazy val logger = LoggerFactory.getLogger(classOf[JavaDriver])
 
-  private val scalaDriver = Driver.getOrCreate(driverConf, auth)
+  private val scalaDriver = Driver.newSession(driverConf, auth)
 
   /**
    * Sync execution with defaults: timeout 10 sec, nr-retries 2
@@ -98,15 +103,13 @@ class JavaDriver private(driverConf: DriverConf,
   def isClusterAlive(): Boolean =
     scalaDriver.isClusterAlive()
 
-  def stop(): Unit = {
-    scalaDriver.stop()
-  }
+  def closeSession(): Unit =
+    scalaDriver.closeSession()
+
 
   def addJar(path:String): Unit =
     scalaDriver.addJar(path)
 
-  @deprecated("Close will be removed from public API. Use stop instead")
-  def close() = stop()
 
 }
 

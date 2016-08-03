@@ -18,16 +18,23 @@ package com.stratio.crossdata.server.config
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-import com.typesafe.config.{ConfigValueFactory, Config, ConfigFactory}
-import scala.collection.JavaConversions._
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.apache.log4j.Logger
+import org.apache.spark.sql.crossdata.config.CoreConfig
 
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.util.Try
 
 object ServerConfig {
+
   val ServerBasicConfig = "server-reference.conf"
   val ParentConfigName = "crossdata-server"
+
+
+  val SparkSqlConfigPrefix = CoreConfig.SparkSqlConfigPrefix
+
+  val ClientExpectedHeartbeatPeriod = "config.client.ExpectedHeartbeatPeriod"
 
   //  akka cluster values
   val ServerClusterNameKey = "config.cluster.name"
@@ -43,13 +50,15 @@ object ServerConfig {
   val FinishedJobTTL = "config.jobs.finished.ttl_ms"
 
   // Host
-  val Host="akka.remote.netty.tcp.hostname"
+  val Host = "akka.remote.netty.tcp.hostname"
 
   // Jars Repo
-  val repoJars="config.externalJarsRepo"
+  val RepoJars = "config.externalJarsRepo"
 
   // Http Server Port
-  val httpServerPort="config.HttpServerPort"
+  val HttpServerPort = "config.HttpServerPort"
+
+  val IsHazelcastProviderEnabledProperty = "config.hazelcast.enabled"
 }
 
 trait ServerConfig extends NumberActorConfig {
@@ -62,11 +71,18 @@ trait ServerConfig extends NumberActorConfig {
   lazy val retryNoAttempts: Int = Try(config.getInt(ServerConfig.ServerRetryMaxAttempts)).getOrElse(0)
   lazy val retryCountWindow: Duration = Try(
     config.getDuration(ServerConfig.ServerRetryCountWindow, TimeUnit.MILLISECONDS)
-  ) map(Duration(_, TimeUnit.MILLISECONDS)) getOrElse(Duration.Inf)
+  ) map (Duration(_, TimeUnit.MILLISECONDS)) getOrElse (Duration.Inf)
 
-  lazy val completedJobTTL: Duration = Try(
-    config.getDuration(ServerConfig.FinishedJobTTL, TimeUnit.MILLISECONDS)
-  ) map(FiniteDuration(_, TimeUnit.MILLISECONDS)) getOrElse(Duration.Inf)
+  lazy val completedJobTTL: Duration = extractDurationField(ServerConfig.FinishedJobTTL)
+
+  lazy val expectedClientHeartbeatPeriod: FiniteDuration =
+    extractDurationField(ServerConfig.ClientExpectedHeartbeatPeriod) match {
+      case d: FiniteDuration =>
+        Seq(11 seconds, d) max // Alarm period need to be at least twice the hear beat period (5 seconds)
+      case _ => 2 minute // Default value
+    }
+
+  lazy val isHazelcastEnabled = config.getBoolean(ServerConfig.IsHazelcastProviderEnabledProperty)
 
   override val config: Config = {
 
@@ -106,10 +122,17 @@ trait ServerConfig extends NumberActorConfig {
     }
 
     // System properties
-    defaultConfig = ConfigFactory.parseProperties(System.getProperties).withFallback(defaultConfig)
+    val systemPropertiesConfig =
+      Try(
+        ConfigFactory.parseProperties(System.getProperties).getConfig(ServerConfig.ParentConfigName)
+      ).getOrElse(
+        ConfigFactory.parseProperties(System.getProperties)
+      )
+
+    defaultConfig = systemPropertiesConfig.withFallback(defaultConfig)
 
     val finalConfig = {
-      if(defaultConfig.hasPath("akka.cluster.server-nodes")){
+      if (defaultConfig.hasPath("akka.cluster.server-nodes")) {
         val serverNodes = defaultConfig.getString("akka.cluster.server-nodes")
         defaultConfig.withValue(
           "akka.cluster.seed-nodes",
@@ -122,6 +145,9 @@ trait ServerConfig extends NumberActorConfig {
     ConfigFactory.load(finalConfig)
   }
 
+  private def extractDurationField(key: String): Duration = Try(
+    config.getDuration(key, TimeUnit.MILLISECONDS)
+  ) map (FiniteDuration(_, TimeUnit.MILLISECONDS)) getOrElse (Duration.Inf)
 
 }
 
