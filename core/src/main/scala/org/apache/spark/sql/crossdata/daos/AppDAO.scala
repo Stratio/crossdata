@@ -38,9 +38,9 @@ import org.apache.spark.sql.crossdata.models.{AppModel, ViewModel}
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
 trait AppDAO extends GenericDAOComponent[AppModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer with PrefixedDAO {
 
   override implicit val formats = json4sJacksonFormats
 
-  override val dao: DAO = new GenericDAO(Option(config.getString(ClusterNameConfig,"")+"_"+AppsPath))
+  override val dao: DAO = new GenericDAO(Option(prefix+AppsPath))
 }

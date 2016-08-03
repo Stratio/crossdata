@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.daos.impl
+package org.apache.spark.sql.crossdata.daos
 
-import com.typesafe.config.Config
-import org.apache.spark.sql.crossdata.daos.DAOConstants._
-import org.apache.spark.sql.crossdata.daos.IndexDAO
-
-import scala.util.Try
-
-class IndexTypesafeDAO(configuration: Config) extends IndexDAO {
-
-  def prefix:String = Try(configuration.getString(PrefixPermantCatalogsConfig)+"_") getOrElse ("")
-
-  override val config = new TypesafeConfig(Option(configuration))
-
+/**
+  * Created by usarasola on 3/08/16.
+  */
+trait PrefixedDAO {
+  def prefix: String
 }

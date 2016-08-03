@@ -24,9 +24,9 @@ import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.json4s.Formats
 
 trait EphemeralQueriesDAO extends GenericDAOComponent[EphemeralQueryModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer with PrefixedDAO{
 
   override implicit val formats = json4sJacksonFormats
 
-  override val dao: DAO = new GenericDAO(Option(config.getString(ClusterNameConfig,"")+"_"+EphemeralQueriesPath))
+  override val dao: DAO = new GenericDAO(Option(prefix+EphemeralQueriesPath))
 }

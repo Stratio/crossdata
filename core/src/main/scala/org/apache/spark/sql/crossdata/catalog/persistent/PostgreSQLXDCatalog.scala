@@ -28,12 +28,12 @@ import scala.util.Try
 
 object PostgreSQLXDCatalog {
   // SQLConfig
-  val Driver = "crossdata-core.catalog.jdbc.driver"
-  val Url = "crossdata-core.catalog.jdbc.url"
-  val Database = "crossdata-core.catalog.jdbc.db.name"
-  val User = "crossdata-core.catalog.jdbc.db.user"
-  val Pass = "crossdata-core.catalog.jdbc.db.pass"
-  val ClusterNameConfig = "crossdata-core.catalog.clustername"
+  val Driver = "jdbc.driver"
+  val Url = "jdbc.url"
+  val Database = "jdbc.db.name"
+  val User = "jdbc.db.user"
+  val Pass = "jdbc.db.pass"
+  val PrefixConfig = "prefix"
 
   //Default tables
   val DefaultTablesMetadataTable = "crossdataTables"
@@ -80,7 +80,7 @@ class PostgreSQLXDCatalog(override val catalystConf: CatalystConf)
   protected lazy val config = XDContext.catalogConfig
 
   private lazy val db = config.getString(Database)
-  protected lazy val tablesPrefix = Try(s"${config.getString(ClusterNameConfig)}_") getOrElse ("") //clustername_
+  protected lazy val tablesPrefix = Try(s"${config.getString(PrefixConfig)}_") getOrElse ("") //clustername_
   protected lazy val tableWithTableMetadata = s"$tablesPrefix$DefaultTablesMetadataTable"
   protected lazy val tableWithViewMetadata = s"$tablesPrefix$DefaultViewsMetadataTable"
   protected lazy val tableWithAppJars = s"$tablesPrefix$DefaultAppsMetadataTable"

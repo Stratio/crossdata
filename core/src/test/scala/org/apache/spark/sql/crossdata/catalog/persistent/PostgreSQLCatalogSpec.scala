@@ -40,7 +40,7 @@ class PostgreSQLCatalogSpec extends BaseXDTest {
 
   it should "get the cluster name from the config if specified" in {
     val catalog = new PostgreSQLCatalogWithMockedConfig(new SimpleCatalystConf(true))
-    catalog.configTest.getString("crossdata-core.catalog.clustername") shouldBe "crossdataPostgresClusterTest"
+    catalog.configTest.getString("prefix") shouldBe "crossdataPostgresClusterTest"
     catalog.tablesPrefixTest shouldBe "crossdataPostgresClusterTest_"
     catalog.tableWithTableMetadataTest shouldBe "crossdataPostgresClusterTest_crossdataTables"
     catalog.tableWithViewMetadataTest shouldBe "crossdataPostgresClusterTest_crossdataViews"
@@ -50,7 +50,7 @@ class PostgreSQLCatalogSpec extends BaseXDTest {
 
   it should "work with the default values if cluster name is not specified" in {
     val catalog = new PostgreSQLCatalogPublicMetadata(new SimpleCatalystConf(true))
-    an[Exception] shouldBe thrownBy(catalog.configTest.getString("crossdata-core.catalog.clustername"))
+    an[Exception] shouldBe thrownBy(catalog.configTest.getString("prefix"))
     catalog.tablesPrefixTest shouldBe ""
     catalog.tableWithTableMetadataTest shouldBe "crossdataTables"
     catalog.tableWithViewMetadataTest shouldBe "crossdataViews"

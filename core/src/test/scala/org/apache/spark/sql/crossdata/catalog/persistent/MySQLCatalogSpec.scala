@@ -40,7 +40,7 @@ class MySQLCatalogSpec extends BaseXDTest {
 
   it should "get the cluster name from the config if specified" in {
     val catalog = new MySQLCatalogWithMockedConfig(new SimpleCatalystConf(true))
-    catalog.configTest.getString("crossdata-core.catalog.clustername") shouldBe "crossdataClusterTest"
+    catalog.configTest.getString("prefix") shouldBe "crossdataClusterTest"
     catalog.tablesPrefixTest shouldBe "crossdataClusterTest_"
     catalog.tableWithTableMetadataTest shouldBe "crossdataClusterTest_crossdataTables"
     catalog.tableWithViewMetadataTest shouldBe "crossdataClusterTest_crossdataViews"
@@ -50,7 +50,7 @@ class MySQLCatalogSpec extends BaseXDTest {
 
   it should "work with the default values if cluster name is not specified" in {
     val catalog = new MySQLCatalogPublicMetadata(new SimpleCatalystConf(true))
-    an[Exception] shouldBe thrownBy(catalog.configTest.getString("crossdata-core.catalog.clustername"))
+    an[Exception] shouldBe thrownBy(catalog.configTest.getString("prefix"))
     catalog.tablesPrefixTest shouldBe ""
     catalog.tableWithTableMetadataTest shouldBe "crossdataTables"
     catalog.tableWithViewMetadataTest shouldBe "crossdataViews"
