@@ -77,14 +77,14 @@ class PostgreSQLXDCatalog(override val catalystConf: CatalystConf)
   import PostgreSQLXDCatalog._
   import XDCatalog._
 
-  protected[crossdata] lazy val config = XDContext.catalogConfig
+  protected lazy val config = XDContext.catalogConfig
 
-  protected[crossdata] lazy val db = config.getString(Database)
-  protected[crossdata] lazy val tablesPrefix = Try(s"${config.getString(ClusterNameConfig)}_") getOrElse ("") //clustername_
-  protected[crossdata] lazy val tableWithTableMetadata = s"$tablesPrefix$DefaultTablesMetadataTable"
-  protected[crossdata] lazy val tableWithViewMetadata = s"$tablesPrefix$DefaultViewsMetadataTable"
-  protected[crossdata] lazy val tableWithAppJars = s"$tablesPrefix$DefaultAppsMetadataTable"
-  protected[crossdata] lazy val tableWithIndexMetadata = s"$tablesPrefix$DefaultIndexesMetadataTable"
+  private lazy val db = config.getString(Database)
+  protected lazy val tablesPrefix = Try(s"${config.getString(ClusterNameConfig)}_") getOrElse ("") //clustername_
+  protected lazy val tableWithTableMetadata = s"$tablesPrefix$DefaultTablesMetadataTable"
+  protected lazy val tableWithViewMetadata = s"$tablesPrefix$DefaultViewsMetadataTable"
+  protected lazy val tableWithAppJars = s"$tablesPrefix$DefaultAppsMetadataTable"
+  protected lazy val tableWithIndexMetadata = s"$tablesPrefix$DefaultIndexesMetadataTable"
 
   @transient lazy val connection: Connection = {
 

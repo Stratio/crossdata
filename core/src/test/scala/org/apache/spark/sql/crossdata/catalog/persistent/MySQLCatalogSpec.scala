@@ -25,28 +25,37 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class MySQLCatalogSpec extends BaseXDTest {
 
-  private class MySQLCatalogWithMockedConfig(override val catalystConf: CatalystConf) extends MySQLXDCatalog(catalystConf) {
+  private class MySQLCatalogPublicMetadata(override val catalystConf: CatalystConf) extends MySQLXDCatalog(catalystConf){
+    def tablesPrefixTest = tablesPrefix
+    def tableWithTableMetadataTest = tableWithTableMetadata
+    def tableWithViewMetadataTest = tableWithViewMetadata
+    def tableWithAppJarsTest = tableWithAppJars
+    def tableWithIndexMetadataTest = tableWithIndexMetadata
+    def configTest = config
+  }
+
+  private class MySQLCatalogWithMockedConfig(override val catalystConf: CatalystConf) extends MySQLCatalogPublicMetadata(catalystConf) {
     override lazy val config: Config = ConfigFactory.load("catalogspec/mysql-catalog-test-properties.conf")
   }
 
   it should "get the cluster name from the config if specified" in {
     val catalog = new MySQLCatalogWithMockedConfig(new SimpleCatalystConf(true))
-    catalog.config.getString("crossdata-core.catalog.clustername") shouldBe "crossdataClusterTest"
-    catalog.tablesPrefix shouldBe "crossdataClusterTest_"
-    catalog.tableWithTableMetadata shouldBe "crossdataClusterTest_crossdataTables"
-    catalog.tableWithViewMetadata shouldBe "crossdataClusterTest_crossdataViews"
-    catalog.tableWithAppJars shouldBe "crossdataClusterTest_crossdataJars"
-    catalog.tableWithIndexMetadata shouldBe "crossdataClusterTest_crossdataIndexes"
+    catalog.configTest.getString("crossdata-core.catalog.clustername") shouldBe "crossdataClusterTest"
+    catalog.tablesPrefixTest shouldBe "crossdataClusterTest_"
+    catalog.tableWithTableMetadataTest shouldBe "crossdataClusterTest_crossdataTables"
+    catalog.tableWithViewMetadataTest shouldBe "crossdataClusterTest_crossdataViews"
+    catalog.tableWithAppJarsTest shouldBe "crossdataClusterTest_crossdataJars"
+    catalog.tableWithIndexMetadataTest shouldBe "crossdataClusterTest_crossdataIndexes"
   }
 
   it should "work with the default values if cluster name is not specified" in {
-    val catalog = new MySQLXDCatalog(new SimpleCatalystConf(true))
-    an[Exception] shouldBe thrownBy(catalog.config.getString("crossdata-core.catalog.clustername"))
-    catalog.tablesPrefix shouldBe ""
-    catalog.tableWithTableMetadata shouldBe "crossdataTables"
-    catalog.tableWithViewMetadata shouldBe "crossdataViews"
-    catalog.tableWithAppJars shouldBe "crossdataJars"
-    catalog.tableWithIndexMetadata shouldBe "crossdataIndexes"
+    val catalog = new MySQLCatalogPublicMetadata(new SimpleCatalystConf(true))
+    an[Exception] shouldBe thrownBy(catalog.configTest.getString("crossdata-core.catalog.clustername"))
+    catalog.tablesPrefixTest shouldBe ""
+    catalog.tableWithTableMetadataTest shouldBe "crossdataTables"
+    catalog.tableWithViewMetadataTest shouldBe "crossdataViews"
+    catalog.tableWithAppJarsTest shouldBe "crossdataJars"
+    catalog.tableWithIndexMetadataTest shouldBe "crossdataIndexes"
   }
 
 }

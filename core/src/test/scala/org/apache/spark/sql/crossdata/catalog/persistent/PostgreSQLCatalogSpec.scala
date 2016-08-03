@@ -25,28 +25,37 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class PostgreSQLCatalogSpec extends BaseXDTest {
 
-  private class PostgreSQLCatalogWithMockedConfig(override val catalystConf: CatalystConf) extends PostgreSQLXDCatalog(catalystConf) {
+  private class PostgreSQLCatalogPublicMetadata(override val catalystConf: CatalystConf) extends PostgreSQLXDCatalog(catalystConf){
+    def tablesPrefixTest = tablesPrefix
+    def tableWithTableMetadataTest = tableWithTableMetadata
+    def tableWithViewMetadataTest = tableWithViewMetadata
+    def tableWithAppJarsTest = tableWithAppJars
+    def tableWithIndexMetadataTest = tableWithIndexMetadata
+    def configTest = config
+  }
+
+  private class PostgreSQLCatalogWithMockedConfig(override val catalystConf: CatalystConf) extends PostgreSQLCatalogPublicMetadata(catalystConf) {
     override lazy val config: Config = ConfigFactory.load("catalogspec/postgresql-catalog-test-properties.conf")
   }
 
   it should "get the cluster name from the config if specified" in {
     val catalog = new PostgreSQLCatalogWithMockedConfig(new SimpleCatalystConf(true))
-    catalog.config.getString("crossdata-core.catalog.clustername") shouldBe "crossdataPostgresClusterTest"
-    catalog.tablesPrefix shouldBe "crossdataPostgresClusterTest_"
-    catalog.tableWithTableMetadata shouldBe "crossdataPostgresClusterTest_crossdataTables"
-    catalog.tableWithViewMetadata shouldBe "crossdataPostgresClusterTest_crossdataViews"
-    catalog.tableWithAppJars shouldBe "crossdataPostgresClusterTest_crossdataJars"
-    catalog.tableWithIndexMetadata shouldBe "crossdataPostgresClusterTest_crossdataIndexes"
+    catalog.configTest.getString("crossdata-core.catalog.clustername") shouldBe "crossdataPostgresClusterTest"
+    catalog.tablesPrefixTest shouldBe "crossdataPostgresClusterTest_"
+    catalog.tableWithTableMetadataTest shouldBe "crossdataPostgresClusterTest_crossdataTables"
+    catalog.tableWithViewMetadataTest shouldBe "crossdataPostgresClusterTest_crossdataViews"
+    catalog.tableWithAppJarsTest shouldBe "crossdataPostgresClusterTest_crossdataJars"
+    catalog.tableWithIndexMetadataTest shouldBe "crossdataPostgresClusterTest_crossdataIndexes"
   }
 
   it should "work with the default values if cluster name is not specified" in {
-    val catalog = new PostgreSQLXDCatalog(new SimpleCatalystConf(true))
-    an[Exception] shouldBe thrownBy(catalog.config.getString("crossdata-core.catalog.clustername"))
-    catalog.tablesPrefix shouldBe ""
-    catalog.tableWithTableMetadata shouldBe "crossdataTables"
-    catalog.tableWithViewMetadata shouldBe "crossdataViews"
-    catalog.tableWithAppJars shouldBe "crossdataJars"
-    catalog.tableWithIndexMetadata shouldBe "crossdataIndexes"
+    val catalog = new PostgreSQLCatalogPublicMetadata(new SimpleCatalystConf(true))
+    an[Exception] shouldBe thrownBy(catalog.configTest.getString("crossdata-core.catalog.clustername"))
+    catalog.tablesPrefixTest shouldBe ""
+    catalog.tableWithTableMetadataTest shouldBe "crossdataTables"
+    catalog.tableWithViewMetadataTest shouldBe "crossdataViews"
+    catalog.tableWithAppJarsTest shouldBe "crossdataJars"
+    catalog.tableWithIndexMetadataTest shouldBe "crossdataIndexes"
   }
 
 }
