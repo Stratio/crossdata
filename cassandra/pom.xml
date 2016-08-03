@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>parent_2.10</artifactId>
-        <version>1.5.0-RC2-SNAPSHOT</version>
+        <version>1.5.0</version>
     </parent>
     <groupId>com.stratio.crossdata.connector</groupId>
     <artifactId>crossdata-cassandra_2.10</artifactId>
