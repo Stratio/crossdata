@@ -36,7 +36,7 @@ class CrossdataStreaming(ephemeralTableName: String,
       (key.substring(s"$ZooKeeperStreamingCatalogPath.".length), value)
   }
 
-  def prefix:String = Try(zookeeperCatalogConfig.get(PrefixPermantCatalogsConfig)+"_") getOrElse ("")
+  def prefix:String = Try(zookeeperCatalogConfig.get(PrefixStreamingCatalogsConfig)+"_") getOrElse ("")
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperCatalogConfig)
 
