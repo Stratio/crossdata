@@ -19,12 +19,14 @@ import akka.actor.{Actor, Cancellable}
 import com.github.nscala_time.time.Imports._
 import com.stratio.crossdata.streaming.actors.EphemeralStatusActor._
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
+import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.EphemeralTableStatusMapDAO
 import org.apache.spark.sql.crossdata.daos.impl.EphemeralTableMapDAO
 import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralOptionsModel, EphemeralStatusModel}
 import org.apache.spark.streaming.{StreamingContext, StreamingContextState}
 
 import scala.concurrent.duration._
+import scala.util.Try
 
 class EphemeralStatusActor(streamingContext: StreamingContext,
                            zookeeperConfiguration: Map[String, String],
@@ -35,6 +37,9 @@ with EphemeralTableStatusMapDAO {
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var ephemeralStatus: Option[EphemeralStatusModel] = getRepositoryStatusTable
   var cancellableCheckStatus: Option[Cancellable] = None
+
+  def prefix:String = Try(config.getString(PrefixPermantCatalogsConfig)+"_") getOrElse ("")
+
 
   override def receive: Receive = receive(listenerAdded = false)
 
