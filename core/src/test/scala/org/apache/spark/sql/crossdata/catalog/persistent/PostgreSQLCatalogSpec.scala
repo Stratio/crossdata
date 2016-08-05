@@ -18,6 +18,7 @@ package org.apache.spark.sql.crossdata.catalog.persistent
 import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -26,16 +27,17 @@ import org.scalatest.junit.JUnitRunner
 class PostgreSQLCatalogSpec extends BaseXDTest {
 
   private class PostgreSQLCatalogPublicMetadata(override val catalystConf: CatalystConf) extends PostgreSQLXDCatalog(catalystConf){
-    def tablesPrefixTest = tablesPrefix
-    def tableWithTableMetadataTest = tableWithTableMetadata
-    def tableWithViewMetadataTest = tableWithViewMetadata
-    def tableWithAppJarsTest = tableWithAppJars
-    def tableWithIndexMetadataTest = tableWithIndexMetadata
-    def configTest = config
+    val tablesPrefixTest = tablesPrefix
+    val tableWithTableMetadataTest = tableWithTableMetadata
+    val tableWithViewMetadataTest = tableWithViewMetadata
+    val tableWithAppJarsTest = tableWithAppJars
+    val tableWithIndexMetadataTest = tableWithIndexMetadata
+    val configTest = config
   }
 
   private class PostgreSQLCatalogWithMockedConfig(override val catalystConf: CatalystConf) extends PostgreSQLCatalogPublicMetadata(catalystConf) {
-    override lazy val config: Config = ConfigFactory.load("catalogspec/postgresql-catalog-test-properties.conf")
+    override lazy val config: Config =
+      ConfigFactory.load("catalogspec/postgresql-catalog-test-properties.conf").getConfig(Seq(CoreConfig.ParentConfigName, CoreConfig.CatalogConfigKey) mkString ".")
   }
 
   it should "get the cluster name from the config if specified" in {

@@ -19,6 +19,7 @@ import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
 import org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -27,7 +28,8 @@ import org.scalatest.junit.JUnitRunner
 class ZookeeperCatalogSpec extends BaseXDTest {
 
   private class ZookeeperCatalogWithMockedConfig(override val catalystConf: CatalystConf) extends ZookeeperCatalog(catalystConf) {
-    override lazy val config: Config = ConfigFactory.load("catalogspec/zookeeper-catalog-test-properties.conf")
+    override lazy val config: Config =
+      ConfigFactory.load("catalogspec/zookeeper-catalog-test-properties.conf").getConfig(Seq(CoreConfig.ParentConfigName, CoreConfig.CatalogConfigKey) mkString ".")
   }
 
   it should "get the cluster name from the config" in {
@@ -39,7 +41,10 @@ class ZookeeperCatalogSpec extends BaseXDTest {
     catalog.indexDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/indexes"
 
     //Ephemeral
-    val streamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), ConfigFactory.load("catalogspec/zookeeper-streaming-catalog-with-prefix.conf"))
+    val streamingCatalog = new ZookeeperStreamingCatalog(
+      new SimpleCatalystConf(true),
+      ConfigFactory.load("catalogspec/zookeeper-streaming-catalog-with-prefix.conf").getConfig(CoreConfig.ParentConfigName)
+    )
     streamingCatalog.streamingConfig.getString("catalog.prefix") shouldBe "crossdataClusterTest"
     streamingCatalog.ephemeralQueriesDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/ephemeralqueries"
     streamingCatalog.ephemeralTableDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/ephemeraltables"
@@ -55,7 +60,10 @@ class ZookeeperCatalogSpec extends BaseXDTest {
     catalog.indexDAO.dao.entity shouldBe "stratio/crossdata/indexes"
 
     //Ephemeral
-    val streamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), ConfigFactory.load("catalogspec/zookeeper-streaming-catalog-without-prefix.conf"))
+    val streamingCatalog = new ZookeeperStreamingCatalog(
+      new SimpleCatalystConf(true),
+      ConfigFactory.load("catalogspec/zookeeper-streaming-catalog-without-prefix.conf").getConfig(CoreConfig.ParentConfigName)
+    )
     an[Exception] shouldBe thrownBy(catalog.config.getString("streaming.catalog.prefix"))
     streamingCatalog.ephemeralQueriesDAO.dao.entity shouldBe "stratio/crossdata/ephemeralqueries"
     streamingCatalog.ephemeralTableDAO.dao.entity shouldBe "stratio/crossdata/ephemeraltables"
