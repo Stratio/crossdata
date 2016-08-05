@@ -81,7 +81,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
 
   protected lazy val config = XDContext.catalogConfig
   private lazy val db = config.getString(Database)
-  protected lazy val tablesPrefix = Try(s"${config.getString(PrefixConfig)}_") getOrElse ("") //clustername_
+  protected lazy val tablesPrefix = Try(s"${config.getString(PrefixConfig)}_") getOrElse ("") //prefix_
   protected lazy val tableWithTableMetadata = s"$tablesPrefix$DefaultTablesMetadataTable"
   protected lazy val tableWithViewMetadata = s"$tablesPrefix$DefaultViewsMetadataTable"
   protected lazy val tableWithAppJars = s"$tablesPrefix$DefaultAppsMetadataTable"
