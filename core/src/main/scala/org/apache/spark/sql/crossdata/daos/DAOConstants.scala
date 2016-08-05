@@ -20,7 +20,7 @@ import java.util.UUID
 object DAOConstants {
 
   val PrefixPermantCatalogsConfig = "prefix" //crossdata-core.catalog.prefix
-  val PrefixStreamingCatalogsConfig = "prefix" //crossdata-core.streaming.catalog.prefix
+  val PrefixStreamingCatalogsConfig = "zookeeper.prefix" //crossdata-core.streaming.catalog.zookeeper.prefix
 
   val BaseZKPath = "stratio/crossdata"
   val TablesPath = s"$BaseZKPath/tables"

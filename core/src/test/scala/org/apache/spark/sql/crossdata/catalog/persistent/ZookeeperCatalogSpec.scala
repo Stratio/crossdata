@@ -45,7 +45,7 @@ class ZookeeperCatalogSpec extends BaseXDTest {
       new SimpleCatalystConf(true),
       ConfigFactory.load("catalogspec/zookeeper-streaming-catalog-with-prefix.conf").getConfig(CoreConfig.ParentConfigName)
     )
-    streamingCatalog.streamingConfig.getString("catalog.prefix") shouldBe "crossdataClusterTest"
+    streamingCatalog.streamingConfig.getString("catalog.zookeeper.prefix") shouldBe "crossdataClusterTest"
     streamingCatalog.ephemeralQueriesDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/ephemeralqueries"
     streamingCatalog.ephemeralTableDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/ephemeraltables"
     streamingCatalog.ephemeralTableStatusDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/ephemeraltablestatus"
@@ -64,7 +64,7 @@ class ZookeeperCatalogSpec extends BaseXDTest {
       new SimpleCatalystConf(true),
       ConfigFactory.load("catalogspec/zookeeper-streaming-catalog-without-prefix.conf").getConfig(CoreConfig.ParentConfigName)
     )
-    an[Exception] shouldBe thrownBy(catalog.config.getString("streaming.catalog.prefix"))
+    an[Exception] shouldBe thrownBy(catalog.config.getString("streaming.catalog.zookeeper.prefix"))
     streamingCatalog.ephemeralQueriesDAO.dao.entity shouldBe "stratio/crossdata/ephemeralqueries"
     streamingCatalog.ephemeralTableDAO.dao.entity shouldBe "stratio/crossdata/ephemeraltables"
     streamingCatalog.ephemeralTableStatusDAO.dao.entity shouldBe "stratio/crossdata/ephemeraltablestatus"
