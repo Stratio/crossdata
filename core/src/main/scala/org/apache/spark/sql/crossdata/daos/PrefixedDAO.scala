@@ -15,9 +15,6 @@
  */
 package org.apache.spark.sql.crossdata.daos
 
-/**
-  * Created by usarasola on 3/08/16.
-  */
 trait PrefixedDAO {
   def prefix: String
 }
