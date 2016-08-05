@@ -43,5 +43,5 @@ with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer 
 
   override implicit val formats = json4sJacksonFormats
 
-  override val dao: DAO = new GenericDAO(Option(prefix+ViewsPath))
+  override val dao: DAO = new GenericDAO(Option(s"$BaseZKPath/$prefix$ViewsPath"))
 }

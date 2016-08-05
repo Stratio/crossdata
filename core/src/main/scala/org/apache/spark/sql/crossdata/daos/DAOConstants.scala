@@ -23,13 +23,13 @@ object DAOConstants {
   val PrefixStreamingCatalogsConfig = "zookeeper.prefix" //crossdata-core.streaming.catalog.zookeeper.prefix
 
   val BaseZKPath = "stratio/crossdata"
-  val TablesPath = s"$BaseZKPath/tables"
-  val ViewsPath = s"$BaseZKPath/views"
-  val AppsPath = s"$BaseZKPath/apps"
-  val IndexesPath = s"$BaseZKPath/indexes"
-  val EphemeralTablesPath = s"$BaseZKPath/ephemeraltables"
-  val EphemeralTableStatusPath = s"$BaseZKPath/ephemeraltablestatus"
-  val EphemeralQueriesPath = s"$BaseZKPath/ephemeralqueries"
+  val TablesPath = "tables"
+  val ViewsPath = "views"
+  val AppsPath = "apps"
+  val IndexesPath = "indexes"
+  val EphemeralTablesPath = "ephemeraltables"
+  val EphemeralTableStatusPath = "ephemeraltablestatus"
+  val EphemeralQueriesPath = "ephemeralqueries"
 
   def createId: String = UUID.randomUUID.toString
 }

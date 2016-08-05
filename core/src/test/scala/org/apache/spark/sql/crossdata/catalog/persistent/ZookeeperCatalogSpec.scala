@@ -35,10 +35,10 @@ class ZookeeperCatalogSpec extends BaseXDTest {
   it should "get the cluster name from the config" in {
     val catalog = new ZookeeperCatalogWithMockedConfig(new SimpleCatalystConf(true))
     catalog.config.getString("prefix") shouldBe "crossdataClusterTest"
-    catalog.tableDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/tables"
-    catalog.viewDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/views"
-    catalog.appDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/apps"
-    catalog.indexDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/indexes"
+    catalog.tableDAO.dao.entity shouldBe "stratio/crossdata/crossdataClusterTest_tables"
+    catalog.viewDAO.dao.entity shouldBe "stratio/crossdata/crossdataClusterTest_views"
+    catalog.appDAO.dao.entity shouldBe "stratio/crossdata/crossdataClusterTest_apps"
+    catalog.indexDAO.dao.entity shouldBe "stratio/crossdata/crossdataClusterTest_indexes"
 
     //Ephemeral
     val streamingCatalog = new ZookeeperStreamingCatalog(
@@ -46,9 +46,9 @@ class ZookeeperCatalogSpec extends BaseXDTest {
       ConfigFactory.load("catalogspec/zookeeper-streaming-catalog-with-prefix.conf").getConfig(CoreConfig.ParentConfigName)
     )
     streamingCatalog.streamingConfig.getString("catalog.zookeeper.prefix") shouldBe "crossdataClusterTest"
-    streamingCatalog.ephemeralQueriesDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/ephemeralqueries"
-    streamingCatalog.ephemeralTableDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/ephemeraltables"
-    streamingCatalog.ephemeralTableStatusDAO.dao.entity shouldBe "crossdataClusterTest_stratio/crossdata/ephemeraltablestatus"
+    streamingCatalog.ephemeralQueriesDAO.dao.entity shouldBe "stratio/crossdata/crossdataClusterTest_ephemeralqueries"
+    streamingCatalog.ephemeralTableDAO.dao.entity shouldBe "stratio/crossdata/crossdataClusterTest_ephemeraltables"
+    streamingCatalog.ephemeralTableStatusDAO.dao.entity shouldBe "stratio/crossdata/crossdataClusterTest_ephemeraltablestatus"
   }
 
   it should "work with the default values if cluster name is not specified" in {

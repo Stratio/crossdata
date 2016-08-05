@@ -27,5 +27,5 @@ with MapConfigComponent with SparkLoggerComponent with CrossdataSerializer with 
 
   override implicit val formats = json4sJacksonFormats
 
-  override val dao: DAO = new GenericDAO(Option(prefix+EphemeralTablesPath))
+  override val dao: DAO = new GenericDAO(Option(s"$BaseZKPath/$prefix$EphemeralTablesPath"))
 }
