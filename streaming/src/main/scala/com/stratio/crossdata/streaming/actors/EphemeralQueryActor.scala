@@ -30,7 +30,7 @@ with EphemeralQueriesMapDAO {
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var streamingQueries: List[EphemeralQueryModel] = dao.getAll()
 
-  def prefix:String = Try(config.getString(PrefixStreamingCatalogsConfig)+"_") getOrElse ("")
+  def prefix:String = Try(zookeeperConfiguration.get(PrefixStreamingCatalogsConfig)+"_") getOrElse ("")
 
   import context.become
 
