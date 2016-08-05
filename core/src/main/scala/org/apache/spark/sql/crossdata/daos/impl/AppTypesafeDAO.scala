@@ -23,7 +23,7 @@ import scala.util.Try
 
 class AppTypesafeDAO(configuration: Config) extends AppDAO {
 
-  def prefix:String = Try(configuration.getString(PrefixPermantCatalogsConfig)+"_") getOrElse ("")
+  def prefix: String = Try(configuration.getString(PrefixPermantCatalogsConfig) + "_") getOrElse ("")
 
   override val config = new TypesafeConfig(Option(configuration))
 

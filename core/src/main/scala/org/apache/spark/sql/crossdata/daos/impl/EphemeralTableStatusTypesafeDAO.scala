@@ -23,7 +23,7 @@ import scala.util.Try
 
 class EphemeralTableStatusTypesafeDAO (configuration: Config) extends EphemeralTableStatusDAO {
 
-  def prefix:String = Try(configuration.getString(PrefixStreamingCatalogsConfig)+"_") getOrElse ("")
+  def prefix: String = Try(configuration.getString(PrefixStreamingCatalogsConfig) + "_") getOrElse ("")
 
   override val config = new TypesafeConfig(Option(configuration))
 

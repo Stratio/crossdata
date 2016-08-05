@@ -26,5 +26,5 @@ class EphemeralQueriesMapDAO(opts: Map[String, String], subPath: Option[String] 
   val memoryMap = opts
   override lazy val config: Config = new DummyConfig(subPath)
 
-  def prefix:String = Try(config.getString(PrefixStreamingCatalogsConfig)+"_") getOrElse ("")
+  def prefix: String = Try(config.getString(PrefixStreamingCatalogsConfig) + "_") getOrElse ("")
 }

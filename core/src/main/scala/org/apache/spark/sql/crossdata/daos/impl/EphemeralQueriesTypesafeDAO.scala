@@ -23,7 +23,7 @@ import scala.util.Try
 
 class EphemeralQueriesTypesafeDAO(configuration: Config) extends EphemeralQueriesDAO {
 
-  def prefix:String = Try(configuration.getString(PrefixStreamingCatalogsConfig)+"_") getOrElse ("")
+  def prefix: String = Try(configuration.getString(PrefixStreamingCatalogsConfig) + "_") getOrElse ("")
 
   override val config = new TypesafeConfig(Option(configuration))
 

@@ -23,7 +23,7 @@ import scala.util.Try
 
 class TableTypesafeDAO(configuration: Config) extends TableDAO {
 
-  def prefix:String = Try(configuration.getString(PrefixPermantCatalogsConfig)+"_") getOrElse ("")
+  def prefix: String = Try(configuration.getString(PrefixPermantCatalogsConfig) + "_") getOrElse ("")
 
   override val config = new TypesafeConfig(Option(configuration))
 

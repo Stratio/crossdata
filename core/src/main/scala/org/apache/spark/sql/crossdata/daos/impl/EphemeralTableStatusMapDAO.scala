@@ -25,5 +25,5 @@ class EphemeralTableStatusMapDAO (opts: Map[String, String], subPath: Option[Str
   val memoryMap = opts
   override lazy val config: Config = new DummyConfig(subPath)
 
-  def prefix:String = Try(config.getString(PrefixPermantCatalogsConfig)+"_") getOrElse ("")
+  def prefix: String = Try(config.getString(PrefixPermantCatalogsConfig) + "_") getOrElse ("")
 }
