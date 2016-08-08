@@ -16,13 +16,16 @@
 package com.stratio.crossdata.connector.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
 
   // IMPORT OPERATIONS
 
-  it should "import all tables from a keyspace" in {
+  it should "import all tables from an index" in {
     assumeEnvironmentIsUpAndRunning
     def tableCountInHighschool: Long = sql("SHOW TABLES").count
     val initialLength = tableCountInHighschool
@@ -69,7 +72,9 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
     //Expectations
     xdContext.tableNames() should contain (s"$Index.$Type")
+    println(xdContext.table(s"$Index.$Type").schema)
     xdContext.table(s"$Index.$Type").schema should have length 8
+
   }
 
   it should "infer schema after import One table from an Index" in {
