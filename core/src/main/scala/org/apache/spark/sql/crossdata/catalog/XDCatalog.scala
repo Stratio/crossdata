@@ -46,8 +46,7 @@ object XDCatalog extends CrossdataSerializer {
                             datasource: String,
                             partitionColumn: Array[String] = Array.empty,
                             opts: Map[String, String] = Map.empty,
-                            crossdataVersion: String =
-                              crossdata.CrossdataVersion)
+                            crossdataVersion: String = crossdata.CrossdataVersion)
 
   case class CrossdataIndex(tableIdentifier: TableIdentifierNormalized,
                             indexIdentifier: IndexIdentifierNormalized,
@@ -55,8 +54,7 @@ object XDCatalog extends CrossdataSerializer {
                             pk: String,
                             datasource: String,
                             opts: Map[String, String] = Map.empty,
-                            crossdataVersion: String =
-                              crossdata.CrossdataVersion)
+                            crossdataVersion: String = crossdata.CrossdataVersion)
 
   case class CrossdataApp(jar: String, appAlias: String, appClass: String)
 
@@ -82,10 +80,7 @@ object XDCatalog extends CrossdataSerializer {
 
 }
 
-trait XDCatalog
-    extends Catalog
-    with ExternalCatalogAPI
-    with StreamingCatalogAPI {
+trait XDCatalog extends Catalog with ExternalCatalogAPI with StreamingCatalogAPI {
 
   def registerTable(tableIdent: TableIdentifier,
                     plan: LogicalPlan,
@@ -94,8 +89,7 @@ trait XDCatalog
                    logicalPlan: LogicalPlan,
                    sql: Option[String] = None): Unit
 
-  final def registerTable(tableIdent: TableIdentifier,
-                          plan: LogicalPlan): Unit =
+  final def registerTable(tableIdent: TableIdentifier, plan: LogicalPlan): Unit =
     registerTable(tableIdent, plan, None)
 
   def unregisterView(viewIdentifier: ViewIdentifier): Unit

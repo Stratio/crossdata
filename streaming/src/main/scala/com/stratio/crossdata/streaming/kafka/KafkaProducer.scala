@@ -27,8 +27,7 @@ object KafkaProducer {
 
   import KafkaConstants._
 
-  private val producers: mutable.Map[String, Producer[String, String]] =
-    mutable.Map.empty
+  private val producers: mutable.Map[String, Producer[String, String]] = mutable.Map.empty
 
   def put(topic: String,
           message: String,
@@ -39,10 +38,9 @@ object KafkaProducer {
     sendMessage(keyedMessage, options)
   }
 
-  private[streaming] def kafkaMessage(
-      topic: String,
-      message: String,
-      partition: Option[String]): KeyedMessage[String, String] = {
+  private[streaming] def kafkaMessage(topic: String,
+                                      message: String,
+                                      partition: Option[String]): KeyedMessage[String, String] = {
     partition.fold(new KeyedMessage[String, String](topic, message)) { key =>
       new KeyedMessage[String, String](topic, key, message)
     }
@@ -53,36 +51,29 @@ object KafkaProducer {
     getProducer(options).send(message)
   }
 
-  private[streaming] def getProducer(
-      options: KafkaOptionsModel): Producer[String, String] = {
+  private[streaming] def getProducer(options: KafkaOptionsModel): Producer[String, String] = {
     KafkaProducer.getInstance(getKey(options.connection), options)
   }
 
   private[streaming] def getKey(connection: ConnectionHostModel): String =
-    s"ConnectionHostModel([${connection.zkConnection
-      .map(_.toString)
-      .mkString(",")}],[${connection.kafkaConnection.map(_.toString).mkString(",")}])"
+    s"ConnectionHostModel([${connection.zkConnection.map(_.toString).mkString(",")}],[${connection.kafkaConnection.map(_.toString).mkString(",")}])"
 
-  private[streaming] def getInstance(
-      key: String,
-      options: KafkaOptionsModel): Producer[String, String] =
+  private[streaming] def getInstance(key: String,
+                                     options: KafkaOptionsModel): Producer[String, String] =
     producers.getOrElse(key, {
       val producer = createProducer(options)
       producers.put(key, producer)
       producer
     })
 
-  private[streaming] def createProducer(
-      options: KafkaOptionsModel): Producer[String, String] = {
+  private[streaming] def createProducer(options: KafkaOptionsModel): Producer[String, String] = {
     val properties = new Properties()
 
     properties.put(BrokerListKey, getBrokerList(options.connection))
     properties.put(SerializerKey, DefaultSerializer)
     options.additionalOptions.foreach {
       case (key, value) =>
-        producerProperties
-          .get(key)
-          .foreach(kafkaKey => properties.put(kafkaKey, value))
+        producerProperties.get(key).foreach(kafkaKey => properties.put(kafkaKey, value))
     }
 
     val producerConfig = new ProducerConfig(properties)
@@ -91,12 +82,10 @@ object KafkaProducer {
 
   private[streaming] def getBrokerList(connection: ConnectionHostModel,
                                        defaultHost: String = DefaultHost,
-                                       defaultPort: String =
-                                         DefaultProducerPort): String = {
+                                       defaultPort: String = DefaultProducerPort): String = {
 
     val connectionStr = (for (kafkaConnection <- connection.kafkaConnection)
-      yield
-        ( s"${kafkaConnection.host}:${kafkaConnection.port}")).mkString(",")
+      yield ( s"${kafkaConnection.host}:${kafkaConnection.port}")).mkString(",")
 
     if (connectionStr.isEmpty) s"$defaultHost:$defaultPort" else connectionStr
   }

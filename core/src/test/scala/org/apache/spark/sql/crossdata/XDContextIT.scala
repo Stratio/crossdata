@@ -60,10 +60,10 @@ class XDContextIT extends SharedXDContextTest {
   }
 
   it must "plan a PersistDataSource when creating a table " in {
-    val dataframe = xdContext.sql(
-        s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
-      .get(getClass.getResource("/core-reference.conf").toURI())
-      .toString}')")
+    val dataframe =
+      xdContext.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
+        .get(getClass.getResource("/core-reference.conf").toURI())
+        .toString}')")
     val sparkPlan = dataframe.queryExecution.sparkPlan
     xdContext.catalog.dropTable(TableIdentifier("jsonTable", None))
     sparkPlan should matchPattern {
@@ -74,20 +74,14 @@ class XDContextIT extends SharedXDContextTest {
 
   it must "plan a query with conflicted column names between two tables resolving by alias preference" in {
 
-    val t1: DataFrame =
-      xdContext.createDataFrame(xdContext.sparkContext.parallelize(
-                                    (1 to 5).map(i => Row(s"val_$i", i))),
-                                StructType(
-                                    Array(StructField("id", StringType),
-                                          StructField("value", IntegerType))))
+    val t1: DataFrame = xdContext.createDataFrame(
+        xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i", i))),
+        StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
     t1.registerTempTable("t1")
 
-    val t2: DataFrame =
-      xdContext.createDataFrame(xdContext.sparkContext.parallelize(
-                                    (4 to 8).map(i => Row(s"val_$i", i))),
-                                StructType(
-                                    Array(StructField("name", StringType),
-                                          StructField("value", IntegerType))))
+    val t2: DataFrame = xdContext.createDataFrame(
+        xdContext.sparkContext.parallelize((4 to 8).map(i => Row(s"val_$i", i))),
+        StructType(Array(StructField("name", StringType), StructField("value", IntegerType))))
     t2.registerTempTable("t2")
 
     val dataFrame = xdContext.sql(
@@ -101,16 +95,12 @@ class XDContextIT extends SharedXDContextTest {
 
   it must "plan a query with aliased attributes in the group by clause" in {
 
-    val t1: DataFrame =
-      xdContext.createDataFrame(xdContext.sparkContext.parallelize(
-                                    (1 to 5).map(i => Row(s"val_$i", i))),
-                                StructType(
-                                    Array(StructField("id", StringType),
-                                          StructField("value", IntegerType))))
+    val t1: DataFrame = xdContext.createDataFrame(
+        xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i", i))),
+        StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
     t1.registerTempTable("t3")
 
-    val dataFrame = xdContext.sql(
-        "SELECT id as id, value as product FROM t3 GROUP BY id, product")
+    val dataFrame = xdContext.sql("SELECT id as id, value as product FROM t3 GROUP BY id, product")
 
     dataFrame.collect should have length 5
 

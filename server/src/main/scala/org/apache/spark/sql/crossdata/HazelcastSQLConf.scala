@@ -20,8 +20,7 @@ import java.util.Map.Entry
 import com.hazelcast.core.IMap
 import com.stratio.crossdata.util.CacheInvalidator
 
-class HazelcastSQLConf(hazelcastMap: IMap[String, String],
-                       cacheInvalidator: CacheInvalidator)
+class HazelcastSQLConf(hazelcastMap: IMap[String, String], cacheInvalidator: CacheInvalidator)
     extends XDSQLConf {
 
   import HazelcastSQLConf._
@@ -33,13 +32,12 @@ class HazelcastSQLConf(hazelcastMap: IMap[String, String],
 
   def invalidateLocalCache: Unit = localMap.clear
 
-  private val localMap = java.util.Collections
-    .synchronizedMap(new java.util.HashMap[String, String]())
+  private val localMap =
+    java.util.Collections.synchronizedMap(new java.util.HashMap[String, String]())
 
   override protected[spark] val settings = {
-    new ChainedJavaMapWithWriteInvalidation[String, String](
-        Seq(localMap, hazelcastMap),
-        invalidator)
+    new ChainedJavaMapWithWriteInvalidation[String, String](Seq(localMap, hazelcastMap),
+                                                            invalidator)
   }
 
   override def enableCacheInvalidation(enable: Boolean): XDSQLConf = {

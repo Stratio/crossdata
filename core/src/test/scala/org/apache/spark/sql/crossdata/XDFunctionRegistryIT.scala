@@ -35,10 +35,8 @@ class XDFunctionRegistryIT extends SharedXDContextTest {
         .toString}')")
 
       val missingUDFName = "missingFunction"
-      val thrown = the[AnalysisException] thrownBy sql(
-            s"SELECT $missingUDFName() FROM jsonTable")
-      thrown.getMessage() should startWith(
-          s"Undefined function $missingUDFName")
+      val thrown = the[AnalysisException] thrownBy sql(s"SELECT $missingUDFName() FROM jsonTable")
+      thrown.getMessage() should startWith(s"Undefined function $missingUDFName")
     } finally {
       _xdContext.dropTable(TableIdentifier("jsonTable"))
     }

@@ -55,13 +55,9 @@ trait ElasticWithSharedContext
           "description" -> s"A ${a}description about the Name$a",
           "enrolled" -> (if (a % 2 == 0) true else null),
           "name" -> s"Name $a",
-          "birthday" -> DateTime
-            .parse((1980 + a) + "-01-01T10:00:00-00:00")
-            .toDate,
+          "birthday" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").toDate,
           "salary" -> a * 1000.5,
-          "ageInMilis" -> DateTime
-            .parse((1980 + a) + "-01-01T10:00:00-00:00")
-            .getMillis)
+          "ageInMilis" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").getMillis)
     }.await
     client.get.execute {
       flush index Index
@@ -77,12 +73,8 @@ trait ElasticWithSharedContext
     Try {
       logInfo(
           s"Connection to elastic search, ElasticHost: $ElasticHost, ElasticNativePort:$ElasticNativePort, ElasticClusterName $ElasticClusterName")
-      val settings = Settings
-        .settingsBuilder()
-        .put("cluster.name", ElasticClusterName)
-        .build()
-      val uri = ElasticsearchClientUri(
-          s"elasticsearch://$ElasticHost:$ElasticNativePort")
+      val settings = Settings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
+      val uri = ElasticsearchClientUri(s"elasticsearch://$ElasticHost:$ElasticNativePort")
       val elasticClient = ElasticClient.transport(settings, uri)
       createIndex(elasticClient, Index, typeMapping())
       elasticClient
@@ -93,14 +85,12 @@ trait ElasticWithSharedContext
       str2sparkTableDesc(
           s"CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN, birthday DATE, salary DOUBLE, ageInMilis LONG)")
 
-  override val runningError: String =
-    "ElasticSearch and Spark must be up and running"
+  override val runningError: String = "ElasticSearch and Spark must be up and running"
 
   def createIndex(elasticClient: ElasticClient,
                   indexName: String,
                   mappings: MappingDefinition): Unit = {
-    val command = Option(mappings).fold(create index indexName)(
-        create index indexName mappings _)
+    val command = Option(mappings).fold(create index indexName)(create index indexName mappings _)
     elasticClient.execute { command }.await
   }
 
@@ -129,9 +119,8 @@ trait ElasticSearchDefaultConstants {
   private lazy val config = ConfigFactory.load()
   val Index = s"highschool${UUID.randomUUID.toString.replaceAll("-", "")}"
   val Type = s"students${UUID.randomUUID.toString.replaceAll("-", "")}"
-  val ElasticHost: String = Try(config.getStringList("elasticsearch.hosts"))
-    .map(_.get(0))
-    .getOrElse("127.0.0.1")
+  val ElasticHost: String =
+    Try(config.getStringList("elasticsearch.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
   val ElasticRestPort = 9200
   val ElasticNativePort = 9300
   val SourceProvider = "com.stratio.crossdata.connector.elasticsearch"

@@ -27,8 +27,7 @@ import org.elasticsearch.hadoop.cfg.ConfigurationOptions._
 
 object ElasticSearchConnectionUtils {
 
-  def withClientDo[T](parameters: Map[String, String])(
-      f: ElasticClient => T): T = {
+  def withClientDo[T](parameters: Map[String, String])(f: ElasticClient => T): T = {
     val client = buildClient(parameters)
     try {
       f(client)
@@ -45,17 +44,14 @@ object ElasticSearchConnectionUtils {
 
     val uri = ElasticsearchClientUri(s"elasticsearch://$host:$port")
 
-    val settings =
-      Settings.settingsBuilder().put("cluster.name", clusterName).build()
+    val settings = Settings.settingsBuilder().put("cluster.name", clusterName).build()
     ElasticClient.transport(settings, uri)
   }
 
-  def extractIndexAndType(
-      options: Map[String, String]): Option[(String, String)] = {
+  def extractIndexAndType(options: Map[String, String]): Option[(String, String)] = {
     options.get(ES_RESOURCE).map { indexType =>
       val indexTypeArray = indexType.split("/")
-      require(indexTypeArray.size == 2,
-              s"$ES_RESOURCE option has an invalid format")
+      require(indexTypeArray.size == 2, s"$ES_RESOURCE option has an invalid format")
       (indexTypeArray(0), indexTypeArray(1))
     }
   }
@@ -76,8 +72,7 @@ object ElasticSearchConnectionUtils {
   import collection.JavaConversions._
   private def listAllIndexTypes(adminClient: IndicesAdminClient): Seq[Table] = {
 
-    val mappings: ImmutableOpenMap[String,
-                                   ImmutableOpenMap[String, MappingMetaData]] =
+    val mappings: ImmutableOpenMap[String, ImmutableOpenMap[String, MappingMetaData]] =
       adminClient.prepareGetIndex().get().mappings
     mappings
       .keys()
@@ -91,18 +86,10 @@ object ElasticSearchConnectionUtils {
     val adminClient = buildClient(options).admin.indices()
 
     val indexType: Option[(String, String)] = extractIndexAndType(options)
-    val index = indexType
-        .map(_._1)
-        .orElse(options.get(ElasticIndex)) getOrElse sys.error(
+    val index = indexType.map(_._1).orElse(options.get(ElasticIndex)) getOrElse sys.error(
           "Index not found")
 
-    adminClient
-      .prepareGetIndex()
-      .addIndices(index)
-      .get()
-      .mappings()
-      .get(index)
-      .size()
+    adminClient.prepareGetIndex().addIndices(index).get().mappings().get(index).size()
   }
 
   private def listIndexTypes(adminClient: IndicesAdminClient,
@@ -110,18 +97,15 @@ object ElasticSearchConnectionUtils {
                              typeName: Option[String] = None): Seq[Table] = {
 
     val elasticBuilder = adminClient.prepareGetIndex().addIndices(indexName)
-    val elasticBuilderWithTypes =
-      typeName.fold(elasticBuilder)(elasticBuilder.addTypes(_))
-    val mappings: ImmutableOpenMap[String,
-                                   ImmutableOpenMap[String, MappingMetaData]] =
+    val elasticBuilderWithTypes = typeName.fold(elasticBuilder)(elasticBuilder.addTypes(_))
+    val mappings: ImmutableOpenMap[String, ImmutableOpenMap[String, MappingMetaData]] =
       elasticBuilderWithTypes.get().mappings
     getIndexDetails(indexName, mappings.get(indexName))
 
   }
 
-  private def getIndexDetails(
-      indexName: String,
-      indexData: ImmutableOpenMap[String, MappingMetaData]): Seq[Table] = {
+  private def getIndexDetails(indexName: String,
+                              indexData: ImmutableOpenMap[String, MappingMetaData]): Seq[Table] = {
     indexData
       .keys()
       .map(
@@ -155,9 +139,7 @@ object ElasticSearchConnectionUtils {
     val esFields = mapping
       .sourceAsMap()
       .get("properties")
-      .asInstanceOf[java.util.LinkedHashMap[
-              String,
-              java.util.LinkedHashMap[String, String]]]
+      .asInstanceOf[java.util.LinkedHashMap[String, java.util.LinkedHashMap[String, String]]]
       .toMap
 
     val fields: Seq[StructField] = esFields.map {

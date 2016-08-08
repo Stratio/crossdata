@@ -27,10 +27,9 @@ class MongoFilterIT extends MongoDataTypesCollection {
   "MongoConnector" should "supports NOT BETWEEN by spark" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow =
-      sql(s"SELECT id FROM $Collection WHERE id NOT BETWEEN 2 AND 10")
-        .collect(ExecutionType.Spark)
-        .head
+    val sparkRow = sql(s"SELECT id FROM $Collection WHERE id NOT BETWEEN 2 AND 10")
+      .collect(ExecutionType.Spark)
+      .head
 
     val result = Row(1)
     sparkRow should be(result)
@@ -40,10 +39,9 @@ class MongoFilterIT extends MongoDataTypesCollection {
   it should "supports equals AND NOT IN by spark" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow =
-      sql(s"SELECT id FROM $Collection WHERE id = 6 AND id NOT IN (2,3,4,5)")
-        .collect(ExecutionType.Spark)
-        .head
+    val sparkRow = sql(s"SELECT id FROM $Collection WHERE id = 6 AND id NOT IN (2,3,4,5)")
+      .collect(ExecutionType.Spark)
+      .head
 
     val result = Row(6)
     sparkRow should be(result)
@@ -53,9 +51,9 @@ class MongoFilterIT extends MongoDataTypesCollection {
   it should "supports NOT LIKE by spark" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(
-        s"SELECT description FROM $Collection WHERE description NOT LIKE 'description1'")
-      .collect(ExecutionType.Spark)
+    val sparkRow =
+      sql(s"SELECT description FROM $Collection WHERE description NOT LIKE 'description1'")
+        .collect(ExecutionType.Spark)
 
     val result = (2 to 10).map(n => Row(s"description$n")).toArray
     sparkRow should be(result)
@@ -65,9 +63,9 @@ class MongoFilterIT extends MongoDataTypesCollection {
   it should "supports filter DATE greater than" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(
-        s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE date > '1970'")
-      .collect(ExecutionType.Spark)
+    val sparkRow =
+      sql(s"SELECT date FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE date > '1970'")
+        .collect(ExecutionType.Spark)
     sparkRow.length should be(10)
 
   }
@@ -116,8 +114,7 @@ class MongoFilterIT extends MongoDataTypesCollection {
     val sparkRow = sql(
         s"SELECT timestamp FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp = '1970-01-02 00:0:0.002'")
       .collect(ExecutionType.Native)
-    sparkRow.head(0) should be(
-        java.sql.Timestamp.valueOf("1970-01-02 00:00:00.002"))
+    sparkRow.head(0) should be(java.sql.Timestamp.valueOf("1970-01-02 00:00:00.002"))
 
   }
 
@@ -129,8 +126,7 @@ class MongoFilterIT extends MongoDataTypesCollection {
         s"SELECT timestamp FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE timestamp <= '1970-01-01 00:00:00.001'")
       .collect(ExecutionType.Native)
     sparkRow.size should be > 0
-    sparkRow.head(0) should be(
-        java.sql.Timestamp.valueOf("1970-01-01 00:00:00.001"))
+    sparkRow.head(0) should be(java.sql.Timestamp.valueOf("1970-01-01 00:00:00.001"))
 
   }
 
@@ -183,8 +179,8 @@ class MongoFilterIT extends MongoDataTypesCollection {
   it should "execute Spark UDFs by Spark" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(s"SELECT substring(name,0,2) FROM $Collection LIMIT 2")
-      .collect(ExecutionType.Default)
+    val sparkRow =
+      sql(s"SELECT substring(name,0,2) FROM $Collection LIMIT 2").collect(ExecutionType.Default)
     sparkRow.length should be(2)
     sparkRow(0).getString(0) should have length 2
     sparkRow(1).getString(0) should have length 2

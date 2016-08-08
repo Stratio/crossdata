@@ -46,9 +46,7 @@ object ElasticSearchRowConverter {
     val schemaMap = schema.map(field => field.name -> field.dataType).toMap
 
     array map { hit =>
-      hitAsRow(hit.fields().asScala.toMap,
-               schemaMap,
-               requiredFields.map(_.name))
+      hitAsRow(hit.fields().asScala.toMap, schemaMap, requiredFields.map(_.name))
     }
   }
 
@@ -56,11 +54,7 @@ object ElasticSearchRowConverter {
                schemaMap: Map[String, DataType],
                requiredFields: Seq[String]): Row = {
     val values: Seq[Any] = requiredFields.map { name =>
-      hitFields
-        .get(name)
-        .flatMap(v => Option(v))
-        .map(toSQL(_, schemaMap(name)))
-        .orNull
+      hitFields.get(name).flatMap(v => Option(v)).map(toSQL(_, schemaMap(name))).orNull
     }
     Row.fromSeq(values)
   }
@@ -88,8 +82,7 @@ object ElasticSearchRowConverter {
       case NullType => null
       case DateType => toDate(value)
       case _ =>
-        sys.error(
-            s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
+        sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
         value
     }.orNull
   }
@@ -136,8 +129,7 @@ object ElasticSearchRowConverter {
         new java.sql.Timestamp(parsedDate.getTime)
       case value: java.util.Date => new Timestamp(value.getTime)
       case _ =>
-        sys.error(
-            s"Unsupported datatype conversion [${value.getClass}},Timestamp]")
+        sys.error(s"Unsupported datatype conversion [${value.getClass}},Timestamp]")
     }
   }
 

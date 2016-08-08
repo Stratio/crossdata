@@ -29,8 +29,7 @@ object StreamingSqlExample
 
   val (cluster, session) = prepareEnvironment()
 
-  val driver = Driver.newSession(
-      new DriverConf().setClusterContactPoint("127.0.0.1:13420"))
+  val driver = Driver.newSession(new DriverConf().setClusterContactPoint("127.0.0.1:13420"))
 
   val importQuery = s"""|IMPORT TABLES
         |USING $SourceProvider
@@ -55,8 +54,7 @@ object StreamingSqlExample
     driver.sql(createEphemeralTable).waitForResult()
 
     // Adds a streaming query. It will be executed when the streaming process is running
-    driver.sql(
-        s"SELECT count(*) FROM $EphemeralTableName WITH WINDOW 5 SECS AS outputTopic")
+    driver.sql(s"SELECT count(*) FROM $EphemeralTableName WITH WINDOW 5 SECS AS outputTopic")
 
     // Starts the streaming process associated to the ephemeral table
     driver.sql(s"START $EphemeralTableName")

@@ -75,8 +75,7 @@ class BasicSessionProvider(
   override lazy val logger = Logger.getLogger(classOf[BasicSessionProvider])
 
   private lazy val catalogConfig =
-    Try(config.getConfig(CoreConfig.CatalogConfigKey))
-      .getOrElse(ConfigFactory.empty())
+    Try(config.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
   private lazy val sqlConf: SQLConf = configToSparkSQL(userConfig, new SQLConf)
 
   @transient
@@ -87,13 +86,10 @@ class BasicSessionProvider(
   protected lazy val streamingCatalog: Option[XDStreamingCatalog] =
     CatalogUtils.streamingCatalog(sqlConf, config)
 
-  private val sharedState =
-    new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
+  private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
 
-  private val sessionIDToSQLProps: mutable.Map[SessionID, SQLConf] =
-    mutable.Map.empty
-  private val sessionIDToTempCatalog: mutable.Map[SessionID,
-                                                  XDTemporaryCatalog] =
+  private val sessionIDToSQLProps: mutable.Map[SessionID, SQLConf] = mutable.Map.empty
+  private val sessionIDToTempCatalog: mutable.Map[SessionID, XDTemporaryCatalog] =
     mutable.Map.empty
 
   private val errorMessage =
@@ -117,9 +113,7 @@ class BasicSessionProvider(
   } map {
     Success(_)
   } getOrElse {
-    Failure(
-        new RuntimeException(
-            s"Cannot close session with sessionId=$sessionID"))
+    Failure(new RuntimeException(s"Cannot close session with sessionId=$sessionID"))
   }
 
   override def session(sessionID: SessionID): Try[XDSession] = {
@@ -130,9 +124,7 @@ class BasicSessionProvider(
   } map {
     Success(_)
   } getOrElse {
-    Failure(
-        new RuntimeException(
-            s"Cannot recover session with sessionId=$sessionID"))
+    Failure(new RuntimeException(s"Cannot recover session with sessionId=$sessionID"))
   }
 
   override def close(): Unit = {
@@ -140,9 +132,7 @@ class BasicSessionProvider(
     sessionIDToTempCatalog.clear
   }
 
-  private def buildSession(
-      sqlConf: XDSQLConf,
-      xDTemporaryCatalog: XDTemporaryCatalog): XDSession = {
+  private def buildSession(sqlConf: XDSQLConf, xDTemporaryCatalog: XDTemporaryCatalog): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalog :: Nil)
     new XDSession(sharedState, sessionState)
   }

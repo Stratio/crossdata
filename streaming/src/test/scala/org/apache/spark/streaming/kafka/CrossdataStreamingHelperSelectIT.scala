@@ -31,13 +31,10 @@ import org.scalatest.junit.JUnitRunner
 import scala.language.postfixOps
 
 @RunWith(classOf[JUnitRunner])
-class CrossdataStreamingHelperSelectIT
-    extends BaseSparkStreamingXDTest
-    with CommonValues {
+class CrossdataStreamingHelperSelectIT extends BaseSparkStreamingXDTest with CommonValues {
 
-  private val sparkConf = new SparkConf()
-    .setMaster("local[2]")
-    .setAppName(this.getClass.getSimpleName)
+  private val sparkConf =
+    new SparkConf().setMaster("local[2]").setAppName(this.getClass.getSimpleName)
   private var sc: SparkContext = _
   private var kafkaTestUtils: KafkaTestUtils = _
   private var zookeeperConf: Map[String, String] = _
@@ -56,9 +53,8 @@ class CrossdataStreamingHelperSelectIT
       zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress)
       catalogConf = parseZookeeperCatalogConfig(zookeeperConf)
       xDContext = XDContext.getOrCreate(sc, parseCatalogConfig(catalogConf))
-      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(
-          new SimpleCatalystConf(true),
-          XDContext.xdConfig)
+      zookeeperStreamingCatalog =
+        new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), XDContext.xdConfig)
     }
 
     if (consumer == null) {

@@ -44,9 +44,7 @@ object MongoQueryProcessor {
     def filters: Array[SourceFilter] = basePlan.filters
   }
 
-  def apply(logicalPlan: LogicalPlan,
-            config: Config,
-            schemaProvided: Option[StructType] = None) =
+  def apply(logicalPlan: LogicalPlan, config: Config, schemaProvided: Option[StructType] = None) =
     new MongoQueryProcessor(logicalPlan, config, schemaProvided)
 
   def buildNativeQuery(
@@ -55,8 +53,7 @@ object MongoQueryProcessor {
       config: Config,
       name2randomAccess: Map[String, GetArrayItem] = Map.empty
   ): (DBObject, DBObject) = {
-    (filtersToDBObject(filters, name2randomAccess)(config),
-     selectFields(requiredColums))
+    (filtersToDBObject(filters, name2randomAccess)(config), selectFields(requiredColums))
   }
 
   def filtersToDBObject(
@@ -76,13 +73,9 @@ object MongoQueryProcessor {
     if (parentFilterIsNot) queryBuilder.not()
     sFilters.foreach {
       case sources.EqualTo(attribute, value) =>
-        queryBuilder
-          .put(attstr2left(attribute))
-          .is(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).is(correctIdValue(attribute, value))
       case sources.GreaterThan(attribute, value) =>
-        queryBuilder
-          .put(attstr2left(attribute))
-          .greaterThan(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).greaterThan(correctIdValue(attribute, value))
       case sources.GreaterThanOrEqual(attribute, value) =>
         queryBuilder
           .put(attstr2left(attribute))
@@ -92,37 +85,25 @@ object MongoQueryProcessor {
           .put(attstr2left(attribute))
           .in(values.map(value => correctIdValue(attribute, value)))
       case sources.LessThan(attribute, value) =>
-        queryBuilder
-          .put(attstr2left(attribute))
-          .lessThan(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).lessThan(correctIdValue(attribute, value))
       case sources.LessThanOrEqual(attribute, value) =>
-        queryBuilder
-          .put(attstr2left(attribute))
-          .lessThanEquals(correctIdValue(attribute, value))
+        queryBuilder.put(attstr2left(attribute)).lessThanEquals(correctIdValue(attribute, value))
       case sources.IsNull(attribute) =>
         queryBuilder.put(attstr2left(attribute)).is(null)
       case sources.IsNotNull(attribute) =>
         queryBuilder.put(attstr2left(attribute)).notEquals(null)
       case sources.And(leftFilter, rightFilter) if !parentFilterIsNot =>
-        queryBuilder.and(
-            filtersToDBObject(Array(leftFilter), name2randomAccess),
-            filtersToDBObject(Array(rightFilter), name2randomAccess))
+        queryBuilder.and(filtersToDBObject(Array(leftFilter), name2randomAccess),
+                         filtersToDBObject(Array(rightFilter), name2randomAccess))
       case sources.Or(leftFilter, rightFilter) if !parentFilterIsNot =>
-        queryBuilder.or(
-            filtersToDBObject(Array(leftFilter), name2randomAccess),
-            filtersToDBObject(Array(rightFilter), name2randomAccess))
+        queryBuilder.or(filtersToDBObject(Array(leftFilter), name2randomAccess),
+                        filtersToDBObject(Array(rightFilter), name2randomAccess))
       case sources.StringStartsWith(attribute, value) if !parentFilterIsNot =>
-        queryBuilder
-          .put(attstr2left(attribute))
-          .regex(Pattern.compile("^" + value + ".*$"))
+        queryBuilder.put(attstr2left(attribute)).regex(Pattern.compile("^" + value + ".*$"))
       case sources.StringEndsWith(attribute, value) if !parentFilterIsNot =>
-        queryBuilder
-          .put(attstr2left(attribute))
-          .regex(Pattern.compile("^.*" + value + "$"))
+        queryBuilder.put(attstr2left(attribute)).regex(Pattern.compile("^.*" + value + "$"))
       case sources.StringContains(attribute, value) if !parentFilterIsNot =>
-        queryBuilder
-          .put(attstr2left(attribute))
-          .regex(Pattern.compile(".*" + value + ".*"))
+        queryBuilder.put(attstr2left(attribute)).regex(Pattern.compile(".*" + value + ".*"))
       case sources.Not(filter) =>
         filtersToDBObject(Array(filter), name2randomAccess, true)
     }
@@ -137,12 +118,10 @@ object MongoQueryProcessor {
     * @param value Value for the attribute
     * @return The value in the correct data type
     */
-  private def correctIdValue(attribute: String, value: Any)(
-      implicit config: Config): Any = {
+  private def correctIdValue(attribute: String, value: Any)(implicit config: Config): Any = {
 
     val idAsObjectId: Boolean = config
-      .getOrElse[String](MongodbConfig.IdAsObjectId,
-                         MongodbConfig.DefaultIdAsObjectId)
+      .getOrElse[String](MongodbConfig.IdAsObjectId, MongodbConfig.DefaultIdAsObjectId)
       .equalsIgnoreCase("true")
 
     attribute match {
@@ -202,17 +181,13 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan,
                   config,
                   name2randomAccess
               )
-              val resultSet = MongodbConnection.withCollectionDo(config) {
-                collection =>
-                  logDebug(
-                      s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
-                  val cursor =
-                    collection.find(mongoFilters, mongoRequiredColumns)
-                  val result = cursor
-                    .limit(limit.getOrElse(DefaultLimit))
-                    .toArray[DBObject]
-                  cursor.close()
-                  result
+              val resultSet = MongodbConnection.withCollectionDo(config) { collection =>
+                logDebug(
+                    s"Executing native query: filters => $mongoFilters projects => $mongoRequiredColumns")
+                val cursor = collection.find(mongoFilters, mongoRequiredColumns)
+                val result = cursor.limit(limit.getOrElse(DefaultLimit)).toArray[DBObject]
+                cursor.close()
+                result
               }
               sparkResultFromMongodb(bs.projects,
                                      bs.collectionRandomAccesses,
@@ -222,8 +197,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan,
         }
       } catch {
         case exc: Exception =>
-          log.warn(s"Exception executing the native query $logicalPlan",
-                   exc.getMessage); None
+          log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage); None
       }
     }
 
@@ -241,13 +215,9 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan,
           findBasePlan(child)
 
         case PhysicalOperation(projectList, filterList, _) =>
-          CatalystToCrossdataAdapter.getConnectorLogicalPlan(
-              logicalPlan,
-              projectList,
-              filterList) match {
-            case (_,
-                  ProjectReport(exprIgnored),
-                  FilterReport(filtersIgnored, _))
+          CatalystToCrossdataAdapter
+            .getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
+            case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _))
                 if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
               None
             case (basePlan: SimpleLogicalPlan, _, _) =>
@@ -293,11 +263,7 @@ class MongoQueryProcessor(logicalPlan: LogicalPlan,
         pruneSchema(
             schema,
             requiredColumns
-              .map(
-                  r =>
-                    r.name -> indexAccesses
-                      .get(r)
-                      .map(_.right.toString().toInt))
+              .map(r => r.name -> indexAccesses.get(r).map(_.right.toString().toInt))
               .toArray
         ),
         resultSet

@@ -15,5 +15,4 @@
  */
 package org.apache.spark.sql.crossdata.security
 
-case class AuthorizationReply(authorizated: Boolean,
-                              info: Option[String] = None)
+case class AuthorizationReply(authorizated: Boolean, info: Option[String] = None)

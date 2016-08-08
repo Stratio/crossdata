@@ -171,8 +171,7 @@ class QueryBuilderSpec extends BaseXDTest {
 
   it should "be able to build a query containing a subquery as a predicate" in {
 
-    val query =
-      select('c + 4).from('table).where('col === (select('c) from 't))
+    val query = select('c + 4).from('table).where('col === (select('c) from 't))
 
     val expected = """
                      | SELECT c + 4 FROM table
@@ -341,8 +340,7 @@ class QueryBuilderSpec extends BaseXDTest {
     val expected = s"""
                    |SELECT ${expectedExpressions mkString ", "}
                    |FROM test
-                   |WHERE ${expectedExpressions
-                        .map(exp => s"($exp = ref)") mkString " AND "}
+                   |WHERE ${expectedExpressions.map(exp => s"($exp = ref)") mkString " AND "}
                    |""".stripMargin
 
     compareAfterFormatting(query, expected)
@@ -354,10 +352,8 @@ class QueryBuilderSpec extends BaseXDTest {
     val selQueryStr = "SELECT a FROM sourceTable"
 
     Seq(
-        (insert into 'test select 'a from 'sourceTable,
-         s"INSERT INTO test $selQueryStr"),
-        (insert overwrite 'test select 'a from 'sourceTable,
-         s"INSERT OVERWRITE test $selQueryStr")
+        (insert into 'test select 'a from 'sourceTable, s"INSERT INTO test $selQueryStr"),
+        (insert overwrite 'test select 'a from 'sourceTable, s"INSERT OVERWRITE test $selQueryStr")
     ) foreach {
       case (query, expected) =>
         compareAfterFormatting(query, expected)
@@ -379,8 +375,7 @@ class QueryBuilderSpec extends BaseXDTest {
           abs('col)
       ) from 'table
 
-    val expected =
-      """
+    val expected = """
                      | SELECT DISTINCT col, count( DISTINCT col), sum( DISTINCT col),
                      | count(*), APPROXIMATE (0.95) count ( DISTINCT col),
                      | avg(col), min(col), max(col), sum(col), abs(col)
@@ -431,8 +426,7 @@ class QueryBuilderSpec extends BaseXDTest {
 
     val query = selectAll from 'table where (('a in (2, 3, 4)) && ('b like "%R") && ('b isNull) && ('b isNotNull))
 
-    val expected =
-      """
+    val expected = """
         | SELECT *
         | FROM table
         | WHERE ( a IN (2,3,4)) AND (b LIKE '%R') AND ( b IS NULL) AND ( b IS NOT NULL)
@@ -444,8 +438,7 @@ class QueryBuilderSpec extends BaseXDTest {
 
   it should "be able to support SparkSQL types" in {
 
-    val timestampVal =
-      new Timestamp(new GregorianCalendar(1970, 0, 1, 0, 0, 0).getTimeInMillis)
+    val timestampVal = new Timestamp(new GregorianCalendar(1970, 0, 1, 0, 0, 0).getTimeInMillis)
 
     val query = selectAll from 'table where (('a <> "string") && ('a <> 5f) && ('a <> true) && ('a <> timestampVal) && ('a <> new java.math.BigDecimal(
                   1)))
@@ -466,9 +459,6 @@ class QueryBuilderSpec extends BaseXDTest {
   }
 
   def formatOutput(query: String): String =
-    query.stripMargin
-      .replaceAll(System.lineSeparator(), " ")
-      .trim
-      .replaceAll(" +", " ")
+    query.stripMargin.replaceAll(System.lineSeparator(), " ").trim.replaceAll(" +", " ")
 
 }

@@ -57,8 +57,7 @@ object Driver {
 
   private lazy val defaultDriverConf = new DriverConf
 
-  private lazy val system =
-    ActorSystem("CrossdataServerCluster", defaultDriverConf.finalSettings)
+  private lazy val system = ActorSystem("CrossdataServerCluster", defaultDriverConf.finalSettings)
 
   def newSession(): Driver = newSession(defaultDriverConf)
 
@@ -68,16 +67,13 @@ object Driver {
   def newSession(user: String, password: String): Driver =
     newSession(user, password, defaultDriverConf)
 
-  def newSession(user: String,
-                 password: String,
-                 driverConf: DriverConf): Driver =
+  def newSession(user: String, password: String, driverConf: DriverConf): Driver =
     newSession(driverConf, Authentication(user, password))
 
   def newSession(seedNodes: java.util.List[String]): Driver =
     newSession(seedNodes, defaultDriverConf)
 
-  def newSession(seedNodes: java.util.List[String],
-                 driverConf: DriverConf): Driver =
+  def newSession(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
     newSession(driverConf.setClusterContactPoint(seedNodes))
 
   /**
@@ -96,8 +92,7 @@ object Driver {
           s"Cannot establish connection to XDServer: timed out after ${Driver.InitializationTimeout}")
     }
     if (!isConnected) {
-      throw new RuntimeException(
-          s"The server has rejected the open session request")
+      throw new RuntimeException(s"The server has rejected the open session request")
     }
     driver
   }
@@ -118,8 +113,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
 
   import Driver._
 
-  private lazy val driverSession =
-    SessionManager.createSession(auth, proxyActor)
+  private lazy val driverSession = SessionManager.createSession(auth, proxyActor)
 
   private lazy val logger = LoggerFactory.getLogger(classOf[Driver])
 
@@ -135,8 +129,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
     logger.debug("Initial contacts: " + initialContacts)
     val remoteClientName: String = ServerClusterClientParameters.RemoteClientName + UUID
         .randomUUID()
-    val actor =
-      system.actorOf(ClusterClient.props(initialContacts), remoteClientName)
+    val actor = system.actorOf(ClusterClient.props(initialContacts), remoteClientName)
     logger.debug(s"Cluster client actor created with name: $remoteClientName")
 
     actor
@@ -176,8 +169,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
     //TODO remove this part when servers broadcast bus was realized
     //Preparse query to know if it is an special command sent from the shell or other driver user that is not a query
     val addJarPattern = """(\s*add)(\s+jar\s+)(.*)""".r
-    val addAppWithAliasPattern =
-      """(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(.*)""".r
+    val addAppWithAliasPattern = """(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(.*)""".r
     val addAppPattern = """(\s*add)(\s+app\s+)(.*)(\s+with\s+)(.*)""".r
 
     query match {
@@ -195,8 +187,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
         val hdfspath = res.resultSet(0).getString(0)
         addApp(hdfspath, clss, realPath)
       case _ =>
-        val sqlCommand =
-          new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
+        val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
         val futureReply = askCommand(securitizeCommand(sqlCommand)).map {
           case SQLReply(_, sqlResult) => sqlResult
           case other =>
@@ -205,8 +196,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
         new SQLResponse(sqlCommand.requestId, futureReply) {
           // TODO cancel sync => 5 secs
           override def cancelCommand(): Unit =
-            askCommand(
-                securitizeCommand(CancelQueryExecution(sqlCommand.queryId)))
+            askCommand(securitizeCommand(CancelQueryExecution(sqlCommand.queryId)))
         }
     }
   }
@@ -227,14 +217,11 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
       }
       new SQLResponse(addJarCommand.requestId, futureReply)
     } else {
-      new SQLResponse(addJarCommand.requestId,
-                      Future(ErrorSQLResult("File doesn't exist")))
+      new SQLResponse(addJarCommand.requestId, Future(ErrorSQLResult("File doesn't exist")))
     }
   }
 
-  def addAppCommand(path: String,
-                    clss: String,
-                    alias: Option[String] = None): SQLResponse = {
+  def addAppCommand(path: String, clss: String, alias: Option[String] = None): SQLResponse = {
     val result = addJar(path, Option(false)).waitForResult()
     val hdfsPath = result.resultSet(0).getString(0)
     addApp(hdfsPath, clss, alias.getOrElse(path))
@@ -256,8 +243,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
     new SQLResponse(addAppCommand.requestId, futureReply)
   }
 
-  def importTables(dataSourceProvider: String,
-                   options: Map[String, String]): SQLResponse =
+  def importTables(dataSourceProvider: String, options: Map[String, String]): SQLResponse =
     sql(
         s"""|IMPORT TABLES
           |USING $dataSourceProvider
@@ -283,8 +269,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
   def dropTable(name: String, isTemporary: Boolean = false): SQLResponse = {
 
     if (isTemporary)
-      throw new UnsupportedOperationException(
-          "Drop temporary table is not supported yet")
+      throw new UnsupportedOperationException("Drop temporary table is not supported yet")
 
     sql(
         s"""|DROP ${if (isTemporary) "TEMPORARY" else ""}
@@ -304,8 +289,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
     options.headOption.fold("")(_ => s" OPTIONS ( $opt ) ")
   }
 
-  private def askCommand(
-      commandEnvelope: CommandEnvelope): Future[ServerReply] = {
+  private def askCommand(commandEnvelope: CommandEnvelope): Future[ServerReply] = {
     val promise = Promise[ServerReply]()
     proxyActor ! (commandEnvelope, promise)
     promise.future
@@ -325,8 +309,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
       }
     }
     import SQLResponse._
-    val sqlResult: SQLResult = sql(
-        s"SHOW TABLES ${databaseName.fold("")("IN " + _)}")
+    val sqlResult: SQLResult = sql(s"SHOW TABLES ${databaseName.fold("")("IN " + _)}")
     sqlResult match {
       case SuccessfulSQLResult(result, _) =>
         result.map(row => processTableName(row.getString(0)))
@@ -341,15 +324,13 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
     * @param tableName The name of the table.
     * @return A sequence with the metadata of the fields of the table.
     */
-  def describeTable(database: Option[String],
-                    tableName: String): Seq[FieldMetadata] = {
+  def describeTable(database: Option[String], tableName: String): Seq[FieldMetadata] = {
 
     def extractNameDataType: Row => (String, String) =
       row => (row.getString(0), row.getString(1))
 
     import SQLResponse._
-    val sqlResult: SQLResult = sql(
-        s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")
+    val sqlResult: SQLResult = sql(s"DESCRIBE ${database.map(_ + ".").getOrElse("")}$tableName")
 
     sqlResult match {
       case SuccessfulSQLResult(result, _) =>
@@ -412,8 +393,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
     val res = Try {
       val promise = Promise[ServerReply]()
       proxyActor ! (securitizeCommand(OpenSessionCommand()), promise)
-      Await.result(promise.future.mapTo[OpenSessionReply].map(_.isOpen),
-                   InitializationTimeout)
+      Await.result(promise.future.mapTo[OpenSessionReply].map(_.isOpen), InitializationTimeout)
     }
 
     if (res.isSuccess)
@@ -434,8 +414,7 @@ class Driver private (private[crossdata] val driverConf: DriverConf,
   private def securitizeCommand(command: Command): CommandEnvelope =
     new CommandEnvelope(command, driverSession)
 
-  private def getFlattenedFields(fieldName: String,
-                                 dataType: DataType): Seq[FieldMetadata] =
+  private def getFlattenedFields(fieldName: String, dataType: DataType): Seq[FieldMetadata] =
     dataType match {
       case structType: StructType =>
         structType.flatMap(field =>

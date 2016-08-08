@@ -103,36 +103,28 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
   it should "execute a select * where indexedFilter is greater than" in {
 
-    val result =
-      sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10")
-        .collect()
+    val result = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
 
     result should have length 1
     result shouldBe Array(Row(11, "prueba", "one comment", 12, 12))
   }
 
   it should "execute a select * where indexedFilter equals to" in {
-    val result =
-      sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other = 5")
-        .collect()
+    val result = sql(s"select * from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
 
     result should have length 1
     result shouldBe Array(Row(13, "prueba2", "one comment fail", 5, 12))
   }
 
   it should "execute a select col where indexedFilter is greater than" in {
-    val result =
-      sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10")
-        .collect()
+    val result = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other > 10").collect()
 
     result should have length 1
     result shouldBe Array(Row("prueba"))
   }
 
   it should "execute a select col where indexedFilter equals to" in {
-    val result =
-      sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other = 5")
-        .collect()
+    val result = sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
 
     result should have length 1
     result shouldBe Array(Row("prueba2"))
@@ -150,9 +142,7 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
   }
 
   it should "execute a select indexedCol where indexedFilter equals to" in {
-    val result =
-      sql(s"select other from globalIndexDb.proofGlobalIndex WHERE other = 5")
-        .collect()
+    val result = sql(s"select other from globalIndexDb.proofGlobalIndex WHERE other = 5").collect()
 
     result should have length 1
     result shouldBe Array(Row(5))
@@ -168,9 +158,8 @@ class MongoCreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
   }
 
   it should "support filters using equals in two indexed columns" in {
-    val result = sql(
-        s"select name from globalIndexDb.proofGlobalIndex WHERE other = another")
-      .collect()
+    val result =
+      sql(s"select name from globalIndexDb.proofGlobalIndex WHERE other = another").collect()
 
     result should have length 1
     result shouldBe Array(Row("prueba"))

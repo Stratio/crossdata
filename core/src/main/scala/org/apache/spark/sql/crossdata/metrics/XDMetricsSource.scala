@@ -24,15 +24,13 @@ class XDMetricsSource extends Source {
   override val metricRegistry = new MetricRegistry()
 
   // Simple metric registered
-  metricRegistry
-    .register(MetricRegistry.name("executionType"), new Gauge[String] {
-      override def getValue: String = "valueOfExecutionType"
-    })
+  metricRegistry.register(MetricRegistry.name("executionType"), new Gauge[String] {
+    override def getValue: String = "valueOfExecutionType"
+  })
 
   def registerGauge(name: String): Unit = {
-    metricRegistry
-      .register(MetricRegistry.name("metricName", name), new Gauge[String] {
-        override def getValue: String = name
-      })
+    metricRegistry.register(MetricRegistry.name("metricName", name), new Gauge[String] {
+      override def getValue: String = name
+    })
   }
 }

@@ -40,10 +40,7 @@ class GroupConcat(val separator: String) extends UserDefinedAggregateFunction {
     if (buffer.isNullAt(0)) {
       buffer(0) = input.getAs[String](0)
     } else {
-      buffer(0) = buffer
-        .getAs[String](0)
-        .concat(separator)
-        .concat(input.getAs[String](0))
+      buffer(0) = buffer.getAs[String](0).concat(separator).concat(input.getAs[String](0))
     }
   }
 
@@ -51,10 +48,7 @@ class GroupConcat(val separator: String) extends UserDefinedAggregateFunction {
     if (buffer1.isNullAt(0)) {
       buffer1(0) = buffer2.getAs[String](0)
     } else {
-      buffer1(0) = buffer1
-        .getAs[String](0)
-        .concat(separator)
-        .concat(buffer2.getAs[String](0))
+      buffer1(0) = buffer1.getAs[String](0).concat(separator).concat(buffer2.getAs[String](0))
     }
   }
 

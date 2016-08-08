@@ -44,13 +44,11 @@ object ServerActor {
 
   case class JobId(requester: ActorRef, sessionId: UUID, queryId: UUID)
 
-  private case class ManagementEnvelope(command: ControlCommand,
-                                        source: ActorRef)
+  private case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
 
   private object ManagementMessages {
 
-    case class DelegateCommand(scommand: CommandEnvelope,
-                               broadcaster: ActorRef)
+    case class DelegateCommand(scommand: CommandEnvelope, broadcaster: ActorRef)
 
     case class FinishJob(jobActor: ActorRef)
 
@@ -104,30 +102,24 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     */
   private def executeAccepted(cmd: CommandEnvelope)(st: State): Unit =
     cmd match {
-      case CommandEnvelope(
-          sqlCommand @ SQLCommand(query, queryId, withColnames, timeout),
-          session @ Session(id, requester)) =>
-        logger.debug(
-            s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
+      case CommandEnvelope(sqlCommand @ SQLCommand(query, queryId, withColnames, timeout),
+                           session @ Session(id, requester)) =>
+        logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
         logger.debug(s"Session identifier $session")
 
         sessionProvider.session(id) match {
           case Success(xdSession) =>
-            val jobActor = context.actorOf(
-                JobActor.props(xdSession, sqlCommand, sender(), timeout))
+            val jobActor =
+              context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
             jobActor ! StartJob
             context.become(
                 ready(
                     st.copy(
-                        jobsById = st.jobsById + (JobId(
-                                  requester,
-                                  id,
-                                  sqlCommand.queryId) -> jobActor)))
+                        jobsById = st.jobsById + (JobId(requester, id, sqlCommand.queryId) -> jobActor)))
             )
 
           case Failure(error) =>
-            logger
-              .warn(s"Received message with an unknown sessionId $id", error)
+            logger.warn(s"Received message with an unknown sessionId $id", error)
             sender ! ErrorSQLResult(
                 s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
         }
@@ -142,12 +134,10 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
           sender ! SQLReply(addAppCommand.requestId,
                             SuccessfulSQLResult(Array.empty, new StructType()))
         else
-          sender ! SQLReply(
-              addAppCommand.requestId,
-              ErrorSQLResult("App can't be stored in the catalog"))
+          sender ! SQLReply(addAppCommand.requestId,
+                            ErrorSQLResult("App can't be stored in the catalog"))
 
-      case CommandEnvelope(cc @ CancelQueryExecution(queryId),
-                           session @ Session(id, requester)) =>
+      case CommandEnvelope(cc @ CancelQueryExecution(queryId), session @ Session(id, requester)) =>
         st.jobsById.get(JobId(requester, id, queryId)).get ! CancelJob
     }
 
@@ -160,10 +150,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     case DelegateCommand(cmd, broadcaster) if broadcaster != self =>
       cmd match {
         // Inner pattern matching for future delegated command validations
-        case sc @ CommandEnvelope(CancelQueryExecution(queryId),
-                                  Session(sid, requester)) =>
-          st.jobsById.get(JobId(requester, sid, queryId)) foreach (_ =>
-                executeAccepted(sc)(st))
+        case sc @ CommandEnvelope(CancelQueryExecution(queryId), Session(sid, requester)) =>
+          st.jobsById.get(JobId(requester, sid, queryId)) foreach (_ => executeAccepted(sc)(st))
         /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
             servers through the topic. */
       }
@@ -181,8 +169,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     case sc @ CommandEnvelope(_: AddAppCommand, _) =>
       executeAccepted(sc)(st)
 
-    case sc @ CommandEnvelope(cc: ControlCommand,
-                              session @ Session(id, requester)) =>
+    case sc @ CommandEnvelope(cc: ControlCommand, session @ Session(id, requester)) =>
       st.jobsById.get(JobId(requester, id, cc.requestId)) map { _ =>
         executeAccepted(sc)(st) // Command validated to be executed by this server.
       } getOrElse {
@@ -196,19 +183,16 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     case sc @ CommandEnvelope(_: OpenSessionCommand, session) =>
       val open = sessionProvider.newSession(session.id) match {
         case Success(_) =>
-          logger.debug(
-              s"new session with sessionID=${session.id} has been created")
+          logger.debug(s"new session with sessionID=${session.id} has been created")
           true
         case Failure(error) =>
-          logger.error(
-              s"failure while creating the session with sessionID=${session.id}")
+          logger.error(s"failure while creating the session with sessionID=${session.id}")
           false
       }
       sender ! OpenSessionReply(sc.cmd.requestId, isOpen = open)
 
-      context.actorSelection("/user/client-monitor") ! DoCheck(
-          session.id,
-          expectedClientHeartbeatPeriod)
+      context.actorSelection("/user/client-monitor") ! DoCheck(session.id,
+                                                               expectedClientHeartbeatPeriod)
 
     case sc @ CommandEnvelope(_: CloseSessionCommand, session) =>
       closeSessionTerminatingJobs(session.id)(st)
@@ -228,8 +212,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       sentenceToDeath(sender())
 
     case FinishJob(who) =>
-      context.become(
-          ready(st.copy(jobsById = st.jobsById.filterNot(_._2 == who))))
+      context.become(ready(st.copy(jobsById = st.jobsById.filterNot(_._2 == who))))
       context.children.find(_ == who).foreach(gracefullyKill)
   }
 
@@ -262,8 +245,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   private def sentenceToDeath(victim: ActorRef): Unit = completedJobTTL match {
     case finite: FiniteDuration =>
-      context.system.scheduler
-        .scheduleOnce(finite, self, FinishJob(victim))(context.dispatcher)
+      context.system.scheduler.scheduleOnce(finite, self, FinishJob(victim))(context.dispatcher)
     case _ => // Reprieve by infinite limit
   }
 

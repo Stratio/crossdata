@@ -70,58 +70,45 @@ trait ServerConfig extends NumberActorConfig {
   lazy val retryNoAttempts: Int =
     Try(config.getInt(ServerConfig.ServerRetryMaxAttempts)).getOrElse(0)
   lazy val retryCountWindow: Duration = Try(
-        config.getDuration(ServerConfig.ServerRetryCountWindow,
-                           TimeUnit.MILLISECONDS)
+        config.getDuration(ServerConfig.ServerRetryCountWindow, TimeUnit.MILLISECONDS)
     ) map (Duration(_, TimeUnit.MILLISECONDS)) getOrElse (Duration.Inf)
 
-  lazy val completedJobTTL: Duration = extractDurationField(
-      ServerConfig.FinishedJobTTL)
+  lazy val completedJobTTL: Duration = extractDurationField(ServerConfig.FinishedJobTTL)
 
-  lazy val expectedClientHeartbeatPeriod: FiniteDuration =
-    extractDurationField(ServerConfig.ClientExpectedHeartbeatPeriod) match {
-      case d: FiniteDuration =>
-        Seq(11 seconds, d) max // Alarm period need to be at least twice the hear beat period (5 seconds)
-      case _ => 2 minute // Default value
-    }
+  lazy val expectedClientHeartbeatPeriod: FiniteDuration = extractDurationField(
+      ServerConfig.ClientExpectedHeartbeatPeriod) match {
+    case d: FiniteDuration =>
+      Seq(11 seconds, d) max // Alarm period need to be at least twice the hear beat period (5 seconds)
+    case _ => 2 minute // Default value
+  }
 
-  lazy val isHazelcastEnabled =
-    config.getBoolean(ServerConfig.IsHazelcastProviderEnabledProperty)
+  lazy val isHazelcastEnabled = config.getBoolean(ServerConfig.IsHazelcastProviderEnabledProperty)
 
   override val config: Config = {
 
-    var defaultConfig = ConfigFactory
-      .load(ServerConfig.ServerBasicConfig)
-      .getConfig(ServerConfig.ParentConfigName)
-    val envConfigFile = Option(
-        System.getProperties.getProperty(ServerConfig.ServerUserConfigFile))
-    val configFile = envConfigFile.getOrElse(
-        defaultConfig.getString(ServerConfig.ServerUserConfigFile))
-    val configResource =
-      defaultConfig.getString(ServerConfig.ServerUserConfigResource)
+    var defaultConfig =
+      ConfigFactory.load(ServerConfig.ServerBasicConfig).getConfig(ServerConfig.ParentConfigName)
+    val envConfigFile = Option(System.getProperties.getProperty(ServerConfig.ServerUserConfigFile))
+    val configFile =
+      envConfigFile.getOrElse(defaultConfig.getString(ServerConfig.ServerUserConfigFile))
+    val configResource = defaultConfig.getString(ServerConfig.ServerUserConfigResource)
 
     if (configResource != "") {
-      val resource =
-        ServerConfig.getClass.getClassLoader.getResource(configResource)
+      val resource = ServerConfig.getClass.getClassLoader.getResource(configResource)
       if (resource != null) {
-        val userConfig = ConfigFactory
-          .parseResources(configResource)
-          .getConfig(ServerConfig.ParentConfigName)
+        val userConfig =
+          ConfigFactory.parseResources(configResource).getConfig(ServerConfig.ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
-        logger.info(
-            "User resource (" + configResource + ") found in resources")
+        logger.info("User resource (" + configResource + ") found in resources")
       } else {
         logger.warn("User resource (" + configResource + ") hasn't been found")
         val file = new File(configResource)
         if (file.exists()) {
-          val userConfig = ConfigFactory
-            .parseFile(file)
-            .getConfig(ServerConfig.ParentConfigName)
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.ParentConfigName)
           defaultConfig = userConfig.withFallback(defaultConfig)
-          logger.info(
-              "User resource (" + configResource + ") found in classpath")
+          logger.info("User resource (" + configResource + ") found in classpath")
         } else {
-          logger.warn(
-              "User file (" + configResource + ") hasn't been found in classpath")
+          logger.warn("User file (" + configResource + ") hasn't been found in classpath")
         }
       }
     }
@@ -129,9 +116,7 @@ trait ServerConfig extends NumberActorConfig {
     if (configFile != "") {
       val file = new File(configFile)
       if (file.exists()) {
-        val userConfig = ConfigFactory
-          .parseFile(file)
-          .getConfig(ServerConfig.ParentConfigName)
+        val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
         logger.info("External file (" + configFile + ") found")
       } else {
@@ -153,9 +138,8 @@ trait ServerConfig extends NumberActorConfig {
     val finalConfig = {
       if (defaultConfig.hasPath("akka.cluster.server-nodes")) {
         val serverNodes = defaultConfig.getString("akka.cluster.server-nodes")
-        defaultConfig.withValue(
-            "akka.cluster.seed-nodes",
-            ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
+        defaultConfig.withValue("akka.cluster.seed-nodes",
+                                ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
       } else {
         defaultConfig
       }

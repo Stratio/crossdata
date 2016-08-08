@@ -74,8 +74,7 @@ trait XDTestUtils extends BaseXDTest with BeforeAndAfterAll { self =>
     */
   protected def withSQLConf(pairs: (String, String)*)(f: => Unit): Unit = {
     val (keys, values) = pairs.unzip
-    val currentValues =
-      keys.map(key => Try(_xdContext.conf.getConfString(key)).toOption)
+    val currentValues = keys.map(key => Try(_xdContext.conf.getConfString(key)).toOption)
     (keys, values).zipped.foreach(_xdContext.conf.setConfString)
     try f
     finally {
@@ -115,8 +114,7 @@ trait XDTestUtils extends BaseXDTest with BeforeAndAfterAll { self =>
     * Turn a logical plan into a [[DataFrame]]. This should be removed once we have an easier
     * way to construct [[XDDataFrame]] directly out of local data without relying on implicits.
     */
-  protected implicit def logicalPlanToSparkQuery(
-      plan: LogicalPlan): DataFrame = {
+  protected implicit def logicalPlanToSparkQuery(plan: LogicalPlan): DataFrame = {
     XDDataFrame(_xdContext, plan)
   }
 }

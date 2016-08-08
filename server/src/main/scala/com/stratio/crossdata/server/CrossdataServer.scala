@@ -60,8 +60,7 @@ class CrossdataServer extends Daemon with ServerConfig {
     val filteredSparkParams =
       metricsPath.fold(sparkParams)(m => checkMetricsFile(sparkParams, m.get))
 
-    val sparkContext = new SparkContext(
-        new SparkConf().setAll(filteredSparkParams))
+    val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
 
     sessionProviderOpt = Some {
       if (isHazelcastEnabled)
@@ -76,47 +75,37 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     system = Some(ActorSystem(clusterName, config))
 
-    system.fold(throw new RuntimeException("Actor system cannot be started")) {
-      actorSystem =>
-        val resizer = DefaultResizer(lowerBound = minServerActorInstances,
-                                     upperBound = maxServerActorInstances)
-        val serverActor = actorSystem.actorOf(
-            RoundRobinPool(minServerActorInstances, Some(resizer)).props(
-                Props(classOf[ServerActor],
-                      Cluster(actorSystem),
-                      sessionProvider)),
-            actorName)
+    system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
+      val resizer =
+        DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
+      val serverActor = actorSystem.actorOf(
+          RoundRobinPool(minServerActorInstances, Some(resizer))
+            .props(Props(classOf[ServerActor], Cluster(actorSystem), sessionProvider)),
+          actorName)
 
-        val clientMonitor = actorSystem
-          .actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
-        ClusterReceptionistExtension(actorSystem).registerService(
-            clientMonitor)
+      val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
+      ClusterReceptionistExtension(actorSystem).registerService(clientMonitor)
 
-        val resourceManagerActor = actorSystem.actorOf(
-            ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
-        ClusterReceptionistExtension(actorSystem).registerService(serverActor)
-        ClusterReceptionistExtension(actorSystem).registerService(
-            resourceManagerActor)
+      val resourceManagerActor =
+        actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
+      ClusterReceptionistExtension(actorSystem).registerService(serverActor)
+      ClusterReceptionistExtension(actorSystem).registerService(resourceManagerActor)
 
-        implicit val httpSystem = actorSystem
-        implicit val materializer = ActorMaterializer()
-        val httpServerActor =
-          new CrossdataHttpServer(config, serverActor, actorSystem)
-        val host = config.getString(ServerConfig.Host)
-        val port = config.getInt(ServerConfig.HttpServerPort)
-        bindingFuture =
-          Option(Http().bindAndHandle(httpServerActor.route, host, port))
+      implicit val httpSystem = actorSystem
+      implicit val materializer = ActorMaterializer()
+      val httpServerActor = new CrossdataHttpServer(config, serverActor, actorSystem)
+      val host = config.getString(ServerConfig.Host)
+      val port = config.getInt(ServerConfig.HttpServerPort)
+      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))
     }
 
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
   }
 
-  def checkMetricsFile(params: Map[String, String],
-                       metricsPath: String): Map[String, String] = {
+  def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
     val metricsFile = new File(metricsPath)
     if (!metricsFile.exists) {
-      logger.warn(
-          s"Metrics configuration file not found: ${metricsFile.getPath}")
+      logger.warn(s"Metrics configuration file not found: ${metricsFile.getPath}")
       params - "spark.metrics.conf"
     } else {
       params

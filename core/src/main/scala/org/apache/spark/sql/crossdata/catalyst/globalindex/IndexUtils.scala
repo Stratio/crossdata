@@ -29,8 +29,7 @@ object IndexUtils {
     * @param indexedCols
     * @return
     */
-  def areAllAttributeIndexedInExpr(condition: Expression,
-                                   indexedCols: Seq[String]): Boolean = {
+  def areAllAttributeIndexedInExpr(condition: Expression, indexedCols: Seq[String]): Boolean = {
 
     @tailrec
     def checkIfRemainExprAreSupported(remainExpr: Seq[Expression]): Boolean =
@@ -40,15 +39,12 @@ object IndexUtils {
           nonEmptySeq.head match {
             case predicate: Predicate if !isSupportedPredicate(predicate) =>
               false
-            case UnresolvedAttribute(name)
-                if !indexedCols.contains(name.last) =>
+            case UnresolvedAttribute(name) if !indexedCols.contains(name.last) =>
               false // TODO TOFIX subdocuments can cause conflicts
-            case AttributeReference(name, _, _, _)
-                if !indexedCols.contains(name) =>
+            case AttributeReference(name, _, _, _) if !indexedCols.contains(name) =>
               false
             case head if head.children.nonEmpty =>
-              checkIfRemainExprAreSupported(
-                  remainExpr.tail ++ remainExpr.head.children)
+              checkIfRemainExprAreSupported(remainExpr.tail ++ remainExpr.head.children)
             case _ => checkIfRemainExprAreSupported(remainExpr.tail)
           }
       }

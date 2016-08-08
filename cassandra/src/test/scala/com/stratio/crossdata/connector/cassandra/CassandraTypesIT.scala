@@ -23,14 +23,11 @@ import org.scalatest.junit.JUnitRunner
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class CassandraTypesIT
-    extends CassandraWithSharedContext
-    with SharedXDContextTypesTest {
+class CassandraTypesIT extends CassandraWithSharedContext with SharedXDContextTypesTest {
 
   //Prepare test
 
-  override val emptyTypesSetError: String =
-    "Type test entries should have been already inserted"
+  override val emptyTypesSetError: String = "Type test entries should have been already inserted"
 
   override def saveTypesData: Int = {
     val session = client.get._2
@@ -102,16 +99,12 @@ class CassandraTypesIT
 
   override protected def typesSet: Seq[SparkSQLColDef] =
     super.typesSet flatMap {
-      case SparkSQLColDef(_, "TINYINT", _) |
-          SparkSQLColDef(_, "SMALLINT", _) =>
+      case SparkSQLColDef(_, "TINYINT", _) | SparkSQLColDef(_, "SMALLINT", _) =>
         Nil
       case SparkSQLColDef(name, "DATE", typeChecker) =>
         SparkSQLColDef(name, "TIMESTAMP", _.isInstanceOf[java.sql.Timestamp]) :: Nil
-      case SparkSQLColDef(name, sqlClause, typeChecker)
-          if name contains "struct" =>
-        SparkSQLColDef(name,
-                       sqlClause.replace("DATE", "TIMESTAMP"),
-                       typeChecker) :: Nil
+      case SparkSQLColDef(name, sqlClause, typeChecker) if name contains "struct" =>
+        SparkSQLColDef(name, sqlClause.replace("DATE", "TIMESTAMP"), typeChecker) :: Nil
       case other =>
         other :: Nil
     }

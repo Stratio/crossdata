@@ -28,8 +28,7 @@ case class CreateTableStatement(tableName: String,
     s"CREATE TABLE ${if (ifNotExists) "IF NOT EXISTS " else ""}$keyspace.$tableName (" + schema.fields
       .foldLeft("") {
         case (prev: String, next: StructField) =>
-          val cassandraDataType =
-            CassandraUtils.fromSparkSqlType(next.dataType)
+          val cassandraDataType = CassandraUtils.fromSparkSqlType(next.dataType)
           prev + s"${next.name} ${cassandraDataType.cqlTypeName}, "
       } + s"PRIMARY KEY ($primaryKeyString))"
 

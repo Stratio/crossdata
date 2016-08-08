@@ -39,8 +39,7 @@ class CassandraImportTablesIT extends CassandraWithSharedContext {
 
     val importedTables = xdContext.sql(importQuery)
 
-    importedTables.schema.fieldNames shouldBe Array("tableIdentifier",
-                                                    "ignored")
+    importedTables.schema.fieldNames shouldBe Array("tableIdentifier", "ignored")
     importedTables.collect.length should be > 0
 
     tableCountInHighschool should be > initialLength

@@ -59,9 +59,9 @@ class MongoDotsNotationIT extends MongoDataTypesCollection {
   it should "supports Filters with DOT notation with no ExecutionType defined" in {
     assumeEnvironmentIsUpAndRunning
 
-    val sparkRow = sql(
-        s"SELECT int FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE struct.field2=3")
-      .collect()
+    val sparkRow =
+      sql(s"SELECT int FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE struct.field2=3")
+        .collect()
 
     sparkRow.length should be(10)
   }
@@ -69,8 +69,8 @@ class MongoDotsNotationIT extends MongoDataTypesCollection {
   it should "Does not supports Filters with DOT notation in Native" in {
     assumeEnvironmentIsUpAndRunning
 
-    val df = sql(
-        s"SELECT int FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE struct.field2=3")
+    val df =
+      sql(s"SELECT int FROM ${SharedXDContextTypesTest.dataTypesTableName} WHERE struct.field2=3")
 
     an[CrossdataException] should be thrownBy df.collect(ExecutionType.Native)
   }

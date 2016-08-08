@@ -37,7 +37,8 @@ import scala.language.postfixOps
 @RunWith(classOf[JUnitRunner])
 class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with CommonValues {
 
-  private val sparkConf = new SparkConf().setMaster("local[2]").setAppName(this.getClass.getSimpleName)
+  private val sparkConf =
+    new SparkConf().setMaster("local[2]").setAppName(this.getClass.getSimpleName)
   private var sc: SparkContext = _
   private var kafkaTestUtils: KafkaTestUtils = _
   private var zookeeperConf: Map[String, String] = _
@@ -56,7 +57,9 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
       zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress)
       catalogConf = parseZookeeperCatalogConfig(zookeeperConf)
       xDContext = XDContext.getOrCreate(sc, parseCatalogConfig(catalogConf))
-      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), XDContext.xdConfig) //TODO Replace XDContext.xdConfig when refactoring CoreConfig
+      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(
+          new SimpleCatalystConf(true),
+          XDContext.xdConfig) //TODO Replace XDContext.xdConfig when refactoring CoreConfig
     }
 
     if (consumer == null) {
@@ -97,19 +100,19 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
     val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
 
     val kafkaStreamModelZk = kafkaStreamModelProject.copy(
-      connection = connectionHostModel.copy(
-        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK)),
-        kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
+        connection = connectionHostModel.copy(
+            zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK)),
+            kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
 
     val ephemeralTableKafka = ephemeralTableModelStreamKafkaOptionsProject.copy(
-      options = ephemeralOptionsStreamKafkaProject.copy(kafkaOptions = kafkaStreamModelZk
-      ))
+        options = ephemeralOptionsStreamKafkaProject.copy(kafkaOptions = kafkaStreamModelZk))
 
     zookeeperStreamingCatalog.createEphemeralQuery(queryProjectedModel)
     zookeeperStreamingCatalog.createEphemeralTable(ephemeralTableKafka)
     zookeeperStreamingCatalog.getEphemeralTable(TableNameProject) match {
       case Some(ephemeralTable) =>
-        ssc = CrossdataStreamingHelper.createContext(ephemeralTable, sparkConf, zookeeperConf, catalogConf)
+        ssc = CrossdataStreamingHelper
+          .createContext(ephemeralTable, sparkConf, zookeeperConf, catalogConf)
         val valuesToSent = Array("""{"name": "a"}""", """{"name": "c"}""")
         kafkaTestUtils.createTopic(TopicTestProject)
         kafkaTestUtils.sendMessages(TopicTestProject, valuesToSent)

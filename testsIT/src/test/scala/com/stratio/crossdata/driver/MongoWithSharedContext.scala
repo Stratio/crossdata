@@ -41,19 +41,23 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
     val collection = client(Database)(Collection)
     for (a <- 1 to 10) {
       collection.insert {
-        MongoDBObject("id" -> a,
-          "age" -> (10 + a),
-          "description" -> s"description$a",
-          "enrolled" -> (a % 2 == 0),
-          "name" -> s"Name $a",
-          "address" -> MongoDBObject("street" -> s"${a}th Avenue", "city" -> s"City $a", "zip" -> (28000+a)),
-          "account" -> MongoDBObject("number" -> (11235813*a), "details" -> MongoDBObject("bank" -> "Mercantil", "office" -> (12357+a))),
-          "grades" -> Seq(MongoDBObject("FP" -> Seq(7.0, 8.0)), MongoDBObject("REACTIVEARCHS" -> Seq(9.0)))
-        )
+        MongoDBObject(
+            "id" -> a,
+            "age" -> (10 + a),
+            "description" -> s"description$a",
+            "enrolled" -> (a % 2 == 0),
+            "name" -> s"Name $a",
+            "address" -> MongoDBObject("street" -> s"${a}th Avenue",
+                                       "city" -> s"City $a",
+                                       "zip" -> (28000 + a)),
+            "account" -> MongoDBObject("number" -> (11235813 * a),
+                                       "details" -> MongoDBObject("bank" -> "Mercantil",
+                                                                  "office" -> (12357 + a))),
+            "grades" -> Seq(MongoDBObject("FP" -> Seq(7.0, 8.0)),
+                            MongoDBObject("REACTIVEARCHS" -> Seq(9.0))))
       }
     }
   }
-
 
   protected def cleanTestData: Unit = {
     val client = this.client
@@ -62,8 +66,6 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
     collection.dropCollection()
 
   }
-
-
 
   def init() = {
     crossdataServer = Some(new CrossdataServer)
@@ -80,13 +82,11 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
     crossdataServer.foreach(_.destroy())
   }
 
-
   override protected def beforeAll(): Unit = {
     init()
     saveTestData
 
-    val importQuery =
-      s"""
+    val importQuery = s"""
          |IMPORT TABLES
          |USING $SourceProvider
          |OPTIONS (
@@ -97,7 +97,8 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
          |)
       """.stripMargin
 
-    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.session(SessionID).get.sql(importQuery)))
+    crossdataServer.foreach(
+        _.sessionProviderOpt.foreach(_.session(SessionID).get.sql(importQuery)))
   }
 
   override protected def afterAll(): Unit = {

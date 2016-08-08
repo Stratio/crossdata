@@ -26,8 +26,7 @@ class CassandraDropExternalTableIT extends CassandraWithSharedContext {
   protected override def beforeAll(): Unit = {
     super.beforeAll()
 
-    val createTableQueryString1 =
-      s"""|CREATE EXTERNAL TABLE $Catalog.dropTable1 (
+    val createTableQueryString1 = s"""|CREATE EXTERNAL TABLE $Catalog.dropTable1 (
           |id Integer,
           |name String,
           |booleanFile boolean,
@@ -86,9 +85,7 @@ class CassandraDropExternalTableIT extends CassandraWithSharedContext {
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table(s"$Catalog.dropTable1"))
-    client.get._1.getMetadata
-      .getKeyspace(Catalog)
-      .getTable(cassandraTableName) shouldBe null
+    client.get._1.getMetadata.getKeyspace(Catalog).getTable(cassandraTableName) shouldBe null
 
   }
 
@@ -105,9 +102,7 @@ class CassandraDropExternalTableIT extends CassandraWithSharedContext {
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table("dropTable2"))
-    client.get._1.getMetadata
-      .getKeyspace(Catalog)
-      .getTable(cassandraTableName) shouldBe null
+    client.get._1.getMetadata.getKeyspace(Catalog).getTable(cassandraTableName) shouldBe null
 
   }
 

@@ -21,8 +21,7 @@ case class CreateKeyspaceStatement(options: Map[String, String]) {
 
   override def toString(): String = {
     val cqlCommand = StringBuilder.newBuilder
-    cqlCommand.append(
-        s"CREATE KEYSPACE $keyspace WITH REPLICATION = $replication")
+    cqlCommand.append(s"CREATE KEYSPACE $keyspace WITH REPLICATION = $replication")
 
     cqlCommand.toString()
   }

@@ -62,12 +62,10 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
 
   // Previous step to process the message where promise is stored.
   def storePromise(promisesByIds: PromisesByIds): Receive = {
-    case (message: CommandEnvelope,
-          promise: Promise[ServerReply @unchecked]) =>
+    case (message: CommandEnvelope, promise: Promise[ServerReply @unchecked]) =>
       logger.debug("Sending message to the Crossdata cluster")
       context.become(
-          start(promisesByIds.copy(
-                  promisesByIds.promises + (message.cmd.requestId -> promise))))
+          start(promisesByIds.copy(promisesByIds.promises + (message.cmd.requestId -> promise))))
       self ! message
   }
 
@@ -77,65 +75,44 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
     case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
       logger.info(
           s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
-      clusterClientActor ! ClusterClient.Send(
-          ServerClusterClientParameters.ServerPath,
-          secureSQLCommand,
-          localAffinity = false)
+      clusterClientActor ! ClusterClient
+        .Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(
-        addJARCommand @ AddJARCommand(path, _, _, _),
-        session) =>
+    case secureSQLCommand @ CommandEnvelope(addJARCommand @ AddJARCommand(path, _, _, _),
+                                            session) =>
       import context.dispatcher
-      val shipmentResponse: Future[SQLReply] =
-        sendJarToServers(addJARCommand, path, session)
+      val shipmentResponse: Future[SQLReply] = sendJarToServers(addJARCommand, path, session)
       shipmentResponse pipeTo sender
 
-    case secureSQLCommand @ CommandEnvelope(
-        clusterStateCommand: ClusterStateCommand,
-        _) =>
-      logger.debug(
-          s"Send cluster state with requestID=${clusterStateCommand.requestId}")
-      clusterClientActor ! ClusterClient.Send(
-          ServerClusterClientParameters.ServerPath,
-          secureSQLCommand,
-          localAffinity = false)
+    case secureSQLCommand @ CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
+      logger.debug(s"Send cluster state with requestID=${clusterStateCommand.requestId}")
+      clusterClientActor ! ClusterClient
+        .Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(
-        aCmd @ AddAppCommand(path, alias, clss, _),
-        _) =>
-      clusterClientActor ! ClusterClient.Send(
-          ServerClusterClientParameters.ServerPath,
-          secureSQLCommand,
-          localAffinity = false)
+    case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss, _), _) =>
+      clusterClientActor ! ClusterClient
+        .Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(_: OpenSessionCommand |
-                                            _: CloseSessionCommand,
-                                            _) =>
-      clusterClientActor ! ClusterClient.Send(
-          ServerClusterClientParameters.ServerPath,
-          secureSQLCommand,
-          localAffinity = true)
+    case secureSQLCommand @ CommandEnvelope(_: OpenSessionCommand | _: CloseSessionCommand, _) =>
+      clusterClientActor ! ClusterClient
+        .Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = true)
 
     case sqlCommand: SQLCommand =>
       logger.warn(
           s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
   }
 
-  def sendJarToServers(command: Command,
-                       path: String,
-                       session: Session): Future[SQLReply] = {
+  def sendJarToServers(command: Command, path: String, session: Session): Future[SQLReply] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     httpClient.sendJarToHTTPServer(path, session) map { response =>
       SQLReply(
           command.requestId,
-          SuccessfulSQLResult(
-              Array(Row(response)),
-              StructType(StructField("filepath", StringType) :: Nil))
+          SuccessfulSQLResult(Array(Row(response)),
+                              StructType(StructField("filepath", StringType) :: Nil))
       )
     } recover {
       case failureCause =>
-        val msg =
-          s"Error trying to send JAR through HTTP: ${failureCause.getMessage}"
+        val msg = s"Error trying to send JAR through HTTP: ${failureCause.getMessage}"
         logger.error(msg)
         SQLReply(
             command.requestId,
@@ -151,9 +128,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
           s"Sever reply received from Crossdata Server: $sender with ID=${reply.requestId}")
       promisesByIds.promises.get(reply.requestId) match {
         case Some(p) =>
-          context.become(
-              start(promisesByIds.copy(
-                      promisesByIds.promises - reply.requestId)))
+          context.become(start(promisesByIds.copy(promisesByIds.promises - reply.requestId)))
           reply match {
             case reply @ SQLReply(_, result) =>
               logger.info(s"Successful SQL execution: $result")
@@ -180,8 +155,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
       sendToServer(promisesByIds) orElse
       receiveFromServer(promisesByIds) orElse {
       case any =>
-        logger.warn(
-            s"Unknown message: $any. Message won't be sent to the Crossdata cluster")
+        logger.warn(s"Unknown message: $any. Message won't be sent to the Crossdata cluster")
     }
   }
 }

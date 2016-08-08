@@ -39,9 +39,8 @@ with ZookeeperDefaultTestConstants {
     ZookeeperConnection.fold(zkResourceConfig) { connectionString =>
       zkResourceConfig.flatMap(
           resourceConfig =>
-            Option(resourceConfig.withValue(
-                    ZookeeperConnectionKey,
-                    ConfigValueFactory.fromAnyRef(connectionString))))
+            Option(resourceConfig.withValue(ZookeeperConnectionKey,
+                                            ConfigValueFactory.fromAnyRef(connectionString))))
     }
   }
 

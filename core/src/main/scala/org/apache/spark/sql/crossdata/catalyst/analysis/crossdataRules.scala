@@ -33,16 +33,13 @@ object ResolveAggregateAlias extends Rule[LogicalPlan] {
     case p: LogicalPlan if !p.childrenResolved => p
 
     case a @ Aggregate(grouping, aggregateExp, child)
-        if child.resolved && !a.resolved && groupingExpressionsContainAlias(
-            grouping,
-            aggregateExp) =>
+        if child.resolved && !a.resolved && groupingExpressionsContainAlias(grouping,
+                                                                            aggregateExp) =>
       val newGrouping = grouping.map { groupExpression =>
         groupExpression transformUp {
-          case PostponedAttribute(
-              u @ UnresolvedAttribute(Seq(aliasCandidate))) =>
+          case PostponedAttribute(u @ UnresolvedAttribute(Seq(aliasCandidate))) =>
             aggregateExp.collectFirst {
-              case Alias(resolvedAttribute, aliasName)
-                  if aliasName == aliasCandidate =>
+              case Alias(resolvedAttribute, aliasName) if aliasName == aliasCandidate =>
                 resolvedAttribute
             }.getOrElse(u)
         }
@@ -56,8 +53,7 @@ object ResolveAggregateAlias extends Rule[LogicalPlan] {
       aggregateExpressions: Seq[NamedExpression]): Boolean = {
     def aggregateExpressionsContainAliasReference(aliasCandidate: String) =
       aggregateExpressions.exists {
-        case Alias(resolvedAttribute, aliasName)
-            if aliasName == aliasCandidate =>
+        case Alias(resolvedAttribute, aliasName) if aliasName == aliasCandidate =>
           true
         case _ =>
           false
@@ -117,16 +113,14 @@ object PrepareAggregateAlias extends Rule[LogicalPlan] {
 
 }
 
-case class WrapRelationWithGlobalIndex(catalog: XDCatalog)
-    extends Rule[LogicalPlan] {
+case class WrapRelationWithGlobalIndex(catalog: XDCatalog) extends Rule[LogicalPlan] {
 
   override def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
 
     case pp if planWithAvailableIndex(pp) =>
       plan resolveOperators {
         case unresolvedRelation: UnresolvedRelation =>
-          ExtendedUnresolvedRelation(unresolvedRelation.tableIdentifier,
-                                     unresolvedRelation)
+          ExtendedUnresolvedRelation(unresolvedRelation.tableIdentifier, unresolvedRelation)
       }
   }
 
@@ -134,8 +128,7 @@ case class WrapRelationWithGlobalIndex(catalog: XDCatalog)
 
     //Get filters and escape projects to check if plan could be resolved using Indexes
     @tailrec
-    def helper(filtersConditions: Seq[Expression],
-               actual: LogicalPlan): Boolean = actual match {
+    def helper(filtersConditions: Seq[Expression], actual: LogicalPlan): Boolean = actual match {
 
       case logical.Filter(condition, child: LogicalPlan) =>
         helper(filtersConditions :+ condition, child)
@@ -145,12 +138,10 @@ case class WrapRelationWithGlobalIndex(catalog: XDCatalog)
 
       case u: UnresolvedRelation =>
         //Check if table has index and if there are some Filter that have all its attributes indexed
-        catalog.indexMetadataByTableIdentifier(u.tableIdentifier).map {
-          index =>
-            filtersConditions exists { condition =>
-              IndexUtils.areAllAttributeIndexedInExpr(condition,
-                                                      index.indexedCols)
-            }
+        catalog.indexMetadataByTableIdentifier(u.tableIdentifier).map { index =>
+          filtersConditions exists { condition =>
+            IndexUtils.areAllAttributeIndexedInExpr(condition, index.indexedCols)
+          }
         } getOrElse {
           false
         }

@@ -32,8 +32,7 @@ class EphemeralStatusActor(streamingContext: StreamingContext,
     extends Actor
     with EphemeralTableStatusMapDAO {
 
-  val ephemeralTMDao = new EphemeralTableMapDAO(
-      Map(ZookeeperPrefixName -> zookeeperConfiguration))
+  val ephemeralTMDao = new EphemeralTableMapDAO(Map(ZookeeperPrefixName -> zookeeperConfiguration))
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var ephemeralStatus: Option[EphemeralStatusModel] = getRepositoryStatusTable
   var cancellableCheckStatus: Option[Cancellable] = None
@@ -92,8 +91,7 @@ class EphemeralStatusActor(streamingContext: StreamingContext,
       }
     }
 
-  private[streaming] def doSetStatus(
-      newStatus: EphemeralExecutionStatus.Value): Unit = {
+  private[streaming] def doSetStatus(newStatus: EphemeralExecutionStatus.Value): Unit = {
 
     val startTime =
       if (newStatus == EphemeralExecutionStatus.Started)
@@ -105,10 +103,7 @@ class EphemeralStatusActor(streamingContext: StreamingContext,
       else None
     val resultStatus = ephemeralStatus.fold(
         dao.create(ephemeralTableName,
-                   EphemeralStatusModel(ephemeralTableName,
-                                        newStatus,
-                                        startTime,
-                                        stopTime))
+                   EphemeralStatusModel(ephemeralTableName, newStatus, startTime, stopTime))
     ) { ephStatus =>
       val newStatusModel = ephStatus.copy(
           status = newStatus,
@@ -138,8 +133,7 @@ class EphemeralStatusActor(streamingContext: StreamingContext,
     dao.get(ephemeralTableName)
 
   private[streaming] def getStatusFromTable(
-      ephemeralTable: Option[EphemeralStatusModel])
-    : EphemeralExecutionStatus.Value = {
+      ephemeralTable: Option[EphemeralStatusModel]): EphemeralExecutionStatus.Value = {
     ephemeralTable.fold(EphemeralExecutionStatus.NotStarted) { tableStatus =>
       tableStatus.status
     }

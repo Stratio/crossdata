@@ -44,8 +44,7 @@ trait CassandraInsertCollection extends CassandraWithSharedContext {
             s"Name $a" ::
               List(a.toString, (a + 1).toString, (a + 2).toString) ::
                 Map("x" -> (a + 1).toString, "y" -> (a + 2).toString) ::
-                  List(Map("x" -> (a + 1).toString),
-                       Map("y" -> (a + 2).toString)) ::
+                  List(Map("x" -> (a + 1).toString), Map("y" -> (a + 2).toString)) ::
                     Map("x" -> List((a + 1).toString, (a + 2).toString),
                         "y" -> List((a + 2).toString)) :: Nil
   }).toList

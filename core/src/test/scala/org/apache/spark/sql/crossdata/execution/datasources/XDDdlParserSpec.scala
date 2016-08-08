@@ -106,24 +106,21 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar {
   it should "successfully parse a DROP TABLE with a qualified table name into a DropTable RunnableCommand" in {
 
     val sentence = "DROP TABLE dbId.tableId"
-    parser.parse(sentence) shouldBe DropTable(
-        TableIdentifier("tableId", Some("dbId")))
+    parser.parse(sentence) shouldBe DropTable(TableIdentifier("tableId", Some("dbId")))
 
   }
 
   it should "successfully parse a DROP EXTERNAL TABLE into a DropExternalTable RunnableCommand" in {
 
     val sentence = "DROP EXTERNAL TABLE tableId"
-    parser.parse(sentence) shouldBe DropExternalTable(
-        TableIdentifier("tableId", None))
+    parser.parse(sentence) shouldBe DropExternalTable(TableIdentifier("tableId", None))
 
   }
 
   it should "successfully parse a DROP EXTERNAL TABLE with a qualified table name into a DropExternalTable RunnableCommand" in {
 
     val sentence = "DROP EXTERNAL TABLE dbId.tableId"
-    parser.parse(sentence) shouldBe DropExternalTable(
-        TableIdentifier("tableId", Some("dbId")))
+    parser.parse(sentence) shouldBe DropExternalTable(TableIdentifier("tableId", Some("dbId")))
 
   }
 
@@ -131,8 +128,7 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar {
 
     val sentence = """INSERT INTO tableId VALUES ( 12, 12.01, 'proof', true)"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable(TableIdentifier("tableId"),
-                      List(List("12", "12.01", "proof", "true")))
+      InsertIntoTable(TableIdentifier("tableId"), List(List("12", "12.01", "proof", "true")))
 
   }
 
@@ -243,10 +239,9 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar {
     val sentence =
       """INSERT INTO tableId VALUES ( [(x->1, y->2), (z->3)], (x -> [3,4], y -> [5,6]) )"""
     parser.parse(sentence) shouldBe
-      InsertIntoTable(
-          TableIdentifier("tableId"),
-          List(List(List(Map("x" -> "1", "y" -> "2"), Map("z" -> "3")),
-                    Map("x" -> List("3", "4"), "y" -> List("5", "6")))))
+      InsertIntoTable(TableIdentifier("tableId"),
+                      List(List(List(Map("x" -> "1", "y" -> "2"), Map("z" -> "3")),
+                                Map("x" -> List("3", "4"), "y" -> List("5", "6")))))
 
   }
 
@@ -292,16 +287,12 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar {
 
   it should "successfully parse a ADD APP into a AddApp RunnableCommand" in {
     val sentence = "ADD APP '/my/path/file.jar' AS jj WITH aaa.bbb.ccc"
-    parser.parse(sentence) shouldBe AddApp("/my/path/file.jar",
-                                           "aaa.bbb.ccc",
-                                           Some("jj"))
+    parser.parse(sentence) shouldBe AddApp("/my/path/file.jar", "aaa.bbb.ccc", Some("jj"))
   }
 
   it should "successfully parse a ADD APP without Alias into a AddApp RunnableCommand" in {
     val sentence = "ADD APP '/my/path/file.jar' WITH aaa.bbb.ccc"
-    parser.parse(sentence) shouldBe AddApp("/my/path/file.jar",
-                                           "aaa.bbb.ccc",
-                                           None)
+    parser.parse(sentence) shouldBe AddApp("/my/path/file.jar", "aaa.bbb.ccc", None)
   }
 
   it should "successfully parse a CREATE GLOBAL INDEX into a CreateGlobalIndex RunnableCommand" in {
@@ -314,13 +305,12 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar {
          |   opt2 "opt2val"
          |)""".stripMargin
     parser.parse(sentence) shouldBe
-      CreateGlobalIndex(
-          TableIdentifier("myIndex"),
-          TableIdentifier("myTable", Some("myDb")),
-          Seq("col1", "col2"),
-          "pk1",
-          Option("com.stratio.crossdata.connector.elasticsearch"),
-          Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
+      CreateGlobalIndex(TableIdentifier("myIndex"),
+                        TableIdentifier("myTable", Some("myDb")),
+                        Seq("col1", "col2"),
+                        "pk1",
+                        Option("com.stratio.crossdata.connector.elasticsearch"),
+                        Map("opt1" -> "opt1val", "opt2" -> "opt2val"))
   }
 
   it should "successfully parse a CREATE GLOBAL INDEX without USING into a CreateGlobalIndex RunnableCommand" in {

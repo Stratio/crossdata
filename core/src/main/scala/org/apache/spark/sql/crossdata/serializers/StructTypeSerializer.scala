@@ -25,8 +25,7 @@ object StructTypeSerializer extends Serializer[StructType] {
   private val StructTypeClass = classOf[StructType]
   private val StructTypeId = "structType"
 
-  def deserialize(implicit format: Formats)
-    : PartialFunction[(TypeInfo, JValue), StructType] = {
+  def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), StructType] = {
     case (TypeInfo(StructTypeClass, _), json) =>
       json match {
         case JObject(JField(StructTypeId, JString(jsonString)) :: _) =>

@@ -26,8 +26,7 @@ case class EntityIdentifier(id: String) extends Identifier {
   override private[querybuilder] def toXDQL: String = id
 }
 
-case class AliasIdentifier(underlyingEntity: CrossdataSQLStatement,
-                           alias: String)
+case class AliasIdentifier(underlyingEntity: CrossdataSQLStatement, alias: String)
     extends Identifier {
   override private[querybuilder] def toXDQL: String =
     s" ${underlyingEntity.toXDQL} AS $alias"

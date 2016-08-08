@@ -56,16 +56,14 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
           ephemeralStatusActor = Option(actorRef)
           actorRef ! AddListener
         case Failure(e) =>
-          logger
-            .error("Error creating streaming status actor with listener: ", e)
+          logger.error("Error creating streaming status actor with listener: ", e)
       }
     }
     ephemeralStatusActor
   }
 
-  def queriesFromEphemeralTable(
-      zookeeperConfiguration: Map[String, String],
-      ephemeralTableName: String): Seq[EphemeralQueryModel] = {
+  def queriesFromEphemeralTable(zookeeperConfiguration: Map[String, String],
+                                ephemeralTableName: String): Seq[EphemeralQueryModel] = {
 
     createEphemeralQueryActor(zookeeperConfiguration)
 
@@ -104,9 +102,8 @@ object CrossdataStatusHelper extends SparkLoggerComponent {
     synchronized {
       if (ephemeralQueryActor.isEmpty) {
         Try(
-            actorSystem.actorOf(
-                Props(new EphemeralQueryActor(zookeeperConfiguration)),
-                EphemeralQueryActorName)
+            actorSystem.actorOf(Props(new EphemeralQueryActor(zookeeperConfiguration)),
+                                EphemeralQueryActorName)
         ) match {
           case Success(actorRef) =>
             ephemeralQueryActor = Option(actorRef)

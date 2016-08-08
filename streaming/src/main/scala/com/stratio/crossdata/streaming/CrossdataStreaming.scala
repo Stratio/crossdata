@@ -41,20 +41,17 @@ class CrossdataStreaming(ephemeralTableName: String,
     Try {
       val ephemeralTable = dao
         .get(ephemeralTableName)
-        .getOrElse(
-            throw new IllegalStateException("Ephemeral table not found"))
+        .getOrElse(throw new IllegalStateException("Ephemeral table not found"))
       val sparkConfig = configToSparkConf(ephemeralTable)
 
-      val ssc = StreamingContext
-        .getOrCreate(ephemeralTable.options.checkpointDirectory, () => {
-          CrossdataStreamingHelper.createContext(ephemeralTable,
-                                                 sparkConfig,
-                                                 zookeeperCatalogConfig,
-                                                 crossdataCatalogConfiguration)
-        })
+      val ssc = StreamingContext.getOrCreate(ephemeralTable.options.checkpointDirectory, () => {
+        CrossdataStreamingHelper.createContext(ephemeralTable,
+                                               sparkConfig,
+                                               zookeeperCatalogConfig,
+                                               crossdataCatalogConfiguration)
+      })
 
-      CrossdataStatusHelper
-        .initStatusActor(ssc, zookeeperCatalogConfig, ephemeralTable.name)
+      CrossdataStatusHelper.initStatusActor(ssc, zookeeperCatalogConfig, ephemeralTable.name)
 
       logger.info(s"Started Ephemeral Table: $ephemeralTableName")
       CrossdataStatusHelper.setEphemeralStatus(
@@ -68,12 +65,10 @@ class CrossdataStreaming(ephemeralTableName: String,
     }
   }
 
-  private[streaming] def configToSparkConf(
-      ephemeralTable: EphemeralTableModel): SparkConf =
+  private[streaming] def configToSparkConf(ephemeralTable: EphemeralTableModel): SparkConf =
     new SparkConf().setAll(setPrefixSpark(ephemeralTable.options.sparkOptions))
 
-  private[streaming] def setPrefixSpark(
-      sparkConfig: Map[String, String]): Map[String, String] =
+  private[streaming] def setPrefixSpark(sparkConfig: Map[String, String]): Map[String, String] =
     sparkConfig.map {
       case entry @ (key, value) =>
         if (key.startsWith(SparkPrefixName)) entry

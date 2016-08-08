@@ -32,11 +32,10 @@ import scala.util.{Failure, Try}
 
 object CrossdataStreamingHelper extends SparkLoggerComponent {
 
-  def createContext(
-      ephemeralTable: EphemeralTableModel,
-      sparkConf: SparkConf,
-      zookeeperConf: Map[String, String],
-      crossdataCatalogConf: Map[String, String]): StreamingContext = {
+  def createContext(ephemeralTable: EphemeralTableModel,
+                    sparkConf: SparkConf,
+                    zookeeperConf: Map[String, String],
+                    crossdataCatalogConf: Map[String, String]): StreamingContext = {
     val sparkStreamingWindow = ephemeralTable.options.atomicWindow
     val sparkContext = SparkContext.getOrCreate(sparkConf)
 
@@ -44,16 +43,14 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     // Therefore, this value never reaches the Spark workers.
     val countdowns = collection.mutable.Map[String, Int]()
 
-    val streamingContext =
-      new StreamingContext(sparkContext, Seconds(sparkStreamingWindow))
+    val streamingContext = new StreamingContext(sparkContext, Seconds(sparkStreamingWindow))
 
     streamingContext.checkpoint(ephemeralTable.options.checkpointDirectory)
 
     val kafkaOptions = ephemeralTable.options.kafkaOptions
     val kafkaInput = new KafkaInput(kafkaOptions)
-    val kafkaDStream = toWindowDStream(
-        kafkaInput.createStream(streamingContext),
-        ephemeralTable.options)
+    val kafkaDStream =
+      toWindowDStream(kafkaInput.createStream(streamingContext), ephemeralTable.options)
 
     // DStream.foreachRDD is a method that is executed in the Spark Driver if and when an output action is not called
     // over a RDD. Thus, the value countdowns can be used inside.
@@ -61,23 +58,21 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     // http://spark.apache.org/docs/latest/streaming-programming-guide.html#design-patterns-for-using-foreachrdd
     kafkaDStream.foreachRDD { rdd =>
       if (rdd.take(1).length > 0) {
-        val ephemeralQueries = CrossdataStatusHelper
-          .queriesFromEphemeralTable(zookeeperConf, ephemeralTable.name)
+        val ephemeralQueries =
+          CrossdataStatusHelper.queriesFromEphemeralTable(zookeeperConf, ephemeralTable.name)
 
         if (ephemeralQueries.nonEmpty) {
           ephemeralQueries.foreach(ephemeralQuery => {
             val alias = ephemeralQuery.alias
             if (!countdowns.contains(alias)) {
-              countdowns.put(alias,
-                             (ephemeralQuery.window / sparkStreamingWindow))
+              countdowns.put(alias, (ephemeralQuery.window / sparkStreamingWindow))
             }
             countdowns.put(alias, countdowns.get(alias).getOrElse(0) - 1)
             logDebug(s"Countdowns: ${countdowns.mkString(", ")}")
 
             countdowns.get(alias) foreach {
               case 0 => {
-                countdowns.put(alias,
-                               (ephemeralQuery.window / sparkStreamingWindow))
+                countdowns.put(alias, (ephemeralQuery.window / sparkStreamingWindow))
                 logInfo(s"Executing streaming query $alias")
                 executeQuery(rdd,
                              ephemeralQuery,
@@ -110,14 +105,11 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     val sqlTableName = ephemeralTable.name
     val query = ephemeralQuery.sql
     val kafkaOptionsMerged = mergeKafkaOptions(ephemeralQuery, kafkaOptions)
-    val xdContext =
-      XDContext.getOrCreate(rdd.context, parseCatalogConfig(catalogConf))
+    val xdContext = XDContext.getOrCreate(rdd.context, parseCatalogConfig(catalogConf))
     // TODO add sampling ratio
     val dfReader = xdContext.read
-    val dfReaderWithschema =
-      ephemeralTable.schema.map(dfReader.schema).getOrElse(dfReader)
-    val df =
-      dfReaderWithschema.json(filterRddWithWindow(rdd, ephemeralQuery.window))
+    val dfReaderWithschema = ephemeralTable.schema.map(dfReader.schema).getOrElse(dfReader)
+    val df = dfReaderWithschema.json(filterRddWithWindow(rdd, ephemeralQuery.window))
     //df.cache()
     if (df.head(1).length > 0) {
       df.registerTempTable(sqlTableName)
@@ -147,18 +139,15 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     }
   }
 
-  private[streaming] def mergeKafkaOptions(
-      ephemeralQuery: EphemeralQueryModel,
-      kafkaOptions: KafkaOptionsModel): KafkaOptionsModel = {
+  private[streaming] def mergeKafkaOptions(ephemeralQuery: EphemeralQueryModel,
+                                           kafkaOptions: KafkaOptionsModel): KafkaOptionsModel = {
     kafkaOptions.copy(
-        partitionOutput = ephemeralQuery.options
-          .get(PartitionKey)
-          .orElse(kafkaOptions.partitionOutput),
+        partitionOutput =
+          ephemeralQuery.options.get(PartitionKey).orElse(kafkaOptions.partitionOutput),
         additionalOptions = kafkaOptions.additionalOptions ++ ephemeralQuery.options)
   }
 
-  private[streaming] def filterRddWithWindow(rdd: RDD[(Long, String)],
-                                             window: Int): RDD[String] =
+  private[streaming] def filterRddWithWindow(rdd: RDD[(Long, String)], window: Int): RDD[String] =
     rdd.flatMap {
       case (time, row) =>
         if (time > DateTime.now.getMillis - window * 1000) Option(row)
@@ -172,32 +161,21 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     inputStream.mapPartitions { iterator =>
       val dateTime = DateTime.now.getMillis
       iterator.map { case (_, kafkaEvent) => (dateTime, kafkaEvent) }
-    }.window(Seconds(ephemeralOptions.maxWindow),
-             Seconds(ephemeralOptions.atomicWindow))
+    }.window(Seconds(ephemeralOptions.maxWindow), Seconds(ephemeralOptions.atomicWindow))
 
-  private[streaming] def saveToKafkaInJSONFormat(
-      dataFrame: DataFrame,
-      topic: String,
-      kafkaOptions: KafkaOptionsModel): Unit =
-    dataFrame.toJSON.foreachPartition(
-        values =>
-          values.foreach(
-              value =>
-                KafkaProducer.put(topic,
-                                  value,
-                                  kafkaOptions,
-                                  kafkaOptions.partitionOutput)))
+  private[streaming] def saveToKafkaInJSONFormat(dataFrame: DataFrame,
+                                                 topic: String,
+                                                 kafkaOptions: KafkaOptionsModel): Unit =
+    dataFrame.toJSON.foreachPartition(values =>
+          values.foreach(value =>
+                KafkaProducer.put(topic, value, kafkaOptions, kafkaOptions.partitionOutput)))
 
-  private[streaming] def saveToKafkaInRowFormat(
-      dataFrame: DataFrame,
-      topic: String,
-      kafkaOptions: KafkaOptionsModel): Unit =
+  private[streaming] def saveToKafkaInRowFormat(dataFrame: DataFrame,
+                                                topic: String,
+                                                kafkaOptions: KafkaOptionsModel): Unit =
     dataFrame.rdd.foreachPartition(
         values =>
-          values.foreach(
-              value =>
-                KafkaProducer.put(topic,
-                                  value.mkString(","),
-                                  kafkaOptions,
-                                  kafkaOptions.partitionOutput)))
+          values.foreach(value =>
+                KafkaProducer
+                  .put(topic, value.mkString(","), kafkaOptions, kafkaOptions.partitionOutput)))
 }

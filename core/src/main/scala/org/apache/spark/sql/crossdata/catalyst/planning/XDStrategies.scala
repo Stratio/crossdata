@@ -58,12 +58,7 @@ trait XDStrategies extends SparkStrategies { self: XDContext#XDPlanner =>
                                     mode,
                                     opts,
                                     query) =>
-        val cmd = PersistSelectAsTable(tableIdent,
-                                       provider,
-                                       partitionCols,
-                                       mode,
-                                       opts,
-                                       query)
+        val cmd = PersistSelectAsTable(tableIdent, provider, partitionCols, mode, opts, query)
         ExecutedCommand(cmd) :: Nil
 
       case _ => Nil

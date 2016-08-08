@@ -47,8 +47,7 @@ class EphemeralQueryActor(zookeeperConfiguration: Map[String, String])
   }
 
   private def doAddListener(): Unit = {
-    repository
-      .addEntityListener(dao.entity, _ => streamingQueries = dao.getAll())
+    repository.addEntityListener(dao.entity, _ => streamingQueries = dao.getAll())
     sender ! ListenerResponse(true)
   }
 }
@@ -61,7 +60,6 @@ object EphemeralQueryActor {
 
   case class ListenerResponse(added: Boolean)
 
-  case class EphemeralQueriesResponse(
-      streamingQueries: Seq[EphemeralQueryModel])
+  case class EphemeralQueriesResponse(streamingQueries: Seq[EphemeralQueryModel])
 
 }

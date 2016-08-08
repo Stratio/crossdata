@@ -69,23 +69,17 @@ class DriverIT extends EndToEndTest {
     withDriverDo { driver =>
       driver
         .sql(
-            s"CREATE TABLE db.jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths
-              .get(getClass.getResource("/tabletest.json").toURI)
-              .toString}')"
+            s"CREATE TABLE db.jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
         )
         .waitForResult()
 
       driver
         .sql(
-            s"CREATE TABLE jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths
-              .get(getClass.getResource("/tabletest.json").toURI)
-              .toString}')"
+            s"CREATE TABLE jsonTable2 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')"
         )
         .waitForResult()
 
-      driver
-        .listTables() should contain allOf (("jsonTable2", Some("db")), ("jsonTable2",
-                                                                         None))
+      driver.listTables() should contain allOf (("jsonTable2", Some("db")), ("jsonTable2", None))
     }
   }
 
@@ -116,8 +110,7 @@ class DriverIT extends EndToEndTest {
     // TODO restore before merging session to master
     assumeCrossdataUpAndRunning
 
-    val file =
-      File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
+    val file = File(s"/tmp/bulk_${System.currentTimeMillis()}.jar").createFile(false)
     withDriverDo { driver =>
       val result = driver.addJar(file.path).waitForResult()
       file.delete()
@@ -140,9 +133,7 @@ class DriverIT extends EndToEndTest {
     val filePath = getClass.getResource("/TestAddApp.jar").getPath
     withDriverDo { driver =>
       val result = driver
-        .addAppCommand(filePath,
-                       "com.stratio.addApp.AddAppTest.main",
-                       Some("testApp"))
+        .addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp"))
         .waitForResult()
       driver.sql("EXECUTE testApp(rain,bow)").waitForResult()
       result.hasError should equal(false)
@@ -157,9 +148,7 @@ class DriverIT extends EndToEndTest {
 
     withDriverDo { driver =>
       val addAppResult = driver
-        .addAppCommand(filePath,
-                       "com.stratio.addApp.AddAppTest.main",
-                       Some("testApp"))
+        .addAppCommand(filePath, "com.stratio.addApp.AddAppTest.main", Some("testApp"))
         .waitForResult()
       addAppResult.hasError should equal(false)
 
@@ -185,18 +174,13 @@ class DriverIT extends EndToEndTest {
         driver.listTables().size shouldBe anotherDriver.listTables().size
 
         driver
-          .sql(s"CREATE TEMPORARY TABLE $driverTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
+          .sql(
+              s"CREATE TEMPORARY TABLE $driverTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
             .get(getClass.getResource("/tabletest.json").toURI)
             .toString}')")
           .waitForResult()
-        driver
-          .sql(s"SELECT * FROM $driverTable")
-          .waitForResult()
-          .resultSet should not be empty
-        anotherDriver
-          .sql(s"SELECT * FROM $driverTable")
-          .waitForResult()
-          .hasError shouldBe true
+        driver.sql(s"SELECT * FROM $driverTable").waitForResult().resultSet should not be empty
+        anotherDriver.sql(s"SELECT * FROM $driverTable").waitForResult().hasError shouldBe true
 
         anotherDriver
           .sql(s"CREATE TEMPORARY TABLE $anotherDriverTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
@@ -207,21 +191,12 @@ class DriverIT extends EndToEndTest {
           .sql(s"SELECT * FROM $anotherDriverTable")
           .waitForResult()
           .resultSet should not be empty
-        driver
-          .sql(s"SELECT * FROM $anotherDriverTable")
-          .waitForResult()
-          .hasError shouldBe true
+        driver.sql(s"SELECT * FROM $anotherDriverTable").waitForResult().hasError shouldBe true
 
       }
       // Once 'anotherDriver' closes its session, 'driver' should be still alive
-      driver
-        .sql(s"SELECT * FROM $driverTable")
-        .waitForResult()
-        .resultSet should not be empty
-      driver
-        .sql(s"SELECT * FROM $anotherDriverTable")
-        .waitForResult()
-        .hasError shouldBe true
+      driver.sql(s"SELECT * FROM $driverTable").waitForResult().resultSet should not be empty
+      driver.sql(s"SELECT * FROM $anotherDriverTable").waitForResult().hasError shouldBe true
     }
   }
 

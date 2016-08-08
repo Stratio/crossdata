@@ -27,30 +27,24 @@ object XDCatalogCommon {
 
   implicit class RichTableIdentifier(tableIdentifier: TableIdentifier) {
     def normalize(implicit conf: CatalystConf): TableIdentifierNormalized = {
-      val normalizedDatabase =
-        tableIdentifier.database.map(normalizeIdentifier(_, conf))
-      TableIdentifierNormalized(
-          normalizeIdentifier(tableIdentifier.table, conf),
-          normalizedDatabase)
+      val normalizedDatabase = tableIdentifier.database.map(normalizeIdentifier(_, conf))
+      TableIdentifierNormalized(normalizeIdentifier(tableIdentifier.table, conf),
+                                normalizedDatabase)
     }
   }
 
   implicit class RichIndexIdentifier(indexIdentifier: IndexIdentifier) {
     def normalize(implicit conf: CatalystConf): IndexIdentifierNormalized = {
-      val normalizedIndexName =
-        normalizeIdentifier(indexIdentifier.indexName, conf)
-      val normalizedIndexType =
-        normalizeIdentifier(indexIdentifier.indexType, conf)
+      val normalizedIndexName = normalizeIdentifier(indexIdentifier.indexName, conf)
+      val normalizedIndexType = normalizeIdentifier(indexIdentifier.indexType, conf)
       IndexIdentifierNormalized(normalizedIndexType, normalizedIndexName)
     }
   }
 
-  def stringifyTableIdentifierNormalized(
-      tableIdent: TableIdentifierNormalized): String =
+  def stringifyTableIdentifierNormalized(tableIdent: TableIdentifierNormalized): String =
     tableIdent.unquotedString
 
-  def normalizeTableIdentifier(tableIdent: TableIdentifier,
-                               conf: CatalystConf): String =
+  def normalizeTableIdentifier(tableIdent: TableIdentifier, conf: CatalystConf): String =
     stringifyTableIdentifierNormalized(tableIdent.normalize(conf))
 
   def normalizeIdentifier(identifier: String, conf: CatalystConf): String =
@@ -60,16 +54,12 @@ object XDCatalogCommon {
       identifier.toLowerCase
     }
 
-  def processAlias(tableIdentifier: TableIdentifier,
-                   lPlan: LogicalPlan,
-                   alias: Option[String])(conf: CatalystConf) = {
-    val tableWithQualifiers =
-      Subquery(normalizeTableIdentifier(tableIdentifier, conf), lPlan)
+  def processAlias(tableIdentifier: TableIdentifier, lPlan: LogicalPlan, alias: Option[String])(
+      conf: CatalystConf) = {
+    val tableWithQualifiers = Subquery(normalizeTableIdentifier(tableIdentifier, conf), lPlan)
     // If an alias was specified by the lookup, wrap the plan in a subquery so that attributes are
     // properly qualified with this alias.
-    alias
-      .map(a => Subquery(a, tableWithQualifiers))
-      .getOrElse(tableWithQualifiers)
+    alias.map(a => Subquery(a, tableWithQualifiers)).getOrElse(tableWithQualifiers)
   }
 }
 
@@ -80,8 +70,7 @@ sealed trait XDCatalogCommon extends SparkLoggerComponent {
   def relation(tableIdent: TableIdentifierNormalized)(
       implicit sqlContext: SQLContext): Option[LogicalPlan]
 
-  def allRelations(databaseName: Option[StringNormalized] = None)
-    : Seq[TableIdentifierNormalized]
+  def allRelations(databaseName: Option[StringNormalized] = None): Seq[TableIdentifierNormalized]
 
   def isAvailable: Boolean
 
@@ -120,9 +109,8 @@ trait XDPersistentCatalog extends XDCatalogCommon {
   def saveTable(crossdataTable: CrossdataTable, plan: LogicalPlan)(
       implicit sqlContext: SQLContext): Unit
 
-  def saveView(tableIdentifier: ViewIdentifierNormalized,
-               plan: LogicalPlan,
-               sqlText: String)(implicit sqlContext: SQLContext): Unit
+  def saveView(tableIdentifier: ViewIdentifierNormalized, plan: LogicalPlan, sqlText: String)(
+      implicit sqlContext: SQLContext): Unit
 
   def saveIndex(crossdataIndex: CrossdataIndex): Unit
 
@@ -143,11 +131,9 @@ trait XDPersistentCatalog extends XDCatalogCommon {
 
   def dropAllIndexes(): Unit
 
-  def lookupTable(
-      tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable]
+  def lookupTable(tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable]
 
-  def lookupIndex(indexIdentifier: IndexIdentifierNormalized)
-    : Option[CrossdataIndex] //TODO: Index operations to trait
+  def lookupIndex(indexIdentifier: IndexIdentifierNormalized): Option[CrossdataIndex] //TODO: Index operations to trait
 
   def lookupIndexByTableIdentifier(
       tableIdentifier: TableIdentifierNormalized): Option[CrossdataIndex]
@@ -198,9 +184,8 @@ trait XDStreamingCatalog extends XDCatalogCommon {
 
   protected[crossdata] def getAllEphemeralStatuses: Seq[EphemeralStatusModel]
 
-  protected[crossdata] def updateEphemeralStatus(
-      tableIdentifier: String,
-      status: EphemeralStatusModel): Unit
+  protected[crossdata] def updateEphemeralStatus(tableIdentifier: String,
+                                                 status: EphemeralStatusModel): Unit
 
   protected[crossdata] def dropEphemeralStatus(tableIdentifier: String): Unit
 

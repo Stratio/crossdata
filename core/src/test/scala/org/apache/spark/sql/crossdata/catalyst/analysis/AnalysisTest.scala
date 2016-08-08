@@ -41,15 +41,12 @@ trait AnalysisTest extends BaseXDTest {
     val caseSensitiveCatalog = new SimpleCatalog(caseSensitiveConf)
     caseSensitiveCatalog.registerTable(TableIdentifier("table"), testRelation)
 
-    new Analyzer(caseSensitiveCatalog,
-                 EmptyFunctionRegistry,
-                 caseSensitiveConf) {
+    new Analyzer(caseSensitiveCatalog, EmptyFunctionRegistry, caseSensitiveConf) {
       override val extendedResolutionRules = ResolveAggregateAlias :: Nil
     }
   }
 
-  protected def checkAnalysis(inputPlan: LogicalPlan,
-                              expectedPlan: LogicalPlan): Unit = {
+  protected def checkAnalysis(inputPlan: LogicalPlan, expectedPlan: LogicalPlan): Unit = {
     val analyzer = caseSensitiveAnalyzer
     val actualPlan = analyzer.execute(inputPlan)
     analyzer.checkAnalysis(actualPlan)
@@ -71,8 +68,7 @@ trait AnalysisTest extends BaseXDTest {
     if (normalized1 != normalized2) {
       fail(s"""
            |== FAIL: Plans do not match ===
-           |${sideBySide(normalized1.treeString, normalized2.treeString)
-            .mkString("\n")}
+           |${sideBySide(normalized1.treeString, normalized2.treeString).mkString("\n")}
          """.stripMargin)
     }
   }

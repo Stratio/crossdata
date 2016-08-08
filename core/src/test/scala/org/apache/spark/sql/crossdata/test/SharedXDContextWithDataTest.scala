@@ -19,9 +19,7 @@ import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 
 import scala.util.Try
 
-trait SharedXDContextWithDataTest
-    extends SharedXDContextTest
-    with SparkLoggerComponent {
+trait SharedXDContextWithDataTest extends SharedXDContextTest with SparkLoggerComponent {
 
   import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest._
 
@@ -99,13 +97,10 @@ trait SharedXDContextWithDataTest
 
 object SharedXDContextWithDataTest {
 
-  case class Sentence(query: String,
-                      provider: String,
-                      options: Map[String, String]) {
+  case class Sentence(query: String, provider: String, options: Map[String, String]) {
     override def toString: String = {
       val opt = options.map { case (k, v) => s"$k " + s"'$v'" } mkString ","
-      s"$query USING $provider" + options.headOption.fold("")(_ =>
-            s" OPTIONS ( $opt ) ")
+      s"$query USING $provider" + options.headOption.fold("")(_ => s" OPTIONS ( $opt ) ")
     }
   }
 

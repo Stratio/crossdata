@@ -49,8 +49,7 @@ class CassandraInsertTableIT extends CassandraInsertCollection {
       .collect() should be(Row(1) :: Nil)
 
     //EXPECTATION
-    val results =
-      sql(s"select id, age, enrolled from $Table where id=21").collect()
+    val results = sql(s"select id, age, enrolled from $Table where id=21").collect()
 
     results should have length 1
     results should contain
@@ -109,9 +108,7 @@ class CassandraInsertTableIT extends CassandraInsertCollection {
       .collect() should be(Row(2) :: Nil)
 
     //EXPECTATION
-    val results =
-      sql(s"select id, age, name, enrolled from $Table where id=25 or id=26")
-        .collect()
+    val results = sql(s"select id, age, name, enrolled from $Table where id=25 or id=26").collect()
 
     results should have length 2
     results should contain allOf (
@@ -122,17 +119,15 @@ class CassandraInsertTableIT extends CassandraInsertCollection {
   }
 
   it should "insert rows using INSERT INTO table(schema) VALUES with Arrays in Cassandra" in {
-    val query =
-      s"""|INSERT INTO $Table (id, age, name, enrolled, array_test) VALUES
+    val query = s"""|INSERT INTO $Table (id, age, name, enrolled, array_test) VALUES
           |(27, 55, 'Jules', true, [true, false]),
           |(28, 12, 'Martha', false, ['test1,t', 'test2'])
        """.stripMargin
     _xdContext.sql(query).collect() should be(Row(2) :: Nil)
 
     //EXPECTATION
-    val results = sql(
-        s"select id, age, name, enrolled, array_test from $Table where id=27 or id=28")
-      .collect()
+    val results =
+      sql(s"select id, age, name, enrolled, array_test from $Table where id=27 or id=28").collect()
 
     results should have length 2
     results should contain allOf (
@@ -142,78 +137,56 @@ class CassandraInsertTableIT extends CassandraInsertCollection {
   }
 
   it should "insert rows using INSERT INTO table(schema) VALUES with Map in Cassandra" in {
-    val query =
-      s"""|INSERT INTO $Table (id, age, name, enrolled, map_test) VALUES
+    val query = s"""|INSERT INTO $Table (id, age, name, enrolled, map_test) VALUES
           |( 29, 12, 'Albert', true, (x->1, y->2, z->3) ),
           |( 30, 20, 'Alfred', false, (xa->1, ya->2, za->3,d -> 5) )
        """.stripMargin
     _xdContext.sql(query).collect() should be(Row(2) :: Nil)
 
     //EXPECTATION
-    val results = sql(
-        s"select id, age, name, enrolled, map_test from $Table where id=29 or id=30")
-      .collect()
+    val results =
+      sql(s"select id, age, name, enrolled, map_test from $Table where id=29 or id=30").collect()
 
     results should have length 2
     results should contain allOf (
         Row(29, 12, "Albert", true, Map("x" -> "1", "y" -> "2", "z" -> "3")),
-        Row(30,
-            20,
-            "Alfred",
-            false,
-            Map("xa" -> "1", "ya" -> "2", "za" -> "3", "d" -> "5"))
+        Row(30, 20, "Alfred", false, Map("xa" -> "1", "ya" -> "2", "za" -> "3", "d" -> "5"))
     )
   }
 
   it should "insert rows using INSERT INTO table(schema) VALUES with Array of Maps in Cassandra" in {
-    val query =
-      s"""|INSERT INTO $Table (id, age,name, enrolled, array_map) VALUES
+    val query = s"""|INSERT INTO $Table (id, age,name, enrolled, array_map) VALUES
           |(31, 1, 'Nikolai', true, [(x -> 3), (z -> 1)] ),
           |(32, 14, 'Ludwig', false, [(x -> 1, y-> 1), (z -> 1)] )
        """.stripMargin
     _xdContext.sql(query).collect() should be(Row(2) :: Nil)
 
     //EXPECTATION
-    val results = sql(
-        s"select id, age,name, enrolled, array_map from $Table where id=31 or id=32")
-      .collect()
+    val results =
+      sql(s"select id, age,name, enrolled, array_map from $Table where id=31 or id=32").collect()
 
     results should have length 2
     results should contain allOf (
         Row(31, 1, "Nikolai", true, Seq(Map("x" -> "3"), Map("z" -> "1"))),
-        Row(32,
-            14,
-            "Ludwig",
-            false,
-            Seq(Map("x" -> "1", "y" -> "1"), Map("z" -> "1")))
+        Row(32, 14, "Ludwig", false, Seq(Map("x" -> "1", "y" -> "1"), Map("z" -> "1")))
     )
   }
 
   it should "insert rows using INSERT INTO table(schema) VALUES with Map of Array in Cassandra" in {
-    val query =
-      s"""|INSERT INTO $Table (id, age,name, enrolled, map_array) VALUES
+    val query = s"""|INSERT INTO $Table (id, age,name, enrolled, map_array) VALUES
           |(33, 13, 'Svletana', true, ( x->[1], y-> [3,4] ) ),
           |(34, 17, 'Wolfang', false, ( x->[1,2], y-> [3] ) )
        """.stripMargin
     _xdContext.sql(query).collect() should be(Row(2) :: Nil)
 
     //EXPECTATION
-    val results = sql(
-        s"select id, age,name, enrolled, map_array from $Table where id=33 or id=34")
-      .collect()
+    val results =
+      sql(s"select id, age,name, enrolled, map_array from $Table where id=33 or id=34").collect()
 
     results should have length 2
     results should contain allOf (
-        Row(33,
-            13,
-            "Svletana",
-            true,
-            Map("x" -> Seq("1"), "y" -> Seq("3", "4"))),
-        Row(34,
-            17,
-            "Wolfang",
-            false,
-            Map("x" -> Seq("1", "2"), "y" -> Seq("3")))
+        Row(33, 13, "Svletana", true, Map("x" -> Seq("1"), "y" -> Seq("3", "4"))),
+        Row(34, 17, "Wolfang", false, Map("x" -> Seq("1", "2"), "y" -> Seq("3")))
     )
   }
 

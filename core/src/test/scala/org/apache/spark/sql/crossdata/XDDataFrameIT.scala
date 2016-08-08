@@ -38,8 +38,7 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
   lazy val nativeRows = Array(Row(2l))
 
   "A XDDataFrame (select * from nativeRelation)" should "be executed natively" in {
-    val result =
-      XDDataFrame(xdContext, LogicalRelation(mockNativeRelation)).collect()
+    val result = XDDataFrame(xdContext, LogicalRelation(mockNativeRelation)).collect()
     result should have length 1
     result(0) should equal(nativeRows(0))
   }
@@ -54,31 +53,26 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
   }
 
   "A XDDataFrame resulting in an error when executing natively" should "be executed on the Spark cluster" in {
-    val result =
-      XDDataFrame(xdContext, LogicalRelation(mockPureSparkNativeRelation))
-        .collect()
+    val result = XDDataFrame(xdContext, LogicalRelation(mockPureSparkNativeRelation)).collect()
     result should have length 1
     result(0) should equal(sparkRows(0))
   }
 
   "A XDDataFrame with a logical plan which is not supported natively" should "be executed on the Spark cluster" in {
     val result =
-      XDDataFrame(xdContext,
-                  LogicalRelation(mockNativeRelationUnsupportedPlan)).collect()
+      XDDataFrame(xdContext, LogicalRelation(mockNativeRelationUnsupportedPlan)).collect()
     result should have length 1
     result(0) should equal(sparkRows(0))
   }
 
   "A XDDataFrame " should "execute collectAsList natively" in {
-    val result = XDDataFrame(xdContext, LogicalRelation(mockNativeRelation))
-      .collectAsList()
+    val result = XDDataFrame(xdContext, LogicalRelation(mockNativeRelation)).collectAsList()
     result should have length 1
     result.get(0) should equal(nativeRows(0))
   }
 
   "A XDDataFrame " should "return a XDDataFrame when applying a limit" in {
-    val dataframe =
-      XDDataFrame(xdContext, LogicalRelation(mockNativeRelation)).limit(5)
+    val dataframe = XDDataFrame(xdContext, LogicalRelation(mockNativeRelation)).limit(5)
     dataframe shouldBe a[XDDataFrame]
     dataframe.logicalPlan should matchPattern {
       case Limit(Literal(5, _), _) =>
@@ -86,20 +80,16 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
   }
 
   "A XDDataFrame " should "return a XDDataFrame when applying a count" in {
-    XDDataFrame(xdContext, LogicalRelation(mockNativeRelation))
-      .count() should be(2l)
+    XDDataFrame(xdContext, LogicalRelation(mockNativeRelation)).count() should be(2l)
   }
 
   val mockNonNativeRelation = new MockBaseRelation
 
-  val mockNativeRelation = new MockBaseRelation with NativeScan
-  with TableScan {
-    override def isSupported(logicalStep: LogicalPlan,
-                             fullyLogicalPlan: LogicalPlan) = true
+  val mockNativeRelation = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
 
     // Native execution
-    override def buildScan(
-        optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] =
+    override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] =
       Some(nativeRows)
 
     // Spark execution
@@ -110,14 +100,11 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
         .rdd
   }
 
-  val mockPureSparkNativeRelation = new MockBaseRelation with NativeScan
-  with TableScan {
-    override def isSupported(logicalStep: LogicalPlan,
-                             fullyLogicalPlan: LogicalPlan) = true
+  val mockPureSparkNativeRelation = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
 
     // Native execution
-    override def buildScan(
-        optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = None
+    override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = None
 
     // Spark execution
     override def buildScan(): RDD[Row] =
@@ -127,14 +114,11 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
         .rdd
   }
 
-  val mockNativeRelationWith2Rows = new MockBaseRelation with NativeScan
-  with TableScan {
-    override def isSupported(logicalStep: LogicalPlan,
-                             fullyLogicalPlan: LogicalPlan) = true
+  val mockNativeRelationWith2Rows = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = true
 
     // Native execution
-    override def buildScan(
-        optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] =
+    override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] =
       Some(Array(nativeRows(0), nativeRows(0)))
 
     // Spark execution
@@ -145,14 +129,11 @@ class XDDataFrameIT extends SharedXDContextTest with Inside {
         .rdd
   }
 
-  val mockNativeRelationUnsupportedPlan = new MockBaseRelation with NativeScan
-  with TableScan {
-    override def isSupported(logicalStep: LogicalPlan,
-                             fullyLogicalPlan: LogicalPlan) = false
+  val mockNativeRelationUnsupportedPlan = new MockBaseRelation with NativeScan with TableScan {
+    override def isSupported(logicalStep: LogicalPlan, fullyLogicalPlan: LogicalPlan) = false
 
     // Native execution
-    override def buildScan(
-        optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] =
+    override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] =
       Some(nativeRows)
 
     // Spark execution

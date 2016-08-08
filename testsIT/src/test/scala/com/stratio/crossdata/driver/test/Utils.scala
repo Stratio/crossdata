@@ -21,11 +21,9 @@ import com.stratio.crossdata.test.BaseXDTest
 
 object Utils extends BaseXDTest {
 
-  def withDriverDo(block: Driver => Unit)(
-      implicit optConfig: Option[DriverConf] = None): Unit = {
+  def withDriverDo(block: Driver => Unit)(implicit optConfig: Option[DriverConf] = None): Unit = {
 
-    val driver =
-      optConfig.map(Driver.newSession).getOrElse(Driver.newSession())
+    val driver = optConfig.map(Driver.newSession).getOrElse(Driver.newSession())
     try {
       block(driver)
     } finally {
@@ -36,9 +34,8 @@ object Utils extends BaseXDTest {
   def withJavaDriverDo(block: JavaDriver => Unit)(
       implicit optConfig: Option[DriverConf] = None): Unit = {
 
-    val driver = optConfig
-      .map(driverConf => new JavaDriver(driverConf))
-      .getOrElse(new JavaDriver())
+    val driver =
+      optConfig.map(driverConf => new JavaDriver(driverConf)).getOrElse(new JavaDriver())
     try {
       block(driver)
     } finally {

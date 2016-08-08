@@ -48,9 +48,8 @@ private[crossdata] trait StreamingCatalogAPI {
 
   protected[crossdata] def getAllEphemeralStatuses: Seq[EphemeralStatusModel]
 
-  protected[crossdata] def updateEphemeralStatus(
-      tableIdentifier: String,
-      status: EphemeralStatusModel): Unit
+  protected[crossdata] def updateEphemeralStatus(tableIdentifier: String,
+                                                 status: EphemeralStatusModel): Unit
 
   protected[crossdata] def dropEphemeralStatus(tableIdentifier: String): Unit
 

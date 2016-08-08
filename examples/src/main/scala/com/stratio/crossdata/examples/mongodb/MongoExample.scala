@@ -42,14 +42,10 @@ object MongoExample extends App with MongoDefaultConstants {
     //xdContext.sql(s"SELECT name as b, age FROM $Collection WHERE age > 12 limit 4").show(5)
     //xdContext.sql(s"SELECT id, age FROM $Collection WHERE age BETWEEN 13 AND 14 OR age = 15 OR (age = 11 AND id = '1')").show(5)
     //xdContext.sql(s"SELECT id, age FROM $Collection WHERE id LIKE '1%'").show(5)
-    xdContext
-      .sql(s"SELECT id, name FROM $Collection WHERE name LIKE '%ame%'")
-      .show(5)
+    xdContext.sql(s"SELECT id, name FROM $Collection WHERE name LIKE '%ame%'").show(5)
 
     //Spark
-    xdContext
-      .sql(s"SELECT count(*), avg(age) FROM $Collection GROUP BY enrolled")
-      .show(5)
+    xdContext.sql(s"SELECT count(*), avg(age) FROM $Collection GROUP BY enrolled").show(5)
 
   /* TODO CREATE TABLE AS SELECT EXAMPLE
     xdContext.sql(
@@ -68,8 +64,7 @@ object MongoExample extends App with MongoDefaultConstants {
 
   private def withCrossdataContext(commands: XDContext => Unit) = {
 
-    val sparkConf =
-      new SparkConf().setAppName("MongoExample").setMaster("local[4]")
+    val sparkConf = new SparkConf().setAppName("MongoExample").setMaster("local[4]")
 
     val sc = new SparkContext(sparkConf)
     try {

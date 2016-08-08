@@ -26,19 +26,14 @@ class SimpleRunnableQuery private (context: String => String,
     with Limitable
     with Groupable {
 
-  def this(projections: Seq[Expression],
-           relation: Relation,
-           context: String => String) =
+  def this(projections: Seq[Expression], relation: Relation, context: String => String) =
     this(context, projections, relation, None)
 
   // It has to be abstract (simple runnable query has transitions) and concrete
   override def where(condition: Predicate): this.type =
     //Not knew alternatives to `asInstanceOf`: http://stackoverflow.com/a/791157/1893995
-    new SimpleRunnableQuery(
-        context,
-        projections,
-        relation,
-        Some(combinePredicates(condition))).asInstanceOf[this.type]
+    new SimpleRunnableQuery(context, projections, relation, Some(combinePredicates(condition)))
+      .asInstanceOf[this.type]
 
 }
 
@@ -47,11 +42,7 @@ class GroupedQuery(context: String => String,
                    relation: Relation,
                    filters: Option[Predicate] = None,
                    groupingExpressions: Seq[Expression])
-    extends RunnableQuery(context,
-                          projections,
-                          relation,
-                          filters,
-                          groupingExpressions)
+    extends RunnableQuery(context, projections, relation, filters, groupingExpressions)
     with Sortable
     with Limitable {
 
@@ -59,12 +50,7 @@ class GroupedQuery(context: String => String,
     having(XDQLStatement(expression))
 
   def having(expression: Predicate): HavingQuery =
-    new HavingQuery(context,
-                    projections,
-                    relation,
-                    filters,
-                    groupingExpressions,
-                    expression)
+    new HavingQuery(context, projections, relation, filters, groupingExpressions, expression)
 
   override def where(condition: Predicate): this.type =
     //Not knew alternatices to `asInstanceOf`: http://stackoverflow.com/a/791157/1893995

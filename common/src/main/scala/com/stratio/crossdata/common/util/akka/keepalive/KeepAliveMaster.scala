@@ -34,9 +34,7 @@ object KeepAliveMaster {
     * @param continueMonitoring `true` if the target actor should still be monitored after misses. Otherwise
     *                          it'll be forgotten by the master actor.
     */
-  case class DoCheck[ID](id: ID,
-                         period: FiniteDuration,
-                         continueMonitoring: Boolean = false)
+  case class DoCheck[ID](id: ID, period: FiniteDuration, continueMonitoring: Boolean = false)
 
   /**
     * Message sent to the monitor client when a heartbeat has been lost.

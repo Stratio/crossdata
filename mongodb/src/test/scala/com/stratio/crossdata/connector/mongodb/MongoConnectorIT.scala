@@ -35,8 +35,7 @@ class MongoConnectorIT extends MongoWithSharedContext {
     result should have length 10
     schema.fieldNames should equal(
         Seq("id", "age", "description", "enrolled", "name", "optionalField"))
-    result.head.toSeq should equal(
-        Seq(1, 11, "description1", false, "Name 1", null))
+    result.head.toSeq should equal(Seq(1, 11, "description1", false, "Name 1", null))
   }
 
   it should "return the columns in the requested order" in {
@@ -64,90 +63,75 @@ class MongoConnectorIT extends MongoWithSharedContext {
 
   it should "execute natively an In filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result =
-      sql(s"SELECT * FROM $Collection WHERE id IN (1,5,9)").collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE id IN (1,5,9)").collect(Native)
     result should have length 3
   }
 
   it should "execute natively a LessThan filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result =
-      sql(s"SELECT * FROM $Collection WHERE age < 13").collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE age < 13").collect(Native)
     result should have length 2
   }
 
   it should "execute natively a LessThanOrEqual filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result =
-      sql(s"SELECT * FROM $Collection WHERE age <= 13").collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE age <= 13").collect(Native)
     result should have length 3
   }
 
   it should "execute natively a GreaterThan filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result =
-      sql(s"SELECT * FROM $Collection WHERE age > 13").collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE age > 13").collect(Native)
     result should have length 7
   }
 
   it should "execute natively a GreaterThanOrEqual filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result =
-      sql(s"SELECT * FROM $Collection WHERE age >= 13").collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE age >= 13").collect(Native)
     result should have length 8
   }
 
   it should "execute natively an IsNull filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result = sql(s"SELECT * FROM $Collection WHERE optionalField IS NULL")
-      .collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE optionalField IS NULL").collect(Native)
     result should have length 4
   }
 
   it should "execute natively an IsNotNull filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result =
-      sql(s"SELECT * FROM $Collection WHERE optionalField IS NOT NULL")
-        .collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE optionalField IS NOT NULL").collect(Native)
     result should have length 6
   }
 
   it should "execute natively a StringStartsWith filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result =
-      sql(s"SELECT * FROM $Collection WHERE description LIKE 'descr%'")
-        .collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE description LIKE 'descr%'").collect(Native)
     result should have length 10
   }
 
   it should "execute natively a StringEndsWith filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result =
-      sql(s"SELECT * FROM $Collection WHERE description LIKE '%ion1'")
-        .collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE description LIKE '%ion1'").collect(Native)
     result should have length 1
   }
 
   it should "execute natively a StringContains filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result =
-      sql(s"SELECT * FROM $Collection WHERE description LIKE '%ion%'")
-        .collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE description LIKE '%ion%'").collect(Native)
     result should have length 10
   }
 
   it should "execute natively an AND filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result = sql(
-        s"SELECT * FROM $Collection WHERE id = 3 AND age = 13 AND description = 'description3' ")
-      .collect(Native)
+    val result =
+      sql(s"SELECT * FROM $Collection WHERE id = 3 AND age = 13 AND description = 'description3' ")
+        .collect(Native)
     result should have length 1
   }
 
   it should "execute natively an OR filter" in {
     assumeEnvironmentIsUpAndRunning
-    val result =
-      sql(s"SELECT * FROM $Collection WHERE id = 3 OR id = 4 ").collect(Native)
+    val result = sql(s"SELECT * FROM $Collection WHERE id = 3 OR id = 4 ").collect(Native)
     result should have length 2
   }
 
@@ -180,9 +164,8 @@ class MongoConnectorIT extends MongoWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //This crates a new collection in the database which will not be initially registered at the Spark
-    val client =
-      MongoClient(MongoHost, MongoPort)(Database)(UnregisteredCollection)
-        .insert(MongoDBObject("id" -> 1))
+    val client = MongoClient(MongoHost, MongoPort)(Database)(UnregisteredCollection)
+      .insert(MongoDBObject("id" -> 1))
 
     val result = sql(s"""
          |IMPORT TABLES
@@ -194,9 +177,8 @@ class MongoConnectorIT extends MongoWithSharedContext {
       """.stripMargin)
 
     val imported = result.collect().exists { row =>
-      val tableFound = row.getSeq(row.fieldIndex("tableIdentifier")) == Seq(
-            Database,
-            UnregisteredCollection)
+      val tableFound = row.getSeq(row.fieldIndex("tableIdentifier")) == Seq(Database,
+                                                                            UnregisteredCollection)
       val isIgnored = row.getBoolean(row.fieldIndex("ignored"))
       tableFound && !isIgnored
     }
@@ -207,8 +189,7 @@ class MongoConnectorIT extends MongoWithSharedContext {
 
   it should "not import tables for sentences lacking required options:" in {
     assumeEnvironmentIsUpAndRunning
-    an[Exception] shouldBe thrownBy(
-        sql(s"IMPORT TABLES USING $SourceProvider"))
+    an[Exception] shouldBe thrownBy(sql(s"IMPORT TABLES USING $SourceProvider"))
   }
 
 }

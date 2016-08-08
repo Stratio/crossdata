@@ -43,8 +43,7 @@ trait CommonValues extends SparkLoggerComponent {
   val PartitionOutputEmpty = None
   val PartitionOutput = Some("1")
   val additionalOptionsEmpty = Map.empty[String, String]
-  val additionalOptionsStream =
-    Map("auto.offset.reset" -> "smallest", "batchSize" -> "100")
+  val additionalOptionsStream = Map("auto.offset.reset" -> "smallest", "batchSize" -> "100")
   val StorageLevel = "MEMORY_ONLY_SER"
   val StorageStreamLevel = "MEMORY_ONLY"
   val connectionHostModel = ConnectionHostModel(
@@ -58,21 +57,19 @@ trait CommonValues extends SparkLoggerComponent {
                                             PartitionOutputEmpty,
                                             additionalOptionsEmpty,
                                             StorageLevel)
-  val kafkaOptionsModelEmptyConnection = KafkaOptionsModel(
-      ConnectionHostModel(Seq(), Seq()),
-      Seq(topicModel),
-      GroupId,
-      PartitionOutputEmpty,
-      additionalOptionsEmpty,
-      StorageLevel)
+  val kafkaOptionsModelEmptyConnection = KafkaOptionsModel(ConnectionHostModel(Seq(), Seq()),
+                                                           Seq(topicModel),
+                                                           GroupId,
+                                                           PartitionOutputEmpty,
+                                                           additionalOptionsEmpty,
+                                                           StorageLevel)
 
-  val kafkaOptionsModelEmptyTopics = KafkaOptionsModel(
-      connectionHostModel,
-      Seq(),
-      s"$GroupId-${Random.nextInt(10000)}",
-      PartitionOutputEmpty,
-      additionalOptionsEmpty,
-      StorageLevel)
+  val kafkaOptionsModelEmptyTopics = KafkaOptionsModel(connectionHostModel,
+                                                       Seq(),
+                                                       s"$GroupId-${Random.nextInt(10000)}",
+                                                       PartitionOutputEmpty,
+                                                       additionalOptionsEmpty,
+                                                       StorageLevel)
   val kafkaStreamModel = KafkaOptionsModel(connectionHostModel,
                                            Seq(topicModel),
                                            GroupId,
@@ -138,8 +135,7 @@ trait CommonValues extends SparkLoggerComponent {
   val TopicTestSelect = "topictestselect"
   val AliasNameSelect = "aliasselect"
   val SqlSelect = s"select * from $TableNameSelect"
-  val querySelectModel =
-    EphemeralQueryModel(TableNameSelect, SqlSelect, AliasNameSelect)
+  val querySelectModel = EphemeralQueryModel(TableNameSelect, SqlSelect, AliasNameSelect)
   val topicModelSelect = TopicModel(TopicTestSelect)
   val kafkaStreamModelSelect = KafkaOptionsModel(connectionHostModel,
                                                  Seq(topicModelSelect),
@@ -167,8 +163,7 @@ trait CommonValues extends SparkLoggerComponent {
   val TopicTestProject = "topicTestproject"
   val AliasNameProject = "aliasproject"
   val SqlProjected = s"select name from $TableNameProject"
-  val queryProjectedModel =
-    EphemeralQueryModel(TableNameProject, SqlProjected, AliasNameProject)
+  val queryProjectedModel = EphemeralQueryModel(TableNameProject, SqlProjected, AliasNameProject)
   val topicModelProject = TopicModel(TopicTestProject)
   val kafkaStreamModelProject = KafkaOptionsModel(connectionHostModel,
                                                   Seq(topicModelProject),
@@ -189,8 +184,7 @@ trait CommonValues extends SparkLoggerComponent {
   val ephemeralTableModelStreamKafkaOptionsProject =
     EphemeralTableModel(TableNameProject, ephemeralOptionsStreamKafkaProject)
 
-  def parseZookeeperCatalogConfig(
-      zookeeperConf: Map[String, String]): Map[String, String] = {
+  def parseZookeeperCatalogConfig(zookeeperConf: Map[String, String]): Map[String, String] = {
     Map(CatalogClassConfigKey -> ZookeeperClass) ++
       Map(StreamingCatalogClassConfigKey -> ZookeeperStreamingClass) ++
       zookeeperConf.map {

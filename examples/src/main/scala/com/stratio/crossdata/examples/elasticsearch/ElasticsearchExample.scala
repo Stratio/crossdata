@@ -55,10 +55,7 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
 
     // Spark
     xdContext.sql(s"SELECT name as b FROM $Type WHERE age > 1 limit 7").show(5)
-    xdContext
-      .sql(
-          s"SELECT description as b FROM $Type WHERE description = 'Comment 4'")
-      .show(5)
+    xdContext.sql(s"SELECT description as b FROM $Type WHERE description = 'Comment 4'").show(5)
     xdContext
       .sql(s"SELECT description as b FROM $Type WHERE description = 'Comment 2' AND id = 2")
       .show(5)
@@ -69,8 +66,7 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
 
   private def withCrossdataContext(commands: XDContext => Unit) = {
 
-    val sparkConf =
-      new SparkConf().setAppName("ElasticsearchExample").setMaster("local[4]")
+    val sparkConf = new SparkConf().setAppName("ElasticsearchExample").setMaster("local[4]")
 
     val sc = new SparkContext(sparkConf)
     try {
@@ -94,13 +90,8 @@ object ElasticsearchExample extends App with ElasticsearchDefaultConstants {
   }
 
   private def createClient(): ElasticClient = {
-    val settings = Settings
-      .settingsBuilder()
-      .put("cluster.name", s"$ElasticClusterName")
-      .build
-    ElasticClient.transport(
-        settings,
-        ElasticsearchClientUri(ElasticHost, ElasticNativePort))
+    val settings = Settings.settingsBuilder().put("cluster.name", s"$ElasticClusterName").build
+    ElasticClient.transport(settings, ElasticsearchClientUri(ElasticHost, ElasticNativePort))
   }
 
   private def buildTable(client: ElasticClient): Unit = {

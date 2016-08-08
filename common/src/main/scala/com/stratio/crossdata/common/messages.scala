@@ -29,19 +29,14 @@ private[crossdata] trait Command {
   private[crossdata] val requestId = UUID.randomUUID()
 }
 
-private[crossdata] case class SQLCommand private (
-    sql: String,
-    queryId: UUID = UUID.randomUUID(),
-    flattenResults: Boolean = false,
-    timeout: Option[FiniteDuration] = None)
+private[crossdata] case class SQLCommand private (sql: String,
+                                                  queryId: UUID = UUID.randomUUID(),
+                                                  flattenResults: Boolean = false,
+                                                  timeout: Option[FiniteDuration] = None)
     extends Command {
 
-  def this(query: String,
-           retrieveColNames: Boolean,
-           timeoutDuration: FiniteDuration) =
-    this(sql = query,
-         flattenResults = retrieveColNames,
-         timeout = Option(timeoutDuration))
+  def this(query: String, retrieveColNames: Boolean, timeoutDuration: FiniteDuration) =
+    this(sql = query, flattenResults = retrieveColNames, timeout = Option(timeoutDuration))
 
   def this(query: String, retrieveColNames: Boolean) =
     this(sql = query, flattenResults = retrieveColNames, timeout = None)
@@ -98,8 +93,7 @@ trait ControlCommand extends Command
 
 private[crossdata] case class GetJobStatus() extends ControlCommand
 
-private[crossdata] case class CancelQueryExecution(queryId: UUID)
-    extends ControlCommand
+private[crossdata] case class CancelQueryExecution(queryId: UUID) extends ControlCommand
 
 private[crossdata] case class CommandEnvelope(cmd: Command, session: Session)
 
@@ -108,21 +102,15 @@ private[crossdata] trait ServerReply {
   def requestId: UUID
 }
 
-private[crossdata] case class QueryCancelledReply(requestId: UUID)
+private[crossdata] case class QueryCancelledReply(requestId: UUID) extends ServerReply
+
+private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
+
+private[crossdata] case class ClusterStateReply(requestId: UUID, clusterState: CurrentClusterState)
     extends ServerReply
 
-private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult)
+private[crossdata] case class OpenSessionReply(requestId: UUID, isOpen: Boolean)
     extends ServerReply
 
-private[crossdata] case class ClusterStateReply(
-    requestId: UUID,
-    clusterState: CurrentClusterState)
-    extends ServerReply
-
-private[crossdata] case class OpenSessionReply(requestId: UUID,
-                                               isOpen: Boolean)
-    extends ServerReply
-
-private[crossdata] case class AddHdfsFileReply(requestId: UUID,
-                                               hdfsRoute: String)
+private[crossdata] case class AddHdfsFileReply(requestId: UUID, hdfsRoute: String)
     extends ServerReply

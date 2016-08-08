@@ -31,9 +31,7 @@ class CrossdataCSV extends SharedXDContextTest with ServerConfig {
   "Crossdata" should "execute csv queries" in {
 
     try {
-      sql(s"CREATE TABLE cars USING com.databricks.spark.csv OPTIONS (path '${Paths
-        .get(getClass.getResource("/cars.csv").toURI())
-        .toString}', header 'true')")
+      sql(s"CREATE TABLE cars USING com.databricks.spark.csv OPTIONS (path '${Paths.get(getClass.getResource("/cars.csv").toURI()).toString}', header 'true')")
 
       val result = sql("SELECT * FROM cars").collect()
       result should have length 8

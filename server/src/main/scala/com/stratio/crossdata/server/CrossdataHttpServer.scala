@@ -36,9 +36,7 @@ import org.apache.spark.sql.crossdata.XDContext
 
 import scala.concurrent.Future
 
-class CrossdataHttpServer(config: Config,
-                          serverActor: ActorRef,
-                          implicit val system: ActorSystem) {
+class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) {
 
   import ResourceManagerActor._
 
@@ -59,14 +57,11 @@ class CrossdataHttpServer(config: Config,
 
             case part: BodyPart if part.name == "fileChunk" =>
               // stream into a file as the chunks of it arrives and return a future file to where it got stored
-              val file = new java.io.File(
-                  s"/tmp/${part.filename.getOrElse("uploadFile")}")
+              val file = new java.io.File(s"/tmp/${part.filename.getOrElse("uploadFile")}")
               path = file.getAbsolutePath
               logger.info("Uploading file...")
               // TODO map is not used
-              part.entity.dataBytes
-                .runWith(FileIO.toFile(file))
-                .map(_ => part.name -> file)
+              part.entity.dataBytes.runWith(FileIO.toFile(file)).map(_ => part.name -> file)
 
           }
           .runFold(Map.empty[String, Any])((map, tuple) => map + tuple)
@@ -85,11 +80,10 @@ class CrossdataHttpServer(config: Config,
               case _ => logger.error("Problem deleting the temporary file.")
             }
             //Send a broadcast message to all servers
-            mediator ! Publish(
-                AddJarTopic,
-                CommandEnvelope(AddJARCommand(hdfsPath,
-                                              hdfsConfig = Option(hdfsConfig)),
-                                session))
+            mediator ! Publish(AddJarTopic,
+                               CommandEnvelope(AddJARCommand(hdfsPath,
+                                                             hdfsConfig = Option(hdfsConfig)),
+                                               session))
             hdfsPath
           }
         }

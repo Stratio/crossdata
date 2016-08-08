@@ -45,19 +45,15 @@ private[crossdata] case class PersistDataSourceTable(
     protected val allowExisting: Boolean
 ) extends DoCatalogDataSourceTable {
 
-  override protected def catalogDataSourceTable(
-      crossdataContext: XDContext): Seq[Row] = {
+  override protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row] = {
 
     val tableIdentifier = crossdataTable.tableIdentifier
 
-    if (crossdataContext.catalog
-          .tableExists(tableIdentifier.toTableIdentifier) && !allowExisting)
-      throw new AnalysisException(
-          s"Table ${tableIdentifier.unquotedString} already exists")
+    if (crossdataContext.catalog.tableExists(tableIdentifier.toTableIdentifier) && !allowExisting)
+      throw new AnalysisException(s"Table ${tableIdentifier.unquotedString} already exists")
     else
-      crossdataContext.catalog.persistTable(
-          crossdataTable,
-          createLogicalRelation(crossdataContext, crossdataTable))
+      crossdataContext.catalog
+        .persistTable(crossdataTable, createLogicalRelation(crossdataContext, crossdataTable))
 
     Seq.empty[Row]
   }
@@ -69,8 +65,7 @@ private[crossdata] case class RegisterDataSourceTable(
     protected val allowExisting: Boolean
 ) extends DoCatalogDataSourceTable {
 
-  override protected def catalogDataSourceTable(
-      crossdataContext: XDContext): Seq[Row] = {
+  override protected def catalogDataSourceTable(crossdataContext: XDContext): Seq[Row] = {
 
     val tableIdentifier = crossdataTable.tableIdentifier.toTableIdentifier
 
@@ -84,13 +79,12 @@ private[crossdata] case class RegisterDataSourceTable(
 
 }
 
-private[crossdata] case class PersistSelectAsTable(
-    tableIdent: TableIdentifier,
-    provider: String,
-    partitionColumns: Array[String],
-    mode: SaveMode,
-    options: Map[String, String],
-    query: LogicalPlan)
+private[crossdata] case class PersistSelectAsTable(tableIdent: TableIdentifier,
+                                                   provider: String,
+                                                   partitionColumns: Array[String],
+                                                   mode: SaveMode,
+                                                   options: Map[String, String],
+                                                   query: LogicalPlan)
     extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
@@ -122,9 +116,7 @@ private[crossdata] case class PersistSelectAsTable(
                                             options)
           val createdRelation = LogicalRelation(resolved.relation)
           EliminateSubQueries(sqlContext.catalog.lookupRelation(tableIdent)) match {
-            case l @ LogicalRelation(_: InsertableRelation |
-                                     _: HadoopFsRelation,
-                                     _) =>
+            case l @ LogicalRelation(_: InsertableRelation | _: HadoopFsRelation, _) =>
               if (l.relation != createdRelation.relation) {
                 val errorDescription =
                   s"Cannot append to table ${tableIdent.unquotedString} because the resolved relation does not " +
@@ -143,8 +135,7 @@ private[crossdata] case class PersistSelectAsTable(
               }
               existingSchema = Some(l.schema)
             case o =>
-              throw new AnalysisException(
-                  s"Saving data in ${o.toString} is not supported.")
+              throw new AnalysisException(s"Saving data in ${o.toString} is not supported.")
           }
         case SaveMode.Overwrite =>
           crossdataContext.catalog.dropTable(tableIdent)
@@ -166,22 +157,13 @@ private[crossdata] case class PersistSelectAsTable(
     // **************** TODO end refactor
 
     if (createMetastoreTable) {
-      val resolved = ResolvedDataSource(sqlContext,
-                                        provider,
-                                        partitionColumns,
-                                        mode,
-                                        options,
-                                        df)
+      val resolved = ResolvedDataSource(sqlContext, provider, partitionColumns, mode, options, df)
       import XDCatalogCommon._
-      val identifier = TableIdentifier(tableIdent.table, tableIdent.database)
-        .normalize(crossdataContext.conf)
-      val crossdataTable = CrossdataTable(identifier,
-                                          Some(resolved.relation.schema),
-                                          provider,
-                                          Array.empty,
-                                          options)
-      crossdataContext.catalog
-        .persistTable(crossdataTable, LogicalRelation(resolved.relation))
+      val identifier =
+        TableIdentifier(tableIdent.table, tableIdent.database).normalize(crossdataContext.conf)
+      val crossdataTable =
+        CrossdataTable(identifier, Some(resolved.relation.schema), provider, Array.empty, options)
+      crossdataContext.catalog.persistTable(crossdataTable, LogicalRelation(resolved.relation))
     }
 
     Seq.empty[Row]
@@ -190,8 +172,7 @@ private[crossdata] case class PersistSelectAsTable(
   private def sideBySide(left: Seq[String], right: Seq[String]): Seq[String] = {
     val maxLeftSize = left.map(_.size).max
     val leftPadded = left ++ Seq.fill(math.max(right.size - left.size, 0))("")
-    val rightPadded = right ++ Seq
-        .fill(math.max(left.size - right.size, 0))("")
+    val rightPadded = right ++ Seq.fill(math.max(left.size - right.size, 0))("")
 
     leftPadded.zip(rightPadded).map {
       case (l, r) =>

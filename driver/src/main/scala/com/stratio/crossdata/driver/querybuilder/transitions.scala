@@ -28,11 +28,7 @@ trait Groupable {
     groupBy(XDQLStatement(groupingExpressions))
 
   def groupBy(groupingExpressions: Expression*): GroupedQuery =
-    new GroupedQuery(context,
-                     projections,
-                     relation,
-                     filters,
-                     groupingExpressions)
+    new GroupedQuery(context, projections, relation, filters, groupingExpressions)
 
 }
 
@@ -53,8 +49,7 @@ trait Sortable {
   def orderBy(ordering: SortOrder*): SortedQuery =
     orderOrSortBy(global = true, ordering)
 
-  private def orderOrSortBy(global: Boolean,
-                            ordering: Seq[SortOrder]): SortedQuery =
+  private def orderOrSortBy(global: Boolean, ordering: Seq[SortOrder]): SortedQuery =
     new SortedQuery(
         context,
         projections,
@@ -92,23 +87,17 @@ trait Combinable extends CrossdataSQLStatement {
 
   def unionAll(newQuery: RunnableQuery): CombinedQuery =
     generateCombinedQuery {
-      computeCombinationInfo(newQuery,
-                             UnionAll,
-                             query => query.unionAll(newQuery))
+      computeCombinationInfo(newQuery, UnionAll, query => query.unionAll(newQuery))
     }
 
   def unionDistinct(newQuery: RunnableQuery): CombinedQuery =
     generateCombinedQuery {
-      computeCombinationInfo(newQuery,
-                             UnionDistinct,
-                             query => query.unionDistinct(newQuery))
+      computeCombinationInfo(newQuery, UnionDistinct, query => query.unionDistinct(newQuery))
     }
 
   def intersect(newQuery: RunnableQuery): CombinedQuery =
     generateCombinedQuery {
-      computeCombinationInfo(newQuery,
-                             Intersect,
-                             query => query.intersect(newQuery))
+      computeCombinationInfo(newQuery, Intersect, query => query.intersect(newQuery))
     }
 
   def except(newQuery: RunnableQuery): CombinedQuery =
@@ -143,8 +132,7 @@ trait Combinable extends CrossdataSQLStatement {
       CombinationInfo(newCombineType, newQuery)
     }
 
-  private def generateCombinedQuery(
-      combinationInfo: CombinationInfo): CombinedQuery =
+  private def generateCombinedQuery(combinationInfo: CombinationInfo): CombinedQuery =
     new CombinedQuery(context,
                       projections,
                       relation,

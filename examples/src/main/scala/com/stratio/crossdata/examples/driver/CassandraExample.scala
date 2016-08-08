@@ -54,9 +54,7 @@ object DriverExample extends App with DefaultConstants {
     for {
       xdDriver <- driver
     } {
-      xdDriver
-        .importTables(SourceProvider, CassandraOptions)
-        .waitForResult() match {
+      xdDriver.importTables(SourceProvider, CassandraOptions).waitForResult() match {
         case result: SuccessfulSQLResult => println("Successful importation")
         case error: ErrorSQLResult => sys.error(error.message)
       }

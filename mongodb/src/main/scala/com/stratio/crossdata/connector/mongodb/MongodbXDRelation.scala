@@ -34,23 +34,19 @@ import org.apache.spark.sql.{Row, SQLContext}
   *                       a sample ratio (as JSON Data Source does).
   * @param sqlContext An existing Spark SQL context.
   */
-case class MongodbXDRelation(config: Config,
-                             schemaProvided: Option[StructType] = None)(
+case class MongodbXDRelation(config: Config, schemaProvided: Option[StructType] = None)(
     @transient sqlContext: SQLContext)
     extends MongodbRelation(config, schemaProvided)(sqlContext)
     with NativeScan
     with SparkLoggerComponent {
 
-  override def buildScan(
-      optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
+  override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
     logDebug(s"Processing ${optimizedLogicalPlan.toString()}")
-    val queryExecutor =
-      MongoQueryProcessor(optimizedLogicalPlan, config, schemaProvided)
+    val queryExecutor = MongoQueryProcessor(optimizedLogicalPlan, config, schemaProvided)
     queryExecutor.execute()
   }
 
-  override def isSupported(logicalStep: LogicalPlan,
-                           wholeLogicalPlan: LogicalPlan): Boolean =
+  override def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean =
     logicalStep match {
       case ln: LeafNode =>
         true // TODO leafNode == LogicalRelation(xdSourceRelation)
@@ -61,8 +57,7 @@ case class MongodbXDRelation(config: Config,
 
         }
       case unsupportedLogicalPlan =>
-        logDebug(
-            s"LogicalPlan $unsupportedLogicalPlan cannot be executed natively");
+        logDebug(s"LogicalPlan $unsupportedLogicalPlan cannot be executed natively");
         false
     }
 

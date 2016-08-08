@@ -50,8 +50,7 @@ case class Add(left: Expression, right: Expression) extends BinaryExpression {
   }
 }
 
-case class Subtract(left: Expression, right: Expression)
-    extends BinaryExpression {
+case class Subtract(left: Expression, right: Expression) extends BinaryExpression {
   override val tokenStr = "-"
 
   override def childExpansion(child: Expression): String = child match {
@@ -60,8 +59,7 @@ case class Subtract(left: Expression, right: Expression)
   }
 }
 
-case class Multiply(left: Expression, right: Expression)
-    extends BinaryExpression {
+case class Multiply(left: Expression, right: Expression) extends BinaryExpression {
   override val tokenStr = "*"
 
   override def childExpansion(child: Expression): String = child match {
@@ -70,8 +68,7 @@ case class Multiply(left: Expression, right: Expression)
   }
 }
 
-case class Divide(left: Expression, right: Expression)
-    extends BinaryExpression {
+case class Divide(left: Expression, right: Expression) extends BinaryExpression {
   override val tokenStr = "/"
 
   override def childExpansion(child: Expression): String = child match {
@@ -80,8 +77,7 @@ case class Divide(left: Expression, right: Expression)
   }
 }
 
-case class Remainder(left: Expression, right: Expression)
-    extends BinaryExpression {
+case class Remainder(left: Expression, right: Expression) extends BinaryExpression {
   override val tokenStr = "%"
 
   override def childExpansion(child: Expression): String = child match {
@@ -114,8 +110,7 @@ case class CountDistinct(expr: Expression*) extends Expression {
     s" count( DISTINCT ${expr.map(_.toXDQL) mkString ","})"
 }
 
-case class ApproxCountDistinct(expr: Expression, rsd: Double)
-    extends Expression {
+case class ApproxCountDistinct(expr: Expression, rsd: Double) extends Expression {
   override private[querybuilder] def toXDQL: String =
     s" APPROXIMATE ($rsd) count ( DISTINCT ${expr.toXDQL})"
 }

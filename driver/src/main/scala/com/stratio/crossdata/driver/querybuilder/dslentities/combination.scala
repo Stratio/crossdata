@@ -28,8 +28,7 @@ object CombineType extends Enumeration {
 
 import com.stratio.crossdata.driver.querybuilder.dslentities.CombineType.CombineType
 
-case class CombinationInfo(combineType: CombineType,
-                           runnableQuery: RunnableQuery)
+case class CombinationInfo(combineType: CombineType, runnableQuery: RunnableQuery)
     extends CrossdataSQLStatement {
   override private[querybuilder] def toXDQL: String =
     s" ${combineType.toString} ${runnableQuery.toXDQL}"

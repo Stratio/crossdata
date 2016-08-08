@@ -17,8 +17,7 @@ package com.stratio.crossdata.driver.querybuilder
 
 import com.stratio.crossdata.driver.querybuilder.dslentities.XDQLStatement
 
-class ProjectedSelect(selection: Expression*)(
-    implicit context: String => String = x => x) {
+class ProjectedSelect(selection: Expression*)(implicit context: String => String = x => x) {
 
   def from(relation: Relation): SimpleRunnableQuery =
     new SimpleRunnableQuery(selection, relation, context)

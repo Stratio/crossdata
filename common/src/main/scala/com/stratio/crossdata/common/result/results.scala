@@ -42,14 +42,13 @@ trait SQLResult extends Result {
 
     // For array values, replace Seq and Array with square brackets
     // For cells that are beyond 20 characters, replace it with the first 17 and "..."
-    val rows: Seq[Seq[String]] = schema.fieldNames.toSeq +: resultSet.map {
-      row =>
-        row.toSeq.map {
-          case null => "null"
-          case array: Array[_] => array.mkString("[", ", ", "]")
-          case seq: Seq[_] => seq.mkString("[", ", ", "]")
-          case cell => cell.toString
-        }: Seq[String]
+    val rows: Seq[Seq[String]] = schema.fieldNames.toSeq +: resultSet.map { row =>
+      row.toSeq.map {
+        case null => "null"
+        case array: Array[_] => array.mkString("[", ", ", "]")
+        case seq: Seq[_] => seq.mkString("[", ", ", "]")
+        case cell => cell.toString
+      }: Seq[String]
     }
 
     // Initialise the width of each column to a minimum value of '3'
@@ -63,8 +62,7 @@ trait SQLResult extends Result {
     }
 
     // Create SeparateLine
-    val sep: String =
-      colWidths.map("-" * _).addString(sb, "+", "+", "+\n").toString()
+    val sep: String = colWidths.map("-" * _).addString(sb, "+", "+", "+\n").toString()
 
     // column names
     rows.head.zipWithIndex.map {
@@ -86,13 +84,11 @@ trait SQLResult extends Result {
   }
 }
 
-case class SuccessfulSQLResult(resultSet: Array[Row], schema: StructType)
-    extends SQLResult {
+case class SuccessfulSQLResult(resultSet: Array[Row], schema: StructType) extends SQLResult {
   val hasError = false
 }
 
-case class ErrorSQLResult(message: String, cause: Option[Throwable] = None)
-    extends SQLResult {
+case class ErrorSQLResult(message: String, cause: Option[Throwable] = None) extends SQLResult {
   val hasError = true
   override lazy val resultSet = throw mkException
   override lazy val schema = throw mkException

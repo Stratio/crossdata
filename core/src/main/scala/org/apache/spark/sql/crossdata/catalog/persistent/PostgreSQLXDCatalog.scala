@@ -67,8 +67,7 @@ object PostgreSQLXDCatalog {
   *
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
-class PostgreSQLXDCatalog(sqlContext: SQLContext,
-                          override val catalystConf: CatalystConf)
+class PostgreSQLXDCatalog(sqlContext: SQLContext, override val catalystConf: CatalystConf)
     extends PersistentCatalogWithCache(catalystConf) {
 
   import PostgreSQLXDCatalog._
@@ -96,9 +95,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
       if (!schemaExists(db, jdbcConnection))
         jdbcConnection.createStatement().executeUpdate(s"CREATE SCHEMA $db")
 
-      jdbcConnection
-        .createStatement()
-        .executeUpdate(s"""|CREATE TABLE IF NOT EXISTS $db.$table (
+      jdbcConnection.createStatement().executeUpdate(s"""|CREATE TABLE IF NOT EXISTS $db.$table (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
             |$SchemaField TEXT,
@@ -110,8 +107,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
 
       jdbcConnection
         .createStatement()
-        .executeUpdate(
-            s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
+        .executeUpdate(s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithViewMetadata (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
             |$SqlViewField TEXT,
@@ -128,8 +124,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
 
       jdbcConnection
         .createStatement()
-        .executeUpdate(
-            s"""|CREATE TABLE IF NOT EXISTS $db.$TableWithIndexMetadata (
+        .executeUpdate(s"""|CREATE TABLE IF NOT EXISTS $db.$TableWithIndexMetadata (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
             |$IndexNameField VARCHAR(50),
@@ -151,8 +146,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
 
   }
 
-  override def lookupTable(
-      tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable] = {
+  override def lookupTable(tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable] = {
 
     val preparedStatement = connection.prepareStatement(
         s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
@@ -183,13 +177,13 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
     }
   }
 
-  override def allRelations(databaseName: Option[StringNormalized])
-    : Seq[TableIdentifierNormalized] = {
+  override def allRelations(
+      databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = {
     @tailrec
-    def getSequenceAux(resultset: ResultSet,
-                       next: Boolean,
-                       set: Set[TableIdentifierNormalized] = Set.empty)
-      : Set[TableIdentifierNormalized] = {
+    def getSequenceAux(
+        resultset: ResultSet,
+        next: Boolean,
+        set: Set[TableIdentifierNormalized] = Set.empty): Set[TableIdentifierNormalized] = {
       if (next) {
         val database = resultset.getString(DatabaseField)
         val table = resultset.getString(TableNameField)
@@ -203,29 +197,26 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
     }
 
     val statement = connection.createStatement
-    val dbFilter = databaseName.fold("")(dbName =>
-          s"WHERE $DatabaseField ='${dbName.normalizedString}'")
-    val resultSet = statement.executeQuery(
-        s"SELECT $DatabaseField, $TableNameField FROM $db.$table $dbFilter")
+    val dbFilter =
+      databaseName.fold("")(dbName => s"WHERE $DatabaseField ='${dbName.normalizedString}'")
+    val resultSet =
+      statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$table $dbFilter")
 
     getSequenceAux(resultSet, resultSet.next).toSeq
   }
 
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit = {
 
-    val tableSchema = serializeSchema(
-        crossdataTable.schema.getOrElse(schemaNotFound()))
+    val tableSchema = serializeSchema(crossdataTable.schema.getOrElse(schemaNotFound()))
     val tableOptions = serializeOptions(crossdataTable.opts)
-    val partitionColumn = serializePartitionColumn(
-        crossdataTable.partitionColumn)
+    val partitionColumn = serializePartitionColumn(crossdataTable.partitionColumn)
 
     connection.setAutoCommit(false)
 
     // check if the database-table exist in the persisted catalog
     val preparedStatement = connection.prepareStatement(
         s"SELECT * FROM $db.$table WHERE $DatabaseField= ? AND $TableNameField= ?")
-    preparedStatement
-      .setString(1, crossdataTable.tableIdentifier.database.getOrElse(""))
+    preparedStatement.setString(1, crossdataTable.tableIdentifier.database.getOrElse(""))
     preparedStatement.setString(2, crossdataTable.tableIdentifier.table)
     val resultSet = preparedStatement.executeQuery()
     preparedStatement.close()
@@ -236,8 +227,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
             | $DatabaseField, $TableNameField, $SchemaField, $DatasourceField, $PartitionColumnField, $OptionsField, $CrossdataVersionField
             |) VALUES (?,?,?,?,?,?,?)
        """.stripMargin)
-      prepped
-        .setString(1, crossdataTable.tableIdentifier.database.getOrElse(""))
+      prepped.setString(1, crossdataTable.tableIdentifier.database.getOrElse(""))
       prepped.setString(2, crossdataTable.tableIdentifier.table)
       prepped.setString(3, tableSchema)
       prepped.setString(4, crossdataTable.datasource)
@@ -250,8 +240,8 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
       resultSet.close()
       val prepped = connection.prepareStatement(
           s"""|UPDATE $db.$table SET $SchemaField=?, $DatasourceField=?,$PartitionColumnField=?,$OptionsField=?,$CrossdataVersionField=?
-            |WHERE $DatabaseField='${crossdataTable.tableIdentifier.database.getOrElse(
-             "")}' AND $TableNameField='${crossdataTable.tableIdentifier.table}';
+            |WHERE $DatabaseField='${crossdataTable.tableIdentifier.database
+           .getOrElse("")}' AND $TableNameField='${crossdataTable.tableIdentifier.table}';
        """.stripMargin.replaceAll("\n", " "))
 
       prepped.setString(1, tableSchema)
@@ -266,8 +256,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
     connection.setAutoCommit(true)
   }
 
-  override def dropTableMetadata(
-      tableIdentifier: ViewIdentifierNormalized): Unit =
+  override def dropTableMetadata(tableIdentifier: ViewIdentifierNormalized): Unit =
     connection.createStatement.executeUpdate(
         s"DELETE FROM $db.$table WHERE tableName='${tableIdentifier.table}' AND db='${tableIdentifier.database
       .getOrElse("")}'")
@@ -282,8 +271,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
     result.isBeforeFirst
   }
 
-  override def lookupView(
-      viewIdentifier: ViewIdentifierNormalized): Option[String] = {
+  override def lookupView(viewIdentifier: ViewIdentifierNormalized): Option[String] = {
     val resultSet = selectMetadata(tableWithViewMetadata, viewIdentifier)
     if (!resultSet.isBeforeFirst) {
       None
@@ -301,8 +289,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
 
       if (!resultSet.isBeforeFirst) {
         resultSet.close()
-        val prepped = connection.prepareStatement(
-            s"""|INSERT INTO $db.$tableWithViewMetadata (
+        val prepped = connection.prepareStatement(s"""|INSERT INTO $db.$tableWithViewMetadata (
               | $DatabaseField, $TableNameField, $SqlViewField, $CrossdataVersionField
               |) VALUES (?,?,?,?)
        """.stripMargin)
@@ -331,9 +318,8 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
     }
   }
 
-  private def selectMetadata(
-      targetTable: String,
-      tableIdentifier: TableIdentifierNormalized): ResultSet = {
+  private def selectMetadata(targetTable: String,
+                             tableIdentifier: TableIdentifierNormalized): ResultSet = {
 
     val preparedStatement = connection.prepareStatement(
         s"SELECT * FROM $db.$targetTable WHERE $DatabaseField= ? AND $TableNameField= ?")
@@ -344,32 +330,29 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
 
   }
 
-  override def dropViewMetadata(
-      viewIdentifier: ViewIdentifierNormalized): Unit = {
+  override def dropViewMetadata(viewIdentifier: ViewIdentifierNormalized): Unit = {
     connection.createStatement.executeUpdate(
         s"DELETE FROM $db.$tableWithViewMetadata WHERE tableName='${viewIdentifier.table}' AND db='${viewIdentifier.database
       .getOrElse("")}'")
   }
 
   override def dropAllViewsMetadata(): Unit = {
-    connection.createStatement.executeUpdate(
-        s"DELETE FROM $db.$tableWithViewMetadata")
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithViewMetadata")
   }
 
   override def saveAppMetadata(crossdataApp: CrossdataApp): Unit =
     try {
       connection.setAutoCommit(false)
 
-      val preparedStatement = connection.prepareStatement(
-          s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
+      val preparedStatement =
+        connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
       preparedStatement.setString(1, crossdataApp.appAlias)
       val resultSet = preparedStatement.executeQuery()
       preparedStatement.close()
 
       if (!resultSet.next()) {
         resultSet.close()
-        val prepped =
-          connection.prepareStatement(s"""|INSERT INTO $db.$tableWithAppJars (
+        val prepped = connection.prepareStatement(s"""|INSERT INTO $db.$tableWithAppJars (
               | $JarPath, $AppAlias, $AppClass
               |) VALUES (?,?,?)
          """.stripMargin)
@@ -380,8 +363,8 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
         prepped.close()
       } else {
         resultSet.close()
-        val prepped = connection.prepareStatement(
-            s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, $AppClass=?
+        val prepped =
+          connection.prepareStatement(s"""|UPDATE $db.$tableWithAppJars SET $JarPath=?, $AppClass=?
               |WHERE $AppAlias='${crossdataApp.appAlias}'
          """.stripMargin)
         prepped.setString(1, crossdataApp.jar)
@@ -396,8 +379,8 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
 
   override def getApp(alias: String): Option[CrossdataApp] = {
 
-    val preparedStatement = connection.prepareStatement(
-        s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
+    val preparedStatement =
+      connection.prepareStatement(s"SELECT * FROM $db.$tableWithAppJars WHERE $AppAlias= ?")
     preparedStatement.setString(1, alias)
     val resultSet = preparedStatement.executeQuery()
 
@@ -424,21 +407,18 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
     try {
       connection.setAutoCommit(false)
       // check if the database-table exist in the persisted catalog
-      val resultSet =
-        selectMetadata(TableWithIndexMetadata, crossdataIndex.tableIdentifier)
+      val resultSet = selectMetadata(TableWithIndexMetadata, crossdataIndex.tableIdentifier)
 
       val serializedIndexedCols = serializeSeq(crossdataIndex.indexedCols)
       val serializedOptions = serializeOptions(crossdataIndex.opts)
 
       if (!resultSet.next()) {
-        val prepped = connection.prepareStatement(
-            s"""|INSERT INTO $db.$TableWithIndexMetadata (
+        val prepped = connection.prepareStatement(s"""|INSERT INTO $db.$TableWithIndexMetadata (
               | $DatabaseField, $TableNameField, $IndexNameField, $IndexTypeField, $IndexedColsField,
               | $PKField, $DatasourceField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?,?,?)
        """.stripMargin)
-        prepped
-          .setString(1, crossdataIndex.tableIdentifier.database.getOrElse(""))
+        prepped.setString(1, crossdataIndex.tableIdentifier.database.getOrElse(""))
         prepped.setString(2, crossdataIndex.tableIdentifier.table)
         prepped.setString(3, crossdataIndex.indexIdentifier.indexName)
         prepped.setString(4, crossdataIndex.indexIdentifier.indexType)
@@ -457,18 +437,15 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
       connection.setAutoCommit(true)
     }
 
-  override def dropIndexMetadata(
-      indexIdentifier: IndexIdentifierNormalized): Unit =
+  override def dropIndexMetadata(indexIdentifier: IndexIdentifierNormalized): Unit =
     connection.createStatement.executeUpdate(
         s"DELETE FROM $db.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
     )
 
   override def dropAllIndexesMetadata(): Unit =
-    connection.createStatement.executeUpdate(
-        s"DELETE FROM $db.$TableWithIndexMetadata")
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$TableWithIndexMetadata")
 
-  override def lookupIndex(
-      indexIdentifier: IndexIdentifierNormalized): Option[CrossdataIndex] = {
+  override def lookupIndex(indexIdentifier: IndexIdentifierNormalized): Option[CrossdataIndex] = {
     val resultSet = selectIndex(indexIdentifier)
 
     if (!resultSet.next) {
@@ -497,8 +474,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
     }
   }
 
-  private def selectIndex(
-      indexIdentifier: IndexIdentifierNormalized): ResultSet = {
+  private def selectIndex(indexIdentifier: IndexIdentifierNormalized): ResultSet = {
     val preparedStatement = connection.prepareStatement(
         s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $IndexNameField= ? AND $IndexTypeField= ?")
     preparedStatement.setString(1, indexIdentifier.indexName)
@@ -506,8 +482,7 @@ class PostgreSQLXDCatalog(sqlContext: SQLContext,
     preparedStatement.executeQuery()
   }
 
-  override def dropIndexMetadata(
-      tableIdentifier: TableIdentifierNormalized): Unit =
+  override def dropIndexMetadata(tableIdentifier: TableIdentifierNormalized): Unit =
     connection.createStatement.executeUpdate(
         s"DELETE FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database
           .getOrElse("")}'"

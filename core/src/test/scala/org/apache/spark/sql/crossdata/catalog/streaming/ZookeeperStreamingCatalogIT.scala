@@ -33,16 +33,13 @@ class ZookeeperStreamingCatalogIT
 
   override val coreConfig: Option[Config] = {
     val zkResourceConfig = Try(
-        ConfigFactory
-          .load("core-reference.conf")
-          .getConfig(CoreConfig.ParentConfigName)).toOption
+        ConfigFactory.load("core-reference.conf").getConfig(CoreConfig.ParentConfigName)).toOption
 
     ZookeeperConnection.fold(zkResourceConfig) { connectionString =>
       zkResourceConfig.flatMap(
           resourceConfig =>
-            Option(resourceConfig.withValue(
-                    ZookeeperStreamingConnectionKey,
-                    ConfigValueFactory.fromAnyRef(connectionString))))
+            Option(resourceConfig.withValue(ZookeeperStreamingConnectionKey,
+                                            ConfigValueFactory.fromAnyRef(connectionString))))
     }
   }
 
@@ -51,11 +48,9 @@ class ZookeeperStreamingCatalogIT
     val streamCatalog = xdContext.catalog
 
     streamCatalog.existsEphemeralTable(EphemeralTableName) shouldBe false
-    streamCatalog.createEphemeralTable(EphemeralTable) shouldBe Right(
-        EphemeralTable)
+    streamCatalog.createEphemeralTable(EphemeralTable) shouldBe Right(EphemeralTable)
     streamCatalog.existsEphemeralTable(EphemeralTableName) shouldBe true
-    streamCatalog.getEphemeralTable(EphemeralTableName) shouldBe Some(
-        EphemeralTable)
+    streamCatalog.getEphemeralTable(EphemeralTableName) shouldBe Some(EphemeralTable)
 
     streamCatalog.dropEphemeralTable(EphemeralTableName)
     streamCatalog.existsEphemeralTable(EphemeralTableName) shouldBe false
@@ -65,12 +60,9 @@ class ZookeeperStreamingCatalogIT
 
     val streamCatalog = xdContext.catalog
 
-    streamCatalog.createEphemeralTable(EphemeralTable) shouldBe Right(
-        EphemeralTable)
+    streamCatalog.createEphemeralTable(EphemeralTable) shouldBe Right(EphemeralTable)
     streamCatalog.existsEphemeralTable(EphemeralTableName) shouldBe true
-    streamCatalog
-      .getEphemeralStatus(EphemeralTableName)
-      .isDefined shouldBe true
+    streamCatalog.getEphemeralStatus(EphemeralTableName).isDefined shouldBe true
 
     streamCatalog.dropEphemeralTable(EphemeralTableName)
   }
@@ -97,8 +89,7 @@ class ZookeeperStreamingCatalogIT
 
     val streamCatalog = xdContext.catalog
 
-    an[Exception] should be thrownBy streamCatalog.dropEphemeralTable(
-        "stronker")
+    an[Exception] should be thrownBy streamCatalog.dropEphemeralTable("stronker")
   }
 
   it should "not fail when droppingAll ephemeral tables even though the catalog is empty" in {
@@ -117,8 +108,7 @@ class ZookeeperStreamingCatalogIT
     streamCatalog.createEphemeralTable(EphemeralTable)
     streamCatalog.updateEphemeralStatus(
         EphemeralTableName,
-        EphemeralStatusModel(EphemeralTableName,
-                             EphemeralExecutionStatus.Started)
+        EphemeralStatusModel(EphemeralTableName, EphemeralExecutionStatus.Started)
     )
     the[Exception] thrownBy {
       streamCatalog.dropEphemeralTable(EphemeralTableName)
@@ -126,8 +116,7 @@ class ZookeeperStreamingCatalogIT
 
     streamCatalog.updateEphemeralStatus(
         EphemeralTableName,
-        EphemeralStatusModel(EphemeralTableName,
-                             EphemeralExecutionStatus.Stopped)
+        EphemeralStatusModel(EphemeralTableName, EphemeralExecutionStatus.Stopped)
     )
     streamCatalog.dropEphemeralTable(EphemeralTableName)
   }
@@ -137,18 +126,14 @@ class ZookeeperStreamingCatalogIT
     val streamCatalog = xdContext.catalog
 
     streamCatalog.createEphemeralTable(EphemeralTable)
-    streamCatalog
-      .getEphemeralStatus(EphemeralTableName)
-      .isDefined shouldBe true
+    streamCatalog.getEphemeralStatus(EphemeralTableName).isDefined shouldBe true
     streamCatalog
       .getEphemeralStatus(EphemeralTableName)
       .get
       .status shouldBe EphemeralExecutionStatus.NotStarted
 
     streamCatalog.dropEphemeralTable(EphemeralTableName)
-    streamCatalog
-      .getEphemeralStatus(EphemeralTableName)
-      .isDefined shouldBe false
+    streamCatalog.getEphemeralStatus(EphemeralTableName).isDefined shouldBe false
   }
 
   it should "create, get, and drop queries" in {
@@ -156,8 +141,7 @@ class ZookeeperStreamingCatalogIT
     val streamCatalog = xdContext.catalog
 
     streamCatalog.existsEphemeralQuery(QueryAlias) shouldBe false
-    streamCatalog.createEphemeralQuery(EphemeralQuery) shouldBe Right(
-        EphemeralQuery)
+    streamCatalog.createEphemeralQuery(EphemeralQuery) shouldBe Right(EphemeralQuery)
     streamCatalog.existsEphemeralQuery(QueryAlias) shouldBe true
     streamCatalog.getEphemeralQuery(QueryAlias) shouldBe Some(EphemeralQuery)
 
@@ -177,8 +161,7 @@ class ZookeeperStreamingCatalogIT
 
 sealed trait ZookeeperStreamingDefaultTestConstants {
 
-  val ZookeeperStreamingConnectionKey =
-    "streaming.catalog.zookeeper.connectionString"
+  val ZookeeperStreamingConnectionKey = "streaming.catalog.zookeeper.connectionString"
   val ZookeeperConnection: Option[String] = Try(
       ConfigFactory.load().getString(ZookeeperStreamingConnectionKey)).toOption
 
@@ -193,12 +176,10 @@ sealed trait ZookeeperStreamingDefaultTestConstants {
       Map("key" -> "value"),
       "MEMORY_AND_DISK")
   val EphemeralTableOptions = EphemeralOptionsModel(KafkaOptions, 5)
-  val EphemeralTable =
-    EphemeralTableModel(EphemeralTableName, EphemeralTableOptions)
+  val EphemeralTable = EphemeralTableModel(EphemeralTableName, EphemeralTableOptions)
 
   //Queries
   val QueryAlias = "qalias"
   val Sql = "select * from epheTable"
-  val EphemeralQuery =
-    EphemeralQueryModel(EphemeralTableName, Sql, QueryAlias, 5, Map.empty)
+  val EphemeralQuery = EphemeralQueryModel(EphemeralTableName, Sql, QueryAlias, 5, Map.empty)
 }

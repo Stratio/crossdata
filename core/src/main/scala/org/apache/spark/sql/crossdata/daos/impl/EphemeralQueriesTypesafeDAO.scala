@@ -18,8 +18,7 @@ package org.apache.spark.sql.crossdata.daos.impl
 import com.typesafe.config.Config
 import org.apache.spark.sql.crossdata.daos.EphemeralQueriesDAO
 
-class EphemeralQueriesTypesafeDAO(configuration: Config)
-    extends EphemeralQueriesDAO {
+class EphemeralQueriesTypesafeDAO(configuration: Config) extends EphemeralQueriesDAO {
 
   override val config = new TypesafeConfig(Option(configuration))
 

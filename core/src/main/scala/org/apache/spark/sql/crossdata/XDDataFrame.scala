@@ -64,8 +64,7 @@ private[sql] object XDDataFrame {
     * @param optimizedLogicalPlan the logical plan once it has been processed by the parser, analyzer and optimizer.
     * @return
     */
-  def findNativeQueryExecutor(
-      optimizedLogicalPlan: LogicalPlan): Option[NativeScan] = {
+  def findNativeQueryExecutor(optimizedLogicalPlan: LogicalPlan): Option[NativeScan] = {
 
     def allLeafsAreNative(leafs: Seq[LeafNode]): Boolean = {
       leafs.forall {
@@ -106,9 +105,8 @@ private[sql] object XDDataFrame {
 /**
   * Extends a [[DataFrame]] to provide native access to datasources when performing Spark actions.
   */
-class XDDataFrame private[sql] (
-    @transient override val sqlContext: SQLContext,
-    @transient override val queryExecution: QueryExecution)
+class XDDataFrame private[sql] (@transient override val sqlContext: SQLContext,
+                                @transient override val queryExecution: QueryExecution)
     extends DataFrame(sqlContext, queryExecution)
     with SparkLoggerComponent {
 
@@ -138,28 +136,23 @@ class XDDataFrame private[sql] (
       } else {
         logInfo(s"Native query: ${queryExecution.simpleString}")
       }
-      nativeQueryExecutor
-        .flatMap(executeNativeQuery)
-        .getOrElse(super.collect())
+      nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
   }
 
   def flattenedCollect(): Array[Row] = {
 
-    def flattenProjectedColumns(
-        exp: Expression,
-        prev: List[String] = Nil): (List[String], Boolean) = exp match {
+    def flattenProjectedColumns(exp: Expression,
+                                prev: List[String] = Nil): (List[String], Boolean) = exp match {
       case GetStructField(child, _, Some(fieldName)) =>
         flattenProjectedColumns(child, fieldName :: prev)
       case GetArrayStructFields(child, field, _, _, _) =>
         flattenProjectedColumns(child, field.name :: prev)
       case AttributeReference(name, _, _, _) =>
         (name :: prev, false)
-      case Alias(child @ GetStructField(_, _, Some(fname)), name)
-          if fname == name =>
+      case Alias(child @ GetStructField(_, _, Some(fname)), name) if fname == name =>
         flattenProjectedColumns(child)
-      case Alias(child @ GetArrayStructFields(childArray, field, _, _, _),
-                 name) =>
+      case Alias(child @ GetArrayStructFields(childArray, field, _, _, _), name) =>
         flattenProjectedColumns(child)
       case Alias(child, name) =>
         List(name) -> true
@@ -174,27 +167,18 @@ class XDDataFrame private[sql] (
       def baseName(parentName: String): String =
         parentName.headOption.map(_ => s"$parentName.").getOrElse("")
 
-      def flatRow(row: GenericRowWithSchema,
-                  parentsNamesAndAlias: Seq[(String, Boolean)] = Seq.empty)
-        : Array[(StructField, Any)] = {
+      def flatRow(
+          row: GenericRowWithSchema,
+          parentsNamesAndAlias: Seq[(String, Boolean)] = Seq.empty): Array[(StructField, Any)] = {
         (row.schema.fields zip row.values zipAll (parentsNamesAndAlias, null, "" -> false)) flatMap {
           case (null, _) => Seq.empty
           case ((StructField(_, t, nable, mdata), vobject), (name, true)) =>
             Seq((StructField(name, t, nable, mdata), vobject))
-          case ((StructField(name, StructType(_), _, _),
-                 col: GenericRowWithSchema),
+          case ((StructField(name, StructType(_), _, _), col: GenericRowWithSchema),
                 (parentName, false)) =>
-            flatRow(col,
-                    Seq.fill(col.schema.size)(
-                        s"${baseName(parentName)}$name" -> false))
-          case ((StructField(name, dtype, nullable, meta), vobject),
-                (parentName, false)) =>
-            Seq(
-                (StructField(s"${baseName(parentName)}$name",
-                             dtype,
-                             nullable,
-                             meta),
-                 vobject))
+            flatRow(col, Seq.fill(col.schema.size)(s"${baseName(parentName)}$name" -> false))
+          case ((StructField(name, dtype, nullable, meta), vobject), (parentName, false)) =>
+            Seq((StructField(s"${baseName(parentName)}$name", dtype, nullable, meta), vobject))
         }
       }
 
@@ -219,8 +203,7 @@ class XDDataFrame private[sql] (
       }
     }
 
-    def verticallyFlatRowArrays(row: GenericRowWithSchema)(
-        limit: Int): Seq[GenericRowWithSchema] = {
+    def verticallyFlatRowArrays(row: GenericRowWithSchema)(limit: Int): Seq[GenericRowWithSchema] = {
 
       def cartesian[T](ls: Seq[Seq[T]]): Seq[Seq[T]] =
         (ls :\ Seq(Seq.empty[T])) {
@@ -264,8 +247,7 @@ class XDDataFrame private[sql] (
           row.schema collectFirst {
             case StructField(_, _: ArrayType, _, _) =>
               val newLimit = limit - currentSize.getOrElse(0)
-              iterativeFlatten(verticallyFlatRowArrays(row)(newLimit))(
-                  newLimit)
+              iterativeFlatten(verticallyFlatRowArrays(row)(newLimit))(newLimit)
           } getOrElse Seq(row)
         case (row: Row, _) => Seq(row)
       }
@@ -273,8 +255,7 @@ class XDDataFrame private[sql] (
     def processProjection(plist: Seq[NamedExpression],
                           child: LogicalPlan,
                           limit: Int = Int.MaxValue): Array[Row] = {
-      val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(
-                _))
+      val fullyAnnotatedRequestedColumns = plist map (flattenProjectedColumns(_))
       iterativeFlatten(collect(), fullyAnnotatedRequestedColumns)(limit) toArray
     }
 
@@ -302,8 +283,8 @@ class XDDataFrame private[sql] (
     case Default => collect()
     case Spark => super.collect()
     case Native =>
-      val result = findNativeQueryExecutor(queryExecution.optimizedPlan)
-        .flatMap(executeNativeQuery)
+      val result =
+        findNativeQueryExecutor(queryExecution.optimizedPlan).flatMap(executeNativeQuery)
       result.getOrElse(throw new NativeExecutionException)
   }
 
@@ -323,8 +304,7 @@ class XDDataFrame private[sql] (
     * @inheritdoc
     */
   override def count(): Long = {
-    val aggregateExpr = Seq(
-        Alias(Count(Literal(1)).toAggregateExpression(), "count")())
+    val aggregateExpr = Seq(Alias(Count(Literal(1)).toAggregateExpression(), "count")())
     XDDataFrame(sqlContext, Aggregate(Seq.empty, aggregateExpr, logicalPlan))
       .collect()
       .head
@@ -338,8 +318,7 @@ class XDDataFrame private[sql] (
     * @return an array that contains all of [[Row]]s in this [[XDDataFrame]]
     *         or None if the provider cannot resolve the entire [[XDDataFrame]] natively.
     */
-  private[this] def executeNativeQuery(
-      provider: NativeScan): Option[Array[Row]] = {
+  private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
 
     val containsSubfields = notSupportedProject(queryExecution.optimizedPlan)
     val planSupported = !containsSubfields && queryExecution.optimizedPlan
@@ -356,12 +335,10 @@ class XDDataFrame private[sql] (
 
   }
 
-  private[this] def notSupportedProject(
-      optimizedLogicalPlan: LogicalPlan): Boolean = {
+  private[this] def notSupportedProject(optimizedLogicalPlan: LogicalPlan): Boolean = {
 
     optimizedLogicalPlan collectFirst {
-      case a @ Project(seq, _)
-          if seq.collectFirst { case b: GetMapValue => b }.isDefined =>
+      case a @ Project(seq, _) if seq.collectFirst { case b: GetMapValue => b }.isDefined =>
         a
       case a @ Project(seq, _) if seq.collectFirst {
             case b: GetStructField => b

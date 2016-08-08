@@ -17,13 +17,13 @@ package org.apache.spark.sql.crossdata.models
 
 import org.apache.spark.sql.crossdata.models.EphemeralOptionsModel._
 
-case class EphemeralOptionsModel(
-    kafkaOptions: KafkaOptionsModel,
-    atomicWindow: Int = DefaultAtomicWindow,
-    maxWindow: Int = DefaultMaxWindow,
-    outputFormat: EphemeralOutputFormat.Value = EphemeralOutputFormat.ROW,
-    checkpointDirectory: String = DefaultCheckpointDirectory,
-    sparkOptions: Map[String, String] = Map.empty) {
+case class EphemeralOptionsModel(kafkaOptions: KafkaOptionsModel,
+                                 atomicWindow: Int = DefaultAtomicWindow,
+                                 maxWindow: Int = DefaultMaxWindow,
+                                 outputFormat: EphemeralOutputFormat.Value =
+                                   EphemeralOutputFormat.ROW,
+                                 checkpointDirectory: String = DefaultCheckpointDirectory,
+                                 sparkOptions: Map[String, String] = Map.empty) {
 
   def toPrettyString: String = ModelUtils.modelToJsonString(this)
 }

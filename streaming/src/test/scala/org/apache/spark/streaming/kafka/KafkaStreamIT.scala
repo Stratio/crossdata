@@ -33,7 +33,7 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
   val sparkConf = new SparkConf().setMaster("local[2]").setAppName(this.getClass.getSimpleName)
   val sc = SparkContext.getOrCreate(sparkConf)
   var ssc: StreamingContext = _
-  val kafkaTestUtils: KafkaTestUtils =  new KafkaTestUtils
+  val kafkaTestUtils: KafkaTestUtils = new KafkaTestUtils
   kafkaTestUtils.setup()
 
   after {
@@ -44,7 +44,7 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
     }
   }
 
-  override def afterAll : Unit = {
+  override def afterAll: Unit = {
     kafkaTestUtils.teardown()
   }
 
@@ -61,9 +61,9 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
     val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
 
     val kafkaStreamModelZk = kafkaStreamModel.copy(
-      connection = connectionHostModel.copy(
-        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK)),
-        kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
+        connection = connectionHostModel.copy(
+            zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK)),
+            kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
 
     val input = new KafkaInput(kafkaStreamModelZk)
     val stream = input.createStream(ssc)
@@ -71,9 +71,10 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
 
     stream.map(_._2).countByValue().foreachRDD { rdd =>
       val ret = rdd.collect()
-      ret.toMap.foreach { case (key, value) =>
-        val count = result.getOrElseUpdate(key, 0) + value
-        result.put(key, count)
+      ret.toMap.foreach {
+        case (key, value) =>
+          val count = result.getOrElseUpdate(key, 0) + value
+          result.put(key, count)
       }
     }
 
@@ -97,9 +98,9 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
     val producerPortKafka = kafkaTestUtils.brokerAddress.split(":").last
 
     val kafkaStreamModelZk = kafkaStreamModelProject.copy(
-      connection = connectionHostModel.copy(
-        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK)),
-        kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
+        connection = connectionHostModel.copy(
+            zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK)),
+            kafkaConnection = Seq(ConnectionModel(producerHostKafka, producerPortKafka.toInt))))
 
     val input = new KafkaInput(kafkaStreamModelZk)
     val stream = input.createStream(ssc)

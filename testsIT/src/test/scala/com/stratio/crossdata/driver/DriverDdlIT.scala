@@ -37,11 +37,9 @@ class DriverDdlIT extends MongoWithSharedContext {
           MongodbConfig.Database -> Database,
           MongodbConfig.Collection -> Collection
       )
-      driver
-        .importTables("mongodb", mongoImportOptions)
-        .resultSet
-        .head
-        .getSeq(0) shouldBe Seq(Database, Collection)
+      driver.importTables("mongodb", mongoImportOptions).resultSet.head.getSeq(0) shouldBe Seq(
+          Database,
+          Collection)
     }
   }
 
@@ -49,14 +47,13 @@ class DriverDdlIT extends MongoWithSharedContext {
 
     withDriverDo { driver =>
       val crtTableResult = driver
-        .createTable(name = "crtTable",
-                     dataSourceProvider = "org.apache.spark.sql.json",
-                     schema = None,
-                     options = Map(
-                         "path" -> Paths
-                           .get(getClass.getResource("/tabletest.json").toURI)
-                           .toString),
-                     isTemporary = true)
+        .createTable(
+            name = "crtTable",
+            dataSourceProvider = "org.apache.spark.sql.json",
+            schema = None,
+            options =
+              Map("path" -> Paths.get(getClass.getResource("/tabletest.json").toURI).toString),
+            isTemporary = true)
         .resultSet
 
       driver.listTables() should contain("crtTable", None)

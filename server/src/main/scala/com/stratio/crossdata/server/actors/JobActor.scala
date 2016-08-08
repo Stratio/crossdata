@@ -63,9 +63,7 @@ object JobActor {
     case object StartJob
   }
 
-  case class Task(command: SQLCommand,
-                  requester: ActorRef,
-                  timeout: Option[FiniteDuration])
+  case class Task(command: SQLCommand, requester: ActorRef, timeout: Option[FiniteDuration])
 
   /**
     * The [[JobActor]] state is directly given by the running task which can be: None (Idle st) or a Running, Completed,
@@ -155,9 +153,8 @@ class JobActor(
     case event @ JobFailed(e) if sender == self =>
       logger.debug(s"Task failed at ${self.path}")
       context.parent ! event
-      requester ! SQLReply(
-          command.requestId,
-          ErrorSQLResult(e.getMessage, Some(new Exception(e.getMessage))))
+      requester ! SQLReply(command.requestId,
+                           ErrorSQLResult(e.getMessage, Some(new Exception(e.getMessage))))
       throw e //Let It Crash: It'll be managed by its supervisor
     case JobCompleted if sender == self =>
       logger.debug(s"Completed or cancelled ${self.path} task")
@@ -166,8 +163,7 @@ class JobActor(
 
   private def launchTask: Cancellable[SQLReply] = {
 
-    implicit val _: ExecutionContext =
-      ExecutionContext.fromExecutor(new ProlificExecutor)
+    implicit val _: ExecutionContext = ExecutionContext.fromExecutor(new ProlificExecutor)
 
     Cancellable {
       val df = xdContext.sql(command.sql)

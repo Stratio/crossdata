@@ -32,8 +32,7 @@ class DriverConfSpec extends BaseXDTest {
 
   it should "allow to write config programmatically" in {
     val conf = new DriverConf()
-    conf.set("config.cluster.name",
-             ConfigValueFactory.fromAnyRef("CrossdataCluster"))
+    conf.set("config.cluster.name", ConfigValueFactory.fromAnyRef("CrossdataCluster"))
 
     conf.get("config.cluster.name") shouldBe "CrossdataCluster"
   }
@@ -49,8 +48,7 @@ class DriverConfSpec extends BaseXDTest {
     conf.getClusterContactPoint should contain allOf
       ("akka.tcp://CrossdataServerCluster@1.1.1.1:1000/user/receptionist", "akka.tcp://CrossdataServerCluster@2.2.2.2:2000/user/receptionist")
 
-    conf.get(
-        "akka.contrib.cluster.receptionist.response-tunnel-receive-timeout") shouldBe 10000
+    conf.get("akka.contrib.cluster.receptionist.response-tunnel-receive-timeout") shouldBe 10000
   }
 
 }

@@ -80,9 +80,8 @@ class DefaultSource
     * When push_down is true, some filters are pushed down to CQL.
     *
     */
-  override def createRelation(
-      sqlContext: SQLContext,
-      parameters: Map[String, String]): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext,
+                              parameters: Map[String, String]): BaseRelation = {
 
     val (tableRef, options) = TableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options)
@@ -119,8 +118,7 @@ class DefaultSource
         if (table.buildScan().isEmpty()) {
           table.insert(data, overwrite = false)
         } else {
-          throw new UnsupportedOperationException(
-              s"""'SaveMode is set to ErrorIfExists and Table
+          throw new UnsupportedOperationException(s"""'SaveMode is set to ErrorIfExists and Table
                |${tableRef.keyspace + "." + tableRef.table} already exists and contains data.
                |Perhaps you meant to set the DataFrame write mode to Append?
                |Example: df.write.format.options.mode(SaveMode.Append).save()" '""".stripMargin)
@@ -150,20 +148,18 @@ class DefaultSource
 
   }
 
-  override def createExternalTable(
-      context: SQLContext,
-      tableName: String,
-      databaseName: Option[String],
-      schema: StructType,
-      options: Map[String, String]): Option[Table] = {
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   databaseName: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String]): Option[Table] = {
     val keyspace: String = options
       .get(CassandraDataSourceKeyspaceNameProperty)
       .orElse(databaseName)
       .getOrElse(throw new RuntimeException(
               s"$CassandraDataSourceKeyspaceNameProperty required when use CREATE EXTERNAL TABLE command"))
 
-    val table: String =
-      options.getOrElse(CassandraDataSourceTableNameProperty, tableName)
+    val table: String = options.getOrElse(CassandraDataSourceTableNameProperty, tableName)
 
     try {
       buildCassandraConnector(context, options).withSessionDo { s =>
@@ -184,11 +180,9 @@ class DefaultSource
     }
   }
 
-  override def dropExternalTable(context: SQLContext,
-                                 options: Map[String, String]): Try[Unit] = {
+  override def dropExternalTable(context: SQLContext, options: Map[String, String]): Try[Unit] = {
 
-    val keyspace: String =
-      options.get(CassandraDataSourceKeyspaceNameProperty).get
+    val keyspace: String = options.get(CassandraDataSourceKeyspaceNameProperty).get
     val table: String = options.get(CassandraDataSourceTableNameProperty).get
 
     Try {
@@ -202,8 +196,7 @@ class DefaultSource
 
   import collection.JavaConversions._
 
-  override def listTables(context: SQLContext,
-                          options: Map[String, String]): Seq[Table] = {
+  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
     if (options.contains(CassandraDataSourceTableNameProperty))
       require(
@@ -217,17 +210,15 @@ class DefaultSource
           s.getCluster.getMetadata.getKeyspace(keySpaceName) :: Nil
         }
 
-      val tablesIt: Iterable[Table] =
-        for (ksMeta: KeyspaceMetadata <- keyspaces;
-             tMeta: TableMetadata <- pickTables(ksMeta, options))
-          yield tableMeta2Table(tMeta)
+      val tablesIt: Iterable[Table] = for (ksMeta: KeyspaceMetadata <- keyspaces;
+                                           tMeta: TableMetadata <- pickTables(ksMeta, options))
+        yield tableMeta2Table(tMeta)
       tablesIt.toSeq
     }
   }
 
-  private def buildCassandraConnector(
-      context: SQLContext,
-      options: Map[String, String]): CassandraConnector = {
+  private def buildCassandraConnector(context: SQLContext,
+                                      options: Map[String, String]): CassandraConnector = {
 
     val conParams = (CassandraDataSourceClusterNameProperty :: CassandraConnectionHostProperty :: Nil) map {
       opName =>
@@ -246,12 +237,10 @@ class DefaultSource
     CassandraConnector(cfg)
   }
 
-  private def pickTables(
-      ksMeta: KeyspaceMetadata,
-      options: Map[String, String]): Collection[TableMetadata] = {
-    options.get(CassandraDataSourceTableNameProperty).fold(ksMeta.getTables) {
-      tableName =>
-        ksMeta.getTable(tableName) :: Nil
+  private def pickTables(ksMeta: KeyspaceMetadata,
+                         options: Map[String, String]): Collection[TableMetadata] = {
+    options.get(CassandraDataSourceTableNameProperty).fold(ksMeta.getTables) { tableName =>
+      ksMeta.getTable(tableName) :: Nil
     }
   }
 
@@ -268,15 +257,13 @@ class DefaultSource
   override def exclusionFilter(t: TableInventory.Table): Boolean =
     t.database.exists(dbName => systemTableRegex.findFirstIn(dbName).isEmpty)
 
-  override def generateConnectorOpts(
-      item: Table,
-      opts: Map[String, String] = Map.empty): Map[String, String] =
+  override def generateConnectorOpts(item: Table,
+                                     opts: Map[String, String] = Map.empty): Map[String, String] =
     Map(
         CassandraDataSourceTableNameProperty -> item.tableName,
         CassandraDataSourceKeyspaceNameProperty -> item.database.get
     ) ++ opts.filterKeys(
-        Set(CassandraConnectionHostProperty,
-            CassandraDataSourceClusterNameProperty).contains(_))
+        Set(CassandraConnectionHostProperty, CassandraDataSourceClusterNameProperty).contains(_))
 
   //------------MetadataInventory-----------------
 }

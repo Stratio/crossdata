@@ -27,8 +27,7 @@ class MongoDropExternalTableIT extends MongoWithSharedContext {
     super.beforeAll()
 
     //Create test tables
-    val createTable1 =
-      s"""|CREATE EXTERNAL TABLE $Database.drop1 (id Integer, name String)
+    val createTable1 = s"""|CREATE EXTERNAL TABLE $Database.drop1 (id Integer, name String)
       USING $SourceProvider
           |OPTIONS (
           |host '$MongoHost:$MongoPort',
@@ -38,8 +37,7 @@ class MongoDropExternalTableIT extends MongoWithSharedContext {
       """.stripMargin.replaceAll("\n", " ")
     sql(createTable1).collect()
 
-    val createTable2 =
-      s"""|CREATE EXTERNAL TABLE drop2 (id Integer, name String)
+    val createTable2 = s"""|CREATE EXTERNAL TABLE drop2 (id Integer, name String)
       USING $SourceProvider
           |OPTIONS (
           |host '$MongoHost:$MongoPort',
@@ -63,8 +61,7 @@ class MongoDropExternalTableIT extends MongoWithSharedContext {
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table(s"$Database.drop1"))
-    this.client.get.getDB(Database).collectionExists(mongoTableName) should be(
-        false)
+    this.client.get.getDB(Database).collectionExists(mongoTableName) should be(false)
 
   }
 
@@ -81,8 +78,7 @@ class MongoDropExternalTableIT extends MongoWithSharedContext {
 
     //Expectations
     an[Exception] shouldBe thrownBy(xdContext.table("drop2"))
-    this.client.get.getDB(Database).collectionExists(mongoTableName) should be(
-        false)
+    this.client.get.getDB(Database).collectionExists(mongoTableName) should be(false)
 
   }
 

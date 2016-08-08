@@ -45,11 +45,9 @@ class ElasticsearchXDRelation(parameters: Map[String, String],
     * @param optimizedLogicalPlan the [[LogicalPlan]] to be executed
     * @return a list of Spark [[Row]] with the [[LogicalPlan]] execution result.
     */
-  override def buildScan(
-      optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
+  override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
     logDebug(s"Processing ${optimizedLogicalPlan.toString()}")
-    val queryExecutor =
-      ElasticSearchQueryProcessor(optimizedLogicalPlan, parameters, userSchema)
+    val queryExecutor = ElasticSearchQueryProcessor(optimizedLogicalPlan, parameters, userSchema)
     queryExecutor.execute()
   }
 
@@ -60,8 +58,7 @@ class ElasticsearchXDRelation(parameters: Map[String, String],
     * @param wholeLogicalPlan the whole DataFrame tree
     * @return whether the logical step within the entire logical plan is supported
     */
-  override def isSupported(logicalStep: LogicalPlan,
-                           wholeLogicalPlan: LogicalPlan): Boolean =
+  override def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean =
     logicalStep match {
       case ln: LeafNode =>
         true // TODO leafNode == LogicalRelation(xdSourceRelation)

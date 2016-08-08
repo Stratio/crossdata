@@ -23,12 +23,9 @@ import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTabl
 
 import scala.util.Try
 
-trait MongoDataTypesCollection
-    extends MongoWithSharedContext
-    with SharedXDContextTypesTest {
+trait MongoDataTypesCollection extends MongoWithSharedContext with SharedXDContextTypesTest {
 
-  override val emptyTypesSetError: String =
-    "Type test entries should have been already inserted"
+  override val emptyTypesSetError: String = "Type test entries should have been already inserted"
 
   override def dataTypesSparkOptions: Map[String, String] = Map(
       "host" -> s"$MongoHost:$MongoPort",

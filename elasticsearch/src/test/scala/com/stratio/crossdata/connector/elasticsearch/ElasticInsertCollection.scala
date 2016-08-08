@@ -41,13 +41,9 @@ trait ElasticInsertCollection extends ElasticWithSharedContext {
           "description" -> s"A ${a}description about the Name$a",
           "enrolled" -> (if (a % 2 == 0) true else null),
           "name" -> s"Name $a",
-          "birthday" -> DateTime
-            .parse((1980 + a) + "-01-01T10:00:00-00:00")
-            .toDate,
+          "birthday" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").toDate,
           "salary" -> a * 1000.5,
-          "ageInMilis" -> DateTime
-            .parse((1980 + a) + "-01-01T10:00:00-00:00")
-            .getMillis,
+          "ageInMilis" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").getMillis,
           "array_test" -> List(a, a + 1, a + 2),
           "map_test" -> Map("x" -> a, "y" -> (a + 1)),
           "array_map" -> Seq(Map("x" -> a), Map("y" -> (a + 1))),

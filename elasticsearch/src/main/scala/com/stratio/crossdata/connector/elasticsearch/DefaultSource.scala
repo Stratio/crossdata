@@ -40,8 +40,7 @@ import scala.util.Try
 
 object DefaultSource {
   val DataSourcePushDown: String = "es.internal.spark.sql.pushdown"
-  val DataSourcePushDownStrict: String =
-    "es.internal.spark.sql.pushdown.strict"
+  val DataSourcePushDownStrict: String = "es.internal.spark.sql.pushdown.strict"
   val ElasticNativePort = "es.nativePort"
   val ElasticCluster = "es.cluster"
   val ElasticIndex = "es.index"
@@ -65,9 +64,8 @@ class DefaultSource
 
   override def shortName(): String = "elasticsearch"
 
-  override def createRelation(
-      @transient sqlContext: SQLContext,
-      parameters: Map[String, String]): BaseRelation = {
+  override def createRelation(@transient sqlContext: SQLContext,
+                              parameters: Map[String, String]): BaseRelation = {
     new ElasticsearchXDRelation(params(parameters), sqlContext)
   }
 
@@ -82,9 +80,7 @@ class DefaultSource
                               parameters: Map[String, String],
                               data: DataFrame): BaseRelation = {
 
-    val relation = new ElasticsearchXDRelation(params(parameters),
-                                               sqlContext,
-                                               Some(data.schema))
+    val relation = new ElasticsearchXDRelation(params(parameters), sqlContext, Some(data.schema))
     mode match {
       case Append =>
         relation.insert(data, overwrite = false)
@@ -135,9 +131,8 @@ class DefaultSource
   /**
     * @inheritdoc
     */
-  override def generateConnectorOpts(
-      item: Table,
-      userOpts: Map[String, String]): Map[String, String] =
+  override def generateConnectorOpts(item: Table,
+                                     userOpts: Map[String, String]): Map[String, String] =
     Map(
         ES_RESOURCE -> s"${item.database.get}/${item.tableName}"
     ) ++ userOpts
@@ -145,8 +140,7 @@ class DefaultSource
   /**
     * @inheritdoc
     */
-  override def listTables(context: SQLContext,
-                          options: Map[String, String]): Seq[Table] = {
+  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
     Seq(ElasticCluster).foreach { opName =>
       if (!options.contains(opName))
@@ -156,12 +150,11 @@ class DefaultSource
     ElasticSearchConnectionUtils.listTypes(params(options))
   }
 
-  override def createExternalTable(
-      context: SQLContext,
-      tableName: String,
-      databaseName: Option[String],
-      schema: StructType,
-      options: Map[String, String]): Option[Table] = {
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   databaseName: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String]): Option[Table] = {
 
     val (index, typeName) = ElasticSearchConnectionUtils
       .extractIndexAndType(options)
@@ -208,12 +201,10 @@ class DefaultSource
     }
   }
 
-  override def dropExternalTable(context: SQLContext,
-                                 options: Map[String, String]): Try[Unit] = {
+  override def dropExternalTable(context: SQLContext, options: Map[String, String]): Try[Unit] = {
 
     if (ElasticSearchConnectionUtils.numberOfTypes(options) == 1) {
-      val (index, _) =
-        ElasticSearchConnectionUtils.extractIndexAndType(options).get
+      val (index, _) = ElasticSearchConnectionUtils.extractIndexAndType(options).get
 
       Try {
         ElasticSearchConnectionUtils.withClientDo(options) { client =>

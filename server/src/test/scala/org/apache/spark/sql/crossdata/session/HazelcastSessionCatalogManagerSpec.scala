@@ -29,8 +29,8 @@ import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
 
 object HazelcastSessionCatalogManagerSpec {
 
-  private class ProbedHazelcastSessionCatalogManager(
-      hInstance: HazelcastInstance)(implicit monitorActor: ActorRef)
+  private class ProbedHazelcastSessionCatalogManager(hInstance: HazelcastInstance)(
+      implicit monitorActor: ActorRef)
       extends HazelcastSessionCatalogManager(hInstance, EmptyConf) {
 
     override def invalidateLocalCaches(key: SessionID): Unit = {
@@ -79,8 +79,7 @@ class HazelcastSessionCatalogManagerSpec
         catalogManager.newResource(sessionID)
         expectMsg(InvalidatedSession(sessionID))
 
-        val catalog: XDTemporaryCatalog =
-          catalogManager.getResource(sessionID).get.head
+        val catalog: XDTemporaryCatalog = catalogManager.getResource(sessionID).get.head
         expectNoMsg()
 
         catalog.dropAllTables()

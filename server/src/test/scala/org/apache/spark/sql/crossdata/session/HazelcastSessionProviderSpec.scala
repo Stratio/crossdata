@@ -38,14 +38,12 @@ import scala.util.{Success, Try}
 @RunWith(classOf[JUnitRunner])
 class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
-  val SparkSqlConfigString =
-    "config.spark.sql.inMemoryColumnarStorage.batchSize=5000"
+  val SparkSqlConfigString = "config.spark.sql.inMemoryColumnarStorage.batchSize=5000"
 
   "HazelcastSessionProvider" should "provides new sessions whose properties are initialized properly" in {
 
-    val hazelcastSessionProvider = new HazelcastSessionProvider(
-        xdContext.sc,
-        ConfigFactory.parseString(SparkSqlConfigString))
+    val hazelcastSessionProvider =
+      new HazelcastSessionProvider(xdContext.sc, ConfigFactory.parseString(SparkSqlConfigString))
 
     val session = createNewSession(hazelcastSessionProvider)
 
@@ -72,21 +70,17 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
     val (sessionTempCatalogs, sessionPersCatalogs) = {
       val session = createNewSession(hazelcastSessionProvider)
-      (tempCatalogsFromSession(session),
-       persistentCatalogsFromSession(session))
+      (tempCatalogsFromSession(session), persistentCatalogsFromSession(session))
     }
     val (session2TempCatalogs, session2PersCatalogs) = {
       val session = createNewSession(hazelcastSessionProvider)
-      (tempCatalogsFromSession(session),
-       persistentCatalogsFromSession(session))
+      (tempCatalogsFromSession(session), persistentCatalogsFromSession(session))
     }
 
     Seq(sessionTempCatalogs, session2TempCatalogs) foreach (_ should have length 2)
 
-    sessionTempCatalogs.head should not be theSameInstanceAs(
-        session2TempCatalogs.head)
-    sessionTempCatalogs(1) should not be theSameInstanceAs(
-        session2TempCatalogs(1))
+    sessionTempCatalogs.head should not be theSameInstanceAs(session2TempCatalogs.head)
+    sessionTempCatalogs(1) should not be theSameInstanceAs(session2TempCatalogs(1))
 
     Seq(sessionPersCatalogs, session2PersCatalogs) foreach (_ should have length 1)
     sessionPersCatalogs.head should be theSameInstanceAs session2PersCatalogs.head
@@ -108,14 +102,10 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     session.catalog.registerTable(
         tableIdent,
         LocalRelation(),
-        Some(
-            CrossdataTable(tableIdent.normalize(xdContext.catalog.conf),
-                           None,
-                           "fakedatasource")))
+        Some(CrossdataTable(tableIdent.normalize(xdContext.catalog.conf), None, "fakedatasource")))
 
     hazelcastSessionProvider.session(sessionId) should matchPattern {
-      case Success(s: XDSession)
-          if Try(s.catalog.lookupRelation(tableIdent)).isSuccess =>
+      case Success(s: XDSession) if Try(s.catalog.lookupRelation(tableIdent)).isSuccess =>
     }
 
     hazelcastSessionProvider.close()
@@ -152,9 +142,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
     val session = hazelcastSessionProvider.newSession(UUID.randomUUID())
 
-    hazelcastSessionProvider
-      .closeSession(UUID.randomUUID())
-      .isFailure shouldBe true
+    hazelcastSessionProvider.closeSession(UUID.randomUUID()).isFailure shouldBe true
 
     hazelcastSessionProvider.close()
   }
@@ -167,8 +155,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     hazelcastSessionProvider.newSession(sessionID)
     hazelcastSessionProvider.close()
 
-    a[RuntimeException] shouldBe thrownBy(
-        hazelcastSessionProvider.session(sessionID))
+    a[RuntimeException] shouldBe thrownBy(hazelcastSessionProvider.session(sessionID))
 
   }
 
@@ -186,20 +173,17 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     hazelcastSessionProvider.close()
   }
 
-  testInvalidation(
-      "provide a new session instance after its invalidation by a SQLConf change")(
+  testInvalidation("provide a new session instance after its invalidation by a SQLConf change")(
       // This changes a setting  value using a second hazelcast peer
       _.setConf("spark.sql.parquet.filterPushdown", "false")
   )
 
-  testInvalidation(
-      "provide a new session instance after its invalidation by a Catalog change")(
+  testInvalidation("provide a new session instance after its invalidation by a Catalog change")(
       // This changes a setting  value using a second hazelcast peer
       _.catalog.unregisterTable(TableIdentifier("DUMMY_TABLE"))
   )
 
-  def testInvalidation(testDescription: String)(
-      invalidationAction: XDSession => Unit) =
+  def testInvalidation(testDescription: String)(invalidationAction: XDSession => Unit) =
     it should testDescription in {
 
       // Two hazelcast peers shall be created
@@ -210,22 +194,18 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
       val sessionID = UUID.randomUUID()
 
-      val newSessionAtPeerA =
-        hazelcastSessionProviderA.newSession(sessionID).get
-      val obtainedSessionFromPeerA =
-        hazelcastSessionProviderA.session(sessionID).get
+      val newSessionAtPeerA = hazelcastSessionProviderA.newSession(sessionID).get
+      val obtainedSessionFromPeerA = hazelcastSessionProviderA.session(sessionID).get
 
       obtainedSessionFromPeerA should be theSameInstanceAs newSessionAtPeerA
 
-      val obtainedSessionFromPeerB =
-        hazelcastSessionProviderB.session(sessionID).get
+      val obtainedSessionFromPeerB = hazelcastSessionProviderB.session(sessionID).get
 
       invalidationAction(obtainedSessionFromPeerB)
 
       Thread.sleep(500)
 
-      val obtainedSessionFromPeerAAfterChange =
-        hazelcastSessionProviderA.session(sessionID).get
+      val obtainedSessionFromPeerAAfterChange = hazelcastSessionProviderA.session(sessionID).get
 
       newSessionAtPeerA shouldNot be theSameInstanceAs obtainedSessionFromPeerAAfterChange
 
@@ -233,21 +213,18 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
       hazelcastSessionProviderB.close()
     }
 
-  private def tempCatalogsFromSession(
-      session: XDSession): Seq[XDTemporaryCatalog] = {
+  private def tempCatalogsFromSession(session: XDSession): Seq[XDTemporaryCatalog] = {
     session.catalog shouldBe a[CatalogChain]
     session.catalog.asInstanceOf[CatalogChain].temporaryCatalogs
   }
 
-  private def persistentCatalogsFromSession(
-      session: XDSession): Seq[XDPersistentCatalog] = {
+  private def persistentCatalogsFromSession(session: XDSession): Seq[XDPersistentCatalog] = {
     session.catalog shouldBe a[CatalogChain]
     session.catalog.asInstanceOf[CatalogChain].persistentCatalogs
   }
 
-  private def createNewSession(
-      hazelcastSessionProvider: HazelcastSessionProvider,
-      uuid: UUID = UUID.randomUUID()): XDSession = {
+  private def createNewSession(hazelcastSessionProvider: HazelcastSessionProvider,
+                               uuid: UUID = UUID.randomUUID()): XDSession = {
     val optSession = hazelcastSessionProvider.newSession(uuid).toOption
     optSession shouldBe defined
     optSession.get

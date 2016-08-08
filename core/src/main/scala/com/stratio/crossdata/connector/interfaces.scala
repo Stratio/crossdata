@@ -48,8 +48,7 @@ sealed trait PushDownable {
     * @param wholeLogicalPlan the whole DataFrame tree
     * @return whether the logical step within the entire logical plan is supported
     */
-  def isSupported(logicalStep: LogicalPlan,
-                  wholeLogicalPlan: LogicalPlan): Boolean
+  def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean
 }
 
 sealed trait GenerateConnectorOptions {
@@ -63,9 +62,8 @@ sealed trait GenerateConnectorOptions {
     * @return A concrete (for a given connector) translation of the high level table description
     *         to a low-level option map.
     */
-  def generateConnectorOpts(
-      item: Table,
-      userOpts: Map[String, String] = Map.empty): Map[String, String]
+  def generateConnectorOpts(item: Table,
+                            userOpts: Map[String, String] = Map.empty): Map[String, String]
 }
 
 /**
@@ -138,13 +136,11 @@ trait NativeFunctionExecutor {
   */
 trait TableManipulation extends GenerateConnectorOptions {
 
-  def createExternalTable(
-      context: SQLContext,
-      tableName: String,
-      databaseName: Option[String],
-      schema: StructType,
-      options: Map[String, String]): Option[TableInventory.Table]
+  def createExternalTable(context: SQLContext,
+                          tableName: String,
+                          databaseName: Option[String],
+                          schema: StructType,
+                          options: Map[String, String]): Option[TableInventory.Table]
 
-  def dropExternalTable(context: SQLContext,
-                        options: Map[String, String]): Try[Unit]
+  def dropExternalTable(context: SQLContext, options: Map[String, String]): Try[Unit]
 }

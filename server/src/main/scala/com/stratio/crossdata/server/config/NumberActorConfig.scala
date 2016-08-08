@@ -28,14 +28,12 @@ trait NumberActorConfig {
   import NumberActorConfig.ServerActorInstancesMin
   import NumberActorConfig.ServerActorInstancesMax
   import NumberActorConfig.DefaultServerExecutorInstances
-  lazy val minServerActorInstances: Int =
-    Option(config.getString(ServerActorInstancesMin))
-      .map(_.toInt)
-      .getOrElse(DefaultServerExecutorInstances)
-  lazy val maxServerActorInstances: Int =
-    Option(config.getString(ServerActorInstancesMax))
-      .map(_.toInt)
-      .getOrElse(minServerActorInstances * 2)
+  lazy val minServerActorInstances: Int = Option(config.getString(ServerActorInstancesMin))
+    .map(_.toInt)
+    .getOrElse(DefaultServerExecutorInstances)
+  lazy val maxServerActorInstances: Int = Option(config.getString(ServerActorInstancesMax))
+    .map(_.toInt)
+    .getOrElse(minServerActorInstances * 2)
   def config: Config
 
 }

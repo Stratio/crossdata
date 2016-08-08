@@ -52,8 +52,7 @@ object CassandraExample extends App with CassandraDefaultConstants {
 
   private def withCrossdataContext(commands: XDContext => Unit) = {
 
-    val sparkConf =
-      new SparkConf().setAppName("CassandraExample").setMaster("local[4]")
+    val sparkConf = new SparkConf().setAppName("CassandraExample").setMaster("local[4]")
 
     val sc = new SparkContext(sparkConf)
     try {

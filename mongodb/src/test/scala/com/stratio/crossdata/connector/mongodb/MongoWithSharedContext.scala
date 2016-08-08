@@ -52,10 +52,9 @@ trait MongoWithSharedContext
                       "enrolled" -> (a % 2 == 0),
                       "name" -> s"Name $a")
       }
-      collection.update(
-          QueryBuilder.start("id").greaterThan(4).get,
-          MongoDBObject(("$set", MongoDBObject(("optionalField", true)))),
-          multi = true)
+      collection.update(QueryBuilder.start("id").greaterThan(4).get,
+                        MongoDBObject(("$set", MongoDBObject(("optionalField", true)))),
+                        multi = true)
     }
 
   }
@@ -77,8 +76,7 @@ trait MongoWithSharedContext
       str2sparkTableDesc(
           s"CREATE TEMPORARY TABLE $Collection (id BIGINT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN)")
 
-  override val runningError: String =
-    "MongoDB and Spark must be up and running"
+  override val runningError: String = "MongoDB and Spark must be up and running"
 
   val UnregisteredCollection = "unregistered"
 
@@ -93,9 +91,7 @@ sealed trait MongoDefaultConstants {
 
   //Config
   val MongoHost: String = {
-    Try(ConfigFactory.load().getStringList("mongo.hosts"))
-      .map(_.get(0))
-      .getOrElse("127.0.0.1")
+    Try(ConfigFactory.load().getStringList("mongo.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
   }
   val MongoPort = 27017
   val SourceProvider = "com.stratio.crossdata.connector.mongodb"
@@ -125,17 +121,15 @@ sealed trait MongoDefaultConstants {
   val mapintint = new BasicDBObject("1", 1).append("2", 2)
   val mapstringint = new BasicDBObject("1", 1).append("2", 2)
   val mapstringstring = new BasicDBObject("1", "1").append("2", "2")
-  val mapstruct = new BasicDBObject(
-      "mapstruct",
-      MongoDBObject("structField1" -> date, "structField2" -> 3))
+  val mapstruct =
+    new BasicDBObject("mapstruct", MongoDBObject("structField1" -> date, "structField2" -> 3))
 
   // Struct
   val struct = MongoDBObject("field1" -> 2, "field2" -> 3)
   val structofstruct = MongoDBObject(
       "field1" -> date,
       "field2" -> 3,
-      "struct1" -> MongoDBObject("structField1" -> "structfield1",
-                                 "structField2" -> 2))
+      "struct1" -> MongoDBObject("structField1" -> "structfield1", "structField2" -> 2))
 
   // Complex compositions
   val arraystructarraystruct = Seq(

@@ -30,11 +30,7 @@ object SessionBeaconActor {
             period: FiniteDuration,
             clusterClientActor: ActorRef,
             clusterPath: String): Props =
-    Props(
-        new SessionBeaconActor(sessionId,
-                               period,
-                               clusterClientActor,
-                               clusterPath))
+    Props(new SessionBeaconActor(sessionId, period, clusterClientActor, clusterPath))
 
 }
 

@@ -78,8 +78,7 @@ class CreateGlobalIndexIT extends MongoAndElasticWithSharedContext {
 
     typeExistResponse.isExists shouldBe true
 
-    xdContext.dropGlobalIndex(
-        IndexIdentifier(indexName, CreateGlobalIndex.DefaultDatabaseName))
+    xdContext.dropGlobalIndex(IndexIdentifier(indexName, CreateGlobalIndex.DefaultDatabaseName))
 
   }
 

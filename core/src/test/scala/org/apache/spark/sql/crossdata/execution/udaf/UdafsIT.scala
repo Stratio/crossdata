@@ -35,8 +35,7 @@ class UdafsIT extends SharedXDContextTest {
   "XDContext" should "resolve a query with the UDAF group_concat" in {
     val tempContext = _xdContext
 
-    val schema = StructType(
-        Seq(StructField("name", StringType), StructField("age", IntegerType)))
+    val schema = StructType(Seq(StructField("name", StringType), StructField("age", IntegerType)))
 
     val df = _xdContext.createDataFrame(
         _xdContext.sc.parallelize(

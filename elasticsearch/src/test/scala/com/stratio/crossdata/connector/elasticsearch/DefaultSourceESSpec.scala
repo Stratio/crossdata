@@ -55,8 +55,7 @@ class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
     }
 
     //Experimentation
-    val result =
-      defaultDatasource.createRelation(sqlContext, parameters, schema)
+    val result = defaultDatasource.createRelation(sqlContext, parameters, schema)
 
     //Expectations
     result should not be null
@@ -71,8 +70,7 @@ class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
     val userOpts: Map[String, String] = Map(ES_HOST -> "localhost")
 
     //Experimentation
-    val result: Map[String, String] =
-      defaultDatasource.generateConnectorOpts(item, userOpts)
+    val result: Map[String, String] = defaultDatasource.generateConnectorOpts(item, userOpts)
 
     //Expectations
     result should not be null

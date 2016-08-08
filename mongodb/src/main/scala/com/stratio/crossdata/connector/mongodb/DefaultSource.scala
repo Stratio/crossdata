@@ -61,12 +61,10 @@ class DefaultSource
 
   override def shortName(): String = "mongodb"
 
-  override def createRelation(
-      sqlContext: SQLContext,
-      parameters: Map[String, String]): BaseRelation = {
+  override def createRelation(sqlContext: SQLContext,
+                              parameters: Map[String, String]): BaseRelation = {
 
-    MongodbXDRelation(
-        MongodbConfigBuilder(parseParameters(parameters)).build())(sqlContext)
+    MongodbXDRelation(MongodbConfigBuilder(parseParameters(parameters)).build())(sqlContext)
 
   }
 
@@ -74,9 +72,8 @@ class DefaultSource
                               parameters: Map[String, String],
                               schema: StructType): BaseRelation = {
 
-    MongodbXDRelation(
-        MongodbConfigBuilder(parseParameters(parameters)).build(),
-        Some(schema))(sqlContext)
+    MongodbXDRelation(MongodbConfigBuilder(parseParameters(parameters)).build(), Some(schema))(
+        sqlContext)
 
   }
 
@@ -85,8 +82,8 @@ class DefaultSource
                               parameters: Map[String, String],
                               data: DataFrame): BaseRelation = {
 
-    val mongodbRelation = MongodbXDRelation(
-        MongodbConfigBuilder(parseParameters(parameters)).build())(sqlContext)
+    val mongodbRelation =
+      MongodbXDRelation(MongodbConfigBuilder(parseParameters(parameters)).build())(sqlContext)
 
     mode match {
       case Append => mongodbRelation.insert(data, overwrite = false)
@@ -95,8 +92,7 @@ class DefaultSource
         if (mongodbRelation.isEmptyCollection)
           mongodbRelation.insert(data, overwrite = false)
         else
-          throw new UnsupportedOperationException(
-              "Writing in a non-empty collection.")
+          throw new UnsupportedOperationException("Writing in a non-empty collection.")
       case Ignore =>
         if (mongodbRelation.isEmptyCollection)
           mongodbRelation.insert(data, overwrite = false)
@@ -108,9 +104,8 @@ class DefaultSource
   /**
     * @inheritdoc
     */
-  override def generateConnectorOpts(
-      item: Table,
-      userOpts: Map[String, String]): Map[String, String] =
+  override def generateConnectorOpts(item: Table,
+                                     userOpts: Map[String, String]): Map[String, String] =
     Map(
         Database -> item.database.get,
         Collection -> item.tableName
@@ -119,34 +114,29 @@ class DefaultSource
   /**
     * @inheritdoc
     */
-  override def listTables(context: SQLContext,
-                          options: Map[String, String]): Seq[Table] = {
+  override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
     Seq(Host).foreach { opName =>
       if (!options.contains(opName))
         sys.error(s"""Option "$opName" is mandatory for IMPORT TABLES""")
     }
 
-    MongodbConnection.withClientDo(parseParametersWithoutValidation(options)) {
-      mongoClient =>
-        def extractAllDatabases: Seq[MongoDB] =
-          mongoClient.getDatabaseNames().map(mongoClient.getDB)
+    MongodbConnection.withClientDo(parseParametersWithoutValidation(options)) { mongoClient =>
+      def extractAllDatabases: Seq[MongoDB] =
+        mongoClient.getDatabaseNames().map(mongoClient.getDB)
 
-        def extractAllCollections(db: MongoDB): Seq[DBCollection] =
-          db.getCollectionNames().map(db.getCollection).toSeq
+      def extractAllCollections(db: MongoDB): Seq[DBCollection] =
+        db.getCollectionNames().map(db.getCollection).toSeq
 
-        val tablesIt: Iterable[Table] = for {
-          database: MongoDB <- extractAllDatabases
-          collection: DBCollection <- extractAllCollections(database)
-          if options.get(Database).forall(_ == collection.getDB.getName)
-          if options.get(Collection).forall(_ == collection.getName)
-        } yield {
-          collectionToTable(context,
-                            options,
-                            database.getName,
-                            collection.getName)
-        }
-        tablesIt.toSeq
+      val tablesIt: Iterable[Table] = for {
+        database: MongoDB <- extractAllDatabases
+        collection: DBCollection <- extractAllCollections(database)
+        if options.get(Database).forall(_ == collection.getDB.getName)
+        if options.get(Collection).forall(_ == collection.getName)
+      } yield {
+        collectionToTable(context, options, database.getName, collection.getName)
+      }
+      tablesIt.toSeq
     }
   }
 
@@ -160,26 +150,22 @@ class DefaultSource
                                 collection: String): Table = {
 
     val collectionConfig = MongodbConfigBuilder()
-      .apply(parseParameters(
-              options + (Database -> database) + (Collection -> collection)))
+      .apply(parseParameters(options + (Database -> database) + (Collection -> collection)))
       .build()
-    Table(collection,
-          Some(database),
-          Some(new MongodbRelation(collectionConfig)(context).schema))
+    Table(collection, Some(database), Some(new MongodbRelation(collectionConfig)(context).schema))
   }
 
-  override def createExternalTable(
-      context: SQLContext,
-      tableName: String,
-      databaseName: Option[String],
-      schema: StructType,
-      options: Map[String, String]): Option[Table] = {
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   databaseName: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String]): Option[Table] = {
 
     val database: String = options
       .get(Database)
       .orElse(databaseName)
-      .getOrElse(throw new RuntimeException(
-              s"$Database required when use CREATE EXTERNAL TABLE command"))
+      .getOrElse(
+          throw new RuntimeException(s"$Database required when use CREATE EXTERNAL TABLE command"))
 
     val collection: String = options.getOrElse(Collection, tableName)
 
@@ -195,13 +181,9 @@ class DefaultSource
     }
 
     try {
-      MongodbConnection
-        .withClientDo(parseParametersWithoutValidation(options)) {
-          mongoClient =>
-            mongoClient
-              .getDB(database)
-              .createCollection(collection, mongoOptions)
-        }
+      MongodbConnection.withClientDo(parseParametersWithoutValidation(options)) { mongoClient =>
+        mongoClient.getDB(database).createCollection(collection, mongoOptions)
+      }
       Option(Table(collection, Option(database), Option(schema)))
     } catch {
       case e: Exception =>
@@ -210,8 +192,7 @@ class DefaultSource
     }
   }
 
-  override def dropExternalTable(context: SQLContext,
-                                 options: Map[String, String]): Try[Unit] = {
+  override def dropExternalTable(context: SQLContext, options: Map[String, String]): Try[Unit] = {
     val tupleDbColl = for {
       db <- options.get(Database)
       coll <- options.get(Collection)
@@ -224,27 +205,24 @@ class DefaultSource
     ) {
       case (dbName, collName) =>
         Try {
-          MongodbConnection.withClientDo(
-              parseParametersWithoutValidation(options)) { mongoClient =>
-            mongoClient.getDB(dbName).getCollection(collName).drop()
+          MongodbConnection.withClientDo(parseParametersWithoutValidation(options)) {
+            mongoClient =>
+              mongoClient.getDB(dbName).getCollection(collName).drop()
           }
         }
     }
   }
 
   // TODO refactor datasource -> avoid duplicated method
-  def parseParametersWithoutValidation(
-      parameters: Map[String, String]): Config = {
+  def parseParametersWithoutValidation(parameters: Map[String, String]): Config = {
 
     // required properties
     /** We will assume hosts are provided like 'host:port,host2:port2,...' */
-    val properties: Map[String, Any] = parameters.updated(
-        Host,
-        parameters.getOrElse(Host, notFound[String](Host)).split(",").toList)
+    val properties: Map[String, Any] = parameters
+      .updated(Host, parameters.getOrElse(Host, notFound[String](Host)).split(",").toList)
 
     //optional parseable properties
-    val optionalProperties: List[String] =
-      List(Credentials, SSLOptions, UpdateFields)
+    val optionalProperties: List[String] = List(Credentials, SSLOptions, UpdateFields)
 
     val finalProperties = (properties /: optionalProperties) {
 
@@ -256,9 +234,7 @@ class DefaultSource
             .map(_.split(","))
             .toList
             .map(credentials =>
-                  MongodbCredentials(credentials(0),
-                                     credentials(1),
-                                     credentials(2).toCharArray))
+                  MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
           properties + (Credentials -> credentials)
         } getOrElse properties
 
@@ -285,8 +261,7 @@ class DefaultSource
   }
 
   // TODO refactor datasource -> avoid duplicated config builder
-  case class MongodbConnectorConfigBuilder(props: Map[Property, Any] = Map())
-      extends {
+  case class MongodbConnectorConfigBuilder(props: Map[Property, Any] = Map()) extends {
 
     override val properties = Map() ++ props
 

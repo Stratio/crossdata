@@ -47,8 +47,7 @@ object CassandraQueryProcessor
     def udfsMap: Map[Attribute, NativeUDF] = basePlan.udfsMap
   }
 
-  def apply(cassandraRelation: CassandraXDSourceRelation,
-            logicalPlan: LogicalPlan) =
+  def apply(cassandraRelation: CassandraXDSourceRelation, logicalPlan: LogicalPlan) =
     new CassandraQueryProcessor(cassandraRelation, logicalPlan)
 
   def buildNativeQuery(tableQN: String,
@@ -99,11 +98,8 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation,
   def execute(): Option[Array[Row]] = {
     def annotateRepeatedNames(names: Seq[String]): Seq[String] = {
       val indexedNames = names zipWithIndex
-      val name2pos = indexedNames
-        .groupBy(_._1)
-        .values
-        .flatMap(_.zipWithIndex.map(x => x._1._2 -> x._2))
-        .toMap
+      val name2pos =
+        indexedNames.groupBy(_._1).values.flatMap(_.zipWithIndex.map(x => x._1._2 -> x._2)).toMap
       indexedNames map {
         case (name, index) =>
           val c = name2pos(index); if (c > 0) s"$name$c" else name
@@ -128,11 +124,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation,
             case SimpleLogicalPlan(projects, _, _, _) =>
               projects.map(_.toString())
 
-            case AggregationLogicalPlan(projects,
-                                        groupingExpression,
-                                        _,
-                                        _,
-                                        _) =>
+            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) =>
               require(groupingExpression.isEmpty)
               projects.map(buildAggregationExpression)
           }
@@ -141,25 +133,21 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation,
               cassandraRelation.tableDef.name,
               projectsString,
               cassandraPlan.filters,
-              cassandraPlan.limit.getOrElse(
-                  CassandraQueryProcessor.DefaultLimit),
+              cassandraPlan.limit.getOrElse(CassandraQueryProcessor.DefaultLimit),
               cassandraPlan.udfsMap map { case (k, v) => k.toString -> v }
           )
-          val resultSet = cassandraRelation.connector.withSessionDo {
-            session =>
-              session.execute(cqlQuery)
+          val resultSet = cassandraRelation.connector.withSessionDo { session =>
+            session.execute(cqlQuery)
           }
-          sparkResultFromCassandra(annotateRepeatedNames(
-                                       cassandraPlan.projects
-                                         .map(_.name)).toArray,
-                                   resultSet)
+          sparkResultFromCassandra(
+              annotateRepeatedNames(cassandraPlan.projects.map(_.name)).toArray,
+              resultSet)
         }
 
       }
     } catch {
       case exc: Exception =>
-        log.warn(s"Exception executing the native query $logicalPlan",
-                 exc.getMessage); None
+        log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage); None
     }
 
   }
@@ -179,13 +167,9 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation,
           findBasePlan(child)
 
         case ExtendedPhysicalOperation(projectList, filterList, _) =>
-          CatalystToCrossdataAdapter.getConnectorLogicalPlan(
-              logicalPlan,
-              projectList,
-              filterList) match {
-            case (_,
-                  ProjectReport(exprIgnored),
-                  FilterReport(filtersIgnored, _))
+          CatalystToCrossdataAdapter
+            .getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
+            case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _))
                 if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
               None
             case (basePlan, _, _) =>
@@ -199,9 +183,8 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation,
     }
   }
 
-  private[this] def checkNativeFilters(
-      filters: Array[SourceFilter],
-      udfs: Map[Attribute, NativeUDF]): Boolean = {
+  private[this] def checkNativeFilters(filters: Array[SourceFilter],
+                                       udfs: Map[Attribute, NativeUDF]): Boolean = {
 
     val udfNames = udfs.keys.map(_.toString).toSet
 
@@ -250,34 +233,31 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation,
         groupedFilters.get(PartitionKey).get.forall {
           case sources.EqualTo(_, _) => true
           case sources.In(colName, _)
-              if cassandraRelation.tableDef.partitionKey.last.columnName
-                .equals(colName) =>
+              if cassandraRelation.tableDef.partitionKey.last.columnName.equals(colName) =>
             true
           case _ => false
         }
       }
 
     {
-      !groupedFilters.contains(Unknown) && !groupedFilters
-        .contains(NonIndexed) &&
+      !groupedFilters.contains(Unknown) && !groupedFilters.contains(NonIndexed) &&
       checksPartitionKeyFilters && checksClusteringKeyFilters && checksSecondaryIndexesFilters
     }
 
   }
 
-  private[this] def columnNameFromFilter(
-      sourceFilter: SourceFilter): Option[ColumnName] = sourceFilter match {
-    case sources.EqualTo(attribute, _) => Some(attribute)
-    case sources.In(attribute, _) => Some(attribute)
-    case sources.LessThan(attribute, _) => Some(attribute)
-    case sources.GreaterThan(attribute, _) => Some(attribute)
-    case sources.LessThanOrEqual(attribute, _) => Some(attribute)
-    case sources.GreaterThanOrEqual(attribute, _) => Some(attribute)
-    case _ => None
-  }
+  private[this] def columnNameFromFilter(sourceFilter: SourceFilter): Option[ColumnName] =
+    sourceFilter match {
+      case sources.EqualTo(attribute, _) => Some(attribute)
+      case sources.In(attribute, _) => Some(attribute)
+      case sources.LessThan(attribute, _) => Some(attribute)
+      case sources.GreaterThan(attribute, _) => Some(attribute)
+      case sources.LessThanOrEqual(attribute, _) => Some(attribute)
+      case sources.GreaterThanOrEqual(attribute, _) => Some(attribute)
+      case _ => None
+    }
 
-  private[this] def attributeRole(columnName: String,
-                                  udfs: Set[String]): CassandraAttributeRole =
+  private[this] def attributeRole(columnName: String, udfs: Set[String]): CassandraAttributeRole =
     if (udfs contains columnName) Function
     else
       cassandraRelation.tableDef.columnByName(columnName) match {
@@ -287,16 +267,11 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation,
         case _ => NonIndexed
       }
 
-  private[this] def sparkResultFromCassandra(
-      requiredColumns: Array[ColumnName],
-      resultSet: ResultSet): Array[Row] = {
+  private[this] def sparkResultFromCassandra(requiredColumns: Array[ColumnName],
+                                             resultSet: ResultSet): Array[Row] = {
     import scala.collection.JavaConversions._
-    val cassandraRowMetadata =
-      CassandraRowMetadata.fromColumnNames(requiredColumns)
-    resultSet
-      .all()
-      .map(CassandraSQLRow.fromJavaDriverRow(_, cassandraRowMetadata))
-      .toArray
+    val cassandraRowMetadata = CassandraRowMetadata.fromColumnNames(requiredColumns)
+    resultSet.all().map(CassandraSQLRow.fromJavaDriverRow(_, cassandraRowMetadata)).toArray
   }
 
 }

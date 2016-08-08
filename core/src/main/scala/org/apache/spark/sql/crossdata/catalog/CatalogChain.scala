@@ -26,8 +26,7 @@ import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStat
 import scala.util.Try
 
 object CatalogChain {
-  def apply(catalogs: XDCatalogCommon*)(
-      implicit xdContext: XDContext): CatalogChain = {
+  def apply(catalogs: XDCatalogCommon*)(implicit xdContext: XDContext): CatalogChain = {
     val temporaryCatalogs = catalogs.collect {
       case a: XDTemporaryCatalog => a
     }
@@ -37,17 +36,12 @@ object CatalogChain {
     val streamingCatalogs = catalogs.collect {
       case a: XDStreamingCatalog => a
     }
-    require(streamingCatalogs.length <= 1,
-            "Only one streaming catalog can be included")
+    require(streamingCatalogs.length <= 1, "Only one streaming catalog can be included")
     require(
-        temporaryCatalogs.headOption
-          .orElse(persistentCatalogs.headOption)
-          .isDefined,
+        temporaryCatalogs.headOption.orElse(persistentCatalogs.headOption).isDefined,
         "At least one catalog (temporary or persistent ) must be included"
     )
-    new CatalogChain(temporaryCatalogs,
-                     persistentCatalogs,
-                     streamingCatalogs.headOption)
+    new CatalogChain(temporaryCatalogs, persistentCatalogs, streamingCatalogs.headOption)
   }
 }
 
@@ -58,8 +52,7 @@ object CatalogChain {
 private[crossdata] class CatalogChain private (
     val temporaryCatalogs: Seq[XDTemporaryCatalog],
     val persistentCatalogs: Seq[XDPersistentCatalog],
-    val streamingCatalogs: Option[XDStreamingCatalog])(
-    implicit val xdContext: XDContext)
+    val streamingCatalogs: Option[XDStreamingCatalog])(implicit val xdContext: XDContext)
     extends XDCatalog
     with SparkLoggerComponent {
 
@@ -73,27 +66,22 @@ private[crossdata] class CatalogChain private (
       xdTable: CrossdataTable): TableIdentifierNormalized =
     xdTable.tableIdentifier
 
-  private def normalize(
-      tableIdentifier: TableIdentifier): TableIdentifierNormalized =
+  private def normalize(tableIdentifier: TableIdentifier): TableIdentifierNormalized =
     tableIdentifier.normalize
 
-  private def normalize(
-      indexIdentifier: IndexIdentifier): IndexIdentifierNormalized =
+  private def normalize(indexIdentifier: IndexIdentifier): IndexIdentifierNormalized =
     indexIdentifier.normalize
 
   /**
     * Apply the lookup function to each underlying catalog until a [[LogicalPlan]] is found. If the table is found in a
     * temporary catalog, the relation is saved into the previous temporary catalogs.
     */
-  private def chainedLookup(
-      lookup: XDCatalogCommon => Option[LogicalPlan],
-      tableIdentifier: TableIdentifier): Option[LogicalPlan] = {
-    val (relationOpt, previousCatalogs) =
-      takeUntilRelationFound(lookup, temporaryCatalogs)
+  private def chainedLookup(lookup: XDCatalogCommon => Option[LogicalPlan],
+                            tableIdentifier: TableIdentifier): Option[LogicalPlan] = {
+    val (relationOpt, previousCatalogs) = takeUntilRelationFound(lookup, temporaryCatalogs)
 
     if (relationOpt.isDefined) {
-      previousCatalogs.foreach(
-          _.saveTable(normalize(tableIdentifier), relationOpt.get))
+      previousCatalogs.foreach(_.saveTable(normalize(tableIdentifier), relationOpt.get))
       relationOpt
     } else {
       (persistentCatalogs ++: streamingCatalogs.toSeq).view map lookup collectFirst {
@@ -111,9 +99,9 @@ private[crossdata] class CatalogChain private (
     * @param tempCatalogs a seq of temporary catalogs
     * @return a tuple (optionalRelation, previousNonMatchingLookupCatalogs)
     */
-  private def takeUntilRelationFound[R](lookup: XDCatalogCommon => Option[R],
-                                        tempCatalogs: Seq[XDTemporaryCatalog])
-    : (Option[R], Seq[XDTemporaryCatalog]) = {
+  private def takeUntilRelationFound[R](
+      lookup: XDCatalogCommon => Option[R],
+      tempCatalogs: Seq[XDTemporaryCatalog]): (Option[R], Seq[XDTemporaryCatalog]) = {
 
     val (res: Option[R], idx: Int) = (tempCatalogs.view map (lookup) zipWithIndex) collectFirst {
       case e @ (Some(_), _) => e
@@ -122,8 +110,7 @@ private[crossdata] class CatalogChain private (
     (res, tempCatalogs.take(idx))
   }
 
-  private def persistentChainedLookup[R](
-      lookup: XDPersistentCatalog => Option[R]): Option[R] =
+  private def persistentChainedLookup[R](lookup: XDPersistentCatalog => Option[R]): Option[R] =
     persistentCatalogs.view map lookup collectFirst {
       case Some(res) => res
     }
@@ -134,15 +121,13 @@ private[crossdata] class CatalogChain private (
   override def registerView(viewIdentifier: ViewIdentifier,
                             logicalPlan: LogicalPlan,
                             sql: Option[String]): Unit =
-    temporaryCatalogs.foreach(
-        _.saveView(normalize(viewIdentifier), logicalPlan, sql))
+    temporaryCatalogs.foreach(_.saveView(normalize(viewIdentifier), logicalPlan, sql))
 
   // TODO throw an exception if there is no temp catalogs! Review CatalogChain
   override def registerTable(tableIdent: TableIdentifier,
                              plan: LogicalPlan,
                              crossdataTable: Option[CrossdataTable]): Unit =
-    temporaryCatalogs.foreach(
-        _.saveTable(normalize(tableIdent), plan, crossdataTable))
+    temporaryCatalogs.foreach(_.saveTable(normalize(tableIdent), plan, crossdataTable))
 
   override def unregisterView(viewIdentifier: ViewIdentifier): Unit =
     temporaryCatalogs.foreach(_.dropView(normalize(viewIdentifier)))
@@ -156,12 +141,10 @@ private[crossdata] class CatalogChain private (
   /**
     * CommonCatalog
     */
-  private def lookupRelationOpt(
-      tableIdent: TableIdentifier): Option[LogicalPlan] =
+  private def lookupRelationOpt(tableIdent: TableIdentifier): Option[LogicalPlan] =
     chainedLookup(_.relation(normalize(tableIdent)), tableIdent)
 
-  override def lookupRelation(tableIdent: TableIdentifier,
-                              alias: Option[String]): LogicalPlan =
+  override def lookupRelation(tableIdent: TableIdentifier, alias: Option[String]): LogicalPlan =
     lookupRelationOpt(tableIdent) map {
       processAlias(tableIdent, _, alias)(conf)
     } getOrElse {
@@ -173,21 +156,18 @@ private[crossdata] class CatalogChain private (
     lookupRelationOpt(tableIdent).isDefined
 
   // TODO streaming tables
-  override def getTables(
-      databaseName: Option[String]): Seq[(String, Boolean)] = {
+  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
     def getRelations(catalogSeq: Seq[XDCatalogCommon],
                      isTemporary: Boolean): Seq[(String, Boolean)] = {
       catalogSeq.flatMap { cat =>
         cat
           .allRelations(databaseName.map(dbn =>
-                    StringNormalized(
-                        XDCatalogCommon.normalizeIdentifier(dbn, conf))))
+                    StringNormalized(XDCatalogCommon.normalizeIdentifier(dbn, conf))))
           .map(stringifyTableIdentifierNormalized(_) -> isTemporary)
       }
     }
-    getRelations(temporaryCatalogs, isTemporary = true) ++ getRelations(
-        persistentCatalogs,
-        isTemporary = false)
+    getRelations(temporaryCatalogs, isTemporary = true) ++ getRelations(persistentCatalogs,
+                                                                        isTemporary = false)
   }
 
   /**
@@ -198,15 +178,13 @@ private[crossdata] class CatalogChain private (
   /**
     * ExternalCatalog
     */
-  override def persistTable(crossdataTable: CrossdataTable,
-                            table: LogicalPlan): Unit =
+  override def persistTable(crossdataTable: CrossdataTable, table: LogicalPlan): Unit =
     persistentCatalogs.foreach(_.saveTable(crossdataTable, table))
 
   override def persistView(viewIdentifier: ViewIdentifier,
                            plan: LogicalPlan,
                            sqlText: String): Unit =
-    persistentCatalogs.foreach(
-        _.saveView(normalize(viewIdentifier), plan, sqlText))
+    persistentCatalogs.foreach(_.saveView(normalize(viewIdentifier), plan, sqlText))
 
   override def persistIndex(crossdataIndex: CrossdataIndex): Unit =
     if (tableMetadata(crossdataIndex.tableIdentifier.toTableIdentifier).isEmpty) {
@@ -219,8 +197,7 @@ private[crossdata] class CatalogChain private (
   override def dropTable(tableIdentifier: TableIdentifier): Unit = {
     val strTable = tableIdentifier.unquotedString
     if (!tableExists(tableIdentifier))
-      throw new RuntimeException(
-          s"Table $strTable can't be deleted because it doesn't exist")
+      throw new RuntimeException(s"Table $strTable can't be deleted because it doesn't exist")
     logInfo(s"Deleting table $strTable from catalog")
 
     indexMetadataByTableIdentifier(tableIdentifier) foreach { index =>
@@ -241,8 +218,7 @@ private[crossdata] class CatalogChain private (
   override def dropView(viewIdentifier: ViewIdentifier): Unit = {
     val strView = viewIdentifier.unquotedString
     if (lookupRelationOpt(viewIdentifier).isEmpty)
-      throw new RuntimeException(
-          s"View $strView can't be deleted because it doesn't exist")
+      throw new RuntimeException(s"View $strView can't be deleted because it doesn't exist")
     logInfo(s"Deleting view ${viewIdentifier.unquotedString} from catalog")
     temporaryCatalogs foreach (_.dropView(normalize(viewIdentifier)))
     persistentCatalogs foreach (_.dropView(normalize(viewIdentifier)))
@@ -256,26 +232,22 @@ private[crossdata] class CatalogChain private (
   override def dropIndex(indexIdentifier: IndexIdentifier): Unit = {
     val strIndex = indexIdentifier.unquotedString
     if (indexMetadata(indexIdentifier).isEmpty)
-      throw new RuntimeException(
-          s"Index $strIndex can't be deleted because it doesn't exist")
+      throw new RuntimeException(s"Index $strIndex can't be deleted because it doesn't exist")
     logInfo(s"Deleting index ${indexIdentifier.unquotedString} from catalog")
 
     //First remove table that holds the index
     if (tableExists(indexIdentifier.asTableIdentifier))
       dropTable(indexIdentifier.asTableIdentifier)
 
-    persistentCatalogs foreach (catalog =>
-          Try(catalog.dropIndex(indexIdentifier.normalize)))
+    persistentCatalogs foreach (catalog => Try(catalog.dropIndex(indexIdentifier.normalize)))
   }
 
-  override def indexMetadata(
-      indexIdentifier: IndexIdentifier): Option[CrossdataIndex] =
+  override def indexMetadata(indexIdentifier: IndexIdentifier): Option[CrossdataIndex] =
     persistentChainedLookup(_.lookupIndex(indexIdentifier.normalize))
 
   override def indexMetadataByTableIdentifier(
       tableIdentifier: TableIdentifier): Option[CrossdataIndex] =
-    persistentCatalogs.view map (_.lookupIndexByTableIdentifier(
-            normalize(tableIdentifier))) collectFirst {
+    persistentCatalogs.view map (_.lookupIndexByTableIdentifier(normalize(tableIdentifier))) collectFirst {
       case Some(index) => index
     }
 
@@ -284,8 +256,7 @@ private[crossdata] class CatalogChain private (
 
   }
 
-  override def tableMetadata(
-      tableIdentifier: TableIdentifier): Option[CrossdataTable] =
+  override def tableMetadata(tableIdentifier: TableIdentifier): Option[CrossdataTable] =
     persistentChainedLookup(_.lookupTable(normalize(tableIdentifier)))
 
   override def refreshTable(tableIdent: TableIdentifier): Unit =
@@ -299,12 +270,11 @@ private[crossdata] class CatalogChain private (
   override def existsEphemeralTable(tableIdentifier: String): Boolean =
     getEphemeralTable(tableIdentifier).isDefined
 
-  override def getEphemeralTable(
-      tableIdentifier: String): Option[EphemeralTableModel] =
+  override def getEphemeralTable(tableIdentifier: String): Option[EphemeralTableModel] =
     executeWithStrCatalogOrNone(_.getEphemeralTable(tableIdentifier))
 
-  override def createEphemeralTable(ephemeralTable: EphemeralTableModel)
-    : Either[String, EphemeralTableModel] =
+  override def createEphemeralTable(
+      ephemeralTable: EphemeralTableModel): Either[String, EphemeralTableModel] =
     withStreamingCatalogDo(_.createEphemeralTable(ephemeralTable))
 
   override def dropEphemeralTable(tableIdentifier: String): Unit =
@@ -318,12 +288,11 @@ private[crossdata] class CatalogChain private (
 
   // Ephemeral Queries Functions
 
-  override def createEphemeralQuery(ephemeralQuery: EphemeralQueryModel)
-    : Either[String, EphemeralQueryModel] =
+  override def createEphemeralQuery(
+      ephemeralQuery: EphemeralQueryModel): Either[String, EphemeralQueryModel] =
     withStreamingCatalogDo(_.createEphemeralQuery(ephemeralQuery))
 
-  override def getEphemeralQuery(
-      queryAlias: String): Option[EphemeralQueryModel] =
+  override def getEphemeralQuery(queryAlias: String): Option[EphemeralQueryModel] =
     executeWithStrCatalogOrNone(_.getEphemeralQuery(queryAlias))
 
   override def dropEphemeralQuery(queryAlias: String): Unit =
@@ -344,12 +313,10 @@ private[crossdata] class CatalogChain private (
       tableIdentifier: String): Option[EphemeralStatusModel] =
     executeWithStrCatalogOrNone(_.getEphemeralStatus(tableIdentifier))
 
-  override protected[crossdata] def getAllEphemeralStatuses: Seq[
-      EphemeralStatusModel] =
+  override protected[crossdata] def getAllEphemeralStatuses: Seq[EphemeralStatusModel] =
     executeWithStrCatalogOrEmptyList(_.getAllEphemeralStatuses)
 
-  override protected[crossdata] def dropEphemeralStatus(
-      tableIdentifier: String): Unit =
+  override protected[crossdata] def dropEphemeralStatus(tableIdentifier: String): Unit =
     withStreamingCatalogDo(_.dropEphemeralStatus(tableIdentifier))
 
   override protected[crossdata] def dropAllEphemeralStatus(): Unit =
@@ -358,17 +325,14 @@ private[crossdata] class CatalogChain private (
   override protected[crossdata] def createEphemeralStatus(
       tableIdentifier: String,
       ephemeralStatusModel: EphemeralStatusModel): EphemeralStatusModel =
-    withStreamingCatalogDo(
-        _.createEphemeralStatus(tableIdentifier, ephemeralStatusModel))
+    withStreamingCatalogDo(_.createEphemeralStatus(tableIdentifier, ephemeralStatusModel))
 
-  override protected[crossdata] def updateEphemeralStatus(
-      tableIdentifier: String,
-      status: EphemeralStatusModel): Unit =
+  override protected[crossdata] def updateEphemeralStatus(tableIdentifier: String,
+                                                          status: EphemeralStatusModel): Unit =
     withStreamingCatalogDo(_.updateEphemeralStatus(tableIdentifier, status))
 
   // Utils
-  private def withStreamingCatalogDo[R](
-      streamingCatalogOperation: XDStreamingCatalog => R): R = {
+  private def withStreamingCatalogDo[R](streamingCatalogOperation: XDStreamingCatalog => R): R = {
     streamingCatalogs.map(streamingCatalogOperation).getOrElse {
       throw new RuntimeException("There is no streaming catalog")
     }

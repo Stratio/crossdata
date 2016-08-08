@@ -24,8 +24,7 @@ object HazelcastCacheInvalidator {
 
   trait CacheInvalidationEvent extends Serializable
 
-  case class ResourceInvalidation(sessionId: SessionID)
-      extends CacheInvalidationEvent
+  case class ResourceInvalidation(sessionId: SessionID) extends CacheInvalidationEvent
   case object ResourceInvalidationForAllSessions extends CacheInvalidationEvent
 
 }

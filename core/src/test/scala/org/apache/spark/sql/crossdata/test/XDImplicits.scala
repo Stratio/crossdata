@@ -46,8 +46,7 @@ private[sql] abstract class XDImplicits {
     * Creates a DataFrame from an RDD of Product (e.g. case classes, tuples).
     * @since 1.3.0
     */
-  implicit def rddToDataFrameHolder[A <: Product: TypeTag](
-      rdd: RDD[A]): DataFrameHolder = {
+  implicit def rddToDataFrameHolder[A <: Product: TypeTag](rdd: RDD[A]): DataFrameHolder = {
     DataFrameHolder(_xdContext.createDataFrame(rdd))
   }
 
@@ -55,8 +54,7 @@ private[sql] abstract class XDImplicits {
     * Creates a DataFrame from a local Seq of Product.
     * @since 1.3.0
     */
-  implicit def localSeqToDataFrameHolder[A <: Product: TypeTag](
-      data: Seq[A]): DataFrameHolder = {
+  implicit def localSeqToDataFrameHolder[A <: Product: TypeTag](data: Seq[A]): DataFrameHolder = {
     DataFrameHolder(_xdContext.createDataFrame(data))
   }
 
@@ -78,9 +76,7 @@ private[sql] abstract class XDImplicits {
       }
     }
     DataFrameHolder(
-        _xdContext.internalCreateDataFrame(
-            rows,
-            StructType(StructField("_1", dataType) :: Nil)))
+        _xdContext.internalCreateDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
   }
 
   /**
@@ -97,9 +93,7 @@ private[sql] abstract class XDImplicits {
       }
     }
     DataFrameHolder(
-        _xdContext.internalCreateDataFrame(
-            rows,
-            StructType(StructField("_1", dataType) :: Nil)))
+        _xdContext.internalCreateDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
   }
 
   /**
@@ -116,8 +110,6 @@ private[sql] abstract class XDImplicits {
       }
     }
     DataFrameHolder(
-        _xdContext.internalCreateDataFrame(
-            rows,
-            StructType(StructField("_1", dataType) :: Nil)))
+        _xdContext.internalCreateDataFrame(rows, StructType(StructField("_1", dataType) :: Nil)))
   }
 }

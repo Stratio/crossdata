@@ -33,14 +33,13 @@ class HazelcastCatalog(
 
   override def relation(tableIdent: TableIdentifierNormalized)(
       implicit sqlContext: SQLContext): Option[LogicalPlan] = {
-    Option(tables.get(tableIdent)) map (CreateRelationUtil
-          .createLogicalRelation(sqlContext, _))
+    Option(tables.get(tableIdent)) map (CreateRelationUtil.createLogicalRelation(sqlContext, _))
   } orElse {
     Option(views.get(tableIdent)) map (sqlContext.sql(_).logicalPlan)
   }
 
-  override def allRelations(databaseName: Option[StringNormalized])
-    : Seq[TableIdentifierNormalized] = {
+  override def allRelations(
+      databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = {
     import scala.collection.JavaConversions._
     val tableIdentSeq = (tables ++ views).keys.toSeq
     databaseName.map { dbName =>
@@ -55,8 +54,7 @@ class HazelcastCatalog(
   override def saveTable(tableIdentifier: TableIdentifierNormalized,
                          plan: LogicalPlan,
                          crossdataTable: Option[CrossdataTable]): Unit = {
-    require(crossdataTable.isDefined,
-            requireSerializablePlanMessage("CrossdataTable"))
+    require(crossdataTable.isDefined, requireSerializablePlanMessage("CrossdataTable"))
 
     // TODO add create/drop if not exists => fail if exists instead of override the table
     Option(views get tableIdentifier) foreach (_ => dropView(tableIdentifier))

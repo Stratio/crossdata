@@ -34,8 +34,7 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
       val dataframe = sql(s"SELECT * FROM $Table ")
       val schema = dataframe.schema
       val result = dataframe.collect(executionType)
-      schema.fieldNames should equal(
-          Seq("id", "age", "comment", "enrolled", "name"))
+      schema.fieldNames should equal(Seq("id", "age", "comment", "enrolled", "name"))
       result should have length 10
       result(0) should have length 5
     }
@@ -59,34 +58,31 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
     it should s"support a (SELECT * ... WHERE PK = _ ) for $executionType execution" in {
       assumeEnvironmentIsUpAndRunning
 
-      val result =
-        sql(s"SELECT * FROM $Table WHERE id = 1").collect(executionType)
+      val result = sql(s"SELECT * FROM $Table WHERE id = 1").collect(executionType)
       result should have length 1
     }
 
     it should s"support a (SELECT * ... WHERE LAST_PK_COLUMN IN (...) ) for $executionType execution" in {
       assumeEnvironmentIsUpAndRunning
 
-      val result =
-        sql(s"SELECT * FROM $Table WHERE id IN (1,5,9)").collect(executionType)
+      val result = sql(s"SELECT * FROM $Table WHERE id IN (1,5,9)").collect(executionType)
       result should have length 3
     }
 
     it should s"support a (SELECT * ...  WHERE CK._1 = _ AND CK._2 = _) for $executionType execution" in {
       assumeEnvironmentIsUpAndRunning
 
-      val result =
-        sql(s"SELECT * FROM $Table WHERE age = 13 AND comment = 'Comment 3' ")
-          .collect(executionType)
+      val result = sql(s"SELECT * FROM $Table WHERE age = 13 AND comment = 'Comment 3' ")
+        .collect(executionType)
       result should have length 1
     }
 
     it should s"support a (SELECT * ...  WHERE PK = _ AND CK._1 = _ AND CK._2 = _) for $executionType execution" in {
       assumeEnvironmentIsUpAndRunning
 
-      val result = sql(
-          s"SELECT * FROM $Table WHERE id = 3 AND age = 13 AND comment = 'Comment 3' ")
-        .collect(executionType)
+      val result =
+        sql(s"SELECT * FROM $Table WHERE id = 3 AND age = 13 AND comment = 'Comment 3' ")
+          .collect(executionType)
       result should have length 1
     }
 

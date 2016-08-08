@@ -43,11 +43,7 @@ class ElasticSearchCreateExternalTableIT extends ElasticWithSharedContext {
     table should not be null
     table.schema.fieldNames should contain("title")
 
-    client.get.admin.indices
-      .prepareTypesExists(Index)
-      .setTypes(Type)
-      .get
-      .isExists shouldBe true
+    client.get.admin.indices.prepareTypesExists(Index).setTypes(Type).get.isExists shouldBe true
   }
 
   it should "create an external table without es.resource" in {

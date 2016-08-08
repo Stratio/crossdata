@@ -165,8 +165,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe =
-      sql(s"SELECT id, name FROM $Type where enrolled Is Not Null")
+    val dataframe = sql(s"SELECT id, name FROM $Type where enrolled Is Not Null")
 
     //Expectations
     val result = dataframe.collect(Native)
@@ -179,8 +178,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe =
-      sql(s"SELECT name, age FROM $Type where id > 2 AND age = 13")
+    val dataframe = sql(s"SELECT name, age FROM $Type where id > 2 AND age = 13")
 
     //Expectations
     val result = dataframe.collect(Native)
@@ -206,8 +204,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe =
-      sql(s"SELECT name, age FROM $Type where name like 'Name 3'")
+    val dataframe = sql(s"SELECT name, age FROM $Type where name like 'Name 3'")
 
     //Expectations
     val result = dataframe.collect(Native)
@@ -220,8 +217,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe =
-      sql(s"SELECT name, age FROM $Type where description like '%name3%'")
+    val dataframe = sql(s"SELECT name, age FROM $Type where description like '%name3%'")
 
     //Expectations
     val result = dataframe.collect(Native)
@@ -234,8 +230,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe =
-      sql(s"SELECT name, age FROM $Type where description like '4des%'")
+    val dataframe = sql(s"SELECT name, age FROM $Type where description like '4des%'")
 
     //Expectations
     val result = dataframe.collect(Native)
@@ -254,8 +249,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     val result = dataframe.collect(Native)
 
     result should have length 1
-    result(0).getDate(1) should be(
-        DateTime.parse((1981) + "-01-01T10:00:00-00:00").toDate)
+    result(0).getDate(1) should be(DateTime.parse((1981) + "-01-01T10:00:00-00:00").toDate)
   }
 
   //TODO add support for dates in query?
@@ -263,8 +257,8 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe = sql(
-        s"SELECT name, age FROM $Type where birthday = '1984-01-01T10:00:00-00:00'")
+    val dataframe =
+      sql(s"SELECT name, age FROM $Type where birthday = '1984-01-01T10:00:00-00:00'")
 
     //Expectations
     val result = dataframe.collect(Native)

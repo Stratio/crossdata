@@ -56,8 +56,8 @@ class EphemeralQueryActorIT(_system: ActorSystem)
 
   "EphemeralQueryActor" should {
     "set up with zookeeper configuration without any error" in {
-      _system.actorOf(Props(new EphemeralQueryActor(
-                  Map("connectionString" -> zookeeperConnection))))
+      _system.actorOf(
+          Props(new EphemeralQueryActor(Map("connectionString" -> zookeeperConnection))))
     }
   }
 
@@ -65,8 +65,8 @@ class EphemeralQueryActorIT(_system: ActorSystem)
 
     "AddListener the first message" in new CommonValues {
 
-      val ephemeralQueryActor = _system.actorOf(Props(new EphemeralQueryActor(
-                  Map("connectionString" -> zookeeperConnection))))
+      val ephemeralQueryActor = _system.actorOf(
+          Props(new EphemeralQueryActor(Map("connectionString" -> zookeeperConnection))))
 
       ephemeralQueryActor ! EphemeralQueryActor.AddListener
 
@@ -75,8 +75,8 @@ class EphemeralQueryActorIT(_system: ActorSystem)
 
     "AddListener the not be the first message" in new CommonValues {
 
-      val ephemeralQueryActor = _system.actorOf(Props(new EphemeralQueryActor(
-                  Map("connectionString" -> zookeeperConnection))))
+      val ephemeralQueryActor = _system.actorOf(
+          Props(new EphemeralQueryActor(Map("connectionString" -> zookeeperConnection))))
 
       ephemeralQueryActor ! EphemeralQueryActor.GetQueries
 
@@ -85,8 +85,8 @@ class EphemeralQueryActorIT(_system: ActorSystem)
 
     "GetQueries is the second message" in new CommonValues {
 
-      val ephemeralQueryActor = _system.actorOf(Props(new EphemeralQueryActor(
-                  Map("connectionString" -> zookeeperConnection))))
+      val ephemeralQueryActor = _system.actorOf(
+          Props(new EphemeralQueryActor(Map("connectionString" -> zookeeperConnection))))
 
       ephemeralQueryActor ! EphemeralQueryActor.AddListener
       expectMsg(new ListenerResponse(true))

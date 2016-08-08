@@ -43,8 +43,8 @@ class StreamingConfigSpec extends BaseXDTest {
     ) ++ MandatoryTableOptions
 
   it should "add default options to the ephemeral table" in {
-    val ephTable = StreamingConfig
-      .createEphemeralTableModel(EphemeralTableName, MandatoryTableOptions)
+    val ephTable =
+      StreamingConfig.createEphemeralTableModel(EphemeralTableName, MandatoryTableOptions)
     val options = ephTable.options
 
     options.atomicWindow shouldBe 5
@@ -62,14 +62,13 @@ class StreamingConfigSpec extends BaseXDTest {
 
     // table options
     options.kafkaOptions.groupId shouldBe KafkaGroupId
-    options.kafkaOptions.topics shouldBe Seq(
-        TopicModel(KafkaTopic, KafkaNumPartitions))
+    options.kafkaOptions.topics shouldBe Seq(TopicModel(KafkaTopic, KafkaNumPartitions))
 
   }
 
   it should "override default options" in {
-    val ephTable = StreamingConfig
-      .createEphemeralTableModel(EphemeralTableName, CompleteTableOptions)
+    val ephTable =
+      StreamingConfig.createEphemeralTableModel(EphemeralTableName, CompleteTableOptions)
     val options = ephTable.options
 
     options.atomicWindow shouldBe 10
@@ -81,8 +80,8 @@ class StreamingConfigSpec extends BaseXDTest {
 
   it should "fail if spark.cores.max is less than 2" in {
     val wrongOptions = CompleteTableOptions + (StreamingConstants.SparkCoresMax -> "1")
-    an[Exception] should be thrownBy StreamingConfig
-      .createEphemeralTableModel(EphemeralTableName, wrongOptions)
+    an[Exception] should be thrownBy StreamingConfig.createEphemeralTableModel(EphemeralTableName,
+                                                                               wrongOptions)
   }
 
 }

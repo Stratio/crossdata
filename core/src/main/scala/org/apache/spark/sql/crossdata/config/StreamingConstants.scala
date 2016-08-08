@@ -17,8 +17,7 @@ package org.apache.spark.sql.crossdata.config
 
 object StreamingConstants {
 
-  val MainClass =
-    "com.stratio.crossdata.streaming.CrossdataStreamingApplication"
+  val MainClass = "com.stratio.crossdata.streaming.CrossdataStreamingApplication"
   val StreamingConfPath = "streaming"
   val SparkConfPath = "spark"
 

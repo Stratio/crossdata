@@ -40,9 +40,8 @@ class KafkaInput(options: KafkaOptionsModel) {
 
   private[streaming] def getConnection: (String, String) = {
 
-    val connectionChain =
-      (for (zkConnection <- options.connection.zkConnection)
-        yield ( s"${zkConnection.host}:${zkConnection.port}")).mkString(",")
+    val connectionChain = (for (zkConnection <- options.connection.zkConnection)
+      yield ( s"${zkConnection.host}:${zkConnection.port}")).mkString(",")
 
     (ZookeeperConnectionKey,
      if (connectionChain.isEmpty) s"$DefaultHost:$DefaultConsumerPort"
@@ -54,17 +53,13 @@ class KafkaInput(options: KafkaOptionsModel) {
 
   private[streaming] def getTopics: Map[String, Int] = {
     if (options.topics.isEmpty) {
-      throw new IllegalStateException(
-          s"Invalid configuration, topics must be declared.")
+      throw new IllegalStateException(s"Invalid configuration, topics must be declared.")
     } else {
-      options.topics
-        .map(topicModel => (topicModel.name, topicModel.numPartitions))
-        .toMap
+      options.topics.map(topicModel => (topicModel.name, topicModel.numPartitions)).toMap
     }
   }
 
-  private[streaming] def storageLevel(
-      sparkStorageLevel: String): StorageLevel = {
+  private[streaming] def storageLevel(sparkStorageLevel: String): StorageLevel = {
     StorageLevel.fromString(sparkStorageLevel)
   }
 

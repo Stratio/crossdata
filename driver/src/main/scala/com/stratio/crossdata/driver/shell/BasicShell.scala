@@ -31,8 +31,7 @@ object BasicShell extends App {
 
   val logger = Logger.getLogger(getClass)
 
-  val HistoryPath =
-    Some(System.getProperty("user.home")).getOrElse(".").concat("/.crossdata/")
+  val HistoryPath = Some(System.getProperty("user.home")).getOrElse(".").concat("/.crossdata/")
   val HistoryFile = "history.txt"
   val PersistentHistory = new File(HistoryPath.concat(HistoryFile))
 
@@ -53,8 +52,7 @@ object BasicShell extends App {
   private def checkEnd(line: Option[String]): Boolean =
     line.isEmpty || {
       val trimmedLine = line.get
-      trimmedLine.equalsIgnoreCase("exit") || trimmedLine.equalsIgnoreCase(
-          "quit")
+      trimmedLine.equalsIgnoreCase("exit") || trimmedLine.equalsIgnoreCase("quit")
     }
 
   private def close(console: ConsoleReader): Unit = {
@@ -90,12 +88,10 @@ object BasicShell extends App {
     val driver = Driver.newSession()
 
     console.println()
-    console.println(
-        "+-----------------+-------------------------+---------------------------+")
+    console.println("+-----------------+-------------------------+---------------------------+")
     console.println(
         s"| CROSSDATA ${crossdata.CrossdataVersion} | Powered by Apache Spark | Easy access to big things |")
-    console.println(
-        "+-----------------+-------------------------+---------------------------+")
+    console.println("+-----------------+-------------------------+---------------------------+")
     console.println()
     console.flush
 

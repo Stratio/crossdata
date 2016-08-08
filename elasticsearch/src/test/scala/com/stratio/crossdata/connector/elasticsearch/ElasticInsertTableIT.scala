@@ -53,8 +53,7 @@ class ElasticInsertTableIT extends ElasticInsertCollection {
 
   it should "insert a row using INSERT INTO table(schema) VALUES in ElasticSearch" ignore {
     _xdContext
-      .sql(
-          s"INSERT INTO $Type(age, name, enrolled) VALUES ( 25, 'Peter', true)")
+      .sql(s"INSERT INTO $Type(age, name, enrolled) VALUES ( 25, 'Peter', true)")
       .collect() should be(Row(1) :: Nil)
   }
 

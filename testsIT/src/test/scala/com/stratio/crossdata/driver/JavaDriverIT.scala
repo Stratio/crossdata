@@ -31,19 +31,16 @@ class JavaDriverIT extends EndToEndTest {
     assumeCrossdataUpAndRunning()
     withJavaDriverDo { javaDriver =>
       javaDriver.sql(
-          s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths
-            .get(getClass.getResource("/tabletest.json").toURI())
-            .toString}')"
+          s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
       )
       javaDriver.sql(
-          s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths
-            .get(getClass.getResource("/tabletest.json").toURI())
-            .toString}')"
+          s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
       )
 
-      javaDriver.listTables() should contain allOf (new JavaTableName(
+      javaDriver
+        .listTables() should contain allOf (new JavaTableName("jsonTable3", "db"), new JavaTableName(
               "jsonTable3",
-              "db"), new JavaTableName("jsonTable3", ""))
+              ""))
     }
   }
 
@@ -53,19 +50,16 @@ class JavaDriverIT extends EndToEndTest {
 
     withJavaDriverDo { javaDriver =>
       javaDriver.sql(
-          s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths
-            .get(getClass.getResource("/tabletest.json").toURI())
-            .toString}')"
+          s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
       )
       javaDriver.sql(
-          s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths
-            .get(getClass.getResource("/tabletest.json").toURI())
-            .toString}')"
+          s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
       )
 
-      javaDriver.listTables() should contain allOf (new JavaTableName(
+      javaDriver
+        .listTables() should contain allOf (new JavaTableName("jsonTable3", "db"), new JavaTableName(
               "jsonTable3",
-              "db"), new JavaTableName("jsonTable3", ""))
+              ""))
     }(Some(new DriverConf().setFlattenTables(true)))
 
   }

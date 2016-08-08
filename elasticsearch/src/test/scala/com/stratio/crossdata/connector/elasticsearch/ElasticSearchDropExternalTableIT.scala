@@ -47,8 +47,7 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
       """.stripMargin.replaceAll("\n", " ")
     sql(createTableQueryString1).collect()
 
-    val createTableQueryString2 =
-      s"""|CREATE EXTERNAL TABLE testDrop2 (id Integer, name String)
+    val createTableQueryString2 = s"""|CREATE EXTERNAL TABLE testDrop2 (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
           |es.resource '$Index2/drop_table_example',
@@ -60,8 +59,7 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
       """.stripMargin.replaceAll("\n", " ")
     sql(createTableQueryString2).collect()
 
-    val createTableQueryString3 =
-      s"""|CREATE EXTERNAL TABLE testDrop3 (id Integer, name String)
+    val createTableQueryString3 = s"""|CREATE EXTERNAL TABLE testDrop3 (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
           |es.resource '$Index3/drop_table_example',
@@ -73,8 +71,7 @@ class ElasticSearchDropExternalTableIT extends ElasticWithSharedContext {
       """.stripMargin.replaceAll("\n", " ")
     sql(createTableQueryString3).collect()
 
-    val createTableQueryString4 =
-      s"""|CREATE EXTERNAL TABLE testDrop4 (id Integer, name String)
+    val createTableQueryString4 = s"""|CREATE EXTERNAL TABLE testDrop4 (id Integer, name String)
           |USING $SourceProvider
           |OPTIONS (
           |es.resource '$Index3/drop_table_example2',

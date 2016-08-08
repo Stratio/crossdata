@@ -44,15 +44,11 @@ object CatalystToCrossdataAdapter {
       val collectionRandomAccesses: Map[Attribute, GetArrayItem]
   )
 
-  case class SimpleLogicalPlan(
-      override val projects: Seq[Attribute],
-      override val filters: Array[SourceFilter],
-      override val udfsMap: Map[Attribute, NativeUDF],
-      override val collectionRandomAccesses: Map[Attribute, GetArrayItem])
-      extends BaseLogicalPlan(projects,
-                              filters,
-                              udfsMap,
-                              collectionRandomAccesses)
+  case class SimpleLogicalPlan(override val projects: Seq[Attribute],
+                               override val filters: Array[SourceFilter],
+                               override val udfsMap: Map[Attribute, NativeUDF],
+                               override val collectionRandomAccesses: Map[Attribute, GetArrayItem])
+      extends BaseLogicalPlan(projects, filters, udfsMap, collectionRandomAccesses)
 
   case class AggregationLogicalPlan(
       override val projects: Seq[NamedExpression],
@@ -60,20 +56,17 @@ object CatalystToCrossdataAdapter {
       override val filters: Array[SourceFilter],
       override val udfsMap: Map[Attribute, NativeUDF],
       override val collectionRandomAccesses: Map[Attribute, GetArrayItem])
-      extends BaseLogicalPlan(projects,
-                              filters,
-                              udfsMap,
-                              collectionRandomAccesses)
+      extends BaseLogicalPlan(projects, filters, udfsMap, collectionRandomAccesses)
 
   /**
     * Transforms a Catalyst Logical Plan to a Crossdata Logical Plan
     * @param logicalPlan catalyst logical plan
     * @return A tuple of (Crossdata BaseLogicalPlan, FilterReport)
     */
-  def getConnectorLogicalPlan(logicalPlan: LogicalPlan,
-                              projects: Seq[NamedExpression],
-                              filterPredicates: Seq[Expression])
-    : (BaseLogicalPlan, ProjectReport, FilterReport) = {
+  def getConnectorLogicalPlan(
+      logicalPlan: LogicalPlan,
+      projects: Seq[NamedExpression],
+      filterPredicates: Seq[Expression]): (BaseLogicalPlan, ProjectReport, FilterReport) = {
 
     val relation = logicalPlan.collectFirst { case lr: LogicalRelation => lr }.get
     implicit val att2udf = logicalPlan.collect {
@@ -82,15 +75,13 @@ object CatalystToCrossdataAdapter {
     implicit val att2itemAccess: Map[Attribute, GetArrayItem] =
       (projects ++ filterPredicates).flatMap { c =>
         c.collect {
-          case gi @ GetArrayItem(
-              a @ AttributeReference(name, ArrayType(etype, _), nullable, md),
-              _) =>
+          case gi @ GetArrayItem(a @ AttributeReference(name, ArrayType(etype, _), nullable, md),
+                                 _) =>
             AttributeReference(name, etype, true)() -> gi
         }
       } toMap
 
-    val itemAccess2att: Map[GetArrayItem, Attribute] =
-      att2itemAccess.map(_.swap)
+    val itemAccess2att: Map[GetArrayItem, Attribute] = att2itemAccess.map(_.swap)
 
     object ExpressionType extends Enumeration {
       type ExpressionType = Value
@@ -99,8 +90,7 @@ object CatalystToCrossdataAdapter {
 
     import ExpressionType._
 
-    def extractRequestedColumns(
-        namedExpression: Expression): Seq[(ExpressionType, Expression)] =
+    def extractRequestedColumns(namedExpression: Expression): Seq[(ExpressionType, Expression)] =
       namedExpression match {
 
         case Alias(child, _) =>
@@ -112,10 +102,7 @@ object CatalystToCrossdataAdapter {
         case nudf: NativeUDF =>
           nudf.references flatMap {
             case nat: AttributeReference if att2udf contains nat =>
-              udfFlattenedActualParameters(
-                  nat,
-                  at =>
-                    Found -> relation.attributeMap(at)) :+ (Requested -> nat)
+              udfFlattenedActualParameters(nat, at => Found -> relation.attributeMap(at)) :+ (Requested -> nat)
           } toSeq
 
         case c: GetArrayItem if itemAccess2att contains c =>
@@ -147,24 +134,19 @@ object CatalystToCrossdataAdapter {
       }
     }
 
-    val (filters, filterReport) =
-      selectFilters(pushedFilters, att2udf.keySet, att2itemAccess)
+    val (filters, filterReport) = selectFilters(pushedFilters, att2udf.keySet, att2itemAccess)
 
-    val aggregatePlan: Option[(Seq[Expression], Seq[NamedExpression])] =
-      logicalPlan.collectFirst {
-        case Aggregate(groupingExpression, aggregationExpression, child) =>
-          (groupingExpression, aggregationExpression)
-      }
+    val aggregatePlan: Option[(Seq[Expression], Seq[NamedExpression])] = logicalPlan.collectFirst {
+      case Aggregate(groupingExpression, aggregationExpression, child) =>
+        (groupingExpression, aggregationExpression)
+    }
 
     val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
       val requestedColumns: Seq[Attribute] =
         columnExpressions.getOrElse(Requested, Seq.empty) collect {
           case a: Attribute => a
         }
-      SimpleLogicalPlan(requestedColumns,
-                        filters.toArray,
-                        att2udf,
-                        att2itemAccess)
+      SimpleLogicalPlan(requestedColumns, filters.toArray, att2udf, att2itemAccess)
     } {
       case (groupingExpression, selectExpression) =>
         AggregationLogicalPlan(selectExpression,
@@ -201,8 +183,7 @@ object CatalystToCrossdataAdapter {
       att2arrayaccess: Map[Attribute, GetArrayItem]
   ): (Array[SourceFilter], FilterReport) = {
     val ignoredExpressions: ListBuffer[Expression] = ListBuffer.empty
-    val ignoredNativeUDFReferences: ListBuffer[AttributeReference] =
-      ListBuffer.empty
+    val ignoredNativeUDFReferences: ListBuffer[AttributeReference] = ListBuffer.empty
 
     def attAsOperand(att: Attribute): String =
       att2arrayaccess.get(att).map {
@@ -216,18 +197,14 @@ object CatalystToCrossdataAdapter {
           Some(sources.EqualTo(attAsOperand(a), convertToScala(v, t)))
         case expressions.EqualTo(Literal(v, t), a: Attribute) =>
           Some(sources.EqualTo(attAsOperand(a), convertToScala(v, t)))
-        case expressions.EqualTo(a: AttributeReference, b: Attribute)
-            if udfs contains a =>
+        case expressions.EqualTo(a: AttributeReference, b: Attribute) if udfs contains a =>
           Some(sources.EqualTo(attAsOperand(b), a))
-        case expressions.EqualTo(b: Attribute, a: AttributeReference)
-            if udfs contains a =>
+        case expressions.EqualTo(b: Attribute, a: AttributeReference) if udfs contains a =>
           Some(sources.EqualTo(attAsOperand(b), a))
-        case expressions
-              .EqualTo(Cast(a: Attribute, StringType), Literal(v, t)) =>
+        case expressions.EqualTo(Cast(a: Attribute, StringType), Literal(v, t)) =>
           Some(
               sources.EqualTo(attAsOperand(a),
-                              convertToScala(Cast(Literal(v.toString),
-                                                  a.dataType).eval(EmptyRow),
+                              convertToScala(Cast(Literal(v.toString), a.dataType).eval(EmptyRow),
                                              a.dataType)))
 
         /* TODO
@@ -241,96 +218,73 @@ object CatalystToCrossdataAdapter {
           Some(sources.GreaterThan(attAsOperand(a), convertToScala(v, t)))
         case expressions.GreaterThan(Literal(v, t), a: Attribute) =>
           Some(sources.LessThan(attAsOperand(a), convertToScala(v, t)))
-        case expressions.GreaterThan(b: Attribute, a: AttributeReference)
-            if udfs contains a =>
+        case expressions.GreaterThan(b: Attribute, a: AttributeReference) if udfs contains a =>
           Some(sources.GreaterThan(attAsOperand(b), a))
-        case expressions.GreaterThan(a: AttributeReference, b: Attribute)
-            if udfs contains a =>
+        case expressions.GreaterThan(a: AttributeReference, b: Attribute) if udfs contains a =>
           Some(sources.LessThan(attAsOperand(b), a))
-        case expressions
-              .GreaterThan(Cast(a: Attribute, StringType), Literal(v, t)) =>
+        case expressions.GreaterThan(Cast(a: Attribute, StringType), Literal(v, t)) =>
           Some(
               sources.GreaterThan(
                   attAsOperand(a),
-                  convertToScala(
-                      Cast(Literal(v.toString), a.dataType).eval(EmptyRow),
-                      a.dataType)))
+                  convertToScala(Cast(Literal(v.toString), a.dataType).eval(EmptyRow),
+                                 a.dataType)))
 
         case expressions.LessThan(a: Attribute, Literal(v, t)) =>
           Some(sources.LessThan(attAsOperand(a), convertToScala(v, t)))
         case expressions.LessThan(Literal(v, t), a: Attribute) =>
           Some(sources.GreaterThan(attAsOperand(a), convertToScala(v, t)))
-        case expressions.LessThan(b: Attribute, a: AttributeReference)
-            if udfs contains a =>
+        case expressions.LessThan(b: Attribute, a: AttributeReference) if udfs contains a =>
           Some(sources.LessThan(attAsOperand(b), a))
-        case expressions.LessThan(a: AttributeReference, b: Attribute)
-            if udfs contains a =>
+        case expressions.LessThan(a: AttributeReference, b: Attribute) if udfs contains a =>
           Some(sources.GreaterThan(attAsOperand(b), a))
-        case expressions
-              .LessThan(Cast(a: Attribute, StringType), Literal(v, t)) =>
+        case expressions.LessThan(Cast(a: Attribute, StringType), Literal(v, t)) =>
           Some(
               sources.LessThan(attAsOperand(a),
-                               convertToScala(Cast(Literal(v.toString),
-                                                   a.dataType).eval(EmptyRow),
+                               convertToScala(Cast(Literal(v.toString), a.dataType).eval(EmptyRow),
                                               a.dataType)))
 
         case expressions.GreaterThanOrEqual(a: Attribute, Literal(v, t)) =>
-          Some(
-              sources.GreaterThanOrEqual(attAsOperand(a),
-                                         convertToScala(v, t)))
+          Some(sources.GreaterThanOrEqual(attAsOperand(a), convertToScala(v, t)))
         case expressions.GreaterThanOrEqual(Literal(v, t), a: Attribute) =>
           Some(sources.LessThanOrEqual(attAsOperand(a), convertToScala(v, t)))
-        case expressions
-              .GreaterThanOrEqual(b: Attribute, a: AttributeReference)
+        case expressions.GreaterThanOrEqual(b: Attribute, a: AttributeReference)
             if udfs contains a =>
           Some(sources.GreaterThanOrEqual(attAsOperand(b), a))
-        case expressions
-              .GreaterThanOrEqual(a: AttributeReference, b: Attribute)
+        case expressions.GreaterThanOrEqual(a: AttributeReference, b: Attribute)
             if udfs contains a =>
           Some(sources.LessThanOrEqual(attAsOperand(b), a))
-        case expressions.GreaterThanOrEqual(Cast(a: Attribute, StringType),
-                                            Literal(v, t)) =>
+        case expressions.GreaterThanOrEqual(Cast(a: Attribute, StringType), Literal(v, t)) =>
           Some(
               sources.GreaterThanOrEqual(
                   attAsOperand(a),
-                  convertToScala(
-                      Cast(Literal(v.toString), a.dataType).eval(EmptyRow),
-                      a.dataType)))
+                  convertToScala(Cast(Literal(v.toString), a.dataType).eval(EmptyRow),
+                                 a.dataType)))
 
         case expressions.LessThanOrEqual(a: Attribute, Literal(v, t)) =>
           Some(sources.LessThanOrEqual(attAsOperand(a), convertToScala(v, t)))
         case expressions.LessThanOrEqual(Literal(v, t), a: Attribute) =>
-          Some(
-              sources.GreaterThanOrEqual(attAsOperand(a),
-                                         convertToScala(v, t)))
-        case expressions.LessThanOrEqual(b: Attribute, a: AttributeReference)
-            if udfs contains a =>
+          Some(sources.GreaterThanOrEqual(attAsOperand(a), convertToScala(v, t)))
+        case expressions.LessThanOrEqual(b: Attribute, a: AttributeReference) if udfs contains a =>
           Some(sources.LessThanOrEqual(attAsOperand(b), a))
-        case expressions.LessThanOrEqual(a: AttributeReference, b: Attribute)
-            if udfs contains a =>
+        case expressions.LessThanOrEqual(a: AttributeReference, b: Attribute) if udfs contains a =>
           Some(sources.GreaterThanOrEqual(attAsOperand(b), a))
-        case expressions.LessThanOrEqual(Cast(a: Attribute, StringType),
-                                         Literal(v, t)) =>
+        case expressions.LessThanOrEqual(Cast(a: Attribute, StringType), Literal(v, t)) =>
           Some(
               sources.LessThanOrEqual(
                   attAsOperand(a),
-                  convertToScala(
-                      Cast(Literal(v.toString), a.dataType).eval(EmptyRow),
-                      a.dataType)))
+                  convertToScala(Cast(Literal(v.toString), a.dataType).eval(EmptyRow),
+                                 a.dataType)))
 
         case expressions.InSet(a: Attribute, set) =>
-          val toScala =
-            CatalystTypeConverters.createToScalaConverter(a.dataType)
+          val toScala = CatalystTypeConverters.createToScalaConverter(a.dataType)
           Some(sources.In(attAsOperand(a), set.toArray.map(toScala)))
 
         // Because we only convert In to InSet in Optimizer when there are more than certain
         // items. So it is possible we still get an In expression here that needs to be pushed
         // down.
-        case expressions.In(a: Attribute, list)
-            if !list.exists(!_.isInstanceOf[Literal]) =>
+        case expressions.In(a: Attribute, list) if !list.exists(!_.isInstanceOf[Literal]) =>
           val hSet = list.map(e => e.eval(EmptyRow))
-          val toScala =
-            CatalystTypeConverters.createToScalaConverter(a.dataType)
+          val toScala = CatalystTypeConverters.createToScalaConverter(a.dataType)
           Some(sources.In(attAsOperand(a), hSet.toArray.map(toScala)))
 
         case expressions.IsNull(a: Attribute) =>
@@ -350,16 +304,13 @@ object CatalystToCrossdataAdapter {
         case expressions.Not(child) =>
           translate(child).map(sources.Not)
 
-        case expressions
-              .StartsWith(a: Attribute, Literal(v: UTF8String, StringType)) =>
+        case expressions.StartsWith(a: Attribute, Literal(v: UTF8String, StringType)) =>
           Some(sources.StringStartsWith(attAsOperand(a), v.toString))
 
-        case expressions
-              .EndsWith(a: Attribute, Literal(v: UTF8String, StringType)) =>
+        case expressions.EndsWith(a: Attribute, Literal(v: UTF8String, StringType)) =>
           Some(sources.StringEndsWith(attAsOperand(a), v.toString))
 
-        case expressions
-              .Contains(a: Attribute, Literal(v: UTF8String, StringType)) =>
+        case expressions.Contains(a: Attribute, Literal(v: UTF8String, StringType)) =>
           Some(sources.StringContains(attAsOperand(a), v.toString))
 
         case expression =>
@@ -372,8 +323,7 @@ object CatalystToCrossdataAdapter {
       }
     val convertibleFilters = filters.flatMap(translate).toArray
 
-    val filterReport =
-      FilterReport(ignoredExpressions, ignoredNativeUDFReferences)
+    val filterReport = FilterReport(ignoredExpressions, ignoredNativeUDFReferences)
     (convertibleFilters, filterReport)
   }
 

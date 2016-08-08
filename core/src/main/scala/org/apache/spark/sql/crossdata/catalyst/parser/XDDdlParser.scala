@@ -99,13 +99,10 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext)
     }
   }
 
-  protected lazy val schemaValues: Parser[Seq[String]] = "(" ~> repsep(
-        token,
-        ",") <~ ")"
+  protected lazy val schemaValues: Parser[Seq[String]] = "(" ~> repsep(token, ",") <~ ")"
 
-  protected lazy val tableValues: Parser[Seq[Any]] = "(" ~> repsep(
-        mapValues | arrayValues | token,
-        ",") <~ ")"
+  protected lazy val tableValues: Parser[Seq[Any]] = "(" ~> repsep(mapValues | arrayValues | token,
+                                                                   ",") <~ ")"
 
   protected lazy val arrayValues: Parser[Any] =
     ("[" ~> repsep(mapValues | token, ",") <~ "]") | ("[" ~> success(List()) <~ "]")
@@ -127,9 +124,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext)
   }
 
   protected lazy val insertIntoTable: Parser[LogicalPlan] =
-    INSERT ~> INTO ~> tableIdentifier ~ schemaValues.? ~ (VALUES ~> repsep(
-            tableValues,
-            ",")) ^^ {
+    INSERT ~> INTO ~> tableIdentifier ~ schemaValues.? ~ (VALUES ~> repsep(tableValues, ",")) ^^ {
       case tableId ~ schemaValues ~ tableValues =>
         if (schemaValues.isDefined)
           InsertIntoTable(tableId, tableValues, schemaValues)
@@ -219,8 +214,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext)
   protected lazy val createEphemeralTable: Parser[LogicalPlan] = {
     (CREATE ~ EPHEMERAL ~ TABLE ~> tableIdentifier) ~ tableCols.? ~ (OPTIONS ~> options) ^^ {
       case tableIdent ~ columns ~ opts => {
-        val userSpecifiedSchema =
-          columns.flatMap(fields => Some(StructType(fields)))
+        val userSpecifiedSchema = columns.flatMap(fields => Some(StructType(fields)))
         CreateEphemeralTable(tableIdent, userSpecifiedSchema, opts)
       }
     }
@@ -283,8 +277,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext)
                               new Integer(litN))
           case tableNames =>
             sys.error(
-                s"Expected an ephemeral table within the query, but found ${tableNames
-              .mkString(",")}")
+                s"Expected an ephemeral table within the query, but found ${tableNames.mkString(",")}")
         }
     }
   }
@@ -309,8 +302,7 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext)
       if (indexOfWithWindow <= 0) {
         restInput(in)
       } else {
-        val streamSql =
-          in.source.subSequence(in.offset, indexOfWithWindow).toString.trim
+        val streamSql = in.source.subSequence(in.offset, indexOfWithWindow).toString.trim
 
         def streamingInfoInput(inpt: Input): Input = {
           val startsWithWindow = inpt.source

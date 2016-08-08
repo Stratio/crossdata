@@ -19,30 +19,28 @@ import com.stratio.crossdata.driver.querybuilder.dslentities.{And, CombinationIn
 
 object RunnableQuery {
 
-  implicit class RunnableQueryAsExpression(runnableQuery: RunnableQuery)
-      extends Expression {
+  implicit class RunnableQueryAsExpression(runnableQuery: RunnableQuery) extends Expression {
     override private[querybuilder] def toXDQL: String =
       s"( ${runnableQuery.toXDQL})"
   }
 
-  implicit class RunnableQueryAsRelation(runnableQuery: RunnableQuery)
-      extends Relation {
+  implicit class RunnableQueryAsRelation(runnableQuery: RunnableQuery) extends Relation {
     override private[querybuilder] def toXDQL: String =
       s"( ${runnableQuery.toXDQL})"
   }
 
 }
 
-abstract class RunnableQuery protected (
-    protected val context: String => String,
-    protected val projections: Seq[Expression],
-    protected val relation: Relation,
-    protected val filters: Option[Predicate] = None,
-    protected val groupingExpressions: Seq[Expression] = Seq.empty,
-    protected val havingExpressions: Option[Predicate] = None,
-    protected val ordering: Option[SortCriteria] = None,
-    protected val limit: Option[Int] = None,
-    protected val composition: Option[CombinationInfo] = None)
+abstract class RunnableQuery protected (protected val context: String => String,
+                                        protected val projections: Seq[Expression],
+                                        protected val relation: Relation,
+                                        protected val filters: Option[Predicate] = None,
+                                        protected val groupingExpressions: Seq[Expression] =
+                                          Seq.empty,
+                                        protected val havingExpressions: Option[Predicate] = None,
+                                        protected val ordering: Option[SortCriteria] = None,
+                                        protected val limit: Option[Int] = None,
+                                        protected val composition: Option[CombinationInfo] = None)
     extends Combinable {
 
   def where(condition: String): this.type = where(XDQLStatement(condition))
@@ -55,11 +53,8 @@ abstract class RunnableQuery protected (
     filters.map(And(_, newCondition)).getOrElse(newCondition)
 
   override private[querybuilder] def toXDQL: String = {
-    def stringfy[T](head: String,
-                    elements: Seq[T],
-                    element2str: T => String): String =
-      elements.headOption.fold("")(_ =>
-            s"$head ${elements.map(element2str) mkString ", "}")
+    def stringfy[T](head: String, elements: Seq[T], element2str: T => String): String =
+      elements.headOption.fold("")(_ => s"$head ${elements.map(element2str) mkString ", "}")
 
     def stringfyXDQL(head: String, elements: Seq[CrossdataSQLStatement]) =
       stringfy[CrossdataSQLStatement](head, elements, _.toXDQL)

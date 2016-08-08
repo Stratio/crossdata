@@ -56,9 +56,8 @@ class MongoInsertTableIT extends MongoInsertCollection {
       .collect() should be(Row(1) :: Nil)
 
     //EXPECTATION
-    val results = sql(
-        s"select age, name, enrolled from $Collection where age=25 and name='Peter'")
-      .collect()
+    val results =
+      sql(s"select age, name, enrolled from $Collection where age=25 and name='Peter'").collect()
 
     results should have length 1
     results should contain
@@ -76,8 +75,7 @@ class MongoInsertTableIT extends MongoInsertCollection {
     rows should be(Row(3) :: Nil)
 
     //EXPECTATION
-    val results =
-      sql(s"select * from $Collection where id=21 or id=22 or id=23").collect()
+    val results = sql(s"select * from $Collection where id=21 or id=22 or id=23").collect()
 
     results should have length 3
     results should contain allOf (
@@ -133,8 +131,7 @@ class MongoInsertTableIT extends MongoInsertCollection {
   }
 
   it should "insert rows using INSERT INTO table(schema) VALUES with Arrays in MongoDb" in {
-    val query =
-      s"""|INSERT INTO $Collection (age,name, enrolled, array_test) VALUES
+    val query = s"""|INSERT INTO $Collection (age,name, enrolled, array_test) VALUES
                     |( 55, 'Jules', true, [true, false]),
                     |( 12, 'Martha', false, ['test1,t', 'test2'])
        """.stripMargin
@@ -153,8 +150,7 @@ class MongoInsertTableIT extends MongoInsertCollection {
   }
 
   it should "insert rows using INSERT INTO table(schema) VALUES with Map in MongoDb" in {
-    val query =
-      s"""|INSERT INTO $Collection (age,name, enrolled, map_test) VALUES
+    val query = s"""|INSERT INTO $Collection (age,name, enrolled, map_test) VALUES
                     |( 12, 'Albert', true, (x->1, y->2, z->3) ),
                     |( 20, 'Alfred', false, (xa->1, ya->2, za->3,d -> 5) )
        """.stripMargin
@@ -168,16 +164,12 @@ class MongoInsertTableIT extends MongoInsertCollection {
     results should have length 2
     results should contain allOf (
         Row(12, "Albert", true, Map("x" -> "1", "y" -> "2", "z" -> "3")),
-        Row(20,
-            "Alfred",
-            false,
-            Map("xa" -> "1", "ya" -> "2", "za" -> "3", "d" -> "5"))
+        Row(20, "Alfred", false, Map("xa" -> "1", "ya" -> "2", "za" -> "3", "d" -> "5"))
     )
   }
 
   it should "insert rows using INSERT INTO table(schema) VALUES with Array of Maps in MongoDb" in {
-    val query =
-      s"""|INSERT INTO $Collection (age,name, enrolled, array_map) VALUES
+    val query = s"""|INSERT INTO $Collection (age,name, enrolled, array_map) VALUES
                     |( 1, 'Nikolai', true, [(x -> 3), (z -> 1)] ),
                     |( 14, 'Ludwig', false, [(x -> 1, y-> 1), (z -> 1)] )
        """.stripMargin
@@ -191,16 +183,12 @@ class MongoInsertTableIT extends MongoInsertCollection {
     results should have length 2
     results should contain allOf (
         Row(1, "Nikolai", true, Seq(Map("x" -> "3"), Map("z" -> "1"))),
-        Row(14,
-            "Ludwig",
-            false,
-            Seq(Map("x" -> "1", "y" -> "1"), Map("z" -> "1")))
+        Row(14, "Ludwig", false, Seq(Map("x" -> "1", "y" -> "1"), Map("z" -> "1")))
     )
   }
 
   it should "insert rows using INSERT INTO table(schema) VALUES with Map of Array in MongoDb" in {
-    val query =
-      s"""|INSERT INTO $Collection (age,name, enrolled, map_array) VALUES
+    val query = s"""|INSERT INTO $Collection (age,name, enrolled, map_array) VALUES
                     |( 13, 'Svletiana', true, ( x->[1], y-> [3,4] ) ),
                     |( 17, 'Wolfang', false, ( x->[1,2], y-> [3] ) )
        """.stripMargin

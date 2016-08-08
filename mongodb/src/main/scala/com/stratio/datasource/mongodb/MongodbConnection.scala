@@ -40,9 +40,7 @@ object MongodbConnection {
   }
 
   private def openClient(config: Config): MongoClient =
-    MongodbClientFactory.getClient(config.hosts,
-                                   config.credentials,
-                                   config.sslOptions,
-                                   config.clientOptions)
+    MongodbClientFactory
+      .getClient(config.hosts, config.credentials, config.sslOptions, config.clientOptions)
 
 }

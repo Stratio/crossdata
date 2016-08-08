@@ -36,8 +36,7 @@ class DropTableIT extends SharedXDContextTest {
   private val DatasourceName = "json"
   private val Schema = StructType(Seq(StructField("col", StringType)))
 
-  implicit def catalogToPersistenceWithCache(
-      catalog: XDCatalog): PersistentCatalogWithCache = {
+  implicit def catalogToPersistenceWithCache(catalog: XDCatalog): PersistentCatalogWithCache = {
     catalog
       .asInstanceOf[CatalogChain]
       .persistentCatalogs
@@ -61,15 +60,12 @@ class DropTableIT extends SharedXDContextTest {
 
   it should "remove a qualified table from Crossdata catalog" in {
     _xdContext.catalog.persistTableMetadata(
-        CrossdataTable(
-            TableIdentifier(TableName, Some(DatabaseName)).normalize,
-            Some(Schema),
-            DatasourceName,
-            opts = Map("path" -> "fakepath")))
-    _xdContext.catalog.tableExists(
-        TableIdentifier(TableName, Some(DatabaseName))) shouldBe true
+        CrossdataTable(TableIdentifier(TableName, Some(DatabaseName)).normalize,
+                       Some(Schema),
+                       DatasourceName,
+                       opts = Map("path" -> "fakepath")))
+    _xdContext.catalog.tableExists(TableIdentifier(TableName, Some(DatabaseName))) shouldBe true
     sql(s"DROP TABLE $DatabaseName.$TableName")
-    _xdContext.catalog.tableExists(
-        TableIdentifier(TableName, Some(DatabaseName))) shouldBe false
+    _xdContext.catalog.tableExists(TableIdentifier(TableName, Some(DatabaseName))) shouldBe false
   }
 }

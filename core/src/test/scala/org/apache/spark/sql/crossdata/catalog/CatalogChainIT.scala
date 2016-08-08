@@ -40,9 +40,9 @@ class CatalogChainIT extends SharedXDContextTest {
     val firstFallbackCatalog = new HashmapCatalog(xdContext.conf)
     val secondfallbackCatalog = new HashmapCatalog(xdContext.conf)
 
-    val catalogChain = CatalogChain(prioritaryHashMapCatalog,
-                                    firstFallbackCatalog,
-                                    secondfallbackCatalog)(_xdContext)
+    val catalogChain =
+      CatalogChain(prioritaryHashMapCatalog, firstFallbackCatalog, secondfallbackCatalog)(
+          _xdContext)
 
     val localRelation: LocalRelation = {
       val attributes = AttributeReference("mystring", StringType)() :: Nil
@@ -52,18 +52,15 @@ class CatalogChainIT extends SharedXDContextTest {
 
     secondfallbackCatalog.saveTable(TableNormalized, localRelation)
 
-    secondfallbackCatalog.relation(TableNormalized) should contain(
-        localRelation)
+    secondfallbackCatalog.relation(TableNormalized) should contain(localRelation)
     prioritaryHashMapCatalog.relation(TableNormalized) shouldBe None
     firstFallbackCatalog.relation(TableNormalized) shouldBe None
 
     // Once we lookup the relation, it should be stored in prioritary and firstFallback catalogs
     catalogChain.lookupRelation(TableId)
 
-    prioritaryHashMapCatalog.relation(TableNormalized) should contain(
-        localRelation)
-    firstFallbackCatalog.relation(TableNormalized) should contain(
-        localRelation)
+    prioritaryHashMapCatalog.relation(TableNormalized) should contain(localRelation)
+    firstFallbackCatalog.relation(TableNormalized) should contain(localRelation)
 
   }
 }

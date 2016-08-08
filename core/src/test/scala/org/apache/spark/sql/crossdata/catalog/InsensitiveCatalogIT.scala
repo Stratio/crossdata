@@ -32,8 +32,7 @@ class InsensitiveCatalogIT extends DerbyCatalogIT {
   override val coreConfig: Option[Config] = Some(
       ConfigFactory
         .empty()
-        .withValue(s"config.${SQLConf.CASE_SENSITIVE.key}",
-                   ConfigValueFactory.fromAnyRef(false)))
+        .withValue(s"config.${SQLConf.CASE_SENSITIVE.key}", ConfigValueFactory.fromAnyRef(false)))
 
   it should s"persist a table and retrieve it changing some letters to upper case in $catalogName" in {
 

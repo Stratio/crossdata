@@ -24,8 +24,7 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDTem
 
 import scala.collection.mutable
 
-abstract class MapCatalog(catalystConf: CatalystConf)
-    extends XDTemporaryCatalog {
+abstract class MapCatalog(catalystConf: CatalystConf) extends XDTemporaryCatalog {
 
   // TODO map with catalog/tableIdentifier
 
@@ -41,13 +40,10 @@ abstract class MapCatalog(catalystConf: CatalystConf)
       implicit sqlContext: SQLContext): Option[LogicalPlan] =
     (tables get tableIdent) orElse (views get tableIdent)
 
-  override def allRelations(databaseName: Option[StringNormalized])
-    : Seq[TableIdentifierNormalized] = {
+  override def allRelations(
+      databaseName: Option[StringNormalized]): Seq[TableIdentifierNormalized] = {
     (tables ++ views).toSeq collect {
-      case (k, _)
-          if databaseName
-            .map(_.normalizedString == k.split("\\.")(0))
-            .getOrElse(true) =>
+      case (k, _) if databaseName.map(_.normalizedString == k.split("\\.")(0)).getOrElse(true) =>
         k.split("\\.") match {
           case Array(db, tb) => TableIdentifierNormalized(tb, Option(db))
           case Array(tb) => TableIdentifierNormalized(tb)
@@ -55,10 +51,9 @@ abstract class MapCatalog(catalystConf: CatalystConf)
     }
   }
 
-  override def saveTable(
-      tableIdentifier: TableIdentifierNormalized,
-      plan: LogicalPlan,
-      crossdataTable: Option[CrossdataTable] = None): Unit = {
+  override def saveTable(tableIdentifier: TableIdentifierNormalized,
+                         plan: LogicalPlan,
+                         crossdataTable: Option[CrossdataTable] = None): Unit = {
 
     views get tableIdentifier foreach (_ => dropView(tableIdentifier))
     tables put (tableIdentifier, plan)

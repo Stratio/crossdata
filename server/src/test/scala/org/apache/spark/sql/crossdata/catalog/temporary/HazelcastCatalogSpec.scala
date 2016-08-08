@@ -32,10 +32,9 @@ class HazelcastCatalogSpec extends {
 
   override lazy val temporaryCatalog: XDTemporaryCatalog = {
     val hInstance = Hazelcast.newHazelcastInstance
-    val tables = hInstance.getMap[TableIdentifierNormalized, CrossdataTable](
-        UUID.randomUUID().toString)
-    val views = hInstance.getMap[TableIdentifierNormalized, String](
-        UUID.randomUUID().toString)
+    val tables =
+      hInstance.getMap[TableIdentifierNormalized, CrossdataTable](UUID.randomUUID().toString)
+    val views = hInstance.getMap[TableIdentifierNormalized, String](UUID.randomUUID().toString)
 
     new HazelcastCatalog(tables, views)(xdContext.conf)
   }

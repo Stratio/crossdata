@@ -30,18 +30,17 @@ object CreateRelationUtil extends SparkLoggerComponent {
 
     /** Although table schema is inferred and persisted in XDCatalog, the schema can't be specified in some cases because
       *the source does not implement SchemaRelationProvider (e.g. JDBC) */
-    val tableSchema = ResolvedDataSource
-      .lookupDataSource(crossdataTable.datasource)
-      .newInstance() match {
-      case _: SchemaRelationProvider | _: HadoopFsRelationProvider =>
-        crossdataTable.schema
-      case _: RelationProvider =>
-        None
-      case other =>
-        val msg = s"Unexpected datasource: $other"
-        logError(msg)
-        throw new RuntimeException(msg)
-    }
+    val tableSchema =
+      ResolvedDataSource.lookupDataSource(crossdataTable.datasource).newInstance() match {
+        case _: SchemaRelationProvider | _: HadoopFsRelationProvider =>
+          crossdataTable.schema
+        case _: RelationProvider =>
+          None
+        case other =>
+          val msg = s"Unexpected datasource: $other"
+          logError(msg)
+          throw new RuntimeException(msg)
+      }
 
     val resolved = ResolvedDataSource(sqlContext,
                                       tableSchema,

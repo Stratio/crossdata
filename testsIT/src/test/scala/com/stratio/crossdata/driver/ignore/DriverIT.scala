@@ -54,28 +54,27 @@ class DriverIT extends BaseXDTest {
     withDriverDo { driver =>
       withDriverDo { anotherDriver =>
         driver
-          .sql(s"CREATE TEMPORARY TABLE $randomTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
+          .sql(
+              s"CREATE TEMPORARY TABLE $randomTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
             .get(getClass.getResource("/tabletest.json").toURI)
             .toString}')")
           .waitForResult()
         anotherDriver
-          .sql(s"CREATE TEMPORARY TABLE $randomTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
+          .sql(
+              s"CREATE TEMPORARY TABLE $randomTable USING org.apache.spark.sql.json OPTIONS (path '${Paths
             .get(getClass.getResource("/tabletest.json").toURI)
             .toString}')")
           .waitForResult()
 
         driver.sql(s"SET spark.sql.shuffle.partitions=400").waitForResult()
-        anotherDriver
-          .sql(s"SET spark.sql.shuffle.partitions=400")
-          .waitForResult()
+        anotherDriver.sql(s"SET spark.sql.shuffle.partitions=400").waitForResult()
 
         Thread.sleep(100)
 
         for (_ <- 1 to 3) {
           // It assumes that the driver has a round robin policy
-          val result = driver
-            .sql(s"SELECT title, count(*) FROM $randomTable GROUP BY title")
-            .waitForResult()
+          val result =
+            driver.sql(s"SELECT title, count(*) FROM $randomTable GROUP BY title").waitForResult()
           validateResult(result)
 
           val result2 = anotherDriver

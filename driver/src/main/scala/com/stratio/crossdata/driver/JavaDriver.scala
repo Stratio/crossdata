@@ -56,8 +56,7 @@ class JavaDriver private (driverConf: DriverConf, auth: Authentication) {
   def sql(sqlText: String, timeoutDuration: Duration): SQLResult =
     scalaDriver.sql(sqlText).waitForResult(timeoutDuration)
 
-  def importTables(dataSourceProvider: String,
-                   options: java.util.Map[String, String]): SQLResult =
+  def importTables(dataSourceProvider: String, options: java.util.Map[String, String]): SQLResult =
     scalaDriver.importTables(dataSourceProvider, options.toMap)
 
   def createTable(name: String,
@@ -66,11 +65,7 @@ class JavaDriver private (driverConf: DriverConf, auth: Authentication) {
                   options: java.util.Map[String, String],
                   isTemporary: Boolean): SQLResult =
     scalaDriver
-      .createTable(name,
-                   dataSourceProvider,
-                   schema,
-                   options.toMap,
-                   isTemporary)
+      .createTable(name, dataSourceProvider, schema, options.toMap, isTemporary)
       .waitForResult()
 
   def dropTable(name: String, isTemporary: Boolean = false): SQLResult =
@@ -88,8 +83,7 @@ class JavaDriver private (driverConf: DriverConf, auth: Authentication) {
         new JavaTableName(table, database.getOrElse(""))
     }
 
-  def describeTable(database: String,
-                    tableName: String): java.util.List[FieldMetadata] =
+  def describeTable(database: String, tableName: String): java.util.List[FieldMetadata] =
     scalaDriver.describeTable(Some(database), tableName)
 
   def describeTable(tableName: String): java.util.List[FieldMetadata] =

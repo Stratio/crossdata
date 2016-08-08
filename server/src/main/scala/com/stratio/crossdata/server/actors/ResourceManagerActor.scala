@@ -40,8 +40,7 @@ object ResourceManagerActor {
 
 }
 
-class ResourceManagerActor(cluster: Cluster,
-                           sessionProvider: XDSessionProvider)
+class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     extends Actor
     with ServerConfig {
 
@@ -77,8 +76,7 @@ class ResourceManagerActor(cluster: Cluster,
 
   // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
   def AddJarMessages(st: State): Receive = {
-    case CommandEnvelope(addJarCommand: AddJARCommand,
-                         session @ Session(id, requester)) =>
+    case CommandEnvelope(addJarCommand: AddJARCommand, session @ Session(id, requester)) =>
       logger.debug(
           s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
@@ -88,8 +86,7 @@ class ResourceManagerActor(cluster: Cluster,
           case Success(xdSession) =>
             xdSession.addJar(addJarCommand.path)
           case Failure(error) =>
-            logger
-              .warn(s"Received message with an unknown sessionId $id", error)
+            logger.warn(s"Received message with an unknown sessionId $id", error)
             sender ! ErrorSQLResult(
                 s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
         }
@@ -100,10 +97,8 @@ class ResourceManagerActor(cluster: Cluster,
       } else {
         sender ! SQLReply(
             addJarCommand.requestId,
-            ErrorSQLResult(
-                "File doesn't exist or is not a hdfs file",
-                Some(new Exception(
-                        "File doesn't exist or is not a hdfs file"))))
+            ErrorSQLResult("File doesn't exist or is not a hdfs file",
+                           Some(new Exception("File doesn't exist or is not a hdfs file"))))
       }
     case _ =>
   }

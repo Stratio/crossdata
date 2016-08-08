@@ -57,10 +57,8 @@ class ElasticSearchTypesIT extends ElasticWithSharedContext {
     result(0).getBoolean(3) should be(true)
     result(0).getString(4) should be("Name 2")
 
-    result(0).getDate(6) should be(
-        DateTime.parse("1982-01-01T10:00:00-00:00").toDate)
+    result(0).getDate(6) should be(DateTime.parse("1982-01-01T10:00:00-00:00").toDate)
     result(0).getDouble(7) should be(2001.0)
-    result(0).getLong(8) should be(
-        DateTime.parse("1982-01-01T10:00:00-00:00").getMillis)
+    result(0).getLong(8) should be(DateTime.parse("1982-01-01T10:00:00-00:00").getMillis)
   }
 }

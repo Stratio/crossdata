@@ -23,14 +23,11 @@ import org.scalatest.junit.JUnitRunner
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class CrossdataStreamingApplicationSpec
-    extends BaseStreamingXDTest
-    with CommonValues {
+class CrossdataStreamingApplicationSpec extends BaseStreamingXDTest with CommonValues {
 
   "CrossdataStreamingApplication" should "return a Exception with incorrect arguments" in {
 
-    val result =
-      Try(CrossdataStreamingApplication.main(Array.empty[String])).isFailure
+    val result = Try(CrossdataStreamingApplication.main(Array.empty[String])).isFailure
     val expected = true
 
     result should be(expected)
@@ -38,8 +35,8 @@ class CrossdataStreamingApplicationSpec
 
   "CrossdataStreamingApplication" should "parse correctly the zookeeper argument" in {
 
-    val result = CrossdataStreamingApplication.parseMapArguments(
-        """{"connectionString":"localhost:2181"}""")
+    val result =
+      CrossdataStreamingApplication.parseMapArguments("""{"connectionString":"localhost:2181"}""")
     val expected = Try(Map("connectionString" -> "localhost:2181"))
 
     result should be(expected)

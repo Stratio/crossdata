@@ -35,12 +35,9 @@ object CoreConfig {
   val JarsRepo = "jars"
   val HdfsKey = "hdfs"
 
-  val DerbyClass =
-    "org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog"
-  val DefaultSecurityManager =
-    "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
-  val ZookeeperClass =
-    "org.apache.spark.sql.crossdata.catalog.persistent.ZookeeperCatalog"
+  val DerbyClass = "org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog"
+  val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
+  val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.persistent.ZookeeperCatalog"
   val ZookeeperStreamingClass =
     "org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog"
   val StreamingConfigKey = "streaming"
@@ -53,24 +50,18 @@ object CoreConfig {
   val PasswordConfigKey = "password"
   val SessionConfigKey = "session"
   val CatalogClassConfigKey = s"$CatalogConfigKey.$ClassConfigKey"
-  val StreamingCatalogClassConfigKey =
-    s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
-  val SecurityClassConfigKey =
-    s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
-  val SecurityAuditConfigKey =
-    s"$SecurityConfigKey.$SecurityManagerConfigKey.$AuditConfigKey"
-  val SecurityUserConfigKey =
-    s"$SecurityConfigKey.$SecurityManagerConfigKey.$UserConfigKey"
+  val StreamingCatalogClassConfigKey = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
+  val SecurityClassConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
+  val SecurityAuditConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$AuditConfigKey"
+  val SecurityUserConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$UserConfigKey"
   val SecurityPasswordConfigKey =
     s"$SecurityConfigKey.$SecurityManagerConfigKey.$PasswordConfigKey"
-  val SecuritySessionConfigKey =
-    s"$SecurityConfigKey.$SecurityManagerConfigKey.$SessionConfigKey"
+  val SecuritySessionConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$SessionConfigKey"
 
   val SparkSqlConfigPrefix = "config.spark.sql" //WARNING!! XDServer is using this path to read its parameters
 
   // WARNING: It only detects paths starting with "config.spark.sql"
-  def configToSparkSQL(config: Config,
-                       defaultSqlConf: SQLConf = new SQLConf): SQLConf = {
+  def configToSparkSQL(config: Config, defaultSqlConf: SQLConf = new SQLConf): SQLConf = {
 
     import scala.collection.JavaConversions._
 
@@ -81,8 +72,7 @@ object CoreConfig {
       .filterKeys(_.startsWith(CoreConfig.SparkSqlConfigPrefix))
       .map(e => (e._1.replace("config.", ""), e._2))
 
-    def sqlPropsToSQLConf(sparkSQLProps: Map[String, String],
-                          sqlConf: SQLConf): SQLConf = {
+    def sqlPropsToSQLConf(sparkSQLProps: Map[String, String], sqlConf: SQLConf): SQLConf = {
       sparkSQLProps.foreach {
         case (key, value) =>
           sqlConf.setConfString(key, value)
@@ -102,33 +92,26 @@ trait CoreConfig extends Logging {
 
   val config: Config = {
 
-    var defaultConfig =
-      ConfigFactory.load(CoreBasicConfig).getConfig(ParentConfigName)
-    val envConfigFile = Option(
-        System.getProperties.getProperty(CoreUserConfigFile))
-    val configFile =
-      envConfigFile.getOrElse(defaultConfig.getString(CoreUserConfigFile))
+    var defaultConfig = ConfigFactory.load(CoreBasicConfig).getConfig(ParentConfigName)
+    val envConfigFile = Option(System.getProperties.getProperty(CoreUserConfigFile))
+    val configFile = envConfigFile.getOrElse(defaultConfig.getString(CoreUserConfigFile))
     val configResource = defaultConfig.getString(CoreUserConfigResource)
 
     if (configResource != "") {
       val resource = getClass.getClassLoader.getResource(configResource)
       if (resource != null) {
-        val userConfig = ConfigFactory
-          .parseResources(configResource)
-          .getConfig(ParentConfigName)
+        val userConfig = ConfigFactory.parseResources(configResource).getConfig(ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
         logInfo("User resource (" + configResource + ") found in resources")
       } else {
         logWarning("User resource (" + configResource + ") hasn't been found")
         val file = new File(configResource)
         if (file.exists()) {
-          val userConfig =
-            ConfigFactory.parseFile(file).getConfig(ParentConfigName)
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
           defaultConfig = userConfig.withFallback(defaultConfig)
           logInfo("User resource (" + configResource + ") found in classpath")
         } else {
-          logWarning(
-              "User file (" + configResource + ") hasn't been found in classpath")
+          logWarning("User file (" + configResource + ") hasn't been found in classpath")
         }
       }
     }
@@ -136,8 +119,7 @@ trait CoreConfig extends Logging {
     if (configFile != "") {
       val file = new File(configFile)
       if (file.exists()) {
-        val userConfig =
-          ConfigFactory.parseFile(file).getConfig(ParentConfigName)
+        val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
         defaultConfig = userConfig.withFallback(defaultConfig)
         logInfo("External file (" + configFile + ") found")
       } else {
@@ -147,9 +129,7 @@ trait CoreConfig extends Logging {
 
     // System properties
     val systemPropertiesConfig = Try(
-        ConfigFactory
-          .parseProperties(System.getProperties)
-          .getConfig(ParentConfigName)
+        ConfigFactory.parseProperties(System.getProperties).getConfig(ParentConfigName)
     ).getOrElse(
         ConfigFactory.parseProperties(System.getProperties)
     )

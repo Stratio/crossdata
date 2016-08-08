@@ -45,10 +45,9 @@ object ElasticSearchQueryProcessor {
   * @param parameters ElasticSearch Configuration Parameters
   * @param schemaProvided Spark used defined schema
   */
-class ElasticSearchQueryProcessor(
-    val logicalPlan: LogicalPlan,
-    val parameters: Map[String, String],
-    val schemaProvided: Option[StructType] = None)
+class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan,
+                                  val parameters: Map[String, String],
+                                  val schemaProvided: Option[StructType] = None)
     extends SparkLoggerComponent {
 
   type Limit = Option[Int]
@@ -69,8 +68,7 @@ class ElasticSearchQueryProcessor(
           val errors = resp.getShardFailures map { failure =>
             failure.reason()
           }
-          throw new RuntimeException(
-              errors mkString ("Errors from ES:", ";\n", ""))
+          throw new RuntimeException(errors mkString ("Errors from ES:", ";\n", ""))
         } else {
           ElasticSearchRowConverter
             .asRows(schemaProvided.get, resp.getHits.getHits, requiredColumns)
@@ -89,9 +87,7 @@ class ElasticSearchQueryProcessor(
         val filters = baseLogicalPlan.filters
         val (esIndex, esType) = extractIndexAndType(parameters).get
 
-        val finalQuery = buildNativeQuery(requiredColumns,
-                                          filters,
-                                          search in esIndex / esType)
+        val finalQuery = buildNativeQuery(requiredColumns, filters, search in esIndex / esType)
 
         withClientDo(parameters) { esClient =>
           tryRows(requiredColumns, finalQuery, esClient)
@@ -146,15 +142,12 @@ class ElasticSearchQueryProcessor(
           must(searchFilters)
         }
 
-    log.debug(
-        "LogicalPlan transformed to the Elasticsearch query:" + finalQuery
-          .toString())
+    log.debug("LogicalPlan transformed to the Elasticsearch query:" + finalQuery.toString())
     finalQuery
 
   }
 
-  private def selectFields(fields: Seq[Attribute],
-                           query: SearchDefinition): SearchDefinition = {
+  private def selectFields(fields: Seq[Attribute], query: SearchDefinition): SearchDefinition = {
     val stringFields: Seq[String] = fields.map(_.name)
     query.fields(stringFields.toList: _*)
   }
@@ -171,13 +164,9 @@ class ElasticSearchQueryProcessor(
           findProjectsFilters(child)
 
         case PhysicalOperation(projectList, filterList, _) =>
-          CatalystToCrossdataAdapter.getConnectorLogicalPlan(
-              logicalPlan,
-              projectList,
-              filterList) match {
-            case (_,
-                  ProjectReport(exprIgnored),
-                  FilterReport(filtersIgnored, _))
+          CatalystToCrossdataAdapter
+            .getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
+            case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _))
                 if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
               None
             case (basePlan, _, _) =>

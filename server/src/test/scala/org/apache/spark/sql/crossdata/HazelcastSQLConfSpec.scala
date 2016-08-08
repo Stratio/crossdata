@@ -101,10 +101,8 @@ class HazelcastSQLConfSpec
 
         sqlConf.setConfString("spark.sql.parquet.filterPushdown", "false")
 
-        val sqlConfAtB: SQLConf =
-          probedConfigManager.getResource(sessionID).get
-        sqlConfAtB
-          .getConfString("spark.sql.parquet.filterPushdown") shouldBe "false"
+        val sqlConfAtB: SQLConf = probedConfigManager.getResource(sessionID).get
+        sqlConfAtB.getConfString("spark.sql.parquet.filterPushdown") shouldBe "false"
 
       }
 

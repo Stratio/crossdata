@@ -45,27 +45,23 @@ class CassandraQueryProcessorSpec extends BaseXDTest {
                   DataTypes.StringType,
                   AttributeReference("id", DataTypes.StringType)() :: Nil),
       Function02 ->
-        NativeUDF(getFunctionName(Function02),
-                  DataTypes.StringType,
-                  Literal(42) :: Nil)
+        NativeUDF(getFunctionName(Function02), DataTypes.StringType, Literal(42) :: Nil)
   )
 
   protected def getFunctionName(fid: String): String = fid.split("#").head.trim
 
   "A CassandraQueryProcessor" should "build a query requiring some columns" in {
-    val query = CassandraQueryProcessor
-      .buildNativeQuery(TableQN, Array(ColumnId, ColumnAge), Array(), Limit)
+    val query =
+      CassandraQueryProcessor.buildNativeQuery(TableQN, Array(ColumnId, ColumnAge), Array(), Limit)
 
-    query should be(
-        s"SELECT $ColumnId, $ColumnAge FROM $TableQN  LIMIT $Limit ALLOW FILTERING")
+    query should be(s"SELECT $ColumnId, $ColumnAge FROM $TableQN  LIMIT $Limit ALLOW FILTERING")
   }
 
   it should "build a query with two equal filters" in {
     val query = CassandraQueryProcessor.buildNativeQuery(
         TableQN,
         Array(ColumnId),
-        Array(sources.EqualTo(ColumnAge, ValueAge),
-              sources.EqualTo(ColumnId, ValueId)),
+        Array(sources.EqualTo(ColumnAge, ValueAge), sources.EqualTo(ColumnId, ValueId)),
         Limit)
 
     query should be(
@@ -84,44 +80,44 @@ class CassandraQueryProcessorSpec extends BaseXDTest {
   }
 
   it should "build a query with a IN clause and a single value" in {
-    val query = CassandraQueryProcessor.buildNativeQuery(
-        TableQN,
-        Array(ColumnId),
-        Array(sources.In(ColumnAge, Array(ValueAge))),
-        Limit)
+    val query =
+      CassandraQueryProcessor.buildNativeQuery(TableQN,
+                                               Array(ColumnId),
+                                               Array(sources.In(ColumnAge, Array(ValueAge))),
+                                               Limit)
 
     query should be(
         s"SELECT $ColumnId FROM $TableQN WHERE $ColumnAge IN ($ValueAge) LIMIT $Limit ALLOW FILTERING")
   }
 
   it should "build a query with a LT clause " in {
-    val query = CassandraQueryProcessor.buildNativeQuery(
-        TableQN,
-        Array(ColumnId),
-        Array(sources.LessThan(ColumnAge, ValueAge)),
-        Limit)
+    val query =
+      CassandraQueryProcessor.buildNativeQuery(TableQN,
+                                               Array(ColumnId),
+                                               Array(sources.LessThan(ColumnAge, ValueAge)),
+                                               Limit)
 
     query should be(
         s"SELECT $ColumnId FROM $TableQN WHERE $ColumnAge < $ValueAge LIMIT $Limit ALLOW FILTERING")
   }
 
   it should "build a query with a LTE clause " in {
-    val query = CassandraQueryProcessor.buildNativeQuery(
-        TableQN,
-        Array(ColumnId),
-        Array(sources.LessThanOrEqual(ColumnAge, ValueAge)),
-        Limit)
+    val query =
+      CassandraQueryProcessor.buildNativeQuery(TableQN,
+                                               Array(ColumnId),
+                                               Array(sources.LessThanOrEqual(ColumnAge, ValueAge)),
+                                               Limit)
 
     query should be(
         s"SELECT $ColumnId FROM $TableQN WHERE $ColumnAge <= $ValueAge LIMIT $Limit ALLOW FILTERING")
   }
 
   it should "build a query with a GT clause " in {
-    val query = CassandraQueryProcessor.buildNativeQuery(
-        TableQN,
-        Array(ColumnId),
-        Array(sources.GreaterThan(ColumnAge, ValueAge)),
-        Limit)
+    val query =
+      CassandraQueryProcessor.buildNativeQuery(TableQN,
+                                               Array(ColumnId),
+                                               Array(sources.GreaterThan(ColumnAge, ValueAge)),
+                                               Limit)
 
     query should be(
         s"SELECT $ColumnId FROM $TableQN WHERE $ColumnAge > $ValueAge LIMIT $Limit ALLOW FILTERING")
@@ -190,8 +186,7 @@ class CassandraQueryProcessorSpec extends BaseXDTest {
           Limit,
           udfs
       )
-      query should be(
-          s"SELECT $sel FROM $TableQN  LIMIT $Limit ALLOW FILTERING")
+      query should be(s"SELECT $sel FROM $TableQN  LIMIT $Limit ALLOW FILTERING")
     }
 
   }

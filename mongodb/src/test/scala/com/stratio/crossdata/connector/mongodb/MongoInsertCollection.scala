@@ -32,21 +32,19 @@ trait MongoInsertCollection extends MongoWithSharedContext {
     val collection = client(Database)(Collection)
     for (a <- 1 to 10) {
       collection.insert {
-        MongoDBObject(
-            "id" -> a,
-            "age" -> (10 + a),
-            "description" -> s"description$a",
-            "enrolled" -> (a % 2 == 0),
-            "name" -> s"Name $a",
-            "array_test" -> Seq(a toString, a + 1 toString, a + 2 toString),
-            "map_test" -> Map(("x", a), ("y", a + 2), ("c", a + 3)),
-            "array_map" -> Seq(Map("x" -> a), Map("y" -> (a + 1))),
-            "map_array" -> Map("x" -> Seq(1, 2), "y" -> Seq(2, 3)))
+        MongoDBObject("id" -> a,
+                      "age" -> (10 + a),
+                      "description" -> s"description$a",
+                      "enrolled" -> (a % 2 == 0),
+                      "name" -> s"Name $a",
+                      "array_test" -> Seq(a toString, a + 1 toString, a + 2 toString),
+                      "map_test" -> Map(("x", a), ("y", a + 2), ("c", a + 3)),
+                      "array_map" -> Seq(Map("x" -> a), Map("y" -> (a + 1))),
+                      "map_array" -> Map("x" -> Seq(1, 2), "y" -> Seq(2, 3)))
       }
-      collection.update(
-          QueryBuilder.start("id").greaterThan(4).get,
-          MongoDBObject(("$set", MongoDBObject(("optionalField", true)))),
-          multi = true)
+      collection.update(QueryBuilder.start("id").greaterThan(4).get,
+                        MongoDBObject(("$set", MongoDBObject(("optionalField", true)))),
+                        multi = true)
     }
 
   }

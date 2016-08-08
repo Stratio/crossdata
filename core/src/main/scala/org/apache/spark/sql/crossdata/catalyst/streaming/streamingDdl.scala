@@ -34,8 +34,7 @@ import scala.util.{Failure, Success}
 /**
   * Ephemeral Table Functions
   */
-private[crossdata] case class DescribeEphemeralTable(
-    tableIdent: TableIdentifier)
+private[crossdata] case class DescribeEphemeralTable(tableIdent: TableIdentifier)
     extends LogicalPlan
     with RunnableCommand {
 
@@ -50,14 +49,11 @@ private[crossdata] case class DescribeEphemeralTable(
     sqlContext.catalog
       .getEphemeralTable(normalizeTableIdentifier(tableIdent, sqlContext.conf))
       .map(ephTable => Seq(Row(ephTable.toPrettyString)))
-      .getOrElse(throw new RuntimeException(
-              s"${tableIdent.unquotedString} doesn't exist"))
+      .getOrElse(throw new RuntimeException(s"${tableIdent.unquotedString} doesn't exist"))
 
 }
 
-private[crossdata] case object ShowEphemeralTables
-    extends LogicalPlan
-    with RunnableCommand {
+private[crossdata] case object ShowEphemeralTables extends LogicalPlan with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
@@ -73,23 +69,19 @@ private[crossdata] case object ShowEphemeralTables
     val catalog = sqlContext.catalog
 
     val tables = catalog.getAllEphemeralTables
-    val status =
-      tables.map(etm => catalog.getEphemeralStatus(etm.name).map(_.status))
+    val status = tables.map(etm => catalog.getEphemeralStatus(etm.name).map(_.status))
 
     tables zip status map {
       case (tableModel, tableStatus) =>
-        Row(tableModel.name,
-            tableStatus.mkString,
-            tableModel.options.atomicWindow)
+        Row(tableModel.name, tableStatus.mkString, tableModel.options.atomicWindow)
     }
 
   }
 }
 
-private[crossdata] case class CreateEphemeralTable(
-    tableIdent: TableIdentifier,
-    userSchema: Option[StructType],
-    opts: Map[String, String])
+private[crossdata] case class CreateEphemeralTable(tableIdent: TableIdentifier,
+                                                   userSchema: Option[StructType],
+                                                   opts: Map[String, String])
     extends LogicalPlan
     with RunnableCommand {
 
@@ -126,15 +118,12 @@ private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.dropEphemeralTable(
-        normalizeTableIdentifier(tableIdent, sqlContext.conf))
+    sqlContext.catalog.dropEphemeralTable(normalizeTableIdentifier(tableIdent, sqlContext.conf))
     Seq(Row(tableIdent.unquotedString))
   }
 }
 
-private[crossdata] case object DropAllEphemeralTables
-    extends LogicalPlan
-    with RunnableCommand {
+private[crossdata] case object DropAllEphemeralTables extends LogicalPlan with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
@@ -170,17 +159,13 @@ private[crossdata] case class ShowEphemeralStatus(tableIdent: TableIdentifier)
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     sqlContext.catalog
-      .getEphemeralStatus(
-          normalizeTableIdentifier(tableIdent, sqlContext.conf))
+      .getEphemeralStatus(normalizeTableIdentifier(tableIdent, sqlContext.conf))
       .map(ephStatus => Seq(Row(ephStatus.status.toString)))
-      .getOrElse(
-          sys.error(s"${tableIdent.unquotedString} status doesn't exist"))
+      .getOrElse(sys.error(s"${tableIdent.unquotedString} status doesn't exist"))
   }
 }
 
-private[crossdata] case object ShowAllEphemeralStatuses
-    extends LogicalPlan
-    with RunnableCommand {
+private[crossdata] case object ShowAllEphemeralStatuses extends LogicalPlan with RunnableCommand {
 
   override val output: Seq[Attribute] = {
     val schema = StructType(
@@ -212,8 +197,8 @@ private[crossdata] case class StartProcess(tableIdentifier: String)
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     val xdContext = sqlContext.asInstanceOf[XDContext]
-    val sparkJob = SparkJobLauncher
-      .getSparkStreamingJob(xdContext, XDContext.xdConfig, tableIdentifier)
+    val sparkJob =
+      SparkJobLauncher.getSparkStreamingJob(xdContext, XDContext.xdConfig, tableIdentifier)
 
     sparkJob match {
       case Failure(exception) =>
@@ -242,12 +227,10 @@ private[crossdata] case class StopProcess(tableIdentifier: String)
         if (currentStatus == EphemeralExecutionStatus.Started || currentStatus == EphemeralExecutionStatus.Starting) {
           xdContext.catalog.updateEphemeralStatus(
               tableIdentifier,
-              EphemeralStatusModel(tableIdentifier,
-                                   EphemeralExecutionStatus.Stopping)
+              EphemeralStatusModel(tableIdentifier, EphemeralExecutionStatus.Stopping)
           )
         } else {
-          sys.error(
-              s"Cannot stop process. $tableIdentifier status is $currentStatus")
+          sys.error(s"Cannot stop process. $tableIdentifier status is $currentStatus")
         }
       case None =>
         sys.error(s"Process $tableIdentifier not found")
@@ -259,8 +242,7 @@ private[crossdata] case class StopProcess(tableIdentifier: String)
 /**
   * Ephemeral Queries Functions
   */
-private[crossdata] case class ShowEphemeralQueries(
-    tableIdentifier: Option[String] = None)
+private[crossdata] case class ShowEphemeralQueries(tableIdentifier: Option[String] = None)
     extends LogicalPlan
     with RunnableCommand {
 
@@ -286,8 +268,7 @@ private[crossdata] case class AddEphemeralQuery(ephemeralTablename: String,
                                                 sql: String,
                                                 alias: String,
                                                 window: Int,
-                                                opts: Map[String, String] =
-                                                  Map.empty)
+                                                opts: Map[String, String] = Map.empty)
     extends LogicalPlan
     with RunnableCommand {
 
@@ -299,12 +280,8 @@ private[crossdata] case class AddEphemeralQuery(ephemeralTablename: String,
   }
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog
-      .createEphemeralQuery(EphemeralQueryModel(ephemeralTablename,
-                                                sql,
-                                                alias,
-                                                window,
-                                                opts)) match {
+    sqlContext.catalog.createEphemeralQuery(
+        EphemeralQueryModel(ephemeralTablename, sql, alias, window, opts)) match {
       case Left(errorMessage) => sys.error(errorMessage)
       case Right(query) => Seq(Row(query.toPrettyString))
     }
@@ -329,8 +306,7 @@ private[crossdata] case class DropEphemeralQuery(queryIdent: String)
   }
 }
 
-private[crossdata] case class DropAllEphemeralQueries(
-    tableName: Option[String] = None)
+private[crossdata] case class DropAllEphemeralQueries(tableName: Option[String] = None)
     extends LogicalPlan
     with RunnableCommand {
 

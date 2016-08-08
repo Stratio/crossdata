@@ -51,10 +51,8 @@ trait CassandraWithSharedContext
     session.execute(
         s"""CREATE KEYSPACE $Catalog WITH replication = {'class':'SimpleStrategy', 'replication_factor':1}
          |AND durable_writes = true;""".stripMargin.replaceAll("\n", " "))
-    session.execute(
-        s"""CREATE TABLE $Catalog.$Table (${stringifySchema(schema)},
-         |PRIMARY KEY (${pk
-         .mkString(", ")}))""".stripMargin.replaceAll("\n", " "))
+    session.execute(s"""CREATE TABLE $Catalog.$Table (${stringifySchema(schema)},
+         |PRIMARY KEY (${pk.mkString(", ")}))""".stripMargin.replaceAll("\n", " "))
 
     if (indexedColumn.nonEmpty) {
       session.execute(s"""
@@ -73,9 +71,7 @@ trait CassandraWithSharedContext
     }*/
 
     def insertRow(row: List[Any]): Unit = {
-      session.execute(s"""INSERT INTO $Catalog.$Table(${schema
-                       .map(p => p._1)
-                       .mkString(", ")})
+      session.execute(s"""INSERT INTO $Catalog.$Table(${schema.map(p => p._1).mkString(", ")})
            | VALUES (${parseRow(row)})""".stripMargin.replaceAll("\n", ""))
     }
 
@@ -105,11 +101,8 @@ trait CassandraWithSharedContext
 
     //This creates a new table in the keyspace which will not be initially registered at the Spark
     if (UnregisteredTable.nonEmpty) {
-      session.execute(
-          s"""CREATE TABLE $Catalog.$UnregisteredTable (${stringifySchema(
-             schema)},
-            |PRIMARY KEY (${pk
-           .mkString(", ")}))""".stripMargin.replaceAll("\n", " "))
+      session.execute(s"""CREATE TABLE $Catalog.$UnregisteredTable (${stringifySchema(schema)},
+            |PRIMARY KEY (${pk.mkString(", ")}))""".stripMargin.replaceAll("\n", " "))
     }
 
     super.saveTestData
@@ -135,8 +128,7 @@ trait CassandraWithSharedContext
     super.sparkRegisterTableSQL :+
       str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Table")
 
-  override val runningError: String =
-    "Cassandra and Spark must be up and running"
+  override val runningError: String = "Cassandra and Spark must be up and running"
 
 }
 
@@ -159,9 +151,7 @@ sealed trait CassandraDefaultTestConstants {
   }).toList
 
   val CassandraHost: String = {
-    Try(ConfigFactory.load().getStringList("cassandra.hosts"))
-      .map(_.get(0))
-      .getOrElse("127.0.0.1")
+    Try(ConfigFactory.load().getStringList("cassandra.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
   }
   val SourceProvider = "com.stratio.crossdata.connector.cassandra"
 }

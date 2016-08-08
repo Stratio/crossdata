@@ -58,8 +58,7 @@ class CassandraCreateExternalTableIT extends CassandraWithSharedContext {
 
     import scala.collection.JavaConversions._
 
-    resultSet.getColumnDefinitions.asList.map(cd => cd.getName) should contain(
-        "name")
+    resultSet.getColumnDefinitions.asList.map(cd => cd.getName) should contain("name")
   }
 
   it should "execute natively create a External Table with no existing Keyspace" in {

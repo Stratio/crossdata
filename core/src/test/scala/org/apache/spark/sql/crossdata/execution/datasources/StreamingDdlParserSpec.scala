@@ -31,10 +31,7 @@ import org.scalatest.mock.MockitoSugar
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class StreamingDdlParserSpec
-    extends BaseXDTest
-    with StreamingDDLTestConstants
-    with MockitoSugar {
+class StreamingDdlParserSpec extends BaseXDTest with StreamingDDLTestConstants with MockitoSugar {
 
   val xdContext = mock[XDContext]
   val parser = new XDDdlParser(_ => null, xdContext)
@@ -43,24 +40,21 @@ class StreamingDdlParserSpec
   "StreamingDDLParser" should "parse a create ephemeral table" in {
     val logicalPlan = parser.parse(
         s"CREATE EPHEMERAL TABLE $EphemeralTableName (id STRING) OPTIONS (kafka.options.opKey 'value')")
-    logicalPlan shouldBe CreateEphemeralTable(
-        EphemeralTableIdentifier,
-        Some(EphemeralTableSchema),
-        Map("kafka.options.opKey" -> "value"))
+    logicalPlan shouldBe CreateEphemeralTable(EphemeralTableIdentifier,
+                                              Some(EphemeralTableSchema),
+                                              Map("kafka.options.opKey" -> "value"))
   }
 
   it should "parse a create ephemeral table without schema" in {
     val logicalPlan = parser.parse(
         s"CREATE EPHEMERAL TABLE $EphemeralTableName OPTIONS (kafka.options.opKey 'value')")
-    logicalPlan shouldBe CreateEphemeralTable(
-        EphemeralTableIdentifier,
-        None,
-        Map("kafka.options.opKey" -> "value"))
+    logicalPlan shouldBe CreateEphemeralTable(EphemeralTableIdentifier,
+                                              None,
+                                              Map("kafka.options.opKey" -> "value"))
   }
 
   it should "parse a describe ephemeral table" in {
-    val logicalPlan =
-      parser.parse(s"DESCRIBE EPHEMERAL TABLE $EphemeralTableName")
+    val logicalPlan = parser.parse(s"DESCRIBE EPHEMERAL TABLE $EphemeralTableName")
     logicalPlan shouldBe DescribeEphemeralTable(EphemeralTableIdentifier)
   }
 
@@ -81,8 +75,7 @@ class StreamingDdlParserSpec
 
   // STATUS
   it should "parse a show ephemeral status" in {
-    val logicalPlan =
-      parser.parse(s"SHOW EPHEMERAL STATUS IN $EphemeralTableName")
+    val logicalPlan = parser.parse(s"SHOW EPHEMERAL STATUS IN $EphemeralTableName")
     logicalPlan shouldBe ShowEphemeralStatus(EphemeralTableIdentifier)
   }
   it should "parse a show all ephemeral statuses" in {
@@ -108,10 +101,8 @@ class StreamingDdlParserSpec
   }
 
   it should "parse a show ephemeral queries with a specific table" in {
-    val logicalPlan =
-      parser.parse(s"SHOW EPHEMERAL QUERIES IN $EphemeralTableName")
-    logicalPlan shouldBe ShowEphemeralQueries(
-        Some(EphemeralTableIdentifier.unquotedString))
+    val logicalPlan = parser.parse(s"SHOW EPHEMERAL QUERIES IN $EphemeralTableName")
+    logicalPlan shouldBe ShowEphemeralQueries(Some(EphemeralTableIdentifier.unquotedString))
   }
 
   it should "fail parsing an add query statement without window" in {
@@ -131,8 +122,7 @@ class StreamingDdlParserSpec
   }
 
   it should "parse a drop all ephemeral queries in a specific table" in {
-    val logicalPlan =
-      parser.parse(s"DROP ALL EPHEMERAL QUERIES IN $EphemeralTableName")
+    val logicalPlan = parser.parse(s"DROP ALL EPHEMERAL QUERIES IN $EphemeralTableName")
     DropAllEphemeralQueries(Some(EphemeralTableName))
 
   }
@@ -156,14 +146,12 @@ trait StreamingDDLTestConstants {
         "receiver.kafka.groupId" -> KafkaGroupId
     )
   }
-  val EphemeralTable = StreamingConfig
-    .createEphemeralTableModel(EphemeralTableName, MandatoryTableOptions)
+  val EphemeralTable =
+    StreamingConfig.createEphemeralTableModel(EphemeralTableName, MandatoryTableOptions)
 
-  val EphemeralQuery =
-    EphemeralQueryModel(EphemeralTableName, Sql, QueryName, Window)
+  val EphemeralQuery = EphemeralQueryModel(EphemeralTableName, Sql, QueryName, Window)
 
-  val ZookeeperStreamingConnectionKey =
-    "streaming.catalog.zookeeper.connectionString"
+  val ZookeeperStreamingConnectionKey = "streaming.catalog.zookeeper.connectionString"
   val ZookeeperConnection: Option[String] = Try(
       ConfigFactory.load().getString(ZookeeperStreamingConnectionKey)).toOption
 }

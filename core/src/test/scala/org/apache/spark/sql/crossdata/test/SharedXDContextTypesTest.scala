@@ -33,37 +33,36 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
 
   //Template steps: Override them
 
-  val emptyTypesSetError: String                                /* Error message to be shown when the types test data have not
-                                                                 * been properly inserted in the data source */
-  def saveTypesData: Int                                        // Entry point for saving types examples into the data source
-  def sparkAdditionalKeyColumns: Seq[SparkSQLColDef] = Seq()   /* There are data sources which require their tables to have a
-                                                                 * primary key. This entry point allows specifying primary keys
-                                                                 * columns.
-                                                                 * NOTE that these `SparkSQLColdDef`s shouldn't have type checker
-                                                                 * since the column type does not form part of the test.
-                                                                 * e.g:
-                                                                 *   override def sparkAdditionalKeyColumns(
-                                                                 *                                           "k",
-                                                                 *                                           "INT PRIMARY KEY"
-                                                                 *                                         )
-                                                                 */
-  def dataTypesSparkOptions: Map[String, String]                /* Especial SparkSQL options for type tables, it is equivalent to
-                                                                 * `defaultOptions` but will only apply in the registration of
-                                                                 * the types test table.
-                                                                 */
-
+  val emptyTypesSetError: String /* Error message to be shown when the types test data have not
+   * been properly inserted in the data source */
+  def saveTypesData: Int // Entry point for saving types examples into the data source
+  def sparkAdditionalKeyColumns: Seq[SparkSQLColDef] =
+    Seq() /* There are data sources which require their tables to have a
+   * primary key. This entry point allows specifying primary keys
+   * columns.
+   * NOTE that these `SparkSQLColdDef`s shouldn't have type checker
+   * since the column type does not form part of the test.
+   * e.g:
+   *   override def sparkAdditionalKeyColumns(
+   *                                           "k",
+   *                                           "INT PRIMARY KEY"
+   *                                         )
+   */
+  def dataTypesSparkOptions: Map[String, String] /* Especial SparkSQL options for type tables, it is equivalent to
+   * `defaultOptions` but will only apply in the registration of
+   * the types test table.
+   */
 
   //Template: This is the template implementation and shouldn't be modified in any specific test
 
   def doTypesTest(datasourceName: String): Unit = {
-    for(executionType <- ExecutionType.Spark::ExecutionType.Native::Nil)
+    for (executionType <- ExecutionType.Spark :: ExecutionType.Native :: Nil)
       datasourceName should s"provide the right types for $executionType execution" in {
         assumeEnvironmentIsUpAndRunning
-        val dframe = sql("SELECT " + typesSet.map(_.colname).mkString(", ") + s" FROM $dataTypesTableName")
-        for(
-          (tpe, i) <- typesSet zipWithIndex;
-          typeCheck <- tpe.typeCheck
-        ) typeCheck(dframe.collect(executionType).head(i))
+        val dframe =
+          sql("SELECT " + typesSet.map(_.colname).mkString(", ") + s" FROM $dataTypesTableName")
+        for ((tpe, i) <- typesSet zipWithIndex;
+             typeCheck <- tpe.typeCheck) typeCheck(dframe.collect(executionType).head(i))
       }
 
     //Multi-level column flat test
@@ -119,42 +118,57 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
   }
 
   protected def typesSet: Seq[SparkSQLColDef] = Seq(
-    SparkSQLColDef("int", "INT", _ shouldBe a[java.lang.Integer]),
-    SparkSQLColDef("bigint", "BIGINT", _ shouldBe a[java.lang.Long]),
-    SparkSQLColDef("long", "LONG", _ shouldBe a[java.lang.Long]),
-    SparkSQLColDef("string", "STRING", _ shouldBe a[java.lang.String]),
-    SparkSQLColDef("boolean", "BOOLEAN", _ shouldBe a[java.lang.Boolean]),
-    SparkSQLColDef("double", "DOUBLE", _ shouldBe a[java.lang.Double]),
-    SparkSQLColDef("float", "FLOAT", _ shouldBe a[java.lang.Float]),
-    SparkSQLColDef("decimalint", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
-    SparkSQLColDef("decimallong", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
-    SparkSQLColDef("decimaldouble", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
-    SparkSQLColDef("decimalfloat", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
-    SparkSQLColDef("date", "DATE", _ shouldBe a[java.sql.Date]),
-    SparkSQLColDef("timestamp", "TIMESTAMP", _ shouldBe a[java.sql.Timestamp]),
-    SparkSQLColDef("tinyint", "TINYINT", _ shouldBe a[java.lang.Byte]),
-    SparkSQLColDef("smallint", "SMALLINT", _ shouldBe a[java.lang.Short]),
-    SparkSQLColDef("binary", "BINARY", _.asInstanceOf[Array[Byte]]),
-    SparkSQLColDef("arrayint", "ARRAY<INT>", _ shouldBe a[Seq[_]]),
-    SparkSQLColDef("arraystring", "ARRAY<STRING>", _ shouldBe a[Seq[_]]),
-    SparkSQLColDef("mapintint", "MAP<INT, INT>", _ shouldBe a[Map[_, _]]),
-    SparkSQLColDef("mapstringint", "MAP<STRING, INT>", _ shouldBe a[Map[_, _]]),
-    SparkSQLColDef("mapstringstring", "MAP<STRING, STRING>", _ shouldBe a[Map[_, _]]),
-    SparkSQLColDef("struct", "STRUCT<field1: INT, field2: INT>", _ shouldBe a[Row]),
-    SparkSQLColDef("arraystruct", "ARRAY<STRUCT<field1: INT, field2: INT>>", _ shouldBe a[Seq[_]]),
-    SparkSQLColDef("arraystructwithdate", "ARRAY<STRUCT<field1: DATE, field2: INT>>", _ shouldBe a[Seq[_]]),
-    SparkSQLColDef("structofstruct", "STRUCT<field1: DATE, field2: INT, struct1: STRUCT<structField1: STRING, structField2: INT>>", _ shouldBe a[Row]),
-    SparkSQLColDef("mapstruct", "MAP<STRING, STRUCT<structField1: DATE, structField2: INT>>", _ shouldBe a[Map[_,_]]),
-    SparkSQLColDef(
-      "arraystructarraystruct",
-      "ARRAY<STRUCT<stringfield: STRING, arrayfield: ARRAY<STRUCT<field1: INT, field2: INT>>>>",
-      { res =>
-        res shouldBe a[Seq[_]]
-        res.asInstanceOf[Seq[_]].head shouldBe a[Row]
-        res.asInstanceOf[Seq[_]].head.asInstanceOf[Row].get(1) shouldBe a[Seq[_]]
-        res.asInstanceOf[Seq[_]].head.asInstanceOf[Row].get(1).asInstanceOf[Seq[_]].head shouldBe a[Row]
-      }
-    )
+      SparkSQLColDef("int", "INT", _ shouldBe a[java.lang.Integer]),
+      SparkSQLColDef("bigint", "BIGINT", _ shouldBe a[java.lang.Long]),
+      SparkSQLColDef("long", "LONG", _ shouldBe a[java.lang.Long]),
+      SparkSQLColDef("string", "STRING", _ shouldBe a[java.lang.String]),
+      SparkSQLColDef("boolean", "BOOLEAN", _ shouldBe a[java.lang.Boolean]),
+      SparkSQLColDef("double", "DOUBLE", _ shouldBe a[java.lang.Double]),
+      SparkSQLColDef("float", "FLOAT", _ shouldBe a[java.lang.Float]),
+      SparkSQLColDef("decimalint", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
+      SparkSQLColDef("decimallong", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
+      SparkSQLColDef("decimaldouble", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
+      SparkSQLColDef("decimalfloat", "DECIMAL", _ shouldBe a[java.math.BigDecimal]),
+      SparkSQLColDef("date", "DATE", _ shouldBe a[java.sql.Date]),
+      SparkSQLColDef("timestamp", "TIMESTAMP", _ shouldBe a[java.sql.Timestamp]),
+      SparkSQLColDef("tinyint", "TINYINT", _ shouldBe a[java.lang.Byte]),
+      SparkSQLColDef("smallint", "SMALLINT", _ shouldBe a[java.lang.Short]),
+      SparkSQLColDef("binary", "BINARY", _.asInstanceOf[Array[Byte]]),
+      SparkSQLColDef("arrayint", "ARRAY<INT>", _ shouldBe a[Seq[_]]),
+      SparkSQLColDef("arraystring", "ARRAY<STRING>", _ shouldBe a[Seq[_]]),
+      SparkSQLColDef("mapintint", "MAP<INT, INT>", _ shouldBe a[Map[_, _]]),
+      SparkSQLColDef("mapstringint", "MAP<STRING, INT>", _ shouldBe a[Map[_, _]]),
+      SparkSQLColDef("mapstringstring", "MAP<STRING, STRING>", _ shouldBe a[Map[_, _]]),
+      SparkSQLColDef("struct", "STRUCT<field1: INT, field2: INT>", _ shouldBe a[Row]),
+      SparkSQLColDef("arraystruct",
+                     "ARRAY<STRUCT<field1: INT, field2: INT>>",
+                     _ shouldBe a[Seq[_]]),
+      SparkSQLColDef("arraystructwithdate",
+                     "ARRAY<STRUCT<field1: DATE, field2: INT>>",
+                     _ shouldBe a[Seq[_]]),
+      SparkSQLColDef(
+          "structofstruct",
+          "STRUCT<field1: DATE, field2: INT, struct1: STRUCT<structField1: STRING, structField2: INT>>",
+          _ shouldBe a[Row]),
+      SparkSQLColDef("mapstruct",
+                     "MAP<STRING, STRUCT<structField1: DATE, structField2: INT>>",
+                     _ shouldBe a[Map[_, _]]),
+      SparkSQLColDef(
+          "arraystructarraystruct",
+          "ARRAY<STRUCT<stringfield: STRING, arrayfield: ARRAY<STRUCT<field1: INT, field2: INT>>>>", {
+            res =>
+              res shouldBe a[Seq[_]]
+              res.asInstanceOf[Seq[_]].head shouldBe a[Row]
+              res.asInstanceOf[Seq[_]].head.asInstanceOf[Row].get(1) shouldBe a[Seq[_]]
+              res
+                .asInstanceOf[Seq[_]]
+                .head
+                .asInstanceOf[Row]
+                .get(1)
+                .asInstanceOf[Seq[_]]
+                .head shouldBe a[Row]
+          }
+      )
   )
 
   override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+ {
@@ -168,9 +182,11 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
 
 object SharedXDContextTypesTest {
   val dataTypesTableName = "typesCheckTable"
-  case class SparkSQLColDef(colname: String, sqlType: String, typeCheck: Option[Any => Unit] = None)
+  case class SparkSQLColDef(colname: String,
+                            sqlType: String,
+                            typeCheck: Option[Any => Unit] = None)
   object SparkSQLColDef {
     def apply(colname: String, sqlType: String, typeCheck: Any => Unit): SparkSQLColDef =
-    SparkSQLColDef(colname, sqlType, Some(typeCheck))
+      SparkSQLColDef(colname, sqlType, Some(typeCheck))
   }
 }

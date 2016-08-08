@@ -30,8 +30,7 @@ class XDMetricsSourceSpec extends BaseXDTest {
     xdms.registerGauge("testName")
 
     //Expectations
-    xdms.metricRegistry.getGauges.keySet() should contain(
-        "metricName.testName")
+    xdms.metricRegistry.getGauges.keySet() should contain("metricName.testName")
   }
 
 }

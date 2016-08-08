@@ -36,13 +36,9 @@ class MongoAndElasticWithSharedContext
   lazy val elasticClient: ElasticClient = Try {
     logInfo(
         s"Connection to elastic search, ElasticHost: $ElasticHost, ElasticNativePort:$ElasticNativePort, ElasticClusterName $ElasticClusterName")
-    val settings = Settings
-      .settingsBuilder()
-      .put("cluster.name", ElasticClusterName)
-      .build()
-    val elasticClient = ElasticClient.transport(
-        settings,
-        ElasticsearchClientUri(ElasticHost, ElasticNativePort))
+    val settings = Settings.settingsBuilder().put("cluster.name", ElasticClusterName).build()
+    val elasticClient =
+      ElasticClient.transport(settings, ElasticsearchClientUri(ElasticHost, ElasticNativePort))
     elasticClient
   } get
 
@@ -61,17 +57,14 @@ sealed trait Constants {
 
   //Mongo
   val MongoHost: String = {
-    Try(config.getStringList("mongo.hosts"))
-      .map(_.get(0))
-      .getOrElse("127.0.0.1")
+    Try(config.getStringList("mongo.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
   }
   val MongoPort = 27017
   val MongoSourceProvider = "com.stratio.crossdata.connector.mongodb"
 
   //Elastic
-  val ElasticHost: String = Try(config.getStringList("elasticsearch.hosts"))
-    .map(_.get(0))
-    .getOrElse("127.0.0.1")
+  val ElasticHost: String =
+    Try(config.getStringList("elasticsearch.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
   val ElasticRestPort = 9200
   val ElasticNativePort = 9300
   val ElasticSourceProvider = "com.stratio.crossdata.connector.elasticsearch"
