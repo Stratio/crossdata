@@ -69,7 +69,7 @@ object Driver {
     newSession(user, password, defaultDriverConf)
 
   def newSession(user: String, password: String, driverConf: DriverConf): Driver =
-    newSession(driverConf, Authentication(user, password))
+    newSession(driverConf, Authentication(user, Option(password)))
 
   def newSession(seedNodes: java.util.List[String]): Driver =
     newSession(seedNodes, defaultDriverConf)
@@ -96,7 +96,7 @@ object Driver {
     driver
   }
 
-  private[driver] def generateDefaultAuth = new Authentication("crossdata", "stratio")
+  private[driver] def generateDefaultAuth = new Authentication("crossdata", Some("stratio"))
 
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
     def run() {
