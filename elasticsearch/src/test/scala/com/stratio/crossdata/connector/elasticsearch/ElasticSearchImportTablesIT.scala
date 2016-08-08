@@ -16,6 +16,7 @@
 package com.stratio.crossdata.connector.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
+import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -72,8 +73,24 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
     //Expectations
     xdContext.tableNames() should contain (s"$Index.$Type")
-    println(xdContext.table(s"$Index.$Type").schema)
-    xdContext.table(s"$Index.$Type").schema should have length 8
+    val schema = xdContext.table(s"$Index.$Type").schema
+
+    schema should have length 9
+
+    schema("age").dataType shouldBe IntegerType
+    schema("description").dataType shouldBe StringType
+    schema("enrolled").dataType shouldBe BooleanType
+    schema("salary").dataType shouldBe DoubleType
+    schema("ageInMillis").dataType shouldBe LongType
+    schema("birthday").dataType shouldBe TimestampType
+    schema("team").dataType shouldBe a [StructType]
+
+    val teamSchema = schema("team").dataType.asInstanceOf[StructType]
+    teamSchema.fields should have length 2
+    teamSchema("id").dataType shouldBe IntegerType
+    teamSchema("name").dataType shouldBe StringType
+
+
 
   }
 
@@ -194,6 +211,7 @@ class ElasticSearchImportTablesIT extends ElasticWithSharedContext {
 
     }
   }
+
 
   lazy val connectionOptions: Map[String, String] = Map(
     "es.nodes" -> s"$ElasticHost",
