@@ -18,10 +18,10 @@ ITSERVICES:
         - SPARK_MODE=slave
         - SPARK_MASTER_HOST=%%SPARK#0
   - ELASTICSEARCH:
-      image: itzg/elasticsearch:2.x
-      sleep: 5
+      image: stratio/elasticsearch:1.7.1
+      sleep: 10
       env:
-        - CLUSTER=%%JUID
+        - CLUSTER_NAME=%%JUID
   - CASSANDRA:
       image: stratio/cassandra-lucene-index:2.2.5.3
       sleep: 10
