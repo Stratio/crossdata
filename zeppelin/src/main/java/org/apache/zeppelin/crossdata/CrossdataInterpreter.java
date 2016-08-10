@@ -42,7 +42,7 @@ public class CrossdataInterpreter extends Interpreter {
 
     private static final String CROSSDATA_SEEDS_PROPERTY = "crossdata.seeds";
     private static final String CROSSDATA_DEFAULT_LIMIT = "crossdata.defaultLimit";
-    private static final String CROSSDATA_TIMEOUT_SEC = "crossdata.tiemoutSeconds";
+    private static final String CROSSDATA_TIMEOUT_SEC = "crossdata.timeoutSeconds";
 
 
     public CrossdataInterpreter(Properties property) {

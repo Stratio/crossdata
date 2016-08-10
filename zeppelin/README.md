@@ -13,13 +13,15 @@ To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apach
 
 https://github.com/apache/incubator-zeppelin => git checkout v0.6.0
 
-mvn clean install -DskipTests
+mvn clean package -DskipTests
 
 #### Crossdata Interpreter
 
-/path/to/zeppelin/bin/install-interpreter.sh --name crossdata -t org.apache.zeppelin:zeppelin-crossdata_2.11:1.5.0-SNAPSHOT
+/path/to/zeppelin/bin/install-interpreter.sh --name crossdata -t org.apache.zeppelin:zeppelin-crossdata_2.11:1.6.0-SNAPSHOT
 
 Add interpreter class name ("org.apache.zeppelin.crossdata.CrossdataInterpreter") to 'zeppelin.interpreters' property in your conf/zeppelin-site.xml file
+
+Start Zeppelin
 
 Create interpreter setting in 'Interpreter' menu on GUI. And then you can bind interpreter on your notebook
 

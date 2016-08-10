@@ -10,9 +10,9 @@
         "defaultValue": "127.0.0.1:13420",
         "description": "The list of seeds."
       },
-      "crossdata.tiemoutSeconds": {
+      "crossdata.timeoutSeconds": {
         "envName": "CROSSDATA_TIMEOUT_SEC",
-        "propertyName": "crossdata.tiemoutSeconds",
+        "propertyName": "crossdata.timeoutSeconds",
         "defaultValue": "100",
         "description": "Query timeout in seconds (0 means infinite timeout)"
       },
