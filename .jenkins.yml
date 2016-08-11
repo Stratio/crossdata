@@ -12,16 +12,16 @@ ITSERVICES:
   - MONGODB:
       image: stratio/mongo:3.0.4
       sleep: 10
-  - SPARK:
-      image: stratio/spark:1.6.1
-      env:
-        - SPARK_MODE=slave
-        - SPARK_MASTER_HOST=%%SPARK#0
   - ELASTICSEARCH:
       image: stratio/elasticsearch:1.7.1
       sleep: 10
       env:
         - CLUSTER_NAME=%%JUID
+  - SPARK:
+      image: stratio/spark:1.6.1
+      env:
+        - SPARK_MODE=slave
+        - SPARK_MASTER_HOST=%%SPARK#0
   - CASSANDRA:
       image: stratio/cassandra-lucene-index:2.2.5.3
       sleep: 10
@@ -37,7 +37,6 @@ ITSERVICES:
       image: stratio/kafka:0.8.2.1
       env:
         - ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181
-
 
 
 ITPARAMETERS: >
