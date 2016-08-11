@@ -29,6 +29,7 @@ ITSERVICES:
         - MAX_HEAP=256M
   - HADOOP:
       image: stratio/hadoop:2.7.2
+      sleep: 10
       env:
         - MASTER=true
         - FUNC_MODE=hdfs
