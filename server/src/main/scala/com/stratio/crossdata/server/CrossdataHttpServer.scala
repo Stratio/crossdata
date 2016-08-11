@@ -18,8 +18,8 @@ package com.stratio.crossdata.server
 import java.io.File
 
 import akka.actor.{ActorRef, ActorSystem}
-import akka.contrib.pattern.DistributedPubSubExtension
-import akka.contrib.pattern.DistributedPubSubMediator.Publish
+import akka.cluster.pubsub.DistributedPubSub
+import akka.cluster.pubsub.DistributedPubSubMediator.Publish
 import akka.http.scaladsl.model.Multipart
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
@@ -43,7 +43,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
   implicit val executionContext = system.dispatcher
   implicit val materializer = ActorMaterializer()
   lazy val logger = Logger.getLogger(classOf[CrossdataHttpServer])
-  lazy val mediator = DistributedPubSubExtension(system).mediator
+  lazy val mediator = DistributedPubSub(system).mediator
 
   type SessionDirective[Session] = Directive[Tuple1[Session]]
 
