@@ -126,6 +126,8 @@
         <scala_2.11.version>2.11.8</scala_2.11.version>
         <default.scala.binary.version>2.10</default.scala.binary.version>
         <default.scala.version>${scala_2.10.version}</default.scala.version>
+        <!--Plugins version-->
+        <scalafmt.version>0.2.11</scalafmt.version>
     </properties>
 
     <dependencyManagement>
@@ -398,6 +400,7 @@
             <plugin>
                 <groupId>com.devsmobile</groupId>
                 <artifactId>mvn-scalafmt</artifactId>
+                <version>${scalafmt.version}</version>
                 <configuration>
                     <formatParameters>--maxColumn 100 -i -f .</formatParameters>
                     <verifyParameters>--test --maxColumn 100 -f .</verifyParameters>
