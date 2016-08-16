@@ -396,6 +396,15 @@
             </plugin>
 
             <plugin>
+                <groupId>com.devsmobile</groupId>
+                <artifactId>mvn-scalafmt</artifactId>
+                <configuration>
+                    <formatParameters>--maxColumn 100 -i -f .</formatParameters>
+                    <verifyParameters>--test --maxColumn 100 -f .</verifyParameters>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>com.stratio.mojo</groupId>
                 <artifactId>scala-cross-build-maven-plugin</artifactId>
                 <version>0.1.0-RC3</version>
