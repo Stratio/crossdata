@@ -13,10 +13,10 @@ ITSERVICES:
       image: stratio/mongo:3.0.4
       sleep: 10
   - ELASTICSEARCH:
-      image: stratio/elasticsearch:1.7.1
+      image: elasticsearch:2.0.2
       sleep: 10
       env:
-        - CLUSTER_NAME=%%JUID
+        - ES_JAVA_OPTS=-Des.cluster.name=%%JUID
   - SPARK:
       image: stratio/spark:1.6.1
       env:
