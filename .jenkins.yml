@@ -1,6 +1,6 @@
 CROSSBUILD:
-  - '2.10'
-  - '2.11'
+  - 'scala-2.10'
+  - 'scala-2.11'
 
 ITSERVICES:
   - SPARK:
