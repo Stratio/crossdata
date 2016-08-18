@@ -31,7 +31,6 @@ trait EndToEndTest extends BaseXDTest with BeforeAndAfterAll {
 
   def init() = {
     crossdataServer = Some(new CrossdataServer)
-    crossdataServer.foreach(_.init(null))
     crossdataServer.foreach(_.start())
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID)))
 
@@ -41,7 +40,6 @@ trait EndToEndTest extends BaseXDTest with BeforeAndAfterAll {
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.session(SessionID).get.dropAllTables()))
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.closeSession(SessionID)))
     crossdataServer.foreach(_.stop())
-    crossdataServer.foreach(_.destroy())
   }
 
 
