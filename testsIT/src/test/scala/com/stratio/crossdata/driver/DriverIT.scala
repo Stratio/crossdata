@@ -123,7 +123,7 @@ class DriverIT extends EndToEndTest {
     }
   }
 
-  it should "be able to execute ADD APP Command of an existent file" in {
+  it should "be able to execute ADD APP Command of an existent file" ignore {
     assumeCrossdataUpAndRunning
 
     val filePath = getClass.getResource("/TestAddApp.jar").getPath
@@ -135,7 +135,7 @@ class DriverIT extends EndToEndTest {
 
   }
 
-  it should "be able to execute ADD APP Command of an existent file with options" in {
+  it should "be able to execute ADD APP Command of an existent file with options" ignore {
     assumeCrossdataUpAndRunning
 
     val filePath = getClass.getResource("/TestAddApp.jar").getPath
