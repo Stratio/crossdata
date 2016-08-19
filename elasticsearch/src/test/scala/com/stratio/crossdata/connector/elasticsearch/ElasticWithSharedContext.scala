@@ -84,7 +84,7 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
 
   "team" inner( "id" typed IntegerType, "name" typed StringType)
   override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
-    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, birthday DATE, salary DOUBLE, ageInMillis LONG, team STRUCT<id: INT, name: STRING>)")
+    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, birthday DATE, salary DOUBLE, ageInMillis LONG)") // TODO add when supported natively => team STRUCT<id: INT, name: STRING>
 
   override val runningError: String = "ElasticSearch and Spark must be up and running"
 
