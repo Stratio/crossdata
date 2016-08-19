@@ -15,7 +15,9 @@
  */
 package org.apache.spark.sql.crossdata.catalyst.analysis
 
-import org.apache.spark.sql.catalyst.analysis._
+import org.apache.spark.sql.AnalysisException
+import org.apache.spark.sql.catalyst.CatalystConf
+import org.apache.spark.sql.catalyst.analysis.{UnresolvedAlias, _}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical
 import org.apache.spark.sql.catalyst.plans.logical._
@@ -143,5 +145,45 @@ case class WrapRelationWithGlobalIndex(catalog: XDCatalog) extends Rule[LogicalP
     helper(Seq.empty, plan)
   }
 
+
+}
+
+
+/**
+  * TODO Spark2.0 remove rule once Spark support qualified table names
+  */
+case class ResolveReferencesXD(conf: CatalystConf) extends Rule[LogicalPlan] {
+
+  def resolver: Resolver = {
+    if (conf.caseSensitiveAnalysis) {
+      caseSensitiveResolution
+    } else {
+      caseInsensitiveResolution
+    }
+  }
+
+  def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
+    // return the same logicalPlan when catalyst apply specific changes in ResolveReferences rule
+    case p: LogicalPlan if !p.childrenResolved => p
+    case p @ Project(projectList, child) if containsStar(projectList) => p
+    case t: ScriptTransformation if containsStar(t.input) => t
+    case a: Aggregate if containsStar(a.aggregateExpressions) => a
+    case j @ Join(left, right, _, _) if !j.selfJoinResolved => j
+    case s @ Sort(ordering, global, child) if child.resolved && !s.resolved => s
+    case g @ Generate(generator, join, outer, qualifier, output, child)
+      if child.resolved && !generator.resolved => g
+
+    case q: LogicalPlan =>
+      q transformExpressionsUp  {
+        case u @ UnresolvedAttribute(nameParts) =>
+          withPosition(u) {
+            import XDLogicalPlanFunctions._
+            q.resolveUsingChildren(nameParts, resolver).getOrElse(u)
+          }
+      }
+  }
+
+  def containsStar(exprs: Seq[Expression]): Boolean =
+  exprs.exists(_.collect { case _: Star => true }.nonEmpty)
 
 }
