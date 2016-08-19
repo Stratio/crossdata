@@ -21,12 +21,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>parent_2.10</artifactId>
+        <artifactId>parent_2.11</artifactId>
         <groupId>com.stratio.crossdata</groupId>
         <version>1.6.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>crossdata-testsIT_2.10</artifactId>
+    <artifactId>crossdata-testsIT_2.11</artifactId>
     <name>TestsIT</name>
     <description>Integration tests for Crossdata</description>
     <packaging>jar</packaging>

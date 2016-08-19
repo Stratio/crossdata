@@ -98,8 +98,12 @@ private[crossdata] case class GetJobStatus() extends ControlCommand
 
 private[crossdata] case class CancelQueryExecution(queryId: UUID) extends ControlCommand
 
-private[crossdata] case class CommandEnvelope(cmd: Command, session: Session)
-
+/*
+  Note that this message implies that the server trust the client in regard to the relation between the session id
+   and the user. This assumption will be taken for granted until the model of session management changes from
+   trusted-client management to server management.
+ */
+private[crossdata] case class CommandEnvelope(cmd: Command, session: Session, user: String)
 
 // Server -> Driver messages
 private[crossdata] trait ServerReply {
