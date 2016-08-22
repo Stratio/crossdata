@@ -119,6 +119,7 @@
         <curator.version>2.9.0</curator.version>
         <common.utils.version>0.5.0</common.utils.version>
         <guava.version>18.0</guava.version>
+        <curator.version>2.11.0</curator.version>
         <!-- Scala version and cross build properties -->
         <scala.binary.version>2.10</scala.binary.version>
         <scala.version>2.10.4</scala.version>
