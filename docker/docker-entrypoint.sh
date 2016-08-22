@@ -32,6 +32,7 @@ if [ "${XD_MODE}" == "Streaming" ]; then
  sed -i "s|crossdata-core.streaming.receiver.kafka.connection = \"localhost:9092\"|crossdata-core.streaming.receiver.kafka.connection =  \"${XD_KAFKA_CONNECTION_STRING}\"|" /etc/sds/crossdata/server/core-application.conf
  sed -i "s|crossdata-core.streaming.spark.master = \"spark://localhost:7077\"|crossdata-core.streaming.spark.master = \"${SPARK_MASTER}\" |" /etc/sds/crossdata/server/core-application.conf
 fi
+HOST="hostname -f"
 if [[ "$(hostname -f)" =~ \. ]]; then
   HOST="$(hostname -f)"
 else
