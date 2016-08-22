@@ -19,6 +19,7 @@ import java.sql.Timestamp
 import java.sql.{Date => SQLDate}
 import java.text.SimpleDateFormat
 import java.util.Date
+
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.types.StructType
@@ -30,6 +31,7 @@ import org.apache.spark.sql.types.DecimalType
 import org.apache.spark.sql.types.TimestampType
 import org.apache.spark.sql.types.NullType
 import org.apache.spark.sql.types.DoubleType
+import org.apache.spark.sql.types.FloatType
 import org.apache.spark.sql.types.BooleanType
 import org.apache.spark.sql.types.DateType
 import org.apache.spark.sql.types.Decimal
@@ -78,6 +80,7 @@ object ElasticSearchRowConverter {
         case IntegerType => toInt(value)
         case LongType => toLong(value)
         case DoubleType => toDouble(value)
+        case FloatType => toFloat(value)
         case DecimalType() => toDecimal(value)
         case BooleanType => value.asInstanceOf[Boolean]
         case TimestampType => toTimestamp(value)
@@ -109,6 +112,15 @@ object ElasticSearchRowConverter {
       case value: java.lang.Integer => value.asInstanceOf[Int].toDouble
       case value: java.lang.Long => value.asInstanceOf[Long].toDouble
       case value: java.lang.Double => value.asInstanceOf[Double]
+    }
+  }
+
+  private def toFloat(value: Any): Float = {
+    value match {
+      case value: java.lang.Integer => value.asInstanceOf[Int].toFloat
+      case value: java.lang.Long => value.asInstanceOf[Long].toFloat
+      case value: java.lang.Float => value.asInstanceOf[Float]
+      case value: java.lang.Double => value.asInstanceOf[Double].toFloat
     }
   }
 
