@@ -158,8 +158,8 @@ private[crossdata] case class PersistSelectAsTable(
       val resolved = ResolvedDataSource(sqlContext, provider, partitionColumns, mode, options, df)
       import XDCatalogCommon._
       val identifier = TableIdentifier(tableIdent.table, tableIdent.database).normalize(crossdataContext.conf)
-      val crossdataTable = CrossdataTable(identifier, Some(resolved.relation.schema), provider, Array.empty, options)
-      crossdataContext.catalog.persistTable(crossdataTable, LogicalRelation(resolved.relation))
+      val crossdataTable = CrossdataTable(identifier, Some(df.schema), provider, Array.empty, options)
+      crossdataContext.catalog.persistTable(crossdataTable, createLogicalRelation(sqlContext, crossdataTable))
     }
 
 
