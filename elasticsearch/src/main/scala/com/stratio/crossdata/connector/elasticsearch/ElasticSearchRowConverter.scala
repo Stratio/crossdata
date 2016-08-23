@@ -26,6 +26,8 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.types.IntegerType
+import org.apache.spark.sql.types.ByteType
+import org.apache.spark.sql.types.ShortType
 import org.apache.spark.sql.types.LongType
 import org.apache.spark.sql.types.DecimalType
 import org.apache.spark.sql.types.TimestampType
@@ -72,11 +74,13 @@ object ElasticSearchRowConverter {
   }
 
 
-  protected def enforceCorrectType(value: Any, desiredType: DataType): Any = {
+  protected def enforceCorrectType(value: Any, desiredType: DataType): Any =
       // TODO check if value==null
-      Option(desiredType).map {
+      desiredType match {
         case StringType => value.toString
         case _ if value == "" => null // guard the non string type
+        case ByteType => toByte(value)
+        case ShortType => toShort(value)
         case IntegerType => toInt(value)
         case LongType => toLong(value)
         case DoubleType => toDouble(value)
@@ -89,7 +93,17 @@ object ElasticSearchRowConverter {
         case _ =>
           sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
           value
-      }.orNull
+      }
+
+  private def toByte(value: Any): Byte = value match {
+    case value: Byte => value
+    case value: Int => value.toByte
+    case value: Long => value.toByte
+  }
+
+  private def toShort(value: Any): Short = value match {
+    case value: Int => value.toShort
+    case value: Long => value.toShort
   }
 
   private def toInt(value: Any): Int = {
@@ -102,34 +116,34 @@ object ElasticSearchRowConverter {
 
   private def toLong(value: Any): Long = {
     value match {
-      case value: java.lang.Integer => value.asInstanceOf[Int].toLong
-      case value: java.lang.Long => value.asInstanceOf[Long]
+      case value: Int => value.toLong
+      case value: Long => value
     }
   }
 
   private def toDouble(value: Any): Double = {
     value match {
-      case value: java.lang.Integer => value.asInstanceOf[Int].toDouble
-      case value: java.lang.Long => value.asInstanceOf[Long].toDouble
-      case value: java.lang.Double => value.asInstanceOf[Double]
+      case value: Int => value.toDouble
+      case value: Long => value.toDouble
+      case value: Double => value
     }
   }
 
   private def toFloat(value: Any): Float = {
     value match {
-      case value: java.lang.Integer => value.asInstanceOf[Int].toFloat
-      case value: java.lang.Long => value.asInstanceOf[Long].toFloat
-      case value: java.lang.Float => value.asInstanceOf[Float]
-      case value: java.lang.Double => value.asInstanceOf[Double].toFloat
+      case value: Int => value.toFloat
+      case value: Long => value.toFloat
+      case value: Float => value
+      case value: Double => value.toFloat
     }
   }
 
   private def toDecimal(value: Any): Decimal = {
     value match {
-      case value: java.lang.Integer => Decimal(value)
-      case value: java.lang.Long => Decimal(value)
+      case value: Int => Decimal(value)
+      case value: Long => Decimal(value)
       case value: java.math.BigInteger => Decimal(new java.math.BigDecimal(value))
-      case value: java.lang.Double => Decimal(value)
+      case value: Double => Decimal(value)
       case value: java.math.BigDecimal => Decimal(value)
     }
   }
