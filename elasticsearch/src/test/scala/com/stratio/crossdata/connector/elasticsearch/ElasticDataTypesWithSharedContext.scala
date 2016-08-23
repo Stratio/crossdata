@@ -53,7 +53,7 @@ trait ElasticDataTypesWithSharedContext extends SharedXDContextWithDataTest with
     ESColumnMetadata("description", "STRING", "description" typed StringType, () => "1", _ shouldBe a[java.lang.String]),
     ESColumnMetadata("name", "STRING", "name" typed StringType index NotAnalyzed, () => "1", _ shouldBe a[java.lang.String]),
     ESColumnMetadata("enrolled", "BOOLEAN", "enrolled" typed BooleanType, () => false, _ shouldBe a[java.lang.Boolean]),
-    //ESColumnMetadata("birthday", "DATE", "birthday" typed DateType, () => DateTime.parse(1980 + "-01-01T10:00:00-00:00").toDate, _ shouldBe a [java.sql.Date]), // TODO date should be timestamp (if not supported by elastic natively)
+    ESColumnMetadata("birthday", "DATE", "birthday" typed DateType, () => DateTime.parse(1980 + "-01-01T10:00:00-00:00").toDate, _ shouldBe a [java.sql.Date]),
     ESColumnMetadata("salary", "DOUBLE", "salary" typed DoubleType, () => 0.15, _ shouldBe a[java.lang.Double]),
     ESColumnMetadata("timecol", "TIMESTAMP", "timecol" typed DateType, () => new java.sql.Timestamp(new GregorianCalendar(1970, 0, 1, 0, 0, 0).getTimeInMillis), _ shouldBe a[java.sql.Timestamp])
     //ESColumnMetadata("float", "FLOAT", "float" typed FloatType, () => 0.15, _ shouldBe a[java.lang.Float]), // TODO float not supported natively
