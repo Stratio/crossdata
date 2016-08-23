@@ -57,7 +57,7 @@ trait ElasticDataTypesWithSharedContext extends SharedXDContextWithDataTest with
     ESColumnMetadata("salary", "DOUBLE", "salary" typed DoubleType, () => 0.15, _ shouldBe a[java.lang.Double]),
     ESColumnMetadata("timecol", "TIMESTAMP", "timecol" typed DateType, () => new java.sql.Timestamp(new GregorianCalendar(1970, 0, 1, 0, 0, 0).getTimeInMillis), _ shouldBe a[java.sql.Timestamp]),
     ESColumnMetadata("float", "FLOAT", "float" typed FloatType, () => 0.15, _ shouldBe a[java.lang.Float]),
-    //ESColumnMetadata("binary", "BINARY", "binary" typed BinaryType, () => Array(Byte.MaxValue, Byte.MinValue), x => x.isInstanceOf[Array[Byte]] shouldBe true) // TODO native and spark ko
+    /*ESColumnMetadata("binary", "BINARY", "binary" typed BinaryType, () => Array(Byte.MaxValue, Byte.MinValue), x => x.isInstanceOf[Array[Byte]] shouldBe true), // TODO spark ko*/
     ESColumnMetadata("tinyint", "TINYINT", "tinyint" typed ByteType, () => Byte.MinValue, _ shouldBe a[java.lang.Byte]),
     ESColumnMetadata("smallint", "SMALLINT", "smallint" typed ShortType, () => Short.MaxValue, _ shouldBe a[java.lang.Short])
     // TODO study access to multi-field (example name with multiple fields: raw (not analyzed) and name spanish (analyzed with specific analyzer) ?

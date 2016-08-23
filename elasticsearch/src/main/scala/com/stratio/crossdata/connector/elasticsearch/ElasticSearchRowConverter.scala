@@ -37,6 +37,7 @@ import org.apache.spark.sql.types.FloatType
 import org.apache.spark.sql.types.BooleanType
 import org.apache.spark.sql.types.DateType
 import org.apache.spark.sql.types.Decimal
+import org.apache.spark.sql.types.BinaryType
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.SearchHitField
 import org.joda.time.DateTime
@@ -90,6 +91,7 @@ object ElasticSearchRowConverter {
         case TimestampType => toTimestamp(value)
         case NullType => null
         case DateType => toDate(value)
+        case BinaryType => toBinary(value)
         case _ =>
           sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
           value
@@ -164,4 +166,12 @@ object ElasticSearchRowConverter {
       case value: String => new SQLDate(DateTime.parse(value).getMillis)
     }
   }
+
+
+  def toBinary(value: Any): Array[Byte] = value match {
+    case arr: String => arr.getBytes
+    case arr: Array[Byte @unchecked] if arr.headOption.collect { case _: Byte => true } getOrElse false => arr
+    case _ => sys.error(s"Unsupported datatype conversion [${value.getClass}},Array[Byte]")
+  }
+
 }
