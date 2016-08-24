@@ -34,11 +34,11 @@ class EphemeralStatusActor(streamingContext: StreamingContext,
 with EphemeralTableStatusMapDAO {
 
   val ephemeralTMDao = new EphemeralTableMapDAO(Map(ZookeeperPrefixName -> zookeeperConfiguration))
-  val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
+  lazy val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var ephemeralStatus: Option[EphemeralStatusModel] = getRepositoryStatusTable
   var cancellableCheckStatus: Option[Cancellable] = None
 
-  def prefix:String = Try(config.getString(PrefixPermantCatalogsConfig)+"_") getOrElse ("")
+  def prefix:String = Try(memoryMap.get(ZookeeperPrefixName).get(PrefixStreamingCatalogsConfigForActors)+"_") getOrElse ("")
 
 
   override def receive: Receive = receive(listenerAdded = false)

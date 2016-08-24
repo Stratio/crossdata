@@ -27,10 +27,10 @@ import scala.util.Try
 class EphemeralQueryActor(zookeeperConfiguration: Map[String, String]) extends Actor
 with EphemeralQueriesMapDAO {
 
-  val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
+  lazy val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var streamingQueries: List[EphemeralQueryModel] = dao.getAll()
 
-  def prefix:String = Try(zookeeperConfiguration.get(PrefixStreamingCatalogsConfig)+"_") getOrElse ("")
+  def prefix:String = Try(memoryMap.get(ZookeeperPrefixName).get(PrefixStreamingCatalogsConfigForActors)+"_") getOrElse ("")
 
   import context.become
 
