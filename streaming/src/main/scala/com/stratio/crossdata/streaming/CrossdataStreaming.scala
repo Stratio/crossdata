@@ -19,6 +19,7 @@ import com.stratio.crossdata.streaming.constants.ApplicationConstants._
 import com.stratio.crossdata.streaming.helpers.{CrossdataStatusHelper, CrossdataStreamingHelper}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
+import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.EphemeralTableMapDAO
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.streaming.StreamingContext
@@ -34,6 +35,8 @@ class CrossdataStreaming(ephemeralTableName: String,
     case (key, value) if key.startsWith(ZooKeeperStreamingCatalogPath) =>
       (key.substring(s"$ZooKeeperStreamingCatalogPath.".length), value)
   }
+
+  def prefix:String = Try(zookeeperCatalogConfig.get(PrefixStreamingCatalogsConfig)+"_") getOrElse ("")
 
   val memoryMap = Map(ZookeeperPrefixName -> zookeeperCatalogConfig)
 

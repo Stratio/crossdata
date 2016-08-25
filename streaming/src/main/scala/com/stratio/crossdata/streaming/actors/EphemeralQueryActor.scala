@@ -18,6 +18,7 @@ package com.stratio.crossdata.streaming.actors
 import akka.actor.Actor
 import com.stratio.crossdata.streaming.actors.EphemeralQueryActor._
 import com.stratio.crossdata.streaming.constants.ApplicationConstants._
+import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.EphemeralQueriesMapDAO
 import org.apache.spark.sql.crossdata.models.EphemeralQueryModel
 
@@ -26,8 +27,10 @@ import scala.util.Try
 class EphemeralQueryActor(zookeeperConfiguration: Map[String, String]) extends Actor
 with EphemeralQueriesMapDAO {
 
-  val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
+  lazy val memoryMap = Map(ZookeeperPrefixName -> zookeeperConfiguration)
   var streamingQueries: List[EphemeralQueryModel] = dao.getAll()
+
+  def prefix:String = Try(memoryMap.get(ZookeeperPrefixName).get(PrefixStreamingCatalogsConfigForActors)+"_") getOrElse ("")
 
   import context.become
 
