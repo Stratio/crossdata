@@ -113,9 +113,14 @@ trait ServerConfig extends NumberActorConfig {
     if (configFile != "") {
       val file = new File(configFile)
       if (file.exists()) {
-        val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.ParentConfigName)
-        defaultConfig = userConfig.withFallback(defaultConfig)
-        logger.info("External file (" + configFile + ") found")
+        val parsedConfig = ConfigFactory.parseFile(file)
+        if(parsedConfig.hasPath(ServerConfig.ParentConfigName)){
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.ParentConfigName)
+          defaultConfig = userConfig.withFallback(defaultConfig)
+          logger.info("External file (" + configFile + ") found")
+        } else{
+          logger.info(s"External file ($configFile) found but not configuration found under ${ServerConfig.ParentConfigName}")
+        }
       } else {
         logger.warn("External file (" + configFile + ") hasn't been found")
       }

@@ -38,11 +38,9 @@ import org.apache.spark.sql.crossdata.models.IndexModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
 trait IndexDAO extends GenericDAOComponent[IndexModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
-
-  val indexID = "indexID"
+with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer with PrefixedDAO {
 
   override implicit val formats = json4sJacksonFormats
 
-  override val dao: DAO = new GenericDAO(Option(IndexesPath))
+  override val dao: DAO = new GenericDAO(Option(s"$BaseZKPath/$prefix$IndexesPath"))
 }

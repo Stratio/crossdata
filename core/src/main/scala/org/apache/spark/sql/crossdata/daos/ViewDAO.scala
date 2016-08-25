@@ -38,11 +38,10 @@ import org.apache.spark.sql.crossdata.models.{ViewModel, EphemeralTableModel}
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
 trait ViewDAO extends GenericDAOComponent[ViewModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer with PrefixedDAO {
 
-  val viewID = "viewID"
 
   override implicit val formats = json4sJacksonFormats
 
-  override val dao: DAO = new GenericDAO(Option(ViewsPath))
+  override val dao: DAO = new GenericDAO(Option(s"$BaseZKPath/$prefix$ViewsPath"))
 }
