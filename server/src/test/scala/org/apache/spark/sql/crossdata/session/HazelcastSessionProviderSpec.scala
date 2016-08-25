@@ -207,5 +207,4 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     optSession.get
   }
 
-
 }
