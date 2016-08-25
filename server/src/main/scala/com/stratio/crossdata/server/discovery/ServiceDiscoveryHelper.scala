@@ -1,5 +1,7 @@
 package com.stratio.crossdata.server.discovery
 
+import java.lang.String
+
 import com.typesafe.config.Config
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.recipes.leader.LeaderLatch
@@ -30,8 +32,8 @@ object ServiceDiscoveryConfigHelper {
 
 case class ServiceDiscoveryConfigHelper(sdConfig: Config) {
 
-  def get[T](path: String, default: T): T = {
-    Try(sdConfig.getString(path)).getOrElse(default).asInstanceOf[T]
+  def get(path: String, default: String) = {
+    Try(sdConfig.getString(path)).getOrElse(default)
   }
 
 }

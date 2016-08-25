@@ -34,6 +34,7 @@ import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.curator.framework.recipes.leader.LeaderLatch
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
+import org.apache.curator.utils.ZKPaths
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata
 import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, HazelcastSessionProvider, XDSessionProvider}
@@ -42,7 +43,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import scala.collection.JavaConversions._
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Future, Promise}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 
 class CrossdataServer extends Daemon with ServerConfig {
@@ -58,7 +59,7 @@ class CrossdataServer extends Daemon with ServerConfig {
   def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
     val curatorClient = CuratorFrameworkFactory.newClient(
-      sdConfig.get[String](SDCH.ServiceDiscoveryUrl, SDCH.ServiceDiscoveryDefaultUrl),
+      sdConfig.get(SDCH.ServiceDiscoveryUrl, SDCH.ServiceDiscoveryDefaultUrl),
       new ExponentialBackoffRetry(
         SDCH.RetrySleep,
         SDCH.Retries))
@@ -68,37 +69,54 @@ class CrossdataServer extends Daemon with ServerConfig {
 
   def requestSubscriptionLeadership(dClient: CuratorFramework, sdc: SDCH) = {
 
+    val sLeaderPath = sdc.get(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath)
+
+    ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, sLeaderPath)
+
     val sLeader = new LeaderLatch(
       dClient,
-      sdc.get[String](SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath))
+      sLeaderPath)
+
+    sLeader.start
 
     Try(sLeader.await(
-      sdc.get[Long](SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout), TimeUnit.SECONDS))
+      sdc.get(SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout.toString).toLong, TimeUnit.SECONDS))
       .getOrElse(throw new RuntimeException(
       "Crossdata Server cannot be started because access to service discovery is blocked"))
+
+    logger.info("Subscription leadership acquired")
 
     sLeader
   }
 
   def requestClusterLeadership(dClient: CuratorFramework, sdc: SDCH) = {
 
+    val cLeaderPath = sdc.get(SDCH.ClusterLeaderPath, SDCH.DefaultClusterLeaderPath)
+
+    ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, cLeaderPath)
+
     val cLeader = new LeaderLatch(
       dClient,
-      sdc.get[String](SDCH.ClusterLeaderPath, SDCH.DefaultClusterLeaderPath))
+      cLeaderPath)
 
     val leadershipPromise = Promise[Unit]()
 
-    leadershipPromise success cLeader.await
+    cLeader.start
+
+    leadershipPromise success {
+      cLeader.await
+      logger.info("Cluster leadership acquired")
+    }
 
     (cLeader, leadershipPromise)
   }
 
   def generateFinalConfig(currentClusterLeader: Boolean, dClient: CuratorFramework, sdc: SDCH) = {
     if(currentClusterLeader){
-      dClient.delete.forPath(sdc.get[String](SDCH.SeedsPath, SDCH.DefaultSeedsPath))
+      dClient.delete.forPath(sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath))
       config
     } else {
-      val zkSeeds = Try(dClient.getData.forPath(sdc.get[String](SDCH.SeedsPath, SDCH.DefaultSeedsPath)))
+      val zkSeeds = Try(dClient.getData.forPath(sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)))
         .getOrElse(SDCH.DefaultSeedNodes.getBytes)
       val sdSeeds = new String(zkSeeds)
       config.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromAnyRef(sdSeeds.split(",")))
@@ -133,7 +151,7 @@ class CrossdataServer extends Daemon with ServerConfig {
     val currentMembers =
       xCluster.state.members.filter(_.roles.contains("server")).map(m => m.address.toString).toArray
     h.curatorClient.setData().forPath(
-      h.sdch.get[String](SDCH.SeedsPath, SDCH.DefaultSeedsPath),
+      h.sdch.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath),
       currentMembers.mkString(",").getBytes)
   }
 
@@ -141,7 +159,7 @@ class CrossdataServer extends Daemon with ServerConfig {
     writeSeeds(xCluster, s)
 
     val delayedInit = new FiniteDuration(
-      s.sdch.get[Long](SDCH.ClusterDelayPath, SDCH.DefaultClusterDelay), TimeUnit.SECONDS)
+      s.sdch.get(SDCH.ClusterDelayPath, SDCH.DefaultClusterDelay.toString).toLong, TimeUnit.SECONDS)
 
     import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -176,6 +194,8 @@ class CrossdataServer extends Daemon with ServerConfig {
     val sdConfig = Try(config.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
 
     val sdHelper = sdConfig.map{ discoveryConfig =>
+
+      logger.info("Service discovery enabled")
 
       val sdch = new SDCH(discoveryConfig)
 
