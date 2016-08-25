@@ -110,7 +110,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
-            <artifactId>apache-curator</artifactId>
+            <artifactId>curator-client</artifactId>
             <version>${curator.version}</version>
         </dependency>
         <dependency>

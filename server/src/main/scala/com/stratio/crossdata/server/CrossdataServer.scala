@@ -28,7 +28,7 @@ import akka.stream.ActorMaterializer
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
-import com.stratio.crossdata.server.discovery.{ServiceDiscoveryConfigHelper => SDCH, ServiceDiscoveryHelper => SDH}
+import com.stratio.crossdata.server.discovery.{ZkConnectionState, ServiceDiscoveryConfigHelper => SDCH, ServiceDiscoveryHelper => SDH}
 import com.typesafe.config.ConfigValueFactory
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.curator.framework.recipes.leader.LeaderLatch
@@ -105,9 +105,9 @@ class CrossdataServer extends Daemon with ServerConfig {
     }
   }
 
-  // TODO: hasLeadership is not absolutely reliable, a connection listener has to be added to the client
+  // hasLeadership is not absolutely reliable, a connection listener has to be used to check connection state
   def checkLeadership(cLeader: LeaderLatch) = {
-    cLeader.hasLeadership
+    cLeader.hasLeadership && ZkConnectionState.isConnected
   }
 
   def startServiceDiscovery(sdch: SDCH) = {
@@ -142,6 +142,8 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     val delayedInit = new FiniteDuration(
       s.sdch.get[Long](SDCH.ClusterDelayPath, SDCH.DefaultClusterDelay), TimeUnit.SECONDS)
+
+    import scala.concurrent.ExecutionContext.Implicits.global
 
     aSystem.scheduler.scheduleOnce(delayedInit)(writeSeeds(xCluster, s))
   }
@@ -196,6 +198,7 @@ class CrossdataServer extends Daemon with ServerConfig {
           // Release subscription leadership
           // PROBLEM: Currents seeds are just this current seed
           // SOLUTION: schedulerOnce and get current nodes to be added to zk seeds
+          import scala.concurrent.ExecutionContext.Implicits.global
           sd.leadershipPromise.future onSuccess {
             case _ =>
               endServiceDiscovery(xdCluster, sd, actorSystem)
