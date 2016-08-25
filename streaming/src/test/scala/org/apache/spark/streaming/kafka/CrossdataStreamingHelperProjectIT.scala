@@ -53,7 +53,7 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
     if (kafkaTestUtils == null) {
       kafkaTestUtils = new KafkaTestUtils
       kafkaTestUtils.setup()
-      zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress)
+      zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress, "prefix" -> "crossdataCluster")
       catalogConf = parseZookeeperCatalogConfig(zookeeperConf)
       xDContext = XDContext.getOrCreate(sc, parseCatalogConfig(catalogConf))
       zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), XDContext.xdConfig) //TODO Replace XDContext.xdConfig when refactoring CoreConfig

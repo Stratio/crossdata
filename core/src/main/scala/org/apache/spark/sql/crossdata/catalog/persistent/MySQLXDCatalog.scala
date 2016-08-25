@@ -21,21 +21,26 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDAppsCatalog
-import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, StringNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, StringNormalized, TableIdentifierNormalized, XDCatalog, persistent}
 
 import scala.annotation.tailrec
+import scala.util.Try
 
 object MySQLXDCatalog {
   // SQLConfig
   val Driver = "jdbc.driver"
   val Url = "jdbc.url"
   val Database = "jdbc.db.name"
-  val TableWithTableMetadata = "jdbc.db.table"
-  val TableWithViewMetadata = "jdbc.db.view"
-  val TableWithAppMetadata = "jdbc.db.app"
-  val TableWithIndexMetadata = "jdbc.db.indexes"
   val User = "jdbc.db.user"
   val Pass = "jdbc.db.pass"
+  val PrefixConfig = "prefix"
+
+  //Default tables
+  val DefaultTablesMetadataTable = "crossdataTables"
+  val DefaultViewsMetadataTable = "crossdataViews"
+  val DefaultAppsMetadataTable = "crossdataJars"
+  val DefaultIndexesMetadataTable = "crossdataIndexes"
+
   // CatalogFields
   val DatabaseField = "db"
   val TableNameField = "tableName"
@@ -74,11 +79,13 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
   import XDCatalog._
 
 
-  private val config = XDContext.catalogConfig
-  private val db = config.getString(Database)
-  private val tableWithTableMetadata = config.getString(TableWithTableMetadata)
-  private val tableWithViewMetadata = config.getString(TableWithViewMetadata)
-  private val tableWithAppJars = config.getString(TableWithAppMetadata)
+  protected lazy val config = XDContext.catalogConfig
+  private lazy val db = config.getString(Database)
+  protected lazy val tablesPrefix = Try(s"${config.getString(PrefixConfig)}_") getOrElse ("") //prefix_
+  protected lazy val tableWithTableMetadata = s"$tablesPrefix$DefaultTablesMetadataTable"
+  protected lazy val tableWithViewMetadata = s"$tablesPrefix$DefaultViewsMetadataTable"
+  protected lazy val tableWithAppJars = s"$tablesPrefix$DefaultAppsMetadataTable"
+  protected lazy val tableWithIndexMetadata = s"$tablesPrefix$DefaultIndexesMetadataTable"
 
   @transient lazy val connection: Connection = {
 
@@ -124,7 +131,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
 
       //Index support
       jdbcConnection.createStatement().executeUpdate(
-        s"""|CREATE TABLE IF NOT EXISTS $db.$TableWithIndexMetadata (
+        s"""|CREATE TABLE IF NOT EXISTS $db.$tableWithIndexMetadata (
             |$DatabaseField VARCHAR(50),
             |$TableNameField VARCHAR(50),
             |$IndexNameField VARCHAR(50),
@@ -382,14 +389,14 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
     try {
       connection.setAutoCommit(false)
       // check if the database-table exist in the persisted catalog
-      val resultSet = selectMetadata(TableWithIndexMetadata, crossdataIndex.tableIdentifier)
+      val resultSet = selectMetadata(tableWithIndexMetadata, crossdataIndex.tableIdentifier)
 
       val serializedIndexedCols = serializeSeq(crossdataIndex.indexedCols)
       val serializedOptions = serializeOptions(crossdataIndex.opts)
 
       if (!resultSet.next()) {
         val prepped = connection.prepareStatement(
-          s"""|INSERT INTO $db.$TableWithIndexMetadata (
+          s"""|INSERT INTO $db.$tableWithIndexMetadata (
               | $DatabaseField, $TableNameField, $IndexNameField, $IndexTypeField, $IndexedColsField,
               | $PKField, $DatasourceField, $OptionsField, $CrossdataVersionField
               |) VALUES (?,?,?,?,?,?,?,?,?)
@@ -414,11 +421,11 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
 
   override def dropIndexMetadata(indexIdentifier: IndexIdentifierNormalized): Unit =
     connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$TableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
+      s"DELETE FROM $db.$tableWithIndexMetadata WHERE $IndexTypeField='${indexIdentifier.indexType}' AND $IndexNameField='${indexIdentifier.indexName}'"
     )
 
   override def dropAllIndexesMetadata(): Unit =
-    connection.createStatement.executeUpdate(s"DELETE FROM $db.$TableWithIndexMetadata")
+    connection.createStatement.executeUpdate(s"DELETE FROM $db.$tableWithIndexMetadata")
 
   override def lookupIndex(indexIdentifier: IndexIdentifierNormalized): Option[CrossdataIndex] = {
     val resultSet = selectIndex(indexIdentifier)
@@ -445,7 +452,7 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
   }
 
   private def selectIndex(indexIdentifier: IndexIdentifierNormalized): ResultSet = {
-    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $IndexNameField= ? AND $IndexTypeField= ?")
+    val preparedStatement = connection.prepareStatement(s"SELECT * FROM $db.$tableWithIndexMetadata WHERE $IndexNameField= ? AND $IndexTypeField= ?")
     preparedStatement.setString(1, indexIdentifier.indexName)
     preparedStatement.setString(2, indexIdentifier.indexType)
     preparedStatement.executeQuery()
@@ -453,12 +460,12 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
 
   override def dropIndexMetadata(tableIdentifier: TableIdentifierNormalized): Unit =
     connection.createStatement.executeUpdate(
-      s"DELETE FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
+      s"DELETE FROM $db.$tableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     )
 
   override def lookupIndexByTableIdentifier(tableIdentifier: TableIdentifierNormalized): Option[CrossdataIndex] = {
     val query =
-      s"SELECT * FROM $db.$TableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
+      s"SELECT * FROM $db.$tableWithIndexMetadata WHERE $TableNameField='${tableIdentifier.table}' AND $DatabaseField='${tableIdentifier.database.getOrElse("")}'"
     val preparedStatement = connection.prepareStatement(query)
     val resultSet = preparedStatement.executeQuery()
     if (!resultSet.next) {
