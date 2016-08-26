@@ -59,7 +59,7 @@ ITPARAMETERS: >
     -Dlauncher.sparkHome=/opt/sds/spark/
 
 ATSERVICES:
- - MONGODB:
+  - MONGODB:
       image: stratio/mongo:3.0.4
       sleep: 10
   - ELASTICSEARCH:
