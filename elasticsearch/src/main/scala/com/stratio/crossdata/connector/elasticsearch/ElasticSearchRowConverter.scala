@@ -18,62 +18,54 @@ package com.stratio.crossdata.connector.elasticsearch
 import java.sql.Timestamp
 import java.sql.{Date => SQLDate}
 import java.text.SimpleDateFormat
+import java.util
 import java.util.Date
 
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.types.DataType
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.sql.types.IntegerType
-import org.apache.spark.sql.types.ByteType
-import org.apache.spark.sql.types.ShortType
-import org.apache.spark.sql.types.LongType
-import org.apache.spark.sql.types.DecimalType
-import org.apache.spark.sql.types.TimestampType
-import org.apache.spark.sql.types.NullType
-import org.apache.spark.sql.types.DoubleType
-import org.apache.spark.sql.types.FloatType
-import org.apache.spark.sql.types.BooleanType
-import org.apache.spark.sql.types.DateType
-import org.apache.spark.sql.types.Decimal
-import org.apache.spark.sql.types.BinaryType
+import org.apache.spark.sql.catalyst.expressions.{Attribute, GenericRowWithSchema}
+import org.apache.spark.sql.types._
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.SearchHitField
 import org.joda.time.DateTime
+
+import scala.collection.JavaConverters._
 
 object ElasticSearchRowConverter {
 
 
   def asRows(schema: StructType, array: Array[SearchHit], requiredFields: Seq[Attribute]): Array[Row] = {
-    import scala.collection.JavaConverters._
-    val schemaMap = schema.map(field => field.name -> field.dataType).toMap
 
     array map { hit =>
-      hitAsRow(hit.fields().asScala.toMap, schemaMap, requiredFields.map(_.name))
+      hitAsRow(
+        hit.fields().asScala.toMap,
+        Option(hit.getSource).map(_.asScala.toMap).getOrElse(Map.empty),
+        schema,
+        requiredFields.map(_.name)
+      )
     }
   }
 
   def hitAsRow(
                 hitFields: Map[String, SearchHitField],
-                schemaMap: Map[String, DataType],
+                subDocuments: Map[String, AnyRef],
+                schema: StructType,
                 requiredFields: Seq[String]): Row = {
-    val values: Seq[Any] = requiredFields.map {
-      name =>
-        hitFields.get(name).flatMap(v => Option(v)).map(
-          toSQL(_, schemaMap(name))).orNull
+
+    val schemaMap = schema.map(field => field.name -> field.dataType).toMap
+
+    val values: Seq[Any] = requiredFields.map { name =>
+
+      // TODO: What if a nested subdocument is targeted
+      (hitFields.get(name) orElse subDocuments.get(name)).flatMap(Option(_)) map {
+        ((value: Any) => enforceCorrectType(value, schemaMap(name))) compose {
+          case hitField: SearchHitField => hitField.getValue
+          case other => other
+        }
+      } orNull
+
     }
-    Row.fromSeq(values)
+    new GenericRowWithSchema(values.toArray, schema)
   }
-
-  def toSQL(value: SearchHitField, dataType: DataType): Any = {
-
-    Option(value).map { case value =>
-      //Assure value is mapped to schema constrained type.
-      enforceCorrectType(value.getValue, dataType)
-    }.orNull
-  }
-
 
   protected def enforceCorrectType(value: Any, desiredType: DataType): Any =
       // TODO check if value==null
@@ -92,6 +84,7 @@ object ElasticSearchRowConverter {
         case NullType => null
         case DateType => toDate(value)
         case BinaryType => toBinary(value)
+        case schema: StructType => toRow(value, schema)
         case _ =>
           sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
           value
@@ -167,11 +160,18 @@ object ElasticSearchRowConverter {
     }
   }
 
-
   def toBinary(value: Any): Array[Byte] = value match {
-    case arr: String => arr.getBytes
+    case str: String => str.getBytes
     case arr: Array[Byte @unchecked] if arr.headOption.collect { case _: Byte => true } getOrElse false => arr
     case _ => sys.error(s"Unsupported datatype conversion [${value.getClass}},Array[Byte]")
+  }
+
+
+  def toRow(value: Any, schema: StructType): Row = value match {
+    case m: util.HashMap[String @ unchecked, _] =>
+      val rowValues = schema.fields map (field => enforceCorrectType(m.get(field.name), field.dataType))
+      new GenericRowWithSchema(rowValues, schema)
+    case _ => sys.error(s"Unsupported datatype conversion [${value.getClass}},Row")
   }
 
 }

@@ -23,14 +23,17 @@ import com.sksamuel.elastic4s.mappings.FieldType._
 import com.sksamuel.elastic4s.mappings.{MappingDefinition, TypedFieldDefinition}
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.ConfigFactory
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.elasticsearch.common.settings.Settings
 import org.scalatest.Suite
 import org.joda.time.DateTime
+
 import scala.util.Try
 
-
+//TODO: Use `SharedXDContextTypesTest` types test and template.
 trait ElasticDataTypesWithSharedContext extends SharedXDContextWithDataTest with ElasticSearchDataTypesDefaultConstants with SparkLoggerComponent {
   this: Suite =>
 
@@ -57,14 +60,22 @@ trait ElasticDataTypesWithSharedContext extends SharedXDContextWithDataTest with
     ESColumnMetadata("salary", "DOUBLE", "salary" typed DoubleType, () => 0.15, _ shouldBe a[java.lang.Double]),
     ESColumnMetadata("timecol", "TIMESTAMP", "timecol" typed DateType, () => new java.sql.Timestamp(new GregorianCalendar(1970, 0, 1, 0, 0, 0).getTimeInMillis), _ shouldBe a[java.sql.Timestamp]),
     ESColumnMetadata("float", "FLOAT", "float" typed FloatType, () => 0.15, _ shouldBe a[java.lang.Float]),
-    /*ESColumnMetadata("binary", "BINARY", "binary" typed BinaryType, () => Array(Byte.MaxValue, Byte.MinValue), x => x.isInstanceOf[Array[Byte]] shouldBe true), // TODO spark ko*/
+    /* ESColumnMetadata("binary", "BINARY", "binary" typed BinaryType, () => "YWE=".getBytes, x => x
+      .isInstanceOf[Array[Byte]] shouldBe true), TODO: KO Spark, not critical pending datasource fix
+      https://github.com/elastic/elasticsearch-hadoop/pull/834
+      */
     ESColumnMetadata("tinyint", "TINYINT", "tinyint" typed ByteType, () => Byte.MinValue, _ shouldBe a[java.lang.Byte]),
-    ESColumnMetadata("smallint", "SMALLINT", "smallint" typed ShortType, () => Short.MaxValue, _ shouldBe a[java.lang.Short])
-    // TODO study access to multi-field (example name with multiple fields: raw (not analyzed) and name spanish (analyzed with specific analyzer) ?
-    //ESColumnMetadata("subdocument", "STRUCT<field1: INT>", "subdocument"  inner ("field1" typed IntegerType), () =>  Map( "field1" -> 15), _ shouldBe a [Row]) // TODO native ko
-    // TODO study nested type => to enable flattening
-    // TODO complex structures => [[SharedXDContextTypesTest]]
-
+    ESColumnMetadata("smallint", "SMALLINT", "smallint" typed ShortType, () => Short.MaxValue, _ shouldBe a[java.lang.Short]),
+    ESColumnMetadata("subdocument", "STRUCT<field1: INT>", "subdocument"  inner ("field1" typed IntegerType), () => Map( "field1" -> 15), _ shouldBe a [Row]),
+    ESColumnMetadata(
+      "deepsubdocument",
+      "STRUCT<field1: INT, nested: STRUCT<field2: INT>>",
+      "deepsubdocument" inner ("field1" typed IntegerType, "nested" inner("field2" typed IntegerType))
+      , () => Map("field1" -> 15, "nested" -> Map("field2" -> 42)), { res =>
+        res shouldBe a[GenericRowWithSchema]
+        res.asInstanceOf[GenericRowWithSchema].get(1) shouldBe a[GenericRowWithSchema]
+      }
+    )
   )
 
   override protected def saveTestData: Unit = for (a <- 1 to 1) {
