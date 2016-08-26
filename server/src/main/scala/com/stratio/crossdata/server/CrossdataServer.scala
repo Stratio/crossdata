@@ -37,7 +37,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent.Future
 
 
-class CrossdataServer extends Daemon with ServerConfig {
+class CrossdataServer extends ServerConfig {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
@@ -45,9 +45,7 @@ class CrossdataServer extends Daemon with ServerConfig {
   var sessionProviderOpt: Option[XDSessionProvider] = None
   var bindingFuture: Option[Future[ServerBinding]] = None
 
-  override def init(p1: DaemonContext): Unit = ()
-
-  override def start(): Unit = {
+  def start(): Unit = {
 
     val sparkParams = config.entrySet()
       .map(e => (e.getKey, e.getValue.unwrapped().toString))
@@ -112,7 +110,10 @@ class CrossdataServer extends Daemon with ServerConfig {
     }
   }
 
-  override def stop(): Unit = {
+  /**
+    * Just for test purposes
+    */
+  def stop(): Unit = {
     sessionProviderOpt.foreach(_.close())
 
     sessionProviderOpt.foreach(_.sc.stop())
@@ -126,7 +127,5 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     logger.info("Crossdata Server stopped")
   }
-
-  override def destroy(): Unit = ()
 
 }
