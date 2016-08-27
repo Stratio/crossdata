@@ -29,8 +29,7 @@ import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.server.discovery.{ZkConnectionState, ServiceDiscoveryConfigHelper => SDCH, ServiceDiscoveryHelper => SDH}
-import com.typesafe.config.ConfigValueFactory
-import org.apache.commons.daemon.{Daemon, DaemonContext}
+import com.typesafe.config.{Config, ConfigValueFactory}
 import org.apache.curator.framework.recipes.leader.LeaderLatch
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -46,13 +45,18 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.{Random, Try}
 
 
-class CrossdataServer extends ServerConfig {
+class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
   var system: Option[ActorSystem] = None
   var sessionProviderOpt: Option[XDSessionProvider] = None
   var bindingFuture: Option[Future[ServerBinding]] = None
+
+  val serverConfig = progrConfig match {
+    case Some(c) => c.withFallback(config)
+    case None => config
+  }
 
   private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
@@ -126,13 +130,13 @@ class CrossdataServer extends ServerConfig {
       val pathForSeeds = sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
       Try(dClient.delete.deletingChildrenIfNeeded.forPath(pathForSeeds))
         .getOrElse(logger.debug(s"ZK path '$pathForSeeds' wasn't deleted because it doesn't exist"))
-      config
+      serverConfig
     } else {
       val seedsPath = sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
       ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, seedsPath)
       val zkSeeds = Try(dClient.getData.forPath(seedsPath)).getOrElse(SDCH.DefaultSeedNodes.getBytes)
       val sdSeeds = new String(zkSeeds)
-      config.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromIterable(sdSeeds.split(",").toList))
+      serverConfig.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromIterable(sdSeeds.split(",").toList))
     }
   }
 
@@ -197,16 +201,16 @@ class CrossdataServer extends ServerConfig {
 
     sessionProviderOpt = Some {
       if (isHazelcastEnabled)
-        new HazelcastSessionProvider(sparkContext, config)
+        new HazelcastSessionProvider(sparkContext, serverConfig)
       else
-        new BasicSessionProvider(sparkContext, config)
+        new BasicSessionProvider(sparkContext, serverConfig)
     }
 
     val sessionProvider = sessionProviderOpt
       .getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
 
     // Get service discovery configuration
-    val sdConfig = Try(config.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
+    val sdConfig = Try(serverConfig.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
 
     val sdHelper = sdConfig.map{ discoveryConfig =>
 
@@ -218,7 +222,7 @@ class CrossdataServer extends ServerConfig {
 
     }
 
-    val finalConfig = sdHelper.fold(config)(_.finalConfig)
+    val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
 
     system = Some(ActorSystem(clusterName, finalConfig))
 
