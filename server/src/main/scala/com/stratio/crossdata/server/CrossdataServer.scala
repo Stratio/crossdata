@@ -54,7 +54,7 @@ class CrossdataServer extends ServerConfig {
   var sessionProviderOpt: Option[XDSessionProvider] = None
   var bindingFuture: Option[Future[ServerBinding]] = None
 
-  def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
+  private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
     val curatorClient = CuratorFrameworkFactory.newClient(
       sdConfig.get(SDCH.ServiceDiscoveryUrl, SDCH.ServiceDiscoveryDefaultUrl),
@@ -65,7 +65,7 @@ class CrossdataServer extends ServerConfig {
     curatorClient
   }
 
-  def requestSubscriptionLeadership(dClient: CuratorFramework, sdc: SDCH) = {
+  private def requestSubscriptionLeadership(dClient: CuratorFramework, sdc: SDCH) = {
 
     val sLeaderPath = sdc.get(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath)
 
@@ -87,7 +87,7 @@ class CrossdataServer extends ServerConfig {
     sLeader
   }
 
-  def requestClusterLeadership(dClient: CuratorFramework, sdc: SDCH) = {
+  private def requestClusterLeadership(dClient: CuratorFramework, sdc: SDCH) = {
 
     val cLeaderPath = sdc.get(SDCH.ClusterLeaderPath, SDCH.DefaultClusterLeaderPath)
 
@@ -116,7 +116,7 @@ class CrossdataServer extends ServerConfig {
     (cLeader, leadershipFuture)
   }
 
-  def generateFinalConfig(clusterLeader: LeaderLatch, dClient: CuratorFramework, sdc: SDCH) = {
+  private def generateFinalConfig(clusterLeader: LeaderLatch, dClient: CuratorFramework, sdc: SDCH) = {
 
     // If hasLeadership of cluster, clean zk seeds and keep current config,
     //    otherwise, go to ZK and get seeds to modify the config
@@ -137,14 +137,14 @@ class CrossdataServer extends ServerConfig {
   }
 
   // hasLeadership is not absolutely reliable, a connection listener has to be used to check connection state
-  def checkLeadership(cLeader: LeaderLatch) = {
+  private def checkLeadership(cLeader: LeaderLatch) = {
     while(cLeader.getState == LeaderLatch.State.LATENT){
       Thread.sleep(200)
     }
     cLeader.hasLeadership && ZkConnectionState.isConnected
   }
 
-  def startServiceDiscovery(sdch: SDCH) = {
+  private def startServiceDiscovery(sdch: SDCH) = {
     // Start ZK connection
     val curatorClient = startDiscoveryClient(sdch)
 
@@ -159,7 +159,7 @@ class CrossdataServer extends ServerConfig {
     SDH(curatorClient, finalConfig, leadershipFuture, csLeader, sdch)
   }
 
-  def writeSeeds(xCluster: Cluster, h: SDH) = {
+  private def writeSeeds(xCluster: Cluster, h: SDH) = {
     val currentMembers =
       xCluster.state.members.filter(_.roles.contains("server")).map(m => m.address.toString).toArray
 
@@ -170,7 +170,7 @@ class CrossdataServer extends ServerConfig {
     h.curatorClient.setData().forPath(pathForSeeds, currentMembers.mkString(",").getBytes)
   }
 
-  def endServiceDiscovery(xCluster: Cluster, s: SDH, aSystem: ActorSystem) = {
+  private def endServiceDiscovery(xCluster: Cluster, s: SDH, aSystem: ActorSystem) = {
     writeSeeds(xCluster, s)
 
     val delayedInit = new FiniteDuration(
