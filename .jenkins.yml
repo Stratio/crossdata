@@ -2,6 +2,10 @@ CROSSBUILD:
   - 'scala-2.10'
   - 'scala-2.11'
 
+CROSSBUILDAT:
+  - 'scala-2.10'
+  - 'scala-2.11'
+  
 ITSERVICES:
   - SPARK:
       image: stratio/spark:1.6.1
@@ -53,3 +57,32 @@ ITPARAMETERS: >
     -Dstreaming.receiver.kafka.connection=%%KAFKA:9092
     -Dstreaming.receiver.zookeeper.connectionString=%%ZOOKEEPER:2181
     -Dlauncher.sparkHome=/opt/sds/spark/
+
+ATSERVICES:
+  - MONGODB:
+      image: stratio/mongo:3.0.4
+      sleep: 10
+  - ELASTICSEARCH:
+      image: elasticsearch:2.0.2
+      sleep: 10
+      env:
+        - ES_JAVA_OPTS=-Des.cluster.name=%%JUID
+  - CASSANDRA:
+      image: stratio/cassandra-lucene-index:2.2.5.3
+      sleep: 10
+      env:
+        - MAX_HEAP=256M
+  - CROSSDATA: 
+      image: stratio/crossdata-%%CROSSBUILD:%%VERSION
+      sleep: 10
+      
+ATPARAMETERS: >
+    -DCROSSDATA_HOST=%%CROSSDATA:13420
+    -DCASSANDRA_HOST=%%CASSANDRA
+    -DCASSANDRA_CLUSTER="Stratio cluster"
+    -DMONGO_HOST=%%MONGODB
+    -DMONGO_PORT=27017
+    -DES_NODE=%%ELASTICSEARCH
+    -DES_PORT=9200
+    -DES_NATIVE_PORT=9300
+    -DES_CLUSTER=%%JUID

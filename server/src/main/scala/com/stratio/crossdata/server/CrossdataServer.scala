@@ -46,15 +46,13 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.{Random, Try}
 
 
-class CrossdataServer extends Daemon with ServerConfig {
+class CrossdataServer extends ServerConfig {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
   var system: Option[ActorSystem] = None
   var sessionProviderOpt: Option[XDSessionProvider] = None
   var bindingFuture: Option[Future[ServerBinding]] = None
-
-  override def init(p1: DaemonContext): Unit = ()
 
   def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
@@ -183,7 +181,7 @@ class CrossdataServer extends Daemon with ServerConfig {
     aSystem.scheduler.scheduleOnce(delayedInit)(writeSeeds(xCluster, s))
   }
 
-  override def start(): Unit = {
+  def start(): Unit = {
 
     val sparkParams = config.entrySet()
       .map(e => (e.getKey, e.getValue.unwrapped().toString))
@@ -282,7 +280,10 @@ class CrossdataServer extends Daemon with ServerConfig {
     }
   }
 
-  override def stop(): Unit = {
+  /**
+    * Just for test purposes
+    */
+  def stop(): Unit = {
     sessionProviderOpt.foreach(_.close())
 
     sessionProviderOpt.foreach(_.sc.stop())
@@ -296,7 +297,5 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     logger.info("Crossdata Server stopped")
   }
-
-  override def destroy(): Unit = ()
 
 }

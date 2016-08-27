@@ -120,9 +120,6 @@ class HazelcastSessionProvider( sc: SparkContext,
 
 
   override def close(): Unit = {
-    sessionsCache clear()
-    sessionIDToTempCatalogs.clearAllSessionsResources()
-    sessionIDToSQLProps.clearAllSessionsResources()
     hInstance.shutdown()
   }
 

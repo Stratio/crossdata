@@ -67,7 +67,6 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
 
   def init() = {
     crossdataServer = Some(new CrossdataServer)
-    crossdataServer.foreach(_.init(null))
     crossdataServer.foreach(_.start())
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID)))
 
@@ -77,7 +76,6 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.session(SessionID).get.dropAllTables()))
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.closeSession(SessionID)))
     crossdataServer.foreach(_.stop())
-    crossdataServer.foreach(_.destroy())
   }
 
 
