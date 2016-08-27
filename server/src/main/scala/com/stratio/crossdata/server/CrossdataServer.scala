@@ -41,9 +41,9 @@ import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, HazelcastSe
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
+import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{Future, Promise}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Random, Try}
 
 
 class CrossdataServer extends Daemon with ServerConfig {
@@ -95,36 +95,54 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, cLeaderPath)
 
+    val randomId = math.abs(Random.nextLong())
+
+    logger.debug(s"My ID: $randomId")
+
     val cLeader = new LeaderLatch(
       dClient,
-      cLeaderPath)
-
-    val leadershipPromise = Promise[Unit]()
+      cLeaderPath,
+      randomId.toString)
 
     cLeader.start
 
-    leadershipPromise success {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    val leadershipFuture = Future {
       cLeader.await
-      logger.info("Cluster leadership acquired")
     }
 
-    (cLeader, leadershipPromise)
+    leadershipFuture onSuccess {
+      case _ => logger.info("Cluster leadership acquired")
+    }
+
+    (cLeader, leadershipFuture)
   }
 
-  def generateFinalConfig(currentClusterLeader: Boolean, dClient: CuratorFramework, sdc: SDCH) = {
+  def generateFinalConfig(clusterLeader: LeaderLatch, dClient: CuratorFramework, sdc: SDCH) = {
+
+    // If hasLeadership of cluster, clean zk seeds and keep current config,
+    //    otherwise, go to ZK and get seeds to modify the config
+    val currentClusterLeader = checkLeadership(clusterLeader)
+
     if(currentClusterLeader){
-      dClient.delete.forPath(sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath))
+      val pathForSeeds = sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
+      Try(dClient.delete.deletingChildrenIfNeeded.forPath(pathForSeeds))
+        .getOrElse(logger.debug(s"ZK path '$pathForSeeds' wasn't deleted because it doesn't exist"))
       config
     } else {
-      val zkSeeds = Try(dClient.getData.forPath(sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)))
-        .getOrElse(SDCH.DefaultSeedNodes.getBytes)
+      val seedsPath = sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
+      ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, seedsPath)
+      val zkSeeds = Try(dClient.getData.forPath(seedsPath)).getOrElse(SDCH.DefaultSeedNodes.getBytes)
       val sdSeeds = new String(zkSeeds)
-      config.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromAnyRef(sdSeeds.split(",")))
+      config.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromIterable(sdSeeds.split(",").toList))
     }
   }
 
   // hasLeadership is not absolutely reliable, a connection listener has to be used to check connection state
   def checkLeadership(cLeader: LeaderLatch) = {
+    while(cLeader.getState == LeaderLatch.State.LATENT){
+      Thread.sleep(200)
+    }
     cLeader.hasLeadership && ZkConnectionState.isConnected
   }
 
@@ -136,23 +154,22 @@ class CrossdataServer extends Daemon with ServerConfig {
     val csLeader = requestSubscriptionLeadership(curatorClient, sdch)
 
     // Get promise for cluster leadership
-    val (clLeader, leadershipPromise) = requestClusterLeadership(curatorClient, sdch)
+    val (clLeader, leadershipFuture) = requestClusterLeadership(curatorClient, sdch)
 
-    // If hasLeadership of cluster, clean zk seeds and keep current config,
-    //    otherwise, go to ZK and get seeds to modify the config
-    val currentClusterLeader = checkLeadership(clLeader)
+    val finalConfig = generateFinalConfig(clLeader, curatorClient, sdch)
 
-    val finalConfig = generateFinalConfig(currentClusterLeader, curatorClient, sdch)
-
-    SDH(curatorClient, finalConfig, leadershipPromise, csLeader, sdch)
+    SDH(curatorClient, finalConfig, leadershipFuture, csLeader, sdch)
   }
 
   def writeSeeds(xCluster: Cluster, h: SDH) = {
     val currentMembers =
       xCluster.state.members.filter(_.roles.contains("server")).map(m => m.address.toString).toArray
-    h.curatorClient.setData().forPath(
-      h.sdch.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath),
-      currentMembers.mkString(",").getBytes)
+
+    val pathForSeeds = h.sdch.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
+
+    ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForSeeds)
+
+    h.curatorClient.setData().forPath(pathForSeeds, currentMembers.mkString(",").getBytes)
   }
 
   def endServiceDiscovery(xCluster: Cluster, s: SDH, aSystem: ActorSystem) = {
@@ -219,7 +236,7 @@ class CrossdataServer extends Daemon with ServerConfig {
           // PROBLEM: Currents seeds are just this current seed
           // SOLUTION: schedulerOnce and get current nodes to be added to zk seeds
           import scala.concurrent.ExecutionContext.Implicits.global
-          sd.leadershipPromise.future onSuccess {
+          sd.leadershipFuture onSuccess {
             case _ =>
               endServiceDiscovery(xdCluster, sd, actorSystem)
           }
