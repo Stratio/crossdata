@@ -15,10 +15,26 @@
  */
 package com.stratio.crossdata.server
 
+import com.typesafe.config.{Config, ConfigFactory}
+
+import scala.collection.JavaConversions._
+
 
 object CrossdataApplication extends App {
 
-  val crossdataServer = new CrossdataServer
+  val keysValuesTuple = args.toList.partition(_.startsWith("--"))
+  val argsConfig = keysValuesTuple._1.zip(keysValuesTuple._2).toMap
+
+  val mapConfig = ConfigFactory.parseMap(argsConfig.map{
+    e => (e._1.replace("--", ""), e._2)
+  })
+
+  val params = mapConfig match {
+    case m: Config if !m.isEmpty => Some(m)
+    case _ => None
+  }
+
+  val crossdataServer = new CrossdataServer(params)
   crossdataServer.start()
 
 }
