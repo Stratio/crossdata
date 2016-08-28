@@ -25,7 +25,7 @@ class ServiceDiscoveryIT extends BaseXDTest {
 
   lazy val logger = Logger.getLogger(classOf[ServiceDiscoveryIT])
 
-  "Crossdata" should "execute avro queries" in {
+  "3 Crossdata servers" should "form a Cluster through the Service Discovery" in {
 
   }
 
