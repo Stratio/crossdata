@@ -5,6 +5,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 ## 1.6.0 (upcoming)
 
 * Elasticsearch: support import tables without specifying a particular resource
+* Major Akka version upgrade to 2.4 (2.4.9), thus enabling putting the server behind HAProxy. 
 
 ## 1.5.0 (August 2016)
 
