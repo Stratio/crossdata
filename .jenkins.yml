@@ -1,11 +1,3 @@
-CROSSBUILD:
-  - 'scala-2.10'
-  - 'scala-2.11'
-
-CROSSBUILDAT:
-  - 'scala-2.10'
-  - 'scala-2.11'
-  
 ITSERVICES:
   - SPARK:
       image: stratio/spark:1.6.1
