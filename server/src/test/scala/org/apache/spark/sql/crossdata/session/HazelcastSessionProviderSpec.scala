@@ -140,19 +140,6 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     hazelcastSessionProvider.close()
   }
 
-
-
-  it should "close the hazelcast instance when closing" in {
-    val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
-    val sessionID = UUID.randomUUID()
-
-    hazelcastSessionProvider.newSession(sessionID)
-    hazelcastSessionProvider.close()
-
-    a [RuntimeException] shouldBe thrownBy (hazelcastSessionProvider.session(sessionID))
-    
-  }
-
   it should "provide the same cached instance when it hasn't been invalidated" in {
 
     val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())

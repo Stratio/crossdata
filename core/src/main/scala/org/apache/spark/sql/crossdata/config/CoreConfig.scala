@@ -119,9 +119,15 @@ trait CoreConfig extends Logging {
     if (configFile != "") {
       val file = new File(configFile)
       if (file.exists()) {
-        val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
-        defaultConfig = userConfig.withFallback(defaultConfig)
-        logInfo("External file (" + configFile + ") found")
+        val parsedConfig = ConfigFactory.parseFile(file)
+        if(parsedConfig.hasPath(ParentConfigName)){
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
+          defaultConfig = userConfig.withFallback(defaultConfig)
+          logInfo("External file (" + configFile + ") found")
+        } else {
+          logger.info(s"External file ($configFile) found but not configuration found under $ParentConfigName")
+        }
+
       } else {
         logWarning("External file (" + configFile + ") hasn't been found")
       }

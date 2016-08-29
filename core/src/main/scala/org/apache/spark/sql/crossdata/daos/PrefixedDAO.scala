@@ -13,18 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.session
+package org.apache.spark.sql.crossdata.daos
 
-import java.util.UUID
-
-import akka.actor.ActorRef
-import com.stratio.crossdata.common.security.Session
-
-object SessionManager {
-
-  def createSession(auth: Authentication, clientRef: ActorRef): Session =
-    Session(UUID.randomUUID, clientRef)
-
+trait PrefixedDAO {
+  def prefix: String
 }
-
-case class Authentication(user: String, password: Option[String] = None)
