@@ -25,6 +25,12 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class XDResolveReferencesIT extends SharedXDContextTest{
 
+  //TABLE test.t1 COLUMNS id value
+  //TABLE test.t2 COLUMNS id value
+  //TABLE test2.t1 COLUMNS id value
+
+  //TABLE test COLUMNS test.id test.test
+  //TABLE test.test COLUMNS col.id col.test
   override def beforeAll(): Unit = {
     super.beforeAll()
 
@@ -35,35 +41,45 @@ class XDResolveReferencesIT extends SharedXDContextTest{
     val t2: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((4 to 8)
       .map(i => Row(s"val_$i", i))), StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
     t2.registerTempTable("test.t2")
-
     t1.registerTempTable("test2.t1")
+
+
+    //columns test.id and test.test
+    val rows = xdContext.sparkContext.parallelize(1 to 5).map(i => Row(Row(s"val_$i", i)))
+    val strType = StructType(Array(StructField("test", StructType(Array(StructField("id", StringType), StructField("test", IntegerType))))))
+    xdContext.createDataFrame(rows, strType).registerTempTable("test")
+
+    val rows2= xdContext.sparkContext.parallelize(4 to 8).map(i => Row(Row(s"val_$i", i)))
+    val strType2 = StructType(Array(StructField("col", StructType(Array(StructField("id", StringType), StructField("test", IntegerType))))))
+    xdContext.createDataFrame(rows2, strType2).registerTempTable("test.test")
+
   }
 
-  it must "plan a query" in {
-
-    val dataFrame = xdContext.sql("SELECT t1.id, test.t1.id, id FROM test.t1")
-    dataFrame.show
+  it must "resolve partially qualified columns" in {
+    val rows = xdContext.sql("SELECT t1.id, id FROM test.t1").collect()
+    rows(0)(0) shouldBe rows(0)(1)
   }
 
-  it must "plana" in {
-
-    val dataFrame = xdContext.sql("SELECT t1.id, test.t1.id, id FROM test.t1")
-    dataFrame.show
+  it must "resolve fully qualified columns" in {
+    val rows = xdContext.sql("SELECT test.t1.id, id FROM test.t1").collect()
+    rows(0)(0) shouldBe rows(0)(1)
   }
 
-
-  it must "planb" in {
-    an [Exception] shouldBe thrownBy (xdContext.sql("SELECT otro.test.t1.id FROM test.t1").show)
+  it must "fail when using non-existing qualifiers in the first part of the identifier" in {
+    an [Exception] shouldBe thrownBy (xdContext.sql("SELECT fake.test.t1.id FROM test.t1").show)
   }
 
-  it must "pla be ambiguous" in {
-
-    an [Exception] shouldBe thrownBy (xdContext.sql("SELECT  id FROM test.t1 INNER JOIN test.t2").show)
+  it must "fail when querying ambiguous columns" in {
+    an [Exception] shouldBe thrownBy (xdContext.sql("SELECT id FROM test.t1 INNER JOIN test.t2").show)
   }
 
-  it must "planc" in {
+  it must "keep supporting qualified table aliases" in {
+    val rows = xdContext.sql("SELECT t1.id, als.id FROM test.t1 INNER JOIN test.t1 als").collect()
+    rows(0)(0) shouldBe rows(0)(1)
+  }
 
-    an [Exception] shouldBe thrownBy (xdContext.sql("SELECT t1.id, otra.t2 FROM test.t1 INNER JOIN test.t2 otra").show)
+  it must "fail when using fully qualified columns after aliasing the table" in {
+    an [Exception] shouldBe thrownBy (xdContext.sql("SELECT t1.id, test.t2.id FROM test.t1 INNER JOIN test.t2 als").show)
   }
 
   it must "pland" in {
@@ -77,11 +93,7 @@ class XDResolveReferencesIT extends SharedXDContextTest{
     dataFrame.show
   }
 
-  it must "planf" in {
 
-    val dataFrame = xdContext.sql("SELECT t1.id, otra.id FROM test.t1 INNER JOIN test.t2 otra")
-    dataFrame.show
-  }
 
   it must "plang" in {
 
@@ -129,5 +141,43 @@ class XDResolveReferencesIT extends SharedXDContextTest{
     dataFrame.show
   }
 
+  //TABLE test COLUMNS test.id test.test
+  //TABLE test.test COLUMNS col.id col.test
+  it must "planp" in {
+    xdContext.sql("SELECT * FROM test.test").show
+    xdContext.sql("SELECT col FROM test.test").show
+    xdContext.sql("SELECT col.id FROM test.test").show
+    xdContext.sql("SELECT col.test FROM test.test").show
+    xdContext.sql("SELECT test.col.test FROM test.test").show
+    xdContext.sql("SELECT test.test.col.test FROM test.test").show
+  }
+
+  it must "planq" in {
+    xdContext.sql("SELECT * FROM test").show
+    xdContext.sql("SELECT test FROM test").show
+    xdContext.sql("SELECT test.test FROM test").show
+    xdContext.sql("SELECT test.test.test FROM test").show
+
+  }
+
+  it must "planr" in {
+    xdContext.sql("SELECT test FROM test WHERE test.test.test = 4").show
+     // TODO length 1
+
+  }
+
+  it must "plans" in {
+    xdContext.sql("SELECT * FROM test INNER JOIN test.test").show
+
+    xdContext.sql("SELECT col FROM test INNER JOIN test.test").show
+    xdContext.sql("SELECT col.test FROM test INNER JOIN test.test").show
+    xdContext.sql("SELECT test FROM test INNER JOIN test.test").show
+    xdContext.sql("SELECT test.test FROM test INNER JOIN test.test").show
+    xdContext.sql("SELECT test.test.test FROM test INNER JOIN test.test").show
+  }
+
+  it must "plant" in {
+    xdContext.sql("SELECT * FROM test INNER JOIN test.test ON test.test.test = col.test").show
+  }
 
 }
