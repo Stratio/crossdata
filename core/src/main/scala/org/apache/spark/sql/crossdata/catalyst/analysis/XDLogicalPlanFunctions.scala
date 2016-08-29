@@ -116,58 +116,6 @@ object XDLogicalPlanFunctions{
         }
       }
     }
-    /*  IMPERATIVE APPROACH
-        private def resolveAsCrossdataTable(
-                                             nameParts: Seq[String],
-                                             resolver: Resolver,
-                                             attribute: Attribute): Option[(Attribute, List[String])] = {
-          assert(nameParts.length > 1)
-
-          val crossdataQualifiers = attribute.qualifiers.head.split("\\.").toSeq
-
-          if(crossdataQualifiers.nonEmpty ){ // TODO fold, patternMatching??
-          // try to resolve as database.table.**
-          val isFullyQual = crossdataQualifiers.zip(nameParts).forall { case (a, b) => resolver(a,b) }
-
-            if (isFullyQual){
-              val columnCandidate = nameParts.drop(crossdataQualifiers.length)
-              resolveAsColumn(columnCandidate, resolver, attribute)
-            } else {
-              // try to resolve as table.**
-              val upCrossdataqualifiers = crossdataQualifiers.tail
-              if (upCrossdataqualifiers.nonEmpty){
-                val isPartiallyQual = upCrossdataqualifiers.zip(nameParts).forall { case (a, b) => resolver(a,b) }
-                if (isPartiallyQual){
-                  val columnCandidate = nameParts.drop(upCrossdataqualifiers.length)
-                  resolveAsColumn(columnCandidate, resolver, attribute)
-                } else{
-                  None
-                }
-              } else {
-                None
-              }
-            }
-
-          } else {
-            None
-          }
-
-        }
-    */
-
-    private def resolveAsTableColumn(
-                                      nameParts: Seq[String],
-                                      resolver: Resolver,
-                                      attribute: Attribute): Option[(Attribute, List[String])] = {
-      assert(nameParts.length > 1)
-      if (attribute.qualifiers.exists(resolver(_, nameParts.head))) {
-        // At least one qualifier matches. See if remaining parts match.
-        val remainingParts = nameParts.tail
-        resolveAsColumn(remainingParts, resolver, attribute)
-      } else {
-        None
-      }
-    }
 
 
     private def resolveAsColumn(
