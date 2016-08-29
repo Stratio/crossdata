@@ -73,6 +73,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
             val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
             val hdfsPath = writeJarToHdfs(hdfsConfig, path)
             val session = Session(sessionUUID, null)
+            val user = "fileupload"
             allParts.values.toSeq.foreach{
               case file: File =>
                 file.delete
@@ -80,7 +81,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
               case _ => logger.error("Problem deleting the temporary file.")
             }
             //Send a broadcast message to all servers
-            mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), session))
+            mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), session, user))
             hdfsPath
           }
         }

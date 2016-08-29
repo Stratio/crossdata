@@ -33,12 +33,12 @@ class ElasticSearchTypesIT extends ElasticWithSharedContext {
 //  "name" typed StringType index NotAnalyzed,
 //  "birthday" typed DateType,
 //  "salary" typed DoubleType,
-//  "ageInMilis" typed LongType
+//  "ageInMillis" typed LongType
   "A ElasticSearchQueryProcessor " should "Return types in correct format" in {
     assumeEnvironmentIsUpAndRunning
 
     //Experimentation
-    val dataframe = sql(s"SELECT * FROM $Type where id = 2")
+    val dataframe = sql(s"SELECT id, age, description, enrolled, name, birthday, salary, ageInMillis FROM $Type where id = 2")
     val result = dataframe.collect(Native)
 
     //Expectations
@@ -48,18 +48,17 @@ class ElasticSearchTypesIT extends ElasticWithSharedContext {
     result(0).get(3).isInstanceOf[Boolean] should be (true)
     result(0).get(4).isInstanceOf[String] should be (true)
 
-    result(0).get(6).isInstanceOf[Date] should be (true)
-    result(0).get(7).isInstanceOf[Double] should be (true)
-    result(0).get(8).isInstanceOf[Long] should be (true)
+    result(0).get(5).isInstanceOf[Date] should be (true)
+    result(0).get(6).isInstanceOf[Double] should be (true)
+    result(0).get(7).isInstanceOf[Long] should be (true)
 
     result(0).getInt(0) should be (2)
     result(0).getInt(1) should be (12)
     result(0).getString(2) should be ("A 2description about the Name2")
     result(0).getBoolean(3) should be (true)
     result(0).getString(4) should be ("Name 2")
-
-    result(0).getDate(6) should be (DateTime.parse("1982-01-01T10:00:00-00:00").toDate)
-    result(0).getDouble(7) should be (2001.0)
-    result(0).getLong(8) should be (DateTime.parse("1982-01-01T10:00:00-00:00").getMillis)
+    result(0).getDate(5) should be (DateTime.parse("1982-01-01T10:00:00-00:00").toDate)
+    result(0).getDouble(6) should be (2001.0)
+    result(0).getLong(7) should be (DateTime.parse("1982-01-01T10:00:00-00:00").getMillis)
   }
 }

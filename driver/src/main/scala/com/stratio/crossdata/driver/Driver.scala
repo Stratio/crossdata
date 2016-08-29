@@ -406,7 +406,7 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   }
 
   private def securitizeCommand(command: Command): CommandEnvelope =
-    new CommandEnvelope(command, driverSession)
+    new CommandEnvelope(command, driverSession, auth.user)
 
 
   private def getFlattenedFields(fieldName: String, dataType: DataType): Seq[FieldMetadata] = dataType match {
