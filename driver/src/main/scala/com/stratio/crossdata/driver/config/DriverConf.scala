@@ -148,8 +148,14 @@ class DriverConf extends Logging {
       } else {
         val file = new File(configFile)
         if (file.exists()) {
-          val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
-          userConfig.withFallback(configWithResource)
+          val parsedConfig = ConfigFactory.parseFile(file)
+          if(parsedConfig.hasPath(ParentConfigName)){
+            val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
+            userConfig.withFallback(configWithResource)
+          } else {
+            logger.warn(s"User file ($configFile) found but not configuration found under $ParentConfigName")
+            configWithResource
+          }
         } else {
           logger.warn("User file (" + configFile + ") haven't been found")
           configWithResource

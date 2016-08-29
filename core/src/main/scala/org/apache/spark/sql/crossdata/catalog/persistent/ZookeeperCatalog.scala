@@ -18,9 +18,10 @@ package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.net.Socket
 
+import com.typesafe.config.Config
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, StringNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, StringNormalized, TableIdentifierNormalized, XDCatalog, persistent}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{AppTypesafeDAO, IndexTypesafeDAO, TableTypesafeDAO, ViewTypesafeDAO}
 import org.apache.spark.sql.crossdata.models.{AppModel, IndexModel, TableModel, ViewModel}
@@ -38,10 +39,11 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
 
   import XDCatalog._
 
-  @transient val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
-  @transient val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
-  @transient val appDAO = new AppTypesafeDAO(XDContext.catalogConfig)
-  @transient val indexDAO = new IndexTypesafeDAO(XDContext.catalogConfig)
+  protected[crossdata] lazy val config: Config = XDContext.catalogConfig
+  @transient lazy val tableDAO = new TableTypesafeDAO(config)
+  @transient lazy val viewDAO = new ViewTypesafeDAO(config)
+  @transient lazy val appDAO = new AppTypesafeDAO(config)
+  @transient lazy val indexDAO = new IndexTypesafeDAO(config)
 
 
   override def lookupTable(tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable] = {
