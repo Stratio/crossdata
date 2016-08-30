@@ -1,9 +1,7 @@
 CROSSBUILD:
-  - 'scala-2.10'
   - 'scala-2.11'
 
 CROSSBUILDAT:
-  - 'scala-2.10'
   - 'scala-2.11'
   
 ITSERVICES:
@@ -73,7 +71,7 @@ ATSERVICES:
       env:
         - MAX_HEAP=256M
   - CROSSDATA: 
-      image: stratio/crossdata-%%CROSSBUILD:%%VERSION
+      image: stratio/crossdata%%CROSSBUILD:%%VERSION
       sleep: 10
       
 ATPARAMETERS: >

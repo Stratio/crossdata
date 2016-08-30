@@ -2,7 +2,11 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
-## 1.5.0 (upcoming)
+## 1.6.0 (upcoming)
+
+* Elasticsearch: support import tables without specifying a particular resource
+
+## 1.5.0 (August 2016)
 
 * Global index: use of inverted indices for speeding-up queries
 * Downgrade to Elasticsearch 2.0.2
