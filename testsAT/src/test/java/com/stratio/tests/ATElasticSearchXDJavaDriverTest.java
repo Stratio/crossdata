@@ -31,7 +31,6 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -63,17 +62,17 @@ public class ATElasticSearchXDJavaDriverTest extends BaseTest {
 	private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
     private String elasticSearchIP = System.getProperty("ES_NODE","172.17.0.2");
     Client client;
-    private Settings settings = ImmutableSettings.settingsBuilder()
+    private Settings settings = Settings.settingsBuilder()
             .put("cluster.name", elasticSearchCluster).build();
     public ATElasticSearchXDJavaDriverTest() {
 	}
 
-	@BeforeClass(groups = {"basic"})
+	@BeforeClass(groups = {"elasticServer"})
 	public void setUp() {
         String connector = "ElasticSearch";
         ThreadProperty.set("Connector", connector);
         try {
-            client = new TransportClient(settings)
+            client = TransportClient.builder().settings(settings).build()
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
             BulkRequestBuilder bulkRequest = client.prepareBulk();
             try {
@@ -122,10 +121,10 @@ public class ATElasticSearchXDJavaDriverTest extends BaseTest {
         ThreadProperty.set("Driver", "javaDriver");
     }
 
-	@AfterClass(groups = {"basic"})
+	@AfterClass(groups = {"elasticServer"})
 	public void cleanUp() {
         try {
-            client = new TransportClient(settings)
+            client = TransportClient.builder().settings(settings).build()
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
           //  DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest("databasetest"))
           //          .actionGet();
@@ -137,7 +136,7 @@ public class ATElasticSearchXDJavaDriverTest extends BaseTest {
         client.close();
 	}
 
-    @Test(enabled = true, groups = {"advanced"})
+    @Test(enabled = false, groups = {"elasticServer"})
     public void ATElasticSearchXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}

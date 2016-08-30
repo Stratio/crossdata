@@ -102,7 +102,8 @@ class DriverIT extends EndToEndTest {
     }
   }
 
-  it should "be able to execute ADD JAR Command of an existent file" in {
+  //TODO: Enable this tests
+  it should "be able to execute ADD JAR Command of an existent file" ignore {
     // TODO restore before merging session to master
     assumeCrossdataUpAndRunning
 
@@ -115,7 +116,8 @@ class DriverIT extends EndToEndTest {
 
   }
 
-  it should "be return an Error when execute ADD JAR Command of an un-existent file" in {
+  //TODO: Enable this test
+  it should "be return an Error when execute ADD JAR Command of an un-existent file" ignore {
 
     withDriverDo { driver =>
       val result = driver.addJar(s"/tmp/jarnotexists").waitForResult()

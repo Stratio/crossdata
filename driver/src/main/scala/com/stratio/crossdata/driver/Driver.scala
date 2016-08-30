@@ -17,10 +17,10 @@ package com.stratio.crossdata.driver
 
 import java.util.UUID
 
-import akka.actor.{ActorRef, ActorSystem, Address}
+import akka.actor.{ActorPath, ActorRef, ActorSystem, Address}
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.cluster.MemberStatus
-import akka.contrib.pattern.ClusterClient
+import akka.cluster.client.{ClusterClient, ClusterClientSettings}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.driver.actor.{ProxyActor, ServerClusterClientParameters, SessionBeaconActor}
@@ -123,11 +123,11 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     }
 
     val contactPoints = driverConf.getClusterContactPoint
-    val initialContacts = contactPoints.map(system.actorSelection).toSet
+    val initialContacts = contactPoints.map(ActorPath.fromString).toSet
 
     logger.debug("Initial contacts: " + initialContacts)
     val remoteClientName: String = ServerClusterClientParameters.RemoteClientName + UUID.randomUUID()
-    val actor = system.actorOf(ClusterClient.props(initialContacts), remoteClientName)
+    val actor = system.actorOf(ClusterClient.props(ClusterClientSettings(system).withInitialContacts(initialContacts)), remoteClientName)
     logger.debug(s"Cluster client actor created with name: $remoteClientName")
 
     actor

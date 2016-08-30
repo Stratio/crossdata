@@ -40,12 +40,17 @@
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_${scala.binary.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-cluster_${scala.binary.version}</artifactId>
             <version>${akka.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-contrib_${scala.binary.version}</artifactId>
+            <artifactId>akka-cluster-tools_${scala.binary.version}</artifactId>
             <version>${akka.version}</version>
         </dependency>
         <dependency>
@@ -56,7 +61,7 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-http-experimental_${scala.binary.version}</artifactId>
-            <version>2.0.3</version>
+            <version>${akka.version}</version>
         </dependency>
         <dependency>
             <groupId>jline</groupId>

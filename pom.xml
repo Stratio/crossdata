@@ -105,8 +105,8 @@
         <easymock.version>3.4</easymock.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
         <config.version>1.2.1</config.version>
-        <akka.version>2.3.11</akka.version>
-        <akka.http.stream.version>2.0.3</akka.http.stream.version>
+        <akka.version>2.4.9</akka.version>
+        <!-- <akka.http.stream.version>2.0.3</akka.http.stream.version> -->
         <slf4j.version>1.7.7</slf4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -127,6 +127,7 @@
         <default.scala.binary.version>2.11</default.scala.binary.version>
         <default.scala.version>${scala_2.11.version}</default.scala.version>
     </properties>
+
 
     <dependencyManagement>
         <dependencies>
@@ -217,12 +218,22 @@
             </dependency>
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-actor_${scala.binary.version}</artifactId>
+                <version>${akka.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-remote_${scala.binary.version}</artifactId>
                 <version>${akka.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-contrib_${scala.binary.version}</artifactId>
+                <artifactId>akka-cluster_${scala.binary.version}</artifactId>
+                <version>${akka.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-cluster-tools_${scala.binary.version}</artifactId>
                 <version>${akka.version}</version>
             </dependency>
             <dependency>

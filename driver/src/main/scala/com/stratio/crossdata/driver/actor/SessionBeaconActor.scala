@@ -19,7 +19,7 @@ package com.stratio.crossdata.driver.actor
 import java.util.UUID
 
 import akka.actor.{Actor, ActorRef, Props}
-import akka.contrib.pattern.ClusterClient.SendToAll
+import akka.cluster.client.ClusterClient.SendToAll
 import com.stratio.crossdata.common.util.akka.keepalive.LiveMan
 
 import scala.concurrent.duration.FiniteDuration

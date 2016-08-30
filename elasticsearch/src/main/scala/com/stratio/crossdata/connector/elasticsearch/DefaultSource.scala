@@ -97,7 +97,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
     * @param parameters a Map with the configurations parameters
    * @return the validated map.
    */
-  private def params(parameters: Map[String, String]) = {
+  private def params(parameters: Map[String, String], resourceValidation: Boolean = true) = {
 
     // '.' seems to be problematic when specifying the options
     val params = parameters.map { case (k, v) => (k.replace('_', '.'), v) }.map { case (k, v) =>
@@ -108,9 +108,10 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
       else ("es." + k, v)
     }
 
-    // validate path
-    if (params.get(ConfigurationOptions.ES_RESOURCE_READ).orElse(params.get(ConfigurationOptions.ES_RESOURCE)).isEmpty)
-      throw new EsHadoopIllegalArgumentException("resource must be specified for Elasticsearch resources.")
+    if (resourceValidation) {
+      if (params.get(ConfigurationOptions.ES_RESOURCE_READ).orElse(params.get(ConfigurationOptions.ES_RESOURCE)).isEmpty)
+        throw new EsHadoopIllegalArgumentException("resource must be specified for Elasticsearch resources.")
+    }
 
     params
   }
@@ -131,7 +132,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider
       if (!options.contains(opName)) sys.error( s"""Option "$opName" is mandatory for IMPORT TABLES""")
     }
 
-    ElasticSearchConnectionUtils.listTypes(params(options))
+    ElasticSearchConnectionUtils.listTypes(params(options, resourceValidation = false))
   }
 
   override def createExternalTable(context: SQLContext,
