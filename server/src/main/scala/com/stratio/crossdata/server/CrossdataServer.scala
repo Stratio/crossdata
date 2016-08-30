@@ -187,7 +187,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   def start(): Unit = {
 
-    val sparkParams = config.entrySet()
+    val sparkParams = serverConfig.entrySet()
       .map(e => (e.getKey, e.getValue.unwrapped().toString))
       .toMap
       .filterKeys(_.startsWith("config.spark"))
