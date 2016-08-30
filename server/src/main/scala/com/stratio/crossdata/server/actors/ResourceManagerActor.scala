@@ -18,8 +18,8 @@ package com.stratio.crossdata.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.contrib.pattern.DistributedPubSubExtension
-import akka.contrib.pattern.DistributedPubSubMediator.{Subscribe, SubscribeAck}
+import akka.cluster.pubsub.DistributedPubSub
+import akka.cluster.pubsub.DistributedPubSubMediator.{Subscribe, SubscribeAck}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
@@ -47,7 +47,7 @@ class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   lazy val logger = Logger.getLogger(classOf[ServerActor])
 
-  lazy val mediator = DistributedPubSubExtension(context.system).mediator
+  lazy val mediator = DistributedPubSub(context.system).mediator
 
   override def preStart(): Unit = {
     super.preStart()

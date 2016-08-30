@@ -193,7 +193,7 @@ class DriverConf extends Logging {
 
 
 object DriverConf {
-  val ActorsPath = "/user/receptionist"
+  val ActorsPath = "/system/receptionist"
   val DriverConfigDefault = "driver-reference.conf"
   val ParentConfigName = "crossdata-driver"
   val DriverConfigResource = "external.config.resource"
