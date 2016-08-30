@@ -53,6 +53,7 @@ class XDResolveReferencesIT extends SharedXDContextTest{
     val strType2 = StructType(Array(StructField("col", StructType(Array(StructField("id", StringType), StructField("test", IntegerType))))))
     xdContext.createDataFrame(rows2, strType2).registerTempTable("test.test")
 
+
   }
 
   it must "resolve partially qualified columns" in {
@@ -80,25 +81,13 @@ class XDResolveReferencesIT extends SharedXDContextTest{
 
   it must "fail when using fully qualified columns after aliasing the table" in {
     an [Exception] shouldBe thrownBy (xdContext.sql("SELECT t1.id, test.t2.id FROM test.t1 INNER JOIN test.t2 als").show)
-  }
-
-  it must "pland" in {
-    //once there is an alias, KO qualif??
     an [Exception] shouldBe thrownBy (xdContext.sql("SELECT * FROM test.t1 INNER JOIN test.t2 otra ON t1.id = t2.id").show)
   }
 
-  it must "plane" in {
-
-    val dataFrame = xdContext.sql("SELECT t1.id FROM test.t1 INNER JOIN test.t2")
-    dataFrame.show
-  }
-
-
-
-  it must "plang" in {
-
-    val dataFrame = xdContext.sql("SELECT t1.id, t2.id, test.t1.id, test.t2.id FROM test.t1 INNER JOIN test.t2")
-    dataFrame.show
+  it must "resolve qualified columns when joining tables" in {
+    val rows = xdContext.sql("SELECT t1.id, test.t1.id, t2.id, test.t2.id FROM test.t1 INNER JOIN test.t2").collect()
+    rows(0)(0) shouldBe rows(0)(1)
+    rows(0)(2) shouldBe rows(0)(3)
   }
 
   it must "planh" in {
