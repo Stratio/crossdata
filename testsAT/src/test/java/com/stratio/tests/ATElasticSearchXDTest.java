@@ -32,7 +32,6 @@ import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -48,35 +47,35 @@ import cucumber.api.CucumberOptions;
 
 //Indicar feature
 @CucumberOptions(features = {
-/*        "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
-         "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
-          "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
-        "src/test/resources/features/Udaf/Group_concat.feature",
-        "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
+       "src/test/resources/features/Elasticsearch/ElasticSearchSelectSimple.feature",
+       "src/test/resources/features/Elasticsearch/ElasticSearchelectAnd.feature",
+       "src/test/resources/features/Elasticsearch/ElasticSearchSelectINFilter.feature",
+       "src/test/resources/features/Elasticsearch/ElasticSearchSelectEqualsFilter.feature",
+       "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterFilter.feature",
+       "src/test/resources/features/Elasticsearch/ElasticSearchSelectGreaterEqualsFilter.feature",
+       "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessFilter.feature",
+       "src/test/resources/features/Elasticsearch/ElasticSearchSelectLessEqualsFilter.feature",
+       "src/test/resources/features/Udaf/Group_concat.feature",
+       "src/test/resources/features/Elasticsearch/TemporaryViews.feature",
         "src/test/resources/features/Elasticsearch/Views.feature",
-       "src/test/resources/features/Elasticsearch/DropViews.feature",*/
-        "src/test/resources/features/Elasticsearch/ElasticSearchInsertInto.feature",
+       "src/test/resources/features/Elasticsearch/DropViews.feature"
+       //"src/test/resources/features/Elasticsearch/ElasticSearchInsertInto.feature"
 })
 public class ATElasticSearchXDTest extends BaseTest {
     private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
     private String elasticSearchIP = System.getProperty("ES_NODE","127.0.0.1");
     Client client;
-    private Settings settings = ImmutableSettings.settingsBuilder()
+    private Settings settings = Settings.settingsBuilder()
             .put("cluster.name", elasticSearchCluster).build();
     public ATElasticSearchXDTest() {
 	}
 
-	@BeforeClass(groups = {"basic"})
+	@BeforeClass(groups = {"elasticsearch"})
 	public void setUp() {
         String connector = "ElasticSearch";
         ThreadProperty.set("Connector", connector);
         try {
-            client = new TransportClient(settings)
+            client = TransportClient.builder().settings(settings).build()
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
             BulkRequestBuilder bulkRequest = client.prepareBulk();
             try {
@@ -125,10 +124,10 @@ public class ATElasticSearchXDTest extends BaseTest {
         ThreadProperty.set("Driver", "context");
     }
 
-	@AfterClass(groups = {"basic"})
+	@AfterClass(groups = {"elasticsearch"})
 	public void cleanUp() {
         try {
-            client = new TransportClient(settings)
+            client = TransportClient.builder().settings(settings).build()
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
           //  DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest("databasetest"))
           //          .actionGet();
@@ -139,7 +138,7 @@ public class ATElasticSearchXDTest extends BaseTest {
         client.close();
 	}
 
-    @Test(enabled = true, groups = {"basic"})
+    @Test(enabled = true, groups = {"elasticsearch"})
     public void ATElasticSearchXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
