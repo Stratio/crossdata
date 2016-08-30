@@ -57,7 +57,8 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
         "name" -> s"Name $a",
         "birthday" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").toDate,
         "salary" -> a * 1000.5,
-        "ageInMilis" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").getMillis)
+        "ageInMillis" -> DateTime.parse((1980 + a) + "-01-01T10:00:00-00:00").getMillis,
+        "team" -> Map("id" -> (a+1), "name" -> s"team_name$a") )
     }.await
     client.get.execute {
       flush index Index
@@ -78,8 +79,12 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
     elasticClient
   } toOption
 
+
+
+
+  "team" inner( "id" typed IntegerType, "name" typed StringType)
   override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
-    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, optionalField BOOLEAN, birthday DATE, salary DOUBLE, ageInMilis LONG)")
+    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Type (id INT, age INT, description STRING, enrolled BOOLEAN, name STRING, birthday DATE, salary DOUBLE, ageInMillis LONG)") // TODO add when supported natively => team STRUCT<id: INT, name: STRING>
 
   override val runningError: String = "ElasticSearch and Spark must be up and running"
 
@@ -97,7 +102,8 @@ trait ElasticWithSharedContext extends SharedXDContextWithDataTest with ElasticS
       "name" typed StringType index NotAnalyzed,
       "birthday" typed DateType,
       "salary" typed DoubleType,
-      "ageInMilis" typed LongType
+      "ageInMillis" typed LongType,
+      "team" inner( "id" typed IntegerType, "name" typed StringType)
       )
   }
 

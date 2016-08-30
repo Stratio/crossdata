@@ -23,10 +23,10 @@ import org.apache.spark.sql.crossdata.models.EphemeralStatusModel
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 
 trait EphemeralTableStatusDAO extends GenericDAOComponent[EphemeralStatusModel]
-with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer {
+with TypesafeConfigComponent with SparkLoggerComponent with CrossdataSerializer with PrefixedDAO {
 
   override implicit val formats = json4sJacksonFormats
 
-  override val dao: DAO = new GenericDAO(Option(EphemeralTableStatusPath))
+  override val dao: DAO = new GenericDAO(Option(s"$BaseZKPath/$prefix$EphemeralTableStatusPath"))
 
 }

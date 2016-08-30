@@ -64,7 +64,7 @@ Feature: ElasticSearchSelectINFilter
       | new-boolean |
 
   Scenario: [CROSSDATA-18: ES NATIVE] SELECT date FROM tabletest WHERE date IN ('1999-11-30','1998-12-25','2005-05-05','2008-2-27');
-    When I execute 'SELECT date FROM tabletest WHERE date IN ('1999-11-29 23:00:00.0','1998-12-25','2005-05-04 22:00:00.0', '2008-2-27')'
+    When I execute 'SELECT date FROM tabletest WHERE date IN ('1999-11-30','1998-12-25','2005-05-05', '2008-2-27')'
     Then The result has to have '2' rows ignoring the order:
        | date-timestamp  |
        | 1999-11-29 23:00:00|
