@@ -270,9 +270,9 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                                         + "but  was <%s>", i,
                                 columnExpected[0], actualRow.get(x).getClass().getName());
                         }
-                        scala.collection.mutable.ArrayBuffer<String> obtainedResult = (scala.collection.mutable
-                                .ArrayBuffer<String>)actualRow.get(x);
-                        List<String> obtainedResultList = JavaConverters.asJavaListConverter(obtainedResult).asJava();
+                        scala.collection.mutable.Buffer<String> obtainedResult = (scala.collection.mutable
+                                .Buffer<String>)actualRow.get(x);
+                        List<String> obtainedResultList = JavaConverters.bufferAsJavaListConverter(obtainedResult).asJava();
                         String[] expectedResult = table.get(i + 1).get(x).split(",");
                         if(obtainedResult.size() != expectedResult.length){
                             failWithMessage("Expected length of array to be <%s> but was <%s>", expectedResult.length,
@@ -440,9 +440,9 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                                         + "but  was <%s>", i,
                                 columnExpected[0], actualRow.get(x).getClass().getName());
                     }
-                    scala.collection.mutable.ArrayBuffer<String> obtainedResult = (scala.collection.mutable
-                            .ArrayBuffer<String>)actualRow.get(x);
-                    List<String> obtainedResultList = JavaConverters.asJavaListConverter(obtainedResult).asJava();
+                    scala.collection.mutable.Buffer<String> obtainedResult = (scala.collection.mutable
+                            .Buffer<String>)actualRow.get(x);
+                    List<String> obtainedResultList = JavaConverters.bufferAsJavaListConverter(obtainedResult).asJava();
                     String[] expectedResult = table.get(i + 1).get(x).split(",");
                     if(obtainedResult.size() != expectedResult.length){
                         failWithMessage("Expected length of array to be <%s> but was <%s>", expectedResult.length,
@@ -765,9 +765,9 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                                         + "but  was <%s>", i,
                                 columnExpected[0], actualRow.get(x).getClass().getName());
                     }
-                    scala.collection.mutable.ArrayBuffer<String> obtainedResult = (scala.collection.mutable
-                            .ArrayBuffer<String>)actualRow.get(x);
-                    List<String> obtainedResultList = JavaConverters.asJavaListConverter(obtainedResult).asJava();
+                    scala.collection.mutable.Buffer<String> obtainedResult = (scala.collection.mutable
+                            .Buffer<String>)actualRow.get(x);
+                    List<String> obtainedResultList = JavaConverters.bufferAsJavaListConverter(obtainedResult).asJava();
                     String[] expectedResult = table.get(i + 1).get(x).split(",");
                     if(obtainedResult.size() != expectedResult.length){
                         failWithMessage("Expected length of array to be <%s> but was <%s>", expectedResult.length,
