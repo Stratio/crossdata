@@ -45,7 +45,7 @@ class XDResolveReferencesIT extends SharedXDContextTest{
 
 
     //columns test.id and test.test
-    val rows = xdContext.sparkContext.parallelize(1 to 5).map(i => Row(Row(s"val_$i", i)))
+    val rows = xdContext.sparkContext.parallelize(2 to 5).map(i => Row(Row(s"val_$i", i)))
     val strType = StructType(Array(StructField("test", StructType(Array(StructField("id", StringType), StructField("test", IntegerType))))))
     xdContext.createDataFrame(rows, strType).registerTempTable("test")
 
@@ -56,12 +56,12 @@ class XDResolveReferencesIT extends SharedXDContextTest{
 
   }
 
-  it must "resolve partially qualified columns" in {
+  it must "resolve partially qualified identifiers" in {
     val rows = xdContext.sql("SELECT t1.id, id FROM test.t1").collect()
     rows(0)(0) shouldBe rows(0)(1)
   }
 
-  it must "resolve fully qualified columns" in {
+  it must "resolve fully qualified identifiers" in {
     val rows = xdContext.sql("SELECT test.t1.id, id FROM test.t1").collect()
     rows(0)(0) shouldBe rows(0)(1)
   }
@@ -79,95 +79,81 @@ class XDResolveReferencesIT extends SharedXDContextTest{
     rows(0)(0) shouldBe rows(0)(1)
   }
 
-  it must "fail when using fully qualified columns after aliasing the table" in {
+  it must "fail when using fully qualified identifiers after aliasing the table" in {
     an [Exception] shouldBe thrownBy (xdContext.sql("SELECT t1.id, test.t2.id FROM test.t1 INNER JOIN test.t2 als").show)
     an [Exception] shouldBe thrownBy (xdContext.sql("SELECT * FROM test.t1 INNER JOIN test.t2 otra ON t1.id = t2.id").show)
   }
 
-  it must "resolve qualified columns when joining tables" in {
+  it must "resolve qualified identifiers when joining tables" in {
     val rows = xdContext.sql("SELECT t1.id, test.t1.id, t2.id, test.t2.id FROM test.t1 INNER JOIN test.t2").collect()
     rows(0)(0) shouldBe rows(0)(1)
     rows(0)(2) shouldBe rows(0)(3)
   }
 
-  it must "resolve partially qualified columns in the join condition" in {
-
+  it must "resolve partially qualified identifiers in the join condition" in {
     val dataFrame = xdContext.sql("SELECT * FROM test.t1 INNER JOIN test.t2 ON t1.id = t2.id")
-    dataFrame.count()
-    dataFrame.show
+    dataFrame.count() shouldBe 2
   }
 
-  it must "plani" in {
-
+  it must "resolve fully qualified identifiers in the join condition" in {
     val dataFrame = xdContext.sql("SELECT * FROM test.t1 INNER JOIN test.t2 ON test.t1.id = test.t2.id")
-    dataFrame.show
+    dataFrame.count() shouldBe 2
   }
 
-  it must "planj" in {
-
+  it must "resolve partially and fully qualified identifiers in the same query" in {
     val dataFrame = xdContext.sql("SELECT test.t1.id, t2.id FROM test.t1 INNER JOIN test.t2 ON t1.id = test.t2.id")
-    dataFrame.show
+    dataFrame.count() shouldBe 2
+    val rows = dataFrame.collect()
+    rows(0)(0) shouldBe rows(0)(1)
   }
 
-  it must "plank" in {
-
+  it must "resolve qualified identifiers in the group by" in {
     val dataFrame = xdContext.sql("SELECT test.t1.id FROM test.t1 INNER JOIN test.t2 ON t1.id = test.t2.id GROUP BY t1.id")
-    dataFrame.show
+    val dataFrame2 = xdContext.sql("SELECT test.t1.id FROM test.t1 INNER JOIN test.t2 ON t1.id = test.t2.id GROUP BY test.t1.id")
+    dataFrame.count() shouldBe 2
+    dataFrame2.count() shouldBe 2
   }
 
-  it must "planl" in {
-
-    val dataFrame = xdContext.sql("SELECT test.t1.id FROM test.t1 INNER JOIN test.t2 ON t1.id = test.t2.id GROUP BY test.t1.id")
-    dataFrame.show
-  }
-
-  it must "planm" in {
-    // ambiguous
+  //test.t1 and test2.t1 have a column "id"
+  it must "fail when using ambiguous identifiers in the join condition" in {
     an [Exception] shouldBe thrownBy (xdContext.sql("SELECT * FROM test.t1 INNER JOIN test2.t1 ON t1.id = t1.id").show)
   }
 
-  it must "plano" in {
+  it must "allow to fully qualify identifiers in order to resolve ambiguous columns" in {
     val dataFrame = xdContext.sql("SELECT * FROM test.t1 INNER JOIN test2.t1 ON test.t1.id = test2.t1.id")
-    dataFrame.show
+    dataFrame.count shouldBe 5
   }
 
   //TABLE test COLUMNS test.id test.test
   //TABLE test.test COLUMNS col.id col.test
-  it must "planp" in {
-    xdContext.sql("SELECT * FROM test.test").show
-    xdContext.sql("SELECT col FROM test.test").show
-    xdContext.sql("SELECT col.id FROM test.test").show
-    xdContext.sql("SELECT col.test FROM test.test").show
-    xdContext.sql("SELECT test.col.test FROM test.test").show
-    xdContext.sql("SELECT test.test.col.test FROM test.test").show
+  it must "resolve qualified identifiers associated to subfields" in {
+    xdContext.sql("SELECT * FROM test.test").count() shouldBe 5
+    xdContext.sql("SELECT col FROM test.test").count() shouldBe 5
+    xdContext.sql("SELECT col.id FROM test.test").count() shouldBe 5
+    xdContext.sql("SELECT col.test FROM test.test").count() shouldBe 5
+    xdContext.sql("SELECT test.col.test FROM test.test").count() shouldBe 5
+    xdContext.sql("SELECT test.test.col.test FROM test.test").count() shouldBe 5
+
+    xdContext.sql("SELECT * FROM test").count() shouldBe 4
+    xdContext.sql("SELECT test FROM test").count() shouldBe 4
+    xdContext.sql("SELECT test.test FROM test").count() shouldBe 4
+    xdContext.sql("SELECT test.test.test FROM test").count() shouldBe 4
   }
 
-  it must "planq" in {
-    xdContext.sql("SELECT * FROM test").show
-    xdContext.sql("SELECT test FROM test").show
-    xdContext.sql("SELECT test.test FROM test").show
-    xdContext.sql("SELECT test.test.test FROM test").show
 
+  it must "resolve fully qualified identifiers in where conditions" in {
+    xdContext.sql("SELECT test FROM test WHERE test.test.test = 4").count() shouldBe 1
   }
 
-  it must "planr" in {
-    xdContext.sql("SELECT test FROM test WHERE test.test.test = 4").show
-     // TODO length 1
+  it must "resolve qualified identifiers associated to subfields when joining tables" in {
+    xdContext.sql("SELECT * FROM test INNER JOIN test.test").count() shouldBe 20
+    xdContext.sql("SELECT col FROM test INNER JOIN test.test").count() shouldBe 20
+    xdContext.sql("SELECT col.test FROM test INNER JOIN test.test").count() shouldBe 20
+    xdContext.sql("SELECT test FROM test INNER JOIN test.test").count() shouldBe 20
+    xdContext.sql("SELECT test.test FROM test INNER JOIN test.test").count() shouldBe 20
+    xdContext.sql("SELECT test.test.test FROM test INNER JOIN test.test").count() shouldBe 20
 
+    xdContext.sql("SELECT * FROM test INNER JOIN test.test ON test.test.test = col.test").count() shouldBe 2
   }
-
-  it must "plans" in {
-    xdContext.sql("SELECT * FROM test INNER JOIN test.test").show
-
-    xdContext.sql("SELECT col FROM test INNER JOIN test.test").show
-    xdContext.sql("SELECT col.test FROM test INNER JOIN test.test").show
-    xdContext.sql("SELECT test FROM test INNER JOIN test.test").show
-    xdContext.sql("SELECT test.test FROM test INNER JOIN test.test").show
-    xdContext.sql("SELECT test.test.test FROM test INNER JOIN test.test").show
-  }
-
-  it must "plant" in {
-    xdContext.sql("SELECT * FROM test INNER JOIN test.test ON test.test.test = col.test").show
-  }
-
+  
 }
