@@ -4,6 +4,10 @@ CROSSBUILD:
 CROSSBUILDAT:
   - 'scala-2.11'
   
+CROSSBUILDAT:
+  - 'scala-2.10'
+  - 'scala-2.11'
+  
 ITSERVICES:
   - SPARK:
       image: stratio/spark:1.6.1
@@ -18,7 +22,7 @@ ITSERVICES:
       image: elasticsearch:2.0.2
       sleep: 10
       env:
-        - ES_JAVA_OPTS=-Des.cluster.name=%%JUID
+        - ES_JAVA_OPTS="-Des.cluster.name=%%JUID -Des.network.host=%%OWNHOSTNAME"
   - SPARK:
       image: stratio/spark:1.6.1
       env:
