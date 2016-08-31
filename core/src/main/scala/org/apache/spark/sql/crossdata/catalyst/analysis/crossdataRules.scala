@@ -15,9 +15,8 @@
  */
 package org.apache.spark.sql.crossdata.catalyst.analysis
 
-import org.apache.spark.sql.AnalysisException
 import org.apache.spark.sql.catalyst.CatalystConf
-import org.apache.spark.sql.catalyst.analysis.{UnresolvedAlias, _}
+import org.apache.spark.sql.catalyst.analysis._
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical
 import org.apache.spark.sql.catalyst.plans.logical._
@@ -150,7 +149,7 @@ case class WrapRelationWithGlobalIndex(catalog: XDCatalog) extends Rule[LogicalP
 
 
 /**
-  * TODO Spark2.0 remove rule once Spark support qualified table names
+  * TODO Spark2.0 remove rule once Spark supports qualified table names
   */
 case class ResolveReferencesXD(conf: CatalystConf) extends Rule[LogicalPlan] {
 
@@ -163,7 +162,7 @@ case class ResolveReferencesXD(conf: CatalystConf) extends Rule[LogicalPlan] {
   }
 
   def apply(plan: LogicalPlan): LogicalPlan = plan resolveOperators {
-    // return the same logicalPlan when catalyst apply specific changes in ResolveReferences rule
+    // return the same logicalPlan when catalyst applies specific changes in ResolveReferences rule
     case p: LogicalPlan if !p.childrenResolved => p
     case p @ Project(projectList, child) if containsStar(projectList) => p
     case t: ScriptTransformation if containsStar(t.input) => t

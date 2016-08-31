@@ -87,21 +87,21 @@ object XDLogicalPlanFunctions{
                                          attribute: Attribute): Option[(Attribute, List[String])] = {
       assert(nameParts.length > 1)
 
-      /** Spark docs => TODO review Spark2.0 ( assume the table only contains a qualified table name)
+      /** Spark docs => TODO review Spark2.0 ( qualified tables will be supported)
         * All possible qualifiers for the expression.
         *
         * For now, since we do not allow using original table name to qualify a column name once the
         * table is aliased, this can only be:
         *
-        * 1. Empty Seq: when an attribute doesn't have a qualifier,
-        *    e.g. top level attributes aliased in the SELECT clause, or column from a LocalRelation.
-        * 2. Single element: either the table name or the alias name of the table.
+        * Single element: either the table name or the alias name of the table.
         */
       val attributeQualifiers = attribute.qualifiers.headOption.map(_.split("\\.").toSeq).getOrElse(Seq.empty)
       resolveUsingAttributeQualifiers(attribute, attributeQualifiers, nameParts, resolver)
     }
 
-    // try to resolve nameParts first as database.table.**, then as table.** and so on.
+    /**
+      * Tries to resolve nameParts: firstly, as a Seq(database,table,..), then as a Seq(table,..) and so on.
+      */
     @tailrec
     private def resolveUsingAttributeQualifiers(attribute: Attribute, attrQualifiers: Seq[String], nameParts: Seq[String], resolver: Resolver): Option[(Attribute, List[String])] = {
       if (attrQualifiers.isEmpty) {
