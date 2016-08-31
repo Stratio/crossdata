@@ -45,7 +45,8 @@ trait ElasticDataTypesWithSharedContext extends SharedXDContextWithDataTest with
     "es.nodes" -> s"$ElasticHost",
     "es.port" -> s"$ElasticRestPort",
     "es.nativePort" -> s"$ElasticNativePort",
-    "es.cluster" -> s"$ElasticClusterName"
+    "es.cluster" -> s"$ElasticClusterName",
+    "es.nodes.wan.only" -> "true"
   )
 
   case class ESColumnMetadata(fieldName: String, sparkSqlType: String, elasticType: TypedFieldDefinition, data: () => Any, typeValidation: Any => Unit)

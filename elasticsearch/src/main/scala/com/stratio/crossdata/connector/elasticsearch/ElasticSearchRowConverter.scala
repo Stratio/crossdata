@@ -55,7 +55,7 @@ object ElasticSearchRowConverter {
 
     val values: Seq[Any] = requiredFields.map { name =>
 
-      // TODO: What if a nested subdocument is targeted
+      // TODO: Note that if a nested subdocument is targeted, it won't work and this algorithm should be made recursive.
       (hitFields.get(name) orElse subDocuments.get(name)).flatMap(Option(_)) map {
         ((value: Any) => enforceCorrectType(value, schemaMap(name))) compose {
           case hitField: SearchHitField => hitField.getValue

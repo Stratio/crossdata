@@ -320,6 +320,9 @@ class ElasticsearchXDRelation(parameters: Map[String, String], sqlContext: SQLCo
     new ScalaXDEsRowRDD(sqlContext.sparkContext, paramWithScan, lazySchema, userSchema)
   }
 
+  /* TODO: Removed copied code (from ES connector) and uncomment this method when the next version of the connector
+      gets released.
+     */
   /*override def buildScan(requiredColumns: Array[String], filters: Array[Filter]) = {
     val rdd = super.buildScan(requiredColumns, filters)
     userSchema map { uschema: StructType =>
