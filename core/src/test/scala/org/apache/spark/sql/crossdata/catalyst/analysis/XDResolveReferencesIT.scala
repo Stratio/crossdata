@@ -90,9 +90,10 @@ class XDResolveReferencesIT extends SharedXDContextTest{
     rows(0)(2) shouldBe rows(0)(3)
   }
 
-  it must "planh" in {
+  it must "resolve partially qualified columns in the join condition" in {
 
     val dataFrame = xdContext.sql("SELECT * FROM test.t1 INNER JOIN test.t2 ON t1.id = t2.id")
+    dataFrame.count()
     dataFrame.show
   }
 
