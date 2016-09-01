@@ -136,16 +136,13 @@ trait ServerConfig extends NumberActorConfig {
 
     defaultConfig = systemPropertiesConfig.withFallback(defaultConfig)
 
-    val finalConfig = {
-      if (defaultConfig.hasPath("akka.cluster.server-nodes")) {
-        val serverNodes = defaultConfig.getString("akka.cluster.server-nodes")
+    val finalConfig =
+      Try(defaultConfig.getString("akka.cluster.seed-nodes")).map{ strCluster =>
         defaultConfig.withValue(
           "akka.cluster.seed-nodes",
-          ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
-      } else {
-        defaultConfig
-      }
-    }
+          ConfigValueFactory.fromIterable(strCluster.split(",").toList)
+        )
+      }.getOrElse(defaultConfig)
 
     ConfigFactory.load(finalConfig)
   }

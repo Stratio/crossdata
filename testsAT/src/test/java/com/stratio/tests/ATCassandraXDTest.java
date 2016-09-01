@@ -62,7 +62,7 @@ public class ATCassandraXDTest extends BaseTest {
 	public ATCassandraXDTest() {
 	}
 
-	@BeforeClass(groups = {"basic"})
+	@BeforeClass(groups = {"cassandra"})
 	public void setUp() {
 		logger.info("Connecting to Cassandra Cluster");
 		cassandra.connect();
@@ -92,12 +92,12 @@ public class ATCassandraXDTest extends BaseTest {
 
 	}
 
-	@AfterClass(groups = {"basic"})
+	@AfterClass(groups = {"cassandra"})
 	public void cleanUp() {
 
 	}
 
-	@Test(enabled = true, groups = {"basic"})
+	@Test(enabled = false, groups = {"cassandra"})
 	public void ATCassandraXDTest() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}

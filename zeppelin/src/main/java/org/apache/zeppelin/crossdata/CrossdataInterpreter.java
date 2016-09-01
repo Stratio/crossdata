@@ -24,7 +24,6 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.StructType;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -43,19 +42,8 @@ public class CrossdataInterpreter extends Interpreter {
 
     private static final String CROSSDATA_SEEDS_PROPERTY = "crossdata.seeds";
     private static final String CROSSDATA_DEFAULT_LIMIT = "crossdata.defaultLimit";
-    private static final String CROSSDATA_TIMEOUT_SEC = "crossdata.tiemoutSeconds";
+    private static final String CROSSDATA_TIMEOUT_SEC = "crossdata.timeoutSeconds";
 
-
-    static {
-        Interpreter.register(
-                "crossdata",
-                "crossdata",
-                CrossdataInterpreter.class.getName(),
-                new InterpreterPropertyBuilder()
-                        .add(CROSSDATA_SEEDS_PROPERTY, "127.0.0.1:13420", "The list of seeds.")
-                        .add(CROSSDATA_DEFAULT_LIMIT, "1000", "Default limit")
-                        .add(CROSSDATA_TIMEOUT_SEC, "100", "Query tiemout in seconds (0 means infinite timeout)").build());
-    }
 
     public CrossdataInterpreter(Properties property) {
         super(property);
@@ -170,10 +158,6 @@ public class CrossdataInterpreter extends Interpreter {
         return 0;
     }
 
-    @Override
-    public List<String> completion(String buf, int cursor) {
-        return null;
-    }
 
     @Override
     public Scheduler getScheduler() {

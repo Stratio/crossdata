@@ -22,12 +22,12 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.6.0</version>
   </parent>
 
-  <artifactId>zeppelin-crossdata_2.10</artifactId>
+  <artifactId>zeppelin-crossdata_2.11</artifactId>
   <packaging>jar</packaging>
-  <version>1.5.0-SNAPSHOT</version>
+  <version>1.6.0-SNAPSHOT</version>
   <name>Zeppelin: Crossdata</name>
   <description>Zeppelin interpreter for Crossdata</description>
   <url>https://github.com/Stratio/Crossdata</url>
@@ -36,12 +36,8 @@
     <zeppelin.home>zeppelin_home</zeppelin.home>
     <crossdata.version>${project.version}</crossdata.version>
     <!-- Scala version and cross build properties -->
-    <scala.binary.version>2.10</scala.binary.version>
-    <scala.version>2.10.4</scala.version>
-    <scala_2.10.version>2.10.4</scala_2.10.version>
-    <scala_2.11.version>2.11.8</scala_2.11.version>
-    <default.scala.binary.version>2.10</default.scala.binary.version>
-    <default.scala.version>${scala_2.10.version}</default.scala.version>
+    <scala.binary.version>2.11</scala.binary.version>
+    <scala.version>2.11.8</scala.version>
   </properties>
 
   <dependencies>
@@ -229,21 +225,4 @@
       </plugin>
     </plugins>
   </build>
-  <profiles>
-    <profile>
-      <id>scala-2.10</id>
-      <properties>
-        <scala.version>${scala_2.10.version}</scala.version>
-        <scala.binary.version>2.10</scala.binary.version>
-      </properties>
-    </profile>
-    <profile>
-      <id>scala-2.11</id>
-      <properties>
-        <scala.version>${scala_2.11.version}</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
-      </properties>
-    </profile>
-  </profiles>
-
 </project>

@@ -19,7 +19,7 @@ package com.stratio.crossdata.driver.actor
 import java.util.UUID
 
 import akka.actor.{Actor, ActorRef, Props}
-import akka.contrib.pattern.ClusterClient
+import akka.cluster.client.ClusterClient
 import akka.pattern.pipe
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
