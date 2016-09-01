@@ -19,7 +19,7 @@ import java.io.File
 
 import akka.actor.{ActorSystem, Props}
 import akka.cluster.Cluster
-import akka.contrib.pattern.ClusterReceptionistExtension
+import akka.cluster.client.ClusterClientReceptionist
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
@@ -37,7 +37,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent.Future
 
 
-class CrossdataServer extends Daemon with ServerConfig {
+class CrossdataServer extends ServerConfig {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
@@ -45,9 +45,7 @@ class CrossdataServer extends Daemon with ServerConfig {
   var sessionProviderOpt: Option[XDSessionProvider] = None
   var bindingFuture: Option[Future[ServerBinding]] = None
 
-  override def init(p1: DaemonContext): Unit = ()
-
-  override def start(): Unit = {
+  def start(): Unit = {
 
     val sparkParams = config.entrySet()
       .map(e => (e.getKey, e.getValue.unwrapped().toString))
@@ -85,18 +83,19 @@ class CrossdataServer extends Daemon with ServerConfig {
         actorName)
 
       val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
-      ClusterReceptionistExtension(actorSystem).registerService(clientMonitor)
+      ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
 
       val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
-      ClusterReceptionistExtension(actorSystem).registerService(serverActor)
-      ClusterReceptionistExtension(actorSystem).registerService(resourceManagerActor)
+      ClusterClientReceptionist(actorSystem).registerService(serverActor)
+      ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
 
-      implicit val httpSystem = actorSystem
+      //TODO
+      /*implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()
       val httpServerActor = new CrossdataHttpServer(config, serverActor, actorSystem)
       val host = config.getString(ServerConfig.Host)
       val port = config.getInt(ServerConfig.HttpServerPort)
-      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))
+      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))*/
     }
 
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
@@ -112,7 +111,10 @@ class CrossdataServer extends Daemon with ServerConfig {
     }
   }
 
-  override def stop(): Unit = {
+  /**
+    * Just for test purposes
+    */
+  def stop(): Unit = {
     sessionProviderOpt.foreach(_.close())
 
     sessionProviderOpt.foreach(_.sc.stop())
@@ -126,7 +128,5 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     logger.info("Crossdata Server stopped")
   }
-
-  override def destroy(): Unit = ()
 
 }

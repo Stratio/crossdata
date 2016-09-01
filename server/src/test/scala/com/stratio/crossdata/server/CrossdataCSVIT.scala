@@ -24,21 +24,24 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class CrossdataAvro extends SharedXDContextTest with ServerConfig {
+class CrossdataCSVIT extends SharedXDContextTest with ServerConfig {
 
-  override lazy val logger = Logger.getLogger(classOf[CrossdataAvro])
+  override lazy val logger = Logger.getLogger(classOf[CrossdataCSVIT])
 
-  "Crossdata" should "execute avro queries" in {
+  "Crossdata" should "execute csv queries" in {
 
     try{
-      sql(s"CREATE TABLE test USING com.databricks.spark.avro OPTIONS (path '${Paths.get(getClass.getResource("/test.avro").toURI()).toString}')")
-      val result = sql("SELECT * FROM test").collect()
-      result should have length 3
-      result.head should have length 12
+      sql(s"CREATE TABLE cars USING com.databricks.spark.csv OPTIONS (path '${Paths.get(getClass.getResource("/cars.csv").toURI()).toString}', header 'true')")
+
+      val result = sql("SELECT * FROM cars").collect()
+      result should have length 8
+      result.head should have length 9
 
     } finally {
-      sql("DROP TABLE test")
+      sql("DROP TABLE cars")
     }
   }
+
+
 
 }

@@ -34,7 +34,7 @@ class ElasticsearchConnectorIT extends ElasticWithSharedContext {
     val result = dataframe.collect(Native)
 
     result should have length 10
-    schema.fieldNames should equal (Seq("id", "age", "description", "enrolled", "name", "optionalField", "birthday", "salary", "ageInMilis"))
+    schema.fieldNames should equal (Seq("id", "age", "description", "enrolled", "name", "birthday", "salary", "ageInMillis"))
     result.head.toSeq(4).toString should fullyMatch regex "Name [0-9]+"
   }
 

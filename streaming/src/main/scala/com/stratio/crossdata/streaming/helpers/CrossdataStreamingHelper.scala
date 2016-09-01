@@ -56,6 +56,7 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     // More information here:
     // http://spark.apache.org/docs/latest/streaming-programming-guide.html#design-patterns-for-using-foreachrdd
     kafkaDStream.foreachRDD { rdd =>
+
       if (rdd.take(1).length > 0) {
         val ephemeralQueries = CrossdataStatusHelper.queriesFromEphemeralTable(zookeeperConf, ephemeralTable.name)
 
