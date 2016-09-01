@@ -61,10 +61,8 @@ trait ElasticDataTypesWithSharedContext extends SharedXDContextWithDataTest with
     ESColumnMetadata("salary", "DOUBLE", "salary" typed DoubleType, () => 0.15, _ shouldBe a[java.lang.Double]),
     ESColumnMetadata("timecol", "TIMESTAMP", "timecol" typed DateType, () => new java.sql.Timestamp(new GregorianCalendar(1970, 0, 1, 0, 0, 0).getTimeInMillis), _ shouldBe a[java.sql.Timestamp]),
     ESColumnMetadata("float", "FLOAT", "float" typed FloatType, () => 0.15, _ shouldBe a[java.lang.Float]),
-    /* ESColumnMetadata("binary", "BINARY", "binary" typed BinaryType, () => "YWE=".getBytes, x => x
-      .isInstanceOf[Array[Byte]] shouldBe true), TODO: KO Spark, not critical pending datasource fix
-      https://github.com/elastic/elasticsearch-hadoop/pull/834
-      */
+    ESColumnMetadata("binary", "BINARY", "binary" typed BinaryType, () => "YWE=".getBytes, x => x
+      .isInstanceOf[Array[Byte]] shouldBe true),
     ESColumnMetadata("tinyint", "TINYINT", "tinyint" typed ByteType, () => Byte.MinValue, _ shouldBe a[java.lang.Byte]),
     ESColumnMetadata("smallint", "SMALLINT", "smallint" typed ShortType, () => Short.MaxValue, _ shouldBe a[java.lang.Short]),
     ESColumnMetadata("subdocument", "STRUCT<field1: INT>", "subdocument"  inner ("field1" typed IntegerType), () => Map( "field1" -> 15), _ shouldBe a [Row]),
