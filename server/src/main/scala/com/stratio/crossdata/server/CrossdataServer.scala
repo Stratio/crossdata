@@ -212,14 +212,14 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     // Get service discovery configuration
     val sdConfig = Try(serverConfig.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
 
-    val sdHelper = sdConfig.map{ discoveryConfig =>
+    val sdEnabled = sdConfig.fold(false){ c => Try(c.getBoolean("activated")).getOrElse(false) }
 
+    val sdHelper = if(sdEnabled){
       logger.info("Service discovery enabled")
-
-      val sdch = new SDCH(discoveryConfig)
-
-      startServiceDiscovery(sdch)
-
+      val sdch = new SDCH(sdConfig.get)
+      Some(startServiceDiscovery(sdch))
+    } else {
+      None
     }
 
     val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
@@ -231,20 +231,18 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       val xdCluster = Cluster(actorSystem)
 
       sdHelper.map{ sd =>
-        sdConfig.map{ discoveryConfig =>
 
-          // Complete promise and add current seeds
-          // Release subscription leadership
-          // PROBLEM: Currents seeds are just this current seed
-          // SOLUTION: schedulerOnce and get current nodes to be added to zk seeds
-          import scala.concurrent.ExecutionContext.Implicits.global
-          sd.leadershipFuture onSuccess {
-            case _ =>
-              endServiceDiscovery(xdCluster, sd, actorSystem)
-          }
-
-          sd.clusterLeader.close
+        // Complete promise and add current seeds
+        // Release subscription leadership
+        // PROBLEM: Currents seeds are just this current seed
+        // SOLUTION: schedulerOnce and get current nodes to be added to zk seeds
+        import scala.concurrent.ExecutionContext.Implicits.global
+        sd.leadershipFuture onSuccess {
+          case _ =>
+            endServiceDiscovery(xdCluster, sd, actorSystem)
         }
+
+        sd.clusterLeader.close
       }
 
       val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
