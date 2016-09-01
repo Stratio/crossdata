@@ -31,22 +31,14 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
 
   override lazy val analyzed: LogicalPlan = sqlContext.analyzer.execute(logical)
 
-  // NOTE authorize and return the analyzed plan or Exception
   lazy val authorized: LogicalPlan = {
+    assertAnalyzed()
     analyzed
     // TODO do whatever to authorize
     // TODO add proxy user
   }
 
-  // NOTE use authorized instead of analyzed
   override lazy val withCachedData: LogicalPlan = {
-    assertAnalyzed()
     sqlContext.cacheManager.useCachedData(authorized)
   }
-
-  // TODO executedPlan is always used => lazy val executedPlan: SparkPlan = sqlContext.prepareForExecution.execute(sparkPlan)
-
-  // TODO but toRdd is not used for all cases ( collect() use SparkPlan::doExecute() => override every sparkPlan => envelopeSparkPlan (KerberRDD => add something)
-
-  // TODO nativeExecution => use a SparkPlan (NativePlan) wrapping the real plan whose executeCollect tries to resolve the query natively; otherwise, fallback to Spark the wrapped plan
 }
