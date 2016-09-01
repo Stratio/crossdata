@@ -20,8 +20,8 @@ import java.util.UUID
 import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
-import akka.contrib.pattern.DistributedPubSubExtension
-import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
+import akka.cluster.pubsub.DistributedPubSub
+import akka.cluster.pubsub.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster.{DoCheck, HeartbeatLost}
@@ -68,7 +68,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   lazy val logger = Logger.getLogger(classOf[ServerActor])
 
-  lazy val mediator = DistributedPubSubExtension(context.system).mediator
+  lazy val mediator = DistributedPubSub(context.system).mediator
 
   override def preStart(): Unit = {
     super.preStart()

@@ -49,4 +49,4 @@ Feature: ElasticSearchSelectEqualsFilter
     When I execute 'SELECT date FROM tabletest WHERE date = '1999-11-30''
     Then The result has to have '1' rows:
       | date-timestamp  |
-      | 1999-11-30 00:00:00 |
+      | 1999-11-29 23:00:00.0 |

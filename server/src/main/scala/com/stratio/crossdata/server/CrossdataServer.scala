@@ -19,7 +19,7 @@ import java.io.File
 
 import akka.actor.{ActorSystem, Props}
 import akka.cluster.Cluster
-import akka.contrib.pattern.ClusterReceptionistExtension
+import akka.cluster.client.ClusterClientReceptionist
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
@@ -83,18 +83,19 @@ class CrossdataServer extends ServerConfig {
         actorName)
 
       val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
-      ClusterReceptionistExtension(actorSystem).registerService(clientMonitor)
+      ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
 
       val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
-      ClusterReceptionistExtension(actorSystem).registerService(serverActor)
-      ClusterReceptionistExtension(actorSystem).registerService(resourceManagerActor)
+      ClusterClientReceptionist(actorSystem).registerService(serverActor)
+      ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
 
-      implicit val httpSystem = actorSystem
+      //TODO
+      /*implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()
       val httpServerActor = new CrossdataHttpServer(config, serverActor, actorSystem)
       val host = config.getString(ServerConfig.Host)
       val port = config.getInt(ServerConfig.HttpServerPort)
-      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))
+      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))*/
     }
 
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")

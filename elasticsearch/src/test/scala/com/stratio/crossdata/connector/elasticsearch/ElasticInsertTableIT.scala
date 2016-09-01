@@ -15,17 +15,19 @@
  */
 package com.stratio.crossdata.connector.elasticsearch
 
-import com.sksamuel.elastic4s.ElasticDsl._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.ExecutionType
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 // TODO ignore while elastic fix ... or when native support select map/array values
+@RunWith(classOf[JUnitRunner])
 class ElasticInsertTableIT extends ElasticInsertCollection {
 
 
   it should "insert a row using INSERT INTO table VALUES in ElasticSearch" ignore {
     val query = s"""|INSERT INTO $Type VALUES (20, 25, 'proof description', true, 'Eve', false, '2015-01-01' ,
-                      |1200.00, 1463646640046, ['proof'], (a->2), [ (x -> 1, y-> 1), (z -> 1) ], ( x->[1,2], y-> [3,4] ))""".stripMargin
+                    |1200.00, 1463646640046, ['proof'], (a->2), [ (x -> 1, y-> 1), (z -> 1) ], ( x->[1,2], y-> [3,4] ))""".stripMargin
 
     _xdContext.sql(query).collect() should be (Row(1)::Nil)
 

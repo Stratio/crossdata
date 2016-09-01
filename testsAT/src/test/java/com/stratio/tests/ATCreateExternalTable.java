@@ -15,41 +15,12 @@
  */
 package com.stratio.tests;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
-
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.MongoClient;
 import com.stratio.cucumber.testng.CucumberRunner;
 import com.stratio.tests.utils.BaseTest;
-import com.stratio.tests.utils.CassandraUtils;
 import com.stratio.tests.utils.ThreadProperty;
 
 import cucumber.api.CucumberOptions;
@@ -75,7 +46,7 @@ public class ATCreateExternalTable extends BaseTest {
 
 	}
 
-	@Test(enabled = true, groups = {"advanced"})
+	@Test(enabled = false, groups = {"advanced"})
 	public void ATCreateExternalTable() throws Exception {
 		new CucumberRunner(this.getClass()).runCukes();
 	}
