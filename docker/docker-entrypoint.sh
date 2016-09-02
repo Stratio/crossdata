@@ -39,15 +39,20 @@ else
   HOST="$(hostname -i)"
 fi
 AKKAIP=akka.tcp:\/\/CrossdataServerCluster@${HOST}:13420
+#TODO: Test instead of XD_SEED : CROSSDATA_SERVER_AKKA_CLUSTER_SEED_NODES
 if [ -z ${XD_SEED}]; then
  sed -i "s|<member>127.0.0.1</member>|<member>${HOST}</member>|" /etc/sds/crossdata/server/hazelcast.xml
- sed -i "s|crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"${AKKAIP}\"]|" /etc/sds/crossdata/server/server-application.conf
+ sed -i "s|#crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"${AKKAIP}\"]|" /etc/sds/crossdata/server/server-application.conf
 else
  SEED_IP=akka.tcp:\/\/CrossdataServerCluster@${XD_SEED}:13420
- sed -i "s|crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"${SEED_IP}\",\"${AKKAIP}\"]|" /etc/sds/crossdata/server/server-application.conf
+ sed -i "s|#crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"${SEED_IP}\",\"${AKKAIP}\"]|" /etc/sds/crossdata/server/server-application.conf
  sed -i "s|<member>127.0.0.1</member>|<member>${XD_SEED}</member>|" /etc/sds/crossdata/server/hazelcast.xml
 fi
-sed -i "s|crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
+
+#TODO: Check environment vars for hostname and bind hostname & ports
+sed -i "s|#crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
+sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
+
 sed -i "s|local\[.\]|${SPARK_MASTER:=local\[2\]}|" /etc/sds/crossdata/server/server-application.conf
 sed -i "s|crossdata-server.config.spark.driver.memory.*|crossdata-server.config.spark.driver.memory = ${XD_DRIVER_MEMORY:=512M}|" /etc/sds/crossdata/server/server-application.conf
 sed -i "s|crossdata-server.config.spark.executor.memory.*|crossdata-server.config.spark.executor.memory = ${XD_EXECUTOR_MEMORY:=512M}|" /etc/sds/crossdata/server/server-application.conf
