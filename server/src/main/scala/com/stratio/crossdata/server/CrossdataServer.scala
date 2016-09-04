@@ -38,6 +38,7 @@ import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, HazelcastSe
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
+import scala.collection.immutable.SortedSet
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.util.{Random, Try}
@@ -174,7 +175,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val currentMembers =
       (xCluster.state.members.filter(_.roles.contains("server")).map(m => m.address.toString)
-        ++ xCluster.selfAddress.toString).toArray
+        ++ SortedSet(xCluster.selfAddress.toString))
 
     val pathForSeeds = h.sdch.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
 
