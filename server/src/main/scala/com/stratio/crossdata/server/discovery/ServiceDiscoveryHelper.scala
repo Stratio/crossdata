@@ -52,9 +52,10 @@ case class ServiceDiscoveryConfigHelper(sdConfig: Config) {
 }
 
 case class ServiceDiscoveryHelper(
-    curatorClient: CuratorFramework,
-    finalConfig: Config,
-    leadershipFuture: Future[Unit],
-    clusterLeader: LeaderLatch,
-    sdch: ServiceDiscoveryConfigHelper){
+                                   curatorClient: CuratorFramework,
+                                   finalConfig: Config,
+                                   leadershipFuture: Future[Unit],
+                                   clusterLeader: LeaderLatch,
+                                   subscriptionLeader: LeaderLatch,
+                                   sdch: ServiceDiscoveryConfigHelper){
 }

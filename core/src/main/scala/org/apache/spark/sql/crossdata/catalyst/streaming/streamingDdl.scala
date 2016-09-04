@@ -100,9 +100,6 @@ private[crossdata] case class CreateEphemeralTable(tableIdent: TableIdentifier,
 
 }
 
-
-
-
 private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
   extends LogicalPlan with RunnableCommand {
 

@@ -28,7 +28,7 @@ import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.server.discovery.{ZkConnectionState, ServiceDiscoveryConfigHelper => SDCH, ServiceDiscoveryHelper => SDH}
 import com.typesafe.config.{Config, ConfigValueFactory}
-import org.apache.curator.framework.recipes.leader.LeaderLatch
+import org.apache.curator.framework.recipes.leader.{LeaderLatch, LeaderLatchListener}
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.utils.ZKPaths
@@ -64,6 +64,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
         SDCH.RetrySleep,
         SDCH.Retries))
     curatorClient.start
+    curatorClient.blockUntilConnected
     curatorClient
   }
 
@@ -97,7 +98,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val randomId = math.abs(Random.nextLong())
 
-    logger.debug(s"My ID: $randomId")
+    logger.debug(s"My cluster leadership ID: $randomId")
 
     val cLeader = new LeaderLatch(
       dClient,
@@ -122,7 +123,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     // If hasLeadership of cluster, clean zk seeds and keep current config,
     //    otherwise, go to ZK and get seeds to modify the config
-    val currentClusterLeader = checkLeadership(clusterLeader)
+    val currentClusterLeader = gotLeadership(clusterLeader)
 
     if(currentClusterLeader){
       val pathForSeeds = sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
@@ -139,10 +140,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
   }
 
   // hasLeadership is not absolutely reliable, a connection listener has to be used to check connection state
-  private def checkLeadership(cLeader: LeaderLatch) = {
-    while(cLeader.getState == LeaderLatch.State.LATENT){
-      Thread.sleep(200)
-    }
+  private def gotLeadership(cLeader: LeaderLatch) = {
     cLeader.hasLeadership && ZkConnectionState.isConnected
   }
 
@@ -158,10 +156,17 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val finalConfig = generateFinalConfig(clLeader, curatorClient, sdch)
 
-    SDH(curatorClient, finalConfig, leadershipFuture, csLeader, sdch)
+    SDH(curatorClient, finalConfig, leadershipFuture, clLeader, csLeader, sdch)
   }
 
   private def writeSeeds(xCluster: Cluster, h: SDH) = {
+
+    logger.debug(s"Subscription leadership state: ${h.subscriptionLeader.getState}")
+
+    h.subscriptionLeader.start
+
+    h.subscriptionLeader.await
+
     val currentMembers =
       xCluster.state.members.filter(_.roles.contains("server")).map(m => m.address.toString).toArray
 
@@ -169,7 +174,11 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForSeeds)
 
+    logger.info(s"Updating seeds: ${currentMembers.mkString(",")}")
+
     h.curatorClient.setData().forPath(pathForSeeds, currentMembers.mkString(",").getBytes)
+
+    h.subscriptionLeader.close
   }
 
   private def endServiceDiscovery(xCluster: Cluster, s: SDH, aSystem: ActorSystem) = {
@@ -222,6 +231,12 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
 
+    finalConfig.entrySet.filter{ e =>
+      e.getKey.contains("seed-nodes")
+    }.foreach{ e =>
+      logger.info(s"SEED NODES: ${e.getValue}")
+    }
+
     system = Some(ActorSystem(clusterName, finalConfig))
 
     system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
@@ -240,7 +255,10 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
             endServiceDiscovery(xdCluster, sd, actorSystem)
         }
 
-        sd.clusterLeader.close
+        if(!gotLeadership(sd.clusterLeader)){
+          sd.subscriptionLeader.close
+        }
+
       }
 
       val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
