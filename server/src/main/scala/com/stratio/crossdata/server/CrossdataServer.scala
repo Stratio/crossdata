@@ -163,12 +163,18 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     logger.debug(s"Subscription leadership state: ${h.subscriptionLeader.getState}")
 
-    h.subscriptionLeader.start
-
-    h.subscriptionLeader.await
+    val sll = if(h.subscriptionLeader.getState == LeaderLatch.State.CLOSED){
+      val l = new LeaderLatch(h.curatorClient, h.sdch.get(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath))
+      l.start
+      l.await
+      l
+    } else {
+      h.subscriptionLeader
+    }
 
     val currentMembers =
-      xCluster.state.members.filter(_.roles.contains("server")).map(m => m.address.toString).toArray
+      (xCluster.state.members.filter(_.roles.contains("server")).map(m => m.address.toString)
+        ++ xCluster.selfAddress.toString).toArray
 
     val pathForSeeds = h.sdch.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
 
@@ -178,7 +184,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     h.curatorClient.setData().forPath(pathForSeeds, currentMembers.mkString(",").getBytes)
 
-    h.subscriptionLeader.close
+    sll.close
   }
 
   private def endServiceDiscovery(xCluster: Cluster, s: SDH, aSystem: ActorSystem) = {
@@ -245,7 +251,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
       sdHelper.map{ sd =>
 
-        // Complete promise and add current seeds
+        // Complete future and add current seeds
         // Release subscription leadership
         // PROBLEM: Currents seeds are just this current seed
         // SOLUTION: schedulerOnce and get current nodes to be added to zk seeds
