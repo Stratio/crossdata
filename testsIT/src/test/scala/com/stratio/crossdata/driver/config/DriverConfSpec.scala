@@ -44,7 +44,7 @@ class DriverConfSpec extends BaseXDTest{
     conf.getFlattenTables shouldBe true
     conf.getClusterContactPoint should have length 2
     conf.getClusterContactPoint should contain allOf
-      ("akka.tcp://CrossdataServerCluster@1.1.1.1:1000/user/receptionist", "akka.tcp://CrossdataServerCluster@2.2.2.2:2000/user/receptionist")
+      ("akka.tcp://CrossdataServerCluster@1.1.1.1:1000/system/receptionist", "akka.tcp://CrossdataServerCluster@2.2.2.2:2000/system/receptionist")
 
     conf.get("akka.contrib.cluster.receptionist.response-tunnel-receive-timeout") shouldBe 10000
   }

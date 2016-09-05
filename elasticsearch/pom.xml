@@ -22,18 +22,18 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.stratio.crossdata</groupId>
-        <artifactId>parent_2.10</artifactId>
+        <artifactId>parent_2.11</artifactId>
         <version>1.6.0-SNAPSHOT</version>
     </parent>
     <groupId>com.stratio.crossdata.connector</groupId>
-    <artifactId>crossdata-elasticsearch_2.10</artifactId>
+    <artifactId>crossdata-elasticsearch_2.11</artifactId>
     <packaging>jar</packaging>
     <name>Elasticsearch Connector</name>
     <description>Crossdata Elasticsearch Connector</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
-        <elastic.datasource.version>2.3.3</elastic.datasource.version>
+        <elastic.datasource.version>2.4.0</elastic.datasource.version>
         <elastic4s.version>2.0.1</elastic4s.version>
         <jackson.elastic.version>2.5.3</jackson.elastic.version>
     </properties>

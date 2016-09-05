@@ -18,8 +18,8 @@ package com.stratio.crossdata.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.contrib.pattern.DistributedPubSubExtension
-import akka.contrib.pattern.DistributedPubSubMediator.{Subscribe, SubscribeAck}
+import akka.cluster.pubsub.DistributedPubSub
+import akka.cluster.pubsub.DistributedPubSubMediator.{Subscribe, SubscribeAck}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
@@ -47,7 +47,7 @@ class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   lazy val logger = Logger.getLogger(classOf[ServerActor])
 
-  lazy val mediator = DistributedPubSubExtension(context.system).mediator
+  lazy val mediator = DistributedPubSub(context.system).mediator
 
   override def preStart(): Unit = {
     super.preStart()
@@ -75,7 +75,7 @@ class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
   def AddJarMessages(st: State): Receive = {
-    case CommandEnvelope(addJarCommand: AddJARCommand, session@Session(id, requester)) =>
+    case CommandEnvelope(addJarCommand: AddJARCommand, session@Session(id, requester), _) =>
       logger.debug(s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
       //TODO  Maybe include job controller if it is necessary as in sql command

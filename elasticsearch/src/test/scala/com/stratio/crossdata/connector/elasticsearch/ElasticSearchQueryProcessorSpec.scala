@@ -34,8 +34,7 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
 
     val logicalPlan: LogicalPlan = mock[LogicalPlan]
     val parameters = mock[Map[String, String]]
-    val structType = Option(mock[StructType])
-    val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
+    val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, None)
 
     val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
     val filters: Array[SourceFilter] = Array()
@@ -57,8 +56,7 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
 
     val logicalPlan: LogicalPlan = mock[LogicalPlan]
     val parameters = mock[Map[String, String]]
-    val structType = Option(mock[StructType])
-    val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
+    val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, None)
 
     val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
     val filters: Array[SourceFilter] = Array(EqualTo("year", 1990))
@@ -80,8 +78,7 @@ class ElasticSearchQueryProcessorSpec extends BaseXDTest with MockitoSugar {
 
     val logicalPlan: LogicalPlan = mock[LogicalPlan]
     val parameters = mock[Map[String, String]]
-    val structType = Option(mock[StructType])
-    val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, structType)
+    val queryProcessor = ElasticSearchQueryProcessor(logicalPlan, parameters, None)
 
     val requiredColums: Array[Attribute] = Array(new PrettyAttribute("title"))
     val filters: Array[SourceFilter] = Array(EqualTo("year", 1990), EqualTo("Name", "Lord"))

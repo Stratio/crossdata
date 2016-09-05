@@ -1,0 +1,27 @@
+[
+  {
+    "group": "crossdata",
+    "name": "crossdata",
+    "className": "org.apache.zeppelin.crossdata.CrossdataInterpreter",
+    "properties": {
+      "crossdata.seeds": {
+        "envName": "ZEPPELIN_SPARK_CONCURRENTSQL",
+        "propertyName": "crossdata.seeds",
+        "defaultValue": "127.0.0.1:13420",
+        "description": "The list of seeds."
+      },
+      "crossdata.timeoutSeconds": {
+        "envName": "CROSSDATA_TIMEOUT_SEC",
+        "propertyName": "crossdata.timeoutSeconds",
+        "defaultValue": "100",
+        "description": "Query timeout in seconds (0 means infinite timeout)"
+      },
+      "crossdata.defaultLimit": {
+        "envName": "CROSSDATA_DEFAULT_LIMIT",
+        "propertyName": "crossdata.defaultLimit",
+        "defaultValue": "1000",
+        "description": "Default limit"
+      }
+    }
+  }
+]
