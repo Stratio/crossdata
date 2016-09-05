@@ -94,6 +94,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     else
       context.become(initial(pendingTopics))
 
+  def actualRequester(rqActor: ActorRef): ActorRef = Option(rqActor).getOrElse(sender)
+
   /**
     * If a `cmd` is passed to this method is because it has already been checked that this server can run it.
     *
@@ -159,11 +161,11 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       executeAccepted(sc)(st)
 
     case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, requester), _) =>
-      st.jobsById.get(JobId(requester, id, cc.requestId)) map { _ =>
+      st.jobsById.get(JobId(actualRequester(requester), id, cc.requestId)) map { _ =>
         executeAccepted(sc)(st) // Command validated to be executed by this server.
       } getOrElse {
         // If it can't run here it should be executed somewhere else
-        mediator ! Publish(ManagementTopic, DelegateCommand(sc, self))
+        mediator ! Publish(ManagementTopic, DelegateCommand(sc.copy(session = Session(id, actualRequester(requester))), self))
       }
 
     case sc@CommandEnvelope(_: ClusterStateCommand, session, _) =>

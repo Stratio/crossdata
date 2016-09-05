@@ -33,6 +33,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-common_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
         </dependency>

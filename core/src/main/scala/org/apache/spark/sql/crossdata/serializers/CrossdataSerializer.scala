@@ -26,7 +26,8 @@ trait CrossdataSerializer {
     DefaultFormats +
       StructTypeSerializer +
       new EnumNameSerializer(EphemeralExecutionStatus) +
-      new EnumNameSerializer(EphemeralOutputFormat)
+      new EnumNameSerializer(EphemeralOutputFormat) +
+      UUIDSerializer + SessionSerializer + CommandSerializer
 
 }
 

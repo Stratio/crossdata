@@ -18,25 +18,32 @@ package com.stratio.crossdata.server
 import java.io.File
 
 import akka.actor.{ActorRef, ActorSystem}
+import akka.pattern.ask
 import akka.cluster.pubsub.DistributedPubSub
 import akka.cluster.pubsub.DistributedPubSubMediator.Publish
-import akka.http.scaladsl.model.Multipart
+import akka.http.javadsl.model.RequestEntity
+import akka.http.scaladsl.model.{HttpRequest, Multipart, StatusCodes}
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.FileIO
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope}
+import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope, SQLCommand}
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
+import org.json4s.{DefaultFormats, jackson}
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 
-class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) {
+
+class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) extends
+CrossdataSerializer {
 
   import ResourceManagerActor._
 
@@ -47,7 +54,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
   type SessionDirective[Session] = Directive[Tuple1[Session]]
 
-  def route =
+  lazy val route =
     path("upload" / JavaUUID) { sessionUUID =>
       entity(as[Multipart.FormData]) { formData =>
         // collect all parts of the multipart as it arrives into a map
@@ -87,7 +94,24 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
         }
       }
 
+    } ~ path("query") {
+      //TODO: REFACTOR
+      import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
+      implicit val serialization = jackson.Serialization
+
+      post {
+        entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
+          serverActor ? "a"
+          serverActor ? rq.copy(session = rq.session.copy(clientRef = ))
+          complete(StatusCodes.OK, "GREAT!!!!")
+        }
+      }
     } ~ complete("Welcome to Crossdata HTTP Server")
+
+
+  val getRqEnt = extract[HttpRequest] { rqCtx =>
+    rqCtx.request
+  }
 
   private def writeJarToHdfs(hdfsConfig: Config, jar: String): String = {
     val user = hdfsConfig.getString("user")
