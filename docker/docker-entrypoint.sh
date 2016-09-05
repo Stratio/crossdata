@@ -52,6 +52,7 @@ if [ -z ${MARATHON_APP_ID} ]; then
      sed -i "s|#crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"${SEED_IP}\",\"${AKKAIP}\"]|" /etc/sds/crossdata/server/server-application.conf
      sed -i "s|<member>127.0.0.1</member>|<member>${XD_SEED}</member>|" /etc/sds/crossdata/server/hazelcast.xml
     fi
+
     #TODO: Check environment vars for hostname and bind hostname & ports
     sed -i "s|#crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
     sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
@@ -66,6 +67,11 @@ else
         echo ERROR: Env var XD_EXTERNAL_IP and label HAPROXY_0_PORT must be provided using Marathon&Haproxy 1>&2
         exit 1 # terminate and indicate error
     else
+        #Memory
+        RAM_AVAIL=$(echo $MARATHON_APP_RESOURCE_MEM | cut -d "." -f1)
+        CROSSDATA_JAVA_OPT="-Xmx${RAM_AVAIL}m -Xms${RAM_AVAIL}m"
+        sed -i "s|# CROSSDATA_LIB|#CROSSDATA_JAVA_OPTS\nCROSSDATA_JAVA_OPTS=\"${CROSSDATA_JAVA_OPT}\"\n# CROSSDATA_LIB|" /etc/sds/crossdata/server/crossdata-env.sh
+
         #Hostname and port of haproxy
         HAPROXY_FINAL_ROUTE=${XD_EXTERNAL_IP}:${MARATHON_APP_LABEL_HAPROXY_0_PORT}
         sed -i "s|#crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${XD_EXTERNAL_IP}\"|" /etc/sds/crossdata/server/server-application.conf
@@ -77,7 +83,10 @@ else
         sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"13420\"|" /etc/sds/crossdata/server/server-application.conf
 
         #Hazelcast TODO check
-        sed -i "s|<member>127.0.0.1</member>|<member>${XD_SEED}</member>|" /etc/sds/crossdata/server/hazelcast.xml
+        #sed -i "s|<member>127.0.0.1</member>|<member>${XD_SEED}</member>|" /etc/sds/crossdata/server/hazelcast.xml
+
+        #Driver
+        sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
     fi
 fi
 
