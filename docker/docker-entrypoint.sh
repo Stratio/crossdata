@@ -35,14 +35,15 @@ fi
 
 HOST="hostname -f"
 if [[ "$(hostname -f)" =~ \. ]]; then
-    HOST="$(hostname -f)"
+  HOST="$(hostname -f)"
 else
-    HOST="$(hostname -i)"
+  HOST="$(hostname -i)"
 fi
 
 #Marathon support
 if [ -z ${MARATHON_APP_ID} ]; then
     AKKAIP=akka.tcp:\/\/CrossdataServerCluster@${HOST}:13420
+
     #TODO: Test instead of XD_SEED : CROSSDATA_SERVER_AKKA_CLUSTER_SEED_NODES
     if [ -z ${XD_SEED} ]; then
      sed -i "s|<member>127.0.0.1</member>|<member>${HOST}</member>|" /etc/sds/crossdata/server/hazelcast.xml
@@ -97,5 +98,10 @@ sed -i "s|crossdata-server.config.spark.executor.memory.*|crossdata-server.confi
 sed -i "s|crossdata-server.config.spark.cores.max.*|crossdata-server.config.spark.cores.max = ${XD_CORES:=4}|" /etc/sds/crossdata/server/server-application.conf
 
 /etc/init.d/crossdata start
+if [ -z ${XD_SEED}]; then
+  sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST}:13420\"]|" /etc/sds/crossdata/shell/driver-application.conf
+else
+ sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST}:13420\", \"${XD_SEED}\"]|" /etc/sds/crossdata/shell/driver-application.conf
+fi
 
 tail -F /var/log/sds/crossdata/crossdata.log
