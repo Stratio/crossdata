@@ -102,8 +102,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     * @param cmd
     * @param st
     */
-  private def executeAccepted(cmd: CommandEnvelope)(st: State): Unit = cmd match {
-    case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, requester), _) =>
+  private def executeAccepted(cmd: CommandEnvelope, requester: ActorRef)(st: State): Unit = cmd match {
+    case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, _), _) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
 
@@ -142,7 +142,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       cmd match {
         // Inner pattern matching for future delegated command validations
         case sc@CommandEnvelope(CancelQueryExecution(queryId), Session(sid, requester), _) =>
-          st.jobsById.get(JobId(requester, sid, queryId)) foreach (_ => executeAccepted(sc)(st))
+          st.jobsById.get(JobId(requester, sid, queryId)) foreach (_ => executeAccepted(sc, requester)(st))
         /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
             servers through the topic. */
       }
@@ -151,18 +151,18 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
   // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
   def commandMessagesRec(st: State): Receive = {
 
-    case sc@CommandEnvelope(_: SQLCommand, _, _) =>
+    case sc@CommandEnvelope(_: SQLCommand, session, _) =>
+      executeAccepted(sc, actualRequester(session.clientRef))(st)
+
+    /*case sc@CommandEnvelope(_: AddJARCommand, _, _) => //TODO Adapt Requester
       executeAccepted(sc)(st)
 
-    case sc@CommandEnvelope(_: AddJARCommand, _, _) =>
-      executeAccepted(sc)(st)
-
-    case sc@CommandEnvelope(_: AddAppCommand, _, _) =>
-      executeAccepted(sc)(st)
+    case sc@CommandEnvelope(_: AddAppCommand, _, _) => //TODO: Adapt Requester
+      executeAccepted(sc)(st)*/
 
     case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, requester), _) =>
       st.jobsById.get(JobId(actualRequester(requester), id, cc.requestId)) map { _ =>
-        executeAccepted(sc)(st) // Command validated to be executed by this server.
+        executeAccepted(sc, actualRequester(requester))(st) // Command validated to be executed by this server.
       } getOrElse {
         // If it can't run here it should be executed somewhere else
         mediator ! Publish(ManagementTopic, DelegateCommand(sc.copy(session = Session(id, actualRequester(requester))), self))

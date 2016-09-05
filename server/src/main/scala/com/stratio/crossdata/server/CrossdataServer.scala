@@ -47,7 +47,7 @@ class CrossdataServer extends ServerConfig {
 
   def start(): Unit = {
 
-    /*val sparkParams = config.entrySet()
+    val sparkParams = config.entrySet()
       .map(e => (e.getKey, e.getValue.unwrapped().toString))
       .toMap
       .filterKeys(_.startsWith("config.spark"))
@@ -66,13 +66,13 @@ class CrossdataServer extends ServerConfig {
         new BasicSessionProvider(sparkContext, config)
     }
 
-    val sessionProvider = sessionProviderOpt.getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))*/
+    val sessionProvider = sessionProviderOpt.getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
 
 
     system = Some(ActorSystem(clusterName, config))
 
+
     system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
-   /* system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
       val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
       val serverActor = actorSystem.actorOf(
         RoundRobinPool(minServerActorInstances, Some(resizer)).props(
@@ -80,20 +80,19 @@ class CrossdataServer extends ServerConfig {
             classOf[ServerActor],
             Cluster(actorSystem),
             sessionProvider)),
-        actorName)*/
+        actorName)
 
-      /*val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
+      val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
       ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
 
       val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
       ClusterClientReceptionist(actorSystem).registerService(serverActor)
-      ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)*/
+      ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
 
       //TODO
       implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()
-      val httpServerActor = new CrossdataHttpServer(config, null, actorSystem)
-      /*val httpServerActor = new CrossdataHttpServer(config, serverActor, actorSystem)*/
+      val httpServerActor = new CrossdataHttpServer(config, serverActor, actorSystem)
       val host = config.getString(ServerConfig.Host)
       val port = config.getInt(ServerConfig.HttpServerPort)
 

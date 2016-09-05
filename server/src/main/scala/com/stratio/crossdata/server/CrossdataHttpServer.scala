@@ -22,18 +22,21 @@ import akka.pattern.ask
 import akka.cluster.pubsub.DistributedPubSub
 import akka.cluster.pubsub.DistributedPubSubMediator.Publish
 import akka.http.javadsl.model.RequestEntity
-import akka.http.scaladsl.model.{HttpRequest, Multipart, StatusCodes}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.FileIO
+import akka.stream.scaladsl.{FileIO, Source}
+import akka.util.{ByteString, Timeout}
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope, SQLCommand}
+import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope, SQLCommand, SQLReply}
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.json4s.{DefaultFormats, jackson}
@@ -101,9 +104,38 @@ CrossdataSerializer {
 
       post {
         entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
-          serverActor ? "a"
-          serverActor ? rq.copy(session = rq.session.copy(clientRef = ))
-          complete(StatusCodes.OK, "GREAT!!!!")
+
+          val queryTo = 30 minutes
+          implicit val _ = Timeout(queryTo)
+
+          Await.result(serverActor ? rq, queryTo) match {
+            case SQLReply(requestId, _) if requestId != rq.cmd.requestId =>
+              complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
+
+            case SQLReply(_, SuccessfulSQLResult(rset, _)) =>
+
+              val txt = ("" /: rset) {
+                case (acc, row: Row) => acc + row.toString() + "\n"
+              }
+
+              complete(StatusCodes.OK, txt)
+
+             /* val resStream = Source.fromIterator(() => rset.iterator)
+
+              complete(
+                HttpEntity(
+                  ContentTypes.`text/plain(UTF-8)`,
+                  resStream.map(row => ByteString(row.toString + "\n"))
+                )
+              )*/
+
+            case SQLReply(_, ErrorSQLResult(message, _)) =>
+              complete(StatusCodes.ServerError, message)
+
+            case other => complete(StatusCodes.ServerError, s"Bad internal reply: $other")
+
+          }
+
         }
       }
     } ~ complete("Welcome to Crossdata HTTP Server")
