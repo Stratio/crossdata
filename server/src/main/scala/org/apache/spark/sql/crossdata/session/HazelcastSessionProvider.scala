@@ -44,7 +44,7 @@ object HazelcastSessionProvider {
 
 class HazelcastSessionProvider( sc: SparkContext,
                                 userConfig: Config,
-                                hzConfig: HzConfig
+                                hzConfig: HzConfig = new HzConfig()
                                 ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig { // TODO CoreConfig should not be a trait
 
   import HazelcastSessionProvider._

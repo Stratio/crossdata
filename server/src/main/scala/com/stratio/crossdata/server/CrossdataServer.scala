@@ -281,10 +281,9 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
       sdHelper.map{ sd =>
 
-        // Complete future and add current seeds
-        // Release subscription leadership
-        // PROBLEM: Currents seeds are just this current seed
-        // SOLUTION: schedulerOnce and get current nodes to be added to zk seeds
+        // Once the Cluster has been started and the cluster leadership is gotten,
+        // this sever will update the list of cluster seeds and provider members periodically
+        // according to the Akka members.
         import scala.concurrent.ExecutionContext.Implicits.global
         sd.leadershipFuture onSuccess {
           case _ =>
