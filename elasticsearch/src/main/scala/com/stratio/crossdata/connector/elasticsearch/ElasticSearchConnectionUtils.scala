@@ -102,5 +102,4 @@ object ElasticSearchConnectionUtils {
     indexData.keys().map(typeES => new Table(typeES.value, Some(indexName), schema)).toSeq
   }
 
-
 }

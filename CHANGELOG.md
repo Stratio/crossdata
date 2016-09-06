@@ -4,7 +4,11 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 ## 1.6.0 (upcoming)
 
-* Elasticsearch: support import tables without specifying a particular resource
+* Elasticsearch: 
+    * Support import tables without specifying a particular resource
+    * Adds BINARY, TINYINT, FLOAT types.
+    * Adds support for sub documents at Native side.
+    
 * Major Akka version upgrade to 2.4 (2.4.9), thus enabling putting the server behind HAProxy. 
 * Resolve queries using fully qualified identifiers. 
 

@@ -18,75 +18,87 @@ package com.stratio.crossdata.connector.elasticsearch
 import java.sql.Timestamp
 import java.sql.{Date => SQLDate}
 import java.text.SimpleDateFormat
+import java.util
 import java.util.Date
+
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.types.DataType
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.sql.types.IntegerType
-import org.apache.spark.sql.types.LongType
-import org.apache.spark.sql.types.DecimalType
-import org.apache.spark.sql.types.TimestampType
-import org.apache.spark.sql.types.NullType
-import org.apache.spark.sql.types.DoubleType
-import org.apache.spark.sql.types.BooleanType
-import org.apache.spark.sql.types.DateType
-import org.apache.spark.sql.types.Decimal
+import org.apache.spark.sql.catalyst.expressions.{Attribute, GenericRowWithSchema}
+import org.apache.spark.sql.types._
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.SearchHitField
 import org.joda.time.DateTime
+
+import scala.collection.JavaConverters._
 
 object ElasticSearchRowConverter {
 
 
   def asRows(schema: StructType, array: Array[SearchHit], requiredFields: Seq[Attribute]): Array[Row] = {
-    import scala.collection.JavaConverters._
-    val schemaMap = schema.map(field => field.name -> field.dataType).toMap
 
     array map { hit =>
-      hitAsRow(hit.fields().asScala.toMap, schemaMap, requiredFields.map(_.name))
+      hitAsRow(
+        hit.fields().asScala.toMap,
+        Option(hit.getSource).map(_.asScala.toMap).getOrElse(Map.empty),
+        schema,
+        requiredFields.map(_.name)
+      )
     }
   }
 
   def hitAsRow(
                 hitFields: Map[String, SearchHitField],
-                schemaMap: Map[String, DataType],
+                subDocuments: Map[String, AnyRef],
+                schema: StructType,
                 requiredFields: Seq[String]): Row = {
-    val values: Seq[Any] = requiredFields.map {
-      name =>
-        hitFields.get(name).flatMap(v => Option(v)).map(
-          toSQL(_, schemaMap(name))).orNull
+
+    val schemaMap = schema.map(field => field.name -> field.dataType).toMap
+
+    val values: Seq[Any] = requiredFields.map { name =>
+
+      // TODO: Note that if a nested subdocument is targeted, it won't work and this algorithm should be made recursive.
+      (hitFields.get(name) orElse subDocuments.get(name)).flatMap(Option(_)) map {
+        ((value: Any) => enforceCorrectType(value, schemaMap(name))) compose {
+          case hitField: SearchHitField => hitField.getValue
+          case other => other
+        }
+      } orNull
+
     }
-    Row.fromSeq(values)
+    new GenericRowWithSchema(values.toArray, schema)
   }
 
-  def toSQL(value: SearchHitField, dataType: DataType): Any = {
-
-    Option(value).map { case value =>
-      //Assure value is mapped to schema constrained type.
-      enforceCorrectType(value.getValue, dataType)
-    }.orNull
-  }
-
-
-  protected def enforceCorrectType(value: Any, desiredType: DataType): Any = {
+  protected def enforceCorrectType(value: Any, desiredType: DataType): Any =
       // TODO check if value==null
-      Option(desiredType).map {
+      desiredType match {
         case StringType => value.toString
         case _ if value == "" => null // guard the non string type
+        case ByteType => toByte(value)
+        case ShortType => toShort(value)
         case IntegerType => toInt(value)
         case LongType => toLong(value)
         case DoubleType => toDouble(value)
+        case FloatType => toFloat(value)
         case DecimalType() => toDecimal(value)
         case BooleanType => value.asInstanceOf[Boolean]
         case TimestampType => toTimestamp(value)
         case NullType => null
         case DateType => toDate(value)
+        case BinaryType => toBinary(value)
+        case schema: StructType => toRow(value, schema)
         case _ =>
           sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
           value
-      }.orNull
+      }
+
+  private def toByte(value: Any): Byte = value match {
+    case value: Byte => value
+    case value: Int => value.toByte
+    case value: Long => value.toByte
+  }
+
+  private def toShort(value: Any): Short = value match {
+    case value: Int => value.toShort
+    case value: Long => value.toShort
   }
 
   private def toInt(value: Any): Int = {
@@ -99,25 +111,34 @@ object ElasticSearchRowConverter {
 
   private def toLong(value: Any): Long = {
     value match {
-      case value: java.lang.Integer => value.asInstanceOf[Int].toLong
-      case value: java.lang.Long => value.asInstanceOf[Long]
+      case value: Int => value.toLong
+      case value: Long => value
     }
   }
 
   private def toDouble(value: Any): Double = {
     value match {
-      case value: java.lang.Integer => value.asInstanceOf[Int].toDouble
-      case value: java.lang.Long => value.asInstanceOf[Long].toDouble
-      case value: java.lang.Double => value.asInstanceOf[Double]
+      case value: Int => value.toDouble
+      case value: Long => value.toDouble
+      case value: Double => value
+    }
+  }
+
+  private def toFloat(value: Any): Float = {
+    value match {
+      case value: Int => value.toFloat
+      case value: Long => value.toFloat
+      case value: Float => value
+      case value: Double => value.toFloat
     }
   }
 
   private def toDecimal(value: Any): Decimal = {
     value match {
-      case value: java.lang.Integer => Decimal(value)
-      case value: java.lang.Long => Decimal(value)
+      case value: Int => Decimal(value)
+      case value: Long => Decimal(value)
       case value: java.math.BigInteger => Decimal(new java.math.BigDecimal(value))
-      case value: java.lang.Double => Decimal(value)
+      case value: Double => Decimal(value)
       case value: java.math.BigDecimal => Decimal(value)
     }
   }
@@ -138,4 +159,19 @@ object ElasticSearchRowConverter {
       case value: String => new SQLDate(DateTime.parse(value).getMillis)
     }
   }
+
+  def toBinary(value: Any): Array[Byte] = value match {
+    case str: String => str.getBytes
+    case arr: Array[Byte @unchecked] if arr.headOption.collect { case _: Byte => true } getOrElse false => arr
+    case _ => sys.error(s"Unsupported datatype conversion [${value.getClass}},Array[Byte]")
+  }
+
+
+  def toRow(value: Any, schema: StructType): Row = value match {
+    case m: util.HashMap[String @ unchecked, _] =>
+      val rowValues = schema.fields map (field => enforceCorrectType(m.get(field.name), field.dataType))
+      new GenericRowWithSchema(rowValues, schema)
+    case _ => sys.error(s"Unsupported datatype conversion [${value.getClass}},Row")
+  }
+
 }
