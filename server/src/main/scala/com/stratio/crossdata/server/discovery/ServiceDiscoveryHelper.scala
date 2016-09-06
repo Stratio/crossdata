@@ -41,14 +41,14 @@ object ServiceDiscoveryConfigHelper extends CoreConfig {
   val Retries = 3
   val SubscriptionPrefix = "cluster-subscription"
   val SubscriptionPath = s"$SubscriptionPrefix.path"
-  val DefaultSubscriptionPath = s"/stratio/crossdata${ClusterPrefix.map(p => s"/$p")}/discovery/subscription/leader"
+  val DefaultSubscriptionPath = s"/stratio/crossdata${ClusterPrefix.fold("")(p => s"/$p")}/discovery/subscription/leader"
   val SubscriptionTimeoutPath = s"$SubscriptionPrefix.timeout"
   val DefaultSubscriptionTimeout = 10
   val ClusterLeaderPrefix = "cluster-leader"
   val ClusterLeaderPath = s"$ClusterLeaderPrefix.path"
-  val DefaultClusterLeaderPath = s"/stratio/crossdata${ClusterPrefix.map(p => s"/$p")}/discovery/cluster/leader"
+  val DefaultClusterLeaderPath = s"/stratio/crossdata${ClusterPrefix.fold("")(p => s"/$p")}/discovery/cluster/leader"
   val SeedsPath = "seeds"
-  val DefaultSeedsPath = s"/stratio/crossdata${ClusterPrefix.map(p=>s"/$p")}/discovery/seeds"
+  val DefaultSeedsPath = s"/stratio/crossdata${ClusterPrefix.fold("")(p => s"/$p")}/discovery/seeds"
   val DefaultSeedNodes = "akka.tcp://CrossdataServerCluster@127.0.0.1:13420"
   val ClusterDelayPath = s"$ClusterLeaderPrefix.scheduler.delay"
   val DefaultClusterDelay = 10
