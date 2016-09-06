@@ -1,9 +1,7 @@
 package org.apache.spark.sql.crossdata.serializers
 
 import com.stratio.crossdata.common.{Command, SQLCommand}
-import org.json4s.CustomSerializer
-import org.json4s.JsonAST.{JBool, JField, JObject, JString}
-
+import org.json4s._
 import java.util.UUID
 
 object CommandSerializer extends CustomSerializer[Command](
@@ -17,6 +15,8 @@ object CommandSerializer extends CustomSerializer[Command](
         )
       ) => SQLCommand(sql, UUID.fromString(qid), flattenResults)
     },
-    PartialFunction.empty //TODO
+    {
+      case command: SQLCommand => Extraction.decompose(command)(DefaultFormats + SessionSerializer)
+    }
     )
 )

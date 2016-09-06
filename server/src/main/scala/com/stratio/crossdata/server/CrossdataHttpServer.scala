@@ -108,17 +108,20 @@ CrossdataSerializer {
           val queryTo = 30 minutes
           implicit val _ = Timeout(queryTo)
 
+          //TODO: use 'onComplete' directive.
           Await.result(serverActor ? rq, queryTo) match {
             case SQLReply(requestId, _) if requestId != rq.cmd.requestId =>
               complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
 
-            case SQLReply(_, SuccessfulSQLResult(rset, _)) =>
+            case reply @ SQLReply(_, SuccessfulSQLResult(rset, _)) =>
 
-              val txt = ("" /: rset) {
+              complete(reply)
+
+              /*val txt = ("" /: rset) {
                 case (acc, row: Row) => acc + row.toString() + "\n"
               }
 
-              complete(StatusCodes.OK, txt)
+              complete(StatusCodes.OK, txt)*/
 
              /* val resStream = Source.fromIterator(() => rset.iterator)
 
