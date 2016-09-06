@@ -38,7 +38,7 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPer
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
-import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias, WrapRelationWithGlobalIndex}
+import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias, ResolveReferencesXD, WrapRelationWithGlobalIndex}
 import org.apache.spark.sql.crossdata.catalyst.execution.ImportTablesUsingWithOptions
 import org.apache.spark.sql.crossdata.catalyst.optimizer.XDOptimizer
 import org.apache.spark.sql.crossdata.catalyst.parser.XDDdlParser
@@ -156,6 +156,7 @@ class XDContext protected (@transient val sc: SparkContext,
     new Analyzer(catalog, functionRegistry, conf) {
       override val extendedResolutionRules =
         ResolveAggregateAlias ::
+          ResolveReferencesXD(conf) ::
           ExtractPythonUDFs ::
           ExtractNativeUDFs ::
           PreInsertCastAndRename ::
