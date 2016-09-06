@@ -73,6 +73,8 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val sLeaderPath = sdc.get(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath)
 
+    logger.debug(s"Service discovery - subscription leadership path: $sLeaderPath")
+
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, sLeaderPath)
 
     val sLeader = new LeaderLatch(
@@ -94,6 +96,8 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
   private def requestClusterLeadership(dClient: CuratorFramework, sdc: SDCH) = {
 
     val cLeaderPath = sdc.get(SDCH.ClusterLeaderPath, SDCH.DefaultClusterLeaderPath)
+
+    logger.debug(s"Service discovery - cluster leadership path: $cLeaderPath")
 
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, cLeaderPath)
 
@@ -126,15 +130,17 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     //    otherwise, go to ZK and get seeds to modify the config
     val currentClusterLeader = gotLeadership(clusterLeader)
 
+    val pathForSeeds = sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
+
+    logger.debug(s"Service Discovery - seeds path: $pathForSeeds")
+
     if(currentClusterLeader){
-      val pathForSeeds = sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
       Try(dClient.delete.deletingChildrenIfNeeded.forPath(pathForSeeds))
         .getOrElse(logger.debug(s"ZK path '$pathForSeeds' wasn't deleted because it doesn't exist"))
       serverConfig
     } else {
-      val seedsPath = sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
-      ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, seedsPath)
-      val zkSeeds = Try(dClient.getData.forPath(seedsPath)).getOrElse(SDCH.DefaultSeedNodes.getBytes)
+      ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForSeeds)
+      val zkSeeds = Try(dClient.getData.forPath(pathForSeeds)).getOrElse(SDCH.DefaultSeedNodes.getBytes)
       val sdSeeds = new String(zkSeeds)
       serverConfig.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromIterable(sdSeeds.split(",").toList))
     }
