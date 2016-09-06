@@ -23,6 +23,7 @@ import akka.cluster.Cluster
 import akka.cluster.client.ClusterClientReceptionist
 import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
+import com.hazelcast.config.{Config => HzConfig}
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
@@ -38,7 +39,6 @@ import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, HazelcastSe
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
-import scala.collection.immutable.SortedSet
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.util.{Random, Try}
@@ -56,6 +56,8 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     case Some(c) => c.withFallback(config)
     case None => config
   }
+
+  val hzConfig = new HzConfig()
 
   private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
@@ -77,9 +79,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, sLeaderPath)
 
-    val sLeader = new LeaderLatch(
-      dClient,
-      sLeaderPath)
+    val sLeader = new LeaderLatch(dClient, sLeaderPath)
 
     sLeader.start
 
@@ -121,33 +121,47 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       case _ => logger.info("Cluster leadership acquired")
     }
 
-    (cLeader, leadershipFuture)
+    leadershipFuture
   }
 
-  private def generateFinalConfig(clusterLeader: LeaderLatch, dClient: CuratorFramework, sdc: SDCH) = {
+  def getLocalSeed(): String = {
+    s"${serverConfig.getString("akka.remote.netty.tcp.hostname")}:${serverConfig.getInt("akka.remote.netty.tcp.port")}"
+  }
 
-    // If hasLeadership of cluster, clean zk seeds and keep current config,
-    //    otherwise, go to ZK and get seeds to modify the config
-    val currentClusterLeader = gotLeadership(clusterLeader)
+  def getLocalMember(): String = {
+    s"${hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.getMembers.head}"
+  }
+
+  private def generateFinalConfig(dClient: CuratorFramework, sdc: SDCH) = {
 
     val pathForSeeds = sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
-
     logger.debug(s"Service Discovery - seeds path: $pathForSeeds")
 
-    if(currentClusterLeader){
-      Try(dClient.delete.deletingChildrenIfNeeded.forPath(pathForSeeds))
-        .getOrElse(logger.debug(s"ZK path '$pathForSeeds' wasn't deleted because it doesn't exist"))
-      serverConfig
-    } else {
-      ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForSeeds)
-      val zkSeeds = Try(dClient.getData.forPath(pathForSeeds)).getOrElse(SDCH.DefaultSeedNodes.getBytes)
-      val sdSeeds = new String(zkSeeds)
-      serverConfig.withValue("akka.cluster.seed-nodes", ConfigValueFactory.fromIterable(sdSeeds.split(",").toList))
-    }
+    val pathForMembers = sdc.get(SDCH.ProviderPath, SDCH.DefaultProviderPath)
+    logger.debug(s"Service Discovery - members path: $pathForMembers")
+
+    ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForSeeds)
+    val currentSeeds = new String(dClient.getData.forPath(pathForSeeds))
+    val newSeeds = Set(getLocalSeed) ++ currentSeeds.split(",").toSet
+    dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
+    val modifiedAkkaConfig = serverConfig.withValue(
+      "akka.cluster.seed-nodes",
+      ConfigValueFactory.fromIterable(newSeeds))
+
+    ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForMembers)
+    val currentMembers = new String(dClient.getData.forPath(pathForMembers))
+    val newMembers = Set(getLocalMember) ++ currentMembers.split(",").toSet
+    dClient.setData.forPath(pathForMembers, newMembers.mkString(",").getBytes)
+    val modifiedHzConfig = hzConfig.setNetworkConfig(
+      hzConfig.getNetworkConfig.setJoin(
+        hzConfig.getNetworkConfig.getJoin.setTcpIpConfig(
+          hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.setMembers(newMembers.toList))))
+
+    (modifiedAkkaConfig, modifiedHzConfig)
   }
 
   // hasLeadership is not absolutely reliable, a connection listener has to be used to check connection state
-  private def gotLeadership(cLeader: LeaderLatch) = {
+  private def amILeader(cLeader: LeaderLatch) = {
     cLeader.hasLeadership && ZkConnectionState.isConnected
   }
 
@@ -156,53 +170,60 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val curatorClient = startDiscoveryClient(sdch)
 
     // Take subscription leadership with an await call (with timeout)
-    val csLeader = requestSubscriptionLeadership(curatorClient, sdch)
+    val subscriptionLeader = requestSubscriptionLeadership(curatorClient, sdch)
 
-    // Get promise for cluster leadership
-    val (clLeader, leadershipFuture) = requestClusterLeadership(curatorClient, sdch)
+    // Create future for cluster leadership
+    val leadershipFuture = requestClusterLeadership(curatorClient, sdch)
 
-    val finalConfig = generateFinalConfig(clLeader, curatorClient, sdch)
+    val (finalConfig, hzConfig) = generateFinalConfig(curatorClient, sdch)
 
-    SDH(curatorClient, finalConfig, leadershipFuture, clLeader, csLeader, sdch)
+    subscriptionLeader.close
+
+    SDH(curatorClient, finalConfig, hzConfig, leadershipFuture, sdch)
   }
 
-  private def writeSeeds(xCluster: Cluster, h: SDH) = {
-
-    logger.debug(s"Subscription leadership state: ${h.subscriptionLeader.getState}")
-
-    val sll = if(h.subscriptionLeader.getState == LeaderLatch.State.CLOSED){
-      val l = new LeaderLatch(h.curatorClient, h.sdch.get(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath))
-      l.start
-      l.await
-      l
-    } else {
-      h.subscriptionLeader
-    }
-
-    val currentMembers =
-      (xCluster.state.members.filter(_.roles.contains("server")).map(m => m.address.toString)
-        ++ SortedSet(xCluster.selfAddress.toString))
-
+  def updateClusterSeeds(xCluster: Cluster, h: SDH) = {
+    val currentSeeds =
+      (Set(xCluster.selfAddress.toString)
+        ++ xCluster.state.members.filter(_.roles.contains("server")).map(m => m.address.toString))
     val pathForSeeds = h.sdch.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
-
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForSeeds)
+    logger.info(s"Updating seeds: ${currentSeeds.mkString(",")}")
+    h.curatorClient.setData.forPath(pathForSeeds, currentSeeds.mkString(",").getBytes)
+    currentSeeds
+  }
 
-    logger.info(s"Updating seeds: ${currentMembers.mkString(",")}")
+  def updateClusterMembers(currentSeeds: Set[String], h: SDH) = {
+    val seedsHostnames = currentSeeds.map(_.split(":")(0))
+    val pathForMembers = h.sdch.get(SDCH.ProviderPath, SDCH.DefaultProviderPath)
+    ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
+    val currentMembers = new String(h.curatorClient.getData.forPath(pathForMembers)).split(",").toSet
+    // Filter by keeping only the members whose hostname is present in the seeds set
+    val updatedMembers = Set(getLocalMember) ++ currentMembers.filter(m => seedsHostnames.contains(m.split(":")(0)))
+    logger.info(s"Updating members: ${updatedMembers.mkString(",")}")
+    h.curatorClient.setData.forPath(pathForMembers, updatedMembers.mkString(",").getBytes)
 
-    h.curatorClient.setData().forPath(pathForSeeds, currentMembers.mkString(",").getBytes)
+  }
+
+  private def updateSeeds(xCluster: Cluster, h: SDH) = {
+
+    val sll = new LeaderLatch(h.curatorClient, h.sdch.get(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath))
+    sll.start
+    sll.await
+
+    val currentSeeds = updateClusterSeeds(xCluster, h)
+
+    updateClusterMembers(currentSeeds, h)
 
     sll.close
   }
 
-  private def endServiceDiscovery(xCluster: Cluster, s: SDH, aSystem: ActorSystem) = {
-    writeSeeds(xCluster, s)
-
-    val delayedInit = new FiniteDuration(
+  private def updateServiceDiscovery(xCluster: Cluster, s: SDH, aSystem: ActorSystem) = {
+    val delay = new FiniteDuration(
       s.sdch.get(SDCH.ClusterDelayPath, SDCH.DefaultClusterDelay.toString).toLong, TimeUnit.SECONDS)
 
     import scala.concurrent.ExecutionContext.Implicits.global
-
-    aSystem.scheduler.scheduleOnce(delayedInit)(writeSeeds(xCluster, s))
+    aSystem.scheduler.schedule(delay, delay)(updateSeeds(xCluster, s))
   }
 
   def start(): Unit = {
@@ -219,16 +240,6 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
 
-    sessionProviderOpt = Some {
-      if (isHazelcastEnabled)
-        new HazelcastSessionProvider(sparkContext, serverConfig)
-      else
-        new BasicSessionProvider(sparkContext, serverConfig)
-    }
-
-    val sessionProvider = sessionProviderOpt
-      .getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
-
     // Get service discovery configuration
     val sdConfig = Try(serverConfig.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
 
@@ -243,6 +254,18 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     }
 
     val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
+
+    val hzConfig = sdHelper.fold(new HzConfig())(_.hzConfig)
+
+    sessionProviderOpt = Some {
+      if (isHazelcastEnabled)
+        new HazelcastSessionProvider(sparkContext, serverConfig, hzConfig)
+      else
+        new BasicSessionProvider(sparkContext, serverConfig)
+    }
+
+    val sessionProvider = sessionProviderOpt
+      .getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
 
     finalConfig.entrySet.filter{ e =>
       e.getKey.contains("seed-nodes")
@@ -265,13 +288,8 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
         import scala.concurrent.ExecutionContext.Implicits.global
         sd.leadershipFuture onSuccess {
           case _ =>
-            endServiceDiscovery(xdCluster, sd, actorSystem)
+            updateServiceDiscovery(xdCluster, sd, actorSystem)
         }
-
-        if(!gotLeadership(sd.clusterLeader)){
-          sd.subscriptionLeader.close
-        }
-
       }
 
       val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
