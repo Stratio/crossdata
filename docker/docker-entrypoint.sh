@@ -33,20 +33,19 @@ if [ "${XD_MODE}" == "Streaming" ]; then
  sed -i "s|crossdata-core.streaming.spark.master = \"spark://localhost:7077\"|crossdata-core.streaming.spark.master = \"${SPARK_MASTER}\" |" /etc/sds/crossdata/server/core-application.conf
 fi
 
-HOST="hostname -f"
+DOCKER_HOST="hostname -f"
 if [[ "$(hostname -f)" =~ \. ]]; then
-  HOST="$(hostname -f)"
+  DOCKER_HOST="$(hostname -f)"
 else
-  HOST="$(hostname -i)"
+  DOCKER_HOST="$(hostname -i)"
 fi
 
-#Marathon support
+#Scenary: Working out from Marathon
 if [ -z ${MARATHON_APP_ID} ]; then
-    AKKAIP=akka.tcp:\/\/CrossdataServerCluster@${HOST}:13420
-
+    AKKAIP=akka.tcp:\/\/CrossdataServerCluster@${DOCKER_HOST}:13420
     #TODO: Test instead of XD_SEED : CROSSDATA_SERVER_AKKA_CLUSTER_SEED_NODES
     if [ -z ${XD_SEED} ]; then
-     sed -i "s|<member>127.0.0.1</member>|<member>${HOST}</member>|" /etc/sds/crossdata/server/hazelcast.xml
+     sed -i "s|<member>127.0.0.1</member>|<member>${DOCKER_HOST}</member>|" /etc/sds/crossdata/server/hazelcast.xml
      sed -i "s|#crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"${AKKAIP}\"]|" /etc/sds/crossdata/server/server-application.conf
     else
      SEED_IP=akka.tcp:\/\/CrossdataServerCluster@${XD_SEED}:13420
@@ -55,39 +54,60 @@ if [ -z ${MARATHON_APP_ID} ]; then
     fi
 
     #TODO: Check environment vars for hostname and bind hostname & ports
-    sed -i "s|#crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
-    sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
+    sed -i "s|#crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${DOCKER_HOST}\"|" /etc/sds/crossdata/server/server-application.conf
+    sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${DOCKER_HOST}\"|" /etc/sds/crossdata/server/server-application.conf
     if [ -z ${XD_SEED} ]; then
-        sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST}:13420\"]|" /etc/sds/crossdata/shell/driver-application.conf
+        sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${DOCKER_HOST}:13420\"]|" /etc/sds/crossdata/shell/driver-application.conf
     else
-        sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST}:13420\", \"${XD_SEED}\"]|" /etc/sds/crossdata/shell/driver-application.conf
+        sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${DOCKER_HOST}:13420\", \"${XD_SEED}\"]|" /etc/sds/crossdata/shell/driver-application.conf
     fi
 else
-    #XD_EXTERNAL_IP Must be specified
-    if [ -z ${XD_EXTERNAL_IP} ] || [ -z ${MARATHON_APP_LABEL_HAPROXY_0_PORT} ]; then
-        echo ERROR: Env var XD_EXTERNAL_IP and label HAPROXY_0_PORT must be provided using Marathon&Haproxy 1>&2
-        exit 1 # terminate and indicate error
-    else
-        #Memory
-        RAM_AVAIL=$(echo $MARATHON_APP_RESOURCE_MEM | cut -d "." -f1)
-        CROSSDATA_JAVA_OPT="-Xmx${RAM_AVAIL}m -Xms${RAM_AVAIL}m"
-        sed -i "s|# CROSSDATA_LIB|#CROSSDATA_JAVA_OPTS\nCROSSDATA_JAVA_OPTS=\"${CROSSDATA_JAVA_OPT}\"\n# CROSSDATA_LIB|" /etc/sds/crossdata/server/crossdata-env.sh
+    #Scenary: Working in Marathon
 
-        #Hostname and port of haproxy
-        HAPROXY_FINAL_ROUTE=${XD_EXTERNAL_IP}:${MARATHON_APP_LABEL_HAPROXY_0_PORT}
-        sed -i "s|#crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${XD_EXTERNAL_IP}\"|" /etc/sds/crossdata/server/server-application.conf
-        sed -i "s|#crossdata-server.akka.remote.netty.tcp.port.*|crossdata-server.akka.remote.netty.tcp.port = \"${MARATHON_APP_LABEL_HAPROXY_0_PORT}\"|" /etc/sds/crossdata/server/server-application.conf
-        sed -i "s|#crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"akka.tcp:\/\/CrossdataServerCluster@${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/server/server-application.conf
+    #Memory
+    RAM_AVAIL=$(echo $MARATHON_APP_RESOURCE_MEM | cut -d "." -f1)
+    CROSSDATA_JAVA_OPT="-Xmx${RAM_AVAIL}m -Xms${RAM_AVAIL}m"
+    sed -i "s|# CROSSDATA_LIB|#CROSSDATA_JAVA_OPTS\nCROSSDATA_JAVA_OPTS=\"${CROSSDATA_JAVA_OPT}\"\n# CROSSDATA_LIB|" /etc/sds/crossdata/server/crossdata-env.sh
+
+    #If XD_EXTERNAL_IP and MARATHON_APP_LABEL_HAPROXY_0_PORT are not specified assume we are working in HTTP mode
+    #Scenary: HAProxy exposing Akka http port, and creating an internal cluster using netty and autodiscovery through Zookeeper
+    if [ -z ${XD_EXTERNAL_IP} ] && [ -z ${MARATHON_APP_LABEL_HAPROXY_0_PORT} ]; then
+
+        #Hostname and port from host machine ($HOST:$PORT_13420)
+        HOST_ROUTE=${HOST}:${PORT_13420}
+        sed -i "s|#crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
+        sed -i "s|#crossdata-server.akka.remote.netty.tcp.port.*|crossdata-server.akka.remote.netty.tcp.port = \"${PORT_13420}\"|" /etc/sds/crossdata/server/server-application.conf
 
         #Bind address for local
-        sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
+        sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${DOCKER_HOST}\"|" /etc/sds/crossdata/server/server-application.conf
         sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"13420\"|" /etc/sds/crossdata/server/server-application.conf
 
-        #Hazelcast TODO check
-        #sed -i "s|<member>127.0.0.1</member>|<member>${XD_SEED}</member>|" /etc/sds/crossdata/server/hazelcast.xml
+        #Hazelcast
+        sed -i "s|<member>127.0.0.1</member>|<member>${HOST_ROUTE}</member>|" /etc/sds/crossdata/server/hazelcast.xml
 
         #Driver
-        sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
+        sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
+
+    else
+
+        #Scenary: HAProxy exposing the akka netty port with the external IP. Supported only for one instance of Crossdata
+        if [ -z ${XD_EXTERNAL_IP} ] || [ -z ${MARATHON_APP_LABEL_HAPROXY_0_PORT} ]; then
+            echo "ERROR: Env var XD_EXTERNAL_IP and label HAPROXY_0_PORT must be provided together using Marathon&Haproxy in TCP mode" 1>&2
+            exit 1 # terminate and indicate error
+        else
+            #Hostname and port of haproxy
+            HAPROXY_FINAL_ROUTE=${XD_EXTERNAL_IP}:${MARATHON_APP_LABEL_HAPROXY_0_PORT}
+            sed -i "s|#crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${XD_EXTERNAL_IP}\"|" /etc/sds/crossdata/server/server-application.conf
+            sed -i "s|#crossdata-server.akka.remote.netty.tcp.port.*|crossdata-server.akka.remote.netty.tcp.port = \"${MARATHON_APP_LABEL_HAPROXY_0_PORT}\"|" /etc/sds/crossdata/server/server-application.conf
+            sed -i "s|#crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"akka.tcp:\/\/CrossdataServerCluster@${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/server/server-application.conf
+
+            #Bind address for local
+            sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${DOCKER_HOST}\"|" /etc/sds/crossdata/server/server-application.conf
+            sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"13420\"|" /etc/sds/crossdata/server/server-application.conf
+
+            #Driver
+            sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
+        fi
     fi
 fi
 
@@ -98,10 +118,5 @@ sed -i "s|crossdata-server.config.spark.executor.memory.*|crossdata-server.confi
 sed -i "s|crossdata-server.config.spark.cores.max.*|crossdata-server.config.spark.cores.max = ${XD_CORES:=4}|" /etc/sds/crossdata/server/server-application.conf
 
 /etc/init.d/crossdata start
-if [ -z ${XD_SEED}]; then
-  sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST}:13420\"]|" /etc/sds/crossdata/shell/driver-application.conf
-else
- sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST}:13420\", \"${XD_SEED}\"]|" /etc/sds/crossdata/shell/driver-application.conf
-fi
 
 tail -F /var/log/sds/crossdata/crossdata.log
