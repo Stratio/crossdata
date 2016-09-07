@@ -23,7 +23,7 @@ class DriverStandaloneIT extends BaseXDTest {
 
     the [RuntimeException] thrownBy {
       Driver.newSession()
-    } should have message s"Cannot establish connection to XDServer: timed out after ${Driver.InitializationTimeout}"
+    } should have message s"Cannot establish connection to XDServer: timed out after ${ClusterClientDriver.InitializationTimeout}"
 
   }
 

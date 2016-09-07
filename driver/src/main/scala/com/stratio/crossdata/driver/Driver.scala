@@ -15,28 +15,24 @@
  */
 package com.stratio.crossdata.driver
 
-import java.util.UUID
-
-import akka.actor.{ActorPath, ActorRef, ActorSystem, Address}
+import akka.actor.{ActorSystem, Address}
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.cluster.MemberStatus
-import akka.cluster.client.{ClusterClient, ClusterClientSettings}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.driver.actor.{ProxyActor, ServerClusterClientParameters, SessionBeaconActor}
+import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.FieldMetadata
-import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
+import com.stratio.crossdata.driver.session.Authentication
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
 import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.reflect.io.File
 import scala.util.Try
 
 /*
@@ -46,7 +42,7 @@ import scala.util.Try
  * =======================================================================================
  */
 
-
+// TODO It should be moved to a new package (version 2.0)
 object Driver {
 
   /**
@@ -54,12 +50,32 @@ object Driver {
     */
   type TableIdentifier = (String, Option[String])
 
-  val InitializationTimeout: Duration = 10 seconds
+  private[driver] def generateDefaultAuth = Authentication("crossdata", Some("stratio"))
 
-  private lazy val defaultDriverConf = new DriverConf
+  private[driver] lazy val defaultDriverConf = new DriverConf
 
-  private lazy val system = ActorSystem("CrossdataServerCluster", defaultDriverConf.finalSettings)
+  /**
+    * TODO 2.0 improve implementation (avoiding explicit shutdown as a consequence)
+    * currently, it is the how the actor system is shared amongs drivers (tcp and http)
+    */
+  private[driver] lazy val system = ActorSystem("CrossdataServerCluster", defaultDriverConf.finalSettings)
 
+  /**
+    * Stops the underlying actor system.
+    * WARNING! It should be called once all active sessions have been closed. After the shutdown, new session cannot be created.
+    */
+  def shutdown(): Unit = {
+    if (!system.isTerminated) system.shutdown()
+  }
+
+  Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
+    def run() {
+      shutdown()
+    }
+  }))
+
+
+  // Factory for TCP drivers
   def newSession(): Driver = newSession(defaultDriverConf)
 
   def newSession(driverConf: DriverConf): Driver =
@@ -77,18 +93,10 @@ object Driver {
   def newSession(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
     newSession(driverConf.setClusterContactPoint(seedNodes))
 
-  /**
-    * Stops the underlying actor system.
-    * WARNING! It should be called once all active sessions have been closed. After the shutdown, new session cannot be created.
-    */
-  def shutdown(): Unit = {
-      if (!system.isTerminated) system.shutdown()
-  }
-
   private[crossdata] def newSession(driverConf: DriverConf, authentication: Authentication): Driver = {
-    val driver = new Driver(driverConf, authentication)
+    val driver = new ClusterClientDriver(driverConf, authentication)
     val isConnected = driver.openSession().getOrElse {
-      throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after ${Driver.InitializationTimeout}")
+      throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after ${ClusterClientDriver.InitializationTimeout}")
     }
     if (!isConnected) {
       throw new RuntimeException(s"The server has rejected the open session request")
@@ -96,57 +104,26 @@ object Driver {
     driver
   }
 
-  private[driver] def generateDefaultAuth = new Authentication("crossdata", Some("stratio"))
 
-  Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
-    def run() {
-      if (!system.isTerminated) system.shutdown()
-    }
-  }))
+  // TODO Factory for HTTP driver (as the tcp factory above)
+  def newHTTPSession(): Driver = newHTTPSession(defaultDriverConf, Driver.generateDefaultAuth)
+
+  private[crossdata] def newHTTPSession(driverConf: DriverConf, authentication: Authentication): Driver = ???
 
 }
 
-class Driver private(private[crossdata] val driverConf: DriverConf,
-                     auth: Authentication = Driver.generateDefaultAuth) {
+
+abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected[crossdata] val auth: Authentication) {
 
   import Driver._
 
-  private lazy val driverSession = SessionManager.createSession(auth, proxyActor)
+  protected def logger :Logger
 
-  private lazy val logger = LoggerFactory.getLogger(classOf[Driver])
+  protected def driverSession: Session
 
 
-  private lazy val clusterClientActor = {
-
-    if (logger.isDebugEnabled) {
-      system.logConfiguration()
-    }
-
-    val contactPoints = driverConf.getClusterContactPoint
-    val initialContacts = contactPoints.map(ActorPath.fromString).toSet
-
-    logger.debug("Initial contacts: " + initialContacts)
-    val remoteClientName: String = ServerClusterClientParameters.RemoteClientName + UUID.randomUUID()
-    val actor = system.actorOf(ClusterClient.props(ClusterClientSettings(system).withInitialContacts(initialContacts)), remoteClientName)
-    logger.debug(s"Cluster client actor created with name: $remoteClientName")
-
-    actor
-  }
-
-  private val proxyActor = {
-    val proxyActorName = ProxyActor.DefaultName + UUID.randomUUID()
-    system.actorOf(ProxyActor.props(clusterClientActor, this), proxyActorName)
-  }
-
-  private val sessionBeaconProps = SessionBeaconActor.props(
-    driverSession.id,
-    5 seconds, /* This ins't configurable since it's simpler for the user
-                  to play just with alert period time at server side. */
-    clusterClientActor,
-    ServerClusterClientParameters.ClientMonitorPath
-  )
-
-  private var sessionBeacon: Option[ActorRef] = None
+  // TODO 2.0 remove openSession
+  protected[driver] def openSession(): Try[Boolean]
 
   /**
     * Executes a SQL sentence.
@@ -162,42 +139,7 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     * @param query The SQL Command.
     * @return A SQLResponse with the id and the result set.
     */
-  def sql(query: String): SQLResponse = {
-
-    //TODO remove this part when servers broadcast bus was realized
-    //Preparse query to know if it is an special command sent from the shell or other driver user that is not a query
-    val addJarPattern = """(\s*add)(\s+jar\s+)(.*)""".r
-    val addAppWithAliasPattern ="""(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(.*)""".r
-    val addAppPattern ="""(\s*add)(\s+app\s+)(.*)(\s+with\s+)(.*)""".r
-
-    query match {
-      case addJarPattern(add, jar, path) =>
-        addJar(path.trim)
-      case addAppWithAliasPattern(add, app, path, as, alias, wth, clss) =>
-        val realPath = path.replace("'", "")
-        val res = addJar(realPath).waitForResult()
-        val hdfspath = res.resultSet(0).getString(0)
-        addApp(hdfspath, alias, clss)
-
-      case addAppPattern(add, app, path, wth, clss) =>
-        val realPath = path.replace("'", "")
-        val res = addJar(realPath).waitForResult()
-        val hdfspath = res.resultSet(0).getString(0)
-        addApp(hdfspath, clss, realPath)
-      case _ =>
-        val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
-        val futureReply = askCommand(securitizeCommand(sqlCommand)).map {
-          case SQLReply(_, sqlResult) => sqlResult
-          case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
-        }
-        new SQLResponse(sqlCommand.requestId, futureReply) {
-          // TODO cancel sync => 5 secs
-          override def cancelCommand(): Unit =
-            askCommand(securitizeCommand(CancelQueryExecution(sqlCommand.queryId)))
-        }
-    }
-  }
-
+  def sql(query: String): SQLResponse
 
   /**
     * Add Jar to the XD Context
@@ -205,40 +147,9 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     * @param path The path of the JAR
     * @return A SQLResponse with the id and the result set.
     */
-  def addJar(path: String, toClassPath:Option[Boolean]=None): SQLResponse = {
-    val addJarCommand = AddJARCommand(path,toClassPath=toClassPath)
-    if (File(path).exists) {
-      val futureReply = askCommand(securitizeCommand(addJarCommand)).map {
-        case SQLReply(_, sqlResult) => sqlResult
-        case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
-      }
-      new SQLResponse(addJarCommand.requestId, futureReply)
-    } else {
-        new SQLResponse(addJarCommand.requestId, Future(ErrorSQLResult("File doesn't exist")))
-    }
-  }
+  def addJar(path: String, toClassPath: Option[Boolean] = None): SQLResponse
 
-  def addAppCommand(path: String, clss: String, alias: Option[String] = None): SQLResponse = {
-    val result = addJar(path,Option(false)).waitForResult()
-    val hdfsPath = result.resultSet(0).getString(0)
-    addApp(hdfsPath, clss, alias.getOrElse(path))
-  }
-
-  /**
-    * @param path  The path of the JAR
-    * @param clss  The main class
-    * @param alias The alias of the JAR
-    * @return A SQLResponse with the id and the result set.
-    */
-  private def addApp(path: String, clss: String, alias: String): SQLResponse = {
-    val addAppCommand = AddAppCommand(path, alias, clss)
-    val futureReply = askCommand(securitizeCommand(addAppCommand)).map {
-      case SQLReply(_, sqlResult) => sqlResult
-      case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
-    }
-    new SQLResponse(addAppCommand.requestId, futureReply)
-  }
-
+  def addAppCommand(path: String, clss: String, alias: Option[String] = None): SQLResponse
 
   def importTables(dataSourceProvider: String, options: Map[String, String]): SQLResponse =
     sql(
@@ -252,13 +163,13 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   // TODO schema -> StructType insteadOf String
   // schema -> e.g "( name STRING, age INT )"
   def createTable(name: String, dataSourceProvider: String, schema: Option[String], options: Map[String, String], isTemporary: Boolean = false): SQLResponse =
-    sql(
-      s"""|CREATE ${if (isTemporary) "TEMPORARY" else ""} TABLE $name
-          |USING $dataSourceProvider
-          |${schema.getOrElse("")}
-          |${mkOptionsStatement(options)}
+  sql(
+    s"""|CREATE ${if (isTemporary) "TEMPORARY" else ""} TABLE $name
+        |USING $dataSourceProvider
+        |${schema.getOrElse("")}
+        |${mkOptionsStatement(options)}
        """.stripMargin
-    )
+  )
 
   def dropTable(name: String, isTemporary: Boolean = false): SQLResponse = {
 
@@ -281,14 +192,6 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     val opt = options.map { case (k, v) => s"$k '$v'" } mkString ","
     options.headOption.fold("")(_ => s" OPTIONS ( $opt ) ")
   }
-
-
-  private def askCommand(commandEnvelope: CommandEnvelope): Future[ServerReply] = {
-    val promise = Promise[ServerReply]()
-    proxyActor !(commandEnvelope, promise)
-    promise.future
-  }
-
 
   /**
     * Gets a list of tables from a database or all if the database is None
@@ -343,18 +246,13 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
   def show(query: String) = sql(query).waitForResult().prettyResult.foreach(println)
 
-
   /**
     * Gets the server/cluster state
     *
     * @since 1.3
     * @return Current snapshot state of the cluster
     */
-  def clusterState(): Future[CurrentClusterState] = {
-    val promise = Promise[ServerReply]()
-    proxyActor !(securitizeCommand(ClusterStateCommand()), promise)
-    promise.future.mapTo[ClusterStateReply].map(_.clusterState)
-  }
+  def clusterState(): Future[CurrentClusterState]
 
   /**
     * Gets the addresses of servers up and running
@@ -378,34 +276,15 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     * @return whether at least one member of the cluster is alive or not
     */
   def isClusterAlive(atMost: Duration = 3 seconds): Boolean =
-    Try(Await.result(serversUp(), atMost)).map(_.nonEmpty).getOrElse(false)
+  Try(Await.result(serversUp(), atMost)).map(_.nonEmpty).getOrElse(false)
 
-
-  private def openSession(): Try[Boolean] = {
-    import Driver._
-
-    val res = Try {
-      val promise = Promise[ServerReply]()
-      proxyActor ! (securitizeCommand(OpenSessionCommand()), promise)
-      Await.result(promise.future.mapTo[OpenSessionReply].map(_.isOpen), InitializationTimeout)
-    }
-
-    if(res.isSuccess)
-      sessionBeacon = Some(system.actorOf(sessionBeaconProps))
-
-    res
-
-  }
 
   /**
     * Execute an ordered shutdown
     */
-  def closeSession(): Unit = {
-    proxyActor ! securitizeCommand(CloseSessionCommand())
-    sessionBeacon.foreach(system.stop)
-  }
+  def closeSession(): Unit
 
-  private def securitizeCommand(command: Command): CommandEnvelope =
+  protected def securitizeCommand(command: Command): CommandEnvelope =
     new CommandEnvelope(command, driverSession, auth.user)
 
 

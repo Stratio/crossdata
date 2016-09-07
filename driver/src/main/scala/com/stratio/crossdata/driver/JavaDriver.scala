@@ -26,19 +26,20 @@ import scala.concurrent.duration.Duration
 
 
 class JavaDriver private(driverConf: DriverConf,
-                         auth: Authentication) {
+                         auth: Authentication,
+                         isHttp: Boolean) {
 
   def this(driverConf: DriverConf) =
-    this(driverConf, Driver.generateDefaultAuth)
+    this(driverConf, Driver.generateDefaultAuth, isHttp = false)
 
   def this() = this(new DriverConf)
 
   def this(user: String, password: String, driverConf: DriverConf) =
-    this(driverConf, Authentication(user, Option(password)))
+    this(driverConf, Authentication(user, Option(password)), isHttp = false)
 
 
   def this(user: String, driverConf: DriverConf) =
-    this(driverConf, Authentication(user))
+    this(driverConf, Authentication(user), isHttp = false)
 
 
   def this(user: String, password: String) =
@@ -51,9 +52,18 @@ class JavaDriver private(driverConf: DriverConf,
     this(seedNodes, new DriverConf)
 
 
+  // TODO Add AkkaHttp constructors
+
   private lazy val logger = LoggerFactory.getLogger(classOf[JavaDriver])
 
-  private val scalaDriver = Driver.newSession(driverConf, auth)
+  private val scalaDriver = {
+    if (isHttp) {
+      Driver.newSession(driverConf, auth)
+    } else {
+      Driver.newHTTPSession(driverConf, auth)
+    }
+  }
+
 
   /**
    * Sync execution with defaults: timeout 10 sec, nr-retries 2

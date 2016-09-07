@@ -22,8 +22,13 @@ import com.stratio.crossdata.common.security.Session
 
 object SessionManager {
 
-  def createSession(auth: Authentication, clientRef: ActorRef): Session =
-    Session(UUID.randomUUID, clientRef)
+  def createSession(auth: Authentication, clientRef: ActorRef): Session = // TODO update serializers
+    Session(newUUID, Option(clientRef))
+
+  def createSession(auth: Authentication): Session =
+    Session(newUUID, None)
+
+  private def newUUID = UUID.randomUUID()
 
 }
 
