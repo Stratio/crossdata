@@ -15,7 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.session
 
-import com.hazelcast.config.{ClasspathXmlConfig, Config => HzConfig}
+import com.hazelcast.config.{ClasspathXmlConfig, XmlConfigBuilder, Config => HzConfig}
 import com.hazelcast.core.Hazelcast
 import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.{Config, ConfigFactory}
@@ -44,7 +44,7 @@ object HazelcastSessionProvider {
 
 class HazelcastSessionProvider( sc: SparkContext,
                                 userConfig: Config,
-                                hzConfig: HzConfig = new ClasspathXmlConfig("hazelcast.xml")
+                                hzConfig: HzConfig = new XmlConfigBuilder().build()
                                 ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig { // TODO CoreConfig should not be a trait
 
   import HazelcastSessionProvider._

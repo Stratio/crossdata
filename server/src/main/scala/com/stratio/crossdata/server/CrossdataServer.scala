@@ -23,7 +23,7 @@ import akka.cluster.Cluster
 import akka.cluster.client.ClusterClientReceptionist
 import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
-import com.hazelcast.config.{ClasspathXmlConfig, Config => HzConfig}
+import com.hazelcast.config.{ClasspathXmlConfig, XmlConfigBuilder, Config => HzConfig}
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
@@ -57,7 +57,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     case None => config
   }
 
-  val hzConfig: HzConfig = new ClasspathXmlConfig("hazelcast.xml")
+  val hzConfig: HzConfig = new XmlConfigBuilder().build()
 
   private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
