@@ -15,7 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.session
 
-import com.hazelcast.config.{ClasspathXmlConfig, XmlConfigBuilder, Config => HzConfig}
+import com.hazelcast.config.{XmlConfigBuilder, Config => HzConfig}
 import com.hazelcast.core.Hazelcast
 import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.{Config, ConfigFactory}
@@ -84,6 +84,8 @@ class HazelcastSessionProvider( sc: SparkContext,
     sharedState.sqlConf,
     sessionsCacheInvalidator
   )
+
+  def getHzMembers = hInstance.getCluster.getMembers
 
   override def newSession(sessionID: SessionID): Try[XDSession] =
     Try {
