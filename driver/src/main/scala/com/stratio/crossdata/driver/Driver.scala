@@ -117,7 +117,7 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected
 
   import Driver._
 
-  protected def logger :Logger
+  protected def logger: Logger
 
   protected def driverSession: Session
 
@@ -285,7 +285,7 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected
   def closeSession(): Unit
 
   protected def securitizeCommand(command: Command): CommandEnvelope =
-    new CommandEnvelope(command, driverSession, auth.user)
+    CommandEnvelope(command, driverSession, auth.user)
 
 
   private def getFlattenedFields(fieldName: String, dataType: DataType): Seq[FieldMetadata] = dataType match {

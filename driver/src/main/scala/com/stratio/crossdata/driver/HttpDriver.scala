@@ -15,33 +15,21 @@
  */
 package com.stratio.crossdata.driver
 
-import java.util.UUID
-
-import akka.actor.{ActorPath, ActorRef, ActorSystem, Address}
+import akka.actor.ActorRef
 import akka.cluster.ClusterEvent.CurrentClusterState
-import akka.cluster.MemberStatus
-import akka.cluster.client.{ClusterClient, ClusterClientSettings}
-import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.driver.actor.{ProxyActor, ServerClusterClientParameters, SessionBeaconActor}
 import com.stratio.crossdata.driver.config.DriverConf
-import com.stratio.crossdata.driver.metadata.FieldMetadata
-import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
-import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
+import com.stratio.crossdata.driver.session.Authentication
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.Future
 import scala.language.postfixOps
 import scala.util.Try
 
 
 class HttpDriver private[driver](driverConf: DriverConf,
-                        auth: Authentication) extends Driver(driverConf, auth){
+                                 auth: Authentication) extends Driver(driverConf, auth) {
 
   lazy val logger: Logger = LoggerFactory.getLogger(classOf[HttpDriver])
 
@@ -49,7 +37,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
   private var sessionBeacon: Option[ActorRef] = ???
 
-  // TODO it makes sense here
+  // TODO does it make sense here?
   override protected[driver] def openSession(): Try[Boolean] = ???
 
   override def sql(query: String): SQLResponse = ???
@@ -61,6 +49,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
   override def clusterState(): Future[CurrentClusterState] = ???
 
   override def closeSession(): Unit = ???
+
   /*{
     proxyActor ! securitizeCommand(CloseSessionCommand())
     sessionBeacon.foreach(system.stop)

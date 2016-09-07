@@ -17,20 +17,15 @@ package com.stratio.crossdata.driver
 
 import java.util.UUID
 
-import akka.actor.{ActorPath, ActorRef, ActorSystem, Address}
+import akka.actor.{ActorPath, ActorRef}
 import akka.cluster.ClusterEvent.CurrentClusterState
-import akka.cluster.MemberStatus
 import akka.cluster.client.{ClusterClient, ClusterClientSettings}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.actor.{ProxyActor, ServerClusterClientParameters, SessionBeaconActor}
 import com.stratio.crossdata.driver.config.DriverConf
-import com.stratio.crossdata.driver.metadata.FieldMetadata
 import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.crossdata.metadata.DataTypesUtils
-import org.apache.spark.sql.types.{ArrayType, DataType, StructType}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -47,16 +42,16 @@ import scala.util.Try
  * =======================================================================================
  */
 
-object ClusterClientDriver{
+object ClusterClientDriver {
   val InitializationTimeout: Duration = 10 seconds
 }
 
 class ClusterClientDriver private[driver](driverConf: DriverConf,
-                                          auth: Authentication) extends Driver(driverConf, auth){
+                                          auth: Authentication) extends Driver(driverConf, auth) {
 
 
-  import Driver._
   import ClusterClientDriver._
+  import Driver._
 
   override protected def logger: Logger = LoggerFactory.getLogger(classOf[ClusterClientDriver])
 
