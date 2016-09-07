@@ -202,7 +202,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
     val updatedMembers = Set(getLocalMember) ++ sessionProviderOpt.fold(Set.empty[String]){ sp =>
       sp match {
-        case hzSP: HazelcastSessionProvider => hzSP.getHzMembers.toSet.map{
+        case hzSP: HazelcastSessionProvider => hzSP.getHzMembers.to[Set].map{
           m => s"${m.getAddress.getHost}:${m.getAddress.getPort}"
         }
         case _ => Set.empty[String]
