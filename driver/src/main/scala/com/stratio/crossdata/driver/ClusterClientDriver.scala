@@ -35,12 +35,6 @@ import scala.language.postfixOps
 import scala.reflect.io.File
 import scala.util.Try
 
-/*
- * ======================================== NOTE ========================================
- * Take into account that every time the interface of this class is modified or expanded,
- * the JavaDriver.scala has to be updated according to those changes.
- * =======================================================================================
- */
 
 object ClusterClientDriver {
   val InitializationTimeout: Duration = 10 seconds
