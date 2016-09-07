@@ -18,12 +18,12 @@ package com.stratio.crossdata.server
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorSystem, Address, Props}
 import akka.cluster.Cluster
 import akka.cluster.client.ClusterClientReceptionist
 import akka.http.scaladsl.Http.ServerBinding
 import akka.routing.{DefaultResizer, RoundRobinPool}
-import com.hazelcast.config.{Config => HzConfig}
+import com.hazelcast.config.{ClasspathXmlConfig, Config => HzConfig}
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
@@ -57,7 +57,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     case None => config
   }
 
-  val hzConfig = new HzConfig()
+  val hzConfig: HzConfig = new ClasspathXmlConfig("hazelcast.xml")
 
   private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
@@ -142,15 +142,18 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     val currentSeeds = new String(dClient.getData.forPath(pathForSeeds))
-    val newSeeds = Set(getLocalSeed) ++ currentSeeds.split(",").toSet
+    val newSeeds = Set(getLocalSeed) ++ currentSeeds.split(",").toSet.filter(_.nonEmpty)
     dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
     val modifiedAkkaConfig = serverConfig.withValue(
       "akka.cluster.seed-nodes",
-      ConfigValueFactory.fromIterable(newSeeds))
+      ConfigValueFactory.fromIterable(newSeeds.map{ s =>
+        val hostPort = s.split(":")
+        new Address("akka.tcp", serverConfig.getString("config.cluster.name"), hostPort(0), hostPort(1).toInt).toString
+      }))
 
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForMembers)
     val currentMembers = new String(dClient.getData.forPath(pathForMembers))
-    val newMembers = Set(getLocalMember) ++ currentMembers.split(",").toSet
+    val newMembers = Set(getLocalMember) ++ currentMembers.split(",").toSet.filter(_.nonEmpty)
     dClient.setData.forPath(pathForMembers, newMembers.mkString(",").getBytes)
     val modifiedHzConfig = hzConfig.setNetworkConfig(
       hzConfig.getNetworkConfig.setJoin(
@@ -184,8 +187,8 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   def updateClusterSeeds(xCluster: Cluster, h: SDH) = {
     val currentSeeds =
-      (Set(xCluster.selfAddress.toString)
-        ++ xCluster.state.members.filter(_.roles.contains("server")).map(m => m.address.toString))
+      (Set(s"${xCluster.selfAddress.host.get}:${xCluster.selfAddress.port.get}")
+        ++ xCluster.state.members.filter(_.roles.contains("server")).map(m => s"${m.address.host.get}:${m.address.port.get}"))
     val pathForSeeds = h.sdch.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     logger.info(s"Updating seeds: ${currentSeeds.mkString(",")}")
@@ -197,7 +200,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val seedsHostnames = currentSeeds.map(_.split(":")(0))
     val pathForMembers = h.sdch.get(SDCH.ProviderPath, SDCH.DefaultProviderPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
-    val currentMembers = new String(h.curatorClient.getData.forPath(pathForMembers)).split(",").toSet
+    val currentMembers = new String(h.curatorClient.getData.forPath(pathForMembers)).split(",").toSet.filter(_.nonEmpty)
     // Filter by keeping only the members whose hostname is present in the seeds set
     val updatedMembers = Set(getLocalMember) ++ currentMembers.filter(m => seedsHostnames.contains(m.split(":")(0)))
     logger.info(s"Updating members: ${updatedMembers.mkString(",")}")
@@ -255,11 +258,11 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
 
-    val hzConfig = sdHelper.fold(new HzConfig())(_.hzConfig)
+    val finalHzConfig = sdHelper.fold(hzConfig)(_.hzConfig)
 
     sessionProviderOpt = Some {
       if (isHazelcastEnabled)
-        new HazelcastSessionProvider(sparkContext, serverConfig, hzConfig)
+        new HazelcastSessionProvider(sparkContext, serverConfig, finalHzConfig)
       else
         new BasicSessionProvider(sparkContext, serverConfig)
     }
@@ -270,7 +273,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     finalConfig.entrySet.filter{ e =>
       e.getKey.contains("seed-nodes")
     }.foreach{ e =>
-      logger.info(s"SEED NODES: ${e.getValue}")
+      logger.info(s"Seed nodes: ${e.getValue}")
     }
 
     system = Some(ActorSystem(clusterName, finalConfig))

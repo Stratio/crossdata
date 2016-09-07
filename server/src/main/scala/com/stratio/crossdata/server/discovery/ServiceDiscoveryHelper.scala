@@ -50,7 +50,7 @@ object ServiceDiscoveryConfigHelper extends CoreConfig {
   val DefaultSeedsPath = s"/stratio/crossdata${ClusterPrefix.fold("")(p => s"/$p")}/discovery/seeds"
   val DefaultSeedNodes = "akka.tcp://CrossdataServerCluster@127.0.0.1:13420"
   val ClusterDelayPath = s"$ClusterLeaderPrefix.scheduler.delay"
-  val DefaultClusterDelay = 20
+  val DefaultClusterDelay = 300
 
   val ProviderPrefix = "provider"
   val ProviderPath = s"$ProviderPrefix.path"
