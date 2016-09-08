@@ -6,7 +6,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.{GenericRow, GenericRowWithSchema}
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
 import org.apache.spark.sql.types.{DecimalType, _}
-import org.json4s.JsonAST.JObject
+import org.json4s.JsonAST.{JNumber, JObject}
 import org.json4s._
 import org.json4s.JsonDSL._
 
@@ -19,27 +19,40 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
                                      includeSchema: Boolean
                                    )(implicit formats: Formats): Row = {
 
-    val extractField: (DataType, JValue)=> Any = {
+    def extractField(tv: (DataType, JValue)): Any = tv match {
       case (_, JNull) | (NullType, _) => null
       case (StringType, JString(str)) => str
-      case (TimestampType, JString(toStr)) => Timestamp.valueOf(toStr)
+      case (TimestampType, JString(tsStr)) => Timestamp.valueOf(tsStr)
+      case (DateType, JString(strDate)) => java.sql.Date.valueOf(strDate)
       case (IntegerType, JInt(v)) => v.toInt
       case (ShortType, JInt(v)) => v.toShort
       case (FloatType, JDouble(v)) => v.toFloat
       case (DoubleType, JDouble(v)) => v.toDouble
       case (LongType, JInt(v)) => v.toLong
-      case (_: DecimalType, JDecimal(v)) => Decimal(v)
+      case (_: DecimalType, v: JNumber) =>
+        v match {
+          case JInt(v) => Decimal(v.toString)
+          case JDecimal(v) => Decimal(v)
+          case JDouble(v) => Decimal(v)
+        }
       case (ByteType, JInt(v)) => v.toByte
       case (BinaryType, JString(binaryStr)) => binaryStr.getBytes
       case (BooleanType, JBool(v)) => v
-      case (DateType, JString(strDate)) => java.sql.Date.valueOf(strDate)
-      //case (udt: UserDefinedType[_], v) => //TODO
-      //case (ArrayType(ty, _), JArray(arr)) => arr.map(extractField(ty, _)) //TODO
-      //case (MapType(kt, vt, _), v: MapData) => //TODO
-      case (st: StructType, v: Row) => serializeWithSchema(st, v, true)
+      case (udt: UserDefinedType[_], jobj) => extractField(udt.sqlType -> jobj)
+      case (ArrayType(ty, _), JArray(arr)) =>
+        new GenericArrayData(arr.map(extractField(ty, _)).toArray)
+      /* Maps will be serialized as sub-objects so keys are constrained to be strings */
+      case (MapType(StringType, vt, _), JObject(fields)) =>
+        val (keys, values) = fields.unzip
+        val unserValues = values map (jval => extractField(vt, jval))
+        ArrayBasedMapData(keys.toArray, unserValues.toArray)
+      case (st: StructType, JObject(JField("values",JArray(values))::_)) =>
+        deserializeWithSchema(st, values, true)
+      case other =>
+        null
     }
 
-    val values: Array[Any] = (schema.view.map(_.dataType) zip fields.arr).map(extractField.tupled).toArray
+    val values: Array[Any] = (schema.view.map(_.dataType) zip fields.arr).map(extractField).toArray
 
     if(includeSchema) new GenericRowWithSchema(values, schema)
     else new GenericRow(values)
@@ -51,29 +64,43 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
                                    row: Row, includeSchema: Boolean
                                  )(implicit formats: Formats): JValue = {
 
-    val valuesList = List[JValue]()
 
-    schema.zipWithIndex.view map {
-      case (t, idx) => t.dataType -> row.get(idx)
-    } map { // Cases brought in from Spark's DataFrame JSON serializer (`DataFrame#toJSON`)
+    def serializeField(tv: (DataType, Any)): JValue = tv match {
+      // Cases brought in from Spark's DataFrame JSON serializer (`DataFrame#toJSON`)
       case (_, null) | (NullType, _) => JNull
       case (StringType, v: String) => JString(v)
-      case (TimestampType, v: Long) => JString(DateTimeUtils.toJavaTimestamp(v).toString)
+      case (TimestampType, v: Long) =>
+        JString(DateTimeUtils.toJavaTimestamp(v).toString)
+      case (TimestampType, v: java.sql.Timestamp) =>
+        JString(v.toString)
       case (IntegerType, v: Int) => JInt(v)
       case (ShortType, v: Short) => JInt(v.toInt)
       case (FloatType, v: Float) => JDouble(v)
       case (DoubleType, v: Double) => JDouble(v)
       case (LongType, v: Long) => JInt(v)
-      case (DecimalType(), v: Decimal) => JDecimal(v.toBigDecimal)
+      case (_: DecimalType, v: Decimal) => JDecimal(v.toBigDecimal)
       case (ByteType, v: Byte) => JInt(v.toInt)
-      case (BinaryType, v: Array[Byte]) => JString(v.toString)
+      case (BinaryType, v: Array[Byte]) => JString(new String(v))
       case (BooleanType, v: Boolean) => JBool(v)
       case (DateType, v: Int) => JString(DateTimeUtils.toJavaDate(v).toString)
-      //case (udt: UserDefinedType[_], v) => //TODO
-      // case (ArrayType(ty, _), v: ArrayData) => JArray(v.array.toList.map(v => Extraction.decompose(v)))
-      //case (MapType(kt, vt, _), v: MapData) =>
+      case (DateType, v: java.sql.Date) => JString(v.toString)
+      case (udt: UserDefinedType[_], v) => serializeField(udt.sqlType -> v)
+      case (ArrayType(ty, _), v: ArrayData) => JArray(v.array.toList.map(v => Extraction.decompose(v)))
+      case (MapType(StringType, vt, _), v: MapData) =>
+        /* Maps will be serialized as sub-objects so keys are constrained to be strings */
+        val serKeys = v.keyArray().array.map(v => v.toString)
+        val serValues = v.valueArray.array.map(v => serializeField(vt -> v))
+        JObject(
+          (v.keyArray.array zip serValues) map {
+            case (k: String, v) => JField(k, v)
+          } toList
+        )
       case (st: StructType, v: Row) => serializeWithSchema(st, v, true)
     }
+
+    val valuesList: List[JValue] = for((t, idx) <- schema.zipWithIndex.toList) yield
+      serializeField(t.dataType -> row.get(idx))
+
 
     val justValues: JObject = ("values" -> JArray(valuesList))
 
@@ -83,8 +110,8 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
   }
 
   override def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), Row] = {
-    case (_, JObject(JField("values", JArray(values)))) => deserializeWithSchema(providedSchema, values, false)
-    case (_, JObject(JField("values", JArray(values))::JField("schema", jschema))) =>
+    case (_, JObject(JField("values", JArray(values))::Nil)) => deserializeWithSchema(providedSchema, values, false)
+    case (_, JObject(JField("values", JArray(values))::JField("schema", jschema)::Nil)) =>
       val _format = format;
       {
         implicit val format = _format + StructTypeSerializer
