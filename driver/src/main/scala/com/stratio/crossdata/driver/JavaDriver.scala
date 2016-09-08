@@ -58,9 +58,9 @@ class JavaDriver private(driverConf: DriverConf,
 
   private val scalaDriver = {
     if (isHttp) {
-      Driver.newSession(driverConf, auth)
-    } else {
       Driver.newHTTPSession(driverConf, auth)
+    } else {
+      Driver.newSession(driverConf, auth)
     }
   }
 
