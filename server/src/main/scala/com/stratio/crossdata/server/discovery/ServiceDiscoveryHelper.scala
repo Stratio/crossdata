@@ -29,7 +29,7 @@ object ServiceDiscoveryConfigHelper extends CoreConfig {
 
   val ClusterPrefix = Option(config.getString("catalog.prefix"))
 
-  ClusterPrefix.map { p =>
+  ClusterPrefix.foreach{ p =>
     logger.info(s"Cluster prefix for service discovery: $p")
   }
 
@@ -60,7 +60,7 @@ object ServiceDiscoveryConfigHelper extends CoreConfig {
 
 case class ServiceDiscoveryConfigHelper(sdConfig: Config) {
 
-  def get(path: String, default: String) = {
+  def getOrElse(path: String, default: => String) = {
     Try(sdConfig.getString(path)).getOrElse(default)
   }
 

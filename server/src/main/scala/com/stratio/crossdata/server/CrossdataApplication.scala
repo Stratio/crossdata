@@ -22,12 +22,11 @@ import scala.collection.JavaConversions._
 
 object CrossdataApplication extends App {
 
-  val keysValuesTuple = args.toList.partition(_.startsWith("--"))
-  val argsConfig = keysValuesTuple._1.zip(keysValuesTuple._2).toMap
-
-  val mapConfig = ConfigFactory.parseMap(argsConfig.map{
-    e => (e._1.replace("--", ""), e._2)
-  })
+  val mapConfig = {
+    val keysValuesTuple = args.toList.partition(_.startsWith("--"))
+    val argsConfig = keysValuesTuple._1.map(_.replace("--", "")).zip(keysValuesTuple._2).toMap
+    ConfigFactory.parseMap(argsConfig)
+  }
 
   val params = mapConfig match {
     case m: Config if !m.isEmpty => Some(m)

@@ -16,6 +16,7 @@
 package com.stratio.crossdata.server
 
 import java.io.File
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{ActorSystem, Address, Props}
@@ -27,7 +28,7 @@ import com.hazelcast.config.{XmlConfigBuilder, Config => HzConfig}
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
-import com.stratio.crossdata.server.discovery.{ZkConnectionState, ServiceDiscoveryConfigHelper => SDCH, ServiceDiscoveryHelper => SDH}
+import com.stratio.crossdata.server.discovery.{ServiceDiscoveryConfigHelper => SDCH, ServiceDiscoveryHelper => SDH}
 import com.typesafe.config.{Config, ConfigValueFactory}
 import org.apache.curator.framework.recipes.leader.LeaderLatch
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
@@ -39,7 +40,7 @@ import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, HazelcastSe
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.FiniteDuration
 import scala.util.{Random, Try}
 
@@ -52,17 +53,14 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
   var sessionProviderOpt: Option[XDSessionProvider] = None
   var bindingFuture: Option[Future[ServerBinding]] = None
 
-  private val serverConfig = progrConfig match {
-    case Some(c) => c.withFallback(config)
-    case None => config
-  }
+  private val serverConfig = progrConfig map (_.withFallback(config)) getOrElse (config)
 
   private val hzConfig: HzConfig = new XmlConfigBuilder().build()
 
   private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
     val curatorClient = CuratorFrameworkFactory.newClient(
-      sdConfig.get(SDCH.ServiceDiscoveryUrl, SDCH.ServiceDiscoveryDefaultUrl),
+      sdConfig.getOrElse(SDCH.ServiceDiscoveryUrl, SDCH.ServiceDiscoveryDefaultUrl),
       new ExponentialBackoffRetry(
         SDCH.RetrySleep,
         SDCH.Retries))
@@ -73,7 +71,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private def requestSubscriptionLeadership(dClient: CuratorFramework, sdc: SDCH) = {
 
-    val sLeaderPath = sdc.get(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath)
+    val sLeaderPath = sdc.getOrElse(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath)
 
     logger.debug(s"Service discovery - subscription leadership path: $sLeaderPath")
 
@@ -84,7 +82,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     sLeader.start
 
     Try(sLeader.await(
-      sdc.get(SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout.toString).toLong, TimeUnit.SECONDS))
+      sdc.getOrElse(SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout.toString).toLong, TimeUnit.SECONDS))
       .getOrElse(throw new RuntimeException(
       "Crossdata Server cannot be started because access to service discovery is blocked"))
 
@@ -95,24 +93,26 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private def requestClusterLeadership(dClient: CuratorFramework, sdc: SDCH) = {
 
-    val cLeaderPath = sdc.get(SDCH.ClusterLeaderPath, SDCH.DefaultClusterLeaderPath)
+    val cLeaderPath = sdc.getOrElse(SDCH.ClusterLeaderPath, SDCH.DefaultClusterLeaderPath)
 
     logger.debug(s"Service discovery - cluster leadership path: $cLeaderPath")
 
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, cLeaderPath)
 
-    val randomId = math.abs(Random.nextLong())
+    val randomId = UUID.randomUUID.toString
 
     logger.debug(s"My cluster leadership ID: $randomId")
 
     val cLeader = new LeaderLatch(
       dClient,
       cLeaderPath,
-      randomId.toString)
+      randomId)
 
     cLeader.start
 
-    import scala.concurrent.ExecutionContext.Implicits.global
+    import com.stratio.crossdata.server.actors.JobActor.ProlificExecutor
+    implicit val _: ExecutionContext = ExecutionContext.fromExecutor(new ProlificExecutor)
+
     val leadershipFuture = Future {
       cLeader.await
     }
@@ -124,32 +124,39 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     leadershipFuture
   }
 
-  private def getLocalSeed(): String = {
+  private def getLocalSeed: String =
     s"${serverConfig.getString("akka.remote.netty.tcp.hostname")}:${serverConfig.getInt("akka.remote.netty.tcp.port")}"
-  }
 
-  private def getLocalMember(): String = {
+  private def getLocalMember: String =
     s"${hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.getMembers.head}"
-  }
 
   private def generateFinalConfig(dClient: CuratorFramework, sdc: SDCH) = {
 
-    val pathForSeeds = sdc.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
+    val pathForSeeds = sdc.getOrElse(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
     logger.debug(s"Service Discovery - seeds path: $pathForSeeds")
 
-    val pathForMembers = sdc.get(SDCH.ProviderPath, SDCH.DefaultProviderPath)
+    val pathForMembers = sdc.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
     logger.debug(s"Service Discovery - members path: $pathForMembers")
 
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     val currentSeeds = new String(dClient.getData.forPath(pathForSeeds))
     val newSeeds = Set(getLocalSeed) ++ currentSeeds.split(",").toSet.filter(_.nonEmpty)
     dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
+
+    val protocol = s"akka.${
+      if(Try(serverConfig.getBoolean("akka.remote.netty.ssl.enable-ssl")).getOrElse(false)) "ssl." else ""
+    }tcp"
+
     val modifiedAkkaConfig = serverConfig.withValue(
       "akka.cluster.seed-nodes",
       ConfigValueFactory.fromIterable(newSeeds.map{ s =>
         val hostPort = s.split(":")
-        new Address("akka.tcp", serverConfig.getString("config.cluster.name"), hostPort(0), hostPort(1).toInt).toString
-      }))
+        new Address(protocol,
+          serverConfig.getString("config.cluster.name"),
+          hostPort(0),
+          hostPort(1).toInt).toString
+      })
+    )
 
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForMembers)
     val currentMembers = new String(dClient.getData.forPath(pathForMembers))
@@ -161,11 +168,6 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
           hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.setMembers(newMembers.toList))))
 
     (modifiedAkkaConfig, modifiedHzConfig)
-  }
-
-  // hasLeadership is not absolutely reliable, a connection listener has to be used to check connection state
-  private def amILeader(cLeader: LeaderLatch) = {
-    cLeader.hasLeadership && ZkConnectionState.isConnected
   }
 
   private def startServiceDiscovery(sdch: SDCH) = {
@@ -189,7 +191,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val currentSeeds =
       (Set(s"${xCluster.selfAddress.host.get}:${xCluster.selfAddress.port.get}")
         ++ xCluster.state.members.filter(_.roles.contains("server")).map(m => s"${m.address.host.get}:${m.address.port.get}"))
-    val pathForSeeds = h.sdch.get(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
+    val pathForSeeds = h.sdch.getOrElse(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     logger.info(s"Updating seeds: ${currentSeeds.mkString(",")}")
     h.curatorClient.setData.forPath(pathForSeeds, currentSeeds.mkString(",").getBytes)
@@ -198,16 +200,16 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private def updateClusterMembers(h: SDH) = {
 
-    val pathForMembers = h.sdch.get(SDCH.ProviderPath, SDCH.DefaultProviderPath)
+    val pathForMembers = h.sdch.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
-    val updatedMembers = Set(getLocalMember) ++ sessionProviderOpt.fold(Set.empty[String]){ sp =>
-      sp match {
-        case hzSP: HazelcastSessionProvider => hzSP.getHzMembers.to[Set].map{
-          m => s"${m.getAddress.getHost}:${m.getAddress.getPort}"
-        }
-        case _ => Set.empty[String]
-      }
-    }
+    val updatedMembers = Set(getLocalMember) ++ sessionProviderOpt.map{
+        case hzSP: HazelcastSessionProvider =>
+          hzSP.getHzMembers.to[Set].map{
+            m => s"${m.getAddress.getHost}:${m.getAddress.getPort}"
+          }
+        case _ => Set.empty
+    }.getOrElse(Set.empty)
+
     logger.info(s"Updating members: ${updatedMembers.mkString(",")}")
     h.curatorClient.setData.forPath(pathForMembers, updatedMembers.mkString(",").getBytes)
 
@@ -215,7 +217,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private def updateSeeds(xCluster: Cluster, h: SDH) = {
 
-    val sll = new LeaderLatch(h.curatorClient, h.sdch.get(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath))
+    val sll = new LeaderLatch(h.curatorClient, h.sdch.getOrElse(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath))
     sll.start
     sll.await
 
@@ -228,7 +230,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private def updateServiceDiscovery(xCluster: Cluster, s: SDH, aSystem: ActorSystem) = {
     val delay = new FiniteDuration(
-      s.sdch.get(SDCH.ClusterDelayPath, SDCH.DefaultClusterDelay.toString).toLong, TimeUnit.SECONDS)
+      s.sdch.getOrElse(SDCH.ClusterDelayPath, SDCH.DefaultClusterDelay.toString).toLong, TimeUnit.SECONDS)
 
     import scala.concurrent.ExecutionContext.Implicits.global
     aSystem.scheduler.schedule(delay, delay)(updateSeeds(xCluster, s))
@@ -251,15 +253,17 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     // Get service discovery configuration
     val sdConfig = Try(serverConfig.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
 
-    val sdEnabled = sdConfig.fold(false){ c => Try(c.getBoolean("activated")).getOrElse(false) }
-
-    val sdHelper = if(sdEnabled){
-      logger.info("Service discovery enabled")
-      val sdch = new SDCH(sdConfig.get)
-      Some(startServiceDiscovery(sdch))
-    } else {
-      None
-    }
+    val sdHelper: Option[SDH] =
+      sdConfig.map{ serConfig =>
+        val sdEnabled =  Try(serConfig.getBoolean("activated")).getOrElse(false)
+        if (sdEnabled) {
+          logger.info("Service discovery enabled")
+          val sdch = new SDCH(sdConfig.get)
+          Some(startServiceDiscovery(sdch))
+        } else {
+          None
+        }
+      }.getOrElse(None)
 
     val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
 
