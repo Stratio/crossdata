@@ -54,6 +54,8 @@ object Driver {
 
   private[driver] lazy val defaultDriverConf = new DriverConf
 
+  private[driver] val InitializationTimeout: Duration = 10 seconds
+
   /**
     * TODO 2.0 improve implementation (avoiding explicit shutdown as a consequence)
     * currently, it is the how the actor system is shared amongs drivers (tcp and http)
@@ -96,7 +98,7 @@ object Driver {
   private[crossdata] def newSession(driverConf: DriverConf, authentication: Authentication): Driver = {
     val driver = new ClusterClientDriver(driverConf, authentication)
     val isConnected = driver.openSession().getOrElse {
-      throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after ${ClusterClientDriver.InitializationTimeout}")
+      throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
     }
     if (!isConnected) {
       throw new RuntimeException(s"The server has rejected the open session request")

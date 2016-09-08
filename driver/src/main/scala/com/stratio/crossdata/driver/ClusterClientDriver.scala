@@ -36,15 +36,10 @@ import scala.reflect.io.File
 import scala.util.Try
 
 
-object ClusterClientDriver {
-  val InitializationTimeout: Duration = 10 seconds
-}
 
 class ClusterClientDriver private[driver](driverConf: DriverConf,
                                           auth: Authentication) extends Driver(driverConf, auth) {
 
-
-  import ClusterClientDriver._
   import Driver._
 
   override protected def logger: Logger = LoggerFactory.getLogger(classOf[ClusterClientDriver])
