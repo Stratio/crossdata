@@ -21,28 +21,27 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.cluster.pubsub.DistributedPubSub
 import akka.cluster.pubsub.DistributedPubSubMediator.Publish
-import akka.http.javadsl.model.RequestEntity
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{FileIO, Source}
-import akka.util.{ByteString, Timeout}
+import akka.stream.scaladsl.FileIO
+import akka.util.Timeout
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope, SQLCommand, SQLReply}
+import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope, SQLReply}
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
-import org.json4s.{DefaultFormats, jackson}
+import org.json4s.jackson
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.util.Success
 
 
 class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) extends
@@ -97,7 +96,8 @@ CrossdataSerializer {
         }
       }
 
-    } ~ path("query") {
+    } ~
+      path("query") {
       //TODO: REFACTOR
       import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
       implicit val serialization = jackson.Serialization
@@ -105,38 +105,16 @@ CrossdataSerializer {
       post {
         entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
 
-          val queryTo = 30 minutes
-          implicit val _ = Timeout(queryTo)
+          implicit val _ = Timeout(1 hour) //TODO Make this configurable
 
-          //TODO: use 'onComplete' directive.
-          Await.result(serverActor ? rq, queryTo) match {
-            case SQLReply(requestId, _) if requestId != rq.cmd.requestId =>
+          onComplete(serverActor ? rq) {
+            case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
               complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
-
-            case reply @ SQLReply(_, SuccessfulSQLResult(rset, _)) =>
-
+            case Success(reply @ SQLReply(_, SuccessfulSQLResult(rset, _))) =>
               complete(reply)
-
-              /*val txt = ("" /: rset) {
-                case (acc, row: Row) => acc + row.toString() + "\n"
-              }
-
-              complete(StatusCodes.OK, txt)*/
-
-             /* val resStream = Source.fromIterator(() => rset.iterator)
-
-              complete(
-                HttpEntity(
-                  ContentTypes.`text/plain(UTF-8)`,
-                  resStream.map(row => ByteString(row.toString + "\n"))
-                )
-              )*/
-
-            case SQLReply(_, ErrorSQLResult(message, _)) =>
+            case Success(SQLReply(_, ErrorSQLResult(message, _))) =>
               complete(StatusCodes.ServerError, message)
-
-            case other => complete(StatusCodes.ServerError, s"Bad internal reply: $other")
-
+            case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
           }
 
         }
