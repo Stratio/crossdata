@@ -90,12 +90,14 @@ class CrossdataServer extends ServerConfig {
       ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
 
       //TODO
-      /*implicit val httpSystem = actorSystem
+      implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()
       val httpServerActor = new CrossdataHttpServer(config, serverActor, actorSystem)
       val host = config.getString(ServerConfig.Host)
       val port = config.getInt(ServerConfig.HttpServerPort)
-      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))*/
+
+      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))
+
     }
 
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
