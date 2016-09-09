@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.session
+package org.apache.spark.sql.crossdata.serializers
 
-import java.util.UUID
+import org.json4s._
+import org.json4s.ext.UUIDSerializer
 
-import akka.actor.ActorRef
-import com.stratio.crossdata.common.security.Session
 
-object SessionManager {
+trait CrossdataCommonSerializer {
 
-  def createSession(auth: Authentication, clientRef: ActorRef): Session = // TODO update serializers
-    Session(newUUID, Option(clientRef))
-
-  def createSession(auth: Authentication): Session =
-    Session(newUUID, None)
-
-  private def newUUID = UUID.randomUUID()
-
+  implicit val json4sJacksonFormats: Formats =
+    DefaultFormats +
+      StructTypeSerializer + UUIDSerializer + CommandSerializer
 
 }
 
-case class Authentication(user: String, password: Option[String] = None)

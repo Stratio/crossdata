@@ -13,24 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.session
+package org.apache.spark.sql.crossdata.serializers
 
-import java.util.UUID
+import com.stratio.crossdata.common.{Command, SQLCommand}
+import org.apache.spark.sql.crossdata.serializers.XDSerializationTest.TestCase
+import org.json4s.Formats
 
-import akka.actor.ActorRef
-import com.stratio.crossdata.common.security.Session
+class CommandSerializerSpec extends XDSerializationTest[Command] with CrossdataCommonSerializer {
+  
+  override implicit val formats: Formats = json4sJacksonFormats
 
-object SessionManager {
-
-  def createSession(auth: Authentication, clientRef: ActorRef): Session = // TODO update serializers
-    Session(newUUID, Option(clientRef))
-
-  def createSession(auth: Authentication): Session =
-    Session(newUUID, None)
-
-  private def newUUID = UUID.randomUUID()
-
+  override def testCases: Seq[TestCase] = Seq(
+    TestCase("marshall & unmarshall a SQLCommand", SQLCommand("select * from highschool"))
+  )
 
 }
-
-case class Authentication(user: String, password: Option[String] = None)
