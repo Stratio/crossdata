@@ -40,7 +40,7 @@ abstract class XDSerializationTest[T : ClassTag : Manifest] extends BaseXDTest {
     s"A $classTag serializer" should description in {
 
       val serialized = compact(render(Extraction.decompose(obj)))
-      val extracted = parse(serialized).extract[T]
+      val extracted = parse(serialized, false).extract[T] //TODO @pfperez
 
       extracted shouldEqual obj
 

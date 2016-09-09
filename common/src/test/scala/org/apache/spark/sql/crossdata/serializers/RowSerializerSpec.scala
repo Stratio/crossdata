@@ -103,7 +103,7 @@ class RowSerializerSpec extends BaseXDTest {
   "A RowSerializer" should "marshall & unmarshall a row with no schema" in {
 
     val serialized = pretty(render(Extraction.decompose(rowWithNoSchema)))
-    val deserialized = parse(serialized).extract[Row]
+    val deserialized = parse(serialized, false).extract[Row]
 
     deserialized shouldEqual rowWithNoSchema
 
@@ -112,7 +112,7 @@ class RowSerializerSpec extends BaseXDTest {
   it should "marshall & unmarshall a row with schema" in {
 
     val serialized = pretty(render(Extraction.decompose(rowWithSchema)))
-    val deserialized = parse(serialized).extract[Row]
+    val deserialized = parse(serialized, false).extract[Row] //TODO @pfperez
 
     deserialized shouldEqual rowWithSchema
   }

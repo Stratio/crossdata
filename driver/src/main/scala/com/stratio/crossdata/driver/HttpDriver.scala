@@ -83,7 +83,8 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
   }
 
-  protected[driver] def openSession(): Try[Boolean] = {
+  protected[driver] def openSession(): Try[Boolean] = ???
+  /*{
 
     val result = simpleRequest(
       securitizeCommand(OpenSessionCommand()),
@@ -96,7 +97,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
       Await.result(result, InitializationTimeout)
     }
   }
-
+*/
   override def sql(query: String): SQLResponse = ???
 
   override def addJar(path: String, toClassPath: Option[Boolean] = None): SQLResponse =
