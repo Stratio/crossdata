@@ -101,10 +101,10 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     * @param st
     */
   private def executeAccepted(cmd: CommandEnvelope)(st: State): Unit = cmd match {
-    case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, requester), _) =>
+    case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, sessionRequester), _) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
-
+      val requester = requesterOrException(sessionRequester) // TODO temporarily => review akkaHttp
       sessionProvider.session(id) match {
         case Success(xdSession) =>
           val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
@@ -125,7 +125,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       else
         sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
 
-    case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, requester), _) =>
+    case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, sessionRequester), _) =>
+      val requester = requesterOrException(sessionRequester) // TODO temporarily => review akkaHttp
       st.jobsById.get(JobId(requester, id, queryId)).get ! CancelJob
   }
 
@@ -139,7 +140,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     case DelegateCommand(cmd, broadcaster) if broadcaster != self =>
       cmd match {
         // Inner pattern matching for future delegated command validations
-        case sc@CommandEnvelope(CancelQueryExecution(queryId), Session(sid, requester), _) =>
+        case sc@CommandEnvelope(CancelQueryExecution(queryId), Session(sid, sessionRequester), _) =>
+          val requester = requesterOrException(sessionRequester) // TODO temporarily => review akkaHttp
           st.jobsById.get(JobId(requester, sid, queryId)) foreach (_ => executeAccepted(sc)(st))
         /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
             servers through the topic. */
@@ -158,7 +160,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     case sc@CommandEnvelope(_: AddAppCommand, _, _) =>
       executeAccepted(sc)(st)
 
-    case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, requester), _) =>
+    case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, sessionRequester), _) =>
+      val requester = requesterOrException(sessionRequester) // TODO temporarily => review akkaHttp
       st.jobsById.get(JobId(requester, id, cc.requestId)) map { _ =>
         executeAccepted(sc)(st) // Command validated to be executed by this server.
       } getOrElse {
@@ -246,6 +249,9 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {
     case _ => Restart //Crashed job gets restarted (or not, depending on `retryNoAttempts` and `retryCountWindow`)
   }
+
+  private def requesterOrException(requester: Option[ActorRef]): ActorRef =
+    requester.getOrElse(throw new RuntimeException("missing session requester")) // TODO temporarily => review akkaHttp
 
 }
 
