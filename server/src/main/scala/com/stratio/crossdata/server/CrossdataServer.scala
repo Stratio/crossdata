@@ -40,9 +40,9 @@ import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, HazelcastSe
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{Random, Try}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Try}
 
 
 class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
@@ -81,14 +81,17 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     sLeader.start
 
-    Try(sLeader.await(
-      sdc.getOrElse(SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout.toString).toLong, TimeUnit.SECONDS))
-      .getOrElse(throw new RuntimeException(
-      "Crossdata Server cannot be started because access to service discovery is blocked"))
-
-    logger.info("Subscription leadership acquired")
-
-    sLeader
+    Try {
+      if(sLeader.await(sdc.getOrElse(
+        SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout.toString).toLong, TimeUnit.SECONDS)){
+        throw new RuntimeException()
+      } else {
+        logger.info("Subscription leadership acquired")
+        sLeader
+      }
+    } recoverWith {
+      case _ => Failure(new RuntimeException("Subscription leadership couldn't be acquired"))
+    }
   }
 
   private def requestClusterLeadership(dClient: CuratorFramework, sdc: SDCH) = {
@@ -175,13 +178,13 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val curatorClient = startDiscoveryClient(sdch)
 
     // Take subscription leadership with an await call (with timeout)
-    val subscriptionLeader = requestSubscriptionLeadership(curatorClient, sdch)
+    val subscriptionLeader = requestSubscriptionLeadership(curatorClient, sdch).get
 
     // Create future for cluster leadership
     val leadershipFuture = requestClusterLeadership(curatorClient, sdch)
 
     val (finalConfig, hzConfig) = generateFinalConfig(curatorClient, sdch)
-
+ƒ
     subscriptionLeader.close
 
     SDH(curatorClient, finalConfig, hzConfig, leadershipFuture, sdch)
@@ -253,17 +256,13 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     // Get service discovery configuration
     val sdConfig = Try(serverConfig.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
 
-    val sdHelper: Option[SDH] =
-      sdConfig.map{ serConfig =>
-        val sdEnabled =  Try(serConfig.getBoolean("activated")).getOrElse(false)
-        if (sdEnabled) {
+    val sdHelper: Option[SDH] = sdConfig flatMap { serConfig =>
+      Try(serConfig.getBoolean("activated")).toOption collect {
+        case true =>
           logger.info("Service discovery enabled")
-          val sdch = new SDCH(sdConfig.get)
-          Some(startServiceDiscovery(sdch))
-        } else {
-          None
-        }
-      }.getOrElse(None)
+          startServiceDiscovery(new SDCH(sdConfig.get))
+      }
+    }
 
     val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
 
