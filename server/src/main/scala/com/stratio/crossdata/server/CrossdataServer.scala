@@ -184,7 +184,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val leadershipFuture = requestClusterLeadership(curatorClient, sdch)
 
     val (finalConfig, hzConfig) = generateFinalConfig(curatorClient, sdch)
-    
+
     subscriptionLeader.close
 
     SDH(curatorClient, finalConfig, hzConfig, leadershipFuture, sdch)
