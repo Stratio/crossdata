@@ -24,9 +24,9 @@ import akka.http.scaladsl.model.{HttpMethods, HttpRequest, _}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Source}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.serializer.XDJsonSupport
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.util.HttpClient.HttpClientContext
+import org.apache.spark.sql.crossdata.serializers.CrossdataCommonSerializer
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -42,7 +42,7 @@ object HttpClient {
     new HttpClient(HttpClientContext(config, actorSystem))
 }
 
-class HttpClient(ctx: HttpClientContext) extends XDJsonSupport{
+class HttpClient(ctx: HttpClientContext) extends CrossdataCommonSerializer{
 
   private implicit val actorSystem = ctx.actorSystem
   private val config = ctx.config
