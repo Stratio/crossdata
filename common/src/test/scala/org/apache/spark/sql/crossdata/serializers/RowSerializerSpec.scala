@@ -98,7 +98,7 @@ class RowSerializerSpec extends BaseXDTest {
   val rowWithNoSchema = Row.fromSeq(values)
   val rowWithSchema = new GenericRowWithSchema(values, schema)
 
-  implicit val formats = DefaultFormats +  StructTypeSerializer + new RowSerializer(schema)
+  implicit val formats = DefaultFormats +  StructTypeSerializer + RowSerializer(schema)
 
   "A RowSerializer" should "marshall & unmarshall a row with no schema" in {
 

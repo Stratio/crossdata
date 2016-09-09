@@ -27,6 +27,7 @@ import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.util.HttpClient.HttpClientContext
 import org.apache.spark.sql.crossdata.serializers.CrossdataCommonSerializer
+import org.json4s.jackson
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -47,6 +48,9 @@ class HttpClient(ctx: HttpClientContext) extends CrossdataCommonSerializer{
   private implicit val actorSystem = ctx.actorSystem
   private val config = ctx.config
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
+  import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
+  import akka.http.scaladsl.marshalling._
+  implicit val serialization = jackson.Serialization
 
   private val http = Http(actorSystem)
   private val serverHttp = config.getCrossdataServerHttp
