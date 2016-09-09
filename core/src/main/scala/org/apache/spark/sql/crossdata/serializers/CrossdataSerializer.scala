@@ -17,7 +17,7 @@ package org.apache.spark.sql.crossdata.serializers
 
 import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralOutputFormat}
 import org.json4s._
-import org.json4s.ext.EnumNameSerializer
+import org.json4s.ext.{EnumNameSerializer, UUIDSerializer}
 
 
 trait CrossdataSerializer {
@@ -26,8 +26,7 @@ trait CrossdataSerializer {
     DefaultFormats +
       StructTypeSerializer +
       new EnumNameSerializer(EphemeralExecutionStatus) +
-      new EnumNameSerializer(EphemeralOutputFormat) +
-      UUIDSerializer + SessionSerializer + CommandSerializer
+      new EnumNameSerializer(EphemeralOutputFormat) + UUIDSerializer + CommandSerializer
 
 }
 

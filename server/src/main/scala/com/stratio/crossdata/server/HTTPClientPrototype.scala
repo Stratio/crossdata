@@ -3,18 +3,17 @@ package com.stratio.crossdata.server
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, RequestEntity}
-import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import com.stratio.crossdata.common.{CommandEnvelope, SQLCommand}
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.UUID
 
 import com.stratio.crossdata.common.security.Session
-import org.apache.spark.sql.crossdata.serializers.{CrossdataSerializer, UUIDSerializer}
-import org.json4s.{DefaultFormats, jackson}
+import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
+import org.json4s.jackson
 
 object HTTPClientPrototype extends App  with CrossdataSerializer {
 

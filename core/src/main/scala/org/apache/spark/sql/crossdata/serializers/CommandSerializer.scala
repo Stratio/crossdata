@@ -2,6 +2,7 @@ package org.apache.spark.sql.crossdata.serializers
 
 import com.stratio.crossdata.common.{Command, SQLCommand}
 import org.json4s._
+import org.json4s.ext.UUIDSerializer
 import java.util.UUID
 
 object CommandSerializer extends CustomSerializer[Command](
@@ -9,14 +10,16 @@ object CommandSerializer extends CustomSerializer[Command](
     {
       case JObject(
         List(
-          JField("flattenResults", JBool(flattenResults)),
-          JField("queryId"       , JObject(List(("id",JString(qid))))),
-          JField("sql"           , JString(sql))
+          JField("sql"           , JString(sql)),
+          JField("queryId"       , jqueryId),
+          JField("flattenResults", JBool(flattenResults))
         )
-      ) => SQLCommand(sql, UUID.fromString(qid), flattenResults)
+      ) =>
+        implicit val _ = DefaultFormats + UUIDSerializer
+        SQLCommand(sql, jqueryId.extract[UUID], flattenResults)
     },
     {
-      case command: SQLCommand => Extraction.decompose(command)(DefaultFormats + SessionSerializer)
+      case command: SQLCommand => Extraction.decompose(command)(DefaultFormats + UUIDSerializer)
     }
     )
 )
