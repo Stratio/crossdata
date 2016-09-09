@@ -10,7 +10,8 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
     * Adds support for sub documents at Native side.
     
 * Major Akka version upgrade to 2.4 (2.4.9), thus enabling putting the server behind HAProxy. 
-* Resolve queries using fully qualified identifiers. 
+* Resolve queries using fully qualified identifiers.
+* Service discovery of Akka Cluster and Hazelcast members for servers through Zookeeper.
 
 ## 1.5.0 (August 2016)
 

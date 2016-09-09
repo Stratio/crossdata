@@ -92,7 +92,6 @@ class XDContext protected (@transient val sc: SparkContext,
 
   catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
 
-
   override protected[sql] def executeSql(sql: String): org.apache.spark.sql.execution.QueryExecution = executePlan(parseSql(sql))
 
   override protected[sql] def executePlan(plan: LogicalPlan): sparkexecution.QueryExecution =
