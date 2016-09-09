@@ -27,7 +27,7 @@ object ServiceDiscoveryConfigHelper extends CoreConfig {
 
   override val logger: Logger = Logger.getLogger(this.getClass)
 
-  val ClusterPrefix = Option(config.getString("catalog.prefix"))
+  val ClusterPrefix = Try(config.getString("catalog.prefix")).toOption
 
   ClusterPrefix.foreach{ p =>
     logger.info(s"Cluster prefix for service discovery: $p")
