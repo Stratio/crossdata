@@ -36,7 +36,7 @@
             <multicast enabled="false">
             </multicast>
             <tcp-ip enabled="true">
-                <member>127.0.0.1:5789</member>
+                <member>127.0.0.1</member>
             </tcp-ip>
         </join>
         <ssl enabled="false">

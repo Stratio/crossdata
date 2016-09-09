@@ -23,8 +23,8 @@ import scala.collection.JavaConversions._
 object CrossdataApplication extends App {
 
   val mapConfig = {
-    val keysValuesTuple = args.toList.partition(_.startsWith("--"))
-    val argsConfig = keysValuesTuple._1.map(_.replace("--", "")).zip(keysValuesTuple._2).toMap
+    val (keys, values) = args.toList.partition(_.startsWith("--"))
+    val argsConfig = keys.map(_.replace("--", "")).zip(values).toMap
     ConfigFactory.parseMap(argsConfig)
   }
 
