@@ -18,9 +18,9 @@ package org.apache.spark.sql.crossdata.serializers
 import org.apache.spark.sql.types.StructType
 import org.json4s.JsonAST.{JField, JObject}
 import org.json4s._
+import org.json4s.JsonDSL._
 import org.json4s.reflect.TypeInfo
 import org.json4s.jackson.JsonMethods._
-import JsonDSL._
 
 // TODO @pfperez duplicated(already in common)
 object StructTypeSerializer extends Serializer[StructType]{
@@ -38,6 +38,6 @@ object StructTypeSerializer extends Serializer[StructType]{
 
   def serialize(implicit formats: Formats): PartialFunction[Any, JValue] = {
     case x: StructType =>
-      StructTypeId -> x.json// TODO @pfperez => parse(x.json)
+      StructTypeId -> parse(x.json)
   }
 }

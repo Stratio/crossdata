@@ -19,7 +19,7 @@ import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
-import org.json4s._
+import org.json4s.{DefaultFormats, Extraction}
 import org.json4s.jackson.JsonMethods._
 
 class RowSerializerSpec extends BaseXDTest {
