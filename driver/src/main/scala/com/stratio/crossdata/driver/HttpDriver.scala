@@ -55,29 +55,6 @@ class HttpDriver private[driver](driverConf: DriverConf,
   private val protocol = "http" //TODO
 
 
-/*  override protected[driver] def openSession(): Try[Boolean] = {
-
-    val isOpenReply =
-      for {
-        requestEntity <- Marshal(securitizeCommand(OpenSessionCommand())).to[RequestEntity] //TODO commandEnvelope??
-        httpResponse <- http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/opensession", entity = requestEntity))
-        reply <- Unmarshal(httpResponse.entity).to[OpenSessionReply]
-        isOpen <- reply.isOpen
-      } yield isOpen
-
-    val recovered =
-      isOpenReply.recover {
-        case exception =>
-          logger.error(exception.getMessage, exception)
-          false
-      }
-
-    Try {
-      // TODO onComplete // remove try
-      Await.result(recovered, ClusterClientDriver.InitializationTimeout)
-    }
-  }*/
-
   private def simpleRequest[A, E, R](
                                       toMarshalCommand: A,
                                       path: String,
@@ -95,6 +72,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
         desiredResult = replyToResult(reply)
       } yield desiredResult
 
+    // TODO @pfperez
     defaultValue.map { dValue =>
       result.recover {
         case exception =>
@@ -130,6 +108,10 @@ class HttpDriver private[driver](driverConf: DriverConf,
   override def clusterState(): Future[CurrentClusterState] = ???
 
   override def closeSession(): Unit = ???
+  /*{
+  proxyActor ! securitizeCommand(CloseSessionCommand())
+  sessionBeacon.foreach(system.stop)
+}*/
 
   private def apiNotSupported(command: String): SQLResponse =
     new SQLResponse(
@@ -137,42 +119,8 @@ class HttpDriver private[driver](driverConf: DriverConf,
       Future.successful(ErrorSQLResult(s"HttpDriver does not support $command; please, use a ClusterClientDriver instead"))
     )
 
-
-  /*{
-    proxyActor ! securitizeCommand(CloseSessionCommand())
-    sessionBeacon.foreach(system.stop)
-  }*/
-
-
  /* val tablesURI = {
-    Uri(s"http://$serverHttp/tables")//.withQuery(Query("sessionID" -> session.id.toString))
-  }
-  val requestEntity = Marshal(commandEnvelope).to[RequestEntity]
-
-  requestEntity.flatMap { reqEntity =>
-    //TODO flatMap
-    http.singleRequest(HttpRequest(HttpMethods.POST, uri = tablesURI, entity = reqEntity)).flatMap { //TODO pipeTo an actor vs no onSuccess
-      case resp @ HttpResponse(StatusCodes.OK, _, _, _ ) =>
-        // TODO transform resp to XXX
-        /*for (
-          strictEntity <- response.entity.toStrict(5 seconds)
-        ) yield strictEntity.data.decodeString("UTF-8")
-        */
-
-        val unmarshalStr = Unmarshal(resp.entity).to[SQLReply]
-
-        unmarshalStr.onSuccess{
-          case sqlReply => sqlReply.sqlResult.resultSet.foreach(println)
-        }
-
-        unmarshalStr
-
-      case HttpResponse(code, _, _, _) =>
-        throw new RuntimeException(s"Request failed, response code: $code")
-    }
-
-  } recover  {
-    case throwa => SQLReply(commandEnvelope.cmd.requestId, ErrorSQLResult("Failed while marshalling")) // TODO replace
+    possible defaultValue => SQLReply(commandEnvelope.cmd.requestId, ErrorSQLResult("Failed while marshalling")) // TODO replace
   }*/
 
 }

@@ -22,6 +22,7 @@ import org.json4s._
 import org.json4s.ext.UUIDSerializer
 
 object CommandSerializer extends CustomSerializer[Command](
+  //TODO @pfperez timeout field??
   format => (
     {
       case JObject(

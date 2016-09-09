@@ -30,6 +30,7 @@ import com.stratio.crossdata.common.security.Session
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.json4s.jackson
 
+// TODO @pfperez remove ClientPrototype
 object HTTPClientPrototype extends App  with CrossdataSerializer {
 
   implicit val system = ActorSystem("ClientPrototype")

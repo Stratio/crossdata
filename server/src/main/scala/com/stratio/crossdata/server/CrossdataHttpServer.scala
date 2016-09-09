@@ -112,7 +112,7 @@ CrossdataSerializer {
               complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
             case Success(reply @ SQLReply(_, SuccessfulSQLResult(rset, _))) =>
               complete(reply)
-            case Success(SQLReply(_, ErrorSQLResult(message, _))) =>
+            case Success(SQLReply(_, ErrorSQLResult(message, _))) => // TODO @pfperez serialize error SQL result
               complete(StatusCodes.ServerError, message)
             case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
           }

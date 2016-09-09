@@ -64,6 +64,7 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (st: StructType, JObject(JField("values",JArray(values))::_)) =>
         deserializeWithSchema(st, values, true)
       case other =>
+        //TODO @pfperez remove
         null
     }
 
