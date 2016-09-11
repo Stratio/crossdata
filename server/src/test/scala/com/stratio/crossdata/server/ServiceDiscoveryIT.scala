@@ -17,6 +17,7 @@ package com.stratio.crossdata.server
 
 import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
+import org.apache.curator.CuratorZookeeperClient
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.junit.JUnitRunner
@@ -24,24 +25,41 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
 
-  override def beforeAll(): Unit = super.beforeAll()
+  import ServiceDiscoveryConstants._
 
-  override def afterAll(): Unit = super.afterAll()
+  var testServer: CrossdataServer = _
 
-  "A Crossdata Server" should "write its hostname:port in ZK when service discovery is activated" in {
-
-    val TestHost = "127.0.0.1"
-    val AkkaPort = 13456
-    val HzPort = 5789
-
+  override def beforeAll(): Unit = {
     val testConfig = ConfigFactory.empty
       .withValue("akka.remote.netty.tcp.hostname", ConfigValueFactory.fromAnyRef(TestHost))
       .withValue("akka.remote.netty.tcp.port", ConfigValueFactory.fromAnyRef(AkkaPort))
       .withValue("service-discovery.activated", ConfigValueFactory.fromAnyRef(true))
 
-    val testServer = new CrossdataServer(Some(testConfig))
+    testServer = new CrossdataServer(Some(testConfig), Some(Set(s"$TestHost:$HzPort")))
 
     testServer.start
+
+
+
   }
+
+  override def afterAll(): Unit = {
+    testServer.stop
+  }
+
+  "A Crossdata Server" should "write its hostname:port in ZK when service discovery is activated" in {
+
+    new CuratorZookeeperClient()
+
+  }
+
+}
+
+object ServiceDiscoveryConstants {
+
+  val TestHost = "127.0.0.1"
+  val AkkaPort = 13456
+  val HzPort = 5789
+
 
 }

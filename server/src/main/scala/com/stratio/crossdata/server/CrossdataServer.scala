@@ -45,7 +45,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Try}
 
 
-class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
+class CrossdataServer(progrConfig: Option[Config] = None, hzMembers: Option[Set[String]] = None) extends ServerConfig {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
@@ -55,7 +55,20 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private val serverConfig = progrConfig map (_.withFallback(config)) getOrElse (config)
 
-  private val hzConfig: HzConfig = new XmlConfigBuilder().build()
+  private val hzConfig: HzConfig = {
+    val baseConfig = new XmlConfigBuilder().build()
+    hzMembers map { members =>
+      insertHzMembers(baseConfig, members)
+    } getOrElse {
+      baseConfig
+    }
+  }
+
+  private def insertHzMembers(hConfig: HzConfig, members: Set[String]) =
+    hConfig.setNetworkConfig(
+      hConfig.getNetworkConfig.setJoin(
+        hConfig.getNetworkConfig.getJoin.setTcpIpConfig(
+          hConfig.getNetworkConfig.getJoin.getTcpIpConfig.setMembers(members.toList))))
 
   private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
