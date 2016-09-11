@@ -24,6 +24,9 @@ import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.junit.JUnitRunner
 
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+
 @RunWith(classOf[JUnitRunner])
 class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
 
@@ -44,7 +47,7 @@ class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
         "config.spark.jars",
         ConfigValueFactory.fromAnyRef(s"server/target/2.11/crossdata-server-jar-with-dependencies.jar"))
 
-    testServer = new CrossdataServer(Some(testConfig), Some(Set(s"$TestHost:$HzPort")))
+    testServer = Await.result(Future(new CrossdataServer(Some(testConfig), Some(Set(s"$TestHost:$HzPort")))), 2 minutes)
 
     testServer.start
   }
