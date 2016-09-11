@@ -18,7 +18,6 @@ package com.stratio.crossdata.server
 import com.stratio.crossdata.server.discovery.ServiceDiscoveryConfigHelper
 import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
-import org.apache.curator.CuratorZookeeperClient
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.junit.runner.RunWith
@@ -30,15 +29,20 @@ class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
 
   import ServiceDiscoveryConstants._
 
-  val ZkConnectionString = sys.env("XD_ZOOKEEPER_CONNECTION_STRING")
+  val ZkConnectionString = sys.env.get("XD_ZOOKEEPER_CONNECTION_STRING")
+
 
   var testServer: CrossdataServer = _
 
   override def beforeAll(): Unit = {
+
     val testConfig = ConfigFactory.empty
       .withValue("akka.remote.netty.tcp.hostname", ConfigValueFactory.fromAnyRef(TestHost))
       .withValue("akka.remote.netty.tcp.port", ConfigValueFactory.fromAnyRef(AkkaPort))
       .withValue("service-discovery.activated", ConfigValueFactory.fromAnyRef(true))
+      .withValue(
+        "config.spark.jars",
+        ConfigValueFactory.fromAnyRef(s"server/target/2.11/crossdata-server-jar-with-dependencies.jar"))
 
     testServer = new CrossdataServer(Some(testConfig), Some(Set(s"$TestHost:$HzPort")))
 
@@ -50,8 +54,11 @@ class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
   }
 
   "A Crossdata Server" should "write its hostname:port in ZK when service discovery is activated" in {
+
+    ZkConnectionString.isDefined should be (true)
+
     val curatorClient = CuratorFrameworkFactory.newClient(
-      ZkConnectionString,
+      ZkConnectionString.get,
       new ExponentialBackoffRetry(1000, 3))
     curatorClient.blockUntilConnected
     val currentSeeds = new String(curatorClient.getData.forPath(ServiceDiscoveryConfigHelper.DefaultSeedsPath))
