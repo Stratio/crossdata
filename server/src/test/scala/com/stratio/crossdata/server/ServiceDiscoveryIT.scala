@@ -56,11 +56,11 @@ class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
     curatorClient.blockUntilConnected
     val currentSeeds = new String(curatorClient.getData.forPath(ServiceDiscoveryConfigHelper.DefaultSeedsPath))
 
-    currentSeeds should be s"$TestHost:$AkkaPort"
+    currentSeeds should be (s"$TestHost:$AkkaPort")
 
     val currentMembers = new String(curatorClient.getData.forPath(ServiceDiscoveryConfigHelper.DefaultProviderPath))
 
-    currentMembers should be s"$TestHost:$HzPort"
+    currentMembers should be (s"$TestHost:$HzPort")
   }
 
 }
