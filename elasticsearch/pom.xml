@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>parent_2.11</artifactId>
-        <version>1.6.0-SNAPSHOT</version>
+        <version>1.6.0-RC2-SNAPSHOT</version>
     </parent>
     <groupId>com.stratio.crossdata.connector</groupId>
     <artifactId>crossdata-elasticsearch_2.11</artifactId>
