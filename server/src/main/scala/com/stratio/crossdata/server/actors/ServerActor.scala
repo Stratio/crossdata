@@ -43,7 +43,7 @@ object ServerActor {
   def props(cluster: Cluster, sessionProvider: XDSessionProvider): Props =
     Props(new ServerActor(cluster, sessionProvider))
 
-  case class JobId(requester: ActorRef, sessionId: UUID, queryId: UUID)
+  case class JobId(sessionId: UUID, queryId: UUID)
 
   private case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
 
@@ -105,7 +105,6 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   private def executeAccepted(cmd: CommandEnvelope, requester: ActorRef)(st: State): Unit = cmd match {
     case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, _), _) =>
-      // TODO @pfperez requester
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
       sessionProvider.session(id) match {
@@ -113,7 +112,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
           val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
           jobActor ! StartJob
           context.become(
-            ready(st.copy(jobsById = st.jobsById + (JobId(requester, id, sqlCommand.queryId) -> jobActor)))
+            ready(st.copy(jobsById = st.jobsById + (JobId(id, sqlCommand.queryId) -> jobActor)))
           )
 
         case Failure(error) =>
@@ -123,16 +122,13 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
 
     case CommandEnvelope(addAppCommand@AddAppCommand(path, alias, clss, _), session@Session(id, requesterOpt), _) =>
-      // TODO @pfperez
-      val requester = actualRequester(requesterOpt)
       if ( sessionProvider.session(id).map(_.addApp(path, clss, alias)).getOrElse(None).isDefined)// TODO improve addJar sessionManagement
         sender ! SQLReply(addAppCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
       else
         sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
 
-    case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, requesterOpt), _) =>
-      // TODO @pfperez
-      st.jobsById.get(JobId(requester, id, queryId)).get ! CancelJob
+    case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, _), _) =>
+      st.jobsById.get(JobId(id, queryId)).get ! CancelJob
   }
 
 
@@ -146,9 +142,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       cmd match {
         // Inner pattern matching for future delegated command validations
         case sc@CommandEnvelope(CancelQueryExecution(queryId), Session(sid, requesterOpt), _) =>
-          // TODO @pfperez
           val requester = actualRequester(requesterOpt)
-          st.jobsById.get(JobId(requester, sid, queryId)) foreach (_ => executeAccepted(sc, requester)(st))
+          st.jobsById.get(JobId(sid, queryId)) foreach (_ => executeAccepted(sc, requester)(st))
         /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
             servers through the topic. */
       }
@@ -168,12 +163,12 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
 
     case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, requesterOpt), _) =>
-        val requester = actualRequester(requesterOpt)// TODO @pfperez
-      st.jobsById.get(JobId(requester, id, cc.requestId)) map { _ =>
+        val requester = actualRequester(requesterOpt)
+      st.jobsById.get(JobId(id, cc.requestId)) map { _ =>
         executeAccepted(sc, requester)(st) // Command validated to be executed by this server.
       } getOrElse {
         // If it can't run here it should be executed somewhere else
-        mediator ! Publish(ManagementTopic, DelegateCommand(sc.copy(session = Session(id, requesterOpt)), self)) // TODO @pfperez
+        mediator ! Publish(ManagementTopic, DelegateCommand(sc.copy(session = Session(id, requesterOpt)), self))
       }
 
     case sc@CommandEnvelope(_: ClusterStateCommand, session, _) =>
@@ -232,7 +227,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   private def closeSessionTerminatingJobs(sessionId: UUID)(st: State): Unit = {
     val newjobsmap = st.jobsById filter {
-      case (JobId(_, `sessionId`, _), job) =>
+      case (JobId(`sessionId`, _), job) =>
         gracefullyKill(job) // WARNING! Side-effect within filter function
         false
       case _ => true
