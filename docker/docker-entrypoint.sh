@@ -24,6 +24,9 @@ if [ "x${XD_CATALOG}x" != "xx" ]; then
    sed -i "s|#crossdata-core.catalog.zookeeper.retryAttempts = 5|crossdata-core.catalog.zookeeper.retryAttempts = ${XD_CATALOG_ZOOKEEPER_RETRY_ATTEMPS:=5}|" /etc/sds/crossdata/server/core-application.conf
    sed -i "s|#crossdata-core.catalog.zookeeper.retryInterval = 10000|crossdata-core.catalog.zookeeper.retryInterval = ${XD_CATALOG_ZOOKEEPER_RETRY_INTERVAL:=10000}|" /etc/sds/crossdata/server/core-application.conf
  fi
+ if [ "x${XD_CATALOG_PREFIX}x" != "xx" ]; then
+    sed -i "s|#crossdata-core.catalog.prefix = \"crossdataCluster\"|crossdata-core.catalog.prefix = \"${XD_CATALOG_PREFIX:=crossdataCluster}\"|" /etc/sds/crossdata/server/core-application.conf
+ fi
 fi
 if [ "${XD_MODE}" == "Streaming" ]; then
  sed -i "s|//crossdata-core.streaming*|crossdata-core.streaming|" /etc/sds/crossdata/server/core-application.conf
