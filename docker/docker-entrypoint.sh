@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 if [ "x${XD_CATALOG}x" != "xx" ]; then
- sed -i "s|#crossdata-core.catalog.class.*|crossdata-core.catalog.class = \"org.apache.spark.sql.crossdata.catalog.${XD_CATALOG}Catalog\"|" /etc/sds/crossdata/server/core-application.conf
+ sed -i "s|#crossdata-core.catalog.class.*|crossdata-core.catalog.class = \"org.apache.spark.sql.crossdata.catalog.persistent.${XD_CATALOG}Catalog\"|" /etc/sds/crossdata/server/core-application.conf
  if [ "${XD_CATALOG}" == "MySQL" ]; then
    sed -i "s|#crossdata-core.catalog.jdbc.driver.*|crossdata-core.catalog.jdbc.driver = \"org.mariadb.jdbc.Driver\"|" /etc/sds/crossdata/server/core-application.conf
    sed -i "s|#crossdata-core.catalog.jdbc.url.*|crossdata-core.catalog.jdbc.url = \"${XD_CATALOG_HOST}:3306\"|" /etc/sds/crossdata/server/core-application.conf
