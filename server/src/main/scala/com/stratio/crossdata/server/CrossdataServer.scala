@@ -84,10 +84,10 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     Try {
       if(sLeader.await(sdc.getOrElse(
         SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout.toString).toLong, TimeUnit.SECONDS)){
-        throw new RuntimeException()
-      } else {
         logger.info("Subscription leadership acquired")
         sLeader
+      } else {
+        throw new RuntimeException()
       }
     } recoverWith {
       case _ => Failure(new RuntimeException("Subscription leadership couldn't be acquired"))
