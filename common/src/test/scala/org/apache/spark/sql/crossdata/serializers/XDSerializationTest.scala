@@ -25,6 +25,7 @@ object XDSerializationTest {
   case class TestCase(description: String, obj: Any)
 }
 
+//TODO: Use the template to fully test all interchange messages' serialization (CommandEnvelope, ...)
 abstract class XDSerializationTest[T : ClassTag : Manifest] extends BaseXDTest {
 
   import XDSerializationTest._
@@ -40,7 +41,7 @@ abstract class XDSerializationTest[T : ClassTag : Manifest] extends BaseXDTest {
     s"A $classTag serializer" should description in {
 
       val serialized = compact(render(Extraction.decompose(obj)))
-      val extracted = parse(serialized, false).extract[T] //TODO @pfperez
+      val extracted = parse(serialized).extract[T]
 
       extracted shouldEqual obj
 

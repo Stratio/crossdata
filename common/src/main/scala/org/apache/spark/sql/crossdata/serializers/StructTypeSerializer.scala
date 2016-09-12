@@ -22,7 +22,6 @@ import org.json4s.JsonDSL._
 import org.json4s.reflect.TypeInfo
 import org.json4s.jackson.JsonMethods._
 
-// TODO @pfperez duplicated(already in common)
 object StructTypeSerializer extends Serializer[StructType]{
 
   private val StructTypeClass = classOf[StructType]
@@ -38,6 +37,6 @@ object StructTypeSerializer extends Serializer[StructType]{
 
   def serialize(implicit formats: Formats): PartialFunction[Any, JValue] = {
     case x: StructType =>
-      StructTypeId -> parse(x.json, false) //TODO @pfperez
+      StructTypeId -> parse(x.json)
   }
 }

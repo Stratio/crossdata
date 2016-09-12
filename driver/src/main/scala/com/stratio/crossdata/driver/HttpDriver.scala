@@ -72,14 +72,11 @@ class HttpDriver private[driver](driverConf: DriverConf,
         desiredResult = replyToResult(reply)
       } yield desiredResult
 
-    // TODO @pfperez
-    defaultValue.map { dValue =>
-      result.recover {
-        case exception =>
-          logger.error(exception.getMessage, exception)
-          dValue
-      }
-    }.getOrElse(result)
+    result.recover {
+      case exception if defaultValue.isDefined =>
+        logger.error(exception.getMessage, exception)
+        defaultValue.get
+    }
 
   }
 

@@ -19,11 +19,15 @@ import java.sql.Timestamp
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.{GenericRow, GenericRowWithSchema}
-import org.apache.spark.sql.catalyst.util.DateTimeUtils
-import org.apache.spark.sql.types.{DecimalType, _}
+import org.apache.spark.sql.types._
 import org.json4s.JsonAST.{JNumber, JObject}
 import org.json4s.JsonDSL._
 import org.json4s._
+import org.apache.spark.sql.catalyst.util.{DateTimeUtils,
+  ArrayBasedMapData => ArrayBasedMapDataNotDeprected,
+  MapData => MapDataNotDeprected,
+  ArrayData => ArrayDataNotDeprecated
+}
 
 case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
 
@@ -60,12 +64,9 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (MapType(StringType, vt, _), JObject(fields)) =>
         val (keys, values) = fields.unzip
         val unserValues = values map (jval => extractField(vt, jval))
-        ArrayBasedMapData(keys.toArray, unserValues.toArray)
+        ArrayBasedMapDataNotDeprected(keys.toArray, unserValues.toArray)
       case (st: StructType, JObject(JField("values",JArray(values))::_)) =>
         deserializeWithSchema(st, values, true)
-      case other =>
-        //TODO @pfperez remove
-        null
     }
 
     val values: Array[Any] = (schema.view.map(_.dataType) zip fields.arr).map(extractField).toArray
@@ -101,8 +102,8 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (DateType, v: Int) => JString(DateTimeUtils.toJavaDate(v).toString)
       case (DateType, v: java.sql.Date) => JString(v.toString)
       case (udt: UserDefinedType[_], v) => serializeField(udt.sqlType -> v)
-      case (ArrayType(ty, _), v: ArrayData) => JArray(v.array.toList.map(v => Extraction.decompose(v)))
-      case (MapType(StringType, vt, _), v: MapData) =>
+      case (ArrayType(ty, _), v: ArrayDataNotDeprecated) => JArray(v.array.toList.map(v => Extraction.decompose(v)))
+      case (MapType(StringType, vt, _), v: MapDataNotDeprected) =>
         /* Maps will be serialized as sub-objects so keys are constrained to be strings */
         val serKeys = v.keyArray().array.map(v => v.toString)
         val serValues = v.valueArray.array.map(v => serializeField(vt -> v))

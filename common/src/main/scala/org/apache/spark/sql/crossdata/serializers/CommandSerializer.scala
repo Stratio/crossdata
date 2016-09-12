@@ -22,18 +22,11 @@ import org.json4s._
 import org.json4s.ext.UUIDSerializer
 
 object CommandSerializer extends CustomSerializer[Command](
-  //TODO @pfperez timeout field??
   format => (
     {
-      case JObject(
-        List(
-          JField("sql"           , JString(sql)),
-          JField("queryId"       , jqueryId),
-          JField("flattenResults", JBool(flattenResults))
-        )
-      ) =>
+      case jsqlCommand @ JObject(JField("sql", _)::JField("queryId", _)::JField("flattenResults", _)::_) =>
         implicit val _ = DefaultFormats + UUIDSerializer
-        SQLCommand(sql, jqueryId.extract[UUID], flattenResults)
+        jsqlCommand.extract[SQLCommand] //TODO: Test
     },
     {
       case command: SQLCommand => Extraction.decompose(command)(DefaultFormats + UUIDSerializer)
