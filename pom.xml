@@ -106,6 +106,7 @@
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
         <config.version>1.2.1</config.version>
         <akka.version>2.4.9</akka.version>
+        <akka.http.json4s.version>1.9.0</akka.http.json4s.version>
         <!-- <akka.http.stream.version>2.0.3</akka.http.stream.version> -->
         <slf4j.version>1.7.7</slf4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
