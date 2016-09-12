@@ -164,11 +164,16 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForMembers)
     val currentMembers = new String(dClient.getData.forPath(pathForMembers))
     val newMembers = Set(getLocalMember) ++ currentMembers.split(",").toSet.filter(_.nonEmpty)
-    dClient.setData.forPath(pathForMembers, newMembers.mkString(",").getBytes)
+    val filteredMembers = if((newMembers.size > 1) && (newMembers.map(_.split(":")(0)).contains("127.0.0.1"))){
+      newMembers.filterNot(_.split(":")(0).contains("127.0.0.1"))
+    } else {
+      newMembers
+    }
+    dClient.setData.forPath(pathForMembers, filteredMembers.mkString(",").getBytes)
     val modifiedHzConfig = hzConfig.setNetworkConfig(
       hzConfig.getNetworkConfig.setJoin(
         hzConfig.getNetworkConfig.getJoin.setTcpIpConfig(
-          hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.setMembers(newMembers.toList))))
+          hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.setMembers(filteredMembers.toList))))
 
     (modifiedAkkaConfig, modifiedHzConfig)
   }
