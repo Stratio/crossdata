@@ -118,6 +118,10 @@ sed -i "s|crossdata-server.config.spark.driver.memory.*|crossdata-server.config.
 sed -i "s|crossdata-server.config.spark.executor.memory.*|crossdata-server.config.spark.executor.memory = ${XD_EXECUTOR_MEMORY:=512M}|" /etc/sds/crossdata/server/server-application.conf
 sed -i "s|crossdata-server.config.spark.cores.max.*|crossdata-server.config.spark.cores.max = ${XD_CORES:=4}|" /etc/sds/crossdata/server/server-application.conf
 
-/etc/init.d/crossdata start
-
-tail -F /var/log/sds/crossdata/crossdata.log
+if [ "$SERVER_MODE" == "debug" ]; then
+    # In this mode, crossdata will be launched as a service within the docker container.
+    /etc/init.d/crossdata start 
+    tail -F /var/log/sds/crossdata/crossdata.log
+else
+    /opt/sds/crossdata/bin/server.sh
+fi;
