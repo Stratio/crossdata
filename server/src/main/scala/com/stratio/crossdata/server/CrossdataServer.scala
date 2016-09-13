@@ -144,7 +144,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val localSeed = getLocalSeed
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     val currentSeeds = new String(dClient.getData.forPath(pathForSeeds))
-    val newSeeds = Set(localSeed) ++ currentSeeds.split(",").toSet.map(m => m.trim).filter(_.nonEmpty)
+    val newSeeds = (Set(localSeed) ++ currentSeeds.split(",").toSet).map(m => m.trim).filter(_.nonEmpty)
     dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
 
     val protocol = s"akka.${
