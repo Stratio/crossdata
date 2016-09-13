@@ -173,11 +173,14 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     logger.info(s"HAZELCAST CURRENT MEMBERS: '$currentMembers'")
 
-    val newMembers = if(localMember.split(":").head != "127.0.0.1"){
+    val tmp2 = if(localMember.split(":").head != "127.0.0.1"){
       currentMembers.split(",").toSet + localMember
     } else {
       Set(localMember)
-    }.map(m => m.trim).filter {
+    }
+
+
+    val newMembers = tmp2.map(m => m.trim).filter {
       case str if str.isEmpty =>
         logger.info(s">>>>>>>>> >$str< WAS EMPTY")
         false
