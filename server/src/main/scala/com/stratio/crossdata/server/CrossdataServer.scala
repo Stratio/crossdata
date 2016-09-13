@@ -128,10 +128,10 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
   }
 
   private def getLocalSeed: String =
-    s"${serverConfig.getString("akka.remote.netty.tcp.hostname")}:${serverConfig.getInt("akka.remote.netty.tcp.port")}"
+    s"${Try(serverConfig.getString("akka.remote.netty.tcp.hostname")).getOrElse("127.0.0.1")}:${Try(serverConfig.getInt("akka.remote.netty.tcp.port")).getOrElse("13420")}"
 
   private def getLocalMember: String =
-    s"${hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.getMembers.head}"
+    s"${Try(hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.getMembers.head).getOrElse("127.0.0.1:5701")}"
 
   private def generateFinalConfig(dClient: CuratorFramework, sdc: SDCH) = {
 
@@ -141,9 +141,10 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val pathForMembers = sdc.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
     logger.debug(s"Service Discovery - members path: $pathForMembers")
 
+    val localSeed = getLocalSeed
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     val currentSeeds = new String(dClient.getData.forPath(pathForSeeds))
-    val newSeeds = Set(getLocalSeed) ++ currentSeeds.split(",").toSet.filter(_.nonEmpty)
+    val newSeeds = Set(localSeed) ++ currentSeeds.split(",").toSet.filter(_.nonEmpty)
     dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
 
     val protocol = s"akka.${
@@ -161,21 +162,22 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       })
     )
 
+    val localMember = getLocalMember
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForMembers)
     val currentMembers = new String(dClient.getData.forPath(pathForMembers))
-    val newMembers = currentMembers.split(",").toSet.filter(_.nonEmpty) + getLocalMember
+    val newMembers = currentMembers.split(",").toSet.filter(_.nonEmpty) + localMember
     val filteredMembers = if((newMembers.size > 1) && (newMembers.map(_.split(":")(0)).contains("127.0.0.1"))){
       newMembers.filterNot(_.split(":")(0).contains("127.0.0.1"))
     } else {
       newMembers
     }
     dClient.setData.forPath(pathForMembers, filteredMembers.mkString(",").getBytes)
-    val configMembers = filteredMembers - getLocalMember
+    val configMembers = filteredMembers - localMember
     val modifiedHzConfig = hzConfig.setNetworkConfig(
       hzConfig.getNetworkConfig.setJoin(
         hzConfig.getNetworkConfig.getJoin.setTcpIpConfig(
           hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.setMembers(configMembers.toList)))
-        .setPublicAddress(getLocalMember))
+        .setPublicAddress(localMember))
 
     (modifiedAkkaConfig, modifiedHzConfig)
   }
