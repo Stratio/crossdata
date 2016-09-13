@@ -165,14 +165,13 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val localMember = getLocalMember
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForMembers)
     val currentMembers = new String(dClient.getData.forPath(pathForMembers))
-    val newMembers = currentMembers.split(",").toSet.filter(_.nonEmpty) + localMember
-    val filteredMembers = if((newMembers.size > 1) && (newMembers.map(_.split(":")(0)).contains("127.0.0.1"))){
-      newMembers.filterNot(_.split(":")(0).contains("127.0.0.1"))
+    val newMembers = if(localMember.split(":").head != "127.0.0.1"){
+      currentMembers.split(",").toSet + localMember
     } else {
-      newMembers
+      Set(localMember)
     }
-    dClient.setData.forPath(pathForMembers, filteredMembers.mkString(",").getBytes)
-    val configMembers = filteredMembers - localMember
+    dClient.setData.forPath(pathForMembers, newMembers.mkString(",").getBytes)
+    val configMembers = newMembers - localMember
     val modifiedHzConfig = hzConfig.setNetworkConfig(
       hzConfig.getNetworkConfig.setJoin(
         hzConfig.getNetworkConfig.getJoin.setTcpIpConfig(
