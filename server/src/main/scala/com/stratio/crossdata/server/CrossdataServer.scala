@@ -144,7 +144,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val localSeed = getLocalSeed
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     val currentSeeds = new String(dClient.getData.forPath(pathForSeeds))
-    val newSeeds = Set(localSeed) ++ currentSeeds.split(",").toSet.filter(_.nonEmpty)
+    val newSeeds = Set(localSeed) ++ currentSeeds.split(",").toSet.map(_.trim).filter(_.nonEmpty)
     dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
 
     val protocol = s"akka.${
@@ -169,7 +169,10 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       currentMembers.split(",").toSet + localMember
     } else {
       Set(localMember)
-    }.filter(_.nonEmpty)
+    }.map(_.trim).filter(_.nonEmpty)
+
+    logger.info(s"HAZELCAST NEW MEMBERS: ${newMembers.mkString("|")}")
+
     dClient.setData.forPath(pathForMembers, newMembers.mkString(",").getBytes)
     val modifiedHzConfig = hzConfig.setNetworkConfig(
       hzConfig.getNetworkConfig.setJoin(
