@@ -171,11 +171,10 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       Set(localMember)
     }
     dClient.setData.forPath(pathForMembers, newMembers.mkString(",").getBytes)
-    val configMembers = newMembers - localMember
     val modifiedHzConfig = hzConfig.setNetworkConfig(
       hzConfig.getNetworkConfig.setJoin(
         hzConfig.getNetworkConfig.getJoin.setTcpIpConfig(
-          hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.setMembers(configMembers.toList)))
+          hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.setMembers(newMembers.toList)))
         .setPublicAddress(localMember))
 
     (modifiedAkkaConfig, modifiedHzConfig)
