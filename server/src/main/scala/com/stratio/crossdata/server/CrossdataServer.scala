@@ -177,7 +177,17 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       currentMembers.split(",").toSet + localMember
     } else {
       Set(localMember)
-    }.map(m => m.trim).filter(_.nonEmpty)
+    }.map(m => m.trim).filter {
+      case str if str.isEmpty =>
+        logger.info(s">>>>>>>>> >$str< WAS EMPTY")
+        false
+      case str  =>
+        logger.info(s">>>>>>>>> >$str< WAS NOT EMPTY")
+        true
+
+    }
+
+    //(_.nonEmpty)
 
     newMembers.foreach(m => logger.info(s"MEMBER: $m"))
 
