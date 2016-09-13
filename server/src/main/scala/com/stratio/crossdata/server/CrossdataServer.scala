@@ -165,11 +165,16 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val localMember = getLocalMember
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForMembers)
     val currentMembers = new String(dClient.getData.forPath(pathForMembers))
+
+    logger.info(s"HAZELCAST CURRENT MEMBERS: '$currentMembers'")
+
     val newMembers = if(localMember.split(":").head != "127.0.0.1"){
       currentMembers.split(",").toSet + localMember
     } else {
       Set(localMember)
     }.map(m => m.trim).filter(_.nonEmpty)
+
+    newMembers.foreach(m => logger.info(s"MEMBER: $m"))
 
     logger.info(s"HAZELCAST NEW MEMBERS: ${newMembers.mkString("|")}")
 
