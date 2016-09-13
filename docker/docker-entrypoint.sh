@@ -82,9 +82,9 @@ else
         sed -i "s|#crossdata-server.akka.remote.netty.tcp.port.*|crossdata-server.akka.remote.netty.tcp.port = \"${PORT_13420}\"|" /etc/sds/crossdata/server/server-application.conf
         sed -i "s|#crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"akka.tcp:\/\/CrossdataServerCluster@${HOST_ROUTE}\"]|" /etc/sds/crossdata/server/server-application.conf
 
-        #Bind address for local
-        sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${DOCKER_HOST}\"|" /etc/sds/crossdata/server/server-application.conf
-        sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"13420\"|" /etc/sds/crossdata/server/server-application.conf
+        #Bind address for host machine (In host is also the host machine. In bridge we need to put the internal of the docker: TODO)
+        sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
+        sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"${PORT_13420}\"|" /etc/sds/crossdata/server/server-application.conf
 
         #Hazelcast
         sed -i "s|<member>127.0.0.1</member>|<member>${HOST_ROUTE}</member>|" /etc/sds/crossdata/server/hazelcast.xml
