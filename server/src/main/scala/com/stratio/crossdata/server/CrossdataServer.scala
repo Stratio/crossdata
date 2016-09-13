@@ -130,8 +130,18 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
   private def getLocalSeed: String =
     s"${Try(serverConfig.getString("akka.remote.netty.tcp.hostname")).getOrElse("127.0.0.1")}:${Try(serverConfig.getInt("akka.remote.netty.tcp.port")).getOrElse("13420")}"
 
+  private def getLocalSeed(xdCluster: Cluster): String = {
+    val selfAddress = xdCluster.selfAddress
+    s"${selfAddress.host.getOrElse("127.0.0.1")}:${selfAddress.port}"
+  }
+
   private def getLocalMember: String =
     s"${Try(hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.getMembers.head).getOrElse("127.0.0.1:5701")}"
+
+  private def getLocalMember(hsp: HazelcastSessionProvider): String = {
+    val selfAddress = hsp.gelLocalMember.getAddress
+    s"${selfAddress.getHost}:${selfAddress.getPort}"
+  }
 
   private def generateFinalConfig(dClient: CuratorFramework, sdc: SDCH) = {
 
@@ -165,25 +175,13 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val localMember = getLocalMember
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForMembers)
 
-    val tmp = dClient.getData.forPath(pathForMembers)
+    val currentMembers = new String(dClient.getData.forPath(pathForMembers))
 
-    logger.info(s"BYTES: ${tmp.toList}")
-
-    val currentMembers = new String(tmp)
-
-    logger.info(s"HAZELCAST CURRENT MEMBERS: '$currentMembers'")
-
-    val tmp2 = if(localMember.split(":").head != "127.0.0.1"){
+    val newMembers = (if(localMember.split(":").head != "127.0.0.1"){
       currentMembers.split(",").toSet + localMember
     } else {
       Set(localMember)
-    }
-
-    val newMembers = tmp2.map(m => m.trim).filter(_.nonEmpty)
-
-    newMembers.foreach(m => logger.info(s"MEMBER: $m"))
-
-    logger.info(s"HAZELCAST NEW MEMBERS: ${newMembers.mkString("|")}")
+    }).map(m => m.trim).filter(_.nonEmpty)
 
     dClient.setData.forPath(pathForMembers, newMembers.mkString(",").getBytes)
     val modifiedHzConfig = hzConfig.setNetworkConfig(
@@ -213,9 +211,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
   }
 
   private def updateClusterSeeds(xCluster: Cluster, h: SDH) = {
-    val currentSeeds =
-      (Set(s"${xCluster.selfAddress.host.get}:${xCluster.selfAddress.port.get}")
-        ++ xCluster.state.members.filter(_.roles.contains("server")).map(m => s"${m.address.host.get}:${m.address.port.get}"))
+    val currentSeeds = xCluster.state.members.filter(_.roles.contains("server")).map(m => s"${m.address.host.get}:${m.address.port.get}") + getLocalSeed(xCluster)
     val pathForSeeds = h.sdch.getOrElse(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     logger.info(s"Updating seeds: ${currentSeeds.mkString(",")}")
@@ -223,14 +219,12 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     currentSeeds
   }
 
-  private def updateClusterMembers(h: SDH) = {
+  private def updateClusterMembers(h: SDH, hsp: HazelcastSessionProvider) = {
 
     val pathForMembers = h.sdch.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
 
-    logger.info(s"LOCAL_MEMBER: $getLocalMember")
-
-    val updatedMembers = Set(getLocalMember) ++ sessionProviderOpt.map{
+    val updatedMembers = Set(getLocalMember(hsp)) ++ sessionProviderOpt.map{
         case hzSP: HazelcastSessionProvider =>
           hzSP.getHzMembers.to[Set].map{ m =>
             logger.info(s"HZ_MEMBER: $m")
@@ -244,7 +238,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   }
 
-  private def updateSeeds(xCluster: Cluster, h: SDH) = {
+  private def updateSeeds(xCluster: Cluster, hsp: HazelcastSessionProvider, h: SDH) = {
 
     val sll = new LeaderLatch(h.curatorClient, h.sdch.getOrElse(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath))
     sll.start
@@ -252,17 +246,17 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     updateClusterSeeds(xCluster, h)
 
-    updateClusterMembers(h)
+    updateClusterMembers(h, hsp)
 
     sll.close
   }
 
-  private def updateServiceDiscovery(xCluster: Cluster, s: SDH, aSystem: ActorSystem) = {
+  private def updateServiceDiscovery(xCluster: Cluster, hsp: HazelcastSessionProvider, s: SDH, aSystem: ActorSystem) = {
     val delay = new FiniteDuration(
       s.sdch.getOrElse(SDCH.ClusterDelayPath, SDCH.DefaultClusterDelay.toString).toLong, TimeUnit.SECONDS)
 
     import scala.concurrent.ExecutionContext.Implicits.global
-    aSystem.scheduler.schedule(delay, delay)(updateSeeds(xCluster, s))
+    aSystem.scheduler.schedule(delay, delay)(updateSeeds(xCluster, hsp, s))
   }
 
   def start(): Unit = {
@@ -304,6 +298,10 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val sessionProvider = sessionProviderOpt
       .getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
 
+    assert(
+      sdHelper.nonEmpty || sessionProvider.isInstanceOf[HazelcastSessionProvider],
+      "Service Discovery needs to have the Hazelcast session provider enabled")
+
     finalConfig.entrySet.filter{ e =>
       e.getKey.contains("seed-nodes")
     }.foreach{ e =>
@@ -324,7 +322,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
         import scala.concurrent.ExecutionContext.Implicits.global
         sd.leadershipFuture onSuccess {
           case _ =>
-            updateServiceDiscovery(xdCluster, sd, actorSystem)
+            updateServiceDiscovery(xdCluster, sessionProvider.asInstanceOf[HazelcastSessionProvider], sd, actorSystem)
         }
       }
 
