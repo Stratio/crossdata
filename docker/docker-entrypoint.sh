@@ -87,7 +87,7 @@ else
         sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"${PORT_13420}\"|" /etc/sds/crossdata/server/server-application.conf
 
         #Hazelcast
-        sed -i "s|<member>127.0.0.1</member>|<member>${HOST_ROUTE}</member>|" /etc/sds/crossdata/server/hazelcast.xml
+        sed -i "s|<member>127.0.0.1</member>|<member>${HOST}:${PORT_5701}</member>|" /etc/sds/crossdata/server/hazelcast.xml
 
         #Driver
         sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
