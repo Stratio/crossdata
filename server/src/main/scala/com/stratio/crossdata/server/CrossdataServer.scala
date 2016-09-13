@@ -167,7 +167,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val tmp = dClient.getData.forPath(pathForMembers)
 
-    logger.info(s"BYTES: $tmp")
+    logger.info(s"BYTES: ${tmp.toList}")
 
     val currentMembers = new String(tmp)
 
