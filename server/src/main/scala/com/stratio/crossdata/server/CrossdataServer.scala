@@ -164,7 +164,12 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val localMember = getLocalMember
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForMembers)
-    val currentMembers = new String(dClient.getData.forPath(pathForMembers))
+
+    val tmp = dClient.getData.forPath(pathForMembers)
+
+    logger.info(s"BYTES: $tmp")
+
+    val currentMembers = new String(tmp)
 
     logger.info(s"HAZELCAST CURRENT MEMBERS: '$currentMembers'")
 
