@@ -169,7 +169,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       currentMembers.split(",").toSet + localMember
     } else {
       Set(localMember)
-    }
+    }.filter(_.nonEmpty)
     dClient.setData.forPath(pathForMembers, newMembers.mkString(",").getBytes)
     val modifiedHzConfig = hzConfig.setNetworkConfig(
       hzConfig.getNetworkConfig.setJoin(
