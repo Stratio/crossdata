@@ -33,7 +33,7 @@
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
-        <hazelcast.version>3.6.3</hazelcast.version>
+        <hazelcast.version>3.7.1</hazelcast.version>
     </properties>
 
     <dependencies>
