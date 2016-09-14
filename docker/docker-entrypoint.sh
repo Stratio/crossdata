@@ -72,6 +72,10 @@ else
     CROSSDATA_JAVA_OPT="-Xmx${RAM_AVAIL}m -Xms${RAM_AVAIL}m"
     sed -i "s|# CROSSDATA_LIB|#CROSSDATA_JAVA_OPTS\nCROSSDATA_JAVA_OPTS=\"${CROSSDATA_JAVA_OPT}\"\n# CROSSDATA_LIB|" /etc/sds/crossdata/server/crossdata-env.sh
 
+    #Spark UI port
+    sed -i "s|#crossdata-server.config.spark.ui.port.*|crossdata-server.config.spark.ui.port = \"${PORT_4040}\"|" /etc/sds/crossdata/server/server-application.conf
+
+
     #If XD_EXTERNAL_IP and MARATHON_APP_LABEL_HAPROXY_0_PORT are not specified assume we are working in HTTP mode
     #Scenary: HAProxy exposing Akka http port, and creating an internal cluster using netty and autodiscovery through Zookeeper
     if [ -z ${XD_EXTERNAL_IP} ] && [ -z ${MARATHON_APP_LABEL_HAPROXY_0_PORT} ]; then
