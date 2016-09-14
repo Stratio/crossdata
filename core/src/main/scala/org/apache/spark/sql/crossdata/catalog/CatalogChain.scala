@@ -146,12 +146,17 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
   // TODO streaming tables
   override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
-    def getRelations(catalogSeq: Seq[XDCatalogCommon], isTemporary: Boolean): Seq[(String, Boolean)] = {
-      catalogSeq.flatMap { cat =>
-        cat.allRelations(databaseName.map( dbn => StringNormalized(XDCatalogCommon.normalizeIdentifier(dbn, conf)))).map(stringifyTableIdentifierNormalized(_) -> isTemporary)
-      }
-    }
-    getRelations(temporaryCatalogs, isTemporary = true) ++ getRelations(persistentCatalogs, isTemporary = false)
+    def getRelations(catalogSeq: Seq[XDCatalogCommon]): Set[String] = catalogSeq.flatMap { cat =>
+        cat.allRelations(databaseName.map( dbn => StringNormalized(XDCatalogCommon.normalizeIdentifier(dbn, conf)))).map(stringifyTableIdentifierNormalized(_))
+    } toSet
+
+    val temporaryRelations = getRelations(temporaryCatalogs)
+    val persistentRelations = getRelations(persistentCatalogs)
+
+    (temporaryRelations ++ persistentRelations) map {
+      relation => relation -> !persistentRelations.contains(relation)
+    } toSeq
+
   }
 
   /**
