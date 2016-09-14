@@ -115,6 +115,14 @@ else
     fi
 fi
 
+if [ -n "$XD_EXTERNAL_IP" ]; then
+    NAMEADDR="$(hostname -i)"
+    if [ -n "$HAPROXY_SERVER_INTERNAL_ADDRESS" ]; then
+	NAMEADDR=$HAPROXY_SERVER_INTERNAL_ADDRESS
+    fi
+    echo -e "$NAMEADDR\t$XD_EXTERNAL_IP" >> /etc/hosts
+fi
+
 if [ "$SERVER_MODE" == "debug" ]; then
     # In this mode, crossdata will be launched as a service within the docker container.
     /etc/init.d/crossdata start 
