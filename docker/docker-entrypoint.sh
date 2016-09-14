@@ -115,6 +115,10 @@ else
     fi
 fi
 
-/etc/init.d/crossdata start
-
-tail -F /var/log/sds/crossdata/crossdata.log
+if [ "$SERVER_MODE" == "debug" ]; then
+    # In this mode, crossdata will be launched as a service within the docker container.
+    /etc/init.d/crossdata start 
+    tail -F /var/log/sds/crossdata/crossdata.log
+else
+    /opt/sds/crossdata/bin/server.sh
+fi;
