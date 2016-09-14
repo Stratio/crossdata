@@ -188,7 +188,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       hzConfig.getNetworkConfig.setJoin(
         hzConfig.getNetworkConfig.getJoin.setTcpIpConfig(
           hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.setMembers(newMembers.toList)))
-        .setPublicAddress(localMember))
+        .setPublicAddress(localMember).setPort(localMember.split(":").last.toInt))
 
     (modifiedAkkaConfig, modifiedHzConfig)
   }
