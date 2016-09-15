@@ -42,12 +42,14 @@ class XDSession(
                  )
   extends XDContext(xdSharedState.sc) with Logging {
 
+  @transient
   override protected[sql] lazy val catalog: XDCatalog = {
     val catalogs: Seq[XDCatalogCommon] = (xdSessionState.temporaryCatalogs :+ xdSharedState.externalCatalog) ++ xdSharedState.streamingCatalog.toSeq
     CatalogChain(catalogs: _*)(this)
 
   }
 
+  @transient
   override protected[sql] lazy val conf: SQLConf = xdSessionState.sqlConf.enableCacheInvalidation(false)
 
   xdSessionState.sqlConf.enableCacheInvalidation(true)
