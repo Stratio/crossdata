@@ -36,9 +36,9 @@ object XDSession{
  * Resource initialization is avoided through attribute initialization laziness.
  */
 class XDSession(
-                 xdSharedState: XDSharedState,
-                 xdSessionState: XDSessionState,
-                 userConfig: Option[Config] = None
+                 @transient private val xdSharedState: XDSharedState,
+                 @transient private val xdSessionState: XDSessionState,
+                 @transient private val userConfig: Option[Config] = None
                  )
   extends XDContext(xdSharedState.sc) with Logging {
 
