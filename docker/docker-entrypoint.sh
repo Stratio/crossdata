@@ -111,7 +111,7 @@ else
 
             #Bind address for local
             sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${DOCKER_HOST}\"|" /etc/sds/crossdata/server/server-application.conf
-            sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"13420\"|" /etc/sds/crossdata/server/server-application.conf
+            sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"${PORT_13420}\"|" /etc/sds/crossdata/server/server-application.conf
 
             #Driver
             sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
