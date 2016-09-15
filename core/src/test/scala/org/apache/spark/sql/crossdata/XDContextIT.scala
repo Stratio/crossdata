@@ -26,8 +26,6 @@ import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-import scala.reflect.io.File
-
 @RunWith(classOf[JUnitRunner])
 class XDContextIT extends SharedXDContextTest {
 
@@ -91,6 +89,24 @@ class XDContextIT extends SharedXDContextTest {
     val dataFrame = xdContext.sql("SELECT id as id, value as product FROM t3 GROUP BY id, product")
 
     dataFrame.collect should have length 5
+
+  }
+
+  it must "use statically defined UDFs to convert a string to an integer" in {
+
+    val df = xdContext.createDataFrame(
+      Seq(Row("42"), Row("-42"), Row("3.3")),
+      StructType(Array(StructField("id", StringType)))
+    )
+    df.registerTempTable("TONUMBERTABLE")
+
+    val x: Int = 3
+
+    sql("SELECT to_number(id) FROM TONUMBERTABLE").collect() shouldEqual Array(
+      Row(42L),
+      Row(-42L),
+      Row(3.3D)
+    )
 
   }
 
