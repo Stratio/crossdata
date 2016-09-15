@@ -84,6 +84,11 @@
             <name>Pablo Francisco Pérez Hidalgo</name>
             <email>contact at pablofranciscoperez dot info</email>
         </developer>
+        <developer>
+            <id>usarasola</id>
+            <name>Unai Sarasola Álvarez</name>
+            <email>usarasola at stratio dot com</email>
+        </developer>
     </developers>
 
     <modules>
