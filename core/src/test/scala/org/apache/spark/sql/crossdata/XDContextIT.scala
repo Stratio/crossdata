@@ -98,9 +98,8 @@ class XDContextIT extends SharedXDContextTest {
       Seq(Row("42"), Row("-42"), Row("3.3")),
       StructType(Array(StructField("id", StringType)))
     )
-    df.registerTempTable("TONUMBERTABLE")
 
-    val x: Int = 3
+    df.registerTempTable("TONUMBERTABLE")
 
     sql("SELECT to_number(id) FROM TONUMBERTABLE").collect() shouldEqual Array(
       Row(42L),
