@@ -47,6 +47,7 @@ class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
         "config.spark.jars",
         ConfigValueFactory.fromAnyRef(s"server/target/2.11/crossdata-server-jar-with-dependencies.jar"))
 
+    import scala.concurrent.ExecutionContext.Implicits.global
     testServer = Await.result(Future(new CrossdataServer(Some(testConfig), Some(Set(s"$TestHost:$HzPort")))), 2 minutes)
 
     testServer.start
