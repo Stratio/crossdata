@@ -240,6 +240,10 @@ class XDContext protected (@transient val sc: SparkContext,
 
     val gc = new GroupConcat(", ")
     udf.register("group_concat", gc)
+    udf.register(
+      "to_number",
+      (numberStr: String) => if(numberStr contains ".") numberStr.toDouble else numberStr.toLong
+    )
   }
 
   override def sql(sqlText: String): DataFrame = {

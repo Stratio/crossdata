@@ -38,6 +38,7 @@ Main Crossdata's advantages over other options:
 - Creation of tables in the datastores.
 - Drop of tables from the datastores.
 - Insert with values queries as in typical SQL.
+- Service Discovery
 
 ===================
 Spark Compatibility

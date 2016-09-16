@@ -23,7 +23,7 @@
     <parent>
         <artifactId>parent_2.11</artifactId>
         <groupId>com.stratio.crossdata</groupId>
-        <version>1.6.0-SNAPSHOT</version>
+        <version>1.6.0-RC2-SNAPSHOT</version>
     </parent>
 
     <artifactId>crossdata-server_2.11</artifactId>
@@ -33,7 +33,7 @@
     <url>http://stratio.github.io/crossdata/</url>
 
     <properties>
-        <hazelcast.version>3.6.3</hazelcast.version>
+        <hazelcast.version>3.7.1</hazelcast.version>
     </properties>
 
     <dependencies>
