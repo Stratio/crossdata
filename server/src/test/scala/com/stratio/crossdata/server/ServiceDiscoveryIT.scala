@@ -50,11 +50,11 @@ class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
     import scala.concurrent.ExecutionContext.Implicits.global
     testServer = Await.result(Future(new CrossdataServer(Some(testConfig), Some(Set(s"$TestHost:$HzPort")))), 2 minutes)
 
-    testServer.start
+    Await.result(Future(testServer.start), 2 minutes)
   }
 
   override def afterAll(): Unit = {
-    testServer.stop
+    Await.result(Future(testServer.stop), 2 minutes)
   }
 
   "A Crossdata Server" should "write its hostname:port in ZK when service discovery is activated" in {
