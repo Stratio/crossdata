@@ -87,6 +87,8 @@ class HazelcastSessionProvider( sc: SparkContext,
 
   def getHzMembers = hInstance.getCluster.getMembers
 
+  def gelLocalMember = hInstance.getCluster.getLocalMember
+
   override def newSession(sessionID: SessionID): Try[XDSession] =
     Try {
       val tempCatalogs = sessionIDToTempCatalogs.newResource(sessionID)
