@@ -34,7 +34,6 @@
 
   <properties>
     <zeppelin.home>zeppelin_home</zeppelin.home>
-    <crossdata.version>${project.version}</crossdata.version>
     <!-- Scala version and cross build properties -->
     <scala.binary.version>2.11</scala.binary.version>
     <scala.version>2.11.8</scala.version>
@@ -60,7 +59,7 @@
     <dependency>
       <groupId>com.stratio.crossdata</groupId>
       <artifactId>crossdata-driver_${scala.binary.version}</artifactId>
-      <version>${crossdata.version}</version>
+      <version>${project.version}</version>
     </dependency>
 
     <!--TEST-->
