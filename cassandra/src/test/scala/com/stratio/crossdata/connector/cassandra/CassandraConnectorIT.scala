@@ -144,6 +144,13 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
   // TODO test filter on PKs (=) and CKs(any) (right -> left)
 
+  Seq(Spark) foreach { executionType =>
+
+    it should s"support udfs registered or defined in XDContext" in {
+      assumeEnvironmentIsUpAndRunning
+      sql(s"SELECT UPPER(name) FROM $Table").show()
+    }
+  }
 }
 
 
