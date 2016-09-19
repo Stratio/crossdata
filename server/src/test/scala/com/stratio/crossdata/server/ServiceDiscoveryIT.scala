@@ -26,14 +26,16 @@ import org.scalatest.junit.JUnitRunner
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
 class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
 
   import ServiceDiscoveryConstants._
 
-  val ZkConnectionString = sys.env.get("XD_ZOOKEEPER_CONNECTION_STRING")
-
+  val ZookeeperStreamingConnectionKey = "streaming.catalog.zookeeper.connectionString"
+  val ZookeeperConnection: Option[String] =
+    Try(ConfigFactory.load().getString(ZookeeperStreamingConnectionKey)).toOption
 
   var testServer: CrossdataServer = _
 
@@ -59,10 +61,10 @@ class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
 
   "A Crossdata Server" should "write its hostname:port in ZK when service discovery is activated" in {
 
-    ZkConnectionString.isDefined should be (true)
+    ZookeeperConnection.isDefined should be (true)
 
     val curatorClient = CuratorFrameworkFactory.newClient(
-      ZkConnectionString.get,
+      ZookeeperConnection.get,
       new ExponentialBackoffRetry(1000, 3))
     curatorClient.blockUntilConnected
     val currentSeeds = new String(curatorClient.getData.forPath(ServiceDiscoveryConfigHelper.DefaultSeedsPath))
