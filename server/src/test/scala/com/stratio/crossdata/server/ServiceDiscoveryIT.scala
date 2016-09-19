@@ -56,6 +56,7 @@ class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
   }
 
   override def afterAll(): Unit = {
+    import scala.concurrent.ExecutionContext.Implicits.global
     Await.result(Future(testServer.stop), 2 minutes)
   }
 
