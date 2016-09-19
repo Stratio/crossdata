@@ -18,7 +18,7 @@
         <scala.binary.version>2.11</scala.binary.version>
         <scala.version>2.11.8</scala.version>
         <stratio-test-bdd.version>0.2.0-SNAPSHOT</stratio-test-bdd.version>
-        <crossdata.version>1.6.0-SNAPSHOT</crossdata.version>
+        <crossdata.version>${project.version}</crossdata.version>
         <assertj-core.version>1.7.0</assertj-core.version>
         <scala_2.10.version>2.10.4</scala_2.10.version>
         <scala_2.11.version>2.11.8</scala_2.11.version>
