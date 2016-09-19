@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.server
 
+import java.util.concurrent.Executors
+
 import com.stratio.crossdata.server.discovery.ServiceDiscoveryConfigHelper
 import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
@@ -24,7 +26,7 @@ import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.junit.JUnitRunner
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -39,6 +41,8 @@ class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
 
   var testServer: CrossdataServer = _
 
+  implicit val executionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(8))
+
   override def beforeAll(): Unit = {
 
     val testConfig = ConfigFactory.empty
@@ -49,14 +53,12 @@ class ServiceDiscoveryIT extends BaseXDTest with BeforeAndAfterAll {
         "config.spark.jars",
         ConfigValueFactory.fromAnyRef(s"server/target/2.11/crossdata-server-jar-with-dependencies.jar"))
 
-    import scala.concurrent.ExecutionContext.Implicits.global
     testServer = Await.result(Future(new CrossdataServer(Some(testConfig), Some(Set(s"$TestHost:$HzPort")))), 2 minutes)
 
     Await.result(Future(testServer.start), 2 minutes)
   }
 
   override def afterAll(): Unit = {
-    import scala.concurrent.ExecutionContext.Implicits.global
     Await.result(Future(testServer.stop), 2 minutes)
   }
 
