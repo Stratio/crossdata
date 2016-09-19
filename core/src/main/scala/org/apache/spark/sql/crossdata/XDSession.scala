@@ -36,18 +36,20 @@ object XDSession{
  * Resource initialization is avoided through attribute initialization laziness.
  */
 class XDSession(
-                 xdSharedState: XDSharedState,
-                 xdSessionState: XDSessionState,
-                 userConfig: Option[Config] = None
+                 @transient private val xdSharedState: XDSharedState,
+                 @transient private val xdSessionState: XDSessionState,
+                 @transient private val userConfig: Option[Config] = None
                  )
   extends XDContext(xdSharedState.sc) with Logging {
 
+  @transient
   override protected[sql] lazy val catalog: XDCatalog = {
     val catalogs: Seq[XDCatalogCommon] = (xdSessionState.temporaryCatalogs :+ xdSharedState.externalCatalog) ++ xdSharedState.streamingCatalog.toSeq
     CatalogChain(catalogs: _*)(this)
 
   }
 
+  @transient
   override protected[sql] lazy val conf: SQLConf = xdSessionState.sqlConf.enableCacheInvalidation(false)
 
   xdSessionState.sqlConf.enableCacheInvalidation(true)

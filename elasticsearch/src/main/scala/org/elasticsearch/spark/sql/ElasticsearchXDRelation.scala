@@ -58,7 +58,7 @@ class ScalaXDEsRowRDDIterator(
 }
 
 class ScalaXDEsRowRDD(
-                       @transient sc: SparkContext,
+                       sc: SparkContext,
                        params: mutable.Map[String, String] = mutable.Map.empty,
                        schema: SchemaUtils.Schema,
                        userSchema: Option[StructType]

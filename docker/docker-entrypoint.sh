@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 if [ "x${XD_CATALOG}x" != "xx" ]; then
- sed -i "s|#crossdata-core.catalog.class.*|crossdata-core.catalog.class = \"org.apache.spark.sql.crossdata.catalog.${XD_CATALOG}Catalog\"|" /etc/sds/crossdata/server/core-application.conf
+ sed -i "s|#crossdata-core.catalog.class.*|crossdata-core.catalog.class = \"org.apache.spark.sql.crossdata.catalog.persistent.${XD_CATALOG}Catalog\"|" /etc/sds/crossdata/server/core-application.conf
  if [ "${XD_CATALOG}" == "MySQL" ]; then
    sed -i "s|#crossdata-core.catalog.jdbc.driver.*|crossdata-core.catalog.jdbc.driver = \"org.mariadb.jdbc.Driver\"|" /etc/sds/crossdata/server/core-application.conf
    sed -i "s|#crossdata-core.catalog.jdbc.url.*|crossdata-core.catalog.jdbc.url = \"${XD_CATALOG_HOST}:3306\"|" /etc/sds/crossdata/server/core-application.conf
@@ -23,6 +23,9 @@ if [ "x${XD_CATALOG}x" != "xx" ]; then
    sed -i "s|#crossdata-core.catalog.zookeeper.sessionTimeout = 60000|crossdata-core.catalog.zookeeper.sessionTimeout = ${XD_CATALOG_ZOOKEEPER_SESSION_TIMEOUT:=60000}|" /etc/sds/crossdata/server/core-application.conf
    sed -i "s|#crossdata-core.catalog.zookeeper.retryAttempts = 5|crossdata-core.catalog.zookeeper.retryAttempts = ${XD_CATALOG_ZOOKEEPER_RETRY_ATTEMPS:=5}|" /etc/sds/crossdata/server/core-application.conf
    sed -i "s|#crossdata-core.catalog.zookeeper.retryInterval = 10000|crossdata-core.catalog.zookeeper.retryInterval = ${XD_CATALOG_ZOOKEEPER_RETRY_INTERVAL:=10000}|" /etc/sds/crossdata/server/core-application.conf
+ fi
+ if [ "x${XD_CATALOG_PREFIX}x" != "xx" ]; then
+    sed -i "s|#crossdata-core.catalog.prefix = \"crossdataCluster\"|crossdata-core.catalog.prefix = \"${XD_CATALOG_PREFIX:=crossdataCluster}\"|" /etc/sds/crossdata/server/core-application.conf
  fi
 fi
 if [ "${XD_MODE}" == "Streaming" ]; then
@@ -69,6 +72,10 @@ else
     CROSSDATA_JAVA_OPT="-Xmx${RAM_AVAIL}m -Xms${RAM_AVAIL}m"
     sed -i "s|# CROSSDATA_LIB|#CROSSDATA_JAVA_OPTS\nCROSSDATA_JAVA_OPTS=\"${CROSSDATA_JAVA_OPT}\"\n# CROSSDATA_LIB|" /etc/sds/crossdata/server/crossdata-env.sh
 
+    #Spark UI port
+    sed -i "s|#crossdata-server.config.spark.ui.port.*|crossdata-server.config.spark.ui.port = \"${PORT_4040}\"|" /etc/sds/crossdata/server/server-application.conf
+
+
     #If XD_EXTERNAL_IP and MARATHON_APP_LABEL_HAPROXY_0_PORT are not specified assume we are working in HTTP mode
     #Scenary: HAProxy exposing Akka http port, and creating an internal cluster using netty and autodiscovery through Zookeeper
     if [ -z ${XD_EXTERNAL_IP} ] && [ -z ${MARATHON_APP_LABEL_HAPROXY_0_PORT} ]; then
@@ -79,12 +86,12 @@ else
         sed -i "s|#crossdata-server.akka.remote.netty.tcp.port.*|crossdata-server.akka.remote.netty.tcp.port = \"${PORT_13420}\"|" /etc/sds/crossdata/server/server-application.conf
         sed -i "s|#crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"akka.tcp:\/\/CrossdataServerCluster@${HOST_ROUTE}\"]|" /etc/sds/crossdata/server/server-application.conf
 
-        #Bind address for local
-        sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${DOCKER_HOST}\"|" /etc/sds/crossdata/server/server-application.conf
-        sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"13420\"|" /etc/sds/crossdata/server/server-application.conf
+        #Bind address for host machine (In host is also the host machine. In bridge we need to put the internal of the docker: TODO)
+        sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${HOST}\"|" /etc/sds/crossdata/server/server-application.conf
+        sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"${PORT_13420}\"|" /etc/sds/crossdata/server/server-application.conf
 
         #Hazelcast
-        sed -i "s|<member>127.0.0.1</member>|<member>${HOST_ROUTE}</member>|" /etc/sds/crossdata/server/hazelcast.xml
+        sed -i "s|<member>127.0.0.1</member>|<member>${HOST}:${PORT_5701}</member>|" /etc/sds/crossdata/server/hazelcast.xml
 
         #Driver
         sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
@@ -104,7 +111,7 @@ else
 
             #Bind address for local
             sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-hostname.*|crossdata-server.akka.remote.netty.tcp.bind-hostname = \"${DOCKER_HOST}\"|" /etc/sds/crossdata/server/server-application.conf
-            sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"13420\"|" /etc/sds/crossdata/server/server-application.conf
+            sed -i "s|#crossdata-server.akka.remote.netty.tcp.bind-port.*|crossdata-server.akka.remote.netty.tcp.bind-port = \"${PORT_13420}\"|" /etc/sds/crossdata/server/server-application.conf
 
             #Driver
             sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
@@ -112,11 +119,13 @@ else
     fi
 fi
 
-#TODO spark external check
-sed -i "s|local\[.\]|${SPARK_MASTER:=local\[2\]}|" /etc/sds/crossdata/server/server-application.conf
-sed -i "s|crossdata-server.config.spark.driver.memory.*|crossdata-server.config.spark.driver.memory = ${XD_DRIVER_MEMORY:=512M}|" /etc/sds/crossdata/server/server-application.conf
-sed -i "s|crossdata-server.config.spark.executor.memory.*|crossdata-server.config.spark.executor.memory = ${XD_EXECUTOR_MEMORY:=512M}|" /etc/sds/crossdata/server/server-application.conf
-sed -i "s|crossdata-server.config.spark.cores.max.*|crossdata-server.config.spark.cores.max = ${XD_CORES:=4}|" /etc/sds/crossdata/server/server-application.conf
+if [ -n "$XD_EXTERNAL_IP" ]; then
+    NAMEADDR="$(hostname -i)"
+    if [ -n "$HAPROXY_SERVER_INTERNAL_ADDRESS" ]; then
+	NAMEADDR=$HAPROXY_SERVER_INTERNAL_ADDRESS
+    fi
+    echo -e "$NAMEADDR\t$XD_EXTERNAL_IP" >> /etc/hosts
+fi
 
 if [ "$SERVER_MODE" == "debug" ]; then
     # In this mode, crossdata will be launched as a service within the docker container.
