@@ -90,7 +90,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
         throw new RuntimeException("Timeout acquiring subscription leadership")
       }
     } recoverWith {
-      case e => Failure(new RuntimeException(s"Subscription leadership couldn't be acquired: $e" ))
+      case e => Failure(new RuntimeException(s"Subscription leadership couldn't be acquired: ${e.getMessage}" ))
     }
   }
 
