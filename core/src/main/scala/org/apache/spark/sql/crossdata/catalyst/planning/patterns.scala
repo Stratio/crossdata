@@ -15,7 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.catalyst.planning
 
-//import org.apache.spark.sql.catalyst.expressions._
+import com.stratio.crossdata.connector.NativeFunctionExecutor
 import org.apache.spark.sql.catalyst.expressions.PredicateHelper
 import org.apache.spark.sql.catalyst.expressions.NamedExpression
 import org.apache.spark.sql.catalyst.expressions.Expression
@@ -27,17 +27,27 @@ import org.apache.spark.sql.catalyst.plans.logical.Filter
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.plans.logical.Project
 import org.apache.spark.sql.crossdata.catalyst.EvaluateNativeUDF
+import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.CrossdataExecutionPlan
 
-
+/**
+  * WARNING: The extended physical operation only match when the base relation is an instance of [[NativeFunctionExecutor]]
+  * Otherwise, delegate to the next strategy
+  */
 object ExtendedPhysicalOperation extends PredicateHelper {
   type ReturnType = (Seq[NamedExpression], Seq[Expression], LogicalPlan, CrossdataExecutionPlan)
 
   def unapply(plan: LogicalPlan): Option[ReturnType] = {
     val (fields, filters, child, _) = collectProjectsAndFilters(plan)
     val projects = fields.getOrElse(child.output)
-    Some((projects, filters, child, CatalystToCrossdataAdapter.getConnectorLogicalPlan(plan, projects, filters)))
+
+    child match {
+      case LogicalRelation(t: NativeFunctionExecutor, _) =>
+        Some((projects, filters, child, CatalystToCrossdataAdapter.getConnectorLogicalPlan(plan, projects, filters))) // TODO it does not apply
+      case _ =>
+        None
+    }
   }
 
   def collectProjectsAndFilters(plan: LogicalPlan):
