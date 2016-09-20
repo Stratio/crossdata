@@ -27,13 +27,14 @@
 
   <artifactId>zeppelin-crossdata_2.11</artifactId>
   <packaging>jar</packaging>
-  <version>${crossdata.version}</version>
+  <version>1.6.0-RC2-SNAPSHOT</version>
   <name>Zeppelin: Crossdata</name>
   <description>Zeppelin interpreter for Crossdata</description>
   <url>https://github.com/Stratio/Crossdata</url>
 
   <properties>
     <zeppelin.home>zeppelin_home</zeppelin.home>
+    <crossdata.version>${project.version}</crossdata.version>
     <!-- Scala version and cross build properties -->
     <scala.binary.version>2.11</scala.binary.version>
     <scala.version>2.11.8</scala.version>
@@ -59,7 +60,7 @@
     <dependency>
       <groupId>com.stratio.crossdata</groupId>
       <artifactId>crossdata-driver_${scala.binary.version}</artifactId>
-      <version>${project.version}</version>
+      <version>${crossdata.version}</version>
     </dependency>
 
     <!--TEST-->
