@@ -148,7 +148,8 @@ class CassandraConnectorIT extends CassandraWithSharedContext {
 
     it should s"support udfs registered or defined in XDContext" in {
       assumeEnvironmentIsUpAndRunning
-      sql(s"SELECT UPPER(name) FROM $Table").show()
+      val result = sql(s"SELECT UPPER(name) FROM $Table").collect()
+      result should have length 10
     }
   }
 }
