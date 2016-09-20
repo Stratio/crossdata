@@ -142,11 +142,11 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
         case Aggregate(_, _, child) =>
           findBasePlan(child)
 
-        case ExtendedPhysicalOperation(projectList, filterList, _) =>
-          CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-            case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
+        case ExtendedPhysicalOperation(projectList, filterList, _, crossdataExecutionPlan) =>
+          crossdataExecutionPlan match {
+            case CrossdataExecutionPlan(_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
               None
-            case (basePlan, _, _) =>
+            case CrossdataExecutionPlan(basePlan, _, _) =>
               Some(basePlan)
           }
       }
@@ -172,7 +172,7 @@ class CassandraQueryProcessor(cassandraRelation: CassandraXDSourceRelation, logi
     def checksClusteringKeyFilters: Boolean =
       !groupedFilters.contains(ClusteringKey) || {
         // if there is a CK filter then all CKs should be included. Accept any kind of filter
-        val clusteringColsInFilter = groupedFilters.get(ClusteringKey).get.flatMap(columnNameFromFilter)
+        val clusteringColsInFilter = groupedFilters(ClusteringKey).flatMap(columnNameFromFilter)
         cassandraRelation.tableDef.clusteringColumns.forall { column =>
           clusteringColsInFilter.contains(column.columnName)
         }
