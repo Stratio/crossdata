@@ -23,7 +23,7 @@ import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan}
 import org.apache.spark.sql.catalyst.{InternalRow, expressions}
 import org.apache.spark.sql.crossdata.catalyst.NativeUDF
 import org.apache.spark.sql.execution.datasources.LogicalRelation
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{FilterReport, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{CrossdataExecutionPlan, FilterReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.{Strategy, execution, _}
 
@@ -31,41 +31,42 @@ private[sql] object ExtendedDataSourceStrategy extends Strategy with SparkLogger
 
   def apply(plan: LogicalPlan): Seq[execution.SparkPlan] = plan match {
     // TODO refactor => return None instead of check the aggregation
-    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: NativeFunctionExecutor, _))
-      if plan.collectFirst { case _: Aggregate => false} getOrElse(true) =>
+    case ExtendedPhysicalOperation(projects, filters, l @ LogicalRelation(t: NativeFunctionExecutor, _), crossdataPlan)
+      if !crossdataPlan.containsIgnoredProjections && !crossdataPlan.containsAggregation  =>
       pruneFilterProjectUdfs(
-        plan,
         l,
         projects,
         filters,
+        crossdataPlan,
         (requestedColumns, srcFilters, attr2udf) =>
           toCatalystRDD(l, requestedColumns, t.buildScan(
             requestedColumns.map {
               case nat: AttributeReference if attr2udf contains nat.toString => nat.toString
               case att => att.name
-            }.toArray, srcFilters, attr2udf))
+            }.toArray, srcFilters, attr2udf)
+          )
       ):: Nil
     case _ => Nil
   }
 
-  protected def pruneFilterProjectUdfs(plan: LogicalPlan,
-                                       relation: LogicalRelation,
+  protected def pruneFilterProjectUdfs(relation: LogicalRelation,
                                        projects: Seq[NamedExpression],
                                        filterPredicates: Seq[Expression],
+                                       crossdataExecutionPlan: CrossdataExecutionPlan,
                                        scanBuilder: (
                                          Seq[Attribute],
                                            Array[Filter],
                                            Map[String, NativeUDF]
                                          ) => RDD[InternalRow]
-                                        ) = {
+                                       ) = {
     import org.apache.spark.sql.sources.CatalystToCrossdataAdapter
 
-    val (pro, fil, att2udf) =
-      (CatalystToCrossdataAdapter.getConnectorLogicalPlan(plan, projects, filterPredicates): @unchecked) match {
-        case (_, _, FilterReport(_, udfsIgnored)) if udfsIgnored.nonEmpty =>
-          cannotExecuteNativeUDF(udfsIgnored)
-        case (SimpleLogicalPlan(pro, fil, udfs, _), _, _) => (pro, fil, udfs)
-      }
+    val (pro, fil, att2udf) = crossdataExecutionPlan match {
+      case CrossdataExecutionPlan(_, _, FilterReport(_, udfsIgnored)) if udfsIgnored.nonEmpty =>
+        cannotExecuteNativeUDF(udfsIgnored)
+      case CrossdataExecutionPlan(SimpleLogicalPlan(pro, fil, udfs, _), _, _) =>
+        (pro, fil, udfs)
+    }
 
     val projectSet = AttributeSet(pro)
     val filterSet = AttributeSet(filterPredicates.flatMap(
