@@ -23,7 +23,7 @@ import akka.cluster.client.{ClusterClient, ClusterClientSettings}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.driver.actor.{ProxyActor, ServerClusterClientParameters, SessionBeaconActor}
+import com.stratio.crossdata.driver.actor.{ProxyActor, ServerClusterClientParameters, ClusterClientSessionBeaconActor}
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
 import org.slf4j.{Logger, LoggerFactory}
@@ -68,7 +68,7 @@ class ClusterClientDriver private[driver](driverConf: DriverConf,
     system.actorOf(ProxyActor.props(clusterClientActor, this), proxyActorName)
   }
 
-  private val sessionBeaconProps = SessionBeaconActor.props(
+  private val sessionBeaconProps = ClusterClientSessionBeaconActor.props(
     driverSession.id,
     5 seconds, /* This ins't configurable since it's simpler for the user
                   to play just with alert period time at server side. */

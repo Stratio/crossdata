@@ -27,7 +27,6 @@ import akka.stream.ActorMaterializer
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
-import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata
 import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, HazelcastSessionProvider, XDSessionProvider}

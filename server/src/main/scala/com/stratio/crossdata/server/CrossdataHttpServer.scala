@@ -16,11 +16,13 @@
 package com.stratio.crossdata.server
 
 import java.io.File
+import java.util.UUID
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.cluster.pubsub.DistributedPubSub
-import akka.cluster.pubsub.DistributedPubSubMediator.Publish
+import akka.cluster.pubsub.DistributedPubSubMediator.{Publish, SendToAll}
+import akka.http.scaladsl._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
@@ -28,8 +30,8 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.FileIO
 import akka.util.Timeout
-import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
+import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
 import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope, SQLReply}
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.util.HdfsUtils
@@ -46,6 +48,9 @@ import scala.util.Success
 
 class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) extends
 CrossdataSerializer {
+
+  import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
+  implicit val serialization = jackson.Serialization
 
   import ResourceManagerActor._
 
@@ -98,9 +103,7 @@ CrossdataSerializer {
 
     } ~
       path("query") {
-      //TODO: REFACTOR
-      import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
-      implicit val serialization = jackson.Serialization
+
 
       post {
         entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
@@ -117,8 +120,14 @@ CrossdataSerializer {
 
         }
       }
+    } ~ path("sessions") {
+      post {  //Session life proof is not a PUT to /session/idSession for security reasons.
+        entity(as[HeartBeat[UUID]]) { heartBeat =>
+          mediator ! SendToAll("/user/client-monitor", heartBeat) //TODO: Hardcoded path
+          complete(StatusCodes.Success) //Doesn't give clues on active sessions...
+        }
+      }
     } ~ complete("Welcome to Crossdata HTTP Server")
-
 
   val getRqEnt = extract[HttpRequest] { rqCtx =>
     rqCtx.request
