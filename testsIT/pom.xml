@@ -23,7 +23,7 @@
     <parent>
         <artifactId>parent_2.11</artifactId>
         <groupId>com.stratio.crossdata</groupId>
-        <version>1.6.0</version>
+        <version>1.6.1-RC1-SNAPSHOT</version>
     </parent>
 
     <artifactId>crossdata-testsIT_2.11</artifactId>
