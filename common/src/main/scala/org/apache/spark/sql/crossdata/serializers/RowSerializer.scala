@@ -24,8 +24,8 @@ import org.json4s.JsonAST.{JNumber, JObject}
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.apache.spark.sql.catalyst.util.{DateTimeUtils,
-  ArrayBasedMapData => ArrayBasedMapDataNotDeprected,
-  MapData => MapDataNotDeprected,
+  ArrayBasedMapData => ArrayBasedMapDataNotDeprecated,
+  MapData => MapDataNotDeprecated,
   ArrayData => ArrayDataNotDeprecated
 }
 
@@ -64,7 +64,7 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (MapType(StringType, vt, _), JObject(fields)) =>
         val (keys, values) = fields.unzip
         val unserValues = values map (jval => extractField(vt, jval))
-        ArrayBasedMapDataNotDeprected(keys.toArray, unserValues.toArray)
+        ArrayBasedMapDataNotDeprecated(keys.toArray, unserValues.toArray)
       case (st: StructType, JObject(JField("values",JArray(values))::_)) =>
         deserializeWithSchema(st, values, true)
     }
@@ -103,7 +103,7 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (DateType, v: java.sql.Date) => JString(v.toString)
       case (udt: UserDefinedType[_], v) => serializeField(udt.sqlType -> v)
       case (ArrayType(ty, _), v: ArrayDataNotDeprecated) => JArray(v.array.toList.map(v => Extraction.decompose(v)))
-      case (MapType(StringType, vt, _), v: MapDataNotDeprected) =>
+      case (MapType(StringType, vt, _), v: MapDataNotDeprecated) =>
         /* Maps will be serialized as sub-objects so keys are constrained to be strings */
         val serKeys = v.keyArray().array.map(v => v.toString)
         val serValues = v.valueArray.array.map(v => serializeField(vt -> v))
