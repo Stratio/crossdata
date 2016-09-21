@@ -110,10 +110,8 @@ CrossdataSerializer {
           onComplete(serverActor ? rq) {
             case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
               complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
-            case Success(reply @ SQLReply(_, SuccessfulSQLResult(rset, _))) =>
+            case Success(reply: SQLReply) =>
               complete(reply)
-            case Success(SQLReply(_, ErrorSQLResult(message, _))) =>
-              complete(StatusCodes.ServerError, message)
             case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
           }
 

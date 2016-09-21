@@ -15,18 +15,21 @@
  */
 package org.apache.spark.sql.crossdata.serializers
 
-import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralOutputFormat}
+import java.util.UUID
+
+import com.stratio.crossdata.common.{Command, SQLCommand}
 import org.json4s._
-import org.json4s.ext.EnumNameSerializer
+import org.json4s.ext.UUIDSerializer
 
-
-trait CrossdataSerializer {
-
-  implicit val json4sJacksonFormats: Formats =
-    DefaultFormats +
-      StructTypeSerializer +
-      new EnumNameSerializer(EphemeralExecutionStatus) +
-      new EnumNameSerializer(EphemeralOutputFormat)
-
-}
-
+object CommandSerializer extends CustomSerializer[Command](
+  format => (
+    {
+      case jsqlCommand @ JObject(JField("sql", _)::JField("queryId", _)::JField("flattenResults", _)::_) =>
+        implicit val _ = DefaultFormats + UUIDSerializer
+        jsqlCommand.extract[SQLCommand] //TODO: Test
+    },
+    {
+      case command: SQLCommand => Extraction.decompose(command)(DefaultFormats + UUIDSerializer)
+    }
+    )
+)

@@ -1,14 +1,33 @@
+/*
+ * Copyright (C) 2015 Stratio (http://stratio.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.spark.sql.crossdata.serializers
 
 import java.sql.Timestamp
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.{GenericRow, GenericRowWithSchema}
-import org.apache.spark.sql.catalyst.util.DateTimeUtils
-import org.apache.spark.sql.types.{DecimalType, _}
+import org.apache.spark.sql.types._
 import org.json4s.JsonAST.{JNumber, JObject}
-import org.json4s._
 import org.json4s.JsonDSL._
+import org.json4s._
+import org.apache.spark.sql.catalyst.util.{DateTimeUtils,
+  ArrayBasedMapData => ArrayBasedMapDataNotDeprecated,
+  MapData => MapDataNotDeprecated,
+  ArrayData => ArrayDataNotDeprecated
+}
 
 case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
 
@@ -45,11 +64,9 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (MapType(StringType, vt, _), JObject(fields)) =>
         val (keys, values) = fields.unzip
         val unserValues = values map (jval => extractField(vt, jval))
-        ArrayBasedMapData(keys.toArray, unserValues.toArray)
+        ArrayBasedMapDataNotDeprecated(keys.toArray, unserValues.toArray)
       case (st: StructType, JObject(JField("values",JArray(values))::_)) =>
         deserializeWithSchema(st, values, true)
-      case other =>
-        null
     }
 
     val values: Array[Any] = (schema.view.map(_.dataType) zip fields.arr).map(extractField).toArray
@@ -85,8 +102,8 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (DateType, v: Int) => JString(DateTimeUtils.toJavaDate(v).toString)
       case (DateType, v: java.sql.Date) => JString(v.toString)
       case (udt: UserDefinedType[_], v) => serializeField(udt.sqlType -> v)
-      case (ArrayType(ty, _), v: ArrayData) => JArray(v.array.toList.map(v => Extraction.decompose(v)))
-      case (MapType(StringType, vt, _), v: MapData) =>
+      case (ArrayType(ty, _), v: ArrayDataNotDeprecated) => JArray(v.array.toList.map(v => Extraction.decompose(v)))
+      case (MapType(StringType, vt, _), v: MapDataNotDeprecated) =>
         /* Maps will be serialized as sub-objects so keys are constrained to be strings */
         val serKeys = v.keyArray().array.map(v => v.toString)
         val serValues = v.valueArray.array.map(v => serializeField(vt -> v))

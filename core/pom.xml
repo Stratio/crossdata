@@ -33,10 +33,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-common_${scala.binary.version}</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
         </dependency>
@@ -64,6 +60,10 @@
             <groupId>com.stratio.common</groupId>
             <artifactId>common-utils_${scala.binary.version}</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-common_${scala.binary.version}</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
@@ -71,7 +71,13 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-common_${scala.binary.version}</artifactId>
+            <version>${project.parent.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>

@@ -15,18 +15,16 @@
  */
 package org.apache.spark.sql.crossdata.serializers
 
-import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralOutputFormat}
-import org.json4s._
-import org.json4s.ext.EnumNameSerializer
+import com.stratio.crossdata.common.{Command, SQLCommand}
+import org.apache.spark.sql.crossdata.serializers.XDSerializationTest.TestCase
+import org.json4s.Formats
 
+class CommandSerializerSpec extends XDSerializationTest[Command] with CrossdataCommonSerializer {
+  
+  override implicit val formats: Formats = json4sJacksonFormats
 
-trait CrossdataSerializer {
-
-  implicit val json4sJacksonFormats: Formats =
-    DefaultFormats +
-      StructTypeSerializer +
-      new EnumNameSerializer(EphemeralExecutionStatus) +
-      new EnumNameSerializer(EphemeralOutputFormat)
+  override def testCases: Seq[TestCase] = Seq(
+    TestCase("marshall & unmarshall a SQLCommand", SQLCommand("select * from highschool"))
+  )
 
 }
-

@@ -22,11 +22,14 @@ import com.stratio.crossdata.common.security.Session
 
 object SessionManager {
 
-  def createSession(auth: Authentication, clientRef: ActorRef): Session = {
-    val sessionId = UUID.randomUUID
-    println(s"Session id: $sessionId\n"*10)
-    Session(sessionId, clientRef)
-  }
+  def createSession(auth: Authentication, clientRef: ActorRef): Session =
+    Session(newUUID, Option(clientRef))
+
+  def createSession(auth: Authentication): Session =
+    Session(newUUID, None)
+
+  private def newUUID = UUID.randomUUID()
+
 
 }
 
