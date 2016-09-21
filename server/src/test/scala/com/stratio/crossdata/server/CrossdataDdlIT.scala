@@ -16,6 +16,7 @@
 package com.stratio.crossdata.server
 
 import java.nio.file.Paths
+import java.util.UUID
 
 import com.stratio.crossdata.server.config.ServerConfig
 import com.typesafe.config.ConfigFactory
@@ -85,7 +86,9 @@ class CrossdataDdlIT extends SharedXDContextTest with ServerConfig{
     try {
       sql(s"CREATE TEMPORARY TABLE $tableCSV USING com.databricks.spark.csv OPTIONS (path '${Paths.get(getClass.getResource("/cars.csv").toURI()).toString}', header 'true')")
 
-      sql(s"CREATE TABLE $newTableCSV USING com.databricks.spark.csv OPTIONS (path '/tmp/cars_copy', header 'true') AS SELECT * FROM $tableCSV").collect()
+      val carsPath = UUID.randomUUID.toString.replace("-", "")
+
+      sql(s"CREATE TABLE $newTableCSV USING com.databricks.spark.csv OPTIONS (path '/tmp/cars$carsPath', header 'true') AS SELECT * FROM $tableCSV").collect()
 
       val csvResult = sql(s"SELECT * FROM $tableCSV").collect()
       csvResult should have length 8

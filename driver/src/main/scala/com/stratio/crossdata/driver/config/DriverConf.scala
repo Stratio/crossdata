@@ -33,7 +33,7 @@ class DriverConf extends Logging {
 
   private val userSettings = new ConcurrentHashMap[String, ConfigValue]()
 
-  private[crossdata] lazy val finalSettings: Config =
+   def finalSettings: Config =
     userSettings.foldLeft(typesafeConf) { case (prevConfig, keyValue) =>
       prevConfig.withValue(keyValue._1, keyValue._2)
     }
