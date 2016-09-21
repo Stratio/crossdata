@@ -2,7 +2,7 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
-## 1.6.0 (upcoming)
+## 1.6.0 (September 21, 2016)
 
 * Elasticsearch: 
     * Support import tables without specifying a particular resource
