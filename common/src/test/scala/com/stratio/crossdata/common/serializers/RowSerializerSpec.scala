@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.serializers
+package com.stratio.crossdata.common.serializers
 
-import com.stratio.crossdata.test.BaseXDTest
+import com.stratio.crossdata.common.serializers.XDSerializationTest.TestCase
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
-import org.json4s.{DefaultFormats, Extraction}
 import org.json4s.jackson.JsonMethods._
+import org.json4s.Extraction
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
-class RowSerializerSpec extends BaseXDTest {
+@RunWith(classOf[JUnitRunner])
+class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSerializer {
 
   val schema = StructType(List(
     StructField("int",IntegerType,true),
@@ -98,25 +101,13 @@ class RowSerializerSpec extends BaseXDTest {
   val rowWithNoSchema = Row.fromSeq(values)
   val rowWithSchema = new GenericRowWithSchema(values, schema)
 
-  implicit val formats = DefaultFormats +  StructTypeSerializer + RowSerializer(schema)
 
-  "A RowSerializer" should "marshall & unmarshall a row with no schema" in {
+  implicit val formats = json4sJacksonFormats
+  
 
-    val serialized = pretty(render(Extraction.decompose(rowWithNoSchema)))
-    val deserialized = parse(serialized).extract[Row]
-
-    deserialized shouldEqual rowWithNoSchema
-
-  }
-
-  it should "marshall & unmarshall a row with schema" in {
-
-    val serialized = pretty(render(Extraction.decompose(rowWithSchema)))
-    val deserialized = parse(serialized).extract[Row]
-
-    deserialized shouldEqual rowWithSchema
-  }
-
-
+  override def testCases: Seq[TestCase] = Seq(
+    TestCase("marshall & unmarshall a row with no schema", rowWithNoSchema),
+    TestCase("marshall & unmarshall a row with schema", rowWithSchema)
+  )
 
 }

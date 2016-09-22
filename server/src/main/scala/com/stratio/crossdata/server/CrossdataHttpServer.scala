@@ -32,7 +32,7 @@ import akka.stream.scaladsl.FileIO
 import akka.util.Timeout
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
-import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope, SQLReply}
+import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope, SQLReply, ServerReply}
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.Config
@@ -46,8 +46,7 @@ import scala.concurrent.duration._
 import scala.util.Success
 
 
-class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) extends
-CrossdataSerializer {
+class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) extends CrossdataSerializer {
 
   import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
   implicit val serialization = jackson.Serialization
@@ -101,9 +100,7 @@ CrossdataSerializer {
         }
       }
 
-    } ~
-      path("query") {
-
+    } ~ path("query") {
 
       post {
         entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
@@ -113,20 +110,33 @@ CrossdataSerializer {
           onComplete(serverActor ? rq) {
             case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
               complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
-            case Success(reply: SQLReply) =>
+            case Success(reply: ServerReply) =>
               complete(reply)
             case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
           }
 
-        }
+        } /*~ getRqEnt { rq: HttpRequest =>
+          onComplete(rq.entity.toStrict(5 seconds)) {
+            case Success(s: HttpEntity.Strict) =>
+              import org.json4s.jackson.JsonMethods._
+              val bs = s.data.toIterator.toArray
+              val parsed = parse(new String(bs))
+              println("\n\n\n" + parsed.toString)
+              val extracted = parsed.extract[CommandEnvelope]
+              complete(parsed.toString)
+          }
+        }*/
       }
+
     } ~ path("sessions") {
+
       post {  //Session life proof is not a PUT to /session/idSession for security reasons.
         entity(as[HeartBeat[UUID]]) { heartBeat =>
           mediator ! SendToAll("/user/client-monitor", heartBeat) //TODO: Hardcoded path
           complete(StatusCodes.Success) //Doesn't give clues on active sessions...
         }
       }
+
     } ~ complete("Welcome to Crossdata HTTP Server")
 
   val getRqEnt = extract[HttpRequest] { rqCtx =>
