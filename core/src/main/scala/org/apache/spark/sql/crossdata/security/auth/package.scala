@@ -15,5 +15,16 @@
  */
 package org.apache.spark.sql.crossdata.security
 
-// TODO remove??
-case class AuthorizationReply(authorizated: Boolean, info: Option[String] = None)
+package object auth {
+  type Resource = String
+
+  object ResourceType extends Enumeration {
+    type ResourceType = Value
+    val FunctionResource, TableResource = Value
+  }
+
+  object Action extends Enumeration {
+    type Action = Value
+    val Read, Write, Register, Unregister, Create, Delete, View = Value
+  }
+}

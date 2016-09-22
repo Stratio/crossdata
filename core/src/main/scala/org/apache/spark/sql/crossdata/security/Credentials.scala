@@ -15,4 +15,5 @@
  */
 package org.apache.spark.sql.crossdata.security
 
+// TODO remove??
 case class Credentials(user: Option[String] = None, password: Option[String] = None, sessionId: Option[String] = None)

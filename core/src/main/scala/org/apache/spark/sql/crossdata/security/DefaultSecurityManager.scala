@@ -15,12 +15,13 @@
  */
 package org.apache.spark.sql.crossdata.security
 
+// TODO remove??
 class DefaultSecurityManager(credentials: Credentials, audit: Boolean) extends SecurityManager(credentials, audit) {
 
   override def authorize(resource: Any): AuthorizationReply = {
     val info = s"${credentials.user.fold(""){u => s"User '$u', "}}${credentials.sessionId.fold(""){s => s"SessionId, '$s'}"}}Access to: '$resource'"
     if(audit) logInfo(info)
-    new AuthorizationReply(true, Some(info))
+    AuthorizationReply(true, Some(info))
   }
 
 }
