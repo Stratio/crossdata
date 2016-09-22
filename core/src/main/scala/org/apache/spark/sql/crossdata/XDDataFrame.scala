@@ -15,8 +15,11 @@
  */
 package org.apache.spark.sql.crossdata
 
+import java.util.Date
+
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
+import com.stratio.gosec.dyplon.model._
 import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.DataFrame
@@ -48,6 +51,7 @@ import sun.reflect.generics.tree.BaseType
 import scala.collection.mutable.BufferLike
 import scala.collection.{GenTraversableOnce, immutable, mutable}
 import scala.collection.generic.CanBuildFrom
+import scala.util.{Failure, Success, Try}
 
 private[sql] object XDDataFrame {
 
@@ -132,19 +136,54 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
    * @inheritdoc
    */
   override def collect(): Array[Row] = {
-    sqlContext.asInstanceOf[XDContext].securityManager.authorize(logicalPlan)
+    // TODO sqlContext.asInstanceOf[XDContext].securityManager.authorize(logicalPlan)
     // If cache doesn't go through native
-    if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
-      super.collect()
-    } else {
-      val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
-      if(nativeQueryExecutor.isEmpty){
-        logInfo(s"Spark Query: ${queryExecution.simpleString}")
+    Try{
+      if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
+        super.collect()
       } else {
-        logInfo(s"Native query: ${queryExecution.simpleString}")
+        val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
+        if(nativeQueryExecutor.isEmpty){
+          logInfo(s"Spark Query: ${queryExecution.simpleString}")
+        } else {
+          logInfo(s"Native query: ${queryExecution.simpleString}")
+        }
+        nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
       }
-      nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
+    } match {
+      case Success(result) =>
+        // TODO asInstance???
+        /*queryExecution.asInstanceOf[XDQueryExecution].resourcesAndOperations.foreach{ case (resource, action) =>
+          xd.auditService.save(
+            AuditEvent(
+              Time(new Date()),
+              User("id", stringUser, "email", groups = None),
+              resource,
+              action,
+              Success,
+              AuditAddresses("srcIp", "dstIp"),
+              policy = None,
+              impersonation = None)) // TODO date public?? //TODO user vs strusr // instead of fail (init) //srcIp and srcDst => sqlSec(sql, user, ips..)
+        }*/
+        result
+      case Failure(error) =>
+        // TODO ...
+        /*queryExecution.asInstanceOf[XDQueryExecution].resourcesAndOperations.foreach{ case (resource, action) =>
+            xd.auditService.save(
+              AuditEvent(
+                Time(new Date()),
+                User("id", stringUser, "email", groups = None),
+                resource,
+                action,
+                Fail,
+                AuditAddresses("srcIp", "dstIp"),
+                policy = None,
+                impersonation = None)) // TODO date public?? //TODO user vs strusr // instead of fail (init) //srcIp and srcDst => sqlSec(sql, user, ips..)
+          }*/
+        throw error
     }
+
+
   }
 
   def flattenedCollect(): Array[Row] = {

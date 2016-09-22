@@ -50,7 +50,7 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
       val xd = new  com.stratio.gosec.dyplon.plugins.crossdata.CrossdataAuthorizer{} // TODO move to sqlContext
       xd.start // TODO xd.stop
       val stringUser = sqlContext.getConf("userId")
-      val resourcesAndOperations = extractResourcesAndOperations(logical)
+
       val isAuthorized = resourcesAndOperations.forall{ case (resource, action) =>
         xd.auth(stringUser, resource, action, AuditAddresses("srcIp", "dstIp"), hierarchy = false) // TODO web do it public vs sql(..., user)
       }
@@ -84,7 +84,9 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
     sqlContext.cacheManager.useCachedData(authorized)
   }
 
-  private def extractResourcesAndOperations(parsedPlan: LogicalPlan): Seq[(Resource, Action)] = {
+
+  lazy val resourcesAndOperations: Seq[(Resource, Action)] = {
+    val parsedPlan = logical // TODO remove...
 
     implicit def tupleToSeq( tuple: (Resource, Action)): Seq[(Resource, Action)] = Seq(tuple)
 
