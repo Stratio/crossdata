@@ -37,6 +37,6 @@ object StructTypeSerializer extends Serializer[StructType]{
 
   def serialize(implicit formats: Formats): PartialFunction[Any, JValue] = {
     case x: StructType =>
-      StructTypeId -> parse(x.json)
+      StructTypeId -> parse(x.json, false)
   }
 }

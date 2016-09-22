@@ -17,7 +17,6 @@ package com.stratio.crossdata.common.serializers
 
 import com.stratio.crossdata.common.{CloseSessionCommand, Command, OpenSessionCommand, SQLCommand}
 import org.json4s._
-import org.json4s.ext.UUIDSerializer
 import CommandSerializerHelper._
 
 import scala.reflect.ClassTag

@@ -115,7 +115,7 @@
         <mariadb.version>1.2.3</mariadb.version>
         <postgresql.version>9.2-1003-jdbc4</postgresql.version>
         <derby.version>10.10.1.1</derby.version>
-        <jackson4s.version>3.4.0</jackson4s.version>
+        <jackson4s.version>3.2.10</jackson4s.version>
         <mockito.version>1.10.19</mockito.version>
         <curator.version>2.9.0</curator.version>
         <common.utils.version>0.5.0</common.utils.version>

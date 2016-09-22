@@ -17,13 +17,11 @@ package com.stratio.crossdata.common.serializers
 
 import org.apache.spark.sql.crossdata.serializers.StructTypeSerializer
 import org.json4s._
-import org.json4s.ext.UUIDSerializer
-
 
 trait CrossdataCommonSerializer {
 
   implicit val json4sJacksonFormats: Formats =
-    DefaultFormats +
+    DefaultFormats + SQLResultSerializer +
       StructTypeSerializer + UUIDSerializer + CommandSerializer
 
 }

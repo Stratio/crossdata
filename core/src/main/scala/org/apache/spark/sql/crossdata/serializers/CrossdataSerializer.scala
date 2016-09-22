@@ -15,10 +15,10 @@
  */
 package org.apache.spark.sql.crossdata.serializers
 
-import com.stratio.crossdata.common.serializers.CommandSerializer
+import com.stratio.crossdata.common.serializers.{CommandSerializer, UUIDSerializer}
 import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralOutputFormat}
 import org.json4s._
-import org.json4s.ext.{EnumNameSerializer, UUIDSerializer}
+import org.json4s.ext.EnumNameSerializer
 
 
 trait CrossdataSerializer {

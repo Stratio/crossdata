@@ -120,7 +120,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
             case Success(s: HttpEntity.Strict) =>
               import org.json4s.jackson.JsonMethods._
               val bs = s.data.toIterator.toArray
-              val parsed = parse(new String(bs))
+              val parsed = parse(new String(bs), false)
               println("\n\n\n" + parsed.toString)
               val extracted = parsed.extract[CommandEnvelope]
               complete(parsed.toString)
