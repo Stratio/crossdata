@@ -15,9 +15,6 @@
  */
 package org.apache.spark.sql.crossdata
 
-
-import java.util.Date
-
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.{DescribeFunction, InsertIntoTable, LogicalPlan}
