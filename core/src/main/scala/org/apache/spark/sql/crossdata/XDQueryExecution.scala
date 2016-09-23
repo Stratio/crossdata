@@ -49,7 +49,7 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
       val stringUser = sqlContext.getConf("userId")
 
       val isAuthorized = resourcesAndOperations.forall{ case (resource, action) =>
-        xd.auth(stringUser, resource, action, AuditAddresses("srcIp", "dstIp"), hierarchy = false) // TODO web do it public vs sql(..., user)
+        xd.authorize(stringUser, resource, action, AuditAddresses("srcIp", "dstIp"), hierarchy = false) // TODO web do it public vs sql(..., user)
       }
 
       if (!isAuthorized) throw new RuntimeException("Operation not ") // TODO improve message => specify resource
@@ -61,11 +61,10 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
       resourcesAndOperations.foreach{ case (resource, action) =>
         xd.audit(
           AuditEvent(
-            Time(new Date()),
             stringUser,
             resource,
             action,
-            Fail,
+            FailAR, //TODO failAR??
             AuditAddresses("srcIp", "dstIp"),
             policy = None,
             impersonation = None)) // TODO date public?? //TODO user vs strusr // instead of fail (init) //srcIp and srcDst => sqlSec(sql, user, ips..)
@@ -136,9 +135,9 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
 
     def dropPlanToResourcesAndOps: PartialFunction[LogicalPlan,Seq[(Resource, Action)]] = {
       case DropView(viewIdentifier) => (Resource("service", Seq("instances"), TableResource.toString, viewIdentifier.unquotedString), Unregister)
-      case DropAllTables =>  (Resource("service", Seq("instances"), TableResource.toString, "all"), Delete) // TODO Drop
-      case DropTable(tableIdentifier) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Delete) // TODO Drop
-      case DropExternalTable(tableIdentifier) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Delete)
+      case DropAllTables =>  (Resource("service", Seq("instances"), TableResource.toString, "all"), Drop) // TODO Drop
+      case DropTable(tableIdentifier) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Drop) // TODO Drop
+      case DropExternalTable(tableIdentifier) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Drop)
 
     }
 
