@@ -96,7 +96,8 @@ object Driver {
     newSession(driverConf.setClusterContactPoint(seedNodes))
 
   private[crossdata] def newSession(driverConf: DriverConf, authentication: Authentication): Driver = {
-    val driver = new ClusterClientDriver(driverConf, authentication)
+    //TODO: Enable driver selection by configuration
+    val driver = new HttpDriver(driverConf, authentication) //new ClusterClientDriver(driverConf, authentication)
     val isConnected = driver.openSession().getOrElse {
       throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
     }

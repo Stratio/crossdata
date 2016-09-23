@@ -99,7 +99,7 @@ class ClusterClientDriver private[driver](driverConf: DriverConf,
     val addAppWithAliasPattern ="""(\s*add)(\s+app\s+)(.*)(\s+as\s+)(.*)(\s+with\s+)(.*)""".r
     val addAppPattern ="""(\s*add)(\s+app\s+)(.*)(\s+with\s+)(.*)""".r
 
-    query match {
+    query match { //TODO: Refactor this to re-use at all Driver implementations
       case addJarPattern(add, jar, path) =>
         addJar(path.trim)
       case addAppWithAliasPattern(add, app, path, as, alias, wth, clss) =>

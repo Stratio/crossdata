@@ -125,7 +125,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
               }
           }
 
-        } /*~ getRqEnt { rq: HttpRequest =>
+        } /*~ getRqEnt { rq: HttpRequest =>//TODO: Remove this debugging tool when a minimal stable API has been reached
           onComplete(rq.entity.toStrict(5 seconds)) {
             case Success(s: HttpEntity.Strict) =>
               import org.json4s.jackson.JsonMethods._
