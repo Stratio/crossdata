@@ -15,7 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.serializers
 
-import com.stratio.crossdata.common.serializers.{CommandSerializer, UUIDSerializer}
+import com.stratio.crossdata.common.serializers.{CommandSerializer, SQLResultSerializer, UUIDSerializer}
 import org.apache.spark.sql.crossdata.models.{EphemeralExecutionStatus, EphemeralOutputFormat}
 import org.json4s._
 import org.json4s.ext.EnumNameSerializer
@@ -24,7 +24,7 @@ import org.json4s.ext.EnumNameSerializer
 trait CrossdataSerializer {
 
   implicit val json4sJacksonFormats: Formats =
-    DefaultFormats + UUIDSerializer +
+    DefaultFormats + UUIDSerializer + SQLResultSerializer +
       StructTypeSerializer + CommandSerializer +
       new EnumNameSerializer(EphemeralExecutionStatus) +
       new EnumNameSerializer(EphemeralOutputFormat)

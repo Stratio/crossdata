@@ -24,9 +24,9 @@ import org.json4s.{CustomSerializer, Extraction, _}
 
 object SQLResultSerializer extends CustomSerializer[SQLResult]( format => (
   {
-    case JObject(JField("successfulResult", JBool(false))::JField("error", JString(message))::Nil) =>
+    case JObject(JField("successfulResult", JBool(false))::JField("error", JString(message))::_) =>
       ErrorSQLResult(message)
-    case JObject(JField("successfulResult", JBool(true))::JField("schema", json_schema)::JField("rows", JArray(json_rows)) ::Nil) =>
+    case JObject(JField("successfulResult", JBool(true))::JField("schema", json_schema)::JField("rows", JArray(json_rows)) ::_) =>
 
       val schema = {
         implicit val formats = DefaultFormats + StructTypeSerializer
