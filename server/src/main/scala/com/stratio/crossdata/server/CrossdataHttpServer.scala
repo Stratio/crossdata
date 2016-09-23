@@ -32,7 +32,7 @@ import akka.stream.scaladsl.FileIO
 import akka.util.Timeout
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
-import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope, SQLReply, ServerReply}
+import com.stratio.crossdata.common._
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.Config
@@ -105,14 +105,24 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
       post {
         entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
 
-          implicit val _ = Timeout(1 hour) //TODO Make this configurable
+          rq.cmd match {
 
-          onComplete(serverActor ? rq) {
-            case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
-              complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
-            case Success(reply: ServerReply) =>
-              complete(reply)
-            case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
+            case _: CloseSessionCommand => // Commands with no confirmation
+
+              serverActor ! rq
+              complete(StatusCodes.OK)
+
+            case _ =>                      // Commands requiring confirmation
+
+              implicit val _ = Timeout(1 hour) //TODO Make this configurable
+
+              onComplete(serverActor ? rq) {
+                case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
+                  complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
+                case Success(reply: ServerReply) =>
+                  complete(reply)
+                case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
+              }
           }
 
         } /*~ getRqEnt { rq: HttpRequest =>
