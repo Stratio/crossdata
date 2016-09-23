@@ -19,7 +19,6 @@ import java.util.Date
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
-import com.stratio.gosec.dyplon.model._
 import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.DataFrame

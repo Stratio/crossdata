@@ -18,8 +18,6 @@ package org.apache.spark.sql.crossdata
 
 import java.util.Date
 
-import com.stratio.gosec.dyplon.model._
-import com.stratio.gosec.dyplon.plugins.crossdata.CrossdataAuthorizer
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.{DescribeFunction, InsertIntoTable, LogicalPlan}
@@ -28,9 +26,8 @@ import org.apache.spark.sql.crossdata.catalyst.streaming._
 import org.apache.spark.sql.crossdata.security.auth.ResourceType._
 import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTableUsingAsSelect, CreateTempTableUsing, RefreshTable}
 import org.apache.spark.sql.execution._
-import org.joda.time.DateTime
 
-
+import org.apache.spark.sql.crossdata.security.api._
 /**
   * The primary workflow for executing relational queries using Spark.  Designed to allow easy
   * access to the intermediate phases of query execution for developers.
@@ -47,8 +44,8 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
     val isAuthorizationEnabled = true // TODO config
 
     if (isAuthorizationEnabled){
-      val xd = new  com.stratio.gosec.dyplon.plugins.crossdata.CrossdataAuthorizer{} // TODO move to sqlContext
-      xd.start // TODO xd.stop
+      val xd = new  DummyCrossdataAuthorizer{} // TODO move to sqlContext
+      xd.start() // TODO xd.stop
       val stringUser = sqlContext.getConf("userId")
 
       val isAuthorized = resourcesAndOperations.forall{ case (resource, action) =>
@@ -62,10 +59,10 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
 
       //TODO previous audit (vs authorize logs??)
       resourcesAndOperations.foreach{ case (resource, action) =>
-        xd.auditService.save(
+        xd.audit(
           AuditEvent(
             Time(new Date()),
-            User("id", stringUser, "email", groups = None),
+            stringUser,
             resource,
             action,
             Fail,

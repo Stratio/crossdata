@@ -61,12 +61,6 @@
             <artifactId>common-utils_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
-            <!--TODO remove gosec dyplon (use a public interface)-->
-            <groupId>com.stratio.gosec.dyplon.plugins</groupId>
-            <artifactId>crossdata</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
