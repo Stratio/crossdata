@@ -117,7 +117,10 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
         case Failure(error) =>
           logger.warn(s"Received message with an unknown sessionId $id", error)
-          sender ! ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+          sender ! SQLReply(
+            sqlCommand.requestId,
+            ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+          )
       }
 
 
