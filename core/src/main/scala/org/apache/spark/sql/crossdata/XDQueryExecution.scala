@@ -63,7 +63,6 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
             action,
             FailAR, //TODO failAR??
             AuditAddresses("srcIp", "dstIp"),
-            policy = None,
             impersonation = None)) // TODO date public?? //TODO user vs strusr // instead of fail (init) //srcIp and srcDst => sqlSec(sql, user, ips..)
       }
     }
