@@ -395,7 +395,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private def getTrustManagerFactory: TrustManagerFactory = {
     val tmf: TrustManagerFactory = TrustManagerFactory.getInstance("SunX509")
-    tmf.init(getKeyStore)
+    tmf.init(getTrustStore)
     tmf
   }
 

@@ -15,14 +15,17 @@
  */
 package com.stratio.crossdata.driver
 
+import java.io.{FileInputStream, InputStream}
+import java.security.{KeyStore, SecureRandom}
 import java.util.UUID
+import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 
 import akka.actor.ActorRef
 import akka.cluster.ClusterEvent.CurrentClusterState
-import akka.http.scaladsl.Http
+import akka.http.scaladsl.{Http, HttpExt, HttpsConnectionContext}
 import akka.http.scaladsl.marshalling.{Marshal, Marshaller}
 import akka.http.scaladsl.model.{HttpMethod, HttpRequest, RequestEntity, ResponseEntity}
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, TLSClientAuth}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.config.DriverConf
@@ -56,7 +59,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
   private implicit lazy val _ = system
   private implicit lazy val materializer: ActorMaterializer = ActorMaterializer()
-  private implicit lazy val http = Http(system)
+  private implicit lazy val http = obtainHttpContext
   private val serverHttp = driverConf.getCrossdataServerHttp
   private val protocol = "http" //TODO
   private val requestTimeout: Duration = Duration.Inf //TODO
@@ -71,6 +74,53 @@ class HttpDriver private[driver](driverConf: DriverConf,
                   to play just with alert period time at server side. */
     s"$protocol://$serverHttp/sessions"
   )
+
+  private def obtainHttpContext: HttpExt = {
+    val ext = Http(system)
+    if(driverConf.httpTlsEnable){ //Set for all the requests the Https configurated context with keystores
+      ext.setDefaultClientHttpsContext(getTlsContext)
+    }
+    ext
+  }
+
+  private def getTlsContext: HttpsConnectionContext = {
+    val sslContext: SSLContext = SSLContext.getInstance("TLS")
+    sslContext.init(getKeyManagerFactory.getKeyManagers, getTrustManagerFactory.getTrustManagers, new SecureRandom())
+    new HttpsConnectionContext(sslContext, clientAuth = Some(TLSClientAuth.Need))
+  }
+
+  private def getKeyManagerFactory: KeyManagerFactory = {
+    val keyManagerFactory = KeyManagerFactory.getInstance("SunX509")
+    val keyStorePwd = driverConf.httpTlsKeyStorePwd
+    keyManagerFactory.init(getKeyStore, keyStorePwd.toCharArray)
+    keyManagerFactory
+  }
+
+  private def getKeyStore: KeyStore = {
+    val ks: KeyStore = KeyStore.getInstance("JKS")
+    val path = driverConf.httpTlsKeyStore
+    val pwd = driverConf.httpTlsKeyStorePwd
+    val keystore: InputStream = new FileInputStream(path)
+    require(keystore != null, "Keystore required!")
+    ks.load(keystore, pwd.toCharArray)
+    ks
+  }
+
+  private def getTrustManagerFactory: TrustManagerFactory = {
+    val tmf: TrustManagerFactory = TrustManagerFactory.getInstance("SunX509")
+    tmf.init(getTrustStore)
+    tmf
+  }
+
+  private def getTrustStore: KeyStore = {
+    val ts: KeyStore = KeyStore.getInstance("JKS")
+    val path = driverConf.httpTlsTrustStore
+    val pwd = driverConf.httpTlsTrustStorePwd
+    val truststore: InputStream = new FileInputStream(path)
+    require(truststore != null, "TrustStore required!")
+    ts.load(truststore, pwd.toCharArray)
+    ts
+  }
 
 
   private def simpleRequest[A, E, R](
