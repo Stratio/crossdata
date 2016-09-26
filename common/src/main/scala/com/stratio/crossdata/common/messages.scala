@@ -18,6 +18,7 @@ package com.stratio.crossdata.common
 import java.util.UUID
 
 import akka.cluster.ClusterEvent.CurrentClusterState
+import com.hazelcast.core.Cluster
 import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.common.security.Session
 import com.typesafe.config.Config
@@ -114,7 +115,10 @@ private[crossdata] case class QueryCancelledReply(requestId: UUID) extends Serve
 
 private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
 
-private[crossdata] case class ClusterStateReply(requestId: UUID, clusterState: CurrentClusterState) extends ServerReply
+private[crossdata] case class ClusterStateReply(
+                                                 requestId: UUID,
+                                                 clusterState: CurrentClusterState,
+                                                 sessionCluster: Cluster) extends ServerReply
 
 private[crossdata] case class OpenSessionReply(requestId: UUID, isOpen: Boolean) extends ServerReply
 

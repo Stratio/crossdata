@@ -28,7 +28,7 @@
 
     <artifactId>crossdata-common_2.11</artifactId>
     <name>Common</name>
-    <packaging>jar</packaging>
+    <packaging>jar</packaging>z
     <description>Common structures for communication between driver and server</description>
     <url>http://stratio.github.io/crossdata/</url>
 
@@ -57,6 +57,11 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-cluster-tools_${scala.binary.version}</artifactId>
             <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>${hazelcast.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>

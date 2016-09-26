@@ -375,7 +375,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     system.foreach { actSystem =>
       implicit val exContext = actSystem.dispatcher
       bindingFuture.foreach { bFuture =>
-        bFuture.flatMap(_.unbind()).onComplete(_ => actSystem.shutdown())
+        bFuture.flatMap(_.unbind()).onComplete(_ => actSystem.terminate)
       }
     }
 
