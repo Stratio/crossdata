@@ -15,17 +15,19 @@
  */
 package com.stratio.crossdata.server
 
-import java.io.File
+import java.io.{File, FileInputStream, InputStream}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import java.security.{KeyStore, SecureRandom}
+import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 
 import akka.actor.{ActorSystem, Address, Props}
 import akka.cluster.Cluster
 import akka.cluster.client.ClusterClientReceptionist
-import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
+import akka.http.scaladsl.{Http, HttpsConnectionContext}
 import akka.routing.{DefaultResizer, RoundRobinPool}
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, TLSClientAuth}
 import com.hazelcast.config.{XmlConfigBuilder, Config => HzConfig}
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
@@ -348,14 +350,63 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()
       val httpServerActor = new CrossdataHttpServer(finalConfig, serverActor, actorSystem)
-      val host = finalConfig.getString(ServerConfig.Host)
-      val port = finalConfig.getInt(ServerConfig.HttpServerPort)
 
-      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))
+      if(config.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)){
+        val host = config.getString(ServerConfig.AkkaHttpTLS.TlsHost)
+        val port = config.getInt(ServerConfig.AkkaHttpTLS.TlsPort)
+        val context = getTlsContext
+
+        Http().setDefaultServerHttpContext(context)
+        Option(Http().bindAndHandle(httpServerActor.route, host, port, connectionContext = context))
+
+      } else {
+        val host = config.getString(ServerConfig.Host)
+        val port = config.getInt(ServerConfig.HttpServerPort)
+        bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))
+      }
 
     }
 
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
+  }
+
+  private def getTlsContext: HttpsConnectionContext = {
+    val sslContext: SSLContext = SSLContext.getInstance("TLS")
+    sslContext.init(getKeyManagerFactory.getKeyManagers, getTrustManagerFactory.getTrustManagers, new SecureRandom())
+    new HttpsConnectionContext(sslContext, clientAuth = Some(TLSClientAuth.Need))
+  }
+
+  private def getKeyManagerFactory: KeyManagerFactory = {
+    val keyManagerFactory = KeyManagerFactory.getInstance("SunX509")
+    val keyStorePwd = config.getString(ServerConfig.AkkaHttpTLS.TlsKeystorePwd)
+    keyManagerFactory.init(getKeyStore, keyStorePwd.toCharArray)
+    keyManagerFactory
+  }
+
+  private def getKeyStore: KeyStore = {
+    val ks: KeyStore = KeyStore.getInstance("JKS")
+    val path = config.getString(ServerConfig.AkkaHttpTLS.TlsKeyStore)
+    val pwd = config.getString(ServerConfig.AkkaHttpTLS.TlsKeystorePwd)
+    val keystore: InputStream = new FileInputStream(path)
+    require(keystore != null, "Keystore required!")
+    ks.load(keystore, pwd.toCharArray)
+    ks
+  }
+
+  private def getTrustManagerFactory: TrustManagerFactory = {
+    val tmf: TrustManagerFactory = TrustManagerFactory.getInstance("SunX509")
+    tmf.init(getKeyStore)
+    tmf
+  }
+
+  private def getTrustStore: KeyStore = {
+    val ts: KeyStore = KeyStore.getInstance("JKS")
+    val path = config.getString(ServerConfig.AkkaHttpTLS.TlsTrustStore)
+    val pwd = config.getString(ServerConfig.AkkaHttpTLS.TlsTrustStorePwd)
+    val truststore: InputStream = new FileInputStream(path)
+    require(truststore != null, "TrustStore required!")
+    ts.load(truststore, pwd.toCharArray)
+    ts
   }
 
   def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
