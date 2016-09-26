@@ -1,6 +1,6 @@
 package org.apache.spark.sql.crossdata.security.api
 
-trait CrossdataAuthorizer {
+trait CrossdataSecurityManager {
 
   def start() : Unit
   def stop(): Unit
@@ -11,7 +11,7 @@ trait CrossdataAuthorizer {
 
 }
 
-class DummyCrossdataAuthorizer extends CrossdataAuthorizer{
+class DummyCrossdataSecurityManager extends CrossdataSecurityManager{
 
   def start() : Unit = ()
 

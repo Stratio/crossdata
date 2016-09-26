@@ -41,7 +41,7 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
     val isAuthorizationEnabled = true // TODO config
 
     if (isAuthorizationEnabled){
-      val xd = new  DummyCrossdataAuthorizer{} // TODO move to sqlContext
+      val xd = new  DummyCrossdataSecurityManager{} // TODO move to sqlContext
       xd.start() // TODO xd.stop
       val stringUser = sqlContext.getConf("userId")
 
