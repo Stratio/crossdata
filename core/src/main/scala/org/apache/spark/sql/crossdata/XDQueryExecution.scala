@@ -86,55 +86,55 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
     //(Resource.wildCardAll, View) // TODO tablesAll
     def createPlanToResourcesAndOps: PartialFunction[LogicalPlan,Seq[(Resource, Action)]] = {
 
-      case CreateTableUsing(tableIdent, _, provider, isTemporary, _, _, _ ) if isTemporary => (Resource("service", Seq("instances"), TableResource.toString, "none"), Register)//TODO createTable => name = None??
+      case CreateTableUsing(tableIdent, _, provider, isTemporary, _, _, _ ) if isTemporary => (Resource( Seq("instances"), TableResource.toString, "none"), Register)//TODO createTable => name = None??
 
-      case CreateTableUsing(tableIdent, _, provider, isTemporary, _, _, _ ) if !isTemporary => (Resource("service", Seq("instances"), TableResource.toString, "none"), Create)//TODO createTable => name = None??
+      case CreateTableUsing(tableIdent, _, provider, isTemporary, _, _, _ ) if !isTemporary => (Resource( Seq("instances"), TableResource.toString, "none"), Create)//TODO createTable => name = None??
 
-      case _: CreateExternalTable => (Resource("service", Seq("instances"), TableResource.toString, "none"), Create)//TODO createTable => name = None??
+      case _: CreateExternalTable => (Resource(Seq("instances"), TableResource.toString, "none"), Create)//TODO createTable => name = None??
 
       case CreateTableUsingAsSelect(tableIdent, _, isTemporary, _, _, _, selectPlan) if isTemporary =>
         selectPlan.collect {
-          case UnresolvedRelation(tableIdentifier, _) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
-        } :+ (Resource("service", Seq("instances"), TableResource.toString, "none"), Register) // TODO table and tempTable resources?? TODO createTable => name = None??
+          case UnresolvedRelation(tableIdentifier, _) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
+        } :+ (Resource( Seq("instances"), TableResource.toString, "none"), Register) // TODO table and tempTable resources?? TODO createTable => name = None??
 
       case CreateTableUsingAsSelect(tableIdent, _, isTemporary, _, _, _, selectPlan) if !isTemporary =>
         selectPlan.collect {
-          case UnresolvedRelation(tableIdentifier, _) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
-        } :+ (Resource("service", Seq("instances"), TableResource.toString, "none"), Create) // TODO table and tempTable resources?? TODO createTable => name = None??
+          case UnresolvedRelation(tableIdentifier, _) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
+        } :+ (Resource( Seq("instances"), TableResource.toString, "none"), Create) // TODO table and tempTable resources?? TODO createTable => name = None??
 
       case CreateView(viewIdentifier, queryPlan, _) =>
         queryPlan.collect {
-          case UnresolvedRelation(tableIdentifier, _) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
-        } :+ (Resource("service", Seq("instances"), TableResource.toString, "none"), Create)//TODO
+          case UnresolvedRelation(tableIdentifier, _) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
+        } :+ (Resource( Seq("instances"), TableResource.toString, "none"), Create)//TODO
 
       case CreateTempView(viewIdentifier, queryPlan, _) =>
         queryPlan.collect {
-          case UnresolvedRelation(tableIdentifier, _) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
-        } :+ (Resource("service", Seq("instances"), TableResource.toString, "none"), Register)//TODO
+          case UnresolvedRelation(tableIdentifier, _) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
+        } :+ (Resource( Seq("instances"), TableResource.toString, "none"), Register)//TODO
 
       case ImportTablesUsingWithOptions(datasource, _) =>
-        Seq((Resource("service", Seq("instances"), TableResource.toString, "All"), Read) , (Resource("service", Seq("instances"), TableResource.toString, "None"), Create)) // TODO all
+        Seq((Resource( Seq("instances"), TableResource.toString, "All"), Read) , (Resource( Seq("instances"), TableResource.toString, "None"), Create)) // TODO all
 
     }
 
     def insertPlanToResourcesAndOps: PartialFunction[LogicalPlan,Seq[(Resource, Action)]] = {
-      case XDInsertIntoTable(tableIdentifier, _, _) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Write)
+      case XDInsertIntoTable(tableIdentifier, _, _) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Write)
       case InsertIntoTable(writePlan, _, readPlan, _, _) =>
         val writeResources = writePlan.collect {
-          case UnresolvedRelation(tableIdentifier, _) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Write)
+          case UnresolvedRelation(tableIdentifier, _) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Write)
         }
         val readResources =
           readPlan.collect {
-            case UnresolvedRelation(tableIdentifier, _) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
+            case UnresolvedRelation(tableIdentifier, _) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
           }
         writeResources ++ readResources
     }
 
     def dropPlanToResourcesAndOps: PartialFunction[LogicalPlan,Seq[(Resource, Action)]] = {
-      case DropView(viewIdentifier) => (Resource("service", Seq("instances"), TableResource.toString, viewIdentifier.unquotedString), Unregister)
-      case DropAllTables =>  (Resource("service", Seq("instances"), TableResource.toString, "all"), Drop) // TODO Drop
-      case DropTable(tableIdentifier) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Drop) // TODO Drop
-      case DropExternalTable(tableIdentifier) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Drop)
+      case DropView(viewIdentifier) => (Resource( Seq("instances"), TableResource.toString, viewIdentifier.unquotedString), Unregister)
+      case DropAllTables =>  (Resource( Seq("instances"), TableResource.toString, "all"), Drop) // TODO Drop
+      case DropTable(tableIdentifier) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Drop) // TODO Drop
+      case DropExternalTable(tableIdentifier) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Drop)
 
     }
 
@@ -163,7 +163,7 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
     }
 
     def metadataPlanToResourcesAndOps: PartialFunction[LogicalPlan,Seq[(Resource, Action)]] = {
-      case DescribeFunction(functionName, _) => (Resource("service", Seq("instances"), FunctionResource.toString, functionName), View) // TODO
+      case DescribeFunction(functionName, _) => (Resource( Seq("instances"), FunctionResource.toString, functionName), View) // TODO
       case ShowTablesCommand(databaseOpt) => (Resource.wildCardAll, View) // TODO tablesAll // database??
       case _: DescribeCommand => Seq.empty
       case _: ExplainCommand => Seq.empty
@@ -179,9 +179,9 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
       case ClearCacheCommand => Seq.empty // TODO
       case CacheTableCommand(tableName, Some(toCachePlan), _) =>
         toCachePlan.collect {
-          case UnresolvedRelation(tableIdentifier, _) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
-        } :+ (Resource("service", Seq("instances"), TableResource.toString, "none"), Register) // TODO table and tempTable resources?? TODO createTable => name = None??
-      case UncacheTableCommand(tableName) => (Resource("service", Seq("instances"), TableResource.toString, "none"), Unregister) // TODO
+          case UnresolvedRelation(tableIdentifier, _) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
+        } :+ (Resource( Seq("instances"), TableResource.toString, "none"), Register) // TODO table and tempTable resources?? TODO createTable => name = None??
+      case UncacheTableCommand(tableName) => (Resource( Seq("instances"), TableResource.toString, "none"), Unregister) // TODO
 
     }
 
@@ -190,7 +190,7 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
         // TODO log other?? whitelist??
         // TODO test collect using union and join
         queryWithUnresolvedAttributes.collect {
-          case UnresolvedRelation(tableIdentifier, _) => (Resource("service", Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
+          case UnresolvedRelation(tableIdentifier, _) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
         }
     }
 
