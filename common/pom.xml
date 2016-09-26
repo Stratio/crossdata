@@ -28,7 +28,7 @@
 
     <artifactId>crossdata-common_2.11</artifactId>
     <name>Common</name>
-    <packaging>jar</packaging>z
+    <packaging>jar</packaging>
     <description>Common structures for communication between driver and server</description>
     <url>http://stratio.github.io/crossdata/</url>
 

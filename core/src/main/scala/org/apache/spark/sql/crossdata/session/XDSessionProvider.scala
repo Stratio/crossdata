@@ -77,7 +77,6 @@ class BasicSessionProvider(
   private lazy val catalogConfig = Try(config.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
   private lazy val sqlConf: SQLConf = configToSparkSQL(userConfig, new SQLConf)
 
-
   @transient
   protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(sqlConf, catalogConfig)
 
@@ -88,7 +87,6 @@ class BasicSessionProvider(
 
   private val sessionIDToSQLProps: mutable.Map[SessionID, SQLConf] = mutable.Map.empty
   private val sessionIDToTempCatalog: mutable.Map[SessionID, XDTemporaryCatalog] = mutable.Map.empty
-
 
   private val errorMessage =
     "A distributed context must be used to manage XDServer sessions. Please, use SparkSessions instead"
