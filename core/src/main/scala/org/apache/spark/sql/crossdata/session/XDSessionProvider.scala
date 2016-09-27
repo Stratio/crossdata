@@ -18,6 +18,7 @@ package org.apache.spark.sql.crossdata.session
 import java.lang.reflect.Constructor
 import java.util.UUID
 
+import com.stratio.crossdata.security.CrossdataSecurityManager
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
@@ -28,7 +29,6 @@ import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.config.CoreConfig._
-import org.apache.spark.sql.crossdata.security.api.CrossdataSecurityManager
 
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}

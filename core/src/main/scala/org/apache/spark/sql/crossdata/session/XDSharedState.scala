@@ -15,11 +15,10 @@
  */
 package org.apache.spark.sql.crossdata.session
 
+import com.stratio.crossdata.security.CrossdataSecurityManager
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDStreamingCatalog}
-import org.apache.spark.sql.crossdata.security.api.CrossdataSecurityManager
-
 
 
 final class XDSharedState(

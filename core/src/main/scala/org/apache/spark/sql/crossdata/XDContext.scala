@@ -19,14 +19,16 @@
 package org.apache.spark.sql.crossdata
 
 import java.io.InputStream
-import java.lang.reflect.{Constructor, Method}
+import java.lang.reflect.Method
 import java.net.{URL, URLClassLoader}
 import java.nio.file.StandardCopyOption
 import java.util.ServiceLoader
 import java.util.concurrent.atomic.AtomicReference
 
 import com.stratio.crossdata.connector.FunctionInventory
+import com.stratio.crossdata.security.CrossdataSecurityManager
 import com.stratio.crossdata.util.HdfsUtils
+import com.typesafe.config.ConfigException
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.TableIdentifier
@@ -45,9 +47,8 @@ import org.apache.spark.sql.crossdata.catalyst.parser.XDDdlParser
 import org.apache.spark.sql.crossdata.catalyst.planning.{ExtendedDataSourceStrategy, XDStrategies}
 import org.apache.spark.sql.crossdata.catalyst.{ExtractNativeUDFs, NativeUDF, XDFunctionRegistry}
 import org.apache.spark.sql.crossdata.config.CoreConfig
+import org.apache.spark.sql.crossdata.execution.XDQueryExecution
 import org.apache.spark.sql.crossdata.launcher.SparkJobLauncher
-import org.apache.spark.sql.crossdata.security.api.CrossdataSecurityManager
-import org.apache.spark.sql.crossdata.security.api.DummyCrossdataSecurityManager
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
 import org.apache.spark.sql.execution.ExtractPythonUDFs
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
@@ -93,10 +94,16 @@ class XDContext protected (@transient val sc: SparkContext,
 
   catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
 
+  private lazy val catalogIdentifier: String = Try(xdConfig.getString(CatalogPrefixConfigKey)).recover {
+    case _: ConfigException =>
+      logger.warn("Catalog identifier not found. Using the default identifier is discouraged")
+      CoreConfig.DefaultCatalogIdentifier
+  }.get
+
   override protected[sql] def executeSql(sql: String): org.apache.spark.sql.execution.QueryExecution = executePlan(parseSql(sql))
 
   override protected[sql] def executePlan(plan: LogicalPlan): sparkexecution.QueryExecution =
-    new XDQueryExecution(this, plan)
+    new XDQueryExecution(this, plan, catalogIdentifier)
 
   override protected[sql] lazy val conf: SQLConf =
     userConfig.map{ coreConfig =>

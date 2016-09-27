@@ -13,26 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security.api
+package com.stratio.crossdata.security
 
-trait CrossdataSecurityManager {
+/**
+  * WARNING: Update crossdata plugin when modifying the actions
+  */
+sealed trait Action
 
-  def start() : Unit
-  def stop(): Unit
+case object Read extends Action
 
-  def authorize(userId: String, resource: Resource, action: Action): Boolean
+case object Write extends Action
 
-  def audit(auditEvent: AuditEvent): Unit
+case object Create extends Action
 
-}
+case object Drop extends Action
 
-class DummyCrossdataSecurityManager extends CrossdataSecurityManager{
+case object Describe extends Action
 
-  def start() : Unit = ()
-
-  def stop(): Unit = ()
-
-  def authorize(userId: String, resource: Resource, action: Action) = true
-
-  def audit(auditEvent: AuditEvent): Unit = ()
-}
+case object Cache extends Action

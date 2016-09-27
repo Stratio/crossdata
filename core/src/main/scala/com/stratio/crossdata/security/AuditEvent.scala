@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security.api
 
-sealed trait AuditResult
+package com.stratio.crossdata.security
 
-case object SuccessAR extends AuditResult
 
-case object FailAR extends AuditResult
+case class AuditEvent(userId: String, resource: Resource, action: Action, result: AuditResult, impersonation: Option[Boolean] = None)

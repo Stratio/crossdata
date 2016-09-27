@@ -19,6 +19,7 @@ import java.lang.reflect.Constructor
 
 import com.hazelcast.config.{XmlConfigBuilder, Config => HzConfig}
 import com.hazelcast.core.Hazelcast
+import com.stratio.crossdata.security.CrossdataSecurityManager
 import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
@@ -29,7 +30,6 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, X
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.config.CoreConfig._
-import org.apache.spark.sql.crossdata.security.api.CrossdataSecurityManager
 import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
 
 import scala.util.{Failure, Success, Try}

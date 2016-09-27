@@ -13,10 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security.api
+package com.stratio.crossdata.security
 
-case class Resource(instances: Seq[String], resourceType: String, name: String)
+trait CrossdataSecurityManager {
 
-object Resource {
-  val wildCardAll = Resource(Seq("*"), "*", "*")
+  def start() : Unit
+  def stop(): Unit
+
+  def authorize(userId: String, resource: Resource, action: Action): Boolean
+
+  def audit(auditEvent: AuditEvent): Unit
+
+}
+
+class DummyCrossdataSecurityManager extends CrossdataSecurityManager{
+
+  def start() : Unit = ()
+
+  def stop(): Unit = ()
+
+  def authorize(userId: String, resource: Resource, action: Action) = true
+
+  def audit(auditEvent: AuditEvent): Unit = ()
 }

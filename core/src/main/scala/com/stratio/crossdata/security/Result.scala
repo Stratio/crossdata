@@ -13,18 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
+package com.stratio.crossdata.security
 
-package object auth {
-  type Resource = String
+sealed trait AuditResult
 
-  object ResourceType extends Enumeration {
-    type ResourceType = Value
-    val TableResource = Value
-  }
+case object SuccessAR extends AuditResult
 
-  object Action extends Enumeration {
-    type Action = Value
-    val Read, Write, Register, Unregister, Create, Delete, View = Value
-  }
-}
+case object FailAR extends AuditResult

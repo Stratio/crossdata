@@ -17,13 +17,12 @@ package org.apache.spark.sql.crossdata
 
 import java.lang.reflect.Constructor
 
+import com.stratio.crossdata.security.CrossdataSecurityManager
 import com.typesafe.config.Config
 import org.apache.spark.Logging
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
-
-import org.apache.spark.sql.crossdata.security.api.CrossdataSecurityManager
 import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 
 import scala.util.Try

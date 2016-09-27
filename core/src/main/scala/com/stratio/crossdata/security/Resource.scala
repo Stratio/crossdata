@@ -13,31 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security.api
+package com.stratio.crossdata.security
 
-/**
-  * WARNING: Update crossdata plugin when modifying the actions
-  */
-sealed trait Action
+case class Resource(instances: Seq[String], resourceType: ResourceType, name: String)
 
-case object Read extends Action
+sealed trait ResourceType{
+  def name(): String
+}
 
-case object Write extends Action
+case object TableResource extends ResourceType{
+  override def name(): String = "table"
+}
+case object CatalogResource extends ResourceType{
+  override def name(): String = "catalog"
+}
 
-case object Execute extends Action
 
-case object Create extends Action
-
-case object Drop extends Action
-
-case object Describe extends Action
-
-case object Other extends Action
-
-case object Access extends Action // TODO access???
-
-case object View extends Action
-
-case object Register extends Action
-
-case object Unregister extends Action
+object Resource {
+  val CrossdataClusterNameEnvVar = "CROSSDATA_CLUSTER_NAME"
+  val AllResourceName = "all"
+}
