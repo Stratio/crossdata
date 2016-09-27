@@ -351,17 +351,19 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       implicit val materializer = ActorMaterializer()
       val httpServerActor = new CrossdataHttpServer(finalConfig, serverActor, actorSystem)
 
-      if(config.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)){
-        val host = config.getString(ServerConfig.AkkaHttpTLS.TlsHost)
-        val port = config.getInt(ServerConfig.AkkaHttpTLS.TlsPort)
+      if(serverConfig.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)){
+        val host = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsHost)
+        val port = serverConfig.getInt(ServerConfig.AkkaHttpTLS.TlsPort)
         val context = getTlsContext
+
+        logger.info(s"Securized server with client certificate authentication on https://$host:$port")
 
         Http().setDefaultServerHttpContext(context)
         Option(Http().bindAndHandle(httpServerActor.route, host, port, connectionContext = context))
 
       } else {
-        val host = config.getString(ServerConfig.Host)
-        val port = config.getInt(ServerConfig.HttpServerPort)
+        val host = serverConfig.getString(ServerConfig.Host)
+      	val port = serverConfig.getInt(ServerConfig.HttpServerPort)
         bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))
       }
 
@@ -378,18 +380,19 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private def getKeyManagerFactory: KeyManagerFactory = {
     val keyManagerFactory = KeyManagerFactory.getInstance("SunX509")
-    val keyStorePwd = config.getString(ServerConfig.AkkaHttpTLS.TlsKeystorePwd)
+    val keyStorePwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeystorePwd)
     keyManagerFactory.init(getKeyStore, keyStorePwd.toCharArray)
     keyManagerFactory
   }
 
-  private def getKeyStore: KeyStore = {
+  protected def getKeyStore: KeyStore = {
     val ks: KeyStore = KeyStore.getInstance("JKS")
-    val path = config.getString(ServerConfig.AkkaHttpTLS.TlsKeyStore)
-    val pwd = config.getString(ServerConfig.AkkaHttpTLS.TlsKeystorePwd)
+    val path = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeyStore)
+    val pwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeystorePwd)
     val keystore: InputStream = new FileInputStream(path)
     require(keystore != null, "Keystore required!")
     ks.load(keystore, pwd.toCharArray)
+    logger.info(s"Valid keystore for TLS Client Auth in $path")
     ks
   }
 
@@ -399,13 +402,14 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     tmf
   }
 
-  private def getTrustStore: KeyStore = {
+  protected def getTrustStore: KeyStore = {
     val ts: KeyStore = KeyStore.getInstance("JKS")
-    val path = config.getString(ServerConfig.AkkaHttpTLS.TlsTrustStore)
-    val pwd = config.getString(ServerConfig.AkkaHttpTLS.TlsTrustStorePwd)
+    val path = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsTrustStore)
+    val pwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsTrustStorePwd)
     val truststore: InputStream = new FileInputStream(path)
     require(truststore != null, "TrustStore required!")
     ts.load(truststore, pwd.toCharArray)
+    logger.info(s"Valid truststore for TLS Client Auth in $path")
     ts
   }
 

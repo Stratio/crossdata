@@ -19,6 +19,8 @@ import com.stratio.crossdata.driver.{Driver, DriverFactory, JavaDriver}
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.test.BaseXDTest
 
+import scala.util.Try
+
 object Utils extends BaseXDTest{
 
   case class DriverTestContext(driverFactory: DriverFactory, optConfig: Option[DriverConf] = None)
@@ -40,6 +42,12 @@ object Utils extends BaseXDTest{
       driver.closeSession()
     }
   }
+
+  def withDriverTry(block: Driver => Unit)(implicit optConfig: Option[DriverConf] = None): Try[Unit] =
+    Try(optConfig.map(Driver.newSession).getOrElse(Driver.newSession())) map { driver =>
+      block(driver)
+    }
+
 
   def withJavaDriverDo(block: JavaDriver => Unit)(
     implicit driverCtx: DriverTestContext = DriverTestContext(Driver)

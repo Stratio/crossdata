@@ -25,7 +25,7 @@ import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.http.scaladsl.{Http, HttpExt, HttpsConnectionContext}
 import akka.http.scaladsl.marshalling.{Marshal, Marshaller}
 import akka.http.scaladsl.model.{HttpMethod, HttpRequest, RequestEntity, ResponseEntity}
-import akka.stream.{ActorMaterializer, TLSClientAuth}
+import akka.stream.{ActorMaterializer, StreamTcpException, TLSClientAuth}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.config.DriverConf
@@ -36,6 +36,7 @@ import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.serializers.CrossdataCommonSerializer
 import com.stratio.crossdata.driver.actor.HttpSessionBeaconActor
+import com.stratio.crossdata.driver.error.TLSInvalidAuthException
 import org.json4s.jackson
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -140,6 +141,9 @@ class HttpDriver private[driver](driverConf: DriverConf,
       } yield desiredResult
 
     result.recover {
+      case e: StreamTcpException if driverConf.httpTlsEnable =>
+        throw TLSInvalidAuthException("Possible invalid authentication (check if you have a valid TLS certificate configured in your driver or if your server is under a lot of requests).",e)
+
       case exception if defaultValue.isDefined =>
         logger.error(exception.getMessage, exception)
         defaultValue.get

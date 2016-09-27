@@ -22,6 +22,7 @@ import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.config.DriverConf
+import com.stratio.crossdata.driver.error.TLSInvalidAuthException
 import com.stratio.crossdata.driver.metadata.FieldMetadata
 import com.stratio.crossdata.driver.session.Authentication
 import org.apache.spark.sql.Row
@@ -116,6 +117,12 @@ object Driver extends DriverFactory {
   object http extends DriverFactory {
     override protected def newDriver(driverConf: DriverConf, authentication: Authentication): Driver =
       new HttpDriver(driverConf, authentication)
+
+    val isConnected = driver.openSession().recover {
+      case _ =>  throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
+    }.get
+
+
   }
 
 }
