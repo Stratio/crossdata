@@ -39,7 +39,7 @@ object CoreConfig {
   val HdfsKey = "hdfs"
 
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog"
-  val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.api.DummySecurityManager"
+  val DefaultSecurityManager = "com.stratio.crossdata.security.DummySecurityManager"
   val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.persistent.ZookeeperCatalog"
   val ZookeeperStreamingClass = "org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog"
   val StreamingConfigKey = "streaming"

@@ -15,23 +15,16 @@
  */
 package org.apache.spark.sql.crossdata
 
-import java.util.Date
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
-import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.expressions.aggregate.Count
-import org.apache.spark.sql.catalyst.plans.logical.Aggregate
-import org.apache.spark.sql.catalyst.plans.logical.LeafNode
-import org.apache.spark.sql.catalyst.plans.logical.Limit
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.plans.logical.Project
-import org.apache.spark.sql.catalyst.trees.TreeNode
+import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.ExecutionType.Default
 import org.apache.spark.sql.crossdata.ExecutionType.ExecutionType
 import org.apache.spark.sql.crossdata.ExecutionType.Native
@@ -43,14 +36,10 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types.ArrayType
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
-import org.json4s.JsonAST.{JInt, JObject, JString, JValue}
-import org.json4s.jsonwritable
-import sun.reflect.generics.tree.BaseType
 
 import scala.collection.mutable.BufferLike
 import scala.collection.{GenTraversableOnce, immutable, mutable}
 import scala.collection.generic.CanBuildFrom
-import scala.util.{Failure, Success, Try}
 
 private[sql] object XDDataFrame {
 
@@ -118,18 +107,6 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
     }
     )
   }
-
-  // TODO @transient override protected[sql] val logicalPlan: LogicalPlan = SET authorized instead of analyzed
-  /*@transient protected[sql] val logicalPlan: LogicalPlan = queryExecution.logical match {
-    // For various commands (like DDL) and queries with side effects, we force query optimization to
-    // happen right away to let these side effects take place eagerly.
-    case _: Command |
-         _: InsertIntoTable |
-         _: CreateTableUsingAsSelect =>
-      LogicalRDD(queryExecution.analyzed.output, queryExecution.toRdd)(sqlContext)
-    case _ =>
-      queryExecution.analyzed
-  }*/
 
   /**
    * @inheritdoc
