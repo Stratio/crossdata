@@ -15,6 +15,7 @@
  */
 package org.apache.spark.sql.crossdata
 
+import org.apache.log4j.Logger
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans
@@ -35,6 +36,8 @@ import org.apache.spark.sql.crossdata.security.api._
   */
 class XDQueryExecution(sqlContext: SQLContext, parsedPlan: LogicalPlan) extends QueryExecution(sqlContext, parsedPlan){
 
+  lazy val logger = Logger.getLogger(classOf[XDQueryExecution])
+
   lazy val authorized: LogicalPlan = {
     assertAnalyzed()
     val xdContext = sqlContext.asInstanceOf[XDContext]
@@ -42,25 +45,18 @@ class XDQueryExecution(sqlContext: SQLContext, parsedPlan: LogicalPlan) extends 
     xdContext.securityManager.foreach { securityManager =>
 
       val userId = xdContext.conf.getConfString(XDSQLConf.UserIdPropertyKey)
-
-      val isAuthorized = resourcesAndOperations.forall { case (resource, action) =>
-        securityManager.authorize(userId, resource, action, AuditAddresses("srcIp", "dstIp"), hierarchy = false) // TODO web do it public vs sql(..., user)
+      if (resourcesAndOperations.isEmpty) {
+        logger.debug(s"LogicalPlan ${parsedPlan.treeString} does not access to any resource")
       }
-
-      if (!isAuthorized) throw new RuntimeException("Operation not ") // TODO improve message => specify resource
-      // TODO ...
-      // TODO warning and log if the seq is empty
-
-      //TODO previous audit (vs authorize logs??)
-      resourcesAndOperations.foreach { case (resource, action) =>
-        securityManager.audit(
-          AuditEvent(
-            userId,
-            resource,
-            action,
-            FailAR, //TODO failAR??
-            AuditAddresses("srcIp", "dstIp"),
-            impersonation = None)) // TODO date public?? //TODO user vs strusr // instead of fail (init) //srcIp and srcDst => sqlSec(sql, user, ips..)
+      val isAuthorized = resourcesAndOperations.forall { case (resource, action) =>
+        val isAuth = securityManager.authorize(userId, resource, action) // TODO .. vs sql(..., user)
+        if (!isAuth) {
+          logger.warn(s"Authorization rejected for user $userId: resource=$resource action=$action")
+        }
+        isAuth
+      }
+      if (!isAuthorized) {
+        throw new RuntimeException("Operation not authorized") // TODO specify the resource/action?
       }
     }
 

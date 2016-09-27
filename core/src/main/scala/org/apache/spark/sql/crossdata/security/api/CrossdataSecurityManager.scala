@@ -20,7 +20,7 @@ trait CrossdataSecurityManager {
   def start() : Unit
   def stop(): Unit
 
-  def authorize(userId: String, resource: Resource, action: Action, auditAddresses: AuditAddresses, hierarchy: Boolean): Boolean
+  def authorize(userId: String, resource: Resource, action: Action): Boolean
 
   def audit(auditEvent: AuditEvent): Unit
 
@@ -32,7 +32,7 @@ class DummyCrossdataSecurityManager extends CrossdataSecurityManager{
 
   def stop(): Unit = ()
 
-  def authorize(userId: String, resource: Resource, action: Action, auditAddresses: AuditAddresses, hierarchy: Boolean) = true
+  def authorize(userId: String, resource: Resource, action: Action) = true
 
   def audit(auditEvent: AuditEvent): Unit = ()
 }
