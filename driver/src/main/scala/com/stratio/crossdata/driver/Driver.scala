@@ -120,7 +120,7 @@ object Driver extends DriverFactory {
 
     val isConnected = driver.openSession().recover {
       case e: TLSInvalidAuthException => throw e
-      case _ =>  throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
+      case _ =>  throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout") //TODO: Bad encapsulation
     }.get
 
 

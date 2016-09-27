@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.driver
 
+import com.stratio.crossdata.common.result.SuccessfulSQLResult
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.error.TLSInvalidAuthException
 import com.stratio.crossdata.driver.test.Utils._
@@ -24,10 +25,12 @@ import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
+import scala.concurrent.duration._
+
 import scala.language.postfixOps
 
 @RunWith(classOf[JUnitRunner])
-class TLSAuthInvalidCertificateIT extends EndToEndTest {
+class TLSAuthValidCertificateIT extends EndToEndTest {
 
   val basepath = getClass.getResource("/certificates").getPath
 
@@ -48,7 +51,7 @@ class TLSAuthInvalidCertificateIT extends EndToEndTest {
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID)))
   }
 
-  "CrossdataDriver" should "return an invalid TLS authentiction error when trying to query to a TLS securized CrossdataServer from a driver with bad certificate" in {
+  "CrossdataDriver" should "return a result as usual using a valid TLS certificate from the driver" in {
 
     assumeCrossdataUpAndRunning()
 
@@ -57,16 +60,19 @@ class TLSAuthInvalidCertificateIT extends EndToEndTest {
     implicit val driverConf = Some(new DriverConf()
       .set(DriverConf.DriverConfigServerHttp, ConfigValueFactory.fromIterable(List("crossdata.com:13422") asJava))
       .set(DriverConf.AkkaHttpTLS.TlsEnable, ConfigValueFactory.fromAnyRef(true))
-      .set(DriverConf.AkkaHttpTLS.TlsKeyStore, ConfigValueFactory.fromAnyRef(s"$basepath/badclient/FakeClientKeyStore.jks"))
+      .set(DriverConf.AkkaHttpTLS.TlsKeyStore, ConfigValueFactory.fromAnyRef(s"$basepath/goodclient/ClientKeyStore.jks"))
       .set(DriverConf.AkkaHttpTLS.TlsKeystorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
       .set(DriverConf.AkkaHttpTLS.TlsTrustStore, ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"))
       .set(DriverConf.AkkaHttpTLS.TlsTrustStorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
     )
 
-    val driverTry = withDriverTry { driver => }
-
-    driverTry.isFailure should be(true)
-    a[TLSInvalidAuthException] shouldBe thrownBy(driverTry.get)
+    withDriverDo { driver =>
+      val result = driver.sql("show tables").waitForResult(10 seconds)
+      result shouldBe an[SuccessfulSQLResult]
+      result.hasError should be(false)
+      val rows = result.resultSet
+      rows should have length 0
+    }
 
   }
 

@@ -18,7 +18,7 @@ package com.stratio.crossdata.driver
 import java.io.{FileInputStream, InputStream}
 import java.security.{KeyStore, SecureRandom}
 import java.util.UUID
-import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
+import javax.net.ssl.{KeyManagerFactory, SSLContext, SSLException, TrustManagerFactory}
 
 import akka.actor.ActorRef
 import akka.cluster.ClusterEvent.CurrentClusterState
@@ -141,8 +141,8 @@ class HttpDriver private[driver](driverConf: DriverConf,
       } yield desiredResult
 
     result.recover {
-      case e: StreamTcpException if driverConf.httpTlsEnable =>
-        throw TLSInvalidAuthException("Possible invalid authentication (check if you have a valid TLS certificate configured in your driver or if your server is under a lot of requests).",e)
+      case e: SSLException if driverConf.httpTlsEnable =>
+        throw TLSInvalidAuthException("Possible invalid authentication (check if you have a valid TLS certificate configured in your driver).",e)
 
       case exception if defaultValue.isDefined =>
         logger.error(exception.getMessage, exception)
