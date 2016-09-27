@@ -23,7 +23,7 @@ import com.stratio.crossdata.driver.session.Authentication
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
-import scala.collection.JavaConverters.
+import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
