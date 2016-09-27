@@ -33,8 +33,9 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.session.{HazelcastSessionProvider, XDSessionProvider}
 import org.apache.spark.sql.types.StructType
 
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 
 object ServerActor {
@@ -169,14 +170,21 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
         mediator ! Publish(ManagementTopic, DelegateCommand(sc, self))
       }
 
-    case sc@CommandEnvelope(_: ClusterStateCommand, session, _) =>
-      val sessionCluster = if(sessionProvider.isInstanceOf[HazelcastSessionProvider]){
+    case sc@CommandEnvelope(_: ClusterStateCommand, session, _) => {
+      val sessionCluster = if (sessionProvider.isInstanceOf[HazelcastSessionProvider]) {
         Some(sessionProvider.asInstanceOf[HazelcastSessionProvider].getClusterState)
       } else {
         None
       }
 
-      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state, sessionCluster)
+      val members = sessionCluster.map(sc =>
+        sc.getMembers map { m =>
+          m.getAddress.toString
+        }
+      ).getOrElse(Set.empty[String])
+
+      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state, members)
+    }
 
     case sc@CommandEnvelope(_: OpenSessionCommand, session, _) =>
       val open = sessionProvider.newSession(session.id) match {

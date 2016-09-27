@@ -18,11 +18,11 @@ package com.stratio.crossdata.common
 import java.util.UUID
 
 import akka.cluster.ClusterEvent.CurrentClusterState
-import com.hazelcast.core.Cluster
 import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.common.security.Session
 import com.typesafe.config.Config
 
+import scala.collection._
 import scala.concurrent.duration.FiniteDuration
 
 // Driver -> Server messages
@@ -118,7 +118,7 @@ private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) ex
 private[crossdata] case class ClusterStateReply(
                                                  requestId: UUID,
                                                  clusterState: CurrentClusterState,
-                                                 sessionCluster: Option[Cluster] = None) extends ServerReply
+                                                 sessionCluster: Set[String] = Set.empty[String]) extends ServerReply
 
 private[crossdata] case class OpenSessionReply(requestId: UUID, isOpen: Boolean) extends ServerReply
 
