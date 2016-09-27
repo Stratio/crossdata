@@ -119,6 +119,7 @@ object Driver extends DriverFactory {
       new HttpDriver(driverConf, authentication)
 
     val isConnected = driver.openSession().recover {
+      case e: TLSInvalidAuthException => throw e
       case _ =>  throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
     }.get
 

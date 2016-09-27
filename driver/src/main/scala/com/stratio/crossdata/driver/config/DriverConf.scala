@@ -190,19 +190,19 @@ class DriverConf extends Logging {
   }
 
   def httpTlsEnable =
-    typesafeConf.getBoolean(DriverConf.AkkaHttpTLS.TlsEnable)
+    finalSettings.getBoolean(DriverConf.AkkaHttpTLS.TlsEnable)
 
   def httpTlsTrustStore =
-    typesafeConf.getString(DriverConf.AkkaHttpTLS.TlsTrustStore)
+    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsTrustStore)
 
   def httpTlsTrustStorePwd =
-    typesafeConf.getString(DriverConf.AkkaHttpTLS.TlsTrustStorePwd)
+    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsTrustStorePwd)
 
   def httpTlsKeyStore =
-    typesafeConf.getString(DriverConf.AkkaHttpTLS.TlsKeyStore)
+    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsKeyStore)
 
   def httpTlsKeyStorePwd =
-    typesafeConf.getString(DriverConf.AkkaHttpTLS.TlsKeystorePwd)
+    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsKeystorePwd)
 
 }
 

@@ -62,7 +62,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
   private implicit lazy val materializer: ActorMaterializer = ActorMaterializer()
   private implicit lazy val http = obtainHttpContext
   private val serverHttp = driverConf.getCrossdataServerHttp
-  private val protocol = "http" //TODO
+  private def protocol = if(driverConf.httpTlsEnable) "https" else "http"
   private val requestTimeout: Duration = Duration.Inf //TODO
 
   import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
