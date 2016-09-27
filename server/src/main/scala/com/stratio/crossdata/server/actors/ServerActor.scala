@@ -180,7 +180,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     case sc@CommandEnvelope(_: OpenSessionCommand, session, _) =>
       val open = sessionProvider.newSession(session.id) match {
         case Success(_) =>
-          logger.debug(s"new session with sessionID=${session.id} has been created")
+          logger.info(s"new session with sessionID=${session.id} has been created")
           true
         case Failure(error) =>
           logger.error(s"failure while creating the session with sessionID=${session.id}")

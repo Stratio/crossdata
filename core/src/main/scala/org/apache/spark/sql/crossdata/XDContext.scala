@@ -92,7 +92,6 @@ class XDContext protected (@transient val sc: SparkContext,
 
   catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
 
-
   override protected[sql] def executeSql(sql: String): org.apache.spark.sql.execution.QueryExecution = executePlan(parseSql(sql))
 
   override protected[sql] def executePlan(plan: LogicalPlan): sparkexecution.QueryExecution =
@@ -241,6 +240,10 @@ class XDContext protected (@transient val sc: SparkContext,
 
     val gc = new GroupConcat(", ")
     udf.register("group_concat", gc)
+    udf.register(
+      "to_number",
+      (numberStr: String) => if(numberStr contains ".") numberStr.toDouble else numberStr.toLong
+    )
   }
 
   override def sql(sqlText: String): DataFrame = {

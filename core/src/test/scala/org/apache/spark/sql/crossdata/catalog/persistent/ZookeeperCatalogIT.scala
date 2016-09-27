@@ -22,6 +22,8 @@ import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
+import CoreConfig.{CatalogClassConfigKey, ZookeeperClass}
+
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
@@ -36,7 +38,7 @@ class ZookeeperCatalogIT extends {
     ZookeeperConnection.fold(zkResourceConfig) {connectionString =>
       zkResourceConfig.flatMap(resourceConfig =>
         Option(resourceConfig.withValue(ZookeeperConnectionKey, ConfigValueFactory.fromAnyRef(connectionString))))
-    }
+    } map (_.withValue(CatalogClassConfigKey, ConfigValueFactory.fromAnyRef(ZookeeperClass)))
   }
 
 }

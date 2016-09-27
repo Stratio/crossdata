@@ -38,6 +38,7 @@ Main Crossdata's advantages over other options:
 - Creation of tables in the datastores.
 - Drop of tables from the datastores.
 - Insert with values queries as in typical SQL.
+- Service Discovery
 
 ===================
 Spark Compatibility
@@ -45,6 +46,10 @@ Spark Compatibility
 
 | Crossdata Version | Spark Version |
 |-------------------|:--------------|
+| 1.7.X	            | 1.6.X         |
+| 1.6.X	            | 1.6.X         |
+| 1.5.X	            | 1.6.X         |
+| 1.4.X	            | 1.6.X         |
 | 1.3.X	            | 1.6.X         |
 | 1.2.X             |	1.5.X         |
 | 1.1.X             |	1.5.X         |
@@ -55,7 +60,7 @@ Spark Compatibility
 Documentation
 =============
 
-For a complete documentation, please, visit https://stratio.atlassian.net/wiki/display/CROSSDATA1x3.
+For a complete documentation, please, visit https://stratio.atlassian.net/wiki/display/PLATFORM/STRATIO+CROSSDATA.
 
 ===========
 Get support
