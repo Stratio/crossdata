@@ -4,7 +4,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 ## 1.7.0 (upcoming)
 
-* Pending changelog
+* Pluggable security manager, enabling authorization and auditing
 
 ## 1.6.0 (upcoming)
 
