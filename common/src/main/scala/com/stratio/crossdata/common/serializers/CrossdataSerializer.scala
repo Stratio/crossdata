@@ -15,14 +15,16 @@
  */
 package com.stratio.crossdata.common.serializers
 
+import com.stratio.crossdata.common.serializers.akka.{AkkaClusterMemberSerializer, AkkaMemberStatusSerializer}
 import org.apache.spark.sql.crossdata.serializers.StructTypeSerializer
 import org.json4s._
 
 trait CrossdataCommonSerializer {
 
   implicit val json4sJacksonFormats: Formats =
-    DefaultFormats + SQLResultSerializer +
-      StructTypeSerializer + UUIDSerializer + CommandSerializer
+    DefaultFormats + SQLResultSerializer + UUIDSerializer +
+      StructTypeSerializer + UUIDSerializer + CommandSerializer +
+        AkkaMemberStatusSerializer + AkkaClusterMemberSerializer
 
 }
 

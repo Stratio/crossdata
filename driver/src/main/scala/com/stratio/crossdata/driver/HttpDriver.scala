@@ -135,7 +135,12 @@ class HttpDriver private[driver](driverConf: DriverConf,
   override def addAppCommand(path: String, clss: String, alias: Option[String]): SQLResponse =
     apiNotSupported("addAppCommand")
 
-  override def clusterState(): Future[CurrentClusterState] = ???
+  override def clusterState(): Future[CurrentClusterState] =
+    simpleRequest(
+      securitizeCommand(ClusterStateCommand()),
+      "query",
+      { reply: ClusterStateReply => reply.clusterState }
+    )
 
   override def closeSession(): Unit = {
     val response = Marshal(securitizeCommand(CloseSessionCommand())).to[RequestEntity] flatMap { requestEntity =>
@@ -150,9 +155,5 @@ class HttpDriver private[driver](driverConf: DriverConf,
       UUID.randomUUID(),
       Future.successful(ErrorSQLResult(s"HttpDriver does not support $command; please, use a ClusterClientDriver instead"))
     )
-
- /* val tablesURI = {
-    possible defaultValue => SQLReply(commandEnvelope.cmd.requestId, ErrorSQLResult("Failed while marshalling")) // TODO replace
-  }*/
 
 }

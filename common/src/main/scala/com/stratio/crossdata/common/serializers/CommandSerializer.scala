@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.common.serializers
 
-import com.stratio.crossdata.common.{CloseSessionCommand, Command, OpenSessionCommand, SQLCommand}
+import com.stratio.crossdata.common._
 import org.json4s._
 import CommandSerializerHelper._
 
@@ -39,7 +39,8 @@ private [serializers] object CommandSerializerHelper {
   val commandExtractor = Map[String, JValue => Command](
     "SQLCommand" -> { jSQLCommand => (jSQLCommand \ "details").extract[SQLCommand] },
     "OpenSessionCommand" -> { _.extract[OpenSessionCommand] },
-    "CloseSessionCommand" -> { _.extract[CloseSessionCommand] }
+    "CloseSessionCommand" -> { _.extract[CloseSessionCommand] },
+    "ClusterStateCommand" -> { _.extract[ClusterStateCommand] }
   )
 
   val commandSerializer: PartialFunction[Any, JValue] = {
@@ -49,6 +50,8 @@ private [serializers] object CommandSerializerHelper {
       Extraction.decompose(CommandWithName[OpenSessionCommand])
     case _: CloseSessionCommand =>
       Extraction.decompose(CommandWithName[CloseSessionCommand])
+    case _: ClusterStateCommand =>
+      Extraction.decompose(CommandWithName[ClusterStateCommand])
   }
 
 }

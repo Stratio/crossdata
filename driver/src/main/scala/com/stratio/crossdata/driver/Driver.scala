@@ -97,7 +97,8 @@ object Driver {
 
   private[crossdata] def newSession(driverConf: DriverConf, authentication: Authentication): Driver = {
     //TODO: Enable driver selection by configuration
-    val driver = new HttpDriver(driverConf, authentication) //new ClusterClientDriver(driverConf, authentication)
+    val driver = new HttpDriver(driverConf, authentication)
+    //val driver = new ClusterClientDriver(driverConf, authentication)
     val isConnected = driver.openSession().getOrElse {
       throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
     }
@@ -279,7 +280,7 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected
     * @return whether at least one member of the cluster is alive or not
     */
   def isClusterAlive(atMost: Duration = 3 seconds): Boolean =
-  Try(Await.result(serversUp(), atMost)).map(_.nonEmpty).getOrElse(false)
+    Try(Await.result(serversUp(), atMost)).map(_.nonEmpty).getOrElse(false)
 
 
   /**
