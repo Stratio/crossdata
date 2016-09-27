@@ -133,56 +133,20 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
 
   /**
    * @inheritdoc
-   */
+    */
   override def collect(): Array[Row] = {
-    // TODO sqlContext.asInstanceOf[XDContext].securityManager.authorize(logicalPlan)
     // If cache doesn't go through native
-    Try{
-      if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
-        super.collect()
+    if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
+      super.collect()
+    } else {
+      val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
+      if (nativeQueryExecutor.isEmpty) {
+        logInfo(s"Spark Query: ${queryExecution.simpleString}")
       } else {
-        val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
-        if(nativeQueryExecutor.isEmpty){
-          logInfo(s"Spark Query: ${queryExecution.simpleString}")
-        } else {
-          logInfo(s"Native query: ${queryExecution.simpleString}")
-        }
-        nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
+        logInfo(s"Native query: ${queryExecution.simpleString}")
       }
-    } match {
-      case Success(result) =>
-        // TODO asInstance???
-        /*queryExecution.asInstanceOf[XDQueryExecution].resourcesAndOperations.foreach{ case (resource, action) =>
-          xd.auditService.save(
-            AuditEvent(
-              Time(new Date()),
-              User("id", stringUser, "email", groups = None),
-              resource,
-              action,
-              Success,
-              AuditAddresses("srcIp", "dstIp"),
-              policy = None,
-              impersonation = None)) // TODO date public?? //TODO user vs strusr // instead of fail (init) //srcIp and srcDst => sqlSec(sql, user, ips..)
-        }*/
-        result
-      case Failure(error) =>
-        // TODO ...
-        /*queryExecution.asInstanceOf[XDQueryExecution].resourcesAndOperations.foreach{ case (resource, action) =>
-            xd.auditService.save(
-              AuditEvent(
-                Time(new Date()),
-                User("id", stringUser, "email", groups = None),
-                resource,
-                action,
-                Fail,
-                AuditAddresses("srcIp", "dstIp"),
-                policy = None,
-                impersonation = None)) // TODO date public?? //TODO user vs strusr // instead of fail (init) //srcIp and srcDst => sqlSec(sql, user, ips..)
-          }*/
-        throw error
+      nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
-
-
   }
 
   def flattenedCollect(): Array[Row] = {

@@ -26,7 +26,6 @@ import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTable
 import org.apache.spark.sql.execution.{datasources, _}
 import org.apache.spark.sql.crossdata.security.api._
 
-import scala.concurrent.Await
 /**
   * The primary workflow for executing relational queries using Spark.  Designed to allow easy
   * access to the intermediate phases of query execution for developers.
@@ -34,33 +33,29 @@ import scala.concurrent.Await
   * While this is not a public class, we should avoid changing the function names for the sake of
   * changing them, because a lot of developers use the feature for debugging.
   */
-class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends QueryExecution(sqlContext, logical){
-
-  override lazy val analyzed: LogicalPlan = sqlContext.analyzer.execute(logical)
+class XDQueryExecution(sqlContext: SQLContext, parsedPlan: LogicalPlan) extends QueryExecution(sqlContext, parsedPlan){
 
   lazy val authorized: LogicalPlan = {
     assertAnalyzed()
-    val isAuthorizationEnabled = true // TODO config
+    val xdContext = sqlContext.asInstanceOf[XDContext]
 
-    if (isAuthorizationEnabled){
-      val xd = new  DummyCrossdataSecurityManager{} // TODO move to sqlContext
-      xd.start() // TODO xd.stop
-      val stringUser = sqlContext.getConf("userId")
+    xdContext.securityManager.foreach { securityManager =>
 
-      val isAuthorized = resourcesAndOperations.forall{ case (resource, action) =>
-        xd.authorize(stringUser, resource, action, AuditAddresses("srcIp", "dstIp"), hierarchy = false) // TODO web do it public vs sql(..., user)
+      val userId = xdContext.conf.getConfString(XDSQLConf.UserIdPropertyKey)
+
+      val isAuthorized = resourcesAndOperations.forall { case (resource, action) =>
+        securityManager.authorize(userId, resource, action, AuditAddresses("srcIp", "dstIp"), hierarchy = false) // TODO web do it public vs sql(..., user)
       }
 
       if (!isAuthorized) throw new RuntimeException("Operation not ") // TODO improve message => specify resource
       // TODO ...
       // TODO warning and log if the seq is empty
 
-
       //TODO previous audit (vs authorize logs??)
-      resourcesAndOperations.foreach{ case (resource, action) =>
-        xd.audit(
+      resourcesAndOperations.foreach { case (resource, action) =>
+        securityManager.audit(
           AuditEvent(
-            stringUser,
+            userId,
             resource,
             action,
             FailAR, //TODO failAR??
@@ -69,18 +64,12 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
       }
     }
 
-
-
-    authorized
+    parsedPlan
   }
 
-  override lazy val withCachedData: LogicalPlan = {
-    sqlContext.cacheManager.useCachedData(authorized)
-  }
-
+  override lazy val analyzed: LogicalPlan = sqlContext.analyzer.execute(authorized)
 
   lazy val resourcesAndOperations: Seq[(Resource, Action)] = {
-    val parsedPlan = logical // TODO remove...
 
     implicit def tupleToSeq( tuple: (Resource, Action)): Seq[(Resource, Action)] = Seq(tuple)
 
@@ -209,9 +198,6 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
     // Plans should not match  InsertIntoHadoopFsRelation InsertIntoDatasource CreateTempTableUsing(and Select) Explain
 
     extResAndOps(parsedPlan)
-
   }
-
-
 
 }
