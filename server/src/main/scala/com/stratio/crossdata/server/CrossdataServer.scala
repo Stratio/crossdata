@@ -57,6 +57,121 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private val hzConfig: HzConfig = new XmlConfigBuilder().build()
 
+
+  def start(): Unit = {
+
+    val sparkParams = serverConfig.entrySet()
+      .map(e => (e.getKey, e.getValue.unwrapped().toString))
+      .toMap
+      .filterKeys(_.startsWith("config.spark"))
+      .map(e => (e._1.replace("config.", ""), e._2))
+
+    val metricsPath = Option(sparkParams.get("spark.metrics.conf"))
+
+    val filteredSparkParams = metricsPath.fold(sparkParams)(m => checkMetricsFile(sparkParams, m.get))
+
+    val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
+
+    // Get service discovery configuration
+    val sdConfig = Try(serverConfig.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
+
+    val sdHelper: Option[SDH] = sdConfig flatMap { serConfig =>
+      Try(serConfig.getBoolean("activated")).toOption collect {
+        case true =>
+          logger.info("Service discovery enabled")
+          startServiceDiscovery(new SDCH(sdConfig.get))
+      }
+    }
+
+    val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
+
+    val finalHzConfig = sdHelper.fold(hzConfig)(_.hzConfig)
+
+    sessionProviderOpt = Some {
+      if (isHazelcastEnabled)
+        new HazelcastSessionProvider(sparkContext, serverConfig, finalHzConfig)
+      else
+        new BasicSessionProvider(sparkContext, serverConfig)
+    }
+
+    val sessionProvider = sessionProviderOpt
+      .getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
+
+    assert(
+      sdHelper.nonEmpty || sessionProvider.isInstanceOf[HazelcastSessionProvider],
+      "Service Discovery needs to have the Hazelcast session provider enabled")
+
+    finalConfig.entrySet.filter{ e =>
+      e.getKey.contains("seed-nodes")
+    }.foreach{ e =>
+      logger.info(s"Seed nodes: ${e.getValue}")
+    }
+
+    system = Some(ActorSystem(clusterName, finalConfig))
+
+    system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
+
+      val xdCluster = Cluster(actorSystem)
+
+      sdHelper.map{ sd =>
+
+        // Once the Cluster has been started and the cluster leadership is gotten,
+        // this sever will update the list of cluster seeds and provider members periodically
+        // according to the Akka members.
+        import scala.concurrent.ExecutionContext.Implicits.global
+        sd.leadershipFuture onSuccess {
+          case _ =>
+            updateServiceDiscovery(xdCluster, sessionProvider.asInstanceOf[HazelcastSessionProvider], sd, actorSystem)
+        }
+      }
+
+      val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
+      val serverActor = actorSystem.actorOf(
+        RoundRobinPool(minServerActorInstances, Some(resizer)).props(
+          Props(
+            classOf[ServerActor],
+            xdCluster,
+            sessionProvider)),
+        actorName)
+
+      val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
+      ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
+
+      val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
+      ClusterClientReceptionist(actorSystem).registerService(serverActor)
+      ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
+
+      //TODO
+      /*implicit val httpSystem = actorSystem
+      implicit val materializer = ActorMaterializer()
+      val httpServerActor = new CrossdataHttpServer(finalConfig, serverActor, actorSystem)
+      val host = finalConfig.getString(ServerConfig.Host)
+      val port = finalConfig.getInt(ServerConfig.HttpServerPort)
+      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))*/
+    }
+
+    logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
+  }
+
+  /**
+    * Just for test purposes
+    */
+  def stop(): Unit = {
+    sessionProviderOpt.foreach(_.close())
+
+    sessionProviderOpt.foreach(_.sc.stop())
+
+    system.foreach { actSystem =>
+      implicit val exContext = actSystem.dispatcher
+      bindingFuture.foreach { bFuture =>
+        bFuture.flatMap(_.unbind()).onComplete(_ => actSystem.shutdown())
+      }
+    }
+
+    logger.info("Crossdata Server stopped")
+  }
+
+
   private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
     val curatorClient = CuratorFrameworkFactory.newClient(
@@ -259,100 +374,6 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     aSystem.scheduler.schedule(delay, delay)(updateSeeds(xCluster, hsp, s))
   }
 
-  def start(): Unit = {
-
-    val sparkParams = serverConfig.entrySet()
-      .map(e => (e.getKey, e.getValue.unwrapped().toString))
-      .toMap
-      .filterKeys(_.startsWith("config.spark"))
-      .map(e => (e._1.replace("config.", ""), e._2))
-
-    val metricsPath = Option(sparkParams.get("spark.metrics.conf"))
-
-    val filteredSparkParams = metricsPath.fold(sparkParams)(m => checkMetricsFile(sparkParams, m.get))
-
-    val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
-
-    // Get service discovery configuration
-    val sdConfig = Try(serverConfig.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
-
-    val sdHelper: Option[SDH] = sdConfig flatMap { serConfig =>
-      Try(serConfig.getBoolean("activated")).toOption collect {
-        case true =>
-          logger.info("Service discovery enabled")
-          startServiceDiscovery(new SDCH(sdConfig.get))
-      }
-    }
-
-    val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
-
-    val finalHzConfig = sdHelper.fold(hzConfig)(_.hzConfig)
-
-    sessionProviderOpt = Some {
-      if (isHazelcastEnabled)
-        new HazelcastSessionProvider(sparkContext, serverConfig, finalHzConfig)
-      else
-        new BasicSessionProvider(sparkContext, serverConfig)
-    }
-
-    val sessionProvider = sessionProviderOpt
-      .getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
-
-    assert(
-      sdHelper.nonEmpty || sessionProvider.isInstanceOf[HazelcastSessionProvider],
-      "Service Discovery needs to have the Hazelcast session provider enabled")
-
-    finalConfig.entrySet.filter{ e =>
-      e.getKey.contains("seed-nodes")
-    }.foreach{ e =>
-      logger.info(s"Seed nodes: ${e.getValue}")
-    }
-
-    system = Some(ActorSystem(clusterName, finalConfig))
-
-    system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
-
-      val xdCluster = Cluster(actorSystem)
-
-      sdHelper.map{ sd =>
-
-        // Once the Cluster has been started and the cluster leadership is gotten,
-        // this sever will update the list of cluster seeds and provider members periodically
-        // according to the Akka members.
-        import scala.concurrent.ExecutionContext.Implicits.global
-        sd.leadershipFuture onSuccess {
-          case _ =>
-            updateServiceDiscovery(xdCluster, sessionProvider.asInstanceOf[HazelcastSessionProvider], sd, actorSystem)
-        }
-      }
-
-      val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
-      val serverActor = actorSystem.actorOf(
-        RoundRobinPool(minServerActorInstances, Some(resizer)).props(
-          Props(
-            classOf[ServerActor],
-            xdCluster,
-            sessionProvider)),
-        actorName)
-
-      val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
-      ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
-
-      val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
-      ClusterClientReceptionist(actorSystem).registerService(serverActor)
-      ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
-
-      //TODO
-      /*implicit val httpSystem = actorSystem
-      implicit val materializer = ActorMaterializer()
-      val httpServerActor = new CrossdataHttpServer(finalConfig, serverActor, actorSystem)
-      val host = finalConfig.getString(ServerConfig.Host)
-      val port = finalConfig.getInt(ServerConfig.HttpServerPort)
-      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))*/
-    }
-
-    logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
-  }
 
   def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
     val metricsFile = new File(metricsPath)
@@ -362,24 +383,6 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     } else {
       params
     }
-  }
-
-  /**
-    * Just for test purposes
-    */
-  def stop(): Unit = {
-    sessionProviderOpt.foreach(_.close())
-
-    sessionProviderOpt.foreach(_.sc.stop())
-
-    system.foreach { actSystem =>
-      implicit val exContext = actSystem.dispatcher
-      bindingFuture.foreach { bFuture =>
-        bFuture.flatMap(_.unbind()).onComplete(_ => actSystem.shutdown())
-      }
-    }
-
-    logger.info("Crossdata Server stopped")
   }
 
 }

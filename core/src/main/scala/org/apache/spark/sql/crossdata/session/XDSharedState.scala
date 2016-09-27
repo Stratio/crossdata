@@ -18,6 +18,7 @@ package org.apache.spark.sql.crossdata.session
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDStreamingCatalog}
+import org.apache.spark.sql.crossdata.security.api.CrossdataSecurityManager
 
 
 
@@ -25,5 +26,6 @@ final class XDSharedState(
                            @transient val sc: SparkContext,
                            val sqlConf: SQLConf,
                            val externalCatalog: XDCatalogCommon,
-                           val streamingCatalog: Option[XDStreamingCatalog]
+                           val streamingCatalog: Option[XDStreamingCatalog],
+                           @transient val securityManager: Option[CrossdataSecurityManager]
                          )

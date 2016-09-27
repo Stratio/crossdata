@@ -169,8 +169,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     case sc@CommandEnvelope(_: ClusterStateCommand, session, _) =>
       sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
 
-    case sc@CommandEnvelope(_: OpenSessionCommand, session, _) =>
-      val open = sessionProvider.newSession(session.id) match {
+    case sc@CommandEnvelope(_: OpenSessionCommand, session, userId) =>
+      val open = sessionProvider.newSession(session.id, userId) match {
         case Success(_) =>
           logger.info(s"new session with sessionID=${session.id} has been created")
           true

@@ -17,14 +17,16 @@ package org.apache.spark.sql.crossdata
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
+import org.apache.spark.sql.catalyst.plans
 import org.apache.spark.sql.catalyst.plans.logical.{DescribeFunction, InsertIntoTable, LogicalPlan}
 import org.apache.spark.sql.crossdata.catalyst.execution.{AddApp, AddJar, CreateExternalTable, CreateGlobalIndex, CreateTempView, CreateView, DropAllTables, DropExternalTable, DropTable, DropView, ExecuteApp, ImportTablesUsingWithOptions, InsertIntoTable => XDInsertIntoTable}
 import org.apache.spark.sql.crossdata.catalyst.streaming._
 import org.apache.spark.sql.crossdata.security.auth.ResourceType._
 import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTableUsingAsSelect, CreateTempTableUsing, RefreshTable}
-import org.apache.spark.sql.execution._
-
+import org.apache.spark.sql.execution.{datasources, _}
 import org.apache.spark.sql.crossdata.security.api._
+
+import scala.concurrent.Await
 /**
   * The primary workflow for executing relational queries using Spark.  Designed to allow easy
   * access to the intermediate phases of query execution for developers.
@@ -162,15 +164,16 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
     }
 
     def metadataPlanToResourcesAndOps: PartialFunction[LogicalPlan,Seq[(Resource, Action)]] = {
-      case DescribeFunction(functionName, _) => (Resource( Seq("instances"), FunctionResource.toString, functionName), View) // TODO
       case ShowTablesCommand(databaseOpt) => (Resource.wildCardAll, View) // TODO tablesAll // database??
-      case _: DescribeCommand => Seq.empty
-      case _: ExplainCommand => Seq.empty
-      case showFunctions: ShowFunctions => Seq.empty // TODO
+      case datasources.DescribeCommand(table, isExtended) => table.collect {
+        case UnresolvedRelation(tableIdentifier, _) => (Resource( Seq("instances"), TableResource.toString, tableIdentifier.unquotedString), Read)
+      }
+      case plans.logical.DescribeFunction(functionName, _) => Seq.empty // TODO audit
+      case showFunctions: plans.logical.ShowFunctions => Seq.empty // TODO audit
     }
 
     def setConfigPlanToResourcesAndOps: PartialFunction[LogicalPlan,Seq[(Resource, Action)]] = {
-      case setCommand: SetCommand => Seq.empty // TODO authorize config
+      case setCommand: SetCommand => Seq.empty // TODO audit instead of authorize
     }
 
     def cachePlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
@@ -203,7 +206,7 @@ class XDQueryExecution(sqlContext: SQLContext, logical: LogicalPlan) extends Que
         cachePlanToResourcesAndOps orElse
         setConfigPlanToResourcesAndOps orElse
         queryPlanToResourcesAndOps
-    // Plans should not match  InsertIntoHadoopFsRelation InsertIntoDatasource CreateTempTableUsing(and Select)
+    // Plans should not match  InsertIntoHadoopFsRelation InsertIntoDatasource CreateTempTableUsing(and Select) Explain
 
     extResAndOps(parsedPlan)
 

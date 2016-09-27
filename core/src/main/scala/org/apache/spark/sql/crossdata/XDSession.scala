@@ -15,12 +15,18 @@
  */
 package org.apache.spark.sql.crossdata
 
+import java.lang.reflect.Constructor
+
 import com.typesafe.config.Config
 import org.apache.spark.Logging
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
+
+import org.apache.spark.sql.crossdata.security.api.CrossdataSecurityManager
 import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
+
+import scala.util.Try
 
 
 object XDSession{
@@ -46,11 +52,13 @@ class XDSession(
   override protected[sql] lazy val catalog: XDCatalog = {
     val catalogs: Seq[XDCatalogCommon] = (xdSessionState.temporaryCatalogs :+ xdSharedState.externalCatalog) ++ xdSharedState.streamingCatalog.toSeq
     CatalogChain(catalogs: _*)(this)
-
   }
 
   @transient
   override protected[sql] lazy val conf: SQLConf = xdSessionState.sqlConf.enableCacheInvalidation(false)
+
+  @transient
+  override protected[crossdata] lazy val securityManager: Option[CrossdataSecurityManager] = xdSharedState.securityManager
 
   xdSessionState.sqlConf.enableCacheInvalidation(true)
 

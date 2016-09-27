@@ -15,6 +15,8 @@
  */
 package org.apache.spark.sql.crossdata.session
 
+import java.lang.reflect.Constructor
+
 import com.hazelcast.config.{XmlConfigBuilder, Config => HzConfig}
 import com.hazelcast.core.Hazelcast
 import com.stratio.crossdata.util.CacheInvalidator
@@ -27,6 +29,7 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, X
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.config.CoreConfig._
+import org.apache.spark.sql.crossdata.security.api.CrossdataSecurityManager
 import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
 
 import scala.util.{Failure, Success, Try}
@@ -45,7 +48,7 @@ object HazelcastSessionProvider {
 class HazelcastSessionProvider( sc: SparkContext,
                                 userConfig: Config,
                                 hzConfig: HzConfig = new XmlConfigBuilder().build()
-                                ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig { // TODO CoreConfig should not be a trait
+                                ) extends XDSessionProvider(sc, userConfig) with CoreConfig { // TODO CoreConfig should not be a trait
 
   import HazelcastSessionProvider._
 
@@ -74,7 +77,7 @@ class HazelcastSessionProvider( sc: SparkContext,
   @transient
   protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(sqlConf, config)
 
-  private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
+  private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog, securityManager)
 
   protected val hInstance = Hazelcast.newHazelcastInstance(hzConfig)
 
@@ -89,9 +92,11 @@ class HazelcastSessionProvider( sc: SparkContext,
 
   def gelLocalMember = hInstance.getCluster.getLocalMember
 
-  override def newSession(sessionID: SessionID): Try[XDSession] =
+  override def newSession(sessionID: SessionID, userId: String): Try[XDSession] =
     Try {
       val tempCatalogs = sessionIDToTempCatalogs.newResource(sessionID)
+      // Add the user to the shared map
+      sharedState.sqlConf.setConfString(XDSQLConf.UserIdPropertyKey, userId)
       val config = sessionIDToSQLProps.newResource(sessionID, Some(sharedState.sqlConf))
 
       val session = buildSession(sessionID, config, tempCatalogs)
@@ -123,6 +128,7 @@ class HazelcastSessionProvider( sc: SparkContext,
 
 
   override def close(): Unit = {
+    super.close()
     hInstance.shutdown()
   }
 

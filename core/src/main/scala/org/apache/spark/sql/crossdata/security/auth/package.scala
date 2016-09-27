@@ -20,7 +20,7 @@ package object auth {
 
   object ResourceType extends Enumeration {
     type ResourceType = Value
-    val FunctionResource, TableResource = Value
+    val TableResource = Value
   }
 
   object Action extends Enumeration {

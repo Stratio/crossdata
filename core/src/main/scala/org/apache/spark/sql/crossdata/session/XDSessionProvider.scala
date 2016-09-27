@@ -15,6 +15,7 @@
  */
 package org.apache.spark.sql.crossdata.session
 
+import java.lang.reflect.Constructor
 import java.util.UUID
 
 import com.typesafe.config.{Config, ConfigFactory}
@@ -27,6 +28,7 @@ import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.config.CoreConfig._
+import org.apache.spark.sql.crossdata.security.api.CrossdataSecurityManager
 
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
@@ -39,16 +41,18 @@ object XDSessionProvider {
 // TODO sessionProvider should be threadSafe
 abstract class XDSessionProvider(
                                   @transient val sc: SparkContext,
-                                  protected val commonConfig: Option[Config] = None
+                                  protected val commonConfig: Config
                                   ) {
 
   import XDSessionProvider._
 
 
+  lazy val logger = Logger.getLogger(getClass)
+
   //NOTE: DO NEVER KEEP THE RETURNED REFERENCE FOR SEVERAL USES!
   def session(sessionID: SessionID): Try[XDSession]
 
-  def newSession(sessionID: SessionID): Try[XDSession]
+  def newSession(sessionID: SessionID, userId: String): Try[XDSession]
 
   def closeSession(sessionID: SessionID): Try[Unit]
 
@@ -58,7 +62,28 @@ abstract class XDSessionProvider(
     * It is called when the crossdata server is stopped, so if a session provider needs to open an external connection
     * it should be closed here.
     */
-  def close(): Unit
+  def close(): Unit = {
+    securityManager.foreach{ secManager =>
+      secManager.stop()
+    }
+  }
+
+
+  @transient
+  protected lazy val securityManager: Option[CrossdataSecurityManager] = {
+    val securityManager = Try(commonConfig.getString(SecurityClassConfigKey)).map{ securityManagerClassName =>
+      val securityManagerClass = Class.forName(securityManagerClassName)
+      val constr: Constructor[_] = securityManagerClass.getConstructor()
+      val secManager = constr.newInstance().asInstanceOf[CrossdataSecurityManager]
+      secManager.start()
+      secManager
+    } toOption
+
+    if (securityManager.isEmpty){
+      logger.warn("Authorization is not enabled, configure a security manager if needed")
+    }
+    securityManager
+  }
 
 }
 
@@ -68,7 +93,7 @@ abstract class XDSessionProvider(
 class BasicSessionProvider(
                              @transient override val sc: SparkContext,
                              userConfig: Config
-                           ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig {
+                           ) extends XDSessionProvider(sc,userConfig) with CoreConfig {
 
   import XDSessionProvider._
 
@@ -84,7 +109,7 @@ class BasicSessionProvider(
   @transient
   protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(sqlConf, config)
 
-  private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
+  private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog, securityManager)
 
   private val sessionIDToSQLProps: mutable.Map[SessionID, SQLConf] = mutable.Map.empty
   private val sessionIDToTempCatalog: mutable.Map[SessionID, XDTemporaryCatalog] = mutable.Map.empty
@@ -93,8 +118,11 @@ class BasicSessionProvider(
   private val errorMessage =
     "A distributed context must be used to manage XDServer sessions. Please, use SparkSessions instead"
 
-  override def newSession(sessionID: SessionID): Try[XDSession] =
+  override def newSession(sessionID: SessionID, userId: String): Try[XDSession] =
     Try {
+
+      sharedState.sqlConf.setConfString(XDSQLConf.UserIdPropertyKey, userId)
+
       val tempCatalog = new HashmapCatalog(sqlConf)
 
       sessionIDToTempCatalog.put(sessionID, tempCatalog)
@@ -127,6 +155,7 @@ class BasicSessionProvider(
   }
 
   override def close(): Unit = {
+    super.close()
     sessionIDToSQLProps.clear
     sessionIDToTempCatalog.clear
   }
