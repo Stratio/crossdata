@@ -26,7 +26,7 @@ private [serializers] object CommandSerializerHelper {
   case class CommandWithName[T <: Command : ClassTag](command: String, details: Option[T] = None)
 
   object CommandWithName {
-    def apply[T <: Command : ClassTag](details: Option[T]): CommandWithName[T] =
+    private def apply[T <: Command : ClassTag](details: Option[T]): CommandWithName[T] =
       CommandWithName(implicitly[ClassTag[T]].toString.split('.').last, details)
     def apply[T <: Command : ClassTag](details: T): CommandWithName[T] =
       CommandWithName(Some(details))
