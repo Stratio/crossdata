@@ -42,19 +42,53 @@ import scala.util.Try
  * =======================================================================================
  */
 
+trait DriverFactory {
+
+  private[driver] lazy val defaultDriverConf = new DriverConf
+
+  protected def newDriver(driverConf: DriverConf, authentication: Authentication): Driver
+
+  protected[driver] def generateDefaultAuth = Authentication("crossdata", Some("stratio"))
+
+  protected [driver] val InitializationTimeout: Duration = 10 seconds
+
+  /*def newSession(driverConf: DriverConf = defaultDriverConf): Driver =
+    newSession(driverConf, Driver.generateDefaultAuth)*/
+
+  def newSession(user: String, password: String): Driver =
+    newSession(defaultDriverConf, Authentication(user, Option(password)))
+
+  def newSession(user: String, password: String, driverConf: DriverConf): Driver =
+    newSession(driverConf, Authentication(user, Option(password)))
+
+  def newSession(seedNodes: java.util.List[String]): Driver =
+    newSession(defaultDriverConf.setClusterContactPoint(seedNodes))
+
+  def newSession(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
+    newSession(driverConf.setClusterContactPoint(seedNodes))
+
+  def newSession(
+                  driverConf: DriverConf  = defaultDriverConf,
+                  authentication: Authentication = generateDefaultAuth): Driver = {
+    val driver = newDriver(driverConf, authentication)
+    val isConnected = driver.openSession().getOrElse {
+      throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
+    }
+    if (!isConnected) {
+      throw new RuntimeException(s"The server has rejected the open session request")
+    }
+    driver
+  }
+
+}
+
 // TODO It should be moved to a new package (version 2.0)
-object Driver {
+object Driver extends DriverFactory {
 
   /**
     * Tuple (tableName, Optional(databaseName))
     */
   type TableIdentifier = (String, Option[String])
-
-  private[driver] def generateDefaultAuth = Authentication("crossdata", Some("stratio"))
-
-  private[driver] lazy val defaultDriverConf = new DriverConf
-
-  private[driver] val InitializationTimeout: Duration = 10 seconds
 
   /**
     * TODO 2.0 improve implementation (avoiding explicit shutdown as a consequence)
@@ -76,43 +110,13 @@ object Driver {
     }
   }))
 
+  override protected def newDriver(driverConf: DriverConf, authentication: Authentication): Driver =
+    new ClusterClientDriver(driverConf, authentication)
 
-  // Factory for TCP drivers
-  def newSession(): Driver = newSession(defaultDriverConf)
-
-  def newSession(driverConf: DriverConf): Driver =
-    newSession(driverConf, Driver.generateDefaultAuth)
-
-  def newSession(user: String, password: String): Driver =
-    newSession(user, password, defaultDriverConf)
-
-  def newSession(user: String, password: String, driverConf: DriverConf): Driver =
-    newSession(driverConf, Authentication(user, Option(password)))
-
-  def newSession(seedNodes: java.util.List[String]): Driver =
-    newSession(seedNodes, defaultDriverConf)
-
-  def newSession(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
-    newSession(driverConf.setClusterContactPoint(seedNodes))
-
-  private[crossdata] def newSession(driverConf: DriverConf, authentication: Authentication): Driver = {
-    //TODO: Enable driver selection by configuration
-    val driver = new HttpDriver(driverConf, authentication)
-    //val driver = new ClusterClientDriver(driverConf, authentication)
-    val isConnected = driver.openSession().getOrElse {
-      throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
-    }
-    if (!isConnected) {
-      throw new RuntimeException(s"The server has rejected the open session request")
-    }
-    driver
+  object http extends DriverFactory {
+    override protected def newDriver(driverConf: DriverConf, authentication: Authentication): Driver =
+      new HttpDriver(driverConf, authentication)
   }
-
-
-  // TODO Factory for HTTP driver (as the tcp factory above)
-  def newHTTPSession(): Driver = newHTTPSession(defaultDriverConf, Driver.generateDefaultAuth)
-
-  private[crossdata] def newHTTPSession(driverConf: DriverConf, authentication: Authentication): Driver = ???
 
 }
 

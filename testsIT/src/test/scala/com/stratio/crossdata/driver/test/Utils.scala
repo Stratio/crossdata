@@ -23,7 +23,8 @@ object Utils extends BaseXDTest{
 
   def withDriverDo(block: Driver => Unit)(implicit optConfig: Option[DriverConf] = None): Unit = {
 
-    val driver = optConfig.map(Driver.newSession).getOrElse(Driver.newSession())
+    val driver = optConfig.map(Driver.newSession(_)).getOrElse(Driver.newSession())
+    //add http Driver.http.newSession
     try {
       block(driver)
     } finally {
