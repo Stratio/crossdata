@@ -53,24 +53,25 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   // TODO filter temporaryCatalogs => add new API to catalog
   private[auth] def createPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
+
     case CreateTableUsing(tableIdent, _, provider, isTemporary, _, _, _) if !isTemporary =>
-      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write)
+      (catalogResource, Write)
 
     case CreateView(viewIdentifier, selectPlan, _) =>
       selectPlan.collect {
         case UnresolvedRelation(tableIdentifier, _) => (Resource(crossdataInstances, TableResource, tableResource(tableIdentifier)), Read)
-      } :+ (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write)
+      } :+ (catalogResource, Write)
 
     case ImportTablesUsingWithOptions(datasource, _) =>
-      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write)
+      (catalogResource, Write)
 
     case _: CreateExternalTable =>
-      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write)
+      (catalogResource, Write)
 
     case CreateTableUsingAsSelect(tableIdent, _, isTemporary, _, _, _, selectPlan) if !isTemporary =>
       selectPlan.collect {
         case UnresolvedRelation(tableIdentifier, _) => (Resource(crossdataInstances, TableResource, tableResource(tableIdentifier)), Read)
-      } :+ (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write)
+      } :+ (catalogResource, Write)
 
     case CreateTableUsingAsSelect(tableIdent, _, isTemporary, _, _, _, selectPlan) if isTemporary =>
       selectPlan.collect {
@@ -104,19 +105,19 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   private[auth] def dropPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
     case DropTable(tableIdentifier) =>
-      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write) :+
+      (catalogResource, Write) :+
         (Resource(crossdataInstances, TableResource, tableResource(tableIdentifier)), Drop)
 
     case DropView(viewIdentifier) =>
-      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write) :+
+      (catalogResource, Write) :+
         (Resource(crossdataInstances, TableResource, tableResource(viewIdentifier)), Drop)
 
     case DropExternalTable(tableIdentifier) =>
-      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write) :+
+      (catalogResource, Write) :+
         (Resource(crossdataInstances, TableResource, tableResource(tableIdentifier)), Drop)
 
     case DropAllTables =>
-      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write) :+
+      (catalogResource, Write) :+
         (Resource(crossdataInstances, TableResource, allTableResource), Drop)
 
   }
@@ -147,7 +148,7 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   private[auth] def metadataPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
     case ShowTablesCommand(databaseOpt) =>
-      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Describe)
+      (catalogResource, Describe)
 
     case LogicalDescribeCommand(table, isExtended) => table.collect {
       case UnresolvedRelation(tableIdentifier, _) => (Resource(crossdataInstances, TableResource, tableResource(tableIdentifier)), Describe)
@@ -196,6 +197,8 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   private[auth] lazy val allTableResource: String = strTableResource(Resource.AllResourceName)
 
   private[auth] def tableResource(tableIdentifier: TableIdentifier): String = strTableResource(tableIdentifier.unquotedString)
+
+  private[auth] def catalogResource = Resource(crossdataInstances, CatalogResource, catalogIdentifier)
 
   private[auth] def strTableResource(tableName: String): String = // TODO remove Spark 2.0 (required for Uncache plans)
     Seq(catalogIdentifier, tableName) mkString "."
