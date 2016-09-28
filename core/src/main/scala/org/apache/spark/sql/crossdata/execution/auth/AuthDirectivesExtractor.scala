@@ -27,8 +27,8 @@ import org.apache.spark.sql.crossdata.execution.XDQueryExecution
 import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTableUsingAsSelect, RefreshTable, DescribeCommand => LogicalDescribeCommand}
 
-
-class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier: String) {
+// TODO tempTables should be an argument of extractResourcesAndActions
+class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier: String, tempTables: Seq[String]) {
 
   private lazy val logger = Logger.getLogger(classOf[XDQueryExecution])
 
@@ -47,10 +47,8 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
 
   // TODO Plans should not match  InsertIntoHadoopFsRelation InsertIntoDatasource Explain CreateTableUsing if isTemporary
 
-
   implicit def tupleToSeq(tuple: (Resource, Action)): Seq[(Resource, Action)] = Seq(tuple)
 
-  // TODO filter temporaryCatalogs => add new API to catalog
   private[auth] def createPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
     case CreateTableUsing(tableIdent, _, provider, isTemporary, _, _, _) if !isTemporary =>
@@ -171,7 +169,8 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   }
 
   private[auth] def collectTableResources(parsedPlan: LogicalPlan) = parsedPlan.collect {
-    case UnresolvedRelation(tableIdentifier, _) => tableResource(tableIdentifier)
+    // TODO filter temporaryCatalogs
+    case UnresolvedRelation(tableIdentifier, _) if !tempTables.contains(tableIdentifier.unquotedString) => tableResource(tableIdentifier)
   }
 
   private[auth] def catalogResource = Resource(crossdataInstances, CatalogResource, catalogIdentifier)
