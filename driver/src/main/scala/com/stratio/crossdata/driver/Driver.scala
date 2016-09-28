@@ -82,7 +82,9 @@ object Driver {
     * WARNING! It should be called once all active sessions have been closed. After the shutdown, new session cannot be created.
     */
   def shutdown(): Unit = {
-      if (!system.isTerminated) system.shutdown()
+    system.whenTerminated onFailure {
+      case _ => system.terminate
+    }
   }
 
   private[crossdata] def newSession(driverConf: DriverConf, authentication: Authentication): Driver = {
@@ -100,7 +102,9 @@ object Driver {
 
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
     def run() {
-      if (!system.isTerminated) system.shutdown()
+      system.whenTerminated onFailure {
+        case _ => system.terminate
+      }
     }
   }))
 
@@ -352,7 +356,7 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
     */
   def clusterState(): Future[CurrentClusterState] = {
     val promise = Promise[ServerReply]()
-    proxyActor !(securitizeCommand(ClusterStateCommand()), promise)
+    proxyActor ! (securitizeCommand(ClusterStateCommand()), promise)
     promise.future.mapTo[ClusterStateReply].map(_.clusterState)
   }
 
