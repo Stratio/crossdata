@@ -28,7 +28,8 @@ import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.junit.JUnitRunner
 import org.apache.spark.sql.crossdata.authorizer.SecurityManagerTestConstants._
-import scala.util.Try
+
+import scala.util.{Random, Try}
 
 @RunWith(classOf[JUnitRunner])
 class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
@@ -36,6 +37,17 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
   var _sparkContext: SparkContext = _
 
   val simplePersistentTable = "simpletable"
+
+  "CrossdataSecurityManager" should "not authorize an unknown user" in {
+    val userRandom = Random.nextString(8)
+    val sessionWithSMallowingAnyResource = createNewBasicProvider(classOf[SMAllowingAnyResource].getName).newSession(UUID.randomUUID(), userRandom).get
+    val df: DataFrame = sessionWithSMallowingAnyResource.createDataFrame(sessionWithSMallowingAnyResource.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
+
+    the [Exception] thrownBy {
+      df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$simplePersistentTable").saveAsTable(simplePersistentTable)
+    } should have message "Operation not authorized"
+
+  }
 
   "A SMAllowingAnyResource" should "authorize any plan requiring authorization" in {
 
@@ -68,6 +80,28 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
 
   }
 
+  it should "execute plans which do not need authorization" in {
+
+    val sessionWithSMDenyingAnyResource = createNewBasicProvider(classOf[SMDenyingAnyResource].getName).newSession(UUID.randomUUID(), XDUser).get
+
+    Try {
+      val df = sessionWithSMDenyingAnyResource.createDataFrame(sessionWithSMDenyingAnyResource.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
+      df.registerTempTable("Records")
+    }.isSuccess shouldBe true
+
+    Try (
+      sessionWithSMDenyingAnyResource.sql("SELECT * FROM Records").collect()
+    ).isSuccess shouldBe true
+
+    Try (
+      sessionWithSMDenyingAnyResource.sql("CREATE TEMPORARY VIEW db.myrecords AS SELECT * FROM Records").collect()
+    ).isSuccess shouldBe true
+
+    Try ( // TODO should be rejected?
+      sessionWithSMDenyingAnyResource.sql(s"CREATE TEMPORARY TABLE MYRECORDS USING json OPTIONS (path '/tmp/${UUID.randomUUID()}') AS SELECT * FROM db.myrecords").collect()
+    ).isSuccess shouldBe true
+  }
+
   "A SMAllowingWriteCatalog" should "accept catalog writes and reject select statements" in {
 
     val sessionWithSMallowingWriteCatalog = createNewBasicProvider(classOf[SMAllowingWriteCatalog].getName).newSession(UUID.randomUUID(), XDUser).get
@@ -83,37 +117,6 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
     } should have message "Operation not authorized"
 
   }
-  // TODO test user, instances and catalog
-
-
-
-  // TODO authorize temporary plans, logicalRDD, etc... tables (with db, caseSensitive...), etc...
-  /*  it must "return a XDDataFrame when executing a SQL query" in {
-
-      val xdSession = createNewDefaultSession
-
-      val df: DataFrame = xdSession.createDataFrame(xdSession.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
-      df.registerTempTable("records")
-
-      val dataframe = xdSession.sql("SELECT * FROM records")
-      dataframe shouldBe a[XDDataFrame]
-    }
-
-
-    it must "plan a PersistDataSource when creating a table " in {
-
-      val xdSession = createNewDefaultSession
-
-      val dataframe = xdSession.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/core-reference.conf").toURI()).toString}')")
-      val sparkPlan = dataframe.queryExecution.sparkPlan
-      xdSession.catalog.dropTable(TableIdentifier("jsonTable", None))
-      sparkPlan should matchPattern { case ExecutedCommand(_: PersistDataSourceTable) => }
-
-    }
-
-
-    */
-
 
   override protected def beforeAll(): Unit = {
     _sparkContext = new SparkContext(
@@ -129,7 +132,12 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
 
   private def createNewBasicProvider(securityManagerClass: String = CoreConfig.DefaultSecurityManager): XDSessionProvider = {
     val securityManagerConfigString = s"${CoreConfig.SecurityClassConfigKey}=$securityManagerClass"
-    new BasicSessionProvider(_sparkContext, ConfigFactory.parseString(securityManagerConfigString))
+    val catalogIdentifierConfigString = s"${CoreConfig.CatalogPrefixConfigKey}=${SecurityManagerTestConstants.CatalogIdentifier}"
+
+    val config = ConfigFactory.parseString(securityManagerConfigString).withFallback{
+      ConfigFactory.parseString(catalogIdentifierConfigString)
+    }
+    new BasicSessionProvider(_sparkContext, config)
   }
 
 }

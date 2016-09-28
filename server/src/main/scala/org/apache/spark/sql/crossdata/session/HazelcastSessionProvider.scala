@@ -99,7 +99,7 @@ class HazelcastSessionProvider( sc: SparkContext,
       sharedState.sqlConf.setConfString(XDSQLConf.UserIdPropertyKey, userId)
       val config = sessionIDToSQLProps.newResource(sessionID, Some(sharedState.sqlConf))
 
-      val session = buildSession(sessionID, config, tempCatalogs)
+      val session = buildSession(sessionID, config, tempCatalogs, Some(userConfig))
       sessionsCache += sessionID -> session
 
       session
@@ -136,9 +136,10 @@ class HazelcastSessionProvider( sc: SparkContext,
   private def buildSession(
                             sessionID: SessionID,
                             sqlConf: XDSQLConf,
-                            xDTemporaryCatalogs: Seq[XDTemporaryCatalog]): XDSession = {
+                            xDTemporaryCatalogs: Seq[XDTemporaryCatalog],
+                            coreConfig: Option[Config] = None): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalogs)
-    new XDSession(sharedState, sessionState)
+    new XDSession(sharedState, sessionState, coreConfig)
   }
 
 }
