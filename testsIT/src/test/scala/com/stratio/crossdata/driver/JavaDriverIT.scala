@@ -57,7 +57,7 @@ class JavaDriverIT extends EndToEndTest{
       )
 
       javaDriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
-    } (Some(new DriverConf().setFlattenTables(true)))
+    } (new DriverConf().setFlattenTables(true))
 
 
   }

@@ -15,16 +15,25 @@
  */
 package com.stratio.crossdata.driver.test
 
-import com.stratio.crossdata.driver.{Driver, JavaDriver}
+import com.stratio.crossdata.driver.{Driver, DriverFactory, JavaDriver}
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.test.BaseXDTest
 
 object Utils extends BaseXDTest{
 
-  def withDriverDo(block: Driver => Unit)(implicit optConfig: Option[DriverConf] = None): Unit = {
+  case class DriverTestContext(driverFactory: DriverFactory, optConfig: Option[DriverConf] = None)
 
-    val driver = optConfig.map(Driver.newSession(_)).getOrElse(Driver.newSession())
-    //add http Driver.http.newSession
+  implicit def config2context(config: DriverConf): DriverTestContext =
+    DriverTestContext(Driver, Some(config))
+
+  def withDriverDo(block: Driver => Unit)(
+    implicit driverCtx: DriverTestContext = DriverTestContext(Driver)
+  ): Unit = {
+
+    import driverCtx._
+
+    val driver = optConfig.map(driverFactory.newSession(_)).getOrElse(driverFactory.newSession())
+
     try {
       block(driver)
     } finally {
@@ -32,13 +41,19 @@ object Utils extends BaseXDTest{
     }
   }
 
-  def withJavaDriverDo(block: JavaDriver => Unit)(implicit optConfig: Option[DriverConf] = None): Unit = {
+  def withJavaDriverDo(block: JavaDriver => Unit)(
+    implicit driverCtx: DriverTestContext = DriverTestContext(Driver)
+  ): Unit = {
+
+    import driverCtx._
 
     val driver = optConfig.map(driverConf => new JavaDriver(driverConf)).getOrElse(new JavaDriver())
+
     try {
       block(driver)
     } finally {
       driver.closeSession()
     }
   }
+
 }
