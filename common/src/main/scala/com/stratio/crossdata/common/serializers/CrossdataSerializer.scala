@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.serializers
+package com.stratio.crossdata.common.serializers
 
-import java.util.UUID
 
-import com.stratio.crossdata.common.{Command, SQLCommand}
+import _root_.akka.cluster.Member
+
+import com.stratio.crossdata.common.serializers.akka.{AkkaClusterMemberSerializer, AkkaMemberStatusSerializer}
+import org.apache.spark.sql.crossdata.serializers.StructTypeSerializer
 import org.json4s._
-import org.json4s.ext.UUIDSerializer
 
-object CommandSerializer extends CustomSerializer[Command](
-  format => (
-    {
-      case jsqlCommand @ JObject(JField("sql", _)::JField("queryId", _)::JField("flattenResults", _)::_) =>
-        implicit val _ = DefaultFormats + UUIDSerializer
-        jsqlCommand.extract[SQLCommand] //TODO: Test
-    },
-    {
-      case command: SQLCommand => Extraction.decompose(command)(DefaultFormats + UUIDSerializer)
-    }
-    )
-)
+trait CrossdataCommonSerializer {
+
+  implicit val json4sJacksonFormats: Formats =
+    DefaultFormats + SQLResultSerializer + UUIDSerializer +
+      StructTypeSerializer + UUIDSerializer + CommandSerializer +
+        AkkaMemberStatusSerializer + AkkaClusterMemberSerializer + new SortedSetSerializer[Member]()
+
+}
+

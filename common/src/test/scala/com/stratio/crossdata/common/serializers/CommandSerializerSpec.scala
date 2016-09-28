@@ -13,18 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.serializers
+package com.stratio.crossdata.common.serializers
 
-import com.stratio.crossdata.common.{Command, SQLCommand}
-import org.apache.spark.sql.crossdata.serializers.XDSerializationTest.TestCase
+import com.stratio.crossdata.common.serializers.XDSerializationTest.TestCase
+import com.stratio.crossdata.common._
 import org.json4s.Formats
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class CommandSerializerSpec extends XDSerializationTest[Command] with CrossdataCommonSerializer {
   
   override implicit val formats: Formats = json4sJacksonFormats
 
   override def testCases: Seq[TestCase] = Seq(
-    TestCase("marshall & unmarshall a SQLCommand", SQLCommand("select * from highschool"))
+    TestCase("marshall & unmarshall a SQLCommand", SQLCommand("select * from highschool")),
+    TestCase("marshall & unmarshall an OpenSessionCommand", OpenSessionCommand()),
+    TestCase("marshall & unmarshall an CloseSessionCommand", CloseSessionCommand())
   )
 
 }

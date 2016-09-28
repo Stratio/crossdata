@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.serializers
+package com.stratio.crossdata.common.serializers
 
 import java.sql.Timestamp
 
@@ -23,11 +23,10 @@ import org.apache.spark.sql.types._
 import org.json4s.JsonAST.{JNumber, JObject}
 import org.json4s.JsonDSL._
 import org.json4s._
-import org.apache.spark.sql.catalyst.util.{DateTimeUtils,
-  ArrayBasedMapData => ArrayBasedMapDataNotDeprecated,
-  MapData => MapDataNotDeprecated,
-  ArrayData => ArrayDataNotDeprecated
-}
+import org.apache.spark.sql.catalyst.util.{DateTimeUtils, ArrayBasedMapData => ArrayBasedMapDataNotDeprecated, ArrayData => ArrayDataNotDeprecated, MapData => MapDataNotDeprecated}
+import org.apache.spark.sql.crossdata.serializers.StructTypeSerializer
+
+import scala.collection.mutable
 
 case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
 
@@ -59,7 +58,7 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (BooleanType, JBool(v)) => v
       case (udt: UserDefinedType[_], jobj) => extractField(udt.sqlType -> jobj)
       case (ArrayType(ty, _), JArray(arr)) =>
-        new GenericArrayData(arr.map(extractField(ty, _)).toArray)
+        mutable.WrappedArray make arr.map(extractField(ty, _)).toArray
       /* Maps will be serialized as sub-objects so keys are constrained to be strings */
       case (MapType(StringType, vt, _), JObject(fields)) =>
         val (keys, values) = fields.unzip
@@ -102,7 +101,11 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (DateType, v: Int) => JString(DateTimeUtils.toJavaDate(v).toString)
       case (DateType, v: java.sql.Date) => JString(v.toString)
       case (udt: UserDefinedType[_], v) => serializeField(udt.sqlType -> v)
-      case (ArrayType(ty, _), v: ArrayDataNotDeprecated) => JArray(v.array.toList.map(v => Extraction.decompose(v)))
+      case (ArrayType(ty, _), v) =>
+        v match {
+          case v: ArrayDataNotDeprecated => JArray(v.array.toList.map(v => Extraction.decompose(v)))
+          case v: mutable.WrappedArray[_] => JArray(v.toList.map(v => Extraction.decompose(v)))
+        }
       case (MapType(StringType, vt, _), v: MapDataNotDeprecated) =>
         /* Maps will be serialized as sub-objects so keys are constrained to be strings */
         val serKeys = v.keyArray().array.map(v => v.toString)

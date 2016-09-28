@@ -26,33 +26,51 @@ import akka.stream.ActorMaterializer
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.config.DriverConf
-import com.stratio.crossdata.driver.session.Authentication
+import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
 import org.slf4j.{Logger, LoggerFactory}
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
-import com.stratio.crossdata.common.{OpenSessionCommand, OpenSessionReply, SQLReply}
+import com.stratio.crossdata.common._
+import com.stratio.crossdata.common.serializers.CrossdataCommonSerializer
+import com.stratio.crossdata.driver.actor.HttpSessionBeaconActor
+import org.json4s.jackson
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.Try
+import scala.util.{Success, Try}
+
 
 class HttpDriver private[driver](driverConf: DriverConf,
-                                 auth: Authentication) extends Driver(driverConf, auth) {
+                                 auth: Authentication
+                                ) extends Driver(driverConf, auth) with CrossdataCommonSerializer {
 
   import Driver._
 
   lazy val logger: Logger = LoggerFactory.getLogger(classOf[HttpDriver])
 
-  lazy val driverSession: Session = ???
+  override lazy val driverSession: Session = SessionManager.createSession(auth)
 
-  private var sessionBeacon: Option[ActorRef] = ???
+  private var sessionBeacon: Option[ActorRef] = None
 
   private implicit lazy val _ = system
   private implicit lazy val materializer: ActorMaterializer = ActorMaterializer()
-  private lazy val http = Http(system)
+  private implicit lazy val http = Http(system)
   private val serverHttp = driverConf.getCrossdataServerHttp
   private val protocol = "http" //TODO
+  private val requestTimeout: Duration = Duration.Inf //TODO
+
+  import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
+  implicit val serialization = jackson.Serialization
+
+
+  private lazy val sessionBeaconProps = HttpSessionBeaconActor.props(
+    driverSession.id,
+    5 seconds, /* This ins't configurable since it's simpler for the user
+                  to play just with alert period time at server side. */
+    s"$protocol://$serverHttp/sessions"
+  )
 
 
   private def simpleRequest[A, E, R](
@@ -62,7 +80,6 @@ class HttpDriver private[driver](driverConf: DriverConf,
                                       defaultValue: Option[R] = None,
                                       httpMethod: HttpMethod = POST
                                     )(implicit m: Marshaller[A, RequestEntity], u: Unmarshaller[ResponseEntity, E]): Future[R] = {
-
 
     val result =
       for {
@@ -80,22 +97,37 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
   }
 
-  protected[driver] def openSession(): Try[Boolean] = ???
-  /*{
+  protected[driver] def openSession(): Try[Boolean] = {
 
-    val result = simpleRequest(
+    val response = simpleRequest(
       securitizeCommand(OpenSessionCommand()),
-      "openSession",
-      (opSessionReply: OpenSessionReply) => opSessionReply.isOpen
+      "query",
+      { reply: OpenSessionReply => reply.isOpen }
     )
 
-    Try {
-      // TODO onComplete // remove try
-      Await.result(result, InitializationTimeout)
-    }
+    val res = Try(Await.result(response, InitializationTimeout))
+    if(res.getOrElse(false)) sessionBeacon = Some(system.actorOf(sessionBeaconProps))
+    res
+
   }
-*/
-  override def sql(query: String): SQLResponse = ???
+
+
+  override def sql(query: String): SQLResponse = {
+
+    val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
+
+    val response = simpleRequest(
+      securitizeCommand(sqlCommand),
+      "query",
+      {
+        case SQLReply(_, result: SQLResult) =>
+          result
+      } : PartialFunction[SQLReply, SQLResult]
+    )
+
+    SQLResponse(sqlCommand.requestId, response) //TODO: Cancellable
+
+  }
 
   override def addJar(path: String, toClassPath: Option[Boolean] = None): SQLResponse =
     apiNotSupported("addJar")
@@ -103,22 +135,25 @@ class HttpDriver private[driver](driverConf: DriverConf,
   override def addAppCommand(path: String, clss: String, alias: Option[String]): SQLResponse =
     apiNotSupported("addAppCommand")
 
-  override def clusterState(): Future[CurrentClusterState] = ???
+  override def clusterState(): Future[CurrentClusterState] =
+    simpleRequest(
+      securitizeCommand(ClusterStateCommand()),
+      "query",
+      { reply: ClusterStateReply => reply.clusterState }
+    )
 
-  override def closeSession(): Unit = ???
-  /*{
-  proxyActor ! securitizeCommand(CloseSessionCommand())
-  sessionBeacon.foreach(system.stop)
-}*/
+  override def closeSession(): Unit = {
+    val response = Marshal(securitizeCommand(CloseSessionCommand())).to[RequestEntity] flatMap { requestEntity =>
+      http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/query", entity = requestEntity))
+    }
+    Await.ready(response, requestTimeout)
+    sessionBeacon.foreach(system.stop)
+  }
 
   private def apiNotSupported(command: String): SQLResponse =
     new SQLResponse(
       UUID.randomUUID(),
       Future.successful(ErrorSQLResult(s"HttpDriver does not support $command; please, use a ClusterClientDriver instead"))
     )
-
- /* val tablesURI = {
-    possible defaultValue => SQLReply(commandEnvelope.cmd.requestId, ErrorSQLResult("Failed while marshalling")) // TODO replace
-  }*/
 
 }

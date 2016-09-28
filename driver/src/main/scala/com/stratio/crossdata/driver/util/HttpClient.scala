@@ -19,14 +19,13 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, _}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Source}
 import com.stratio.crossdata.common.security.Session
+import com.stratio.crossdata.common.serializers.CrossdataCommonSerializer
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.util.HttpClient.HttpClientContext
-import org.apache.spark.sql.crossdata.serializers.CrossdataCommonSerializer
 import org.json4s.jackson
 
 import scala.concurrent.ExecutionContext.Implicits.global

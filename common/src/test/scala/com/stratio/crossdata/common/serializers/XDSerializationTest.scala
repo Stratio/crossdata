@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.serializers
+package com.stratio.crossdata.common.serializers
 
 import com.stratio.crossdata.test.BaseXDTest
 import org.json4s.jackson.JsonMethods._
@@ -38,10 +38,10 @@ abstract class XDSerializationTest[T : ClassTag : Manifest] extends BaseXDTest {
   testCases foreach {
     case TestCase(description, obj) =>
 
-    s"A $classTag serializer" should description in {
+    s"A ${classTag.toString().split('.').last} serializer" should description in {
 
       val serialized = compact(render(Extraction.decompose(obj)))
-      val extracted = parse(serialized).extract[T]
+      val extracted = parse(serialized, false).extract[T]
 
       extracted shouldEqual obj
 

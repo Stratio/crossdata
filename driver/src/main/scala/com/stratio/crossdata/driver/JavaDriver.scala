@@ -27,19 +27,19 @@ import scala.concurrent.duration.Duration
 
 class JavaDriver private(driverConf: DriverConf,
                          auth: Authentication,
-                         isHttp: Boolean) {
+                         driverFactory: DriverFactory = Driver) {
 
   def this(driverConf: DriverConf) =
-    this(driverConf, Driver.generateDefaultAuth, isHttp = false)
+    this(driverConf, Driver.generateDefaultAuth)
 
   def this() = this(new DriverConf)
 
   def this(user: String, password: String, driverConf: DriverConf) =
-    this(driverConf, Authentication(user, Option(password)), isHttp = false)
+    this(driverConf, Authentication(user, Option(password)))
 
 
   def this(user: String, driverConf: DriverConf) =
-    this(driverConf, Authentication(user), isHttp = false)
+    this(driverConf, Authentication(user))
 
 
   def this(user: String, password: String) =
@@ -56,13 +56,7 @@ class JavaDriver private(driverConf: DriverConf,
 
   private lazy val logger = LoggerFactory.getLogger(classOf[JavaDriver])
 
-  private val scalaDriver = {
-    if (isHttp) {
-      Driver.newHTTPSession(driverConf, auth)
-    } else {
-      Driver.newSession(driverConf, auth)
-    }
-  }
+  private val scalaDriver = driverFactory.newSession(driverConf, auth)
 
 
   /**

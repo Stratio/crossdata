@@ -37,9 +37,7 @@ class DriverIT extends EndToEndTest {
 
       val result = driver.sql("select select").waitForResult(10 seconds)
       result shouldBe an[ErrorSQLResult]
-      result.asInstanceOf[ErrorSQLResult].cause.isDefined shouldBe (true)
-      result.asInstanceOf[ErrorSQLResult].cause.get shouldBe a[Exception]
-      result.asInstanceOf[ErrorSQLResult].cause.get.getMessage should include regex "cannot resolve .*"
+      result.asInstanceOf[ErrorSQLResult].message should include regex "cannot resolve .*"
     }
   }
 
