@@ -107,7 +107,7 @@ class JavaDriver private(driverConf: DriverConf,
     scalaDriver.isClusterAlive()
 
   /**
-    * Get a list of the nodes forming the Crossdata cluster.
+    * Gets a list of the nodes forming the Crossdata cluster.
     *
     * @since 1.7
     * @return list of addresses of servers running.
@@ -115,7 +115,7 @@ class JavaDriver private(driverConf: DriverConf,
   def serversUp(): java.util.List[Address]  = Await.result(scalaDriver.serversUp(), 10 seconds).asJava
 
   /**
-    * Get a list of the nodes forming the session provider.
+    * Gets a list of the nodes forming the session provider.
     *
     * @since 1.7
     * @return list of host:port of nodes providing the Crossdata sessions.

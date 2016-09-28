@@ -376,10 +376,10 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   }
 
   /**
-    * Gets the current services forming the session provider.
+    * Gets a list of the nodes forming the session provider.
     *
     * @since 1.7
-    * @return Current snapshot state of the cluster.
+    * @return list of host:port of nodes providing the Crossdata sessions.
     */
   def sessionProviderState(): Future[Seq[String]] = {
     val promise = Promise[ServerReply]()
