@@ -86,7 +86,7 @@ class DriverIT extends EndToEndTest {
 
       val addresses = Await.result(driver.serversUp(), 6 seconds)
 
-      addresses should have length 1
+      addresses should have size 1
       addresses.head.host shouldBe Some("127.0.0.1")
     }
   }
