@@ -102,9 +102,6 @@ object Driver {
 
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
     def run() {
-
-      import scala.concurrent.ExecutionContext.Implicits.global
-
       system.whenTerminated onFailure {
         case _ => system.terminate
       }

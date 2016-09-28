@@ -171,17 +171,13 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       }
 
     case sc@CommandEnvelope(_: ClusterStateCommand, session, _) => {
-      val sessionCluster = if (sessionProvider.isInstanceOf[HazelcastSessionProvider]) {
-        Some(sessionProvider.asInstanceOf[HazelcastSessionProvider].getClusterState)
-      } else {
-        None
-      }
-
-      val members = sessionCluster.map(sc =>
-        sc.getMembers map { m =>
+      val members = if (sessionProvider.isInstanceOf[HazelcastSessionProvider]) {
+        sessionProvider.asInstanceOf[HazelcastSessionProvider].getClusterState.getMembers map { m =>
           m.getAddress.toString
         }
-      ).getOrElse(Set.empty[String])
+      } else {
+        Set.empty[String]
+      }
 
       sender ! ClusterStateReply(sc.cmd.requestId, cluster.state, members)
     }
