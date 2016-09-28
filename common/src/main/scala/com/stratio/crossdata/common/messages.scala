@@ -115,6 +115,13 @@ private[crossdata] case class QueryCancelledReply(requestId: UUID) extends Serve
 
 private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
 
+/**
+  * This class encapsulates the information about the state of the Crossdata cluster.
+  *
+  * @param requestId Identifier of the request (query or command launched by the user).
+  * @param clusterState Information about the Akka cluster.
+  * @param sessionCluster Set of nodes sharing the sessions data. Format: [host]:port. Example: [127.0.0.1]:5701.
+  */
 private[crossdata] case class ClusterStateReply(
                                                  requestId: UUID,
                                                  clusterState: CurrentClusterState,
