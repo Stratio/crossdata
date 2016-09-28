@@ -125,7 +125,7 @@ private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) ex
 private[crossdata] case class ClusterStateReply(
                                                  requestId: UUID,
                                                  clusterState: CurrentClusterState,
-                                                 sessionCluster: Seq[String] = Seq.empty[String]) extends ServerReply
+                                                 sessionCluster: Set[String] = Set.empty[String]) extends ServerReply
 
 private[crossdata] case class OpenSessionReply(requestId: UUID, isOpen: Boolean) extends ServerReply
 

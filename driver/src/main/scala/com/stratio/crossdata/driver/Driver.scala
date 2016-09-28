@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Awaitable, Future, Promise}
+import scala.concurrent.{Await, Future, Promise}
 import scala.language.postfixOps
 import scala.reflect.io.File
 import scala.util.Try
@@ -295,7 +295,7 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
 
   /**
-    * Gets a list of tables from a database or all if the database is None
+    * Returns a list of tables from a database or all if the database is None
     *
     * @param databaseName The database name
     * @return A sequence of tables an its database
@@ -317,7 +317,7 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   }
 
   /**
-    * Gets the metadata from a specific table.
+    * Returns the metadata from a specific table.
     *
     * @param database  Database of the table.
     * @param tableName The name of the table.
@@ -347,41 +347,40 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
   def show(query: String) = sql(query).waitForResult().prettyResult.foreach(println)
 
-
   /**
-    * Gets the server/cluster state.
+    * Returns the server/cluster state
     *
     * @since 1.3
-    * @return Current snapshot state of the cluster.
+    * @return Current snapshot state of the cluster
     */
-  def clusterState(): Future[CurrentClusterState] = {
+  private[driver] def clusterState(): Future[CurrentClusterState] = {
     val promise = Promise[ServerReply]()
     proxyActor ! (securitizeCommand(ClusterStateCommand()), promise)
     promise.future.mapTo[ClusterStateReply].map(_.clusterState)
   }
 
   /**
-    * Gets the addresses of servers up and running.
+    * Returns the addresses of servers up and running
     *
     * @since 1.3
-    * @return A sequence with members of the cluster ready to serve requests.
+    * @return A sequence with members of the cluster ready to serve requests
     */
-  def serversUp(): Future[Seq[Address]] = {
+  private[driver] def serversUp(): Future[Set[Address]] = {
     import collection.JavaConverters._
-    clusterState map { cState =>
+    clusterState() map { cState =>
       cState.getMembers.asScala.collect {
         case member if member.status == MemberStatus.Up => member.address
-      }.toSeq
+      }.toSet
     }
   }
 
   /**
-    * Gets a list of the nodes forming the session provider.
+    * Returns a list of the nodes forming the session provider
     *
     * @since 1.7
-    * @return list of host:port of nodes providing the Crossdata sessions.
+    * @return list of host:port of nodes providing the Crossdata sessions
     */
-  def sessionProviderState(): Future[Seq[String]] = {
+  private[driver] def sessionProviderState(): Future[scala.collection.Set[String]] = {
     val promise = Promise[ServerReply]()
     proxyActor ! (securitizeCommand(ClusterStateCommand()), promise)
     promise.future.mapTo[ClusterStateReply].map(_.sessionCluster)
