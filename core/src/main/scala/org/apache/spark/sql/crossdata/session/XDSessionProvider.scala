@@ -128,7 +128,7 @@ class BasicSessionProvider(
       sessionIDToTempCatalog.put(sessionID, tempCatalog)
       sessionIDToSQLProps.put(sessionID, sharedState.sqlConf)
 
-      buildSession(sharedState.sqlConf, tempCatalog)
+      buildSession(sharedState.sqlConf, tempCatalog, Some(userConfig))
     }
 
   override def closeSession(sessionID: SessionID): Try[Unit] =
@@ -160,8 +160,8 @@ class BasicSessionProvider(
     sessionIDToTempCatalog.clear
   }
 
-  private def buildSession(sqlConf: XDSQLConf, xDTemporaryCatalog: XDTemporaryCatalog): XDSession = {
+  private def buildSession(sqlConf: XDSQLConf, xDTemporaryCatalog: XDTemporaryCatalog, userConfig: Option[Config] = None): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalog :: Nil)
-    new XDSession(sharedState, sessionState)
+    new XDSession(sharedState, sessionState, userConfig)
   }
 }

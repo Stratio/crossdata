@@ -67,6 +67,7 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
       collectTableResources(selectPlan).map((_, Read)) :+ (catalogResource, Write)
 
     case CreateTableUsingAsSelect(tableIdent, _, isTemporary, _, _, _, selectPlan) if isTemporary =>
+      // TODO operation not authorized??
       collectTableResources(selectPlan).map((_, Read))
 
     case CreateTempView(viewIdentifier, selectPlan, _) =>

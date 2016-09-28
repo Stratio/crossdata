@@ -40,7 +40,7 @@ class XDSession(
                  @transient private val xdSessionState: XDSessionState,
                  @transient private val userConfig: Option[Config] = None
                  )
-  extends XDContext(xdSharedState.sc) with Logging {
+  extends XDContext(xdSharedState.sc, userConfig) with Logging {
 
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {
