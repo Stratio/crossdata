@@ -15,19 +15,19 @@
  */
 package org.apache.spark.sql.crossdata.session
 
+import com.hazelcast.config.{XmlConfigBuilder, Config => HzConfig}
 import com.hazelcast.core.Hazelcast
 import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
-import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
-import XDSessionProvider.SessionID
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.config.CoreConfig._
+import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
 
 import scala.util.{Failure, Success, Try}
 
@@ -43,7 +43,8 @@ object HazelcastSessionProvider {
 }
 
 class HazelcastSessionProvider( sc: SparkContext,
-                                userConfig: Config
+                                userConfig: Config,
+                                hzConfig: HzConfig = new XmlConfigBuilder().build()
                                 ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig { // TODO CoreConfig should not be a trait
 
   import HazelcastSessionProvider._
@@ -73,11 +74,9 @@ class HazelcastSessionProvider( sc: SparkContext,
   @transient
   protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(sqlConf, config)
 
-
-
   private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
 
-  protected val hInstance = Hazelcast.newHazelcastInstance()
+  protected val hInstance = Hazelcast.newHazelcastInstance(hzConfig)
 
   protected val sessionIDToSQLProps = new HazelcastSessionConfigManager(hInstance, sessionsCacheInvalidator)
   protected val sessionIDToTempCatalogs = new HazelcastSessionCatalogManager(
@@ -85,6 +84,12 @@ class HazelcastSessionProvider( sc: SparkContext,
     sharedState.sqlConf,
     sessionsCacheInvalidator
   )
+
+  def getHzMembers = hInstance.getCluster.getMembers
+
+  def gelLocalMember = hInstance.getCluster.getLocalMember
+
+  def getClusterState = hInstance.getCluster
 
   override def newSession(sessionID: SessionID): Try[XDSession] =
     Try {

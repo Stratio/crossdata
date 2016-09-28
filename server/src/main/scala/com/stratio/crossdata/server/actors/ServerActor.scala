@@ -30,9 +30,10 @@ import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJo
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.session.XDSessionProvider
+import org.apache.spark.sql.crossdata.session.{HazelcastSessionProvider, XDSessionProvider}
 import org.apache.spark.sql.types.StructType
 
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
@@ -117,7 +118,10 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
         case Failure(error) =>
           logger.warn(s"Received message with an unknown sessionId $id", error)
-          sender ! ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+          sender ! SQLReply(
+            sqlCommand.requestId,
+            ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+          )
       }
 
 
@@ -171,13 +175,22 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
         mediator ! Publish(ManagementTopic, DelegateCommand(sc.copy(session = Session(id, requesterOpt)), self))
       }
 
-    case sc@CommandEnvelope(_: ClusterStateCommand, session, _) =>
-      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
+    case sc@CommandEnvelope(_: ClusterStateCommand, session, _) => {
+      val members = if (sessionProvider.isInstanceOf[HazelcastSessionProvider]) {
+        sessionProvider.asInstanceOf[HazelcastSessionProvider].getClusterState.getMembers map { m =>
+          m.getAddress.toString
+        }
+      } else {
+        Set.empty[String]
+      }
+
+      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state, members)
+    }
 
     case sc@CommandEnvelope(_: OpenSessionCommand, session, _) =>
       val open = sessionProvider.newSession(session.id) match {
         case Success(_) =>
-          logger.debug(s"new session with sessionID=${session.id} has been created")
+          logger.info(s"new session with sessionID=${session.id} has been created")
           true
         case Failure(error) =>
           logger.error(s"failure while creating the session with sessionID=${session.id}")

@@ -130,7 +130,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: ClusterClientDriver) exte
             case reply @ QueryCancelledReply(id) =>
               logger.info(s"Query $id cancelled")
               p.success(reply)
-            case reply @ ClusterStateReply(_, clusterState) =>
+            case reply @ ClusterStateReply(_, clusterState, _) =>
               logger.debug(s"Cluster snapshot received $clusterState")
               p.success(reply)
             case reply @ OpenSessionReply(_, isOpen) =>

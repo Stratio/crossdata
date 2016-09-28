@@ -23,7 +23,7 @@
     <parent>
         <artifactId>parent_2.11</artifactId>
         <groupId>com.stratio.crossdata</groupId>
-        <version>1.6.0-SNAPSHOT</version>
+        <version>1.7.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>crossdata-server_2.11</artifactId>
@@ -31,10 +31,6 @@
     <name>Server</name>
     <description>Crossdata Server</description>
     <url>http://stratio.github.io/crossdata/</url>
-
-    <properties>
-        <hazelcast.version>3.6.3</hazelcast.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -112,6 +108,16 @@
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
             <version>${hazelcast.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-client</artifactId>
+            <version>${curator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-discovery</artifactId>
+            <version>${curator.version}</version>
         </dependency>
         <!-- TESTS -->
         <dependency>

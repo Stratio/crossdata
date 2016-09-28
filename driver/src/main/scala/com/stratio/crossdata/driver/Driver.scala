@@ -95,6 +95,9 @@ object Driver {
   def newSession(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
     newSession(driverConf.setClusterContactPoint(seedNodes))
 
+    system.whenTerminated onFailure {
+      case _ => system.terminate
+    }
   private[crossdata] def newSession(driverConf: DriverConf, authentication: Authentication): Driver = {
     val driver = new ClusterClientDriver(driverConf, authentication)
     val isConnected = driver.openSession().getOrElse {
@@ -105,7 +108,6 @@ object Driver {
     }
     driver
   }
-
 
   // TODO Factory for HTTP driver (as the tcp factory above)
   def newHTTPSession(): Driver = newHTTPSession(defaultDriverConf, Driver.generateDefaultAuth)

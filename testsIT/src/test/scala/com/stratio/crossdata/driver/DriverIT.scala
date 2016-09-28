@@ -74,8 +74,6 @@ class DriverIT extends EndToEndTest {
     }
   }
 
-
-
   it should "indicates that the cluster is alive when there is a server up" in {
     withDriverDo { driver =>
 
