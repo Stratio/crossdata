@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.security
 
+import org.apache.log4j.Logger
+
 trait CrossdataSecurityManager {
 
   def start() : Unit
@@ -28,11 +30,18 @@ trait CrossdataSecurityManager {
 
 class DummyCrossdataSecurityManager extends CrossdataSecurityManager{
 
-  def start() : Unit = ()
+  private val logger = Logger.getLogger(classOf[DummyCrossdataSecurityManager])
+
+  def start() : Unit = {
+    logger.info("Dummy XDSM started")
+  }
 
   def stop(): Unit = ()
 
-  def authorize(userId: String, resource: Resource, action: Action) = true
+  def authorize(userId: String, resource: Resource, action: Action) = {
+    logger.info(s"user=$userId request authorization to perform the action=$action to the resource $resource")
+    true
+  }
 
   def audit(auditEvent: AuditEvent): Unit = ()
 }

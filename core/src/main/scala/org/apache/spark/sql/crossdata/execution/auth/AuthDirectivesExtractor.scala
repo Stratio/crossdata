@@ -170,7 +170,9 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
 
   private[auth] def collectTableResources(parsedPlan: LogicalPlan) = parsedPlan.collect {
     // TODO filter temporaryCatalogs
-    case UnresolvedRelation(tableIdentifier, _) if !tempTables.contains(tableIdentifier.unquotedString) => tableResource(tableIdentifier)
+    case UnresolvedRelation(tableIdentifier, _) if !tempTables.contains(tableIdentifier.unquotedString) =>
+      tableResource(tableIdentifier)
+
   }
 
   private[auth] def catalogResource = Resource(crossdataInstances, CatalogResource, catalogIdentifier)
