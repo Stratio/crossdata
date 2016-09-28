@@ -19,6 +19,7 @@ import java.util.UUID
 
 import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.ConfigFactory
+import org.apache.spark.sql.crossdata.XDSQLConf
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, XDSessionProvider}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -38,7 +39,7 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
 
   val simplePersistentTable = "simpletable"
 
-  "CrossdataSecurityManager" should "not authorize an unknown user" in {
+  "CrossdataSecurityManager" should "reject an unknown user" in {
     val userRandom = Random.nextString(8)
     val sessionWithSMallowingAnyResource = createNewBasicProvider(classOf[SMAllowingAnyResource].getName).newSession(UUID.randomUUID(), userRandom).get
     val df: DataFrame = sessionWithSMallowingAnyResource.createDataFrame(sessionWithSMallowingAnyResource.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
@@ -48,6 +49,27 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
     } should have message "Operation not authorized"
 
   }
+
+  it should "reject streaming plans" in {
+
+    val sessionWithSMallowingAnyResource = createNewBasicProvider(classOf[SMAllowingAnyResource].getName).newSession(UUID.randomUUID(), XDUser).get
+
+    val exception = the [Exception] thrownBy sessionWithSMallowingAnyResource.sql("START PROCESS")
+    exception.getMessage should include ("not authorized")
+  }
+
+  it should "reject set user plans" in {
+
+    val sessionWithSMallowingAnyResource = createNewBasicProvider(classOf[SMAllowingAnyResource].getName).newSession(UUID.randomUUID(), XDUser).get
+
+    Try(
+      sessionWithSMallowingAnyResource.sql("SET a=b")
+    ).isSuccess shouldBe true
+
+    val exception = the [Exception] thrownBy sessionWithSMallowingAnyResource.sql(s"SET ${XDSQLConf.UserIdPropertyKey}=newUser")
+    exception.getMessage should include ("not authorized")
+  }
+
 
   "A SMAllowingAnyResource" should "authorize any plan requiring authorization" in {
 
