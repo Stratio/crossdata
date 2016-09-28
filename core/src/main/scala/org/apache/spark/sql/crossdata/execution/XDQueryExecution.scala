@@ -35,7 +35,7 @@ class XDQueryExecution(sqlContext: SQLContext, parsedPlan: LogicalPlan, catalogI
   lazy val logger = Logger.getLogger(classOf[XDQueryExecution])
 
   lazy val authorized: LogicalPlan = {
-    assertAnalyzed()
+    // TODO assertAnalyzed() execute sqlContext.analyzer.execute(authorized) twice??
     val xdContext = sqlContext.asInstanceOf[XDContext]
 
     xdContext.securityManager.foreach { securityManager =>
