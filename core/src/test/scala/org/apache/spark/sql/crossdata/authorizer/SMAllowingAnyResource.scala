@@ -15,15 +15,11 @@
  */
 package org.apache.spark.sql.crossdata.authorizer
 
-import com.stratio.crossdata.security.{Action, AuditEvent, CrossdataSecurityManager, Resource}
+import com.stratio.crossdata.security.{Action, Resource}
 
-class SMAllowingAnyResource extends CrossdataSecurityManager{
+class SMAllowingAnyResource extends BaseSecurityManagerTest{
 
-  def start() : Unit = ()
+  override def authorize(userId: String, resource: Resource, action: Action): Boolean =
+    super.authorize(userId, resource, action)
 
-  def stop(): Unit = ()
-
-  def authorize(userId: String, resource: Resource, action: Action): Boolean = true
-
-  def audit(auditEvent: AuditEvent): Unit = ()
 }

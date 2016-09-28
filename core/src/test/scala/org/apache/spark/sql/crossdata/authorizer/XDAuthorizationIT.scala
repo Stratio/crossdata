@@ -27,21 +27,20 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.junit.JUnitRunner
-
-import scala.util.{Success, Try}
+import org.apache.spark.sql.crossdata.authorizer.SecurityManagerTestConstants._
+import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
 class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
 
   var _sparkContext: SparkContext = _
-  val XDUser = "mstr"
+
   val simplePersistentTable = "simpletable"
 
   "A SMAllowingAnyResource" should "authorize any plan requiring authorization" in {
 
     val sessionWithSMallowingAnyResource = createNewBasicProvider(classOf[SMAllowingAnyResource].getName).newSession(UUID.randomUUID(), XDUser).get
     val df: DataFrame = sessionWithSMallowingAnyResource.createDataFrame(sessionWithSMallowingAnyResource.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
-
 
     Try (
       df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$simplePersistentTable").saveAsTable(simplePersistentTable)
@@ -50,7 +49,6 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
     Try (
     sessionWithSMallowingAnyResource.sql(s"SELECT * FROM $simplePersistentTable").collect()
     ).isSuccess shouldBe true
-
   }
 
 
