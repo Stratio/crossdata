@@ -176,10 +176,10 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
           m.getAddress.toString
         }
       } else {
-        Set.empty[String]
+        Seq.empty[String]
       }
 
-      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state, members)
+      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state, members.toSeq)
     }
 
     case sc@CommandEnvelope(_: OpenSessionCommand, session, _) =>

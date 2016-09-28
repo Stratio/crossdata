@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.{Await, Awaitable, Future, Promise}
 import scala.language.postfixOps
 import scala.reflect.io.File
 import scala.util.Try
@@ -349,10 +349,10 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
 
 
   /**
-    * Gets the server/cluster state
+    * Gets the server/cluster state.
     *
     * @since 1.3
-    * @return Current snapshot state of the cluster
+    * @return Current snapshot state of the cluster.
     */
   def clusterState(): Future[CurrentClusterState] = {
     val promise = Promise[ServerReply]()
@@ -361,18 +361,30 @@ class Driver private(private[crossdata] val driverConf: DriverConf,
   }
 
   /**
-    * Gets the addresses of servers up and running
+    * Gets the addresses of servers up and running.
     *
     * @since 1.3
-    * @return A sequence with members of the cluster ready to serve requests
+    * @return A sequence with members of the cluster ready to serve requests.
     */
   def serversUp(): Future[Seq[Address]] = {
     import collection.JavaConverters._
-    clusterState().map { cState =>
+    clusterState map { cState =>
       cState.getMembers.asScala.collect {
         case member if member.status == MemberStatus.Up => member.address
       }.toSeq
     }
+  }
+
+  /**
+    * Gets the current services forming the session provider.
+    *
+    * @since 1.7
+    * @return Current snapshot state of the cluster.
+    */
+  def sessionProviderState(): Future[Seq[String]] = {
+    val promise = Promise[ServerReply]()
+    proxyActor ! (securitizeCommand(ClusterStateCommand()), promise)
+    promise.future.mapTo[ClusterStateReply].map(_.sessionCluster)
   }
 
   /**
