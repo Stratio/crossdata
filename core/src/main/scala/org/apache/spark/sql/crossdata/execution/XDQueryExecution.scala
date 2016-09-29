@@ -24,11 +24,7 @@ import org.apache.spark.sql.crossdata.{XDContext, XDSQLConf}
 import org.apache.spark.sql.execution._
 
 /**
-  * The primary workflow for executing relational queries using Spark.  Designed to allow easy
-  * access to the intermediate phases of query execution for developers.
-  *
-  * While this is not a public class, we should avoid changing the function names for the sake of
-  * changing them, because a lot of developers use the feature for debugging.
+  * @inheritdoc
   */
 class XDQueryExecution(sqlContext: SQLContext, parsedPlan: LogicalPlan, catalogIdentifier: String) extends QueryExecution(sqlContext, parsedPlan){
 
