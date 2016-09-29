@@ -38,7 +38,7 @@ class TLSAuthValidCertificateIT extends EndToEndTest {
 
     val tlsConfig = ConfigFactory.empty
       .withValue(ServerConfig.AkkaHttpTLS.TlsEnable, ConfigValueFactory.fromAnyRef(true))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsHost, ConfigValueFactory.fromAnyRef("crossdata.com"))
+      .withValue(ServerConfig.AkkaHttpTLS.TlsHost, ConfigValueFactory.fromAnyRef("localhost"))
       .withValue(ServerConfig.AkkaHttpTLS.TlsPort, ConfigValueFactory.fromAnyRef(13422))
       .withValue(ServerConfig.AkkaHttpTLS.TlsTrustStore, ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"))
       .withValue(ServerConfig.AkkaHttpTLS.TlsTrustStorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
@@ -58,7 +58,7 @@ class TLSAuthValidCertificateIT extends EndToEndTest {
     import scala.collection.JavaConverters._
 
     val setting = Some(new DriverConf()
-      .set(DriverConf.DriverConfigServerHttp, ConfigValueFactory.fromIterable(List("crossdata.com:13422") asJava))
+      .set(DriverConf.DriverConfigServerHttp, ConfigValueFactory.fromIterable(List("localhost:13422") asJava))
       .set(DriverConf.AkkaHttpTLS.TlsEnable, ConfigValueFactory.fromAnyRef(true))
       .set(DriverConf.AkkaHttpTLS.TlsKeyStore, ConfigValueFactory.fromAnyRef(s"$basepath/goodclient/ClientKeyStore.jks"))
       .set(DriverConf.AkkaHttpTLS.TlsKeystorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
