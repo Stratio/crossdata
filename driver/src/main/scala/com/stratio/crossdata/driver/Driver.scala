@@ -72,12 +72,12 @@ trait DriverFactory {
                   driverConf: DriverConf  = defaultDriverConf,
                   authentication: Authentication = generateDefaultAuth): Driver = {
     val driver = newDriver(driverConf, authentication)
-    val isConnected = driver.openSession().getOrElse {
-      throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout")
-    }
-    if (!isConnected) {
-      throw new RuntimeException(s"The server has rejected the open session request")
-    }
+
+    driver.openSession().recover {
+      case e: TLSInvalidAuthException => throw e
+      case e: Exception => throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout",e)
+    } get
+
     driver
   }
 
@@ -117,13 +117,6 @@ object Driver extends DriverFactory {
   object http extends DriverFactory {
     override protected def newDriver(driverConf: DriverConf, authentication: Authentication): Driver =
       new HttpDriver(driverConf, authentication)
-
-    val isConnected = driver.openSession().recover {
-      case e: TLSInvalidAuthException => throw e
-      case e: Exception =>  throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout",e)
-    }.get
-
-
   }
 
 }

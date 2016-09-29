@@ -57,7 +57,7 @@ class TLSAuthValidCertificateIT extends EndToEndTest {
 
     import scala.collection.JavaConverters._
 
-    implicit val driverConf = Some(new DriverConf()
+    val setting = Some(new DriverConf()
       .set(DriverConf.DriverConfigServerHttp, ConfigValueFactory.fromIterable(List("crossdata.com:13422") asJava))
       .set(DriverConf.AkkaHttpTLS.TlsEnable, ConfigValueFactory.fromAnyRef(true))
       .set(DriverConf.AkkaHttpTLS.TlsKeyStore, ConfigValueFactory.fromAnyRef(s"$basepath/goodclient/ClientKeyStore.jks"))
@@ -65,6 +65,8 @@ class TLSAuthValidCertificateIT extends EndToEndTest {
       .set(DriverConf.AkkaHttpTLS.TlsTrustStore, ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"))
       .set(DriverConf.AkkaHttpTLS.TlsTrustStorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
     )
+
+    implicit val _: DriverTestContext = DriverTestContext(Driver.http, setting)
 
     withDriverDo { driver =>
       val result = driver.sql("show tables").waitForResult(10 seconds)

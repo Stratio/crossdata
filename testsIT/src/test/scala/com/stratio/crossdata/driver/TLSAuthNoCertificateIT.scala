@@ -58,7 +58,7 @@ class TLSAuthNoCertificateIT extends EndToEndTest {
   "CrossdataDriver" should "return a connection error when trying to query to a TLS securized CrossdataServer from a non TLS driver" in {
 
     assumeCrossdataUpAndRunning()
-    val driverTry = withDriverTry { driver => }
+    val driverTry = Try { withDriverDo { driver => } (DriverTestContext(Driver.http)) }
 
     driverTry.isFailure should be(true)
     driverTry.failed map { th =>

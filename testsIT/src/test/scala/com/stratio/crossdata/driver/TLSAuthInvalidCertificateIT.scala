@@ -25,6 +25,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 import scala.language.postfixOps
+import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
 class TLSAuthInvalidCertificateIT extends EndToEndTest {
@@ -54,16 +55,20 @@ class TLSAuthInvalidCertificateIT extends EndToEndTest {
 
     import scala.collection.JavaConverters._
 
-    implicit val driverConf = Some(new DriverConf()
+    val setting = new DriverConf()
       .set(DriverConf.DriverConfigServerHttp, ConfigValueFactory.fromIterable(List("crossdata.com:13422") asJava))
       .set(DriverConf.AkkaHttpTLS.TlsEnable, ConfigValueFactory.fromAnyRef(true))
       .set(DriverConf.AkkaHttpTLS.TlsKeyStore, ConfigValueFactory.fromAnyRef(s"$basepath/badclient/FakeClientKeyStore.jks"))
       .set(DriverConf.AkkaHttpTLS.TlsKeystorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
       .set(DriverConf.AkkaHttpTLS.TlsTrustStore, ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"))
       .set(DriverConf.AkkaHttpTLS.TlsTrustStorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
+
+    implicit val ctx: DriverTestContext = DriverTestContext(
+      Driver.http,
+      Some(setting)
     )
 
-    val driverTry = withDriverTry { driver => }
+    val driverTry = Try { withDriverDo { driver => } (ctx) }
 
     driverTry.isFailure should be(true)
     a[TLSInvalidAuthException] shouldBe thrownBy(driverTry.get)

@@ -43,12 +43,6 @@ object Utils extends BaseXDTest{
     }
   }
 
-  def withDriverTry(block: Driver => Unit)(implicit optConfig: Option[DriverConf] = None): Try[Unit] =
-    Try(optConfig.map(Driver.newSession).getOrElse(Driver.newSession())) map { driver =>
-      block(driver)
-    }
-
-
   def withJavaDriverDo(block: JavaDriver => Unit)(
     implicit driverCtx: DriverTestContext = DriverTestContext(Driver)
   ): Unit = {

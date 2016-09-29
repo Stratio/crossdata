@@ -351,7 +351,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       implicit val materializer = ActorMaterializer()
       val httpServerActor = new CrossdataHttpServer(finalConfig, serverActor, actorSystem)
 
-      if(serverConfig.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)){
+      bindingFuture = if(serverConfig.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)){
         val host = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsHost)
         val port = serverConfig.getInt(ServerConfig.AkkaHttpTLS.TlsPort)
         val context = getTlsContext
@@ -364,7 +364,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       } else {
         val host = serverConfig.getString(ServerConfig.Host)
       	val port = serverConfig.getInt(ServerConfig.HttpServerPort)
-        bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))
+        Option(Http().bindAndHandle(httpServerActor.route, host, port))
       }
 
     }
