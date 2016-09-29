@@ -26,39 +26,44 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class JavaDriverIT extends EndToEndTest{
 
+  driverFactories foreach { case (factory, description) =>
 
-  "JavaDriver (with default options)" should "get a list of tables" in {
+    implicit val ctx = DriverTestContext(factory)
 
-    assumeCrossdataUpAndRunning()
-    withJavaDriverDo { javaDriver =>
+    "JavaDriver (with default options)" should s"get a list of tables $description" in {
 
-      javaDriver.sql(
-        s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
-      )
-      javaDriver.sql(
-        s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
-      )
+      assumeCrossdataUpAndRunning()
+      withJavaDriverDo { javaDriver =>
 
-      javaDriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
+        javaDriver.sql(
+          s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
+        )
+        javaDriver.sql(
+          s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
+        )
+
+        javaDriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
+      }
     }
+
+    "JavaDriver (specifying serverHost, and flattened value)" should s"return a list of tables $description" in {
+
+      assumeCrossdataUpAndRunning()
+
+      withJavaDriverDo { javaDriver =>
+
+        javaDriver.sql(
+          s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
+        )
+        javaDriver.sql(
+          s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
+        )
+
+        javaDriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
+      } (DriverTestContext(factory, Some(new DriverConf().setFlattenTables(true))))
+
+    }
+
   }
 
-  "JavaDriver (specifying serverHost, and flattened value)" should "return a list of tables " in {
-
-    assumeCrossdataUpAndRunning()
-
-    withJavaDriverDo { javaDriver =>
-
-      javaDriver.sql(
-        s"CREATE TABLE db.jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
-      )
-      javaDriver.sql(
-        s"CREATE TABLE jsonTable3 USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI()).toString}')"
-      )
-
-      javaDriver.listTables() should contain allOf(new JavaTableName("jsonTable3", "db"), new JavaTableName("jsonTable3", ""))
-    } (new DriverConf().setFlattenTables(true))
-
-
-  }
 }

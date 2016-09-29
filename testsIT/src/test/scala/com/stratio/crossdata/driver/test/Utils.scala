@@ -47,7 +47,9 @@ object Utils extends BaseXDTest{
 
     import driverCtx._
 
-    val driver = optConfig.map(driverConf => new JavaDriver(driverConf)).getOrElse(new JavaDriver())
+    val driver = optConfig.map(
+      driverConf => new JavaDriver(driverConf, driverFactory)
+    ).getOrElse(new JavaDriver(driverFactory))
 
     try {
       block(driver)
@@ -55,5 +57,7 @@ object Utils extends BaseXDTest{
       driver.closeSession()
     }
   }
+
+  val driverFactories = Seq(Driver -> "through AKKA cluster client", Driver.http -> "through HTTP")
 
 }
