@@ -29,6 +29,7 @@ import akka.http.scaladsl.{Http, HttpsConnectionContext}
 import akka.routing.{DefaultResizer, RoundRobinPool}
 import akka.stream.{ActorMaterializer, TLSClientAuth}
 import com.hazelcast.config.{XmlConfigBuilder, Config => HzConfig}
+import com.stratio.crossdata.common.security.KeyStoreUtils
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
@@ -374,43 +375,17 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private def getTlsContext: HttpsConnectionContext = {
     val sslContext: SSLContext = SSLContext.getInstance("TLS")
-    sslContext.init(getKeyManagerFactory.getKeyManagers, getTrustManagerFactory.getTrustManagers, new SecureRandom())
-    new HttpsConnectionContext(sslContext, clientAuth = Some(TLSClientAuth.Need))
-  }
 
-  private def getKeyManagerFactory: KeyManagerFactory = {
-    val keyManagerFactory = KeyManagerFactory.getInstance("SunX509")
+    val keystorePath = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeyStore)
     val keyStorePwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeystorePwd)
-    keyManagerFactory.init(getKeyStore, keyStorePwd.toCharArray)
-    keyManagerFactory
-  }
+    val keyManagerFactory: KeyManagerFactory = KeyStoreUtils.getKeyManagerFactory(keystorePath, keyStorePwd)
 
-  protected def getKeyStore: KeyStore = {
-    val ks: KeyStore = KeyStore.getInstance("JKS")
-    val path = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeyStore)
-    val pwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeystorePwd)
-    val keystore: InputStream = new FileInputStream(path)
-    require(keystore != null, "Keystore required!")
-    ks.load(keystore, pwd.toCharArray)
-    logger.info(s"Valid keystore for TLS Client Auth in $path")
-    ks
-  }
+    val trustStorePath = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsTrustStore)
+    val trustStorePwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsTrustStorePwd)
+    val trustManagerFactory: TrustManagerFactory = KeyStoreUtils.getTrustManagerFactory(trustStorePath, trustStorePwd)
 
-  private def getTrustManagerFactory: TrustManagerFactory = {
-    val tmf: TrustManagerFactory = TrustManagerFactory.getInstance("SunX509")
-    tmf.init(getTrustStore)
-    tmf
-  }
-
-  protected def getTrustStore: KeyStore = {
-    val ts: KeyStore = KeyStore.getInstance("JKS")
-    val path = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsTrustStore)
-    val pwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsTrustStorePwd)
-    val truststore: InputStream = new FileInputStream(path)
-    require(truststore != null, "TrustStore required!")
-    ts.load(truststore, pwd.toCharArray)
-    logger.info(s"Valid truststore for TLS Client Auth in $path")
-    ts
+    sslContext.init(keyManagerFactory.getKeyManagers, trustManagerFactory.getTrustManagers, new SecureRandom())
+    new HttpsConnectionContext(sslContext, clientAuth = Some(TLSClientAuth.Need))
   }
 
   def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
