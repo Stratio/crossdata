@@ -61,11 +61,7 @@ class XDQueryExecution(sqlContext: SQLContext, parsedPlan: LogicalPlan, catalogI
   lazy val resourcesAndActions: Seq[(Resource, Action)] = {
     val crossdataInstances: Seq[String] = Seq(sys.env.getOrElse(Resource.CrossdataClusterNameEnvVar, "unknown")) // TODO get crossdataInstances
 
-    val temporaryTables: Seq[String] =
-    sqlContext.catalog.getTables(None).collect{ // TODO Spark2.0 TableIdentifier instead of String
-      case (tableIdentifier, isTemporary) if isTemporary => tableIdentifier
-    }
-    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier, temporaryTables)
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
 
     authDirectivesExtractor.extractResourcesAndActions(parsedPlan) // TODO improve catalog API to avoid get all tables
   }

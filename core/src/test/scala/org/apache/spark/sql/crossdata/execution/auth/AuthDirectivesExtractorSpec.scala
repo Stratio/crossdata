@@ -15,23 +15,12 @@
  */
 package org.apache.spark.sql.crossdata.execution.auth
 
-import java.util.UUID
-
-import com.stratio.crossdata.test.BaseXDTest
-import com.typesafe.config.ConfigFactory
-import org.apache.spark.sql.crossdata.XDSQLConf
-import org.apache.spark.sql.crossdata.authorizer.SecurityManagerTestConstants._
-import org.apache.spark.sql.crossdata.config.CoreConfig
-import org.apache.spark.sql.crossdata.session.{BasicSessionProvider, XDSessionProvider}
+import com.stratio.crossdata.security.{Read, Resource, TableResource}
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SaveMode}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.{Row, SaveMode}
 import org.junit.runner.RunWith
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.junit.JUnitRunner
-
-import scala.util.{Random, Try}
 
 @RunWith(classOf[JUnitRunner])
 class AuthDirectivesExtractorSpec extends SharedXDContextTest {
@@ -39,9 +28,8 @@ class AuthDirectivesExtractorSpec extends SharedXDContextTest {
 
   val crossdataInstances = Seq("crossdata01", "crossdata02")
   val catalogIdentifier = "mstrCatalog"
-  val usersTempTable = "tempusers"
-  val usersPersTable = "persusers"
-  val tempTables = Seq(usersTempTable)
+  val usersTable = "usersper"
+
 
   protected override def beforeAll(): Unit = {
     super.beforeAll()
@@ -49,18 +37,19 @@ class AuthDirectivesExtractorSpec extends SharedXDContextTest {
     val df = xdContext.createDataFrame(
       xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType)))
     )
-    df.registerTempTable(usersTempTable)
 
-    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$usersPersTable").saveAsTable(usersPersTable)
+
+    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$usersTable").saveAsTable(usersTable)
   }
-
 
   "AuthDirectives" should "return an empty seq when select temporary tables" in {
 
-    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier, tempTables)
-    val selectTempTablePlan = xdContext.sql(s"SELECT * FROM $usersTempTable").queryExecution.logical
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+    val selectTempTablePlan = xdContext.sql(s"SELECT * FROM $usersTable").queryExecution.logical
 
-    authDirectivesExtractor.extractResourcesAndActions(selectTempTablePlan) shouldBe empty
+    authDirectivesExtractor.extractResourcesAndActions(selectTempTablePlan) should have length 1
+    authDirectivesExtractor.extractResourcesAndActions(selectTempTablePlan) should contain((Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read))
   }
 
+  private def composeTableResourceName(catalogIdentifier: String, tableName: String) = Seq(catalogIdentifier, tableName) mkString "."
 }

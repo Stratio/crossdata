@@ -28,7 +28,7 @@ import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTableUsingAsSelect, RefreshTable, DescribeCommand => LogicalDescribeCommand}
 
 // TODO tempTables should be an argument of extractResourcesAndActions
-class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier: String, tempTables: Seq[String]) {
+class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier: String) {
 
   private lazy val logger = Logger.getLogger(classOf[XDQueryExecution])
 
@@ -171,7 +171,7 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
 
   private[auth] def collectTableResources(parsedPlan: LogicalPlan) = parsedPlan.collect {
     // TODO filter temporaryCatalogs
-    case UnresolvedRelation(tableIdentifier, _) if !tempTables.contains(tableIdentifier.unquotedString) =>
+    case UnresolvedRelation(tableIdentifier, _) =>
       tableResource(tableIdentifier)
 
   }
