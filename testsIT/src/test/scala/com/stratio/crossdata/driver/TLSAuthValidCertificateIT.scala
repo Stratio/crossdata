@@ -36,14 +36,19 @@ class TLSAuthValidCertificateIT extends EndToEndTest {
 
   override def init() = {
 
-    val tlsConfig = ConfigFactory.empty
-      .withValue(ServerConfig.AkkaHttpTLS.TlsEnable, ConfigValueFactory.fromAnyRef(true))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsHost, ConfigValueFactory.fromAnyRef("localhost"))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsPort, ConfigValueFactory.fromAnyRef(13422))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsTrustStore, ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsTrustStorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsKeyStore, ConfigValueFactory.fromAnyRef(s"$basepath/ServerKeyStore.jks"))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsKeystorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
+    val configValues = Seq(
+      ServerConfig.AkkaHttpTLS.TlsEnable        -> ConfigValueFactory.fromAnyRef(true),
+      ServerConfig.AkkaHttpTLS.TlsHost          -> ConfigValueFactory.fromAnyRef("localhost"),
+      ServerConfig.AkkaHttpTLS.TlsPort          -> ConfigValueFactory.fromAnyRef(13422),
+      ServerConfig.AkkaHttpTLS.TlsTrustStore    -> ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"),
+      ServerConfig.AkkaHttpTLS.TlsTrustStorePwd -> ConfigValueFactory.fromAnyRef("Pass1word"),
+      ServerConfig.AkkaHttpTLS.TlsKeyStore      -> ConfigValueFactory.fromAnyRef(s"$basepath/ServerKeyStore.jks"),
+      ServerConfig.AkkaHttpTLS.TlsKeystorePwd   -> ConfigValueFactory.fromAnyRef("Pass1word")
+    )
+
+    val tlsConfig = (ConfigFactory.empty /: configValues) {
+      case (config, (key, value)) => config.withValue(key, value)
+    }
 
 
     crossdataServer = Some(new CrossdataServer(Some(tlsConfig)))
@@ -57,16 +62,20 @@ class TLSAuthValidCertificateIT extends EndToEndTest {
 
     import scala.collection.JavaConverters._
 
-    val setting = Some(new DriverConf()
-      .set(DriverConf.DriverConfigServerHttp, ConfigValueFactory.fromIterable(List("localhost:13422") asJava))
-      .set(DriverConf.AkkaHttpTLS.TlsEnable, ConfigValueFactory.fromAnyRef(true))
-      .set(DriverConf.AkkaHttpTLS.TlsKeyStore, ConfigValueFactory.fromAnyRef(s"$basepath/goodclient/ClientKeyStore.jks"))
-      .set(DriverConf.AkkaHttpTLS.TlsKeystorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
-      .set(DriverConf.AkkaHttpTLS.TlsTrustStore, ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"))
-      .set(DriverConf.AkkaHttpTLS.TlsTrustStorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
+    val settingsValues = Seq(
+      DriverConf.DriverConfigServerHttp       -> ConfigValueFactory.fromIterable(List("localhost:13422") asJava),
+      DriverConf.AkkaHttpTLS.TlsEnable        -> ConfigValueFactory.fromAnyRef(true),
+      DriverConf.AkkaHttpTLS.TlsKeyStore      -> ConfigValueFactory.fromAnyRef(s"$basepath/goodclient/ClientKeyStore.jks"),
+      DriverConf.AkkaHttpTLS.TlsKeystorePwd   -> ConfigValueFactory.fromAnyRef("Pass1word"),
+      DriverConf.AkkaHttpTLS.TlsTrustStore    -> ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"),
+      DriverConf.AkkaHttpTLS.TlsTrustStorePwd -> ConfigValueFactory.fromAnyRef("Pass1word")
     )
 
-    implicit val _: DriverTestContext = DriverTestContext(Driver.http, setting)
+    val setting = (new DriverConf() /: settingsValues) {
+      case (config, (key, value)) => config.set(key, value)
+    }
+
+    implicit val _: DriverTestContext = DriverTestContext(Driver.http, Some(setting))
 
     withDriverDo { driver =>
       val result = driver.sql("show tables").waitForResult(10 seconds)

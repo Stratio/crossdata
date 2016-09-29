@@ -40,15 +40,19 @@ class TLSAuthNoCertificateIT extends EndToEndTest {
 
     val basepath = getClass.getResource("/certificates").getPath
 
-    val tlsConfig = ConfigFactory.empty
-      .withValue(ServerConfig.AkkaHttpTLS.TlsEnable, ConfigValueFactory.fromAnyRef(true))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsHost, ConfigValueFactory.fromAnyRef("localhost"))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsPort, ConfigValueFactory.fromAnyRef(13422))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsTrustStore, ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsTrustStorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsKeyStore, ConfigValueFactory.fromAnyRef(s"$basepath/ServerKeyStore.jks"))
-      .withValue(ServerConfig.AkkaHttpTLS.TlsKeystorePwd, ConfigValueFactory.fromAnyRef("Pass1word"))
+    val configValues = Seq(
+      ServerConfig.AkkaHttpTLS.TlsEnable        -> ConfigValueFactory.fromAnyRef(true),
+      ServerConfig.AkkaHttpTLS.TlsHost          -> ConfigValueFactory.fromAnyRef("localhost"),
+      ServerConfig.AkkaHttpTLS.TlsPort          -> ConfigValueFactory.fromAnyRef(13422),
+      ServerConfig.AkkaHttpTLS.TlsTrustStore    -> ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"),
+      ServerConfig.AkkaHttpTLS.TlsTrustStorePwd -> ConfigValueFactory.fromAnyRef("Pass1word"),
+      ServerConfig.AkkaHttpTLS.TlsKeyStore      -> ConfigValueFactory.fromAnyRef(s"$basepath/ServerKeyStore.jks"),
+      ServerConfig.AkkaHttpTLS.TlsKeystorePwd   -> ConfigValueFactory.fromAnyRef("Pass1word")
+    )
 
+    val tlsConfig = (ConfigFactory.empty /: configValues) {
+      case (config, (key, value)) => config.withValue(key, value)
+    }
 
     crossdataServer = Some(new CrossdataServer(Some(tlsConfig)))
     crossdataServer.foreach(_.start())
