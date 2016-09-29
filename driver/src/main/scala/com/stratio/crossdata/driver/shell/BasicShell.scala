@@ -37,12 +37,11 @@ object BasicShell extends App {
 
 
   require(args.length <= 2, "usage --user username")
-  val user = args.toList match {
+  val user = (args.toList: @unchecked) match {
     case Nil => "xd_shell"
     case "--user" :: username :: Nil => username
   }
   val password = "" // TODO read the password
-  println(user)
 
   private def createHistoryDirectory(historyPath: String): Boolean = {
     val historyPathFile = new File(historyPath)
