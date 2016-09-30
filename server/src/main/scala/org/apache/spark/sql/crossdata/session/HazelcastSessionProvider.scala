@@ -15,8 +15,11 @@
  */
 package org.apache.spark.sql.crossdata.session
 
+import java.lang.reflect.Constructor
+
 import com.hazelcast.config.{XmlConfigBuilder, Config => HzConfig}
 import com.hazelcast.core.Hazelcast
+import com.stratio.crossdata.security.CrossdataSecurityManager
 import com.stratio.crossdata.util.CacheInvalidator
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
@@ -45,7 +48,7 @@ object HazelcastSessionProvider {
 class HazelcastSessionProvider( sc: SparkContext,
                                 userConfig: Config,
                                 hzConfig: HzConfig = new XmlConfigBuilder().build()
-                                ) extends XDSessionProvider(sc, Option(userConfig)) with CoreConfig { // TODO CoreConfig should not be a trait
+                                ) extends XDSessionProvider(sc, userConfig) with CoreConfig { // TODO CoreConfig should not be a trait
 
   import HazelcastSessionProvider._
 
@@ -74,7 +77,7 @@ class HazelcastSessionProvider( sc: SparkContext,
   @transient
   protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(sqlConf, config)
 
-  private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog)
+  private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog, securityManager)
 
   protected val hInstance = Hazelcast.newHazelcastInstance(hzConfig)
 
@@ -91,12 +94,14 @@ class HazelcastSessionProvider( sc: SparkContext,
 
   def getClusterState = hInstance.getCluster
 
-  override def newSession(sessionID: SessionID): Try[XDSession] =
+  override def newSession(sessionID: SessionID, userId: String): Try[XDSession] =
     Try {
       val tempCatalogs = sessionIDToTempCatalogs.newResource(sessionID)
+      // Add the user to the shared map
+      sharedState.sqlConf.setConfString(XDSQLConf.UserIdPropertyKey, userId)
       val config = sessionIDToSQLProps.newResource(sessionID, Some(sharedState.sqlConf))
 
-      val session = buildSession(sessionID, config, tempCatalogs)
+      val session = buildSession(sessionID, config, tempCatalogs, Some(userConfig))
       sessionsCache += sessionID -> session
 
       session
@@ -125,6 +130,7 @@ class HazelcastSessionProvider( sc: SparkContext,
 
 
   override def close(): Unit = {
+    super.close()
     hInstance.shutdown()
   }
 
@@ -132,9 +138,10 @@ class HazelcastSessionProvider( sc: SparkContext,
   private def buildSession(
                             sessionID: SessionID,
                             sqlConf: XDSQLConf,
-                            xDTemporaryCatalogs: Seq[XDTemporaryCatalog]): XDSession = {
+                            xDTemporaryCatalogs: Seq[XDTemporaryCatalog],
+                            coreConfig: Option[Config] = None): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalogs)
-    new XDSession(sharedState, sessionState)
+    new XDSession(sharedState, sessionState, coreConfig)
   }
 
 }

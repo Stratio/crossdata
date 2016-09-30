@@ -13,14 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
+package com.stratio.crossdata.security
 
-class DefaultSecurityManager(credentials: Credentials, audit: Boolean) extends SecurityManager(credentials, audit) {
+/**
+  * WARNING: Update crossdata plugin when modifying the actions
+  */
+sealed trait Action
 
-  override def authorize(resource: Any): AuthorizationReply = {
-    val info = s"${credentials.user.fold(""){u => s"User '$u', "}}${credentials.sessionId.fold(""){s => s"SessionId, '$s'}"}}Access to: '$resource'"
-    if(audit) logInfo(info)
-    new AuthorizationReply(true, Some(info))
-  }
+case object Read extends Action
 
-}
+case object Write extends Action
+
+case object Create extends Action
+
+case object Drop extends Action
+
+case object Describe extends Action
+
+case object Cache extends Action

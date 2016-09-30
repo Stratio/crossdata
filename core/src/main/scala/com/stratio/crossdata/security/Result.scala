@@ -13,23 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata
+package com.stratio.crossdata.security
 
-import org.apache.spark.sql.SQLConf
+sealed trait AuditResult
 
-trait XDSQLConf extends SQLConf {
-  def enableCacheInvalidation(enable: Boolean): XDSQLConf
-}
+case object SuccessAR extends AuditResult
 
-
-object XDSQLConf {
-
-  val UserIdPropertyKey = "crossdata.security.user"
-
-  implicit def fromSQLConf(conf: SQLConf): XDSQLConf = new XDSQLConf {
-
-    override def enableCacheInvalidation(enable: Boolean): XDSQLConf = this
-    override protected[spark] val settings: java.util.Map[String, String] = conf.settings
-  }
-}
-
+case object FailAR extends AuditResult

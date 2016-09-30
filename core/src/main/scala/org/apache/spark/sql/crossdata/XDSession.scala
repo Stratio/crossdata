@@ -15,13 +15,13 @@
  */
 package org.apache.spark.sql.crossdata
 
+import com.stratio.crossdata.security.CrossdataSecurityManager
 import com.typesafe.config.Config
 import org.apache.spark.Logging
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
-
 
 object XDSession{
   // TODO Spark2.0. It will be the main entryPoint, so we should add a XDSession builder to make it easier to work with.
@@ -40,17 +40,19 @@ class XDSession(
                  @transient private val xdSessionState: XDSessionState,
                  @transient private val userConfig: Option[Config] = None
                  )
-  extends XDContext(xdSharedState.sc) with Logging {
+  extends XDContext(xdSharedState.sc, userConfig) with Logging {
 
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {
     val catalogs: Seq[XDCatalogCommon] = (xdSessionState.temporaryCatalogs :+ xdSharedState.externalCatalog) ++ xdSharedState.streamingCatalog.toSeq
     CatalogChain(catalogs: _*)(this)
-
   }
 
   @transient
   override protected[sql] lazy val conf: SQLConf = xdSessionState.sqlConf.enableCacheInvalidation(false)
+
+  @transient
+  override protected[crossdata] lazy val securityManager: Option[CrossdataSecurityManager] = xdSharedState.securityManager
 
   xdSessionState.sqlConf.enableCacheInvalidation(true)
 

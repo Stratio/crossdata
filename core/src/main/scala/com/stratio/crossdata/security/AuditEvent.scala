@@ -13,16 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
 
-import org.apache.spark.Logging
-
+package com.stratio.crossdata.security
 
 
-abstract class SecurityManager(val credentials: Credentials, val audit: Boolean) extends Logging {
-
-  def authorize(resource: Any): AuthorizationReply
-
-}
-
-
+case class AuditEvent(userId: String, resource: Resource, action: Action, result: AuditResult, impersonation: Option[Boolean] = None)

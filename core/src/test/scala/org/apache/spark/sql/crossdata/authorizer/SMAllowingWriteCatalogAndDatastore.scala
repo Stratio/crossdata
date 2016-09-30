@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
+package org.apache.spark.sql.crossdata.authorizer
 
-object DummySecurityManager {
-  val UniqueReply = "Authorized"
-}
+import com.stratio.crossdata.security._
 
-class DummySecurityManager(credentials: Credentials, audit: Boolean) extends SecurityManager(credentials, audit) {
+class SMAllowingWriteCatalogAndDatastore extends BaseSecurityManagerTest{
 
-  import org.apache.spark.sql.crossdata.security.DummySecurityManager._
+  override def authorize(userId: String, resource: Resource, action: Action): Boolean = {
+    val isWriteCatalog = resource.resourceType == CatalogResource && action == Write && resource.name == SecurityManagerTestConstants.CatalogIdentifier
+    val isWriteDatastoreAll = resource.resourceType == DatastoreResource && resource.name == "*" && action == Write
 
-  override def authorize(resource: Any): AuthorizationReply = {
-    if(audit) logInfo(s"DUMMY SECURITY MANAGER: $UniqueReply")
-    new AuthorizationReply(true, Some(UniqueReply))
+    (isWriteCatalog || isWriteDatastoreAll) && super.authorize(userId, resource, action)
   }
 
 }
+

@@ -13,6 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
+package org.apache.spark.sql.crossdata.authorizer
 
-case class Credentials(user: Option[String] = None, password: Option[String] = None, sessionId: Option[String] = None)
+import com.stratio.crossdata.security.{Action, Resource}
+
+class SMAllowingAnyResource extends BaseSecurityManagerTest{
+
+  override def authorize(userId: String, resource: Resource, action: Action): Boolean =
+    super.authorize(userId, resource, action)
+
+}

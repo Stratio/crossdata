@@ -15,21 +15,16 @@
  */
 package org.apache.spark.sql.crossdata
 
+
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
-import org.apache.spark.Logging
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.expressions.aggregate.Count
-import org.apache.spark.sql.catalyst.plans.logical.Aggregate
-import org.apache.spark.sql.catalyst.plans.logical.LeafNode
-import org.apache.spark.sql.catalyst.plans.logical.Limit
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.catalyst.plans.logical.Project
-import org.apache.spark.sql.catalyst.trees.TreeNode
+import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.ExecutionType.Default
 import org.apache.spark.sql.crossdata.ExecutionType.ExecutionType
 import org.apache.spark.sql.crossdata.ExecutionType.Native
@@ -41,9 +36,6 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.types.ArrayType
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
-import org.json4s.JsonAST.{JInt, JObject, JString, JValue}
-import org.json4s.jsonwritable
-import sun.reflect.generics.tree.BaseType
 
 import scala.collection.mutable.BufferLike
 import scala.collection.{GenTraversableOnce, immutable, mutable}
@@ -118,15 +110,14 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
 
   /**
    * @inheritdoc
-   */
+    */
   override def collect(): Array[Row] = {
-    sqlContext.asInstanceOf[XDContext].securityManager.authorize(logicalPlan)
     // If cache doesn't go through native
     if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
       super.collect()
     } else {
       val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
-      if(nativeQueryExecutor.isEmpty){
+      if (nativeQueryExecutor.isEmpty) {
         logInfo(s"Spark Query: ${queryExecution.simpleString}")
       } else {
         logInfo(s"Native query: ${queryExecution.simpleString}")
