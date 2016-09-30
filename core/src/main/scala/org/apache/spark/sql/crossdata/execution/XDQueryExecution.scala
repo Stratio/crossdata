@@ -62,8 +62,7 @@ class XDQueryExecution(sqlContext: SQLContext, parsedPlan: LogicalPlan, catalogI
     val crossdataInstances: Seq[String] = Seq(sys.env.getOrElse(Resource.CrossdataClusterNameEnvVar, "unknown")) // TODO get crossdataInstances
 
     val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
-
-    authDirectivesExtractor.extractResourcesAndActions(parsedPlan) // TODO improve catalog API to avoid get all tables
+    authDirectivesExtractor.extractResourcesAndActions(parsedPlan)
   }
 
 }

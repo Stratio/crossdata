@@ -103,30 +103,15 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
   }
 
   it should "execute plans which do not need authorization" in {
-    // TODO update test
-    /*val sessionWithSMDenyingAnyResource = createNewBasicProvider(classOf[SMDenyingAnyResource].getName).newSession(UUID.randomUUID(), XDUser).get
-
-    Try {
-      val df = sessionWithSMDenyingAnyResource.createDataFrame(sessionWithSMDenyingAnyResource.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
-      df.registerTempTable("Records")
-    }.isSuccess shouldBe true
-
+    val sessionWithSMDenyingAnyResource = createNewBasicProvider(classOf[SMDenyingAnyResource].getName).newSession(UUID.randomUUID(), XDUser).get
     Try (
-      sessionWithSMDenyingAnyResource.sql("SELECT * FROM Records").collect()
+      sessionWithSMDenyingAnyResource.sql("SHOW FUNCTIONS").collect()
     ).isSuccess shouldBe true
-
-    Try (
-      sessionWithSMDenyingAnyResource.sql("CREATE TEMPORARY VIEW db.myrecords AS SELECT * FROM Records").collect()
-    ).isSuccess shouldBe true
-
-    Try ( // TODO should be rejected?
-      sessionWithSMDenyingAnyResource.sql(s"CREATE TEMPORARY TABLE MYRECORDS USING json OPTIONS (path '/tmp/${UUID.randomUUID()}') AS SELECT * FROM db.myrecords").collect()
-    ).isSuccess shouldBe true*/
   }
 
   "A SMAllowingWriteCatalog" should "accept catalog writes and reject select statements" in {
 
-    val sessionWithSMallowingWriteCatalog = createNewBasicProvider(classOf[SMAllowingWriteCatalog].getName).newSession(UUID.randomUUID(), XDUser).get
+    val sessionWithSMallowingWriteCatalog = createNewBasicProvider(classOf[SMAllowingWriteCatalogAndDatastore].getName).newSession(UUID.randomUUID(), XDUser).get
     val df: DataFrame = sessionWithSMallowingWriteCatalog.createDataFrame(sessionWithSMallowingWriteCatalog.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
 
     Try {

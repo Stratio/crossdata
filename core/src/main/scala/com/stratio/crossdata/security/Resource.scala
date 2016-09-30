@@ -28,8 +28,11 @@ case object CatalogResource extends ResourceType{
   override def name(): String = "catalog"
 }
 
+case object DatastoreResource extends ResourceType{
+  override def name(): String = "datastore"
+}
 
 object Resource {
   val CrossdataClusterNameEnvVar = "CROSSDATA_CLUSTER_NAME"
-  val AllResourceName = "all"
+  val AllResourceName = "*"
 }

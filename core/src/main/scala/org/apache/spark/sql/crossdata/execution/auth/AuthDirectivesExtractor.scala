@@ -27,7 +27,6 @@ import org.apache.spark.sql.crossdata.execution.XDQueryExecution
 import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTableUsingAsSelect, RefreshTable, DescribeCommand => LogicalDescribeCommand}
 
-// TODO tempTables should be an argument of extractResourcesAndActions
 class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier: String) {
 
   private lazy val logger = Logger.getLogger(classOf[XDQueryExecution])
@@ -45,43 +44,37 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
       configCommandPlanToResourcesAndOps orElse
       queryPlanToResourcesAndOps
 
-  // TODO Plans should not match  InsertIntoHadoopFsRelation InsertIntoDatasource Explain CreateTableUsing if isTemporary
-
   implicit def tupleToSeq(tuple: (Resource, Action)): Seq[(Resource, Action)] = Seq(tuple)
 
   private[auth] def createPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
-    case CreateTableUsing(tableIdent, _, provider, isTemporary, _, _, _) if !isTemporary =>
+    case CreateTableUsing(tableIdent, _, _, isTemporary, _, _, _) =>
       (catalogResource, Write)
 
     case CreateView(viewIdentifier, selectPlan, _) =>
+      collectTableResources(selectPlan).map((_, Read)) :+ (catalogResource, Write)
+
+    case CreateTempView(viewIdentifier, selectPlan, _) =>
       collectTableResources(selectPlan).map((_, Read)) :+ (catalogResource, Write)
 
     case ImportTablesUsingWithOptions(datasource, _) =>
       (catalogResource, Write)
 
     case _: CreateExternalTable =>
-      (catalogResource, Write)
+      (catalogResource, Write) :+ (allDatastoreResource, Write)
 
-    case CreateTableUsingAsSelect(tableIdent, _, isTemporary, _, _, _, selectPlan) if !isTemporary =>
-      collectTableResources(selectPlan).map((_, Read)) :+ (catalogResource, Write)
-
-    case CreateTableUsingAsSelect(tableIdent, _, isTemporary, _, _, _, selectPlan) if isTemporary =>
-      // TODO operation not authorized??
-      collectTableResources(selectPlan).map((_, Read))
-
-    case CreateTempView(viewIdentifier, selectPlan, _) =>
-      collectTableResources(selectPlan).map((_, Read))
+    case CreateTableUsingAsSelect(tableIdent, _, isTemporary, _, _, _, selectPlan) =>
+      collectTableResources(selectPlan).map((_, Read)) :+ (catalogResource, Write) :+ (allDatastoreResource, Write)
 
   }
 
   private[auth] def insertPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
     case XDInsertIntoTable(tableIdentifier, _, _) =>
-      (tableResource(tableIdentifier), Write)
+      (tableResource(tableIdentifier), Write) :+ (allDatastoreResource, Write)
 
     case InsertIntoTable(writePlan, _, selectPlan, _, _) =>
-      collectTableResources(writePlan).map((_, Write)) ++ collectTableResources(selectPlan).map((_, Read))
+      collectTableResources(writePlan).map((_, Write)) ++ collectTableResources(selectPlan).map((_, Read)) :+ (allDatastoreResource, Write)
 
   }
 
@@ -94,7 +87,7 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
       (catalogResource, Write) :+ (tableResource(viewIdentifier), Drop)
 
     case DropExternalTable(tableIdentifier) =>
-      (catalogResource, Write) :+ (tableResource(tableIdentifier), Drop)
+      (catalogResource, Write) :+ (tableResource(tableIdentifier), Drop) :+ (allDatastoreResource, Drop)
 
     case DropAllTables =>
       (catalogResource, Write) :+ (tableResource(allTableResourceName), Drop)
@@ -176,12 +169,14 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
 
   }
 
-  private[auth] def catalogResource = Resource(crossdataInstances, CatalogResource, catalogIdentifier)
+  private lazy val catalogResource = Resource(crossdataInstances, CatalogResource, catalogIdentifier)
 
-  private[auth] def tableResource(tableIdentifier: TableIdentifier): Resource =
+  private lazy val allDatastoreResource =  Resource(crossdataInstances, DatastoreResource, Resource.AllResourceName)
+
+  private def tableResource(tableIdentifier: TableIdentifier): Resource =
     tableResource(tableIdentifier.unquotedString)
 
-  private[auth] def tableResource(tableResourceName: String): Resource =
+  private def tableResource(tableResourceName: String): Resource =
     Resource(crossdataInstances, TableResource, tableStr2ResourceName(tableResourceName))
 
   private lazy val allTableResourceName: String = tableStr2ResourceName(Resource.AllResourceName)
