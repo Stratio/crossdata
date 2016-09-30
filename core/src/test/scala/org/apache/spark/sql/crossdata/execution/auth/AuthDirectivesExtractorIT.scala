@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class AuthDirectivesExtractorSpec extends SharedXDContextTest {
+class AuthDirectivesExtractorIT extends SharedXDContextTest {
 
 
   val crossdataInstances = Seq("crossdata01", "crossdata02")
