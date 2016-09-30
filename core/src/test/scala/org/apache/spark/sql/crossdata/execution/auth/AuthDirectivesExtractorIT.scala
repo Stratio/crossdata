@@ -29,6 +29,7 @@ class AuthDirectivesExtractorIT extends SharedXDContextTest {
   val crossdataInstances = Seq("crossdata01", "crossdata02")
   val catalogIdentifier = "mstrCatalog"
   val usersTable = "usersper"
+  val locationTable = "locat"
 
 
   protected override def beforeAll(): Unit = {
@@ -40,15 +41,38 @@ class AuthDirectivesExtractorIT extends SharedXDContextTest {
 
 
     df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$usersTable").saveAsTable(usersTable)
+    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$locationTable").saveAsTable(locationTable)
   }
 
-  "AuthDirectives" should "return an empty seq when select temporary tables" in {
+  "AuthDirectives" should "return a tuple (TableResource,READ) action resource when reading tables" in {
 
     val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
     val selectTempTablePlan = xdContext.sql(s"SELECT * FROM $usersTable").queryExecution.logical
 
     authDirectivesExtractor.extractResourcesAndActions(selectTempTablePlan) should have length 1
-    authDirectivesExtractor.extractResourcesAndActions(selectTempTablePlan) should contain((Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read))
+    authDirectivesExtractor.extractResourcesAndActions(selectTempTablePlan) should contain(
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read)
+    )
+  }
+
+  it should "return as many table resources as tables" in {
+
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+    val unionTempTablePlan = xdContext.sql(s"SELECT * FROM $locationTable UNION SELECT * FROM $usersTable").queryExecution.logical
+
+    authDirectivesExtractor.extractResourcesAndActions(unionTempTablePlan) should have length 2
+    authDirectivesExtractor.extractResourcesAndActions(unionTempTablePlan) should contain allOf (
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read),
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Read)
+    )
+
+    val joinTempTablePlan = xdContext.sql(s"SELECT * FROM $locationTable JOIN $usersTable").queryExecution.logical
+
+    authDirectivesExtractor.extractResourcesAndActions(joinTempTablePlan) should have length 2
+    authDirectivesExtractor.extractResourcesAndActions(joinTempTablePlan) should contain allOf (
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read),
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Read)
+      )
   }
 
   private def composeTableResourceName(catalogIdentifier: String, tableName: String) = Seq(catalogIdentifier, tableName) mkString "."

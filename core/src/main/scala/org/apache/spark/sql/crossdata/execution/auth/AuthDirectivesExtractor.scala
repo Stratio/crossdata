@@ -158,12 +158,11 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   }
 
   private[auth] def queryPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
-    case queryWithUnresolvedAttributes => // TODO test collect using union and join
+    case queryWithUnresolvedAttributes =>
       collectTableResources(queryWithUnresolvedAttributes).map((_, Read))
   }
 
   private[auth] def collectTableResources(parsedPlan: LogicalPlan) = parsedPlan.collect {
-    // TODO filter temporaryCatalogs
     case UnresolvedRelation(tableIdentifier, _) =>
       tableResource(tableIdentifier)
 
