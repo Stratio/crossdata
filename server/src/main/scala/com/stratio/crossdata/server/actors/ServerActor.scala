@@ -30,9 +30,10 @@ import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJo
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.session.XDSessionProvider
+import org.apache.spark.sql.crossdata.session.{HazelcastSessionProvider, XDSessionProvider}
 import org.apache.spark.sql.types.StructType
 
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
@@ -169,8 +170,17 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
         mediator ! Publish(ManagementTopic, DelegateCommand(sc, self))
       }
 
-    case sc@CommandEnvelope(_: ClusterStateCommand, session, _) =>
-      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
+    case sc@CommandEnvelope(_: ClusterStateCommand, session, _) => {
+      val members = if (sessionProvider.isInstanceOf[HazelcastSessionProvider]) {
+        sessionProvider.asInstanceOf[HazelcastSessionProvider].getClusterState.getMembers map { m =>
+          m.getAddress.toString
+        }
+      } else {
+        Set.empty[String]
+      }
+
+      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state, members)
+    }
 
     case sc@CommandEnvelope(_: OpenSessionCommand, session, _) =>
       val open = sessionProvider.newSession(session.id) match {
