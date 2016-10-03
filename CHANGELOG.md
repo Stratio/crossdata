@@ -6,7 +6,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 * Pluggable security manager, enabling authorization and auditing
 
-## 1.6.0 (upcoming)
+## 1.6.0 (September 2016)
 
 * Elasticsearch: 
     * Support import tables without specifying a particular resource
