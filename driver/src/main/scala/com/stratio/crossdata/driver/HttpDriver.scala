@@ -43,7 +43,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 
 class HttpDriver private[driver](driverConf: DriverConf,
@@ -175,8 +175,11 @@ class HttpDriver private[driver](driverConf: DriverConf,
     val response = Marshal(securitizeCommand(CloseSessionCommand())).to[RequestEntity] flatMap { requestEntity =>
       http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/query", entity = requestEntity))
     }
-    Await.ready(response, requestTimeout)
-    sessionBeacon.foreach(system.stop)
+    Try(Await.ready(response, requestTimeout)) recoverWith {
+      case err =>
+        sessionBeacon.foreach(system.stop)
+        Failure(err)
+    } get
   }
 
   private def apiNotSupported(command: String): SQLResponse =
