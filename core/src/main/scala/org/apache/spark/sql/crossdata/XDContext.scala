@@ -96,7 +96,7 @@ class XDContext protected (@transient val sc: SparkContext,
 
   private lazy val catalogIdentifier: String = Try(xdConfig.getString(CatalogPrefixConfigKey)).recover {
     case _: ConfigException =>
-      logger.warn("Catalog identifier not found. Using the default identifier is discouraged")
+      logger.warn("Catalog identifier not found. Using the default identifier may cause some problems")
       CoreConfig.DefaultCatalogIdentifier
   }.get
 

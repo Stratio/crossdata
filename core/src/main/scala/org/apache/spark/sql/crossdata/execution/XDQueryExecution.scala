@@ -40,7 +40,7 @@ class XDQueryExecution(sqlContext: SQLContext, parsedPlan: LogicalPlan, catalogI
         logger.debug(s"LogicalPlan ${parsedPlan.treeString} does not access to any resource")
       }
       val isAuthorized = resourcesAndActions.forall { case (resource, action) =>
-        val isAuth = securityManager.authorize(userId, resource, action) // TODO .. vs sql(..., user)
+        val isAuth = securityManager.authorize(userId, resource, action)
         if (!isAuth) {
           logger.warn(s"Authorization rejected for user $userId: resource=$resource action=$action")
         }
