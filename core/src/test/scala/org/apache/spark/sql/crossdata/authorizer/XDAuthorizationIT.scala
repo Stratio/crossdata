@@ -86,7 +86,7 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
   }
 
 
-  "A SMDenyingAnyResource" should "no authorize plans requiring authorization" in {
+  "A SMDenyingAnyResource" should "not authorize plans requiring authorization" in {
 
     val sessionWithSDenyingAnyResource = createNewBasicProvider(classOf[SMDenyingAnyResource].getName).newSession(UUID.randomUUID(), XDUser).get
     val df: DataFrame = sessionWithSDenyingAnyResource.createDataFrame(sessionWithSDenyingAnyResource.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))

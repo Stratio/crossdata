@@ -33,13 +33,13 @@ class DummyCrossdataSecurityManager extends CrossdataSecurityManager{
   private val logger = Logger.getLogger(classOf[DummyCrossdataSecurityManager])
 
   def start() : Unit = {
-    logger.info("Dummy XDSM started")
+    logger.info("CrossdataSecurityManager started")
   }
 
   def stop(): Unit = ()
 
   def authorize(userId: String, resource: Resource, action: Action) = {
-    logger.info(s"user=$userId request authorization to perform the action=$action to the resource $resource")
+    logger.info(s"user=$userId requests authorization for the action:$action on the resource:$resource")
     true
   }
 

@@ -55,7 +55,7 @@ class AuthDirectivesExtractorIT extends SharedXDContextTest {
     )
   }
 
-  it should "return as many table resources as tables" in {
+  it should "return as many table resources as tables involved in a query" in {
 
     val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
     val unionTempTablePlan = xdContext.sql(s"SELECT * FROM $locationTable UNION SELECT * FROM $usersTable").queryExecution.logical
