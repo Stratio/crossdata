@@ -21,13 +21,17 @@ import org.json4s.Formats
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
+import scala.concurrent.duration._
+
 @RunWith(classOf[JUnitRunner])
 class CommandSerializerSpec extends XDSerializationTest[Command] with CrossdataCommonSerializer {
   
   override implicit val formats: Formats = json4sJacksonFormats
 
   override def testCases: Seq[TestCase] = Seq(
-    TestCase("marshall & unmarshall a SQLCommand", SQLCommand("select * from highschool")),
+    TestCase("marshall & unmarshall a SQLCommand 0", SQLCommand("select * from highschool")),
+    TestCase("marshall & unmarshall a SQLCommand 1", SQLCommand("select * from highschool", flattenResults = true)),
+    TestCase("marshall & unmarshall a SQLCommand 2", SQLCommand("select * from highschool", timeout = Some(5 seconds))),
     TestCase("marshall & unmarshall an OpenSessionCommand", OpenSessionCommand()),
     TestCase("marshall & unmarshall an CloseSessionCommand", CloseSessionCommand())
   )
