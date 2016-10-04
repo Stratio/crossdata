@@ -16,7 +16,7 @@
 package com.stratio.crossdata.driver
 
 import com.stratio.crossdata.driver.config.DriverConf
-import com.stratio.crossdata.driver.error.TLSInvalidAuthException
+import com.stratio.crossdata.driver.exceptions.TLSInvalidAuthException
 import com.stratio.crossdata.driver.test.Utils._
 import com.stratio.crossdata.server.CrossdataServer
 import com.stratio.crossdata.server.config.ServerConfig

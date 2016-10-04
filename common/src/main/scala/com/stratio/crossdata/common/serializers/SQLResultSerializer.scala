@@ -22,11 +22,22 @@ import org.apache.spark.sql.types.StructType
 import org.json4s.JsonDSL._
 import org.json4s.{CustomSerializer, Extraction, _}
 
+object SQLResultSerializerHelper {
+  object FieldLabels {
+    val SUCCESS  = "successfulResult"
+    val ERRORMSG = "error"
+    val SCHEMA   = "schema"
+    val ROWS     = "rows"
+  }
+}
+
+import SQLResultSerializerHelper.FieldLabels._
+
 object SQLResultSerializer extends CustomSerializer[SQLResult]( format => (
   {
-    case JObject(JField("successfulResult", JBool(false))::JField("error", JString(message))::_) =>
+    case JObject(JField(SUCCESS, JBool(false))::JField(ERRORMSG, JString(message))::_) =>
       ErrorSQLResult(message)
-    case JObject(JField("successfulResult", JBool(true))::JField("schema", json_schema)::JField("rows", JArray(json_rows)) ::_) =>
+    case JObject(JField(SUCCESS, JBool(true))::JField(SCHEMA, json_schema)::JField(ROWS, JArray(json_rows)) ::_) =>
 
       val schema = {
         implicit val formats = DefaultFormats + StructTypeSerializer
@@ -40,10 +51,10 @@ object SQLResultSerializer extends CustomSerializer[SQLResult]( format => (
   },
   {
     case ErrorSQLResult(message, _) =>
-      ("successfulResult" -> false) ~ ("error" -> message)
+      (SUCCESS -> false) ~ (ERRORMSG -> message)
     case SuccessfulSQLResult(resultSet, schema) =>
       implicit val formats = DefaultFormats + StructTypeSerializer + RowSerializer(schema)
-      ("successfulResult" -> true) ~ ("schema" -> Extraction.decompose(schema)) ~ ("rows" -> Extraction.decompose(resultSet))
+      (SUCCESS -> true) ~ (SCHEMA -> Extraction.decompose(schema)) ~ (ROWS -> Extraction.decompose(resultSet))
   }
   )
 )

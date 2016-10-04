@@ -36,14 +36,14 @@ import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.serializers.CrossdataCommonSerializer
 import com.stratio.crossdata.driver.actor.HttpSessionBeaconActor
-import com.stratio.crossdata.driver.error.TLSInvalidAuthException
+import com.stratio.crossdata.driver.exceptions.TLSInvalidAuthException
 import org.json4s.jackson
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 
 class HttpDriver private[driver](driverConf: DriverConf,
@@ -61,7 +61,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
   private implicit lazy val _ = system
   private implicit lazy val materializer: ActorMaterializer = ActorMaterializer()
   private implicit lazy val http = obtainHttpContext
-  private val serverHttp = driverConf.getCrossdataServerHttp
+  private val serverHttp: String = driverConf.getCrossdataServerHttp
   private def protocol = if(driverConf.httpTlsEnable) "https" else "http"
   private val requestTimeout: Duration = Duration.Inf //TODO
 
@@ -135,7 +135,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
     )
 
     val res = Try(Await.result(response, InitializationTimeout))
-    if(res.getOrElse(false)) sessionBeacon = Some(system.actorOf(sessionBeaconProps))
+    sessionBeacon = res.toOption collect { case true => system.actorOf(sessionBeaconProps) }
     res
 
   }
@@ -175,8 +175,11 @@ class HttpDriver private[driver](driverConf: DriverConf,
     val response = Marshal(securitizeCommand(CloseSessionCommand())).to[RequestEntity] flatMap { requestEntity =>
       http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/query", entity = requestEntity))
     }
-    Await.ready(response, requestTimeout)
-    sessionBeacon.foreach(system.stop)
+    Try(Await.ready(response, requestTimeout)) recoverWith {
+      case err =>
+        sessionBeacon.foreach(system.stop)
+        Failure(err)
+    } get
   }
 
   private def apiNotSupported(command: String): SQLResponse =

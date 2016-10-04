@@ -26,7 +26,7 @@ trait CrossdataCommonSerializer {
 
   implicit val json4sJacksonFormats: Formats =
     DefaultFormats + SQLResultSerializer + UUIDSerializer +
-      StructTypeSerializer + UUIDSerializer + CommandSerializer +
+      StructTypeSerializer + FiniteDurationSerializer + CommandSerializer +
         AkkaMemberStatusSerializer + AkkaClusterMemberSerializer + new SortedSetSerializer[Member]()
 
 }
