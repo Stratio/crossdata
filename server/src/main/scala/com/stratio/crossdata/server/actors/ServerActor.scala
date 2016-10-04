@@ -131,7 +131,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
         sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
 
     case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, _), _) =>
-      st.jobsById.get(JobId(id, queryId)).get ! CancelJob
+      st.jobsById(JobId(id, queryId)) ! CancelJob
   }
 
 
@@ -171,7 +171,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
         executeAccepted(sc, requester)(st) // Command validated to be executed by this server.
       } getOrElse {
         // If it can't run here it should be executed somewhere else
-        mediator ! Publish(ManagementTopic, DelegateCommand(sc.copy(session = Session(id, requesterOpt)), self))
+        mediator ! Publish(ManagementTopic, DelegateCommand(sc.copy(session = Session(id, Some(requester))), self))
       }
 
     case sc@CommandEnvelope(_: ClusterStateCommand, session, _) =>
