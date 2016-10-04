@@ -24,6 +24,10 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 import scala.concurrent.duration.Duration
 
+object JavaDriver {
+  def httpDriverFactory: DriverFactory = Driver.http
+  def clusterClientDriverFactory: DriverFactory = Driver
+}
 
 class JavaDriver private(driverConf: DriverConf,
                          auth: Authentication,
