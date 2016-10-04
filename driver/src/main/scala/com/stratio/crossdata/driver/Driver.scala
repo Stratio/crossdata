@@ -22,7 +22,7 @@ import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.driver.config.DriverConf
-import com.stratio.crossdata.driver.error.TLSInvalidAuthException
+import com.stratio.crossdata.driver.exceptions.TLSInvalidAuthException
 import com.stratio.crossdata.driver.metadata.FieldMetadata
 import com.stratio.crossdata.driver.session.Authentication
 import org.apache.spark.sql.Row

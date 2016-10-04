@@ -13,14 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.error
+package com.stratio.crossdata.driver.exceptions
 
-/**
-  * Created by usarasola on 27/09/16.
-  */
-case class TLSInvalidAuthException(msg: String, e: Throwable) extends Exception(msg, e)
-
-object TLSInvalidAuthException {
-  def apply(msg: String) = new TLSInvalidAuthException(msg, null)
-  def apply() = new TLSInvalidAuthException(null, null)
-}
+case class TLSInvalidAuthException(msg: String, e: Throwable = null) extends Exception(msg, e)

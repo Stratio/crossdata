@@ -36,7 +36,7 @@ import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.serializers.CrossdataCommonSerializer
 import com.stratio.crossdata.driver.actor.HttpSessionBeaconActor
-import com.stratio.crossdata.driver.error.TLSInvalidAuthException
+import com.stratio.crossdata.driver.exceptions.TLSInvalidAuthException
 import org.json4s.jackson
 
 import scala.concurrent.ExecutionContext.Implicits.global
