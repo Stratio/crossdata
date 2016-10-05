@@ -41,7 +41,6 @@ object BasicShell extends App {
     case Nil => "xd_shell"
     case "--user" :: username :: Nil => username
   }
-
   val http = (args.toList: @unchecked) match {
     case Nil => false
     case "--connection" :: bool :: Nil => bool.toBoolean

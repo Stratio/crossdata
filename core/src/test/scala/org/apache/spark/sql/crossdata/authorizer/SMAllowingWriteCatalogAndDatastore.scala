@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
+package org.apache.spark.sql.crossdata.authorizer
 
-import org.apache.spark.Logging
+import com.stratio.crossdata.security._
 
+class SMAllowingWriteCatalogAndDatastore extends BaseSecurityManagerTest{
 
+  override def authorize(userId: String, resource: Resource, action: Action): Boolean = {
+    val isWriteCatalog = resource.resourceType == CatalogResource && action == Write && resource.name == SecurityManagerTestConstants.CatalogIdentifier
+    val isWriteDatastoreAll = resource.resourceType == DatastoreResource && resource.name == "*" && action == Write
 
-abstract class SecurityManager(val credentials: Credentials, val audit: Boolean) extends Logging {
-
-  def authorize(resource: Any): AuthorizationReply
+    (isWriteCatalog || isWriteDatastoreAll) && super.authorize(userId, resource, action)
+  }
 
 }
-
 

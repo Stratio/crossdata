@@ -13,6 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
+package org.apache.spark.sql.crossdata.authorizer
 
-case class AuthorizationReply(authorizated: Boolean, info: Option[String] = None)
+import com.stratio.crossdata.security.{Action, Resource}
+
+class SMDenyingAnyResource extends BaseSecurityManagerTest{
+
+  override def authorize(userId: String, resource: Resource, action: Action): Boolean = false
+}
