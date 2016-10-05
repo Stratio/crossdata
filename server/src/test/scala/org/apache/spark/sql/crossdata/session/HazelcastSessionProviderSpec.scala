@@ -39,9 +39,9 @@ import scala.util.{Success, Try}
 class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
   val SparkSqlConfigString = "config.spark.sql.inMemoryColumnarStorage.batchSize=5000"
+  val UserId = "kravets"
 
-
-"HazelcastSessionProvider" should "provides new sessions whose properties are initialized properly" in {
+  "HazelcastSessionProvider" should "provides new sessions whose properties are initialized properly" in {
 
     val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.parseString(SparkSqlConfigString))
 
@@ -120,7 +120,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
     val sessionId = UUID.randomUUID()
 
-    val session = hazelcastSessionProvider.newSession(sessionId)
+    val session = hazelcastSessionProvider.newSession(sessionId, UserId)
 
     hazelcastSessionProvider.closeSession(sessionId)
 
@@ -133,7 +133,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
     val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
 
-    val session = hazelcastSessionProvider.newSession(UUID.randomUUID())
+    val session = hazelcastSessionProvider.newSession(UUID.randomUUID(), UserId)
 
     hazelcastSessionProvider.closeSession(UUID.randomUUID()).isFailure shouldBe true
     
@@ -145,7 +145,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
     val hazelcastSessionProvider = new HazelcastSessionProvider(xdContext.sc, ConfigFactory.empty())
     val sessionID = UUID.randomUUID()
 
-    val refA = hazelcastSessionProvider.newSession(sessionID).get
+    val refA = hazelcastSessionProvider.newSession(sessionID, UserId).get
     val refB = hazelcastSessionProvider.session(sessionID).get
 
     refA should be theSameInstanceAs refB
@@ -172,7 +172,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
 
       val sessionID = UUID.randomUUID()
 
-      val newSessionAtPeerA = hazelcastSessionProviderA.newSession(sessionID).get
+      val newSessionAtPeerA = hazelcastSessionProviderA.newSession(sessionID, UserId).get
       val obtainedSessionFromPeerA = hazelcastSessionProviderA.session(sessionID).get
 
       obtainedSessionFromPeerA should be theSameInstanceAs newSessionAtPeerA
@@ -202,7 +202,7 @@ class HazelcastSessionProviderSpec extends SharedXDContextTest {
   }
 
   private def createNewSession(hazelcastSessionProvider: HazelcastSessionProvider, uuid: UUID = UUID.randomUUID()): XDSession = {
-    val optSession = hazelcastSessionProvider.newSession(uuid).toOption
+    val optSession = hazelcastSessionProvider.newSession(uuid, UserId).toOption
     optSession shouldBe defined
     optSession.get
   }

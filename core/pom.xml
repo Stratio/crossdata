@@ -60,7 +60,6 @@
             <groupId>com.stratio.common</groupId>
             <artifactId>common-utils_${scala.binary.version}</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>

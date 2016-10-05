@@ -13,14 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
 
-class DefaultSecurityManager(credentials: Credentials, audit: Boolean) extends SecurityManager(credentials, audit) {
+package com.stratio.crossdata.security
 
-  override def authorize(resource: Any): AuthorizationReply = {
-    val info = s"${credentials.user.fold(""){u => s"User '$u', "}}${credentials.sessionId.fold(""){s => s"SessionId, '$s'}"}}Access to: '$resource'"
-    if(audit) logInfo(info)
-    new AuthorizationReply(true, Some(info))
-  }
 
-}
+case class AuditEvent(userId: String, resource: Resource, action: Action, result: AuditResult, impersonation: Option[Boolean] = None)
