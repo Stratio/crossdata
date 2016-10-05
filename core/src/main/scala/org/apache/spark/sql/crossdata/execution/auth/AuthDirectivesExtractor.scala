@@ -145,13 +145,16 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   private[auth] def cachePlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
     case CacheTableCommand(tableName, Some(toCachePlan), _) =>
-      collectTableResources(toCachePlan).map((_, Cache))
+      collectTableResources(toCachePlan).map((_, Read)) :+ (catalogResource, Write) :+ (allTableResource, Cache)
+
+    case CacheTableCommand(tableName, None, _) =>
+      (tableResource(tableName), Cache)
 
     case UncacheTableCommand(tableIdentifier) =>
       (tableResource(tableIdentifier), Cache)
 
     case ClearCacheCommand =>
-      (tableResource(allTableResourceName), Cache)
+      (allTableResource, Cache)
 
     case RefreshTable(tableIdentifier) =>
       (tableResource(tableIdentifier), Cache)
@@ -179,6 +182,8 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
     Resource(crossdataInstances, TableResource, tableStr2ResourceName(tableResourceName))
 
   private lazy val allTableResourceName: String = tableStr2ResourceName(Resource.AllResourceName)
+
+  private lazy val allTableResource: Resource = tableResource(Resource.AllResourceName)
 
 
   private def tableStr2ResourceName(tableName: String): String = // TODO remove Spark 2.0 (required for Uncache plans)
