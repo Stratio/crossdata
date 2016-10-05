@@ -16,27 +16,40 @@
 package com.stratio.crossdata.server
 
 import java.io.File
+import java.util.UUID
 
 import akka.actor.{ActorRef, ActorSystem}
+import akka.pattern.ask
 import akka.cluster.pubsub.DistributedPubSub
-import akka.cluster.pubsub.DistributedPubSubMediator.Publish
-import akka.http.scaladsl.model.Multipart
+import akka.cluster.pubsub.DistributedPubSubMediator.{Publish, SendToAll}
+import akka.http.scaladsl._
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.FileIO
+import akka.util.Timeout
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.{AddJARCommand, CommandEnvelope}
+import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
+import com.stratio.crossdata.common._
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
+import org.json4s.jackson
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.util.Success
 
-class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) {
+
+class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) extends CrossdataSerializer {
+
+  import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
+  implicit val serialization = jackson.Serialization
 
   import ResourceManagerActor._
 
@@ -47,7 +60,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
   type SessionDirective[Session] = Directive[Tuple1[Session]]
 
-  def route =
+  lazy val route =
     path("upload" / JavaUUID) { sessionUUID =>
       entity(as[Multipart.FormData]) { formData =>
         // collect all parts of the multipart as it arrives into a map
@@ -87,7 +100,59 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
         }
       }
 
+    } ~ path("query") {
+
+      post {
+        entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
+
+          rq.cmd match {
+
+            case _: CloseSessionCommand => // Commands with no confirmation
+
+              serverActor ! rq
+              complete(StatusCodes.OK)
+
+            case _ =>                      // Commands requiring confirmation
+
+              implicit val _ = Timeout(1 hour) //TODO Make this configurable
+
+              onComplete(serverActor ? rq) {
+                case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
+                  complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
+                case Success(reply: ServerReply) =>
+                  complete(reply)
+                case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
+              }
+          }
+
+        } /*~ getRqEnt { rq: HttpRequest =>//TODO: Remove this debugging tool when a minimal stable API has been reached
+          onComplete(rq.entity.toStrict(5 seconds)) {
+            case Success(s: HttpEntity.Strict) =>
+              import org.json4s.jackson.JsonMethods._
+              val bs = s.data.toIterator.toArray
+              val parsed = parse(new String(bs), false)
+              println("\n\n\n" + parsed.toString)
+              val extracted = parsed.extract[CommandEnvelope]
+              complete(parsed.toString)
+          }
+        }*/
+      }
+
+    } ~ path("sessions") {
+
+      post {  //Session life proof is not a PUT to /session/idSession for security reasons.
+        entity(as[HeartBeat[UUID]]) { heartBeat =>
+          mediator ! SendToAll("/user/client-monitor", heartBeat) //TODO: Hardcoded path
+          complete(StatusCodes.Success) //Doesn't give clues on active sessions...
+        }
+      }
+
     } ~ complete("Welcome to Crossdata HTTP Server")
+
+  //TODO: Remove this debugging tool when a minimal stable API has been reached
+  /*val getRqEnt = extract[HttpRequest] { rqCtx =>
+    rqCtx.request
+  }*/
 
   private def writeJarToHdfs(hdfsConfig: Config, jar: String): String = {
     val user = hdfsConfig.getString("user")

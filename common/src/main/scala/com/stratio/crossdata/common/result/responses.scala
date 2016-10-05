@@ -18,18 +18,23 @@ package com.stratio.crossdata.common.result
 import java.util.UUID
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
-import scala.util.Try
+import scala.concurrent.{Await, Future, TimeoutException}
+import scala.util.{Success, Try}
 
 trait Response extends Serializable {
   def id: UUID
 }
 
+// TODO id (requestId) should be removed from the API (version 2.0)
 case class SQLResponse(id: UUID, sqlResult: Future[SQLResult]) extends Response {
+
   def waitForResult(duration: Duration = Duration.Inf): SQLResult = {
     Try {
-      Await.result(sqlResult, duration)
-    } getOrElse ErrorSQLResult(s"Not found answer to query $id. Timeout was exceed.")
+      Await.result(sqlResult, duration) : SQLResult
+    } recoverWith {
+      case _: TimeoutException => Success(ErrorSQLResult(s"Not found answer to request: $id. Timeout was exceed."))
+      case other: Exception => Success(ErrorSQLResult(other.getLocalizedMessage, Some(other)))
+    } get
   }
 
   def cancelCommand(): Unit = throw new RuntimeException("The query cannot be cancelled. Use sql(query).cancelCommand")

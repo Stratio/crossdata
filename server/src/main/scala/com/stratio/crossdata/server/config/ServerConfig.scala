@@ -59,6 +59,19 @@ object ServerConfig {
   val HttpServerPort = "config.HttpServerPort"
 
   val IsHazelcastProviderEnabledProperty = "config.hazelcast.enabled"
+
+
+  //TLS akka-http client authentication
+  object AkkaHttpTLS {
+    val TlsEnable = "akka-http.ssl.enable"
+    val TlsHost = "akka-http.ssl.host"
+    val TlsPort = "akka-http.ssl.port"
+    val TlsTrustStore = "akka-http.ssl.truststore"
+    val TlsTrustStorePwd = "akka-http.ssl.truststore-password"
+    val TlsKeyStore = "akka-http.ssl.keystore"
+    val TlsKeystorePwd = "akka-http.ssl.keystore-password"
+  }
+
 }
 
 trait ServerConfig extends NumberActorConfig {

@@ -26,11 +26,11 @@ import scala.collection._
 import scala.concurrent.duration.FiniteDuration
 
 // Driver -> Server messages
-private[crossdata] trait Command {
+trait Command {
   private[crossdata] val requestId = UUID.randomUUID()
 }
 
-private[crossdata] case class SQLCommand private(sql: String,
+case class SQLCommand private(sql: String,
                                                  queryId: UUID = UUID.randomUUID(),
                                                  flattenResults: Boolean = false,
                                                  timeout: Option[FiniteDuration] = None

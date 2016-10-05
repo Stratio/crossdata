@@ -27,36 +27,60 @@ import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
+object JavaDriver {
+  def httpDriverFactory: DriverFactory = Driver.http
+  def clusterClientDriverFactory: DriverFactory = Driver
+}
 
 class JavaDriver private(driverConf: DriverConf,
-                         auth: Authentication) {
+                         auth: Authentication,
+                         driverFactory: DriverFactory) {
+
+  def this(driverConf: DriverConf, driverFactory: DriverFactory) =
+    this(driverConf, driverFactory.generateDefaultAuth, driverFactory)
 
   def this(driverConf: DriverConf) =
-    this(driverConf, Driver.generateDefaultAuth)
+    this(driverConf, Driver)
 
-  def this() = this(new DriverConf)
+  def this(driverFactory: DriverFactory) = this(new DriverConf, driverFactory)
+
+  def this() = this(Driver)
+
+  def this(user: String, password: String, driverConf: DriverConf, driverFactory: DriverFactory) =
+    this(driverConf, Authentication(user, Option(password)), driverFactory)
 
   def this(user: String, password: String, driverConf: DriverConf) =
-    this(driverConf, Authentication(user, Option(password)))
+    this(user, password, driverConf, Driver)
 
+
+  def this(user: String, driverConf: DriverConf, driverFactory: DriverFactory) =
+    this(driverConf, Authentication(user), driverFactory)
 
   def this(user: String, driverConf: DriverConf) =
-    this(driverConf, Authentication(user))
+    this(user, driverConf, Driver)
 
+  def this(user: String, password: String, driverFactory: DriverFactory) =
+    this(user, password, new DriverConf, driverFactory)
 
   def this(user: String, password: String) =
-    this(user, password, new DriverConf)
+    this(user, password, Driver)
+
+  def this(seedNodes: java.util.List[String], driverConf: DriverConf, driverFactory: DriverFactory) =
+    this(driverConf.setClusterContactPoint(seedNodes), driverFactory)
 
   def this(seedNodes: java.util.List[String], driverConf: DriverConf) =
-    this(driverConf.setClusterContactPoint(seedNodes))
+    this(seedNodes, driverConf, Driver)
+
+  def this(seedNodes: java.util.List[String], driverFactory: DriverFactory) =
+    this(seedNodes, new DriverConf, driverFactory)
 
   def this(seedNodes: java.util.List[String]) =
-    this(seedNodes, new DriverConf)
-
+    this(seedNodes, Driver)
 
   private lazy val logger = LoggerFactory.getLogger(classOf[JavaDriver])
 
-  private val scalaDriver = Driver.newSession(driverConf, auth)
+  private val scalaDriver = driverFactory.newSession(driverConf, auth)
+
 
   /**
    * Sync execution with defaults: timeout 10 sec, nr-retries 2
