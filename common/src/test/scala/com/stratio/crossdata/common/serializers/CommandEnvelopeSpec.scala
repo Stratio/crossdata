@@ -18,7 +18,7 @@ package com.stratio.crossdata.common.serializers
 import java.util.UUID
 
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.common.{CommandEnvelope, OpenSessionCommand, SQLCommand}
+import com.stratio.crossdata.common.{CancelQueryExecution, CommandEnvelope, OpenSessionCommand, SQLCommand}
 import com.stratio.crossdata.common.serializers.XDSerializationTest.TestCase
 import org.json4s.Formats
 import org.junit.runner.RunWith
@@ -39,6 +39,10 @@ class CommandEnvelopeSpec extends XDSerializationTest[CommandEnvelope] with Cros
     TestCase(
       "marshall & unmarshall a OpenSessionCommand within a CommandEnvelope",
       CommandEnvelope(OpenSessionCommand(), session, "usr")
+    ),
+    TestCase(
+      "marshall & unmarshall a CancelQueryExecution within a CommandEnvelope",
+      CommandEnvelope(CancelQueryExecution(UUID.randomUUID()), session, "usr")
     )
   )
 }
