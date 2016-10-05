@@ -55,7 +55,7 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
     val sessionWithSMallowingAnyResource = createNewBasicProvider(classOf[SMAllowingAnyResource].getName).newSession(UUID.randomUUID(), XDUser).get
 
     val exception = the [Exception] thrownBy sessionWithSMallowingAnyResource.sql("START PROCESS")
-    exception.getMessage should include ("not authorized")
+    exception.getMessage should startWith ("Unauthorized")
   }
 
   it should "reject set user plans" in {
@@ -67,7 +67,7 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
     ).isSuccess shouldBe true
 
     val exception = the [Exception] thrownBy sessionWithSMallowingAnyResource.sql(s"SET ${XDSQLConf.UserIdPropertyKey}=newUser")
-    exception.getMessage should include ("not authorized")
+    exception.getMessage should startWith ("Unauthorized")
   }
 
 
