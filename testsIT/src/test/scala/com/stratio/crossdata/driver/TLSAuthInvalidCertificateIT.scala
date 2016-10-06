@@ -51,7 +51,7 @@ class TLSAuthInvalidCertificateIT extends EndToEndTest {
 
     crossdataServer = Some(new CrossdataServer(Some(tlsConfig)))
     crossdataServer.foreach(_.start())
-    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID)))
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID, this.getClass.getSimpleName))))
   }
 
   "CrossdataDriver" should "return an invalid TLS authentiction error when trying to query to a TLS securized CrossdataServer from a driver with bad certificate" in {
