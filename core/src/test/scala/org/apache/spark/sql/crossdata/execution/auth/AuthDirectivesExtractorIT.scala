@@ -15,7 +15,8 @@
  */
 package org.apache.spark.sql.crossdata.execution.auth
 
-import com.stratio.crossdata.security.{Read, Resource, TableResource}
+import com.stratio.crossdata.security._
+import org.apache.spark.sql.crossdata.catalyst.execution.{DropAllTables, DropExternalTable, DropTable, DropView}
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SaveMode}
@@ -25,7 +26,8 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class AuthDirectivesExtractorIT extends SharedXDContextTest {
 
-
+  val tmpCrossdata = "/tmp/crossdata-test"
+  // TODO constant
   val crossdataInstances = Seq("crossdata01", "crossdata02")
   val catalogIdentifier = "mstrCatalog"
   val usersTable = "usersper"
@@ -40,8 +42,8 @@ class AuthDirectivesExtractorIT extends SharedXDContextTest {
     )
 
 
-    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$usersTable").saveAsTable(usersTable)
-    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$locationTable").saveAsTable(locationTable)
+    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"$tmpCrossdata/$usersTable").saveAsTable(usersTable)
+    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"$tmpCrossdata/$locationTable").saveAsTable(locationTable)
   }
 
   "AuthDirectives" should "return a tuple (TableResource,READ) action resource when reading tables" in {
@@ -61,18 +63,58 @@ class AuthDirectivesExtractorIT extends SharedXDContextTest {
     val unionTempTablePlan = xdContext.sql(s"SELECT * FROM $locationTable UNION SELECT * FROM $usersTable").queryExecution.logical
 
     authDirectivesExtractor.extractResourcesAndActions(unionTempTablePlan) should have length 2
-    authDirectivesExtractor.extractResourcesAndActions(unionTempTablePlan) should contain allOf (
+    authDirectivesExtractor.extractResourcesAndActions(unionTempTablePlan) should contain allOf(
       (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read),
       (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Read)
-    )
+      )
 
     val joinTempTablePlan = xdContext.sql(s"SELECT * FROM $locationTable JOIN $usersTable").queryExecution.logical
 
     authDirectivesExtractor.extractResourcesAndActions(joinTempTablePlan) should have length 2
-    authDirectivesExtractor.extractResourcesAndActions(joinTempTablePlan) should contain allOf (
+    authDirectivesExtractor.extractResourcesAndActions(joinTempTablePlan) should contain allOf(
       (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read),
       (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Read)
       )
+  }
+
+  it should "extract the expected permissions when inserting tables" in {
+
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+    val insertIntoSelectPlan = xdContext.sql(s"INSERT INTO TABLE $locationTable SELECT * FROM $usersTable").queryExecution.logical
+
+    authDirectivesExtractor.extractResourcesAndActions(insertIntoSelectPlan) should have length 3
+    authDirectivesExtractor.extractResourcesAndActions(insertIntoSelectPlan) should contain allOf(
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read),
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Write),
+      (Resource(crossdataInstances, DatastoreResource, "*"), Write)
+      )
+  }
+
+  it should "extract the expected permissions when dropping tables" in {
+
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+    val emptyTableName = "emptytab"
+    val emptyDF = xdContext.emptyDataFrame
+    emptyDF.write.format("json").mode(SaveMode.Overwrite).option("path", s"$tmpCrossdata/toDropTable").saveAsTable(emptyTableName)
+
+    val dropTablePlan = xdContext.sql(s"DROP TABLE $emptyTableName").queryExecution.logical
+
+    authDirectivesExtractor.extractResourcesAndActions(dropTablePlan) should have length 2
+    authDirectivesExtractor.extractResourcesAndActions(dropTablePlan) should contain allOf(
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, emptyTableName)), Drop),
+      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write)
+      )
+
+  }
+
+  it should "not authorize streaming plans" in {
+
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+    val streamingPlan = xdContext.sql(s"START myProcess").queryExecution.logical
+
+    an[Exception] shouldBe thrownBy {
+      authDirectivesExtractor.extractResourcesAndActions(streamingPlan)
+    }
   }
 
   private def composeTableResourceName(catalogIdentifier: String, tableName: String) = Seq(catalogIdentifier, tableName) mkString "."
