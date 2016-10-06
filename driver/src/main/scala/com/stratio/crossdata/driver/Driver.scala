@@ -290,12 +290,6 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected
     */
   private[driver] def sessionProviderState(): Future[scala.collection.Set[String]]
 
-  /*
-    val promise = Promise[ServerReply]()
-    proxyActor ! (securitizeCommand(ClusterStateCommand()), promise)
-    promise.future.mapTo[ClusterStateReply].map(_.sessionCluster)
-  */
-
   /**
     * Indicates if the cluster is alive or not
     *

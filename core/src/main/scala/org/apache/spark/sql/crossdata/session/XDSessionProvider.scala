@@ -35,7 +35,6 @@ import scala.util.{Failure, Success, Try}
 
 object XDSessionProvider {
   type SessionID = UUID
-  val DefaultUserId = "crossdata"
 }
 
 // TODO It should share some of the XDContext fields. It will be possible when Spark 2.0 is released
@@ -53,7 +52,7 @@ abstract class XDSessionProvider(
   //NOTE: DO NEVER KEEP THE RETURNED REFERENCE FOR SEVERAL USES!
   def session(sessionID: SessionID): Try[XDSession]
 
-  def newSession(sessionID: SessionID, userId: String = DefaultUserId): Try[XDSession]
+  def newSession(sessionID: SessionID, userId: String): Try[XDSession]
 
   def closeSession(sessionID: SessionID): Try[Unit]
 
