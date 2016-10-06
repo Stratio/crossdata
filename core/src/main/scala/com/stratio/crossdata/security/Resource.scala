@@ -13,24 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.serializers
+package com.stratio.crossdata.security
 
-import org.json4s.{CustomSerializer, Extraction, Formats, JObject}
+case class Resource(instances: Seq[String], resourceType: ResourceType, name: String)
 
-import scala.concurrent.duration._
+sealed trait ResourceType{
+  def name(): String
+}
 
-private[serializers] case class ProtoDuration(duration_ms: Long)
+case object TableResource extends ResourceType{
+  override def name(): String = "table"
+}
+case object CatalogResource extends ResourceType{
+  override def name(): String = "catalog"
+}
 
-object FiniteDurationSerializer extends CustomSerializer[FiniteDuration](formats =>
-  (
-    {
-      case jduration: JObject =>
-        implicit val _: Formats = formats
-        jduration.extract[ProtoDuration].duration_ms milliseconds
-    },
-    {
-      case d: FiniteDuration =>
-        Extraction.decompose(ProtoDuration(d.toMillis))(formats)
-    }
-  )
-)
+case object DatastoreResource extends ResourceType{
+  override def name(): String = "datastore"
+}
+
+object Resource {
+  val CrossdataClusterNameEnvVar = "CROSSDATA_CLUSTER_NAME"
+  val AllResourceName = "*"
+}

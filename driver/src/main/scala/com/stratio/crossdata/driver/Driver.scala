@@ -32,7 +32,7 @@ import org.slf4j.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, Future, Promise}
 import scala.language.postfixOps
 import scala.util.Try
 
@@ -102,12 +102,16 @@ object Driver extends DriverFactory {
     * WARNING! It should be called once all active sessions have been closed. After the shutdown, new session cannot be created.
     */
   def shutdown(): Unit = {
-    if (!system.isTerminated) system.shutdown()
+    system.whenTerminated onFailure {
+      case _ => system.terminate
+    }
   }
 
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
     def run() {
-      shutdown()
+      system.whenTerminated onFailure {
+        case _ => system.terminate
+      }
     }
   }))
 
@@ -203,7 +207,7 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected
   }
 
   /**
-    * Gets a list of tables from a database or all if the database is None
+    * Returns a list of tables from a database or all if the database is None
     *
     * @param databaseName The database name
     * @return A sequence of tables an its database
@@ -225,7 +229,7 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected
   }
 
   /**
-    * Gets the metadata from a specific table.
+    * Returns the metadata from a specific table.
     *
     * @param database  Database of the table.
     * @param tableName The name of the table.
@@ -256,27 +260,35 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected
   def show(query: String) = sql(query).waitForResult().prettyResult.foreach(println)
 
   /**
-    * Gets the server/cluster state
+    * Returns the server/cluster state
     *
     * @since 1.3
     * @return Current snapshot state of the cluster
     */
-  def clusterState(): Future[CurrentClusterState]
+  private[driver] def clusterState(): Future[CurrentClusterState]
 
   /**
-    * Gets the addresses of servers up and running
+    * Returns the addresses of servers up and running
     *
     * @since 1.3
     * @return A sequence with members of the cluster ready to serve requests
     */
-  def serversUp(): Future[Seq[Address]] = {
+  private[driver] def serversUp(): Future[Set[Address]] = {
     import collection.JavaConverters._
-    clusterState().map { cState =>
+    clusterState() map { cState =>
       cState.getMembers.asScala.collect {
         case member if member.status == MemberStatus.Up => member.address
-      }.toSeq
+      }.toSet
     }
   }
+
+  /**
+    * Returns a list of the nodes forming the session provider
+    *
+    * @since 1.7
+    * @return list of host:port of nodes providing the Crossdata sessions
+    */
+  private[driver] def sessionProviderState(): Future[scala.collection.Set[String]]
 
   /**
     * Indicates if the cluster is alive or not

@@ -32,10 +32,6 @@
     <description>Crossdata Server</description>
     <url>http://stratio.github.io/crossdata/</url>
 
-    <properties>
-        <hazelcast.version>3.7.1</hazelcast.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>

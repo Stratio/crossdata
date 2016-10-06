@@ -173,6 +173,12 @@ class ClusterClientDriver private[driver](driverConf: DriverConf,
     promise.future.mapTo[ClusterStateReply].map(_.clusterState)
   }
 
+  private[driver] def sessionProviderState(): Future[scala.collection.Set[String]] = {
+    val promise = Promise[ServerReply]()
+    proxyActor ! (securitizeCommand(ClusterStateCommand()), promise)
+    promise.future.mapTo[ClusterStateReply].map(_.sessionCluster)
+  }
+
   override def closeSession(): Unit = {
     proxyActor ! securitizeCommand(CloseSessionCommand())
     sessionBeacon.foreach(system.stop)

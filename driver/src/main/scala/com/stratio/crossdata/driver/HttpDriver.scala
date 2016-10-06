@@ -171,6 +171,13 @@ class HttpDriver private[driver](driverConf: DriverConf,
       { reply: ClusterStateReply => reply.clusterState }
     )
 
+  private[driver] def sessionProviderState(): Future[scala.collection.Set[String]] =
+    simpleRequest(
+      securitizeCommand(ClusterStateCommand()),
+      "query",
+      { reply: ClusterStateReply => reply.sessionCluster }
+    )
+
   override def closeSession(): Unit = {
     val response = Marshal(securitizeCommand(CloseSessionCommand())).to[RequestEntity] flatMap { requestEntity =>
       http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/query", entity = requestEntity))

@@ -62,6 +62,24 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private val hzConfig: HzConfig = new XmlConfigBuilder().build()
 
+  /**
+    * Just for test purposes
+    */
+  def stop(): Unit = {
+    sessionProviderOpt.foreach(_.close())
+
+    sessionProviderOpt.foreach(_.sc.stop())
+
+    system.foreach { actSystem =>
+      implicit val exContext = actSystem.dispatcher
+      bindingFuture.foreach { bFuture =>
+        bFuture.flatMap(_.unbind()).onComplete(_ => actSystem.terminate())
+      }
+    }
+
+    logger.info("Crossdata Server stopped")
+  }
+
   private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
     val curatorClient = CuratorFrameworkFactory.newClient(
@@ -418,22 +436,5 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     }
   }
 
-  /**
-    * Just for test purposes
-    */
-  def stop(): Unit = {
-    sessionProviderOpt.foreach(_.close())
-
-    sessionProviderOpt.foreach(_.sc.stop())
-
-    system.foreach { actSystem =>
-      implicit val exContext = actSystem.dispatcher
-      bindingFuture.foreach { bFuture =>
-        bFuture.flatMap(_.unbind()).onComplete(_ => actSystem.shutdown())
-      }
-    }
-
-    logger.info("Crossdata Server stopped")
-  }
 
 }

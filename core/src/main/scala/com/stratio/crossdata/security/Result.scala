@@ -13,6 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
+package com.stratio.crossdata.security
 
-case class Credentials(user: Option[String] = None, password: Option[String] = None, sessionId: Option[String] = None)
+sealed trait AuditResult
+
+// TODO (version 1.8 or higher) rename successAR to Success
+case object SuccessAR extends AuditResult
+
+case object FailAR extends AuditResult

@@ -13,24 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.serializers
+package com.stratio.crossdata.security
 
-import org.json4s.{CustomSerializer, Extraction, Formats, JObject}
+/**
+  * WARNING: Update crossdata plugin when modifying the actions
+  */
+sealed trait Action
 
-import scala.concurrent.duration._
+case object Read extends Action
 
-private[serializers] case class ProtoDuration(duration_ms: Long)
+case object Write extends Action
 
-object FiniteDurationSerializer extends CustomSerializer[FiniteDuration](formats =>
-  (
-    {
-      case jduration: JObject =>
-        implicit val _: Formats = formats
-        jduration.extract[ProtoDuration].duration_ms milliseconds
-    },
-    {
-      case d: FiniteDuration =>
-        Extraction.decompose(ProtoDuration(d.toMillis))(formats)
-    }
-  )
-)
+case object Create extends Action
+
+case object Drop extends Action
+
+case object Describe extends Action
+
+case object Cache extends Action
