@@ -15,6 +15,8 @@
  */
 package com.stratio.crossdata.common.serializers
 
+import java.util.UUID
+
 import com.stratio.crossdata.common.serializers.XDSerializationTest.TestCase
 import com.stratio.crossdata.common._
 import org.json4s.Formats
@@ -33,7 +35,8 @@ class CommandSerializerSpec extends XDSerializationTest[Command] with CrossdataC
     TestCase("marshall & unmarshall a SQLCommand 1", SQLCommand("select * from highschool", flattenResults = true)),
     TestCase("marshall & unmarshall a SQLCommand 2", SQLCommand("select * from highschool", timeout = Some(5 seconds))),
     TestCase("marshall & unmarshall an OpenSessionCommand", OpenSessionCommand()),
-    TestCase("marshall & unmarshall an CloseSessionCommand", CloseSessionCommand())
+    TestCase("marshall & unmarshall an CloseSessionCommand", CloseSessionCommand()),
+    TestCase("marshall & unmarshall an CancelQueryExecution", CancelQueryExecution(UUID.randomUUID()))
   )
 
 }
