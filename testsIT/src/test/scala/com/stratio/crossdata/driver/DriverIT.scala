@@ -190,7 +190,7 @@ class DriverIT extends EndToEndTest with ScalaFutures {
     }
 
 
-    it should "be able to cancel queries" + factoryDesc in {
+    it should "be able to cancel queries" + factoryDesc ignore {
       assumeCrossdataUpAndRunning()
 
       withDriverDo { driver =>
