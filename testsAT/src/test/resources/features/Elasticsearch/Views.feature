@@ -1,5 +1,6 @@
 Feature: VIEWS
 
+  @ignore @tillfixed(CROSSDATA-237)
   Scenario: [CROSSDATA-237] CREATE VIEW viewTest AS SELECT * FROM tabletest;
     When I execute 'CREATE VIEW viewTest AS SELECT * FROM tabletest'
     Then I execute 'SELECT ident, date, money, name, new FROM viewTest'
