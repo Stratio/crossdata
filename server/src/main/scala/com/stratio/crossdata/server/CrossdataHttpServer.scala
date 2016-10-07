@@ -99,7 +99,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
         }
       }
 
-    } ~ path("query") {
+    } ~ path("query" / JavaUUID) { requestId =>
 
       post {
         entity(as[CommandEnvelope]) { rq: CommandEnvelope =>

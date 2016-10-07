@@ -127,10 +127,10 @@ class HttpDriver private[driver](driverConf: DriverConf,
   }
 
   protected[driver] def openSession(): Try[Boolean] = {
-
+    val command = OpenSessionCommand()
     val response = simpleRequest(
-      securitizeCommand(OpenSessionCommand()),
-      "query",
+      securitizeCommand(command),
+      s"query/${command.requestId}",
       { reply: OpenSessionReply => reply.isOpen }
     )
 
@@ -147,7 +147,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
     val response = simpleRequest(
       securitizeCommand(sqlCommand),
-      "query",
+      s"query/${sqlCommand.requestId}",
       {
         case SQLReply(_, result: SQLResult) =>
           result
@@ -156,9 +156,11 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
     new SQLResponse(sqlCommand.requestId, response) {
       override def cancelCommand(): Future[QueryCancelledReply] = {
+        val command = CancelQueryExecution(sqlCommand.queryId)
         simpleRequest(
-          securitizeCommand(CancelQueryExecution(sqlCommand.queryId)),
-          "query", { case reply: QueryCancelledReply => reply }: PartialFunction[SQLReply, QueryCancelledReply]
+          securitizeCommand(command),
+          s"query/${command.requestId}",
+          { case reply: QueryCancelledReply => reply }: PartialFunction[SQLReply, QueryCancelledReply]
         )
       }
     }
@@ -171,16 +173,19 @@ class HttpDriver private[driver](driverConf: DriverConf,
   override def addAppCommand(path: String, clss: String, alias: Option[String]): SQLResponse =
     apiNotSupported("addAppCommand")
 
-  override def clusterState(): Future[CurrentClusterState] =
+  override def clusterState(): Future[CurrentClusterState] = {
+    val command = ClusterStateCommand()
     simpleRequest(
-      securitizeCommand(ClusterStateCommand()),
-      "query",
+      securitizeCommand(command),
+      s"query/${command.requestId}",
       { reply: ClusterStateReply => reply.clusterState }
     )
+  }
 
   override def closeSession(): Unit = {
-    val response = Marshal(securitizeCommand(CloseSessionCommand())).to[RequestEntity] flatMap { requestEntity =>
-      http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/query", entity = requestEntity))
+    val command = CloseSessionCommand()
+    val response = Marshal(securitizeCommand(command)).to[RequestEntity] flatMap { requestEntity =>
+      http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/query/${command.requestId}", entity = requestEntity))
     }
     Await.ready(response, requestTimeout)
     sessionBeacon.foreach(system.stop)
