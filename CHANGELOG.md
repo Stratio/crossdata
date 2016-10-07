@@ -4,7 +4,9 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 ## 1.7.0 (upcoming)
 
-* Pending changelog
+* HTTP/HTTPS Communication layer with transparent driver.
+* Bug Fixes:
+    * Cancellation message is now delivered to the client.
 
 ## 1.6.0 (upcoming)
 
