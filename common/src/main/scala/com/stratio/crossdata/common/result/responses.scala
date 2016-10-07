@@ -17,6 +17,8 @@ package com.stratio.crossdata.common.result
 
 import java.util.UUID
 
+import com.stratio.crossdata.common.QueryCancelledReply
+
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future, TimeoutException}
 import scala.util.{Success, Try}
@@ -37,10 +39,9 @@ case class SQLResponse(id: UUID, sqlResult: Future[SQLResult]) extends Response 
     } get
   }
 
-  def cancelCommand(): Unit = throw new RuntimeException("The query cannot be cancelled. Use sql(query).cancelCommand")
+  def cancelCommand(): Future[QueryCancelledReply] =
+    throw new RuntimeException("The query cannot be cancelled. Use sql(query).cancelCommand")
 }
-
-case class QueryCancelledResponse(id: UUID) extends Response
 
 object SQLResponse {
   implicit def sqlResponseToSQLResult(response: SQLResponse): SQLResult = response.waitForResult()
