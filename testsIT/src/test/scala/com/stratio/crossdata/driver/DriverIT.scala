@@ -17,10 +17,12 @@ package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
+import com.stratio.crossdata.common.QueryCancelledReply
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.driver.test.Utils._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -28,13 +30,14 @@ import scala.language.postfixOps
 import scala.reflect.io.File
 
 @RunWith(classOf[JUnitRunner])
-class DriverIT extends EndToEndTest {
+class DriverIT extends EndToEndTest with ScalaFutures {
 
   driverFactories foreach { case (factory, description) =>
 
     implicit val ctx = DriverTestContext(factory)
 
     val factoryDesc = s" $description"
+
 
     "CrossdataDriver" should "return an ErrorResult when running an unparseable query" + factoryDesc in {
 
@@ -54,6 +57,7 @@ class DriverIT extends EndToEndTest {
         driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
 
         val result = driver.sql("SELECT * FROM jsonTable").waitForResult()
+
         result shouldBe an[SuccessfulSQLResult]
         result.hasError should be(false)
         val rows = result.resultSet
@@ -183,6 +187,26 @@ class DriverIT extends EndToEndTest {
         driver.sql(s"SELECT * FROM $driverTable").waitForResult().resultSet should not be empty
         driver.sql(s"SELECT * FROM $anotherDriverTable").waitForResult().hasError shouldBe true
       }
+    }
+
+
+    it should "be able to cancel queries" + factoryDesc in {
+      assumeCrossdataUpAndRunning()
+
+      withDriverDo { driver =>
+
+        driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
+
+        val queryRq = driver.sql("SELECT DEBUG_SLEEP_MS(2000) FROM jsonTable")
+        val cancellationResponseFuture = queryRq.cancelCommand()
+
+        whenReady(cancellationResponseFuture) { res =>
+          res shouldBe a[QueryCancelledReply]
+        } (PatienceConfig(timeout = 3 seconds))
+
+
+      }
+
     }
 
   }

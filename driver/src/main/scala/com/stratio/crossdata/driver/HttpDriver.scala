@@ -154,7 +154,14 @@ class HttpDriver private[driver](driverConf: DriverConf,
       } : PartialFunction[SQLReply, SQLResult]
     )
 
-    SQLResponse(sqlCommand.requestId, response) //TODO: Cancellable
+    new SQLResponse(sqlCommand.requestId, response) {
+      override def cancelCommand(): Future[QueryCancelledReply] = {
+        simpleRequest(
+          securitizeCommand(CancelQueryExecution(sqlCommand.queryId)),
+          "query", { case reply: QueryCancelledReply => reply }: PartialFunction[SQLReply, QueryCancelledReply]
+        )
+      }
+    }
 
   }
 

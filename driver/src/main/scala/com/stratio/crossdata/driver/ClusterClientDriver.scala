@@ -121,8 +121,11 @@ class ClusterClientDriver private[driver](driverConf: DriverConf,
         }
         new SQLResponse(sqlCommand.requestId, futureReply) {
           // TODO cancel sync => 5 secs
-          override def cancelCommand(): Unit =
-          askCommand(securitizeCommand(CancelQueryExecution(sqlCommand.queryId)))
+          override def cancelCommand(): Future[QueryCancelledReply] =
+            askCommand(securitizeCommand(CancelQueryExecution(sqlCommand.queryId))) map {
+              case reply: QueryCancelledReply => reply
+              case other => throw new RuntimeException(s"CancelQueryExecution expected. Received: $other")
+            }
         }
     }
   }
