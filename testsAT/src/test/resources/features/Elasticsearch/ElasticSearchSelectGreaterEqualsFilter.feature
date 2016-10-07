@@ -52,7 +52,7 @@ Feature: ElasticSearchSelectGreaterEqualsFilter
       |  true         |
       |  true         |
 
-
+  @ignore @tillfixed(CROSSDATA-18)
   Scenario: [CROSSDATA-18: ES NATIVE] SELECT date FROM tabletest WHERE date >= '2009-09-09';
     When I execute 'SELECT date FROM tabletest WHERE date >= '2009-09-08 22:00:00.0''
     Then The result has to have '1' rows:
