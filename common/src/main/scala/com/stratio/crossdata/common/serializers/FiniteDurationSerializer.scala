@@ -13,16 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
+package com.stratio.crossdata.common.serializers
 
-import org.apache.spark.Logging
+import org.json4s.{CustomSerializer, Extraction, Formats, JObject}
 
+import scala.concurrent.duration._
 
+private[serializers] case class ProtoDuration(duration_ms: Long)
 
-abstract class SecurityManager(val credentials: Credentials, val audit: Boolean) extends Logging {
-
-  def authorize(resource: Any): AuthorizationReply
-
-}
-
-
+object FiniteDurationSerializer extends CustomSerializer[FiniteDuration](formats =>
+  (
+    {
+      case jduration: JObject =>
+        implicit val _: Formats = formats
+        jduration.extract[ProtoDuration].duration_ms milliseconds
+    },
+    {
+      case d: FiniteDuration =>
+        Extraction.decompose(ProtoDuration(d.toMillis))(formats)
+    }
+  )
+)

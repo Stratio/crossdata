@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.driver
 
+import akka.actor.Address
 import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.{FieldMetadata, JavaTableName}
@@ -22,8 +23,14 @@ import com.stratio.crossdata.driver.session.Authentication
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
-import scala.concurrent.duration.Duration
+import scala.collection.JavaConverters._
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
+object JavaDriver {
+  def httpDriverFactory: DriverFactory = Driver.http
+  def clusterClientDriverFactory: DriverFactory = Driver
+}
 
 class JavaDriver private(driverConf: DriverConf,
                          auth: Authentication,
@@ -123,9 +130,24 @@ class JavaDriver private(driverConf: DriverConf,
   def isClusterAlive(): Boolean =
     scalaDriver.isClusterAlive()
 
+  /**
+    * Returns a list of the nodes forming the Crossdata cluster
+    *
+    * @since 1.7
+    * @return list of addresses of servers running
+    */
+  def serversUp(): java.util.Set[Address]  = Await.result(scalaDriver.serversUp(), 10 seconds).asJava
+
+  /**
+    * Returns a list of the nodes forming the session provider
+    *
+    * @since 1.7
+    * @return list of host:port of nodes providing the Crossdata sessions
+    */
+  def membersUp(): java.util.Set[String] = Await.result(scalaDriver.sessionProviderState(), 10 seconds).asJava
+
   def closeSession(): Unit =
     scalaDriver.closeSession()
-
 
   def addJar(path:String): Unit =
     scalaDriver.addJar(path)

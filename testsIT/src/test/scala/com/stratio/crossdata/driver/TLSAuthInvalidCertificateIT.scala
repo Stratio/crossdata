@@ -16,7 +16,7 @@
 package com.stratio.crossdata.driver
 
 import com.stratio.crossdata.driver.config.DriverConf
-import com.stratio.crossdata.driver.error.TLSInvalidAuthException
+import com.stratio.crossdata.driver.exceptions.TLSInvalidAuthException
 import com.stratio.crossdata.driver.test.Utils._
 import com.stratio.crossdata.server.CrossdataServer
 import com.stratio.crossdata.server.config.ServerConfig
@@ -51,7 +51,7 @@ class TLSAuthInvalidCertificateIT extends EndToEndTest {
 
     crossdataServer = Some(new CrossdataServer(Some(tlsConfig)))
     crossdataServer.foreach(_.start())
-    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID)))
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID, this.getClass.getSimpleName)))
   }
 
   "CrossdataDriver" should "return an invalid TLS authentiction error when trying to query to a TLS securized CrossdataServer from a driver with bad certificate" in {

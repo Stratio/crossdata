@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.error
+package org.apache.spark.sql.crossdata.authorizer
 
-/**
-  * Created by usarasola on 27/09/16.
-  */
-case class TLSInvalidAuthException(msg: String, e: Throwable) extends Exception(msg, e)
+import com.stratio.crossdata.security.{Action, Resource}
 
-object TLSInvalidAuthException {
-  def apply(msg: String) = new TLSInvalidAuthException(msg, null)
-  def apply() = new TLSInvalidAuthException(null, null)
+class SMAllowingAnyResource extends BaseSecurityManagerTest{
+
+  override def authorize(userId: String, resource: Resource, action: Action): Boolean =
+    super.authorize(userId, resource, action)
+
 }

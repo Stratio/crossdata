@@ -24,6 +24,8 @@ trait XDSQLConf extends SQLConf {
 
 object XDSQLConf {
 
+  val UserIdPropertyKey = "crossdata.security.user"
+
   implicit def fromSQLConf(conf: SQLConf): XDSQLConf = new XDSQLConf {
 
     override def enableCacheInvalidation(enable: Boolean): XDSQLConf = this

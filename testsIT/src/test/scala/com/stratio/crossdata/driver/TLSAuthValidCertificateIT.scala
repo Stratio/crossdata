@@ -17,7 +17,7 @@ package com.stratio.crossdata.driver
 
 import com.stratio.crossdata.common.result.SuccessfulSQLResult
 import com.stratio.crossdata.driver.config.DriverConf
-import com.stratio.crossdata.driver.error.TLSInvalidAuthException
+import com.stratio.crossdata.driver.exceptions.TLSInvalidAuthException
 import com.stratio.crossdata.driver.test.Utils._
 import com.stratio.crossdata.server.CrossdataServer
 import com.stratio.crossdata.server.config.ServerConfig
@@ -53,7 +53,7 @@ class TLSAuthValidCertificateIT extends EndToEndTest {
 
     crossdataServer = Some(new CrossdataServer(Some(tlsConfig)))
     crossdataServer.foreach(_.start())
-    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID)))
+    crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID, this.getClass.getSimpleName)))
   }
 
   "CrossdataDriver" should "return a result as usual using a valid TLS certificate from the driver" in {

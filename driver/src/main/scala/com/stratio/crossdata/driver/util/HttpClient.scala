@@ -32,6 +32,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
+//TODO: Integrate this functionality into the current state of Http and ClusterClient drivers
+
 object HttpClient {
 
   case class HttpClientContext(config: DriverConf, actorSystem: ActorSystem)

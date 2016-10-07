@@ -30,9 +30,10 @@ import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJo
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.session.XDSessionProvider
+import org.apache.spark.sql.crossdata.session.{HazelcastSessionProvider, XDSessionProvider}
 import org.apache.spark.sql.types.StructType
 
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
@@ -131,7 +132,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
         sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
 
     case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, _), _) =>
-      st.jobsById.get(JobId(id, queryId)).get ! CancelJob
+      st.jobsById(JobId(id, queryId)) ! CancelJob
   }
 
 
@@ -171,14 +172,23 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
         executeAccepted(sc, requester)(st) // Command validated to be executed by this server.
       } getOrElse {
         // If it can't run here it should be executed somewhere else
-        mediator ! Publish(ManagementTopic, DelegateCommand(sc.copy(session = Session(id, requesterOpt)), self))
+        mediator ! Publish(ManagementTopic, DelegateCommand(sc.copy(session = Session(id, Some(requester))), self))
       }
 
-    case sc@CommandEnvelope(_: ClusterStateCommand, session, _) =>
-      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
+    case sc@CommandEnvelope(_: ClusterStateCommand, session, _) => {
+      val members = if (sessionProvider.isInstanceOf[HazelcastSessionProvider]) {
+        sessionProvider.asInstanceOf[HazelcastSessionProvider].getClusterState.getMembers map { m =>
+          m.getAddress.toString
+        }
+      } else {
+        Set.empty[String]
+      }
 
-    case sc@CommandEnvelope(_: OpenSessionCommand, session, _) =>
-      val open = sessionProvider.newSession(session.id) match {
+      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state, members)
+    }
+
+    case sc@CommandEnvelope(_: OpenSessionCommand, session, userId) =>
+      val open = sessionProvider.newSession(session.id, userId) match {
         case Success(_) =>
           logger.info(s"new session with sessionID=${session.id} has been created")
           true

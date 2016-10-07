@@ -4,11 +4,12 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 ## 1.7.0 (upcoming)
 
+* Pluggable security manager, enabling authorization and auditing
 * HTTP/HTTPS Communication layer with transparent driver.
 * Bug Fixes:
     * Cancellation message is now delivered to the client.
 
-## 1.6.0 (upcoming)
+## 1.6.0 (September 2016)
 
 * Elasticsearch: 
     * Support import tables without specifying a particular resource

@@ -13,19 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
+package com.stratio.crossdata.driver.exceptions
 
-object DummySecurityManager {
-  val UniqueReply = "Authorized"
-}
-
-class DummySecurityManager(credentials: Credentials, audit: Boolean) extends SecurityManager(credentials, audit) {
-
-  import org.apache.spark.sql.crossdata.security.DummySecurityManager._
-
-  override def authorize(resource: Any): AuthorizationReply = {
-    if(audit) logInfo(s"DUMMY SECURITY MANAGER: $UniqueReply")
-    new AuthorizationReply(true, Some(UniqueReply))
-  }
-
-}
+case class TLSInvalidAuthException(msg: String, e: Throwable = null) extends Exception(msg, e)

@@ -151,9 +151,10 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
     } ~ complete("Welcome to Crossdata HTTP Server")
 
-  val getRqEnt = extract[HttpRequest] { rqCtx =>
+  //TODO: Remove this debugging tool when a minimal stable API has been reached
+  /*val getRqEnt = extract[HttpRequest] { rqCtx =>
     rqCtx.request
-  }
+  }*/
 
   private def writeJarToHdfs(hdfsConfig: Config, jar: String): String = {
     val user = hdfsConfig.getString("user")

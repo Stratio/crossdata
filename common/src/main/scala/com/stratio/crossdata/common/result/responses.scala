@@ -35,7 +35,7 @@ case class SQLResponse(id: UUID, sqlResult: Future[SQLResult]) extends Response 
       Await.result(sqlResult, duration) : SQLResult
     } recoverWith {
       case _: TimeoutException => Success(ErrorSQLResult(s"Not found answer to request: $id. Timeout was exceed."))
-      case other: Throwable => Success(ErrorSQLResult(other.getLocalizedMessage, Some(other)))
+      case other: Exception => Success(ErrorSQLResult(other.getLocalizedMessage, Some(other)))
     } get
   }
 

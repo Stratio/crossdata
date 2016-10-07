@@ -34,7 +34,7 @@ private [serializers] object CommandSerializerHelper {
       CommandWithName(None)
   }
 
-  implicit val _ = DefaultFormats + UUIDSerializer
+  implicit val _ = DefaultFormats + UUIDSerializer + FiniteDurationSerializer
 
   val commandExtractor = Map[String, JValue => Command](
     "SQLCommand" -> { jSQLCommand => (jSQLCommand \ "details").extract[SQLCommand] },

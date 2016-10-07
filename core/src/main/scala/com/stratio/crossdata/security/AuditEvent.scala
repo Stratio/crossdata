@@ -13,21 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.serializers
+
+package com.stratio.crossdata.security
 
 
-import _root_.akka.cluster.Member
-
-import com.stratio.crossdata.common.serializers.akka.{AkkaClusterMemberSerializer, AkkaMemberStatusSerializer}
-import org.apache.spark.sql.crossdata.serializers.StructTypeSerializer
-import org.json4s._
-
-trait CrossdataCommonSerializer {
-
-  implicit val json4sJacksonFormats: Formats =
-    DefaultFormats + SQLResultSerializer + UUIDSerializer +
-      StructTypeSerializer + FiniteDurationSerializer + CommandSerializer +
-        AkkaMemberStatusSerializer + AkkaClusterMemberSerializer + new SortedSetSerializer[Member]()
-
-}
-
+case class AuditEvent(userId: String, resource: Resource, action: Action, result: AuditResult, impersonation: Option[Boolean] = None)

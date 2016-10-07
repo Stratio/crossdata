@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.serializers
+package com.stratio.crossdata.security
 
+/**
+  * WARNING: Update crossdata plugin when modifying the actions
+  */
+sealed trait Action
 
-import _root_.akka.cluster.Member
+case object Read extends Action
 
-import com.stratio.crossdata.common.serializers.akka.{AkkaClusterMemberSerializer, AkkaMemberStatusSerializer}
-import org.apache.spark.sql.crossdata.serializers.StructTypeSerializer
-import org.json4s._
+case object Write extends Action
 
-trait CrossdataCommonSerializer {
+case object Create extends Action
 
-  implicit val json4sJacksonFormats: Formats =
-    DefaultFormats + SQLResultSerializer + UUIDSerializer +
-      StructTypeSerializer + FiniteDurationSerializer + CommandSerializer +
-        AkkaMemberStatusSerializer + AkkaClusterMemberSerializer + new SortedSetSerializer[Member]()
+case object Drop extends Action
 
-}
+case object Describe extends Action
 
+case object Cache extends Action

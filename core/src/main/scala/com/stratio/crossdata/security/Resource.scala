@@ -13,21 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.serializers
+package com.stratio.crossdata.security
 
+case class Resource(instances: Seq[String], resourceType: ResourceType, name: String)
 
-import _root_.akka.cluster.Member
-
-import com.stratio.crossdata.common.serializers.akka.{AkkaClusterMemberSerializer, AkkaMemberStatusSerializer}
-import org.apache.spark.sql.crossdata.serializers.StructTypeSerializer
-import org.json4s._
-
-trait CrossdataCommonSerializer {
-
-  implicit val json4sJacksonFormats: Formats =
-    DefaultFormats + SQLResultSerializer + UUIDSerializer +
-      StructTypeSerializer + FiniteDurationSerializer + CommandSerializer +
-        AkkaMemberStatusSerializer + AkkaClusterMemberSerializer + new SortedSetSerializer[Member]()
-
+sealed trait ResourceType{
+  def name(): String
 }
 
+case object TableResource extends ResourceType{
+  override def name(): String = "table"
+}
+case object CatalogResource extends ResourceType{
+  override def name(): String = "catalog"
+}
+
+case object DatastoreResource extends ResourceType{
+  override def name(): String = "datastore"
+}
+
+object Resource {
+  val CrossdataClusterNameEnvVar = "CROSSDATA_CLUSTER_NAME"
+  val AllResourceName = "*"
+}

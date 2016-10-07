@@ -62,6 +62,24 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   private val hzConfig: HzConfig = new XmlConfigBuilder().build()
 
+  /**
+    * Just for test purposes
+    */
+  def stop(): Unit = {
+    sessionProviderOpt.foreach(_.close())
+
+    sessionProviderOpt.foreach(_.sc.stop())
+
+    system.foreach { actSystem =>
+      implicit val exContext = actSystem.dispatcher
+      bindingFuture.foreach { bFuture =>
+        bFuture.flatMap(_.unbind()).onComplete(_ => actSystem.terminate())
+      }
+    }
+
+    logger.info("Crossdata Server stopped")
+  }
+
   private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
 
     val curatorClient = CuratorFrameworkFactory.newClient(
@@ -368,6 +386,26 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
         Option(Http().bindAndHandle(httpServerActor.route, host, port))
       }
 
+      bindingFuture = Some {
+        if (serverConfig.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)) {
+          val host = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsHost)
+          val port = serverConfig.getInt(ServerConfig.AkkaHttpTLS.TlsPort)
+          val context = getTlsContext
+
+          logger.info(s"Securized server with client certificate authentication on https://$host:$port")
+
+          (host, port, Some(context))
+
+        } else {
+          val host = serverConfig.getString(ServerConfig.Host)
+          val port = serverConfig.getInt(ServerConfig.HttpServerPort)
+          (host, port, None)
+        }
+      } map {
+        case (host, port, None) =>  Http().bindAndHandle(httpServerActor.route, host)
+        case (host, port, Some(ctx)) =>  Http().bindAndHandle(httpServerActor.route, host, port, ctx)
+      }
+
     }
 
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
@@ -398,22 +436,5 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     }
   }
 
-  /**
-    * Just for test purposes
-    */
-  def stop(): Unit = {
-    sessionProviderOpt.foreach(_.close())
-
-    sessionProviderOpt.foreach(_.sc.stop())
-
-    system.foreach { actSystem =>
-      implicit val exContext = actSystem.dispatcher
-      bindingFuture.foreach { bFuture =>
-        bFuture.flatMap(_.unbind()).onComplete(_ => actSystem.shutdown())
-      }
-    }
-
-    logger.info("Crossdata Server stopped")
-  }
 
 }
