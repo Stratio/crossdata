@@ -24,7 +24,7 @@ import akka.actor.ActorRef
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.http.scaladsl.{Http, HttpExt, HttpsConnectionContext}
 import akka.http.scaladsl.marshalling.{Marshal, Marshaller}
-import akka.http.scaladsl.model.{HttpMethod, HttpRequest, RequestEntity, ResponseEntity}
+import akka.http.scaladsl.model._
 import akka.stream.{ActorMaterializer, StreamTcpException, TLSClientAuth}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.{KeyStoreUtils, Session}
@@ -33,6 +33,7 @@ import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
 import org.slf4j.{Logger, LoggerFactory}
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
+import akka.stream.scaladsl.{Flow, Sink, Source}
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.serializers.CrossdataCommonSerializer
 import com.stratio.crossdata.driver.actor.HttpSessionBeaconActor
@@ -68,6 +69,10 @@ class HttpDriver private[driver](driverConf: DriverConf,
   import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
   implicit val serialization = jackson.Serialization
 
+  private val connectionFlow: Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] = {
+    val Array(host, portStr) = serverHttp.split(':')
+    Http().outgoingConnection(host, portStr.toInt)
+  }
 
   private lazy val sessionBeaconProps = HttpSessionBeaconActor.props(
     driverSession.id,
@@ -110,8 +115,15 @@ class HttpDriver private[driver](driverConf: DriverConf,
     val result =
       for {
         requestEntity <- Marshal(toMarshalCommand).to[RequestEntity]
-        httpResponse <- http.singleRequest(HttpRequest(httpMethod, s"$protocol://$serverHttp/$path", entity = requestEntity))
-        reply <- Unmarshal(httpResponse.entity).to[E]
+        httpResponse <- Source.single(HttpRequest(httpMethod, s"/$path", entity = requestEntity)).via(connectionFlow).runWith(Sink.head)
+          //http.singleRequest(HttpRequest(httpMethod, s"$protocol://$serverHttp/$path", entity = requestEntity))
+        reply <- Unmarshal(httpResponse.entity).to[E] recover {
+          case e =>
+            println(">>>>>>>>>>>>" + requestEntity)
+            println("<<<<<<<<<<<<" + httpResponse)
+            e.printStackTrace
+            throw e
+        }
         desiredResult = replyToResult(reply)
       } yield desiredResult
 
@@ -127,10 +139,10 @@ class HttpDriver private[driver](driverConf: DriverConf,
   }
 
   protected[driver] def openSession(): Try[Boolean] = {
-
+    val command = OpenSessionCommand()
     val response = simpleRequest(
-      securitizeCommand(OpenSessionCommand()),
-      "query",
+      securitizeCommand(command),
+      s"query/${command.requestId}",
       { reply: OpenSessionReply => reply.isOpen }
     )
 
@@ -147,14 +159,28 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
     val response = simpleRequest(
       securitizeCommand(sqlCommand),
-      "query",
+      s"query/${sqlCommand.requestId}",
       {
         case SQLReply(_, result: SQLResult) =>
           result
       } : PartialFunction[SQLReply, SQLResult]
     )
 
-    SQLResponse(sqlCommand.requestId, response) //TODO: Cancellable
+    new SQLResponse(sqlCommand.requestId, response) {
+      override def cancelCommand(): Future[QueryCancelledReply] = {
+        val command = CancelQueryExecution(sqlCommand.queryId)
+        simpleRequest(
+          securitizeCommand(command),
+          s"cancel/${command.requestId}",
+          {
+            case reply: QueryCancelledReply =>
+              println("GOT CANCELLATION!!!!!!!!!!!!!!!!!!!!1")
+              reply
+          }: PartialFunction[SQLReply, QueryCancelledReply]
+
+        )
+      }
+    }
 
   }
 
@@ -164,12 +190,14 @@ class HttpDriver private[driver](driverConf: DriverConf,
   override def addAppCommand(path: String, clss: String, alias: Option[String]): SQLResponse =
     apiNotSupported("addAppCommand")
 
-  override def clusterState(): Future[CurrentClusterState] =
+  override def clusterState(): Future[CurrentClusterState] = {
+    val command = ClusterStateCommand()
     simpleRequest(
-      securitizeCommand(ClusterStateCommand()),
-      "query",
+      securitizeCommand(command),
+      s"query/${command.requestId}",
       { reply: ClusterStateReply => reply.clusterState }
     )
+  }
 
   private[driver] def sessionProviderState(): Future[scala.collection.Set[String]] =
     simpleRequest(
@@ -179,8 +207,9 @@ class HttpDriver private[driver](driverConf: DriverConf,
     )
 
   override def closeSession(): Unit = {
-    val response = Marshal(securitizeCommand(CloseSessionCommand())).to[RequestEntity] flatMap { requestEntity =>
-      http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/query", entity = requestEntity))
+    val command = CloseSessionCommand()
+    val response = Marshal(securitizeCommand(command)).to[RequestEntity] flatMap { requestEntity =>
+      http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/query/${command.requestId}", entity = requestEntity))
     }
     Try(Await.ready(response, requestTimeout)) recoverWith {
       case err =>
