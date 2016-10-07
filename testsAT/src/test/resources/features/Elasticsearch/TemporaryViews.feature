@@ -1,5 +1,6 @@
 Feature: VIEWS
 
+  @ignore @tillfixed(CROSSDATA-188)
   Scenario: [CROSSDATA-188] CREATE TEMPORARY VIEW viewTest AS SELECT * FROM tabletest;
     When I execute 'CREATE TEMPORARY VIEW viewTest AS SELECT * FROM tabletest'
     Then I execute 'SELECT ident, date, money, name, new FROM viewTest'

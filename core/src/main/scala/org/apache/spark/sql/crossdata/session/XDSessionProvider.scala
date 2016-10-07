@@ -19,7 +19,7 @@ import java.lang.reflect.Constructor
 import java.util.UUID
 
 import com.stratio.crossdata.security.CrossdataSecurityManager
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{Config, ConfigException, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLConf
@@ -41,13 +41,20 @@ object XDSessionProvider {
 // TODO sessionProvider should be threadSafe
 abstract class XDSessionProvider(
                                   @transient val sc: SparkContext,
-                                  protected val commonConfig: Config
-                                  ) {
+                                  protected val userCoreConfig: Config
+                                ) extends CoreConfig {
 
   import XDSessionProvider._
 
-
   lazy val logger = Logger.getLogger(getClass)
+
+  protected lazy val finalCoreConfig = userCoreConfig.withFallback(config)
+
+  protected lazy val catalogConfig = Try(finalCoreConfig.getConfig(CoreConfig.CatalogConfigKey)).recover {
+    case exception: ConfigException =>
+      logger.debug(exception.getMessage, exception)
+      ConfigFactory.empty()
+  } get
 
   //NOTE: DO NEVER KEEP THE RETURNED REFERENCE FOR SEVERAL USES!
   def session(sessionID: SessionID): Try[XDSession]
@@ -63,14 +70,14 @@ abstract class XDSessionProvider(
     * it should be closed here.
     */
   def close(): Unit = {
-    securityManager.foreach{ secManager =>
+    securityManager.foreach { secManager =>
       secManager.stop()
     }
   }
 
   @transient
   protected lazy val securityManager: Option[CrossdataSecurityManager] = {
-    val securityManager = Try(commonConfig.getString(SecurityClassConfigKey)).map{ securityManagerClassName =>
+    val securityManager = Try(finalCoreConfig.getString(SecurityClassConfigKey)).map { securityManagerClassName =>
       val securityManagerClass = Class.forName(securityManagerClassName)
       val constr: Constructor[_] = securityManagerClass.getConstructor()
       val secManager = constr.newInstance().asInstanceOf[CrossdataSecurityManager]
@@ -78,7 +85,7 @@ abstract class XDSessionProvider(
       secManager
     } toOption
 
-    if (securityManager.isEmpty){
+    if (securityManager.isEmpty) {
       logger.warn("Authorization is not enabled, configure a security manager if needed")
     }
     securityManager
@@ -90,22 +97,22 @@ abstract class XDSessionProvider(
   * Session provider which store session info locally, so it can't be used when deploying several crossdata server
   */
 class BasicSessionProvider(
-                             @transient override val sc: SparkContext,
-                             userConfig: Config
-                           ) extends XDSessionProvider(sc,userConfig) with CoreConfig {
+                            @transient override val sc: SparkContext,
+                            userCoreConfig: Config
+                          ) extends XDSessionProvider(sc, userCoreConfig) {
 
   import XDSessionProvider._
 
   override lazy val logger = Logger.getLogger(classOf[BasicSessionProvider])
 
-  private lazy val catalogConfig = Try(config.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
-  private lazy val sqlConf: SQLConf = configToSparkSQL(userConfig, new SQLConf)
+  // TODO Update DOC => user can set spark sql properties by adding crossdata-core.config.spark.<spark_option>=<option_value>
+  private lazy val sqlConf: SQLConf = configToSparkSQL(finalCoreConfig, new SQLConf)
 
   @transient
   protected lazy val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(sqlConf, catalogConfig)
 
   @transient
-  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(sqlConf, config)
+  protected lazy val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(sqlConf, finalCoreConfig)
 
   private val sharedState = new XDSharedState(sc, sqlConf, externalCatalog, streamingCatalog, securityManager)
 
@@ -125,20 +132,19 @@ class BasicSessionProvider(
       sessionIDToTempCatalog.put(sessionID, tempCatalog)
       sessionIDToSQLProps.put(sessionID, sharedState.sqlConf)
 
-      buildSession(sharedState.sqlConf, tempCatalog, Some(userConfig))
+      buildSession(sharedState.sqlConf, tempCatalog, Some(userCoreConfig))
     }
 
-  override def closeSession(sessionID: SessionID): Try[Unit] =
-    {
-      for {
-        _ <- sessionIDToSQLProps.remove(sessionID)
-        _ <- sessionIDToTempCatalog.remove(sessionID)
-      } yield ()
-    } map {
-      Success(_)
-    } getOrElse {
-      Failure(new RuntimeException(s"Cannot close session with sessionId=$sessionID"))
-    }
+  override def closeSession(sessionID: SessionID): Try[Unit] = {
+    for {
+      _ <- sessionIDToSQLProps.remove(sessionID)
+      _ <- sessionIDToTempCatalog.remove(sessionID)
+    } yield ()
+  } map {
+    Success(_)
+  } getOrElse {
+    Failure(new RuntimeException(s"Cannot close session with sessionId=$sessionID"))
+  }
 
   override def session(sessionID: SessionID): Try[XDSession] = {
     for {

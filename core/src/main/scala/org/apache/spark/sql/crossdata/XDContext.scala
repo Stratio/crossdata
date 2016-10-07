@@ -65,9 +65,9 @@ import scala.util.{Failure, Success, Try}
   *
   * @param sc A [[SparkContext]].
   */
-class XDContext protected (@transient val sc: SparkContext,
-                           @transient private val userConfig: Option[Config] = None
-                          ) extends SQLContext(sc) with Logging  {
+class XDContext protected(@transient val sc: SparkContext,
+                          @transient private val userCoreConfig: Option[Config] = None
+                         ) extends SQLContext(sc) with Logging {
   self =>
 
   def this(sc: SparkContext) =
@@ -88,7 +88,7 @@ class XDContext protected (@transient val sc: SparkContext,
      methods is called.
      */
 
-  xdConfig = userConfig.fold(config) { userConf =>
+  xdConfig = userCoreConfig.fold(config) { userConf =>
     userConf.withFallback(config)
   }
 
@@ -106,7 +106,7 @@ class XDContext protected (@transient val sc: SparkContext,
     new XDQueryExecution(this, plan, catalogIdentifier)
 
   override protected[sql] lazy val conf: SQLConf =
-    userConfig.map{ coreConfig =>
+    userCoreConfig.map { coreConfig =>
       configToSparkSQL(coreConfig, new SQLConf)
     }.getOrElse(new SQLConf)
 
@@ -118,11 +118,9 @@ class XDContext protected (@transient val sc: SparkContext,
     val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(conf, catalogConfig)
     val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(conf, xdConfig)
 
-    val catalogs: List[XDCatalogCommon] =  temporaryCatalog :: externalCatalog :: streamingCatalog.toList
-    CatalogChain(catalogs:_*)(self)
+    val catalogs: List[XDCatalogCommon] = temporaryCatalog :: externalCatalog :: streamingCatalog.toList
+    CatalogChain(catalogs: _*)(self)
   }
-
-
 
 
   @transient
@@ -151,7 +149,7 @@ class XDContext protected (@transient val sc: SparkContext,
         Batch("Substitution", fixedPoint,
           CTESubstitution,
           WindowsSubstitution),
-        Batch("Preparation", fixedPoint, preparationRules : _*),
+        Batch("Preparation", fixedPoint, preparationRules: _*),
         Batch("Resolution", fixedPoint,
           WrapRelationWithGlobalIndex(catalog) ::
             ResolveRelations ::
@@ -168,7 +166,7 @@ class XDContext protected (@transient val sc: SparkContext,
             ResolveAggregateFunctions ::
             DistinctAggregationRewriter(conf) ::
             HiveTypeCoercion.typeCoercionRules ++
-              extendedResolutionRules : _*),
+              extendedResolutionRules: _*),
         Batch("Nondeterministic", Once,
           PullOutNondeterministic,
           ComputeCurrentTime),
@@ -221,7 +219,7 @@ class XDContext protected (@transient val sc: SparkContext,
     udf.register("group_concat", gc)
     udf.register(
       "to_number",
-      (numberStr: String) => if(numberStr contains ".") numberStr.toDouble else numberStr.toLong
+      (numberStr: String) => if (numberStr contains ".") numberStr.toDouble else numberStr.toLong
     )
     udf.register(
       "DEBUG_SLEEP_MS",
@@ -243,20 +241,20 @@ class XDContext protected (@transient val sc: SparkContext,
     */
   def addJar(path: String, toClasspath: Option[Boolean] = None) = {
     super.addJar(path)
-    if ((path.toLowerCase.startsWith("hdfs://")) && (toClasspath.getOrElse(true))){
+    if ((path.toLowerCase.startsWith("hdfs://")) && (toClasspath.getOrElse(true))) {
       val hdfsIS: InputStream = HdfsUtils(xdConfig.getConfig(CoreConfig.HdfsKey)).getFile(path)
       val file: java.io.File = createFile(hdfsIS, s"${xdConfig.getConfig(CoreConfig.JarsRepo).getString("externalJars")}/${path.split("/").last}")
       addToClasspath(file)
-    }else if (scala.reflect.io.File(path).exists){
-      val file=new java.io.File(path)
+    } else if (scala.reflect.io.File(path).exists) {
+      val file = new java.io.File(path)
       addToClasspath(file)
-    }else{
+    } else {
       sys.error("File doesn't exist or is not a hdfs file")
     }
 
   }
 
-  private def addToClasspath(file:java.io.File): Unit = {
+  private def addToClasspath(file: java.io.File): Unit = {
     if (file.exists) {
       val method: Method = classOf[URLClassLoader].getDeclaredMethod("addURL", classOf[URL])
       method.setAccessible(true)
@@ -325,7 +323,7 @@ class XDContext protected (@transient val sc: SparkContext,
     * @param indexIdentifier the index to be dropped.
     */
   def dropGlobalIndex(indexIdentifier: IndexIdentifier): Unit =
-    catalog.dropIndex(indexIdentifier)
+  catalog.dropIndex(indexIdentifier)
 
 
   /**
@@ -335,7 +333,7 @@ class XDContext protected (@transient val sc: SparkContext,
     * @param opts
     */
   def importTables(datasource: String, opts: Map[String, String]): Unit =
-    ImportTablesUsingWithOptions(datasource, opts).run(this)
+  ImportTablesUsingWithOptions(datasource, opts).run(this)
 
 
   /**
@@ -344,7 +342,7 @@ class XDContext protected (@transient val sc: SparkContext,
     * @return if connection is possible
     */
   def checkCatalogConnection: Boolean =
-    catalog.checkConnectivity
+  catalog.checkConnectivity
 
 
   def createDataFrame(rows: Seq[Row], schema: StructType): DataFrame =

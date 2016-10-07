@@ -34,7 +34,7 @@ import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.server.discovery.{ServiceDiscoveryConfigHelper => SDCH, ServiceDiscoveryHelper => SDH}
-import com.typesafe.config.{Config, ConfigValueFactory}
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.apache.curator.framework.recipes.leader.LeaderLatch
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -58,9 +58,126 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
   var sessionProviderOpt: Option[XDSessionProvider] = None
   var bindingFuture: Option[Future[ServerBinding]] = None
 
-  private val serverConfig = progrConfig map (_.withFallback(config)) getOrElse (config)
+  private val serverConfig = progrConfig map (_.withFallback(config)) getOrElse config
 
   private val hzConfig: HzConfig = new XmlConfigBuilder().build()
+
+  def start(): Unit = {
+
+    val sparkParams = serverConfig.entrySet()
+      .map(e => (e.getKey, e.getValue.unwrapped().toString))
+      .toMap
+      .filterKeys(_.startsWith("config.spark"))
+      .map(e => (e._1.replace("config.", ""), e._2))
+
+    val metricsPath = Option(sparkParams.get("spark.metrics.conf"))
+
+    val filteredSparkParams = metricsPath.fold(sparkParams)(m => checkMetricsFile(sparkParams, m.get))
+
+    val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
+
+    // Get service discovery configuration
+    val sdConfig = Try(serverConfig.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
+
+    val sdHelper: Option[SDH] = sdConfig flatMap { serConfig =>
+      Try(serConfig.getBoolean("activated")).toOption collect {
+        case true =>
+          logger.info("Service discovery enabled")
+          startServiceDiscovery(new SDCH(serConfig))
+      }
+    }
+
+    val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
+
+    val finalHzConfig = sdHelper.fold(hzConfig)(_.hzConfig)
+
+    sessionProviderOpt = Some {
+      if (isHazelcastEnabled)
+        new HazelcastSessionProvider(
+          sparkContext,
+          serverConfig = serverConfig,
+          userCoreConfig = ConfigFactory.empty(), // TODO allow to configure core parameters programmatically
+          finalHzConfig)
+      else
+        new BasicSessionProvider(sparkContext, serverConfig)
+    }
+
+    val sessionProvider = sessionProviderOpt
+      .getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
+
+    assert(
+      sdHelper.nonEmpty || sessionProvider.isInstanceOf[HazelcastSessionProvider],
+      "Service Discovery needs to have the Hazelcast session provider enabled")
+
+    finalConfig.entrySet.filter { e =>
+      e.getKey.contains("seed-nodes")
+    }.foreach { e =>
+      logger.info(s"Seed nodes: ${e.getValue}")
+    }
+
+    system = Some(ActorSystem(clusterName, finalConfig))
+
+    system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
+
+      val xdCluster = Cluster(actorSystem)
+
+      sdHelper.map { sd =>
+
+        // Once the Cluster has been started and the cluster leadership is gotten,
+        // this sever will update the list of cluster seeds and provider members periodically
+        // according to the Akka members.
+        import scala.concurrent.ExecutionContext.Implicits.global
+        sd.leadershipFuture onSuccess {
+          case _ =>
+            updateServiceDiscovery(xdCluster, sessionProvider.asInstanceOf[HazelcastSessionProvider], sd, actorSystem)
+        }
+      }
+
+      val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
+      val serverActor = actorSystem.actorOf(
+        RoundRobinPool(minServerActorInstances, Some(resizer)).props(
+          Props(
+            classOf[ServerActor],
+            xdCluster,
+            sessionProvider)),
+        actorName)
+
+      val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
+      ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
+
+      val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
+      ClusterClientReceptionist(actorSystem).registerService(serverActor)
+      ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
+
+      //TODO
+      implicit val httpSystem = actorSystem
+      implicit val materializer = ActorMaterializer()
+      val httpServerActor = new CrossdataHttpServer(finalConfig, serverActor, actorSystem)
+
+      bindingFuture = Some {
+        if (serverConfig.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)) {
+          val host = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsHost)
+          val port = serverConfig.getInt(ServerConfig.AkkaHttpTLS.TlsPort)
+          val context = getTlsContext
+
+          logger.info(s"Securized server with client certificate authentication on https://$host:$port")
+
+          (host, port, Some(context))
+
+        } else {
+          val host = serverConfig.getString(ServerConfig.Host)
+          val port = serverConfig.getInt(ServerConfig.HttpServerPort)
+          (host, port, None)
+        }
+      } map {
+        case (host, port, None) => Http().bindAndHandle(httpServerActor.route, host, port)
+        case (host, port, Some(ctx)) =>  Http().bindAndHandle(httpServerActor.route, host, port, ctx)
+      }
+      println(bindingFuture)
+    }
+
+    logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
+  }
 
   /**
     * Just for test purposes
@@ -105,15 +222,15 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     sLeader.start
 
     Try {
-      if(sLeader.await(sdc.getOrElse(
-        SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout.toString).toLong, TimeUnit.SECONDS)){
+      if (sLeader.await(sdc.getOrElse(
+        SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout.toString).toLong, TimeUnit.SECONDS)) {
         logger.info("Subscription leadership acquired")
         sLeader
       } else {
         throw new RuntimeException("Timeout acquiring subscription leadership")
       }
     } recoverWith {
-      case e => Failure(new RuntimeException(s"Subscription leadership couldn't be acquired: ${e.getMessage}" ))
+      case e => Failure(new RuntimeException(s"Subscription leadership couldn't be acquired: ${e.getMessage}"))
     }
   }
 
@@ -181,12 +298,12 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
 
     val protocol = s"akka.${
-      if(Try(serverConfig.getBoolean("akka.remote.netty.ssl.enable-ssl")).getOrElse(false)) "ssl." else ""
+      if (Try(serverConfig.getBoolean("akka.remote.netty.ssl.enable-ssl")).getOrElse(false)) "ssl." else ""
     }tcp"
 
     val modifiedAkkaConfig = serverConfig.withValue(
       "akka.cluster.seed-nodes",
-      ConfigValueFactory.fromIterable(newSeeds.map{ s =>
+      ConfigValueFactory.fromIterable(newSeeds.map { s =>
         val hostPort = s.split(":")
         new Address(protocol,
           serverConfig.getString("config.cluster.name"),
@@ -200,7 +317,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val currentMembers = new String(dClient.getData.forPath(pathForMembers))
 
-    val newMembers = (if(localMember.split(":").head != "127.0.0.1"){
+    val newMembers = (if (localMember.split(":").head != "127.0.0.1") {
       currentMembers.split(",").toSet + localMember
     } else {
       Set(localMember)
@@ -248,12 +365,12 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val pathForMembers = h.sdch.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
 
-    val updatedMembers = Set(getLocalMember(hsp)) ++ sessionProviderOpt.map{
-        case hzSP: HazelcastSessionProvider =>
-          hzSP.getHzMembers.to[Set].map{ m =>
-            s"${m.getAddress.getHost}:${m.getAddress.getPort}"
-          }
-        case _ => Set.empty
+    val updatedMembers = Set(getLocalMember(hsp)) ++ sessionProviderOpt.map {
+      case hzSP: HazelcastSessionProvider =>
+        hzSP.getHzMembers.to[Set].map { m =>
+          s"${m.getAddress.getHost}:${m.getAddress.getPort}"
+        }
+      case _ => Set.empty
     }.getOrElse(Set.empty)
 
     logger.info(s"Updating members: ${updatedMembers.mkString(",")}")
@@ -282,135 +399,6 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     aSystem.scheduler.schedule(delay, delay)(updateSeeds(xCluster, hsp, s))
   }
 
-  def start(): Unit = {
-
-    val sparkParams = serverConfig.entrySet()
-      .map(e => (e.getKey, e.getValue.unwrapped().toString))
-      .toMap
-      .filterKeys(_.startsWith("config.spark"))
-      .map(e => (e._1.replace("config.", ""), e._2))
-
-    val metricsPath = Option(sparkParams.get("spark.metrics.conf"))
-
-    val filteredSparkParams = metricsPath.fold(sparkParams)(m => checkMetricsFile(sparkParams, m.get))
-
-    val sparkContext = new SparkContext(new SparkConf().setAll(filteredSparkParams))
-
-    // Get service discovery configuration
-    val sdConfig = Try(serverConfig.getConfig(SDCH.ServiceDiscoveryPrefix)).toOption
-
-    val sdHelper: Option[SDH] = sdConfig flatMap { serConfig =>
-      Try(serConfig.getBoolean("activated")).toOption collect {
-        case true =>
-          logger.info("Service discovery enabled")
-          startServiceDiscovery(new SDCH(sdConfig.get))
-      }
-    }
-
-    val finalConfig = sdHelper.fold(serverConfig)(_.finalConfig)
-
-    val finalHzConfig = sdHelper.fold(hzConfig)(_.hzConfig)
-
-    sessionProviderOpt = Some {
-      if (isHazelcastEnabled)
-        new HazelcastSessionProvider(sparkContext, serverConfig, finalHzConfig)
-      else
-        new BasicSessionProvider(sparkContext, serverConfig)
-    }
-
-    val sessionProvider = sessionProviderOpt
-      .getOrElse(throw new RuntimeException("Crossdata Server cannot be started because there is no session provider"))
-
-    assert(
-      sdHelper.nonEmpty || sessionProvider.isInstanceOf[HazelcastSessionProvider],
-      "Service Discovery needs to have the Hazelcast session provider enabled")
-
-    finalConfig.entrySet.filter{ e =>
-      e.getKey.contains("seed-nodes")
-    }.foreach{ e =>
-      logger.info(s"Seed nodes: ${e.getValue}")
-    }
-
-    system = Some(ActorSystem(clusterName, finalConfig))
-
-    system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
-
-      val xdCluster = Cluster(actorSystem)
-
-      sdHelper.map{ sd =>
-
-        // Once the Cluster has been started and the cluster leadership is gotten,
-        // this sever will update the list of cluster seeds and provider members periodically
-        // according to the Akka members.
-        import scala.concurrent.ExecutionContext.Implicits.global
-        sd.leadershipFuture onSuccess {
-          case _ =>
-            updateServiceDiscovery(xdCluster, sessionProvider.asInstanceOf[HazelcastSessionProvider], sd, actorSystem)
-        }
-      }
-
-      val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
-      val serverActor = actorSystem.actorOf(
-        RoundRobinPool(minServerActorInstances, Some(resizer)).props(
-          Props(
-            classOf[ServerActor],
-            xdCluster,
-            sessionProvider)),
-        actorName)
-
-      val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
-      ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
-
-      val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
-      ClusterClientReceptionist(actorSystem).registerService(serverActor)
-      ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
-
-      //TODO
-      implicit val httpSystem = actorSystem
-      implicit val materializer = ActorMaterializer()
-      val httpServerActor = new CrossdataHttpServer(finalConfig, serverActor, actorSystem)
-
-      bindingFuture = if(serverConfig.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)){
-        val host = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsHost)
-        val port = serverConfig.getInt(ServerConfig.AkkaHttpTLS.TlsPort)
-        val context = getTlsContext
-
-        logger.info(s"Securized server with client certificate authentication on https://$host:$port")
-
-        Http().setDefaultServerHttpContext(context)
-        Option(Http().bindAndHandle(httpServerActor.route, host, port, connectionContext = context))
-
-      } else {
-        val host = serverConfig.getString(ServerConfig.Host)
-      	val port = serverConfig.getInt(ServerConfig.HttpServerPort)
-        Option(Http().bindAndHandle(httpServerActor.route, host, port))
-      }
-
-      bindingFuture = Some {
-        if (serverConfig.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)) {
-          val host = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsHost)
-          val port = serverConfig.getInt(ServerConfig.AkkaHttpTLS.TlsPort)
-          val context = getTlsContext
-
-          logger.info(s"Securized server with client certificate authentication on https://$host:$port")
-
-          (host, port, Some(context))
-
-        } else {
-          val host = serverConfig.getString(ServerConfig.Host)
-          val port = serverConfig.getInt(ServerConfig.HttpServerPort)
-          (host, port, None)
-        }
-      } map {
-        case (host, port, None) =>  Http().bindAndHandle(httpServerActor.route, host)
-        case (host, port, Some(ctx)) =>  Http().bindAndHandle(httpServerActor.route, host, port, ctx)
-      }
-
-    }
-
-    logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
-  }
-
   private def getTlsContext: HttpsConnectionContext = {
     val sslContext: SSLContext = SSLContext.getInstance("TLS")
 
@@ -428,7 +416,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
     val metricsFile = new File(metricsPath)
-    if(!metricsFile.exists){
+    if (!metricsFile.exists) {
       logger.warn(s"Metrics configuration file not found: ${metricsFile.getPath}")
       params - "spark.metrics.conf"
     } else {
