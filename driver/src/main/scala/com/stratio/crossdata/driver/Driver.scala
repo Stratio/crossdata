@@ -49,12 +49,14 @@ trait DriverFactory {
 
   protected def newDriver(driverConf: DriverConf, authentication: Authentication): Driver
 
-  protected[driver] def generateDefaultAuth = Authentication("crossdata", Some("stratio"))
+  private[driver] def generateDefaultAuth = Authentication("crossdata", Some("stratio"))
 
   protected [driver] val InitializationTimeout: Duration = 10 seconds
 
-  /*def newSession(driverConf: DriverConf = defaultDriverConf): Driver =
-    newSession(driverConf, Driver.generateDefaultAuth)*/
+  def newSession(): Driver = newSession(defaultDriverConf)
+
+  def newSession(driverConf: DriverConf): Driver =
+    newSession(driverConf, Driver.generateDefaultAuth)
 
   def newSession(user: String, password: String): Driver =
     newSession(defaultDriverConf, Authentication(user, Option(password)))
@@ -68,7 +70,7 @@ trait DriverFactory {
   def newSession(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
     newSession(driverConf.setClusterContactPoint(seedNodes))
 
-  def newSession(
+  private[driver] def newSession(
                   driverConf: DriverConf  = defaultDriverConf,
                   authentication: Authentication = generateDefaultAuth): Driver = {
     val driver = newDriver(driverConf, authentication)

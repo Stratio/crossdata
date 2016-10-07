@@ -33,4 +33,4 @@ object SessionManager {
 
 }
 
-case class Authentication(user: String, password: Option[String] = None)
+private[crossdata] case class Authentication(user: String, password: Option[String] = None)
