@@ -29,7 +29,7 @@ import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.server.discovery.{ServiceDiscoveryConfigHelper => SDCH, ServiceDiscoveryHelper => SDH}
-import com.typesafe.config.{Config, ConfigValueFactory}
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.apache.curator.framework.recipes.leader.LeaderLatch
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -53,7 +53,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
   var sessionProviderOpt: Option[XDSessionProvider] = None
   var bindingFuture: Option[Future[ServerBinding]] = None
 
-  private val serverConfig = progrConfig map (_.withFallback(config)) getOrElse (config)
+  private val serverConfig = progrConfig map (_.withFallback(config)) getOrElse config
 
   private val hzConfig: HzConfig = new XmlConfigBuilder().build()
 
@@ -79,7 +79,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       Try(serConfig.getBoolean("activated")).toOption collect {
         case true =>
           logger.info("Service discovery enabled")
-          startServiceDiscovery(new SDCH(sdConfig.get))
+          startServiceDiscovery(new SDCH(serConfig))
       }
     }
 
@@ -89,7 +89,11 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     sessionProviderOpt = Some {
       if (isHazelcastEnabled)
-        new HazelcastSessionProvider(sparkContext, serverConfig, finalHzConfig)
+        new HazelcastSessionProvider(
+          sparkContext,
+          serverConfig = serverConfig,
+          userCoreConfig = ConfigFactory.empty(), // TODO allow to configure core parameters programmatically
+          finalHzConfig)
       else
         new BasicSessionProvider(sparkContext, serverConfig)
     }
@@ -101,9 +105,9 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       sdHelper.nonEmpty || sessionProvider.isInstanceOf[HazelcastSessionProvider],
       "Service Discovery needs to have the Hazelcast session provider enabled")
 
-    finalConfig.entrySet.filter{ e =>
+    finalConfig.entrySet.filter { e =>
       e.getKey.contains("seed-nodes")
-    }.foreach{ e =>
+    }.foreach { e =>
       logger.info(s"Seed nodes: ${e.getValue}")
     }
 
@@ -113,7 +117,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
       val xdCluster = Cluster(actorSystem)
 
-      sdHelper.map{ sd =>
+      sdHelper.map { sd =>
 
         // Once the Cluster has been started and the cluster leadership is gotten,
         // this sever will update the list of cluster seeds and provider members periodically
@@ -196,15 +200,15 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     sLeader.start
 
     Try {
-      if(sLeader.await(sdc.getOrElse(
-        SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout.toString).toLong, TimeUnit.SECONDS)){
+      if (sLeader.await(sdc.getOrElse(
+        SDCH.SubscriptionTimeoutPath, SDCH.DefaultSubscriptionTimeout.toString).toLong, TimeUnit.SECONDS)) {
         logger.info("Subscription leadership acquired")
         sLeader
       } else {
         throw new RuntimeException("Timeout acquiring subscription leadership")
       }
     } recoverWith {
-      case e => Failure(new RuntimeException(s"Subscription leadership couldn't be acquired: ${e.getMessage}" ))
+      case e => Failure(new RuntimeException(s"Subscription leadership couldn't be acquired: ${e.getMessage}"))
     }
   }
 
@@ -272,12 +276,12 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
 
     val protocol = s"akka.${
-      if(Try(serverConfig.getBoolean("akka.remote.netty.ssl.enable-ssl")).getOrElse(false)) "ssl." else ""
+      if (Try(serverConfig.getBoolean("akka.remote.netty.ssl.enable-ssl")).getOrElse(false)) "ssl." else ""
     }tcp"
 
     val modifiedAkkaConfig = serverConfig.withValue(
       "akka.cluster.seed-nodes",
-      ConfigValueFactory.fromIterable(newSeeds.map{ s =>
+      ConfigValueFactory.fromIterable(newSeeds.map { s =>
         val hostPort = s.split(":")
         new Address(protocol,
           serverConfig.getString("config.cluster.name"),
@@ -291,7 +295,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
     val currentMembers = new String(dClient.getData.forPath(pathForMembers))
 
-    val newMembers = (if(localMember.split(":").head != "127.0.0.1"){
+    val newMembers = (if (localMember.split(":").head != "127.0.0.1") {
       currentMembers.split(",").toSet + localMember
     } else {
       Set(localMember)
@@ -339,12 +343,12 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     val pathForMembers = h.sdch.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
 
-    val updatedMembers = Set(getLocalMember(hsp)) ++ sessionProviderOpt.map{
-        case hzSP: HazelcastSessionProvider =>
-          hzSP.getHzMembers.to[Set].map{ m =>
-            s"${m.getAddress.getHost}:${m.getAddress.getPort}"
-          }
-        case _ => Set.empty
+    val updatedMembers = Set(getLocalMember(hsp)) ++ sessionProviderOpt.map {
+      case hzSP: HazelcastSessionProvider =>
+        hzSP.getHzMembers.to[Set].map { m =>
+          s"${m.getAddress.getHost}:${m.getAddress.getPort}"
+        }
+      case _ => Set.empty
     }.getOrElse(Set.empty)
 
     logger.info(s"Updating members: ${updatedMembers.mkString(",")}")
@@ -376,7 +380,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
 
   def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
     val metricsFile = new File(metricsPath)
-    if(!metricsFile.exists){
+    if (!metricsFile.exists) {
       logger.warn(s"Metrics configuration file not found: ${metricsFile.getPath}")
       params - "spark.metrics.conf"
     } else {

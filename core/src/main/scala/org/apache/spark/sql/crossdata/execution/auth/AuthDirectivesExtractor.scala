@@ -90,31 +90,31 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
       (catalogResource, Write) :+ (tableResource(tableIdentifier), Drop) :+ (allDatastoreResource, Drop)
 
     case DropAllTables =>
-      (catalogResource, Write) :+ (tableResource(allTableResourceName), Drop)
+      (catalogResource, Write) :+ (allTableResource, Drop)
 
   }
 
   private[auth] def streamingPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
-    case lPlan@ShowAllEphemeralStatuses => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan@DropAllEphemeralTables => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: CreateEphemeralTable => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: AddEphemeralQuery => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: DropEphemeralTable => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: DropAllEphemeralQueries => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: DescribeEphemeralTable => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: ShowEphemeralQueries => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: DropEphemeralQuery => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: ShowEphemeralStatus => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan@ShowEphemeralTables => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: StopProcess => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: StartProcess => throw new RuntimeException(s"$lPlan is not authorized")
+    case lPlan@ShowAllEphemeralStatuses => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan@DropAllEphemeralTables => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: CreateEphemeralTable => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: AddEphemeralQuery => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: DropEphemeralTable => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: DropAllEphemeralQueries => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: DescribeEphemeralTable => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: ShowEphemeralQueries => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: DropEphemeralQuery => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: ShowEphemeralStatus => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan@ShowEphemeralTables => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: StopProcess => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: StartProcess => throw new RuntimeException(s"Unauthorized command: $lPlan")
   }
 
   private[auth] def insecurePlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
-    case lPlan: CreateGlobalIndex => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: AddApp => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: ExecuteApp => throw new RuntimeException(s"$lPlan is not authorized")
-    case lPlan: AddJar => throw new RuntimeException(s"$lPlan is not authorized")
+    case lPlan: CreateGlobalIndex => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: AddApp => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: ExecuteApp => throw new RuntimeException(s"Unauthorized command: $lPlan")
+    case lPlan: AddJar => throw new RuntimeException(s"Unauthorized command: $lPlan")
   }
 
   private[auth] def metadataPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
@@ -135,7 +135,7 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   private[auth] def configCommandPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
     case lPlan@SetCommand(Some((key, value))) if key == XDSQLConf.UserIdPropertyKey =>
-      throw new RuntimeException(s"$lPlan is not authorized")
+      throw new RuntimeException(s"Unauthorized command: $lPlan")
 
     case SetCommand(Some((key, value))) =>
       logger.info(s"Set command received: $key=$value)") // TODO log
@@ -151,7 +151,7 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
       (tableResource(tableIdentifier), Cache)
 
     case ClearCacheCommand =>
-      (tableResource(allTableResourceName), Cache)
+      (allTableResource, Cache)
 
     case RefreshTable(tableIdentifier) =>
       (tableResource(tableIdentifier), Cache)
@@ -178,7 +178,7 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   private def tableResource(tableResourceName: String): Resource =
     Resource(crossdataInstances, TableResource, tableStr2ResourceName(tableResourceName))
 
-  private lazy val allTableResourceName: String = tableStr2ResourceName(Resource.AllResourceName)
+  private lazy val allTableResource: Resource = tableResource(Resource.AllResourceName)
 
 
   private def tableStr2ResourceName(tableName: String): String = // TODO remove Spark 2.0 (required for Uncache plans)
