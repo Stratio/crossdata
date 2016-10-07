@@ -75,7 +75,6 @@ abstract class XDSessionProvider(
     }
   }
 
-
   @transient
   protected lazy val securityManager: Option[CrossdataSecurityManager] = {
     val securityManager = Try(finalCoreConfig.getString(SecurityClassConfigKey)).map { securityManagerClassName =>

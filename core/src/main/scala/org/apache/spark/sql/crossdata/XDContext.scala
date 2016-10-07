@@ -221,6 +221,13 @@ class XDContext protected(@transient val sc: SparkContext,
       "to_number",
       (numberStr: String) => if (numberStr contains ".") numberStr.toDouble else numberStr.toLong
     )
+    udf.register(
+      "DEBUG_SLEEP_MS",
+      (ms: Long) => {
+        Thread.sleep(ms)
+        1
+      }
+    )
   }
 
   override def sql(sqlText: String): DataFrame = {
