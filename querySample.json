@@ -1,0 +1,16 @@
+{  
+   "cmd":{  
+      "sql":"select * from table1",
+      "queryId":{  
+         "id":"5f135444-fefd-4d92-ba89-0b048a199a02"
+      },
+      "flattenResults":false
+   },
+   "session":{  
+      "id":{  
+         "id":"59b14db0-9c08-45fd-b5fa-6a957f0d6ff2"
+      },
+      "clientRef":null
+   },
+   "user":"pablo"
+}

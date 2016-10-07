@@ -94,7 +94,10 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     else
       context.become(initial(pendingTopics))
 
-  def actualRequester(rqActor: Option[ActorRef]): ActorRef = rqActor.getOrElse(sender)
+  def actualRequester(rqActor: Option[ActorRef]): ActorRef = {
+    println(" "*10 + "ACTUAL REQUESTER SENDER: " + sender +  "     " + rqActor)
+    rqActor.getOrElse(sender)
+  }
 
   /**
     * If a `cmd` is passed to this method is because it has already been checked that this server can run it.

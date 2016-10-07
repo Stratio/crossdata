@@ -86,7 +86,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
             val hdfsPath = writeJarToHdfs(hdfsConfig, path)
             val session = Session(sessionUUID, null)
             val user = "fileupload"
-            allParts.values.toSeq.foreach{
+            allParts.values.toSeq.foreach {
               case file: File =>
                 file.delete
                 logger.info("Tmp file deleted")
@@ -98,36 +98,59 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
           }
         }
       }
+    } ~ path("cancel" / JavaUUID) { requestId =>
+
+      println(">>>>>>>>>>>>>>>>>>>>>>>>>>> CANCELLATION REQUESTED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  " + requestId)
+
+      entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
+
+        implicit val _ = Timeout(1 hour) //TODO Make this configurable
+
+        onComplete(serverActor ? rq) {
+          case Success(reply: QueryCancelledReply) =>
+            println("=============== CANCELLATION SUCCESSFULLY COMPLETED WITH: " + reply)
+            complete(reply)
+          case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
+
+        }
+
+      }
 
     } ~ path("query" / JavaUUID) { requestId =>
 
-      post {
-        entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
+        println("---------------------------------" + requestId)
 
-          rq.cmd match {
+        post {
+          entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
 
-            case _: CloseSessionCommand => // Commands with no confirmation
+            rq.cmd match {
 
-              serverActor ! rq
-              complete(StatusCodes.OK)
+              case _: CloseSessionCommand => // Commands with no confirmation
 
-            case _ =>                      // Commands requiring confirmation
+                serverActor ! rq
+                complete(StatusCodes.OK)
 
-              implicit val _ = Timeout(1 hour) //TODO Make this configurable
+              case _ =>                      // Commands requiring confirmation
 
-              onComplete(serverActor ? rq) {
-                case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
-                  complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
-                case Success(reply: ServerReply) =>
-                  reply match {
-                    case qcr: QueryCancelledReply => complete(qcr)
-                    case _ => complete(reply)
-                  }
-                case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
-              }
-          }
+                implicit val _ = Timeout(1 hour) //TODO Make this configurable
 
-        } /*~ getRqEnt { rq: HttpRequest => //TODO: Remove this debugging tool when a minimal stable API has been reached
+                /*val sender: ActorRef = implicitly[ActorRef]
+                println(s"     ACTUAL CANCELLATION REQUESTER SENDER: $sender")*/
+
+                onComplete(serverActor ? rq) {
+                  case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
+                    complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
+                  case Success(reply: ServerReply) =>
+                    println("=============== SEUCCESFULLY COMPLETED WITH: " + reply)
+                    reply match {
+                      case qcr: QueryCancelledReply => throw new RuntimeException("AAAAAA")//complete(qcr)
+                      case _ => complete(reply)
+                    }
+                  case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
+                }
+            }
+
+          } /*~ getRqEnt { rq: HttpRequest => //TODO: Remove this debugging tool when a minimal stable API has been reached
           onComplete(rq.entity.toStrict(5 seconds)) {
             case Success(s: HttpEntity.Strict) =>
               import org.json4s.jackson.JsonMethods._
@@ -138,8 +161,8 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
               complete(parsed.toString)
           }
         }*/
-      }
 
+      }
     } ~ path("sessions") {
 
       post {  //Session life proof is not a PUT to /session/idSession for security reasons.
