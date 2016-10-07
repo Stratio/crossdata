@@ -38,6 +38,7 @@ private [serializers] object CommandSerializerHelper {
 
   val commandExtractor = Map[String, JValue => Command](
     "SQLCommand" -> { jSQLCommand => (jSQLCommand \ "details").extract[SQLCommand] },
+    "CancelQueryExecution" -> { jSQLCommand => (jSQLCommand \ "details").extract[CancelQueryExecution] },
     "OpenSessionCommand" -> { _.extract[OpenSessionCommand] },
     "CloseSessionCommand" -> { _.extract[CloseSessionCommand] },
     "ClusterStateCommand" -> { _.extract[ClusterStateCommand] }
@@ -52,6 +53,8 @@ private [serializers] object CommandSerializerHelper {
       Extraction.decompose(CommandWithName[CloseSessionCommand])
     case _: ClusterStateCommand =>
       Extraction.decompose(CommandWithName[ClusterStateCommand])
+    case cancellation: CancelQueryExecution =>
+      Extraction.decompose(CommandWithName(cancellation))
   }
 
 }

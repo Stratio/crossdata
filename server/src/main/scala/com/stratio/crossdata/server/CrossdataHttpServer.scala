@@ -22,7 +22,6 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.cluster.pubsub.DistributedPubSub
 import akka.cluster.pubsub.DistributedPubSubMediator.{Publish, SendToAll}
-import akka.http.scaladsl._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
@@ -100,7 +99,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
         }
       }
 
-    } ~ path("query") {
+    } ~ path("query" / JavaUUID) { requestId =>
 
       post {
         entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
@@ -120,12 +119,15 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
                 case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
                   complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
                 case Success(reply: ServerReply) =>
-                  complete(reply)
+                  reply match {
+                    case qcr: QueryCancelledReply => complete(qcr)
+                    case _ => complete(reply)
+                  }
                 case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
               }
           }
 
-        } /*~ getRqEnt { rq: HttpRequest =>//TODO: Remove this debugging tool when a minimal stable API has been reached
+        } /*~ getRqEnt { rq: HttpRequest => //TODO: Remove this debugging tool when a minimal stable API has been reached
           onComplete(rq.entity.toStrict(5 seconds)) {
             case Success(s: HttpEntity.Strict) =>
               import org.json4s.jackson.JsonMethods._
