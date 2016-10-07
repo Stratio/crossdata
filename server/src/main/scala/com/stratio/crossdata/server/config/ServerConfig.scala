@@ -57,6 +57,7 @@ object ServerConfig {
 
   // Http Server Port
   val HttpServerPort = "config.HttpServerPort"
+  val HttpRequestExecutionTimeout = "config.akka.http.request-execution-timeout"
 
   val IsHazelcastProviderEnabledProperty = "config.hazelcast.enabled"
 
@@ -72,6 +73,8 @@ object ServerConfig {
     val TlsKeystorePwd = "akka-http.ssl.keystore-password"
   }
 
+
+  val DefaultHTTPRequestExecutionTimeout = 4 hour
 }
 
 trait ServerConfig extends NumberActorConfig {
