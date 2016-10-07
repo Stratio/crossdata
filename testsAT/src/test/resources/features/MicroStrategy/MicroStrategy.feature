@@ -6,6 +6,7 @@ Feature: [CROSSDATA-677] Microstrategy - Tests Queries
     #Then The result has to have '1' rows
     #  |COD_BANCSB-string|COD_OFICI-string|DES_OFIPA-string|COD_BANCSB0-string|COD_IDFISCAK-string|DES_NOCLIE-string|COD_PERSOCL-string|COD_SEMAMES-string|DES_DTMM-string|DES_ZOMM-string|DES_CBCMM-string|DES_OFIMM-string|DES_UNIMMDV-string|DES_NIVMM-string|DES_EVENMDV-string|DES_SEGCLM-string|COD_CONTIGO-integer|DES_CONTIGO-string|COD_ORDCONTI-integer|WJXBFS1-long|WJXBFS2-long|WJXBFS3-long|WJXBFS4-long|WJXBFS5-long|WJXBFS6-long|WJXBFS7-long|WJXBFS8-long|WJXBFS9-long|WJXBFSa-double|WJXBFSb-long|WJXBFSc-long|WJXBFSd-long|WJXBFSe-long|
 
+  @ignore @tillfixed(CROSSDATA-645)
   Scenario: [CROSSDATA-625, CROSSDATA-645] MICRO_JDBC_QUERY_2
     When I execute 'create table ZZMQ00 nologging as select a11.COD_CONTIGO  COD_CONTIGO,a11.DES_NIVMM  DES_NIVMM,a11.DES_OFIMM  DES_OFIMM,a11.DES_UNIREF  DES_UNIREF,a11.DES_UNIMMDV  DES_UNIMMDV,a11.DES_EVENMDV  DES_EVENMDV,a11.DES_EVENCORT  DES_EVENCORT,a11.DES_SEGCLM  DES_SEGCLM,a11.COD_SEMAMES  COD_SEMAMES from KUYA.TKUYAKSE a11 where ((a11.COD_BANCSBM = '0182' and (a11.DES_OFIPA like '%0013%' or a11.COD_OFIMM = '0013')) or (a11.COD_BANCSBM = '0182' and (a11.DES_OFIPA like '%6051%' or a11.COD_OFIMM = '6051'))) and((a11.IMP_CUMPLIMI <> 0.0 or a11.QNU_BASEVMDV <> 0.0 or a11.IMP_BASTRANS <> 0.0 or a11.IMP_BATRAINI <> 0.0 or a11.IMP_BASINCRE <> 0.0))'
     Then an exception 'IS NOT' thrown
