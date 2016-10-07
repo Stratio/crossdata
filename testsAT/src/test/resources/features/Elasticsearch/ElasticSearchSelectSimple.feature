@@ -1,5 +1,6 @@
 Feature: ElsticSearchSelectSimple
 
+  @ignore @tillfixed(CROSSDATA-18)@tillfixed(CROSSDATA-173)
   Scenario: [CROSSDATA-18, CROSSDATA-173 : ELASTICSEARCH NATIVE] SELECT * FROM tabletest;
     When I execute 'SELECT * FROM tabletest'
     Then The result has to have '10' rows ignoring the order:
@@ -164,6 +165,7 @@ Feature: ElsticSearchSelectSimple
       |    name_8   | 18.2         |8               |true         |
       |    name_9   | 19.2         |9               |true         |
 
+  @ignore @tillfixed(CROSSDATA-18)
   Scenario: [CROSSDATA-18 : ELASTICSEARCH NATIVE] SELECT ident,name,money,new,date FROM tabletest;
     When I execute 'SELECT ident,name,money,new,date FROM tabletest'
     Then The result has to have '10' rows ignoring the order:

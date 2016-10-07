@@ -45,6 +45,8 @@ Feature: ElasticSearchSelectLessEqualsFilter
       |  true         |
       |  true         |
       |  true         |
+
+  @ignore @tillfixed(CROSSDATA-18)
   Scenario: [CROSSDATA-18: ES NATIVE] SELECT date FROM tabletest WHERE date <= '1999-11-30';
     When I execute 'SELECT date FROM tabletest WHERE date <= '1999-12-01''
     Then The result has to have '1' rows:
