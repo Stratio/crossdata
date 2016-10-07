@@ -19,17 +19,20 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, _}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Source}
 import com.stratio.crossdata.common.security.Session
+import com.stratio.crossdata.common.serializers.CrossdataCommonSerializer
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.util.HttpClient.HttpClientContext
+import org.json4s.jackson
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
+
+//TODO: Integrate this functionality into the current state of Http and ClusterClient drivers
 
 object HttpClient {
 
@@ -41,30 +44,34 @@ object HttpClient {
     new HttpClient(HttpClientContext(config, actorSystem))
 }
 
-class HttpClient(ctx: HttpClientContext) {
+class HttpClient(ctx: HttpClientContext) extends CrossdataCommonSerializer{
 
   private implicit val actorSystem = ctx.actorSystem
   private val config = ctx.config
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
+  import de.heikoseeberger.akkahttpjson4s.Json4sSupport._
+  import akka.http.scaladsl.marshalling._
+  implicit val serialization = jackson.Serialization
 
   private val http = Http(actorSystem)
+  private val serverHttp = config.getCrossdataServerHttp
+  private val protocol = "http"
+
 
   def sendJarToHTTPServer(path: String, session: Session): Future[String] = {
-    val serverHttp = config.getCrossdataServerHttp
     val sessionUUID = session.id
 
     for (
-      request <- createRequest(s"http://$serverHttp/upload/$sessionUUID", new File(path));
+      request <- createSendFileRequest(s"$protocol://$serverHttp/upload/$sessionUUID", new File(path));
       response <- http.singleRequest(request) map {
-        case res@HttpResponse(code, _, _, _) if code != StatusCodes.OK =>
-          throw new RuntimeException(s"Request failed, response code: $code")
-        case other => other
+        case resp@HttpResponse(StatusCodes.OK, _, entity, _) => resp
+        case HttpResponse(code, _, _, _) => throw new RuntimeException(s"Request failed, response code: $code")
       };
       strictEntity <- response.entity.toStrict(5 seconds)
     ) yield strictEntity.data.decodeString("UTF-8")
   }
 
-  private def createEntity(file: File): Future[RequestEntity] = {
+  private def createJarEntity(file: File): Future[RequestEntity] = {
     require(file.exists())
     val fileIO = FileIO.fromFile(file)
     val formData =
@@ -77,9 +84,9 @@ class HttpClient(ctx: HttpClientContext) {
     Marshal(formData).to[RequestEntity]
   }
 
-  private def createRequest(target: Uri, file: File): Future[HttpRequest] =
+  private def createSendFileRequest(target: Uri, file: File): Future[HttpRequest] =
     for {
-      e ← createEntity(file)
+      e ← createJarEntity(file)
     } yield HttpRequest(HttpMethods.POST, uri = target, entity = e)
 
 }

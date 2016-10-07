@@ -20,7 +20,7 @@ import java.util.concurrent.{CancellationException, Executor}
 import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.common.utils.concurrent.Cancellable
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
-import com.stratio.crossdata.common.{SQLCommand, SQLReply}
+import com.stratio.crossdata.common.{QueryCancelledReply, SQLCommand, SQLReply}
 import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, GetJobStatus, StartJob}
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.actors.JobActor.{ProlificExecutor, Task}
@@ -123,7 +123,9 @@ class JobActor(
         case Success(queryRes) =>
           requester ! queryRes
           self ! JobCompleted
-        case Failure(_: CancellationException) => self ! JobCompleted // Job cancellation
+        case Failure(_: CancellationException) => // Job cancellation
+          requester ! QueryCancelledReply(command.requestId)
+          self ! JobCompleted
         case Failure(e: ExecutionException) => self ! JobFailed(e.getCause) // Spark exception
         case Failure(reason) => self ! JobFailed(reason) // Job failure
       }

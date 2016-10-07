@@ -189,6 +189,21 @@ class DriverConf extends Logging {
     ConfigFactory.load(finalConfigWithEnvVars)
   }
 
+  def httpTlsEnable =
+    finalSettings.getBoolean(DriverConf.AkkaHttpTLS.TlsEnable)
+
+  def httpTlsTrustStore =
+    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsTrustStore)
+
+  def httpTlsTrustStorePwd =
+    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsTrustStorePwd)
+
+  def httpTlsKeyStore =
+    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsKeyStore)
+
+  def httpTlsKeyStorePwd =
+    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsKeystorePwd)
+
 }
 
 
@@ -204,4 +219,13 @@ object DriverConf {
   val DriverClusterName = "config.cluster.name"
   val SSLEnabled = "akka.remote.netty.ssl.enable-ssl"
   val AkkaClusterRecepcionistTunnelTimeout = "akka.contrib.cluster.receptionist.response-tunnel-receive-timeout"
+
+  //TLS akka-http client authentication
+  object AkkaHttpTLS {
+    val TlsEnable = "akka-http.ssl.enable"
+    val TlsTrustStore = "akka-http.ssl.truststore"
+    val TlsTrustStorePwd = "akka-http.ssl.truststore-password"
+    val TlsKeyStore = "akka-http.ssl.keystore"
+    val TlsKeystorePwd = "akka-http.ssl.keystore-password"
+  }
 }

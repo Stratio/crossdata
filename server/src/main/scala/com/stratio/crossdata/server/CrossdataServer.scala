@@ -15,16 +15,21 @@
  */
 package com.stratio.crossdata.server
 
-import java.io.File
+import java.io.{File, FileInputStream, InputStream}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import java.security.{KeyStore, SecureRandom}
+import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 
 import akka.actor.{ActorSystem, Address, Props}
 import akka.cluster.Cluster
 import akka.cluster.client.ClusterClientReceptionist
 import akka.http.scaladsl.Http.ServerBinding
+import akka.http.scaladsl.{Http, HttpsConnectionContext}
 import akka.routing.{DefaultResizer, RoundRobinPool}
+import akka.stream.{ActorMaterializer, TLSClientAuth}
 import com.hazelcast.config.{XmlConfigBuilder, Config => HzConfig}
+import com.stratio.crossdata.common.security.KeyStoreUtils
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
@@ -56,7 +61,6 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
   private val serverConfig = progrConfig map (_.withFallback(config)) getOrElse config
 
   private val hzConfig: HzConfig = new XmlConfigBuilder().build()
-
 
   def start(): Unit = {
 
@@ -146,12 +150,30 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
 
       //TODO
-      /*implicit val httpSystem = actorSystem
+      implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()
       val httpServerActor = new CrossdataHttpServer(finalConfig, serverActor, actorSystem)
-      val host = finalConfig.getString(ServerConfig.Host)
-      val port = finalConfig.getInt(ServerConfig.HttpServerPort)
-      bindingFuture = Option(Http().bindAndHandle(httpServerActor.route, host, port))*/
+
+      bindingFuture = Some {
+        if (serverConfig.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)) {
+          val host = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsHost)
+          val port = serverConfig.getInt(ServerConfig.AkkaHttpTLS.TlsPort)
+          val context = getTlsContext
+
+          logger.info(s"Securized server with client certificate authentication on https://$host:$port")
+
+          (host, port, Some(context))
+
+        } else {
+          val host = serverConfig.getString(ServerConfig.Host)
+          val port = serverConfig.getInt(ServerConfig.HttpServerPort)
+          (host, port, None)
+        }
+      } map {
+        case (host, port, None) => Http().bindAndHandle(httpServerActor.route, host, port)
+        case (host, port, Some(ctx)) =>  Http().bindAndHandle(httpServerActor.route, host, port, ctx)
+      }
+      println(bindingFuture)
     }
 
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
@@ -377,6 +399,20 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
     aSystem.scheduler.schedule(delay, delay)(updateSeeds(xCluster, hsp, s))
   }
 
+  private def getTlsContext: HttpsConnectionContext = {
+    val sslContext: SSLContext = SSLContext.getInstance("TLS")
+
+    val keystorePath = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeyStore)
+    val keyStorePwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeystorePwd)
+    val keyManagerFactory: KeyManagerFactory = KeyStoreUtils.getKeyManagerFactory(keystorePath, keyStorePwd)
+
+    val trustStorePath = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsTrustStore)
+    val trustStorePwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsTrustStorePwd)
+    val trustManagerFactory: TrustManagerFactory = KeyStoreUtils.getTrustManagerFactory(trustStorePath, trustStorePwd)
+
+    sslContext.init(keyManagerFactory.getKeyManagers, trustManagerFactory.getTrustManagers, new SecureRandom())
+    new HttpsConnectionContext(sslContext, clientAuth = Some(TLSClientAuth.Need))
+  }
 
   def checkMetricsFile(params: Map[String, String], metricsPath: String): Map[String, String] = {
     val metricsFile = new File(metricsPath)
