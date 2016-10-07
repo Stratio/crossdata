@@ -17,6 +17,7 @@ package com.stratio.crossdata.server
 
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
@@ -33,8 +34,9 @@ import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.server.actors.ResourceManagerActor
+import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.util.HdfsUtils
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigException}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
@@ -42,7 +44,7 @@ import org.json4s.jackson
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.Success
+import scala.util.{Success, Try}
 
 
 class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val system: ActorSystem) extends CrossdataSerializer {
@@ -56,6 +58,12 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
   implicit val materializer = ActorMaterializer()
   lazy val logger = Logger.getLogger(classOf[CrossdataHttpServer])
   lazy val mediator = DistributedPubSub(system).mediator
+
+  private val requestExecutionTimeout: FiniteDuration = Try(FiniteDuration(config.getDuration(ServerConfig.HttpRequestExecutionTimeout).toMillis, TimeUnit.MILLISECONDS)).recover{
+    case configExc: ConfigException =>
+      logger.warn("Http request execution timeout not found. Using the default value $HttpRequestEx", configExc)
+      ServerConfig.DefaultHTTPRequestExecutionTimeout
+  } get
 
   type SessionDirective[Session] = Directive[Tuple1[Session]]
 
@@ -113,7 +121,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
             case _ =>                      // Commands requiring confirmation
 
-              implicit val _ = Timeout(1 hour) //TODO Make this configurable
+              implicit val _ = Timeout(requestExecutionTimeout)
 
               onComplete(serverActor ? rq) {
                 case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
