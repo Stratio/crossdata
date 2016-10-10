@@ -183,8 +183,6 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
 
   private lazy val allTableResource: Resource = tableResource(Resource.AllResourceName)
 
-  private lazy val allTableResource: Resource = tableResource(Resource.AllResourceName)
-
 
   private def tableStr2ResourceName(tableName: String): String = // TODO remove Spark 2.0 (required for Uncache plans)
     Seq(catalogIdentifier, tableName) mkString "."
