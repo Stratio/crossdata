@@ -19,6 +19,7 @@ import java.nio.file.Paths
 import java.util.UUID
 
 import com.stratio.crossdata.security._
+import org.apache.spark.sql.catalyst.expressions.{BitwiseAnd, Expression}
 import org.apache.spark.sql.crossdata.catalyst.execution.{DropAllTables, DropExternalTable, DropTable, DropView}
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -83,6 +84,54 @@ class AuthDirectivesExtractorIT extends SharedXDContextTest {
       )
   }
 
+  it should "return the right permissions when creating tables" in {
+
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+
+    val createTablePlan = xdContext.sql(s"CREATE TABLE tabName USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/foo.json").toURI).toString}')").queryExecution.logical
+    val createTempTablePlan = xdContext.sql(s"CREATE TEMPORARY TABLE tabNameTemp USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/foo.json").toURI).toString}')").queryExecution.logical
+
+    Seq(createTablePlan, createTempTablePlan).foreach { createPlan =>
+      authDirectivesExtractor.extractResourcesAndActions(createPlan) should have length 1
+      authDirectivesExtractor.extractResourcesAndActions(createPlan) should contain(Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write)
+    }
+
+  }
+
+  it should "return the right permissions when creating views" in {
+
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+    val tableName = "tabName"
+
+    val createViewPlan = xdContext.sql(s"CREATE VIEW viewName AS SELECT * FROM $tableName").queryExecution.logical
+    val createTempViewPlan = xdContext.sql(s"CREATE TEMPORARY VIEW viewTempName AS SELECT * FROM $tableName").queryExecution.logical
+
+    Seq(createViewPlan, createTempViewPlan).foreach { createPlan =>
+      authDirectivesExtractor.extractResourcesAndActions(createPlan) should have length 2
+      authDirectivesExtractor.extractResourcesAndActions(createViewPlan) should contain allOf(
+        (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write),
+        (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, tableName)), Read)
+        )
+    }
+  }
+
+  it should "return the right permissions when creating tables as select" in {
+
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+
+    val createAsSelectPlan = xdContext.sql(s"CREATE TABLE extTabName USING org.apache.spark.sql.json OPTIONS (path '/tmp/crossdatatest-${UUID.randomUUID()}.json') AS SELECT * FROM $usersTable").queryExecution.logical
+
+    Seq(createAsSelectPlan).foreach { createPlan =>
+      authDirectivesExtractor.extractResourcesAndActions(createPlan) should have length 3
+      authDirectivesExtractor.extractResourcesAndActions(createPlan) should contain allOf(
+        (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write),
+        (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read),
+        (Resource(crossdataInstances, DatastoreResource, Resource.AllResourceName), Write)
+        )
+    }
+  }
+
+
   it should "extract the expected permissions when inserting tables" in {
 
     val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
@@ -110,7 +159,6 @@ class AuthDirectivesExtractorIT extends SharedXDContextTest {
       (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, emptyTableName)), Drop),
       (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write)
       )
-
   }
 
   it should "not authorize streaming plans" in {
@@ -137,37 +185,8 @@ class AuthDirectivesExtractorIT extends SharedXDContextTest {
         authDirectivesExtractor.extractResourcesAndActions(insecurePlan)
       }
     }
-
   }
 
-  it should "return the right permissions when creating tables" in {
-
-    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
-
-    val createTablePlan = xdContext.sql(s"CREATE TABLE tabName USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/foo.json").toURI).toString}')").queryExecution.logical
-    val createTempTablePlan = xdContext.sql(s"CREATE TEMPORARY TABLE tabNameTemp USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/foo.json").toURI).toString}')").queryExecution.logical
-
-    Seq(createTablePlan, createTempTablePlan).foreach{ createPlan =>
-      authDirectivesExtractor.extractResourcesAndActions(createPlan) should have length 1
-      authDirectivesExtractor.extractResourcesAndActions(createPlan) should contain (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write)
-    }
-
-  }
-
-  it should "return the right permissions when creating views" in {
-
-    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
-    val tableName = "tabName"
-
-    val createViewPlan = xdContext.sql(s"CREATE VIEW viewName AS SELECT * FROM $tableName").queryExecution.logical
-    val createTempViewPlan = xdContext.sql(s"CREATE TEMPORARY VIEW viewTempName AS SELECT * FROM $tableName").queryExecution.logical
-
-    Seq(createViewPlan, createTempViewPlan).foreach { createPlan =>
-      authDirectivesExtractor.extractResourcesAndActions(createPlan) should have length 2
-      authDirectivesExtractor.extractResourcesAndActions(createViewPlan) should contain allOf(
-        (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write),
-        (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, tableName)), Read)
-        )
 
 
   it should "extract the expected permissions when requesting metadata" in {
@@ -188,43 +207,37 @@ class AuthDirectivesExtractorIT extends SharedXDContextTest {
     authDirectivesExtractor.extractResourcesAndActions(describeTablePlan) should contain(
       (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Describe)
     )
-}
+  }
 
-
-  it should "return the right permissions when creating tables as select" in {
-
-    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
-
-    val createAsSelectPlan = xdContext.sql(s"CREATE TABLE extTabName USING org.apache.spark.sql.json OPTIONS (path '/tmp/crossdatatest-${UUID.randomUUID()}.json') AS SELECT * FROM $usersTable").queryExecution.logical
-
-    Seq(createAsSelectPlan).foreach { createPlan =>
-      authDirectivesExtractor.extractResourcesAndActions(createPlan) should have length 3
-      authDirectivesExtractor.extractResourcesAndActions(createPlan) should contain allOf(
-        (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write),
-        (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read),
-        (Resource(crossdataInstances, DatastoreResource, Resource.AllResourceName), Write)
-        )
-    }
-}
- 
 
   it should "extract the expected permissions when executing cache operations" in {
 
     val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
-    val cacheTablePlan = xdContext.sql(s"CACHE TABLE $locationTable").queryExecution.logical
 
-    authDirectivesExtractor.extractResourcesAndActions(cacheTablePlan) should have length 1
-    authDirectivesExtractor.extractResourcesAndActions(cacheTablePlan) should contain(
-      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Cache)
+    val cacheTablePlans = Seq(
+      s"CACHE TABLE $locationTable",
+      s"UNCACHE TABLE $locationTable",
+      s"REFRESH TABLE $locationTable",
+      "CLEAR CACHE"
+    ).map( cacheSQL =>
+      xdContext.sql(s"CACHE TABLE $locationTable").queryExecution.logical
     )
 
-/*    val joinTempTablePlan = xdContext.sql(s"SELECT * FROM $locationTable JOIN $usersTable").queryExecution.logical
+    cacheTablePlans.foreach{ cacheTablePlan =>
+      authDirectivesExtractor.extractResourcesAndActions(cacheTablePlan) should have length 1
+      authDirectivesExtractor.extractResourcesAndActions(cacheTablePlan) should contain(
+        (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Cache)
+      )
+    }
 
-    authDirectivesExtractor.extractResourcesAndActions(joinTempTablePlan) should have length 2
-    authDirectivesExtractor.extractResourcesAndActions(joinTempTablePlan) should contain allOf(
-      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read),
-      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Read)
-      )*/
+    val cacheTableAsSelectPlan = xdContext.sql(s"CACHE TABLE cacheTableGüei AS SELECT * FROM $locationTable").queryExecution.logical
+    authDirectivesExtractor.extractResourcesAndActions(cacheTableAsSelectPlan) should have length 3
+    authDirectivesExtractor.extractResourcesAndActions(cacheTableAsSelectPlan) should contain allOf(
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Read),
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, "*")), Cache),
+      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Write)
+      )
+
   }
 
 
