@@ -24,7 +24,7 @@ import akka.pattern.pipe
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.driver.Driver
+import com.stratio.crossdata.driver.ClusterClientDriver
 import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
 import com.stratio.crossdata.driver.util.HttpClient
 import org.apache.log4j.Logger
@@ -37,14 +37,14 @@ import scala.util.matching.Regex
 object ProxyActor {
   val DefaultName = "proxy-actor"
 
-  def props(clusterClientActor: ActorRef, driver: Driver): Props =
+  def props(clusterClientActor: ActorRef, driver: ClusterClientDriver): Props =
     Props(new ProxyActor(clusterClientActor, driver))
 
   case class PromisesByIds(promises: Map[UUID, Promise[ServerReply]])
 
 }
 
-class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
+class ProxyActor(clusterClientActor: ActorRef, driver: ClusterClientDriver) extends Actor {
 
   lazy val logger = Logger.getLogger(classOf[ProxyActor])
 
