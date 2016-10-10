@@ -15,6 +15,8 @@
  */
 package org.apache.spark.sql.crossdata.execution.auth
 
+import java.nio.file.Paths
+
 import com.stratio.crossdata.security._
 import org.apache.spark.sql.crossdata.catalyst.execution.{DropAllTables, DropExternalTable, DropTable, DropView}
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
@@ -110,11 +112,70 @@ class AuthDirectivesExtractorIT extends SharedXDContextTest {
   it should "not authorize streaming plans" in {
 
     val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
-    val streamingPlan = xdContext.sql(s"START myProcess").queryExecution.logical
+    val streamingPlan = xdContext.sql(s"SHOW EPHEMERAL TABLES").queryExecution.logical
 
     an[Exception] shouldBe thrownBy {
       authDirectivesExtractor.extractResourcesAndActions(streamingPlan)
     }
+  }
+
+  it should "not authorize insecure plans" in {
+
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+    val insecureSQLs = Seq(
+      s"ADD JAR ${Paths.get(getClass.getResource("/TestAddApp.jar").toURI()).toString}",
+      s"ADD APP '${Paths.get(getClass.getResource("/TestAddApp.jar").toURI()).toString}' AS jj WITH aaa.bbb.ccc"
+    )
+
+    insecureSQLs.foreach { insecureSQL =>
+      val insecurePlan = xdContext.sql(insecureSQL).queryExecution.logical
+      an[Exception] shouldBe thrownBy {
+        authDirectivesExtractor.extractResourcesAndActions(insecurePlan)
+      }
+    }
+
+  }
+
+
+  it should "extract the expected permissions when requesting metadata" in {
+
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+
+    val showTablePlan = xdContext.sql("SHOW TABLES").queryExecution.logical
+
+    authDirectivesExtractor.extractResourcesAndActions(showTablePlan) should have length 1
+    authDirectivesExtractor.extractResourcesAndActions(showTablePlan) should contain(
+      (Resource(crossdataInstances, CatalogResource, catalogIdentifier), Describe)
+    )
+
+    val describeTablePlan = xdContext.sql(s"DESCRIBE $usersTable").queryExecution.logical
+
+    authDirectivesExtractor.extractResourcesAndActions(describeTablePlan) should have length 1
+
+    authDirectivesExtractor.extractResourcesAndActions(describeTablePlan) should contain(
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Describe)
+    )
+
+  }
+
+
+  it should "extract the expected permissions when executing cache operations" in {
+
+    val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
+    val cacheTablePlan = xdContext.sql(s"CACHE TABLE $locationTable").queryExecution.logical
+
+    authDirectivesExtractor.extractResourcesAndActions(cacheTablePlan) should have length 1
+    authDirectivesExtractor.extractResourcesAndActions(cacheTablePlan) should contain(
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Cache)
+    )
+
+/*    val joinTempTablePlan = xdContext.sql(s"SELECT * FROM $locationTable JOIN $usersTable").queryExecution.logical
+
+    authDirectivesExtractor.extractResourcesAndActions(joinTempTablePlan) should have length 2
+    authDirectivesExtractor.extractResourcesAndActions(joinTempTablePlan) should contain allOf(
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, usersTable)), Read),
+      (Resource(crossdataInstances, TableResource, composeTableResourceName(catalogIdentifier, locationTable)), Read)
+      )*/
   }
 
   private def composeTableResourceName(catalogIdentifier: String, tableName: String) = Seq(catalogIdentifier, tableName) mkString "."
