@@ -23,24 +23,24 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 
-object XDSession{
+object XDSession {
   // TODO Spark2.0. It will be the main entryPoint, so we should add a XDSession builder to make it easier to work with.
 }
 
 /**
- *
- * [[XDSession]], as with Spark 2.0, SparkSession will be the Crossdata entry point for SQL interfaces. It wraps and
- * implements [[XDContext]]. Overriding those methods & attributes which vary among sessions and keeping
- * common ones in the delegated [[XDContext]].
- *
- * Resource initialization is avoided through attribute initialization laziness.
- */
+  *
+  * [[XDSession]], as with Spark 2.0, SparkSession will be the Crossdata entry point for SQL interfaces. It wraps and
+  * implements [[XDContext]]. Overriding those methods & attributes which vary among sessions and keeping
+  * common ones in the delegated [[XDContext]].
+  *
+  * Resource initialization is avoided through attribute initialization laziness.
+  */
 class XDSession(
                  @transient private val xdSharedState: XDSharedState,
                  @transient private val xdSessionState: XDSessionState,
-                 @transient private val userConfig: Option[Config] = None
-                 )
-  extends XDContext(xdSharedState.sc, userConfig) with Logging {
+                 @transient private val userCoreConfig: Option[Config] = None
+               )
+  extends XDContext(xdSharedState.sc, userCoreConfig) with Logging {
 
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {
@@ -57,4 +57,3 @@ class XDSession(
   xdSessionState.sqlConf.enableCacheInvalidation(true)
 
 }
-
