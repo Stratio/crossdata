@@ -149,31 +149,24 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
       ClusterClientReceptionist(actorSystem).registerService(serverActor)
       ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
 
-      //TODO
       implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()
       val httpServerActor = new CrossdataHttpServer(finalConfig, serverActor, actorSystem)
 
       bindingFuture = Some {
-        if (serverConfig.getBoolean(ServerConfig.AkkaHttpTLS.TlsEnable)) {
-          val host = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsHost)
-          val port = serverConfig.getInt(ServerConfig.AkkaHttpTLS.TlsPort)
-          val context = getTlsContext
+
+        val host = serverConfig.getString(ServerConfig.Http.Host)
+        val port = serverConfig.getInt(ServerConfig.Http.Port)
+
+        if (serverConfig.getBoolean(ServerConfig.Http.TLS.TlsEnable)) {
 
           logger.info(s"Securized server with client certificate authentication on https://$host:$port")
+          Http().bindAndHandle(httpServerActor.route, host, port, getTlsContext)
 
-          (host, port, Some(context))
+        } else Http().bindAndHandle(httpServerActor.route, host, port)
 
-        } else {
-          val host = serverConfig.getString(ServerConfig.Host)
-          val port = serverConfig.getInt(ServerConfig.HttpServerPort)
-          (host, port, None)
-        }
-      } map {
-        case (host, port, None) => Http().bindAndHandle(httpServerActor.route, host, port)
-        case (host, port, Some(ctx)) =>  Http().bindAndHandle(httpServerActor.route, host, port, ctx)
       }
-      println(bindingFuture)
+
     }
 
     logger.info(s"Crossdata Server started --- v${crossdata.CrossdataVersion}")
@@ -402,12 +395,12 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServerConfig {
   private def getTlsContext: HttpsConnectionContext = {
     val sslContext: SSLContext = SSLContext.getInstance("TLS")
 
-    val keystorePath = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeyStore)
-    val keyStorePwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsKeystorePwd)
+    val keystorePath = serverConfig.getString(ServerConfig.Http.TLS.TlsKeyStore)
+    val keyStorePwd = serverConfig.getString(ServerConfig.Http.TLS.TlsKeystorePwd)
     val keyManagerFactory: KeyManagerFactory = KeyStoreUtils.getKeyManagerFactory(keystorePath, keyStorePwd)
 
-    val trustStorePath = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsTrustStore)
-    val trustStorePwd = serverConfig.getString(ServerConfig.AkkaHttpTLS.TlsTrustStorePwd)
+    val trustStorePath = serverConfig.getString(ServerConfig.Http.TLS.TlsTrustStore)
+    val trustStorePwd = serverConfig.getString(ServerConfig.Http.TLS.TlsTrustStorePwd)
     val trustManagerFactory: TrustManagerFactory = KeyStoreUtils.getTrustManagerFactory(trustStorePath, trustStorePwd)
 
     sslContext.init(keyManagerFactory.getKeyManagers, trustManagerFactory.getTrustManagers, new SecureRandom())
