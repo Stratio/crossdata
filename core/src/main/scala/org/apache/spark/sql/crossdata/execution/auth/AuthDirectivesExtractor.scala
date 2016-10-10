@@ -145,7 +145,10 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   private[auth] def cachePlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
     case CacheTableCommand(tableName, Some(toCachePlan), _) =>
-      collectTableResources(toCachePlan).map((_, Cache))
+      collectTableResources(toCachePlan).map((_, Read)) :+ (catalogResource, Write) :+ (allTableResource, Cache)
+
+    case CacheTableCommand(tableName, None, _) =>
+      (tableResource(tableName), Cache)
 
     case UncacheTableCommand(tableIdentifier) =>
       (tableResource(tableIdentifier), Cache)
