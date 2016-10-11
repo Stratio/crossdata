@@ -57,11 +57,10 @@ class TLSAuthInvalidCertificateIT extends EndToEndTest {
   "CrossdataDriver" should "return an invalid TLS authentiction error when trying to query to a TLS securized CrossdataServer from a driver with bad certificate" in {
 
     assumeCrossdataUpAndRunning()
-
-    import scala.collection.JavaConverters._
-
+    
     val settingsValues = Seq(
-      DriverConf.DriverConfigServerHttp       -> ConfigValueFactory.fromIterable(List("localhost:13422") asJava),
+      DriverConf.Http.Host                 -> ConfigValueFactory.fromAnyRef("localhost"),
+      DriverConf.Http.Port                 -> ConfigValueFactory.fromAnyRef("13422"),
       DriverConf.Http.TLS.TlsEnable        -> ConfigValueFactory.fromAnyRef(true),
       DriverConf.Http.TLS.TlsKeyStore      -> ConfigValueFactory.fromAnyRef(s"$basepath/badclient/FakeClientKeyStore.jks"),
       DriverConf.Http.TLS.TlsKeystorePwd   -> ConfigValueFactory.fromAnyRef("Pass1word"),

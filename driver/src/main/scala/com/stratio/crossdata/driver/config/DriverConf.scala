@@ -68,13 +68,11 @@ class DriverConf extends Logging {
 
   def setHttpHostAndPort(host: String, port: Int): DriverConf = {
     val newSettings = Seq(
-      DriverConf.Http.Host -> ConfigValueFactory.fromAnyRef("localhost"),
-      DriverConf.Http.Port -> ConfigValueFactory.fromAnyRef(13422)
+      DriverConf.Http.Host -> ConfigValueFactory.fromAnyRef(host),
+      DriverConf.Http.Port -> ConfigValueFactory.fromAnyRef(port)
     )
     setAll(newSettings)
   }
-
-  //def setHttp
 
   def setFlattenTables(flatten: Boolean): DriverConf = {
     userSettings.put(DriverFlattenTables, ConfigValueFactory.fromAnyRef(flatten))
@@ -104,15 +102,12 @@ class DriverConf extends Logging {
       hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
   }
 
-  private[crossdata] def getCrossdataServerHost: String = {
-    val hosts = finalSettings.getStringList(DriverConfigHosts).toList
-    hosts.head
+  private[crossdata] def getCrossdataServerHttp: String = {
+    val host = finalSettings.getString(Http.Host)
+    val port = finalSettings.getInt(Http.Port)
+    s"$host:$port"
   }
 
-  private[crossdata] def getCrossdataServerHttp: String = {
-    val hosts = finalSettings.getStringList(DriverConfigServerHttp).toList
-    hosts.head
-  }
   private[crossdata] def getFlattenTables: Boolean =
     finalSettings.getBoolean(DriverFlattenTables)
 
@@ -221,7 +216,6 @@ object DriverConf {
   val DriverConfigResource = "external.config.resource"
   val DriverConfigFile = "external.config.filename"
   val DriverConfigHosts = "config.cluster.hosts"
-  val DriverConfigServerHttp = "config.cluster.serverHttp"
   val DriverFlattenTables = "config.flatten-tables"
   val DriverClusterName = "config.cluster.name"
   val SSLEnabled = "akka.remote.netty.ssl.enable-ssl"

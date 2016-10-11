@@ -60,10 +60,9 @@ class TLSAuthValidCertificateIT extends EndToEndTest {
 
     assumeCrossdataUpAndRunning()
 
-    import scala.collection.JavaConverters._
-
     val settingsValues = Seq(
-      DriverConf.DriverConfigServerHttp       -> ConfigValueFactory.fromIterable(List("localhost:13422") asJava),
+      DriverConf.Http.Host                 -> ConfigValueFactory.fromAnyRef("localhost"),
+      DriverConf.Http.Port                 -> ConfigValueFactory.fromAnyRef("13422"),
       DriverConf.Http.TLS.TlsEnable        -> ConfigValueFactory.fromAnyRef(true),
       DriverConf.Http.TLS.TlsKeyStore      -> ConfigValueFactory.fromAnyRef(s"$basepath/goodclient/ClientKeyStore.jks"),
       DriverConf.Http.TLS.TlsKeystorePwd   -> ConfigValueFactory.fromAnyRef("Pass1word"),
