@@ -27,6 +27,8 @@ import scala.util.Try
 
 object CoreConfig {
 
+  val DefaultCatalogIdentifier = "defaultcat"
+
   val CoreBasicConfig = "core-reference.conf"
   val ParentConfigName = "crossdata-core"
   val CoreUserConfigFile = "external.config.filename"
@@ -37,25 +39,23 @@ object CoreConfig {
   val HdfsKey = "hdfs"
 
   val DerbyClass = "org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog"
-  val DefaultSecurityManager = "org.apache.spark.sql.crossdata.security.DefaultSecurityManager"
+  val DefaultSecurityManager = "com.stratio.crossdata.security.DummyCrossdataSecurityManager"
   val ZookeeperClass = "org.apache.spark.sql.crossdata.catalog.persistent.ZookeeperCatalog"
   val ZookeeperStreamingClass = "org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog"
   val StreamingConfigKey = "streaming"
   val SecurityConfigKey = "security"
   val SecurityManagerConfigKey = "manager"
   val ClassConfigKey = "class"
+  val PrefixKey = "prefix"
 
   val AuditConfigKey = "audit"
   val UserConfigKey = "user"
   val PasswordConfigKey = "password"
   val SessionConfigKey = "session"
   val CatalogClassConfigKey = s"$CatalogConfigKey.$ClassConfigKey"
+  val CatalogPrefixConfigKey = s"$CatalogConfigKey.$PrefixKey" // TODO rename prefix to catalogIdentifier
   val StreamingCatalogClassConfigKey = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
   val SecurityClassConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
-  val SecurityAuditConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$AuditConfigKey"
-  val SecurityUserConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$UserConfigKey"
-  val SecurityPasswordConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$PasswordConfigKey"
-  val SecuritySessionConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$SessionConfigKey"
 
   val SparkSqlConfigPrefix = "config.spark.sql" //WARNING!! XDServer is using this path to read its parameters
 

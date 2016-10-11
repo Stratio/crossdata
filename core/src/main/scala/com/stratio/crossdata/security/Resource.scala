@@ -13,23 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata
+package com.stratio.crossdata.security
 
-import org.apache.spark.sql.SQLConf
+case class Resource(instances: Seq[String], resourceType: ResourceType, name: String)
 
-trait XDSQLConf extends SQLConf {
-  def enableCacheInvalidation(enable: Boolean): XDSQLConf
+sealed trait ResourceType{
+  def name(): String
 }
 
-
-object XDSQLConf {
-
-  val UserIdPropertyKey = "crossdata.security.user"
-
-  implicit def fromSQLConf(conf: SQLConf): XDSQLConf = new XDSQLConf {
-
-    override def enableCacheInvalidation(enable: Boolean): XDSQLConf = this
-    override protected[spark] val settings: java.util.Map[String, String] = conf.settings
-  }
+case object TableResource extends ResourceType{
+  override def name(): String = "table"
+}
+case object CatalogResource extends ResourceType{
+  override def name(): String = "catalog"
 }
 
+case object DatastoreResource extends ResourceType{
+  override def name(): String = "datastore"
+}
+
+object Resource {
+  val CrossdataClusterNameEnvVar = "CROSSDATA_CLUSTER_NAME"
+  val AllResourceName = "*"
+}

@@ -35,6 +35,14 @@ object BasicShell extends App {
   val HistoryFile = "history.txt"
   val PersistentHistory = new File(HistoryPath.concat(HistoryFile))
 
+
+  require(args.length <= 2, "usage --user username")
+  val user = (args.toList: @unchecked) match {
+    case Nil => "xd_shell"
+    case "--user" :: username :: Nil => username
+  }
+  val password = "" // TODO read the password
+
   private def createHistoryDirectory(historyPath: String): Boolean = {
     val historyPathFile = new File(historyPath)
     !historyPathFile.exists && historyPathFile.mkdirs
@@ -89,7 +97,7 @@ object BasicShell extends App {
   initialize(console)
 
   private def runConsole(console: ConsoleReader): Unit = {
-    val driver = Driver.newSession()
+    val driver = Driver.newSession(user, password)
 
     console.println()
     console.println("+-----------------+-------------------------+---------------------------+")

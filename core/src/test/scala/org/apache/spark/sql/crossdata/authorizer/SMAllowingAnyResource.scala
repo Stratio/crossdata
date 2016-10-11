@@ -13,19 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.crossdata.security
+package org.apache.spark.sql.crossdata.authorizer
 
-object DummySecurityManager {
-  val UniqueReply = "Authorized"
-}
+import com.stratio.crossdata.security.{Action, Resource}
 
-class DummySecurityManager(credentials: Credentials, audit: Boolean) extends SecurityManager(credentials, audit) {
+class SMAllowingAnyResource extends BaseSecurityManagerTest{
 
-  import org.apache.spark.sql.crossdata.security.DummySecurityManager._
-
-  override def authorize(resource: Any): AuthorizationReply = {
-    if(audit) logInfo(s"DUMMY SECURITY MANAGER: $UniqueReply")
-    new AuthorizationReply(true, Some(UniqueReply))
-  }
+  override def authorize(userId: String, resource: Resource, action: Action): Boolean =
+    super.authorize(userId, resource, action)
 
 }
