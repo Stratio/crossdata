@@ -59,7 +59,9 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
   lazy val logger = Logger.getLogger(classOf[CrossdataHttpServer])
   lazy val mediator = DistributedPubSub(system).mediator
 
-  private val requestExecutionTimeout: FiniteDuration = Try(FiniteDuration(config.getDuration(ServerConfig.HttpRequestExecutionTimeout).toMillis, TimeUnit.MILLISECONDS)).recover{
+  private val requestExecutionTimeout: FiniteDuration = Try(
+    FiniteDuration(config.getDuration(ServerConfig.Http.RequestExecutionTimeout).toMillis, TimeUnit.MILLISECONDS)
+  ).recover{
     case configExc: ConfigException =>
       logger.warn("Http request execution timeout not found. Using the default value $HttpRequestEx", configExc)
       ServerConfig.DefaultHTTPRequestExecutionTimeout
