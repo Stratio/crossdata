@@ -41,13 +41,13 @@ class TLSAuthNoCertificateIT extends EndToEndTest {
     val basepath = getClass.getResource("/certificates").getPath
 
     val configValues = Seq(
-      ServerConfig.AkkaHttpTLS.TlsEnable        -> ConfigValueFactory.fromAnyRef(true),
-      ServerConfig.AkkaHttpTLS.TlsHost          -> ConfigValueFactory.fromAnyRef("localhost"),
-      ServerConfig.AkkaHttpTLS.TlsPort          -> ConfigValueFactory.fromAnyRef(13422),
-      ServerConfig.AkkaHttpTLS.TlsTrustStore    -> ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"),
-      ServerConfig.AkkaHttpTLS.TlsTrustStorePwd -> ConfigValueFactory.fromAnyRef("Pass1word"),
-      ServerConfig.AkkaHttpTLS.TlsKeyStore      -> ConfigValueFactory.fromAnyRef(s"$basepath/ServerKeyStore.jks"),
-      ServerConfig.AkkaHttpTLS.TlsKeystorePwd   -> ConfigValueFactory.fromAnyRef("Pass1word")
+      ServerConfig.Http.Host -> ConfigValueFactory.fromAnyRef("localhost"),
+      ServerConfig.Http.Port -> ConfigValueFactory.fromAnyRef(13422),
+      ServerConfig.Http.TLS.TlsEnable        -> ConfigValueFactory.fromAnyRef(true),
+      ServerConfig.Http.TLS.TlsTrustStore    -> ConfigValueFactory.fromAnyRef(s"$basepath/truststore.jks"),
+      ServerConfig.Http.TLS.TlsTrustStorePwd -> ConfigValueFactory.fromAnyRef("Pass1word"),
+      ServerConfig.Http.TLS.TlsKeyStore      -> ConfigValueFactory.fromAnyRef(s"$basepath/ServerKeyStore.jks"),
+      ServerConfig.Http.TLS.TlsKeystorePwd   -> ConfigValueFactory.fromAnyRef("Pass1word")
     )
 
     val tlsConfig = (ConfigFactory.empty /: configValues) {
