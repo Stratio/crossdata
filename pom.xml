@@ -177,6 +177,12 @@
                 <artifactId>crossdata-elasticsearch_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.stratio.crossdata.connector</groupId>
+                <artifactId>crossdata-postgresql_${scala.binary.version}</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.stratio.crossdata</groupId>
                 <artifactId>crossdata-common_${scala.binary.version}</artifactId>
