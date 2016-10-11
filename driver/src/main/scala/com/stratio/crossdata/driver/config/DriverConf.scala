@@ -64,10 +64,17 @@ class DriverConf extends Logging {
   /**
    * @param hostAndPort e.g 127.0.0.1:13420
    */
-  def setClusterContactPoint(hostAndPort: java.util.List[String]): DriverConf = {
-    userSettings.put(DriverConfigHosts, ConfigValueFactory.fromIterable(hostAndPort))
-    this
+  def setClusterContactPoint(hostAndPort: java.util.List[String]): DriverConf = setClusterContactPoint(hostAndPort:_*)
+
+  def setHttpHostAndPort(host: String, port: Int): DriverConf = {
+    val newSettings = Seq(
+      DriverConf.Http.Host -> ConfigValueFactory.fromAnyRef("localhost"),
+      DriverConf.Http.Port -> ConfigValueFactory.fromAnyRef(13422)
+    )
+    setAll(newSettings)
   }
+
+  //def setHttp
 
   def setFlattenTables(flatten: Boolean): DriverConf = {
     userSettings.put(DriverFlattenTables, ConfigValueFactory.fromAnyRef(flatten))
@@ -190,19 +197,19 @@ class DriverConf extends Logging {
   }
 
   def httpTlsEnable =
-    finalSettings.getBoolean(DriverConf.AkkaHttpTLS.TlsEnable)
+    finalSettings.getBoolean(DriverConf.Http.TLS.TlsEnable)
 
   def httpTlsTrustStore =
-    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsTrustStore)
+    finalSettings.getString(DriverConf.Http.TLS.TlsTrustStore)
 
   def httpTlsTrustStorePwd =
-    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsTrustStorePwd)
+    finalSettings.getString(DriverConf.Http.TLS.TlsTrustStorePwd)
 
   def httpTlsKeyStore =
-    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsKeyStore)
+    finalSettings.getString(DriverConf.Http.TLS.TlsKeyStore)
 
   def httpTlsKeyStorePwd =
-    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsKeystorePwd)
+    finalSettings.getString(DriverConf.Http.TLS.TlsKeystorePwd)
 
 }
 
@@ -220,12 +227,22 @@ object DriverConf {
   val SSLEnabled = "akka.remote.netty.ssl.enable-ssl"
   val AkkaClusterRecepcionistTunnelTimeout = "akka.contrib.cluster.receptionist.response-tunnel-receive-timeout"
 
-  //TLS akka-http client authentication
-  object AkkaHttpTLS {
-    val TlsEnable = "akka-http.ssl.enable"
-    val TlsTrustStore = "akka-http.ssl.truststore"
-    val TlsTrustStorePwd = "akka-http.ssl.truststore-password"
-    val TlsKeyStore = "akka-http.ssl.keystore"
-    val TlsKeystorePwd = "akka-http.ssl.keystore-password"
+  // Http Server
+  object Http { //TODO: Server-Driver labels objects unification/de-duplication ?
+
+    val Host = "akka-http.host"
+    val Port = "akka-http.port"
+
+    val RequestExecutionTimeout = "akka-http.request-execution-timeout"
+
+    //TLS akka-http client authentication
+    object TLS {
+      val TlsEnable = "akka-http.ssl.enable"
+      val TlsTrustStore = "akka-http.ssl.truststore"
+      val TlsTrustStorePwd = "akka-http.ssl.truststore-password"
+      val TlsKeyStore = "akka-http.ssl.keystore"
+      val TlsKeystorePwd = "akka-http.ssl.keystore-password"
+    }
+
   }
 }
