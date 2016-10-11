@@ -96,6 +96,10 @@ else
         #Driver
         sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
 
+        # CROSSDATA_SERVER_CONFIG_HTTP_SERVER_PORT is set with the port provided by Marathon-LB
+        # This way,
+        export CROSSDATA_SERVER_CONFIG_HTTP_SERVER_PORT=$PORT_13422
+
     else
 
         #Scenary: HAProxy exposing the akka netty port with the external IP. Supported only for one instance of Crossdata
@@ -116,16 +120,20 @@ else
             #Driver
             sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
         fi
+
+
+
+        # When using ClusterClient External IP, the hosts-files get updated in order to keep a consistent
+        # binding address in AKKA.
+        NAMEADDR="$(hostname -i)"
+        if [ -n "$HAPROXY_SERVER_INTERNAL_ADDRESS" ]; then
+	        NAMEADDR=$HAPROXY_SERVER_INTERNAL_ADDRESS
+        fi
+        echo -e "$NAMEADDR\t$XD_EXTERNAL_IP" >> /etc/hosts
+
     fi
 fi
 
-if [ -n "$XD_EXTERNAL_IP" ]; then
-    NAMEADDR="$(hostname -i)"
-    if [ -n "$HAPROXY_SERVER_INTERNAL_ADDRESS" ]; then
-	NAMEADDR=$HAPROXY_SERVER_INTERNAL_ADDRESS
-    fi
-    echo -e "$NAMEADDR\t$XD_EXTERNAL_IP" >> /etc/hosts
-fi
 
 if [ "$SERVER_MODE" == "debug" ]; then
     # In this mode, crossdata will be launched as a service within the docker container.
