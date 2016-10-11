@@ -36,7 +36,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Try}
 
 
-abstract class ServiceDiscoveryProvider {
+trait ServiceDiscoveryProvider {
 
   protected def logger: Logger
 
