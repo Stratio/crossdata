@@ -188,13 +188,13 @@
                                     <from>
                                         ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/com/stratio/crossdata/crossdata-server_${scala.binary.version}/${project.parent.version}
                                     </from>
-                                    <to>/opt/sds/crossdata/lib</to>
+                                    <to>/opt/sds/crossdata/lib/server</to>
                                 </copyDirectory>
                                 <copyDirectory>
                                     <from>
                                         ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/com/stratio/crossdata/crossdata-driver_${scala.binary.version}/${project.parent.version}
                                     </from>
-                                    <to>/opt/sds/crossdata/lib</to>
+                                    <to>/opt/sds/crossdata/lib/shell</to>
                                 </copyDirectory>
                                 <copyDirectory>
                                     <from>
