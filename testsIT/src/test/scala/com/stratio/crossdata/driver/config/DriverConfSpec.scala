@@ -49,4 +49,17 @@ class DriverConfSpec extends BaseXDTest{
     conf.get("akka.contrib.cluster.receptionist.response-tunnel-receive-timeout") shouldBe 10000
   }
 
+  it should "allow to set HTTP host & port" in {
+
+    val host = "crossdata.com"
+    val port = 12345
+
+    val conf = new DriverConf().setHttpHostAndPort(host, port)
+
+    conf.get(DriverConf.Http.Host) should equal(host)
+    conf.get(DriverConf.Http.Port) should equal(port)
+    conf.getCrossdataServerHttp should equal(s"$host:$port")
+
+  }
+
 }
