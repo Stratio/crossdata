@@ -58,7 +58,7 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
       }
 
       new XDSession(
-        new XDSharedState(_sparkContext,sqlConf, new DerbyCatalog(sqlConf), None),
+        new XDSharedState(_sparkContext,sqlConf, new DerbyCatalog(sqlConf), None, None),
         new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
       )
     }
@@ -183,11 +183,11 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
   }
 
   private def createNewDefaultSession: XDSession = {
-      val sqlConf = new SQLConf
-      new XDSession(
-        new XDSharedState(_sparkContext, sqlConf, new DerbyCatalog(sqlConf), None),
-        new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
-      )
-    }
+    val sqlConf = new SQLConf
+    new XDSession(
+      new XDSharedState(_sparkContext, sqlConf, new DerbyCatalog(sqlConf), None, None),
+      new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
+    )
+  }
 
 }

@@ -4,26 +4,27 @@ To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apach
 
 ## Requirements
  * Java 1.7
- * Apache Zeppelin 0.6.0-incubating-SNAPSHOT
+ * Apache Zeppelin 0.6.0
  * Maven 
 
 ## Getting Started
 
 # Install Zeppelin
 
-https://github.com/apache/incubator-zeppelin => master
+https://github.com/apache/incubator-zeppelin => git checkout v0.6.0
 
-git checkout 4c269e6d860320e2612eb6b77785c6d1ff3ef106
-
-mvn clean install -DskipTests
+mvn clean package -DskipTests
 
 #### Crossdata Interpreter
 
-From /path/to/crossdata/zeppelin:
+/path/to/zeppelin/bin/install-interpreter.sh --name crossdata -t org.apache.zeppelin:zeppelin-crossdata_2.11:1.6.0-SNAPSHOT
 
-mvn clean install
+Add interpreter class name ("org.apache.zeppelin.crossdata.CrossdataInterpreter") to 'zeppelin.interpreters' property in your conf/zeppelin-site.xml file
 
-scripts/add-crossdata-interpreter.sh /path/to/zeppelin_home 
+Start Zeppelin
+
+Create interpreter setting in 'Interpreter' menu on GUI. And then you can bind interpreter on your notebook
+
 
 ### Configure
 

@@ -15,29 +15,25 @@
  */
 package com.stratio.crossdata.server
 
-import scala.annotation.tailrec
+import com.typesafe.config.{Config, ConfigFactory}
+
+import scala.collection.JavaConversions._
+
 
 object CrossdataApplication extends App {
 
-  val crossdataServer = new CrossdataServer
-
-  crossdataServer.init(null)
-  crossdataServer.start()
-  commandLoop()
-  crossdataServer.stop()
-  crossdataServer.destroy()
-
-  /**
-   * This method make a command loop.
-   * @return  nothing.
-   * */
-  @tailrec
-  private def commandLoop(): Unit = {
-    Console.readLine() match {
-      case "quit" | "exit" => sys.exit()
-      case _ =>
-    }
-    commandLoop()
+  val mapConfig = {
+    val (keys, values) = args.toList.partition(_.startsWith("--"))
+    val argsConfig = keys.map(_.replace("--", "")).zip(values).toMap
+    ConfigFactory.parseMap(argsConfig)
   }
+
+  val params = mapConfig match {
+    case m: Config if !m.isEmpty => Some(m)
+    case _ => None
+  }
+
+  val crossdataServer = new CrossdataServer(params)
+  crossdataServer.start()
 
 }

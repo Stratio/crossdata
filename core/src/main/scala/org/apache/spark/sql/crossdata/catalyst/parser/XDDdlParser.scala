@@ -143,9 +143,8 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
     }
 
   protected lazy val createView: Parser[LogicalPlan] = {
-
-    (CREATE ~> TEMPORARY.? <~ VIEW) ~ tableIdentifier ~ (AS ~> restInput) ^^ {
-      case temp ~ viewIdentifier ~ query =>
+    (CREATE ~> TEMPORARY.? <~ VIEW) ~ tableIdentifier ~ schemaValues.? ~ (AS ~> restInput) ^^ {
+      case temp ~ viewIdentifier ~ cols ~ query =>
         if (temp.isDefined)
           CreateTempView(viewIdentifier, parseQuery(query), query)
         else

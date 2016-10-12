@@ -18,9 +18,10 @@ package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.net.Socket
 
+import com.typesafe.config.Config
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, StringNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, StringNormalized, TableIdentifierNormalized, XDCatalog, persistent}
 import org.apache.spark.sql.crossdata.daos.DAOConstants._
 import org.apache.spark.sql.crossdata.daos.impl.{AppTypesafeDAO, IndexTypesafeDAO, TableTypesafeDAO, ViewTypesafeDAO}
 import org.apache.spark.sql.crossdata.models.{AppModel, IndexModel, TableModel, ViewModel}
@@ -38,10 +39,11 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
 
   import XDCatalog._
 
-  @transient val tableDAO = new TableTypesafeDAO(XDContext.catalogConfig)
-  @transient val viewDAO = new ViewTypesafeDAO(XDContext.catalogConfig)
-  @transient val appDAO = new AppTypesafeDAO(XDContext.catalogConfig)
-  @transient val indexDAO = new IndexTypesafeDAO(XDContext.catalogConfig)
+  protected[crossdata] lazy val config: Config = XDContext.catalogConfig
+  @transient lazy val tableDAO = new TableTypesafeDAO(config)
+  @transient lazy val viewDAO = new ViewTypesafeDAO(config)
+  @transient lazy val appDAO = new AppTypesafeDAO(config)
+  @transient lazy val indexDAO = new IndexTypesafeDAO(config)
 
 
   override def lookupTable(tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable] = {
@@ -134,6 +136,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
 
 
   override def dropTableMetadata(tableIdentifier: ViewIdentifierNormalized): Unit =
+    //TODO: Defend against race conditions!
     tableDAO.dao.getAll().filter {
       tableModel => tableIdentifier.table == tableModel.name && tableIdentifier.database == tableModel.database
     } foreach { tableModel =>
@@ -142,7 +145,9 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
 
 
   override def dropAllTablesMetadata(): Unit = {
-    tableDAO.dao.deleteAll
+    //TODO: Remove Try wrapper when ZK Dao API gets improved
+    Try(tableDAO.dao.deleteAll)
+    //TODO: Defend against race conditions!
     viewDAO.dao.getAll.foreach(view => viewDAO.dao.delete(view.id))
   }
 
@@ -171,6 +176,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
 
 
   override def dropViewMetadata(viewIdentifier: ViewIdentifierNormalized): Unit =
+    //TODO: Defend against race conditions!
     viewDAO.dao.getAll().filter {
       view => view.name == viewIdentifier.table && view.database == viewIdentifier.database
     } foreach { selectedView =>
@@ -178,7 +184,9 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
     }
 
 
-  override def dropAllViewsMetadata(): Unit = viewDAO.dao.deleteAll
+  override def dropAllViewsMetadata(): Unit =
+    //TODO: Remove Try wrapper when ZK Dao API gets improved
+    Try(viewDAO.dao.deleteAll)
 
   override def isAvailable: Boolean = {
     //TODO this method must be changed when Stratio Commons provide a status connection of Zookeeper
@@ -197,12 +205,14 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
   }
 
   override def dropIndexMetadata(indexIdentifier: IndexIdentifierNormalized): Unit =
+    //TODO: Defend against race conditions!
     indexDAO.dao.getAll().filter(
       index => index.crossdataIndex.indexIdentifier == indexIdentifier
     ) foreach (selectedIndex => indexDAO.dao.delete(selectedIndex.indexId))
 
   override def dropAllIndexesMetadata(): Unit =
-    indexDAO.dao.deleteAll
+    //TODO: Remove Try wrapper when ZK Dao API gets improved
+    Try(indexDAO.dao.deleteAll)
 
   override def lookupIndex(indexIdentifier: IndexIdentifierNormalized): Option[CrossdataIndex] = {
     if (indexDAO.dao.count > 0) {
@@ -220,6 +230,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
   }
 
   override def dropIndexMetadata(tableIdentifier: TableIdentifierNormalized): Unit =
+    //TODO: Defend against race conditions!
     indexDAO.dao.getAll().filter(
       index => index.crossdataIndex.tableIdentifier == tableIdentifier
     ) foreach (selectedIndex => indexDAO.dao.delete(selectedIndex.indexId))

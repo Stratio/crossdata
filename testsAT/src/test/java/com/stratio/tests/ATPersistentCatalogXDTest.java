@@ -35,7 +35,6 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -77,7 +76,7 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 	private String elasticSearchCluster = System.getProperty("ES_CLUSTER", "elasticsearch");
 	private String elasticSearchIP = System.getProperty("ES_NODES","172.17.0.3");
 	private Client client;
-	private Settings settings = ImmutableSettings.settingsBuilder()
+	private Settings settings = Settings.settingsBuilder()
 			.put("cluster.name", elasticSearchCluster).build();
 
 	public ATPersistentCatalogXDTest() {
@@ -126,7 +125,7 @@ public class ATPersistentCatalogXDTest extends BaseTest {
 		}
 		mongoClient.close();
 		try {
-			client = new TransportClient(settings)
+			client = TransportClient.builder().settings(settings).build()
 					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
 			BulkRequestBuilder bulkRequest = client.prepareBulk();
 			try {
@@ -186,7 +185,7 @@ public class ATPersistentCatalogXDTest extends BaseTest {
         }
         mongoClient.dropDatabase(dataBase);
 		try {
-			client = new TransportClient(settings)
+			client = TransportClient.builder().settings(settings).build()
 					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(elasticSearchIP), 9300));
 		} catch (UnknownHostException e) {
 			e.printStackTrace();

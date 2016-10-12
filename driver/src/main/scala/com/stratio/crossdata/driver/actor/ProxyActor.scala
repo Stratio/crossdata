@@ -19,12 +19,12 @@ package com.stratio.crossdata.driver.actor
 import java.util.UUID
 
 import akka.actor.{Actor, ActorRef, Props}
-import akka.contrib.pattern.ClusterClient
+import akka.cluster.client.ClusterClient
 import akka.pattern.pipe
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.driver.Driver
+import com.stratio.crossdata.driver.ClusterClientDriver
 import com.stratio.crossdata.driver.actor.ProxyActor.PromisesByIds
 import com.stratio.crossdata.driver.util.HttpClient
 import org.apache.log4j.Logger
@@ -37,14 +37,14 @@ import scala.util.matching.Regex
 object ProxyActor {
   val DefaultName = "proxy-actor"
 
-  def props(clusterClientActor: ActorRef, driver: Driver): Props =
+  def props(clusterClientActor: ActorRef, driver: ClusterClientDriver): Props =
     Props(new ProxyActor(clusterClientActor, driver))
 
   case class PromisesByIds(promises: Map[UUID, Promise[ServerReply]])
 
 }
 
-class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
+class ProxyActor(clusterClientActor: ActorRef, driver: ClusterClientDriver) extends Actor {
 
   lazy val logger = Logger.getLogger(classOf[ProxyActor])
 
@@ -73,23 +73,23 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
   // Process messages from the Crossdata Driver.
   def sendToServer(promisesByIds: PromisesByIds): Receive = {
 
-    case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
+    case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _, _) =>
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
       clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(addJARCommand @ AddJARCommand(path, _, _, _), session) =>
+    case secureSQLCommand @ CommandEnvelope(addJARCommand @ AddJARCommand(path, _, _, _), session, _) =>
       import context.dispatcher
       val shipmentResponse: Future[SQLReply] = sendJarToServers(addJARCommand, path, session)
       shipmentResponse pipeTo sender
 
-    case secureSQLCommand @ CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
+    case secureSQLCommand @ CommandEnvelope(clusterStateCommand: ClusterStateCommand, _, _) =>
       logger.debug(s"Send cluster state with requestID=${clusterStateCommand.requestId}")
       clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss, _), _) =>
+    case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss, _), _, _) =>
       clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath,secureSQLCommand, localAffinity=false)
 
-    case secureSQLCommand @ CommandEnvelope(_: OpenSessionCommand | _: CloseSessionCommand, _) =>
+    case secureSQLCommand @ CommandEnvelope(_: OpenSessionCommand | _: CloseSessionCommand, _, _) =>
       clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = true)
 
     case sqlCommand: SQLCommand =>
@@ -130,7 +130,7 @@ class ProxyActor(clusterClientActor: ActorRef, driver: Driver) extends Actor {
             case reply @ QueryCancelledReply(id) =>
               logger.info(s"Query $id cancelled")
               p.success(reply)
-            case reply @ ClusterStateReply(_, clusterState) =>
+            case reply @ ClusterStateReply(_, clusterState, _) =>
               logger.debug(s"Cluster snapshot received $clusterState")
               p.success(reply)
             case reply @ OpenSessionReply(_, isOpen) =>

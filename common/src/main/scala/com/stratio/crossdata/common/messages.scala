@@ -22,14 +22,15 @@ import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.common.security.Session
 import com.typesafe.config.Config
 
+import scala.collection._
 import scala.concurrent.duration.FiniteDuration
 
 // Driver -> Server messages
-private[crossdata] trait Command {
+trait Command {
   private[crossdata] val requestId = UUID.randomUUID()
 }
 
-private[crossdata] case class SQLCommand private(sql: String,
+case class SQLCommand private(sql: String,
                                                  queryId: UUID = UUID.randomUUID(),
                                                  flattenResults: Boolean = false,
                                                  timeout: Option[FiniteDuration] = None
@@ -98,8 +99,13 @@ private[crossdata] case class GetJobStatus() extends ControlCommand
 
 private[crossdata] case class CancelQueryExecution(queryId: UUID) extends ControlCommand
 
-private[crossdata] case class CommandEnvelope(cmd: Command, session: Session)
-
+/*
+  Note that this message implies that the server trust the client in regard to the relation between the session id
+   and the user. This assumption will be taken for granted until the model of session management changes from
+   trusted-client management to server management.
+ */
+// TODO Remove user from CommandEnvelope and add to OpenSessionCommand()
+private[crossdata] case class CommandEnvelope(cmd: Command, session: Session, user: String)
 
 // Server -> Driver messages
 private[crossdata] trait ServerReply {
@@ -110,7 +116,17 @@ private[crossdata] case class QueryCancelledReply(requestId: UUID) extends Serve
 
 private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
 
-private[crossdata] case class ClusterStateReply(requestId: UUID, clusterState: CurrentClusterState) extends ServerReply
+/**
+  * This class encapsulates the information about the state of the Crossdata cluster.
+  *
+  * @param requestId Identifier of the request (query or command launched by the user).
+  * @param clusterState Information about the Akka cluster.
+  * @param sessionCluster Set of nodes sharing the sessions data. Format: [host]:port. Example: [127.0.0.1]:5701.
+  */
+private[crossdata] case class ClusterStateReply(
+                                                 requestId: UUID,
+                                                 clusterState: CurrentClusterState,
+                                                 sessionCluster: Set[String] = Set.empty[String]) extends ServerReply
 
 private[crossdata] case class OpenSessionReply(requestId: UUID, isOpen: Boolean) extends ServerReply
 

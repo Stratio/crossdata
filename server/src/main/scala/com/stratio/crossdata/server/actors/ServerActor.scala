@@ -20,8 +20,8 @@ import java.util.UUID
 import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.cluster.Cluster
-import akka.contrib.pattern.DistributedPubSubExtension
-import akka.contrib.pattern.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
+import akka.cluster.pubsub.DistributedPubSub
+import akka.cluster.pubsub.DistributedPubSubMediator.{Publish, Subscribe, SubscribeAck}
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster.{DoCheck, HeartbeatLost}
@@ -30,9 +30,10 @@ import com.stratio.crossdata.server.actors.JobActor.Commands.{CancelJob, StartJo
 import com.stratio.crossdata.server.actors.JobActor.Events.{JobCompleted, JobFailed}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import org.apache.spark.sql.crossdata.session.XDSessionProvider
+import org.apache.spark.sql.crossdata.session.{HazelcastSessionProvider, XDSessionProvider}
 import org.apache.spark.sql.types.StructType
 
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
@@ -43,7 +44,7 @@ object ServerActor {
   def props(cluster: Cluster, sessionProvider: XDSessionProvider): Props =
     Props(new ServerActor(cluster, sessionProvider))
 
-  case class JobId(requester: ActorRef, sessionId: UUID, queryId: UUID)
+  case class JobId(sessionId: UUID, queryId: UUID)
 
   private case class ManagementEnvelope(command: ControlCommand, source: ActorRef)
 
@@ -68,7 +69,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   lazy val logger = Logger.getLogger(classOf[ServerActor])
 
-  lazy val mediator = DistributedPubSubExtension(context.system).mediator
+  lazy val mediator = DistributedPubSub(context.system).mediator
 
   override def preStart(): Unit = {
     super.preStart()
@@ -94,39 +95,44 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     else
       context.become(initial(pendingTopics))
 
+  def actualRequester(rqActor: Option[ActorRef]): ActorRef = rqActor.getOrElse(sender)
+
   /**
     * If a `cmd` is passed to this method is because it has already been checked that this server can run it.
     *
     * @param cmd
     * @param st
     */
-  private def executeAccepted(cmd: CommandEnvelope)(st: State): Unit = cmd match {
-    case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, requester)) =>
+
+  private def executeAccepted(cmd: CommandEnvelope, requester: ActorRef)(st: State): Unit = cmd match {
+    case CommandEnvelope(sqlCommand@SQLCommand(query, queryId, withColnames, timeout), session@Session(id, _), _) =>
       logger.debug(s"Query received $queryId: $query. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
-
       sessionProvider.session(id) match {
         case Success(xdSession) =>
           val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
           jobActor ! StartJob
           context.become(
-            ready(st.copy(jobsById = st.jobsById + (JobId(requester, id, sqlCommand.queryId) -> jobActor)))
+            ready(st.copy(jobsById = st.jobsById + (JobId(id, sqlCommand.queryId) -> jobActor)))
           )
 
         case Failure(error) =>
           logger.warn(s"Received message with an unknown sessionId $id", error)
-          sender ! ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+          sender ! SQLReply(
+            sqlCommand.requestId,
+            ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
+          )
       }
 
 
-    case CommandEnvelope(addAppCommand@AddAppCommand(path, alias, clss, _), session@Session(id, requester)) =>
+    case CommandEnvelope(addAppCommand@AddAppCommand(path, alias, clss, _), session@Session(id, requesterOpt), _) =>
       if ( sessionProvider.session(id).map(_.addApp(path, clss, alias)).getOrElse(None).isDefined)// TODO improve addJar sessionManagement
         sender ! SQLReply(addAppCommand.requestId, SuccessfulSQLResult(Array.empty, new StructType()))
       else
         sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
 
-    case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, requester)) =>
-      st.jobsById.get(JobId(requester, id, queryId)).get ! CancelJob
+    case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, _), _) =>
+      st.jobsById(JobId(id, queryId)) ! CancelJob
   }
 
 
@@ -139,8 +145,9 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     case DelegateCommand(cmd, broadcaster) if broadcaster != self =>
       cmd match {
         // Inner pattern matching for future delegated command validations
-        case sc@CommandEnvelope(CancelQueryExecution(queryId), Session(sid, requester)) =>
-          st.jobsById.get(JobId(requester, sid, queryId)) foreach (_ => executeAccepted(sc)(st))
+        case sc@CommandEnvelope(CancelQueryExecution(queryId), Session(sid, requesterOpt), _) =>
+          val requester = actualRequester(requesterOpt)
+          st.jobsById.get(JobId(sid, queryId)) foreach (_ => executeAccepted(sc, requester)(st))
         /* If it doesn't validate it won't be re-broadcast since the source server already distributed it to all
             servers through the topic. */
       }
@@ -149,30 +156,41 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
   // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
   def commandMessagesRec(st: State): Receive = {
 
-    case sc@CommandEnvelope(_: SQLCommand, _) =>
+    case sc@CommandEnvelope(_: SQLCommand, session, _) =>
+      executeAccepted(sc, actualRequester(session.clientRef))(st)
+
+    /*case sc@CommandEnvelope(_: AddJARCommand, _, _) => //TODO Adapt Requester
       executeAccepted(sc)(st)
 
-    case sc@CommandEnvelope(_: AddJARCommand, _) =>
-      executeAccepted(sc)(st)
+    case sc@CommandEnvelope(_: AddAppCommand, _, _) => //TODO: Adapt Requester
+      executeAccepted(sc)(st)*/
 
-    case sc@CommandEnvelope(_: AddAppCommand, _) =>
-      executeAccepted(sc)(st)
 
-    case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, requester)) =>
-      st.jobsById.get(JobId(requester, id, cc.requestId)) map { _ =>
-        executeAccepted(sc)(st) // Command validated to be executed by this server.
+    case sc@CommandEnvelope(cc: ControlCommand, session@Session(id, requesterOpt), _) =>
+        val requester = actualRequester(requesterOpt)
+      st.jobsById.get(JobId(id, cc.requestId)) map { _ =>
+        executeAccepted(sc, requester)(st) // Command validated to be executed by this server.
       } getOrElse {
         // If it can't run here it should be executed somewhere else
-        mediator ! Publish(ManagementTopic, DelegateCommand(sc, self))
+        mediator ! Publish(ManagementTopic, DelegateCommand(sc.copy(session = Session(id, Some(requester))), self))
       }
 
-    case sc@CommandEnvelope(_: ClusterStateCommand, session) =>
-      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state)
+    case sc@CommandEnvelope(_: ClusterStateCommand, session, _) => {
+      val members = if (sessionProvider.isInstanceOf[HazelcastSessionProvider]) {
+        sessionProvider.asInstanceOf[HazelcastSessionProvider].getClusterState.getMembers map { m =>
+          m.getAddress.toString
+        }
+      } else {
+        Set.empty[String]
+      }
 
-    case sc@CommandEnvelope(_: OpenSessionCommand, session) =>
-      val open = sessionProvider.newSession(session.id) match {
+      sender ! ClusterStateReply(sc.cmd.requestId, cluster.state, members)
+    }
+
+    case sc@CommandEnvelope(_: OpenSessionCommand, session, userId) =>
+      val open = sessionProvider.newSession(session.id, userId) match {
         case Success(_) =>
-          logger.debug(s"new session with sessionID=${session.id} has been created")
+          logger.info(s"new session with sessionID=${session.id} has been created")
           true
         case Failure(error) =>
           logger.error(s"failure while creating the session with sessionID=${session.id}")
@@ -183,7 +201,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
       context.actorSelection("/user/client-monitor") ! DoCheck(session.id, expectedClientHeartbeatPeriod)
 
-    case sc@CommandEnvelope(_: CloseSessionCommand, session) =>
+    case sc@CommandEnvelope(_: CloseSessionCommand, session, _) =>
       closeSessionTerminatingJobs(session.id)(st)
       /* Note that the client monitoring isn't explicitly stopped. It'll after the first miss
           is detected, right after the driver has ended its session. */
@@ -222,7 +240,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   private def closeSessionTerminatingJobs(sessionId: UUID)(st: State): Unit = {
     val newjobsmap = st.jobsById filter {
-      case (JobId(_, `sessionId`, _), job) =>
+      case (JobId(`sessionId`, _), job) =>
         gracefullyKill(job) // WARNING! Side-effect within filter function
         false
       case _ => true
@@ -246,6 +264,5 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {
     case _ => Restart //Crashed job gets restarted (or not, depending on `retryNoAttempts` and `retryCountWindow`)
   }
-
 }
 

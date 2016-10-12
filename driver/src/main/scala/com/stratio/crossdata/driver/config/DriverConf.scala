@@ -33,7 +33,7 @@ class DriverConf extends Logging {
 
   private val userSettings = new ConcurrentHashMap[String, ConfigValue]()
 
-  private[crossdata] lazy val finalSettings: Config =
+   def finalSettings: Config =
     userSettings.foldLeft(typesafeConf) { case (prevConfig, keyValue) =>
       prevConfig.withValue(keyValue._1, keyValue._2)
     }
@@ -64,9 +64,14 @@ class DriverConf extends Logging {
   /**
    * @param hostAndPort e.g 127.0.0.1:13420
    */
-  def setClusterContactPoint(hostAndPort: java.util.List[String]): DriverConf = {
-    userSettings.put(DriverConfigHosts, ConfigValueFactory.fromIterable(hostAndPort))
-    this
+  def setClusterContactPoint(hostAndPort: java.util.List[String]): DriverConf = setClusterContactPoint(hostAndPort:_*)
+
+  def setHttpHostAndPort(host: String, port: Int): DriverConf = {
+    val newSettings = Seq(
+      DriverConf.Http.Host -> ConfigValueFactory.fromAnyRef(host),
+      DriverConf.Http.Port -> ConfigValueFactory.fromAnyRef(port)
+    )
+    setAll(newSettings)
   }
 
   def setFlattenTables(flatten: Boolean): DriverConf = {
@@ -97,15 +102,12 @@ class DriverConf extends Logging {
       hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
   }
 
-  private[crossdata] def getCrossdataServerHost: String = {
-    val hosts = finalSettings.getStringList(DriverConfigHosts).toList
-    hosts.head
+  private[crossdata] def getCrossdataServerHttp: String = {
+    val host = finalSettings.getString(Http.Host)
+    val port = finalSettings.getInt(Http.Port)
+    s"$host:$port"
   }
 
-  private[crossdata] def getCrossdataServerHttp: String = {
-    val hosts = finalSettings.getStringList(DriverConfigServerHttp).toList
-    hosts.head
-  }
   private[crossdata] def getFlattenTables: Boolean =
     finalSettings.getBoolean(DriverFlattenTables)
 
@@ -148,8 +150,14 @@ class DriverConf extends Logging {
       } else {
         val file = new File(configFile)
         if (file.exists()) {
-          val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
-          userConfig.withFallback(configWithResource)
+          val parsedConfig = ConfigFactory.parseFile(file)
+          if(parsedConfig.hasPath(ParentConfigName)){
+            val userConfig = ConfigFactory.parseFile(file).getConfig(ParentConfigName)
+            userConfig.withFallback(configWithResource)
+          } else {
+            logger.warn(s"User file ($configFile) found but not configuration found under $ParentConfigName")
+            configWithResource
+          }
         } else {
           logger.warn("User file (" + configFile + ") haven't been found")
           configWithResource
@@ -183,19 +191,52 @@ class DriverConf extends Logging {
     ConfigFactory.load(finalConfigWithEnvVars)
   }
 
+  def httpTlsEnable =
+    finalSettings.getBoolean(DriverConf.Http.TLS.TlsEnable)
+
+  def httpTlsTrustStore =
+    finalSettings.getString(DriverConf.Http.TLS.TlsTrustStore)
+
+  def httpTlsTrustStorePwd =
+    finalSettings.getString(DriverConf.Http.TLS.TlsTrustStorePwd)
+
+  def httpTlsKeyStore =
+    finalSettings.getString(DriverConf.Http.TLS.TlsKeyStore)
+
+  def httpTlsKeyStorePwd =
+    finalSettings.getString(DriverConf.Http.TLS.TlsKeystorePwd)
+
 }
 
 
 object DriverConf {
-  val ActorsPath = "/user/receptionist"
+  val ActorsPath = "/system/receptionist"
   val DriverConfigDefault = "driver-reference.conf"
   val ParentConfigName = "crossdata-driver"
   val DriverConfigResource = "external.config.resource"
   val DriverConfigFile = "external.config.filename"
   val DriverConfigHosts = "config.cluster.hosts"
-  val DriverConfigServerHttp = "config.cluster.serverHttp"
   val DriverFlattenTables = "config.flatten-tables"
   val DriverClusterName = "config.cluster.name"
   val SSLEnabled = "akka.remote.netty.ssl.enable-ssl"
   val AkkaClusterRecepcionistTunnelTimeout = "akka.contrib.cluster.receptionist.response-tunnel-receive-timeout"
+
+  // Http Server
+  object Http { //TODO: Server-Driver labels objects unification/de-duplication ?
+
+    val Host = "akka-http.host"
+    val Port = "akka-http.port"
+
+    val RequestExecutionTimeout = "akka-http.request-execution-timeout"
+
+    //TLS akka-http client authentication
+    object TLS {
+      val TlsEnable = "akka-http.ssl.enable"
+      val TlsTrustStore = "akka-http.ssl.truststore"
+      val TlsTrustStorePwd = "akka-http.ssl.truststore-password"
+      val TlsKeyStore = "akka-http.ssl.keystore"
+      val TlsKeystorePwd = "akka-http.ssl.keystore-password"
+    }
+
+  }
 }

@@ -23,9 +23,9 @@ import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
 import org.apache.spark.sql.{Row, sources}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, ProjectReport, SimpleLogicalPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, ProjectReport, SimpleLogicalPlan, CrossdataExecutionPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{StructField, StructType}
 import org.elasticsearch.action.search.SearchResponse
 
 import scala.util.{Failure, Try}
@@ -128,8 +128,18 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
   }
 
   private def selectFields(fields: Seq[Attribute], query: SearchDefinition): SearchDefinition = {
-      val stringFields: Seq[String] = fields.map(_.name)
-      query.fields(stringFields.toList: _*)
+      val subDocuments = schemaProvided.toSeq flatMap {
+        _.fields collect {
+          case StructField(name, _: StructType, _, _) => name
+        }
+      }
+      val stringFields: Seq[String] = fields.view map (_.name) filterNot (subDocuments contains _)
+
+      val fieldsQuery = query.fields(stringFields.toList: _*)
+
+      if(stringFields.size != fields.size)
+        fieldsQuery.sourceInclude(subDocuments: _*).sourceExclude(stringFields:_*)
+      else fieldsQuery
   }
 
 
@@ -144,9 +154,9 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
 
         case PhysicalOperation(projectList, filterList, _) =>
           CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-            case (_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
+            case CrossdataExecutionPlan(_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
               None
-            case (basePlan, _, _) =>
+            case CrossdataExecutionPlan(basePlan, _, _) =>
               Some(basePlan)
           }
       }

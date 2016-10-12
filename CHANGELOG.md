@@ -2,7 +2,25 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
-## 1.5.0 (upcoming)
+## 1.7.0 (upcoming)
+
+* Pluggable security manager, enabling authorization and auditing
+* HTTP/HTTPS Communication layer with transparent driver.
+* Bug Fixes:
+    * Cancellation message is now delivered to the client.
+
+## 1.6.0 (September 2016)
+
+* Elasticsearch: 
+    * Support import tables without specifying a particular resource
+    * Adds BINARY, TINYINT, FLOAT types.
+    * Adds support for sub documents at Native side.
+    
+* Major Akka version upgrade to 2.4 (2.4.9), thus enabling putting the server behind HAProxy. 
+* Resolve queries using fully qualified identifiers.
+* Service discovery of Akka Cluster and Hazelcast members for servers through Zookeeper.
+
+## 1.5.0 (August 2016)
 
 * Global index: use of inverted indices for speeding-up queries
 * Downgrade to Elasticsearch 2.0.2

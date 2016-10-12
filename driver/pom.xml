@@ -21,12 +21,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>parent_2.10</artifactId>
+        <artifactId>parent_2.11</artifactId>
         <groupId>com.stratio.crossdata</groupId>
-        <version>1.5.0-SNAPSHOT</version>
+        <version>1.7.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>crossdata-driver_2.10</artifactId>
+    <artifactId>crossdata-driver_2.11</artifactId>
     <name>Driver</name>
     <description>Driver for Crossdata in order to communicate with the Crossdata Servers</description>
     <packaging>jar</packaging>
@@ -40,12 +40,17 @@
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_${scala.binary.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-cluster_${scala.binary.version}</artifactId>
             <version>${akka.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-contrib_${scala.binary.version}</artifactId>
+            <artifactId>akka-cluster-tools_${scala.binary.version}</artifactId>
             <version>${akka.version}</version>
         </dependency>
         <dependency>
@@ -56,14 +61,13 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-http-experimental_${scala.binary.version}</artifactId>
-            <version>2.0.3</version>
+            <version>${akka.version}</version>
         </dependency>
         <dependency>
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
             <version>2.13</version>
         </dependency>
-
         <!--TEST-->
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
@@ -73,7 +77,7 @@
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-core_${scala.binary.version}</artifactId>
+            <artifactId>crossdata-common_${scala.binary.version}</artifactId>
             <version>${project.parent.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -106,7 +110,6 @@
                                     <include>com.google.guava:guava</include>
                                     <include>io.netty:netty-all</include>
                                     <include>io.netty:netty</include>
-                                    <include>com.google.protobuf:protobuf-java</include>
                                     <include>org.slf4j:slf4j-api</include>
                                     <include>org.slf4j:slf4j-log4j12</include>
                                     <include>log4j:log4j:jar</include>
@@ -284,7 +287,6 @@
                                     <include>com.google.guava:guava</include>
                                     <include>io.netty:netty-all</include>
                                     <include>io.netty:netty</include>
-                                    <include>com.google.protobuf:protobuf-java</include>
                                     <include>log4j:log4j:jar</include>
                                     <include>org.scala-lang:scala-library</include>
                                     <include>org.scala-lang:scala-reflect</include>

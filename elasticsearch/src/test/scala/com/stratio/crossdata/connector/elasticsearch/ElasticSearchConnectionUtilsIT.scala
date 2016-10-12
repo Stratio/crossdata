@@ -55,9 +55,9 @@ class ElasticSearchConnectionUtilsIT extends ElasticWithSharedContext with Elast
     val types = ElasticSearchConnectionUtils.listTypes(options)
 
     //Expectations
-    types should not be (null)
+    types should not be null
     types.size should be (1)
-    types(0).schema.get.size should be (8)
+    types.head.schema shouldBe empty
 
   }
 

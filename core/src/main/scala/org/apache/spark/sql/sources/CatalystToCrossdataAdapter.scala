@@ -37,6 +37,14 @@ object CatalystToCrossdataAdapter {
   case class FilterReport(filtersIgnored: Seq[Expression], ignoredNativeUDFReferences: Seq[AttributeReference])
   case class ProjectReport(expressionsIgnored: Seq[Expression])
 
+  case class CrossdataExecutionPlan(baseLogicalPlan: BaseLogicalPlan, projectReport: ProjectReport, filterReport: FilterReport) {
+
+    def containsAggregation: Boolean = baseLogicalPlan.isInstanceOf[AggregationLogicalPlan]
+
+    def containsIgnoredProjections: Boolean = projectReport.expressionsIgnored.nonEmpty
+
+  }
+
   abstract class BaseLogicalPlan(
                                   val projects: Seq[NamedExpression],
                                   val filters: Array[SourceFilter],
@@ -65,7 +73,7 @@ object CatalystToCrossdataAdapter {
    */
   def getConnectorLogicalPlan(logicalPlan: LogicalPlan,
                               projects: Seq[NamedExpression],
-                              filterPredicates: Seq[Expression]): (BaseLogicalPlan, ProjectReport, FilterReport) = {
+                              filterPredicates: Seq[Expression]): CrossdataExecutionPlan = {
 
     val relation = logicalPlan.collectFirst { case lr: LogicalRelation => lr }.get
     implicit val att2udf = logicalPlan.collect { case EvaluateNativeUDF(udf, child, att) => att -> udf } toMap
@@ -103,8 +111,8 @@ object CatalystToCrossdataAdapter {
         c.references.map(Found -> relation.attributeMap(_)).toSeq :+ (Requested -> itemAccess2att(c))
 
       // TODO should these expressions be ignored? We are omitting expressions within structfields
-      case c: GetStructField  => c.references flatMap {
-        case x => Seq(Requested -> relation.attributeMap(x))
+      case c: GetStructField  => c.references flatMap { x =>
+        Seq(Requested -> relation.attributeMap(x))
       } toSeq
 
       case ignoredExpr =>
@@ -134,12 +142,13 @@ object CatalystToCrossdataAdapter {
     val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
       val requestedColumns: Seq[Attribute] =
         columnExpressions.getOrElse(Requested, Seq.empty) collect { case a: Attribute => a }
-      SimpleLogicalPlan(requestedColumns, filters.toArray, att2udf, att2itemAccess)
+      SimpleLogicalPlan(requestedColumns, filters, att2udf, att2itemAccess)
     } { case (groupingExpression, selectExpression) =>
       AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)
     }
+
     val projectReport = columnExpressions.getOrElse(Ignored, Seq.empty)
-    (baseLogicalPlan, ProjectReport(projectReport), filterReport)
+    CrossdataExecutionPlan(baseLogicalPlan, ProjectReport(projectReport), filterReport)
   }
 
   def udfFlattenedActualParameters[B](

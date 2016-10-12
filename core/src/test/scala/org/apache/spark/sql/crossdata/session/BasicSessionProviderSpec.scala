@@ -37,6 +37,7 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
 class BasicSessionProviderSpec extends SharedXDContextTest {
 
   val SparkSqlConfigString = "config.spark.sql.inMemoryColumnarStorage.batchSize=5000"
+  val UserId = "kravets"
 
   implicit lazy val conf: CatalystConf = xdContext.catalog.conf
 
@@ -112,7 +113,7 @@ class BasicSessionProviderSpec extends SharedXDContextTest {
     val basicSessionProvider = new BasicSessionProvider(xdContext.sc, ConfigFactory.empty())
     val sessionId = UUID.randomUUID()
 
-    val session = basicSessionProvider.newSession(sessionId)
+    val session = basicSessionProvider.newSession(sessionId, UserId)
 
     basicSessionProvider.closeSession(sessionId)
 
@@ -124,7 +125,7 @@ class BasicSessionProviderSpec extends SharedXDContextTest {
 
     val basicSessionProvider = new BasicSessionProvider(xdContext.sc, ConfigFactory.empty())
 
-    val session = basicSessionProvider.newSession(UUID.randomUUID())
+    val session = basicSessionProvider.newSession(UUID.randomUUID(), UserId)
 
     basicSessionProvider.closeSession(UUID.randomUUID()).isFailure shouldBe true
 
@@ -142,7 +143,7 @@ class BasicSessionProviderSpec extends SharedXDContextTest {
   }
 
   private def createNewSession(sessionProvider: XDSessionProvider, uuid: UUID = UUID.randomUUID()): XDSession = {
-    val optSession = sessionProvider.newSession(uuid).toOption
+    val optSession = sessionProvider.newSession(uuid, UserId).toOption
     optSession shouldBe defined
     optSession.get
   }

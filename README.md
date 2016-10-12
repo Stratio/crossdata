@@ -1,8 +1,6 @@
-[![Coverage Status](https://coveralls.io/repos/github/Stratio/Crossdata/badge.svg?branch=master)](https://coveralls.io/github/Stratio/Crossdata?branch=master)
-
 Introduction
 ============
-[![GitterIL]( https://badges.gitter.im/Stratio/Crossdata.svg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)](https://gitter.im/Stratio/Crossdata)
+[![GitterIL]( https://badges.gitter.im/Stratio/Crossdata.svg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)](https://gitter.im/Stratio/Crossdata) [![Coverage Status](https://coveralls.io/repos/github/Stratio/Crossdata/badge.svg?branch=master)](https://coveralls.io/github/Stratio/Crossdata?branch=master)
 
 Crossdata is a distributed framework and a fast and general-purpose computing system powered by Apache Spark. It unifies the interaction with different sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like language using SparkSQL as the core of the project. In addition, Crossdata supports batch and streaming processing so that you can mix data from both input technologies. Supporting multiple architectures imposes two main challenges: how to normalize the access to the datastores, and how to cope with datastore limitations. Crossdata provides connectors which can access to multiple datastores natively, speeding up the queries by avoiding the overhead and the block of resources of the Spark Cluster when possible. We offer a shell, Java and Scala APIs, JDBC and ODBC for BI tools.
 
@@ -40,6 +38,7 @@ Main Crossdata's advantages over other options:
 - Creation of tables in the datastores.
 - Drop of tables from the datastores.
 - Insert with values queries as in typical SQL.
+- Service Discovery
 
 ===================
 Spark Compatibility
@@ -47,6 +46,10 @@ Spark Compatibility
 
 | Crossdata Version | Spark Version |
 |-------------------|:--------------|
+| 1.7.X	            | 1.6.X         |
+| 1.6.X	            | 1.6.X         |
+| 1.5.X	            | 1.6.X         |
+| 1.4.X	            | 1.6.X         |
 | 1.3.X	            | 1.6.X         |
 | 1.2.X             |	1.5.X         |
 | 1.1.X             |	1.5.X         |
@@ -57,7 +60,7 @@ Spark Compatibility
 Documentation
 =============
 
-For a complete documentation, please, visit https://stratio.atlassian.net/wiki/display/CROSSDATA1x3.
+For a complete documentation, please, visit https://stratio.atlassian.net/wiki/display/PLATFORM/STRATIO+CROSSDATA.
 
 ===========
 Get support

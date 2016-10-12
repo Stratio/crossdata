@@ -55,10 +55,29 @@ object ServerConfig {
   // Jars Repo
   val RepoJars = "config.externalJarsRepo"
 
-  // Http Server Port
-  val HttpServerPort = "config.HttpServerPort"
-
   val IsHazelcastProviderEnabledProperty = "config.hazelcast.enabled"
+
+  // Http Server
+  object Http {
+
+    val Host = "akka-http.host"
+    val Port = "akka-http.port"
+
+    val RequestExecutionTimeout = "akka-http.request-execution-timeout"
+
+    //TLS akka-http client authentication
+    object TLS {
+      val TlsEnable = "akka-http.ssl.enable"
+      val TlsTrustStore = "akka-http.ssl.truststore"
+      val TlsTrustStorePwd = "akka-http.ssl.truststore-password"
+      val TlsKeyStore = "akka-http.ssl.keystore"
+      val TlsKeystorePwd = "akka-http.ssl.keystore-password"
+    }
+
+  }
+
+
+  val DefaultHTTPRequestExecutionTimeout = 4 hour
 }
 
 trait ServerConfig extends NumberActorConfig {
@@ -113,9 +132,14 @@ trait ServerConfig extends NumberActorConfig {
     if (configFile != "") {
       val file = new File(configFile)
       if (file.exists()) {
-        val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.ParentConfigName)
-        defaultConfig = userConfig.withFallback(defaultConfig)
-        logger.info("External file (" + configFile + ") found")
+        val parsedConfig = ConfigFactory.parseFile(file)
+        if(parsedConfig.hasPath(ServerConfig.ParentConfigName)){
+          val userConfig = ConfigFactory.parseFile(file).getConfig(ServerConfig.ParentConfigName)
+          defaultConfig = userConfig.withFallback(defaultConfig)
+          logger.info("External file (" + configFile + ") found")
+        } else{
+          logger.info(s"External file ($configFile) found but not configuration found under ${ServerConfig.ParentConfigName}")
+        }
       } else {
         logger.warn("External file (" + configFile + ") hasn't been found")
       }
@@ -131,16 +155,13 @@ trait ServerConfig extends NumberActorConfig {
 
     defaultConfig = systemPropertiesConfig.withFallback(defaultConfig)
 
-    val finalConfig = {
-      if (defaultConfig.hasPath("akka.cluster.server-nodes")) {
-        val serverNodes = defaultConfig.getString("akka.cluster.server-nodes")
+    val finalConfig =
+      Try(defaultConfig.getString("akka.cluster.seed-nodes")).map{ strCluster =>
         defaultConfig.withValue(
           "akka.cluster.seed-nodes",
-          ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
-      } else {
-        defaultConfig
-      }
-    }
+          ConfigValueFactory.fromIterable(strCluster.split(",").toList)
+        )
+      }.getOrElse(defaultConfig)
 
     ConfigFactory.load(finalConfig)
   }

@@ -100,9 +100,6 @@ private[crossdata] case class CreateEphemeralTable(tableIdent: TableIdentifier,
 
 }
 
-
-
-
 private[crossdata] case class DropEphemeralTable(tableIdent: TableIdentifier)
   extends LogicalPlan with RunnableCommand {
 
@@ -213,7 +210,7 @@ private[crossdata] case class StopProcess(tableIdentifier: String) extends Logic
     logInfo(s"Stopping process $tableIdentifier")
     xdContext.catalog.getEphemeralStatus(tableIdentifier) match {
       case Some(currentStatus) =>
-        if (currentStatus == EphemeralExecutionStatus.Started || currentStatus == EphemeralExecutionStatus.Starting) {
+        if (currentStatus.status == EphemeralExecutionStatus.Started || currentStatus.status == EphemeralExecutionStatus.Starting) {
           xdContext.catalog.updateEphemeralStatus(
             tableIdentifier,
             EphemeralStatusModel(tableIdentifier, EphemeralExecutionStatus.Stopping)
