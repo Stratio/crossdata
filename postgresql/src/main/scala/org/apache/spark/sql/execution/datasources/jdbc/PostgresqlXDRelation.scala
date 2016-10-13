@@ -20,10 +20,13 @@ import java.util.Properties
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.Partition
+import org.apache.spark.sql.crossdata.exceptions.CrossdataException
+import org.apache.spark.sql.execution.datasources.LogicalRelation
+import org.apache.spark.sql.sources.BaseRelation
 
 class PostgresqlXDRelation( url: String,
                             table: String,
@@ -37,7 +40,8 @@ class PostgresqlXDRelation( url: String,
 
   override val schema: StructType = userSchema.getOrElse(JDBCRDD.resolveTable(url, table, properties))
 
-  override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = ???
+  override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] =
+    throw new CrossdataException("Native buildScan not implemented yet", null)
 
     /**
     * Checks the ability to execute a [[LogicalPlan]].
@@ -46,5 +50,24 @@ class PostgresqlXDRelation( url: String,
     * @param wholeLogicalPlan the whole DataFrame tree
     * @return whether the logical step within the entire logical plan is supported
     */
-  override def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean = ???
+  override def isSupported(logicalStep: LogicalPlan, wholeLogicalPlan: LogicalPlan): Boolean = logicalStep match {
+
+    case ln: LeafNode => ln match {
+      // It supports native query if all tables are in postgresql
+      case LogicalRelation(br: BaseRelation, _) => br.isInstanceOf[PostgresqlXDRelation]
+      case _ => true
+    }
+
+    case un: UnaryNode => un match {
+      case Limit(_, _) | Project(_, _) | Filter(_, _) => true
+      case _: Sort => true
+      case _: Aggregate => true
+      case _ => false
+    }
+    case bn: BinaryNode => bn match {
+      case _: Join => true
+      case _ => false
+    }
+    case unsupportedLogicalPlan =>logDebug(s"LogicalPlan $unsupportedLogicalPlan cannot be executed natively"); false
+  }
 }

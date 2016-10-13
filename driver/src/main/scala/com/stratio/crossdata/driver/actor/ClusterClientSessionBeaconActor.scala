@@ -24,14 +24,14 @@ import com.stratio.crossdata.common.util.akka.keepalive.LiveMan
 
 import scala.concurrent.duration.FiniteDuration
 
-object SessionBeaconActor {
+object ClusterClientSessionBeaconActor {
 
   def props(
              sessionId: UUID,
              period: FiniteDuration,
              clusterClientActor: ActorRef,
              clusterPath: String): Props =
-    Props(new SessionBeaconActor(sessionId, period, clusterClientActor, clusterPath))
+    Props(new ClusterClientSessionBeaconActor(sessionId, period, clusterClientActor, clusterPath))
 
 }
 
@@ -39,7 +39,7 @@ object SessionBeaconActor {
   * This actor is used by the driver provide the cluster with proof of life for the current session.
   * Check [[LiveMan]] for more details.
   */
-class SessionBeaconActor private (
+class ClusterClientSessionBeaconActor private(
                      override val keepAliveId: UUID,
                      override val period: FiniteDuration,
                      clusterClientActor: ActorRef,

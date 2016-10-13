@@ -55,10 +55,29 @@ object ServerConfig {
   // Jars Repo
   val RepoJars = "config.externalJarsRepo"
 
-  // Http Server Port
-  val HttpServerPort = "config.HttpServerPort"
-
   val IsHazelcastProviderEnabledProperty = "config.hazelcast.enabled"
+
+  // Http Server
+  object Http {
+
+    val Host = "akka-http.host"
+    val Port = "akka-http.port"
+
+    val RequestExecutionTimeout = "akka-http.request-execution-timeout"
+
+    //TLS akka-http client authentication
+    object TLS {
+      val TlsEnable = "akka-http.ssl.enable"
+      val TlsTrustStore = "akka-http.ssl.truststore"
+      val TlsTrustStorePwd = "akka-http.ssl.truststore-password"
+      val TlsKeyStore = "akka-http.ssl.keystore"
+      val TlsKeystorePwd = "akka-http.ssl.keystore-password"
+    }
+
+  }
+
+
+  val DefaultHTTPRequestExecutionTimeout = 4 hour
 }
 
 trait ServerConfig extends NumberActorConfig {

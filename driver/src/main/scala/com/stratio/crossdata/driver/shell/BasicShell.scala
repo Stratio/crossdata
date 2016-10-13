@@ -35,12 +35,17 @@ object BasicShell extends App {
   val HistoryFile = "history.txt"
   val PersistentHistory = new File(HistoryPath.concat(HistoryFile))
 
+  require(args.length <= 4, "usage --user username --http true/false(default)")
 
-  require(args.length <= 2, "usage --user username")
   val user = (args.toList: @unchecked) match {
     case Nil => "xd_shell"
     case "--user" :: username :: Nil => username
   }
+  val http = (args.toList: @unchecked) match {
+    case Nil => false
+    case "--connection" :: bool :: Nil => bool.toBoolean
+  }
+
   val password = "" // TODO read the password
 
   private def createHistoryDirectory(historyPath: String): Boolean = {
@@ -97,7 +102,12 @@ object BasicShell extends App {
   initialize(console)
 
   private def runConsole(console: ConsoleReader): Unit = {
-    val driver = Driver.newSession(user, password)
+
+    val driver = if(http){
+      Driver.http.newSession(user, password)
+    } else {
+      Driver.newSession(user, password)
+    }
 
     console.println()
     console.println("+-----------------+-------------------------+---------------------------+")

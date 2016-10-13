@@ -24,7 +24,7 @@ trait Result {
   def hasError: Boolean
 }
 
-trait SQLResult extends Result {
+sealed trait SQLResult extends Result {
 
   // TODO: Avoid to expose methods that some of their implementation throw an exception
   def resultSet: Array[Row]
