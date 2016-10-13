@@ -112,6 +112,7 @@
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
         <config.version>1.2.1</config.version>
         <akka.version>2.4.9</akka.version>
+        <akka.http.json4s.version>1.9.0</akka.http.json4s.version>
         <!-- <akka.http.stream.version>2.0.3</akka.http.stream.version> -->
         <hazelcast.version>3.7.1</hazelcast.version>
         <slf4j.version>1.7.7</slf4j.version>
@@ -197,6 +198,11 @@
             <dependency>
                 <groupId>org.json4s</groupId>
                 <artifactId>json4s-ext_${scala.binary.version}</artifactId>
+                <version>${jackson4s.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json4s</groupId>
+                <artifactId>json4s-jackson_${scala.binary.version}</artifactId>
                 <version>${jackson4s.version}</version>
             </dependency>
             <dependency>
