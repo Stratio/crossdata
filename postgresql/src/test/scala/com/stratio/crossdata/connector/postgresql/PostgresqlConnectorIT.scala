@@ -82,6 +82,40 @@ class PostgresqlConnectorIT extends PostgresqlWithSharedContext {
 
   }
 
+    "Postgresql connector" should " execute natively a (SELECT * ...  WHERE DEFAULT_COLUM = _ )" in {
+      assumeEnvironmentIsUpAndRunning
+
+      the[CrossdataException] thrownBy {
+        sql(s"SELECT * FROM $Table WHERE enrolled = true").collect(Native)
+      } should have message "Native buildScan not implemented yet"
+    }
+
+    it should " not execute natively a (SELECT * ...  WHERE DEFAULT_COLUM = _ ) when a casting is needed (string to boolean)" in {
+      assumeEnvironmentIsUpAndRunning
+
+      the[CrossdataException] thrownBy {
+        sql(s"SELECT * FROM $Table WHERE enrolled = 'true'").collect(Native)
+      } should have message "The operation cannot be executed without Spark"
+    }
+
+  it should " execute natively a (SELECT * ...  WHERE PK > _ )" in {
+      assumeEnvironmentIsUpAndRunning
+
+      the[CrossdataException] thrownBy {
+        sql(s"SELECT * FROM $Table WHERE id > 3").collect(Native)
+      } should have message "Native buildScan not implemented yet"
+    }
+
+    it should " execute natively a (SELECT * ...  ORDER BY _ )" in {
+      assumeEnvironmentIsUpAndRunning
+
+      the[CrossdataException] thrownBy {
+        sql(s"SELECT * FROM $Table ORDER BY age").collect(Native)
+      } should have message "Native buildScan not implemented yet"
+    }
+
+
+
 //  "Postgresql connector" should " execute natively a (SELECT * ...  WHERE DEFAULT_COLUM = _ )" in {
 //    assumeEnvironmentIsUpAndRunning
 //
