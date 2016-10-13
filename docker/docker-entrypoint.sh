@@ -76,7 +76,7 @@ else
     sed -i "s|#crossdata-server.config.spark.ui.port.*|crossdata-server.config.spark.ui.port = \"${PORT_4040}\"|" /etc/sds/crossdata/server/server-application.conf
 
 
-    #If XD_EXTERNAL_IP and MARATHON_APP_LABEL_HAPROXY_0_PORT are not specified assume we are working in HTTP mode
+    #If XD_EXTERNAL_IP and MARATHON_APP_LABEL_HAPROXY_1_PORT are not specified assume we are working in HTTP mode
     #Scenary: HAProxy exposing Akka http port, and creating an internal cluster using netty and autodiscovery through Zookeeper
     if [ -z ${XD_EXTERNAL_IP} ] && [ -z ${MARATHON_APP_LABEL_HAPROXY_1_PORT} ]; then
 
@@ -110,7 +110,7 @@ else
             #Hostname and port of haproxy
             HAPROXY_FINAL_ROUTE=${XD_EXTERNAL_IP}:${MARATHON_APP_LABEL_HAPROXY_1_PORT}
             sed -i "s|#crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${XD_EXTERNAL_IP}\"|" /etc/sds/crossdata/server/server-application.conf
-            sed -i "s|#crossdata-server.akka.remote.netty.tcp.port.*|crossdata-server.akka.remote.netty.tcp.port = \"${MARATHON_APP_LABEL_HAPROXY_0_PORT}\"|" /etc/sds/crossdata/server/server-application.conf
+            sed -i "s|#crossdata-server.akka.remote.netty.tcp.port.*|crossdata-server.akka.remote.netty.tcp.port = \"${MARATHON_APP_LABEL_HAPROXY_1_PORT}\"|" /etc/sds/crossdata/server/server-application.conf
             sed -i "s|#crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"akka.tcp:\/\/CrossdataServerCluster@${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/server/server-application.conf
 
             #Bind address for local
