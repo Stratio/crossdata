@@ -121,6 +121,12 @@
                             </excludes>
                         </filter>
                     </filters>
+                    <transformers>
+                        <!-- TODO This transformer fix https://stratio.atlassian.net/browse/CROSSDATA-721. Remove it when solving conflicts properly-->
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                            <resource>reference.conf</resource>
+                        </transformer>
+                    </transformers>
                 </configuration>
                 <executions>
                     <execution>
