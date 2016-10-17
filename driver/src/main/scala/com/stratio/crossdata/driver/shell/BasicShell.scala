@@ -37,14 +37,28 @@ object BasicShell extends App {
 
   require(args.length <= 4, "usage --user username --http true/false(default)")
 
-  val user = (args.toList: @unchecked) match {
-    case Nil => "xd_shell"
-    case "--user" :: username :: Nil => username
+  val arglist=args.toList
+
+  type OptionMap = Map[String, Any]
+
+  def nextOption(map : OptionMap, list: List[String]) : OptionMap = {
+    list match {
+      case Nil => map
+      case "--user" :: username :: tail =>
+        nextOption(map ++ Map("user" -> username), tail)
+      case "--http" :: bool :: tail  =>
+        nextOption(map ++ Map("http" -> bool.toBoolean), tail)
+    }
   }
-  val http = (args.toList: @unchecked) match {
-    case Nil => false
-    case "--connection" :: bool :: Nil => bool.toBoolean
+  val options = nextOption(Map(),arglist)
+
+  val user=options.getOrElse("user","").toString
+  val http=options.getOrElse("http", false) match {
+    case x:Boolean=>x
+    case _=> false
   }
+
+  logger.info("user: " + user + ". http enabled:" + http.toString)
 
   val password = "" // TODO read the password
 
