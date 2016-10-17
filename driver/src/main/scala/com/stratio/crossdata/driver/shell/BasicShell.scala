@@ -37,25 +37,26 @@ object BasicShell extends App {
 
   require(args.length <= 4, "usage --user username --http true/false(default)")
 
-  val arglist=args.toList
+  val arglist = args.toList
 
   type OptionMap = Map[String, Any]
 
-  def nextOption(map : OptionMap, list: List[String]) : OptionMap = {
+  def nextOption(map: OptionMap, list: List[String]): OptionMap = {
     list match {
       case Nil => map
       case "--user" :: username :: tail =>
         nextOption(map ++ Map("user" -> username), tail)
-      case "--http" :: bool :: tail  =>
+      case "--http" :: bool :: tail =>
         nextOption(map ++ Map("http" -> bool.toBoolean), tail)
     }
   }
-  val options = nextOption(Map(),arglist)
 
-  val user=options.getOrElse("user","").toString
-  val http=options.getOrElse("http", false) match {
-    case x:Boolean=>x
-    case _=> false
+  val options = nextOption(Map(), arglist)
+
+  val user = options.getOrElse("user", "xd_shell").toString
+  val http = options.getOrElse("http", false) match {
+    case x: Boolean => x
+    case _ => false
   }
 
   logger.info("user: " + user + ". http enabled:" + http.toString)
@@ -95,7 +96,7 @@ object BasicShell extends App {
   }
 
   def loadHistory(console: ConsoleReader): Unit = {
-    if(PersistentHistory.exists){
+    if (PersistentHistory.exists) {
       logger.info("Loading history...")
       console.setHistory(new FileHistory(PersistentHistory))
     } else {
@@ -117,7 +118,7 @@ object BasicShell extends App {
 
   private def runConsole(console: ConsoleReader): Unit = {
 
-    val driver = if(http){
+    val driver = if (http) {
       Driver.http.newSession(user, password)
     } else {
       Driver.newSession(user, password)
@@ -157,7 +158,7 @@ object BasicShell extends App {
 
   runConsole(console)
 
-  sys addShutdownHook{
+  sys addShutdownHook {
     close(console)
   }
 
