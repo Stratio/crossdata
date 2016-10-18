@@ -64,9 +64,14 @@ class DriverConf extends Logging {
   /**
    * @param hostAndPort e.g 127.0.0.1:13420
    */
-  def setClusterContactPoint(hostAndPort: java.util.List[String]): DriverConf = {
-    userSettings.put(DriverConfigHosts, ConfigValueFactory.fromIterable(hostAndPort))
-    this
+  def setClusterContactPoint(hostAndPort: java.util.List[String]): DriverConf = setClusterContactPoint(hostAndPort:_*)
+
+  def setHttpHostAndPort(host: String, port: Int): DriverConf = {
+    val newSettings = Seq(
+      DriverConf.Http.Host -> ConfigValueFactory.fromAnyRef(host),
+      DriverConf.Http.Port -> ConfigValueFactory.fromAnyRef(port)
+    )
+    setAll(newSettings)
   }
 
   def setFlattenTables(flatten: Boolean): DriverConf = {
@@ -97,15 +102,12 @@ class DriverConf extends Logging {
       hosts map (host => s"akka.tcp://$clusterName@$host$ActorsPath")
   }
 
-  private[crossdata] def getCrossdataServerHost: String = {
-    val hosts = finalSettings.getStringList(DriverConfigHosts).toList
-    hosts.head
+  private[crossdata] def getCrossdataServerHttp: String = {
+    val host = finalSettings.getString(Http.Host)
+    val port = finalSettings.getInt(Http.Port)
+    s"$host:$port"
   }
 
-  private[crossdata] def getCrossdataServerHttp: String = {
-    val hosts = finalSettings.getStringList(DriverConfigServerHttp).toList
-    hosts.head
-  }
   private[crossdata] def getFlattenTables: Boolean =
     finalSettings.getBoolean(DriverFlattenTables)
 
@@ -190,19 +192,19 @@ class DriverConf extends Logging {
   }
 
   def httpTlsEnable =
-    finalSettings.getBoolean(DriverConf.AkkaHttpTLS.TlsEnable)
+    finalSettings.getBoolean(DriverConf.Http.TLS.TlsEnable)
 
   def httpTlsTrustStore =
-    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsTrustStore)
+    finalSettings.getString(DriverConf.Http.TLS.TlsTrustStore)
 
   def httpTlsTrustStorePwd =
-    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsTrustStorePwd)
+    finalSettings.getString(DriverConf.Http.TLS.TlsTrustStorePwd)
 
   def httpTlsKeyStore =
-    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsKeyStore)
+    finalSettings.getString(DriverConf.Http.TLS.TlsKeyStore)
 
   def httpTlsKeyStorePwd =
-    finalSettings.getString(DriverConf.AkkaHttpTLS.TlsKeystorePwd)
+    finalSettings.getString(DriverConf.Http.TLS.TlsKeystorePwd)
 
 }
 
@@ -214,18 +216,27 @@ object DriverConf {
   val DriverConfigResource = "external.config.resource"
   val DriverConfigFile = "external.config.filename"
   val DriverConfigHosts = "config.cluster.hosts"
-  val DriverConfigServerHttp = "config.cluster.serverHttp"
   val DriverFlattenTables = "config.flatten-tables"
   val DriverClusterName = "config.cluster.name"
   val SSLEnabled = "akka.remote.netty.ssl.enable-ssl"
   val AkkaClusterRecepcionistTunnelTimeout = "akka.contrib.cluster.receptionist.response-tunnel-receive-timeout"
 
-  //TLS akka-http client authentication
-  object AkkaHttpTLS {
-    val TlsEnable = "akka-http.ssl.enable"
-    val TlsTrustStore = "akka-http.ssl.truststore"
-    val TlsTrustStorePwd = "akka-http.ssl.truststore-password"
-    val TlsKeyStore = "akka-http.ssl.keystore"
-    val TlsKeystorePwd = "akka-http.ssl.keystore-password"
+  // Http Server
+  object Http { //TODO: Server-Driver labels objects unification/de-duplication ?
+
+    val Host = "akka-http.host"
+    val Port = "akka-http.port"
+
+    val RequestExecutionTimeout = "akka-http.request-execution-timeout"
+
+    //TLS akka-http client authentication
+    object TLS {
+      val TlsEnable = "akka-http.ssl.enable"
+      val TlsTrustStore = "akka-http.ssl.truststore"
+      val TlsTrustStorePwd = "akka-http.ssl.truststore-password"
+      val TlsKeyStore = "akka-http.ssl.keystore"
+      val TlsKeystorePwd = "akka-http.ssl.keystore-password"
+    }
+
   }
 }

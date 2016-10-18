@@ -52,7 +52,6 @@ class JavaDriver private(driverConf: DriverConf,
   def this(user: String, password: String, driverConf: DriverConf) =
     this(user, password, driverConf, Driver)
 
-
   def this(user: String, driverConf: DriverConf, driverFactory: DriverFactory) =
     this(driverConf, Authentication(user), driverFactory)
 
@@ -65,17 +64,27 @@ class JavaDriver private(driverConf: DriverConf,
   def this(user: String, password: String) =
     this(user, password, Driver)
 
-  def this(seedNodes: java.util.List[String], driverConf: DriverConf, driverFactory: DriverFactory) =
-    this(driverConf.setClusterContactPoint(seedNodes), driverFactory)
+  // TODO Create a JavaDriver factory
+  /**
+    * Cluster client tcp constructor
+    */
+  def this(tcpSeedNodes: java.util.List[String], driverConf: DriverConf) =
+    this(driverConf.setClusterContactPoint(tcpSeedNodes), JavaDriver.clusterClientDriverFactory)
 
-  def this(seedNodes: java.util.List[String], driverConf: DriverConf) =
-    this(seedNodes, driverConf, Driver)
+  def this(tcpSeedNodes: java.util.List[String]) =
+    this(tcpSeedNodes, new DriverConf)
 
-  def this(seedNodes: java.util.List[String], driverFactory: DriverFactory) =
-    this(seedNodes, new DriverConf, driverFactory)
+  /**
+    * Http constructors
+    */
+  def this(httpHost: String, httpPort: Int, driverConf: DriverConf) =
+  this(driverConf.setHttpHostAndPort(httpHost, httpPort), JavaDriver.httpDriverFactory)
 
-  def this(seedNodes: java.util.List[String]) =
-    this(seedNodes, Driver)
+  def this(httpHost: String, httpPort: Int) =
+    this(httpHost, httpPort, new DriverConf)
+
+
+
 
   private lazy val logger = LoggerFactory.getLogger(classOf[JavaDriver])
 

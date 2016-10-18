@@ -76,9 +76,9 @@ else
     sed -i "s|#crossdata-server.config.spark.ui.port.*|crossdata-server.config.spark.ui.port = \"${PORT_4040}\"|" /etc/sds/crossdata/server/server-application.conf
 
 
-    #If XD_EXTERNAL_IP and MARATHON_APP_LABEL_HAPROXY_0_PORT are not specified assume we are working in HTTP mode
+    #If XD_EXTERNAL_IP and MARATHON_APP_LABEL_HAPROXY_1_PORT are not specified assume we are working in HTTP mode
     #Scenary: HAProxy exposing Akka http port, and creating an internal cluster using netty and autodiscovery through Zookeeper
-    if [ -z ${XD_EXTERNAL_IP} ] && [ -z ${MARATHON_APP_LABEL_HAPROXY_0_PORT} ]; then
+    if [ -z ${XD_EXTERNAL_IP} ] && [ -z ${MARATHON_APP_LABEL_HAPROXY_1_PORT} ]; then
 
         #Hostname and port from host machine ($HOST:$PORT_13420)
         HOST_ROUTE=${HOST}:${PORT_13420}
@@ -96,17 +96,21 @@ else
         #Driver
         sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HOST_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
 
+        # CROSSDATA_SERVER_CONFIG_HTTP_SERVER_PORT is set with the port provided by Marathon-LB
+        # This way,
+        export CROSSDATA_SERVER_CONFIG_HTTP_SERVER_PORT=$PORT_13422
+
     else
 
         #Scenary: HAProxy exposing the akka netty port with the external IP. Supported only for one instance of Crossdata
-        if [ -z ${XD_EXTERNAL_IP} ] || [ -z ${MARATHON_APP_LABEL_HAPROXY_0_PORT} ]; then
-            echo "ERROR: Env var XD_EXTERNAL_IP and label HAPROXY_0_PORT must be provided together using Marathon&Haproxy in TCP mode" 1>&2
+        if [ -z ${XD_EXTERNAL_IP} ] || [ -z ${MARATHON_APP_LABEL_HAPROXY_1_PORT} ]; then
+            echo "ERROR: Env var XD_EXTERNAL_IP and label HAPROXY_1_PORT must be provided together using Marathon&Haproxy in TCP mode" 1>&2
             exit 1 # terminate and indicate error
         else
             #Hostname and port of haproxy
-            HAPROXY_FINAL_ROUTE=${XD_EXTERNAL_IP}:${MARATHON_APP_LABEL_HAPROXY_0_PORT}
+            HAPROXY_FINAL_ROUTE=${XD_EXTERNAL_IP}:${MARATHON_APP_LABEL_HAPROXY_1_PORT}
             sed -i "s|#crossdata-server.akka.remote.netty.tcp.hostname.*|crossdata-server.akka.remote.netty.tcp.hostname = \"${XD_EXTERNAL_IP}\"|" /etc/sds/crossdata/server/server-application.conf
-            sed -i "s|#crossdata-server.akka.remote.netty.tcp.port.*|crossdata-server.akka.remote.netty.tcp.port = \"${MARATHON_APP_LABEL_HAPROXY_0_PORT}\"|" /etc/sds/crossdata/server/server-application.conf
+            sed -i "s|#crossdata-server.akka.remote.netty.tcp.port.*|crossdata-server.akka.remote.netty.tcp.port = \"${MARATHON_APP_LABEL_HAPROXY_1_PORT}\"|" /etc/sds/crossdata/server/server-application.conf
             sed -i "s|#crossdata-server.akka.cluster.seed-nodes =.*|crossdata-server.akka.cluster.seed-nodes = [\"akka.tcp:\/\/CrossdataServerCluster@${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/server/server-application.conf
 
             #Bind address for local
@@ -116,16 +120,20 @@ else
             #Driver
             sed -i "s|crossdata-driver.config.cluster.hosts.*|crossdata-driver.config.cluster.hosts = [\"${HAPROXY_FINAL_ROUTE}\"]|" /etc/sds/crossdata/shell/driver-application.conf
         fi
+
+
+
+        # When using ClusterClient External IP, the hosts-files get updated in order to keep a consistent
+        # binding address in AKKA.
+        NAMEADDR="$(hostname -i)"
+        if [ -n "$HAPROXY_SERVER_INTERNAL_ADDRESS" ]; then
+	        NAMEADDR=$HAPROXY_SERVER_INTERNAL_ADDRESS
+        fi
+        echo -e "$NAMEADDR\t$XD_EXTERNAL_IP" >> /etc/hosts
+
     fi
 fi
 
-if [ -n "$XD_EXTERNAL_IP" ]; then
-    NAMEADDR="$(hostname -i)"
-    if [ -n "$HAPROXY_SERVER_INTERNAL_ADDRESS" ]; then
-	NAMEADDR=$HAPROXY_SERVER_INTERNAL_ADDRESS
-    fi
-    echo -e "$NAMEADDR\t$XD_EXTERNAL_IP" >> /etc/hosts
-fi
 
 if [ "$SERVER_MODE" == "debug" ]; then
     # In this mode, crossdata will be launched as a service within the docker container.
