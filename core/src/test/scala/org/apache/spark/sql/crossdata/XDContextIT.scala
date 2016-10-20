@@ -110,7 +110,7 @@ class XDContextIT extends SharedXDContextTest {
       Row(3.3D)
     )
 
-  }*/
+  }
 
   it should "succesfully parse a CROSS JOIN" in {
 
