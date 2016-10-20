@@ -84,6 +84,31 @@ class DriverConf extends Logging {
     this
   }
 
+  def setEnableSsl(enabled: Boolean): DriverConf = {
+    userSettings.put(Http.TLS.TlsEnable, ConfigValueFactory.fromAnyRef(enabled))
+    this
+  }
+
+  def setKeyStorePath(keyStorePath: String): DriverConf = {
+    userSettings.put(Http.TLS.TlsKeyStore, ConfigValueFactory.fromAnyRef(keyStorePath))
+    this
+  }
+
+  def setKeyStorePwd(keyStorePwd: String): DriverConf = {
+    userSettings.put(Http.TLS.TlsKeystorePwd, ConfigValueFactory.fromAnyRef(keyStorePwd))
+    this
+  }
+
+  def setTrustStorePath(trustStorePath: String): DriverConf = {
+    userSettings.put(Http.TLS.TlsTrustStore, ConfigValueFactory.fromAnyRef(trustStorePath))
+    this
+  }
+
+  def setTrustStorePwd(trustStorePwd: String): DriverConf = {
+    userSettings.put(Http.TLS.TlsTrustStorePwd, ConfigValueFactory.fromAnyRef(trustStorePwd))
+    this
+  }
+
   private[crossdata] def get(key: String): AnyRef = {
     getOption(key).getOrElse(throw new NoSuchElementException(key))
   }
