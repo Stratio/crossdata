@@ -405,6 +405,7 @@
                         <exclude>**/com/stratio/crossdata/connector/elasticsearch/DefaultSource.scala</exclude>
                         <exclude>**/org/apache/spark/sql/cassandra/CassandraXDSourceRelation.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/XDContext.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/catalyst/parser/CrossdataSqlParser.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/SharedXDContextTest.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/TestXDContext.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/XDImplicits.scala</exclude>
