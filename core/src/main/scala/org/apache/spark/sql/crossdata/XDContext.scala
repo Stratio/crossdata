@@ -191,6 +191,7 @@ class XDContext protected(@transient val sc: SparkContext,
   @transient
   protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_), this)
 
+  // TODO CrossdataParserDialect should be removed in Spark 2.0 (at least if the new parser support the required sentences)
   @transient
   protected[sql] override val sqlParser = new SparkSQLParser(new CrossdataParserDialect().parse(_))
 
