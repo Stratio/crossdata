@@ -109,6 +109,79 @@ class XDContextIT extends SharedXDContextTest {
 
   }
 
+  it must "plan a query with a filter and an alias for the table" in {
+
+    val t1: DataFrame = xdContext.createDataFrame(
+      xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i", i))),
+      StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
+    t1.registerTempTable("t1")
+
+    val t2: DataFrame = xdContext.createDataFrame(
+      xdContext.sparkContext.parallelize((4 to 8).map(i => Row(s"val_$i", i, i*2))),
+      StructType(Array(StructField("ident", StringType), StructField("num", IntegerType), StructField("magic", IntegerType))))
+    t2.registerTempTable("t2")
+
+    val dataFrame = xdContext.sql("SELECT st.num FROM t2 st WHERE st.num <= 10")
+
+    dataFrame.show
+
+    dataFrame.collect should have length 5
+
+  }
+
+  it must "plan a query with a subquery" in {
+
+    val t1: DataFrame = xdContext.createDataFrame(
+      xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i", i))),
+      StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
+    t1.registerTempTable("t1")
+
+    val t2: DataFrame = xdContext.createDataFrame(
+      xdContext.sparkContext.parallelize((4 to 8).map(i => Row(s"val_$i", i, i*2))),
+      StructType(Array(StructField("ident", StringType), StructField("num", IntegerType), StructField("magic", IntegerType))))
+    t2.registerTempTable("t2")
+
+    val dataFrame = xdContext.sql("SELECT * FROM t1 WHERE (t1.value IN (1, 3, 5, 7, 9)) GROUP BY value, id")
+
+    dataFrame.show
+
+    dataFrame.collect should have length 3
+
+  }
+
+  it must "plan a query with same alias in different scopes" in {
+
+    val t1: DataFrame = xdContext.createDataFrame(
+      xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i", i))),
+      StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
+    t1.registerTempTable("t1")
+
+    val t2: DataFrame = xdContext.createDataFrame(
+      xdContext.sparkContext.parallelize((4 to 8).map(i => Row(s"val_$i", i, i/2))),
+      StructType(Array(StructField("ident", StringType), StructField("num", IntegerType), StructField("magic", IntegerType))))
+    t2.registerTempTable("t2")
+
+    val dataFrame = xdContext.sql("SELECT * FROM (SELECT *  FROM t1 ft WHERE ft.value = 2) ft WHERE ft.id = 'val_2'")
+
+    dataFrame.show
+
+    dataFrame.collect should have length 1
+
+  }
+
+  it must "fail when a subquery is used in a filter" in {
+
+    val t1: DataFrame = xdContext.createDataFrame(
+      xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i", i))),
+      StructType(Array(StructField("id", StringType), StructField("value", IntegerType))))
+    t1.registerTempTable("t1")
+
+    an[Exception] should be thrownBy xdContext.sql("SELECT * FROM t1 WHERE t1.value = (SELECT first(value) FROM t1)")
+
+  }
+
+
+
 //  it must "execute jar app previously uploaded" in {
 //    val file = File(s"TestAddApp.jar")
 //    xdContext.addJar("TestAddApp.jar")
