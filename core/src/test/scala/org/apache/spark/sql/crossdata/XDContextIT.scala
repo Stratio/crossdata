@@ -129,7 +129,7 @@ class XDContextIT extends SharedXDContextTest {
 
   }
 
-  it must "plan a query with a subquery" in {
+  it must "plan a query with a in clause" in {
 
     val t1: DataFrame = xdContext.createDataFrame(
       xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i", i))),
