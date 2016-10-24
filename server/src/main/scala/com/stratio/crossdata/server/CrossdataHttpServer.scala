@@ -19,6 +19,7 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
+import akka.NotUsed
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.cluster.pubsub.DistributedPubSub
@@ -28,16 +29,18 @@ import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.FileIO
+import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.Timeout
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
 import com.stratio.crossdata.common._
+import com.stratio.crossdata.common.result.{StreamedSchema, StreamedSuccessfulSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.{Config, ConfigException}
 import org.apache.log4j.Logger
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.json4s.jackson
@@ -131,6 +134,15 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
                 case Success(reply: ServerReply) =>
                   reply match {
                     case qcr: QueryCancelledReply => complete(qcr)
+                    case SQLReply(_, SuccessfulSQLResult(resultSet, schema)) =>
+
+                      val responseStream: Source[StreamedSuccessfulSQLResult, NotUsed] =
+                        Source.fromIterator(() => resultSet.toIterator).map(
+                          row => row: StreamedSuccessfulSQLResult
+                        ) prepend Source.single(schema)
+
+                      complete(responseStream)
+
                     case _ => complete(reply)
                   }
                 case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
