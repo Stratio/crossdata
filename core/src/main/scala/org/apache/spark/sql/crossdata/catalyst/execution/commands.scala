@@ -50,9 +50,10 @@ private[crossdata] case class PersistDataSourceTable(
 
     val tableIdentifier = crossdataTable.tableIdentifier
 
-    if (crossdataContext.catalog.tableExists(tableIdentifier.toTableIdentifier) && !allowExisting)
-      throw new AnalysisException(s"Table ${tableIdentifier.unquotedString} already exists")
-    else
+    if (crossdataContext.catalog.tableExists(tableIdentifier.toTableIdentifier)) {
+      if (!allowExisting)
+        throw new AnalysisException(s"Table ${tableIdentifier.unquotedString} already exists")
+    } else
       crossdataContext.catalog.persistTable(crossdataTable, createLogicalRelation(crossdataContext, crossdataTable))
 
     Seq.empty[Row]
