@@ -32,7 +32,7 @@ import com.typesafe.config.ConfigException
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
+import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.optimizer.Optimizer
 import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, LogicalPlan}
 import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, IndexIdentifier}
@@ -43,14 +43,14 @@ import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
 import org.apache.spark.sql.crossdata.catalyst.analysis._
 import org.apache.spark.sql.crossdata.catalyst.execution.ImportTablesUsingWithOptions
 import org.apache.spark.sql.crossdata.catalyst.optimizer.XDOptimizer
-import org.apache.spark.sql.crossdata.catalyst.parser.XDDdlParser
+import org.apache.spark.sql.crossdata.catalyst.parser.{CrossdataParserDialect, XDDdlParser}
 import org.apache.spark.sql.crossdata.catalyst.planning.{ExtendedDataSourceStrategy, XDStrategies}
 import org.apache.spark.sql.crossdata.catalyst.{ExtractNativeUDFs, NativeUDF, XDFunctionRegistry}
 import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.execution.XDQueryExecution
 import org.apache.spark.sql.crossdata.launcher.SparkJobLauncher
 import org.apache.spark.sql.crossdata.user.functions.GroupConcat
-import org.apache.spark.sql.execution.ExtractPythonUDFs
+import org.apache.spark.sql.execution.{ExtractPythonUDFs, SparkSQLParser}
 import org.apache.spark.sql.execution.datasources.{PreInsertCastAndRename, PreWriteCheck}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLConf, SQLContext, Strategy, execution => sparkexecution}
@@ -190,6 +190,10 @@ class XDContext protected(@transient val sc: SparkContext,
 
   @transient
   protected[sql] override val ddlParser = new XDDdlParser(sqlParser.parse(_), this)
+
+  // TODO CrossdataParserDialect should be removed in Spark 2.0 (at least if the new parser support the required sentences)
+  @transient
+  protected[sql] override val sqlParser = new SparkSQLParser(new CrossdataParserDialect().parse(_))
 
   @transient
   override protected[sql] lazy val functionRegistry: FunctionRegistry =
