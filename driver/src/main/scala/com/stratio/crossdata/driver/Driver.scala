@@ -64,12 +64,6 @@ trait DriverFactory {
   def newSession(user: String, password: String, driverConf: DriverConf): Driver =
     newSession(driverConf, Authentication(user, Option(password)))
 
-  def newSession(seedNodes: java.util.List[String]): Driver =
-    newSession(defaultDriverConf.setClusterContactPoint(seedNodes))
-
-  def newSession(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
-    newSession(driverConf.setClusterContactPoint(seedNodes))
-
   private[driver] def newSession(
                   driverConf: DriverConf  = defaultDriverConf,
                   authentication: Authentication = generateDefaultAuth): Driver = {
@@ -120,9 +114,20 @@ object Driver extends DriverFactory {
   override protected def newDriver(driverConf: DriverConf, authentication: Authentication): Driver =
     new ClusterClientDriver(driverConf, authentication)
 
+  def newSession(seedNodes: java.util.List[String]): Driver =
+    newSession(defaultDriverConf.setClusterContactPoint(seedNodes))
+
+  def newSession(seedNodes: java.util.List[String], driverConf: DriverConf): Driver =
+    newSession(driverConf.setClusterContactPoint(seedNodes))
+
   object http extends DriverFactory {
+
     override protected def newDriver(driverConf: DriverConf, authentication: Authentication): Driver =
       new HttpDriver(driverConf, authentication)
+
+    def newSession(httpHost: String, httpPort: Int): Driver =
+      newSession(defaultDriverConf.setHttpHostAndPort(httpHost, httpPort))
+
   }
 
 }

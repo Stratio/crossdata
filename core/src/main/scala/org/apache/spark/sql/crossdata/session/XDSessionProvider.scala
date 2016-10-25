@@ -77,18 +77,25 @@ abstract class XDSessionProvider(
 
   @transient
   protected lazy val securityManager: Option[CrossdataSecurityManager] = {
-    val securityManager = Try(finalCoreConfig.getString(SecurityClassConfigKey)).map { securityManagerClassName =>
-      val securityManagerClass = Class.forName(securityManagerClassName)
-      val constr: Constructor[_] = securityManagerClass.getConstructor()
-      val secManager = constr.newInstance().asInstanceOf[CrossdataSecurityManager]
-      secManager.start()
-      secManager
-    } toOption
 
-    if (securityManager.isEmpty) {
+    val isSecurityManagerEnabled: Boolean =  Try(finalCoreConfig.getBoolean(SecurityEnabledKey)).getOrElse(false)
+
+    if (!isSecurityManagerEnabled) {
       logger.warn("Authorization is not enabled, configure a security manager if needed")
+      None
+    } else {
+      Some(
+        Try(finalCoreConfig.getString(SecurityClassConfigKey)).map { securityManagerClassName =>
+          val securityManagerClass = Class.forName(securityManagerClassName)
+          val constr: Constructor[_] = securityManagerClass.getConstructor()
+          val secManager = constr.newInstance().asInstanceOf[CrossdataSecurityManager]
+          secManager.start()
+          secManager
+        } get // Throw an exception if auth enabled and a security manager cannot be loaded
+      )
+
     }
-    securityManager
+
   }
 
 }

@@ -28,7 +28,7 @@
 
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>parent_2.11</artifactId>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.8.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Stratio Crossdata Parent</name>
     <description>Stratio Crossdata reactor</description>
@@ -411,6 +411,7 @@
                         <exclude>**/org/apache/spark/sql/crossdata/test/XDTestUtils.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/catalyst/analysis/AnalysisTest.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/acceptance/TestXDContext.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/crossdata/catalyst/analysis/DistinctAggregationRewriterXD.scala</exclude>
                         <exclude>**/hazelcast.xml</exclude>
                         <exclude>**/testAT/**</exclude>
                         <exclude>**/unix/**</exclude>
