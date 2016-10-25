@@ -24,13 +24,14 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.cluster.pubsub.DistributedPubSub
 import akka.cluster.pubsub.DistributedPubSubMediator.{Publish, SendToAll}
+import akka.http.scaladsl.common.EntityStreamingSupport
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{FileIO, Source}
-import akka.util.Timeout
+import akka.stream.scaladsl.{FileIO, Flow, Source}
+import akka.util.{ByteString, Timeout}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
 import com.stratio.crossdata.common._
@@ -43,6 +44,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
+import org.apache.spark.sql.types.StructType
 import org.json4s.jackson
 
 import scala.concurrent.Future
@@ -136,6 +138,13 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
                     case qcr: QueryCancelledReply => complete(qcr)
                     case SQLReply(_, SuccessfulSQLResult(resultSet, schema)) =>
 
+                      implicit val jsonStreamingSupport = EntityStreamingSupport.json()
+                        .withFramingRenderer(
+                          Flow[ByteString].intersperse(ByteString.empty, ByteString("\n"), ByteString.empty)
+                        )
+
+                      implicit val _: StructType = schema
+
                       val responseStream: Source[StreamedSuccessfulSQLResult, NotUsed] =
                         Source.fromIterator(() => resultSet.toIterator).map(
                           row => row: StreamedSuccessfulSQLResult
@@ -145,7 +154,8 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
                     case _ => complete(reply)
                   }
-                case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
+                case other =>
+                  complete(StatusCodes.ServerError, s"Internal XD server error: $other")
               }
           }
 
