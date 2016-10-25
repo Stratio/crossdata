@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2015 Stratio (http://stratio.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.stratio.crossdata.connector.postgresql
 
 import java.sql.{Date, ResultSet, ResultSetMetaData, Timestamp}
@@ -54,7 +69,6 @@ object PostgresqlQueryProcessor {
         case GreaterThanOrEqual(attr, value) => s"${columnName(attr)} >= ${quoteString(value)}"
         case IsNull(attr) => s"${columnName(attr)} IS NULL"
         case IsNotNull(attr) => s"${columnName(attr)} IS NOT NULL"
-
         case StringStartsWith(attr, value) => s"${columnName(attr)} LIKE '$value%'"
         case StringEndsWith(attr, value) => s"${columnName(attr)} LIKE '%$value'"
         case StringContains(attr, value) => s"${columnName(attr)} LIKE '%$value%'"
@@ -66,14 +80,14 @@ object PostgresqlQueryProcessor {
           // If we can make sure compileFilter supports all filters, we can remove this check.
           val or = Seq(f1, f2).flatMap(filterToSQL)
           if (or.size == 2) {
-            or.map(p => s"($p)").mkString(" OR ")
+            "(" + or.map(p => s"($p)").mkString(" OR ") + ")"
           } else {
             null
           }
         case And(f1, f2) =>
           val and = Seq(f1, f2).flatMap(filterToSQL)
           if (and.size == 2) {
-            and.map(p => s"($p)").mkString(" AND ")
+            "(" + and.map(p => s"($p)").mkString(" AND ") + ")"
           } else {
             null
           }
@@ -128,6 +142,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
             postgresqlPlan.limit.getOrElse(PostgresqlQueryProcessor.DefaultLimit)
           )
           logDebug("QUERY: " + sqlQuery)
+          logInfo("QUERY: " + sqlQuery)
 
           import scala.collection.JavaConversions._
           PostgresqlUtils.withClientDo(props.toMap) { (_, stm) =>
