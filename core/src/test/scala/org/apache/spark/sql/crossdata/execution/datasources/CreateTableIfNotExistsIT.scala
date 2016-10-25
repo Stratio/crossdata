@@ -34,13 +34,12 @@ class CreateTableIfNotExistsIT extends SharedXDContextTest {
   "CreateTableIfNotExists command" should "allow multiple creations of the table persisting just the first" in {
     _xdContext.sql(s"CREATE TABLE tabNameIfExists USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/foo.json").toURI).toString}')")
 
-    an[Exception] should be thrownBy _xdContext.sql(s"CREATE TABLE tabName USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/foo.json").toURI).toString}')")
+    an[Exception] should be thrownBy _xdContext.sql(s"CREATE TABLE tabNameIfExists USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/foo.json").toURI).toString}')")
 
     _xdContext.sql(s"CREATE TABLE IF NOT EXISTS tabNameIfExists USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/foo.json").toURI).toString}')")
     _xdContext.sql(s"CREATE TABLE IF NOT EXISTS tabNameIfExists USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/foo.json").toURI).toString}')")
 
     _xdContext.sql("DROP TABLE tabNameIfExists")
   }
-
-
+  
 }
