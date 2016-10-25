@@ -33,6 +33,8 @@ import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
 import org.slf4j.{Logger, LoggerFactory}
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
+import akka.stream.scaladsl.Framing
+import akka.util.ByteString
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.serializers.CrossdataCommonSerializer
 import com.stratio.crossdata.driver.actor.HttpSessionBeaconActor
@@ -145,7 +147,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
     val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
 
-    val response = simpleRequest(
+    /*val response = simpleRequest(
       securitizeCommand(sqlCommand),
       s"query/${sqlCommand.requestId}",
       {
@@ -163,7 +165,22 @@ class HttpDriver private[driver](driverConf: DriverConf,
           { case reply: QueryCancelledReply => reply }: PartialFunction[SQLReply, QueryCancelledReply]
         )
       }
+    }*/
+
+    val um: Unmarshaller[ByteString, StreamedSuccessfulSQLResult] = Unmarshaller
+
+    for {
+      requestEntity <- Marshal(securitizeCommand(sqlCommand)).to[RequestEntity]
+      httpResponse <- http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/query/${sqlCommand.requestId}", entity = requestEntity))
+      reply <- Unmarshal(httpResponse.entity)
+      //desiredResult = replyToResult(reply)
+    } yield {
+      //httpResponse.entity
+      httpResponse.entity.dataBytes.via(Framing.delimiter(ByteString("\n"), 1024*1024*1024)).mapAsync(10)(um(_))
+
     }
+
+    null
 
   }
 
