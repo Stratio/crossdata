@@ -31,7 +31,7 @@ import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.ConfigException
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.catalyst.{DefaultParserDialect, TableIdentifier}
+import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.{Analyzer, CleanupAliases, ComputeCurrentTime, DistinctAggregationRewriter, FunctionRegistry, HiveTypeCoercion, ResolveUpCast}
 import org.apache.spark.sql.catalyst.optimizer.Optimizer
 import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, LogicalPlan}
@@ -40,7 +40,7 @@ import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPer
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
-import org.apache.spark.sql.crossdata.catalyst.analysis.{PrepareAggregateAlias, ResolveAggregateAlias, ResolveReferencesXD, WrapRelationWithGlobalIndex}
+import org.apache.spark.sql.crossdata.catalyst.analysis._
 import org.apache.spark.sql.crossdata.catalyst.execution.ImportTablesUsingWithOptions
 import org.apache.spark.sql.crossdata.catalyst.optimizer.XDOptimizer
 import org.apache.spark.sql.crossdata.catalyst.parser.{CrossdataParserDialect, XDDdlParser}
