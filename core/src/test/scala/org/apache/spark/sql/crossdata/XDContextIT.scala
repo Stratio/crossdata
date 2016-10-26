@@ -18,6 +18,9 @@ package org.apache.spark.sql.crossdata
 import java.nio.file.Paths
 
 import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.analysis.{UnresolvedAlias, UnresolvedRelation, UnresolvedStar}
+import org.apache.spark.sql.catalyst.plans.Inner
+import org.apache.spark.sql.catalyst.plans.logical.{Join, Project}
 import org.apache.spark.sql.crossdata.catalyst.execution.PersistDataSourceTable
 import org.apache.spark.sql.crossdata.test.SharedXDContextTest
 import org.apache.spark.sql.execution.ExecutedCommand
@@ -177,6 +180,15 @@ class XDContextIT extends SharedXDContextTest {
     t1.registerTempTable("t1")
 
     an[Exception] should be thrownBy xdContext.sql("SELECT * FROM t1 WHERE t1.value = (SELECT first(value) FROM t1)")
+
+  }
+
+  it should "succesfully parse a CROSS JOIN" in {
+
+    val crossJoin = "SELECT * FROM table1 CROSS JOIN table2"
+
+    xdContext.parseSql(crossJoin) shouldBe xdContext.parseSql("SELECT * FROM table1 JOIN table2")
+    xdContext.parseSql(crossJoin) shouldBe Project(UnresolvedAlias(UnresolvedStar(None)):: Nil, Join(UnresolvedRelation(TableIdentifier("table1")), UnresolvedRelation(TableIdentifier("table2")), Inner, None))
 
   }
 
