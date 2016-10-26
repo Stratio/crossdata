@@ -25,6 +25,7 @@ import jline.console.{ConsoleReader, UserInterruptException}
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
+import scala.concurrent.duration._
 import scala.util.{Failure, Try}
 
 object BasicShell extends App {
@@ -35,7 +36,7 @@ object BasicShell extends App {
   val HistoryFile = "history.txt"
   val PersistentHistory = new File(HistoryPath.concat(HistoryFile))
 
-  require(args.length <= 4, "usage --user username --http true/false(default)")
+  require(args.length <= 6, "usage --user username --http true/false(default) --timeout-in-seconds 120")
 
   val arglist = args.toList
 
@@ -48,6 +49,8 @@ object BasicShell extends App {
         nextOption(map ++ Map("user" -> username), tail)
       case "--http" :: bool :: tail =>
         nextOption(map ++ Map("http" -> bool.toBoolean), tail)
+      case "--timeout-in-seconds" :: timeout :: tail =>
+        nextOption(map ++ Map("timeout" -> timeout.toInt), tail)
     }
   }
 
@@ -58,8 +61,12 @@ object BasicShell extends App {
     case x: Boolean => x
     case _ => false
   }
+  val timeout: Duration = options.get("timeout") map {
+    case x: Int => x seconds
+    case _ => Duration.Inf
+  } getOrElse Duration.Inf
 
-  logger.info("user: " + user + ". http enabled:" + http.toString)
+  logger.info(s"user: $user http enabled ${http.toString} timeout(seconds): $timeout")
 
   val password = "" // TODO read the password
 
@@ -142,7 +149,7 @@ object BasicShell extends App {
       if (line.get.trim.nonEmpty) {
 
         val sqlResponse = driver.sql(line.get)
-        val result = sqlResponse.waitForResult()
+        val result = sqlResponse.waitForResult(timeout)
         console.println(s"Result for query ID: ${sqlResponse.id}")
         if (result.hasError) {
           console.println("ERROR")
