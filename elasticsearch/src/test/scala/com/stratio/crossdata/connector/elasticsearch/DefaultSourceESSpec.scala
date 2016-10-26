@@ -65,7 +65,7 @@ class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
     val item: Table = mock[Table]
     when(item.database).thenReturn(Some("index"))
     when(item.tableName).thenReturn("type")
-    val userOpts: Map[String, String] = Map(ES_HOST -> "localhost")
+    val userOpts: Map[String, String] = Map(ES_NODES -> "localhost")
 
     //Experimentation
     val result:Map[String, String] = defaultDatasource.generateConnectorOpts(item, userOpts)
@@ -73,7 +73,7 @@ class DefaultSourceESSpec extends BaseXDTest with MockitoSugar {
     //Expectations
     result should not be null
     result.get(ES_RESOURCE).get should be ("index/type")
-    result.get(ES_HOST).get should be ("localhost")
+    result.get(ES_NODES).get should be ("localhost")
 
   }
 }
