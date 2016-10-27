@@ -111,7 +111,6 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
 
   def execute(): Option[Array[Row]] = {
 
-    //TODO Needed?
     def buildAggregationExpression(names: Expression): String = {
       names match {
         case Alias(child, _) => buildAggregationExpression(child)
@@ -141,7 +140,6 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
             postgresqlPlan.filters,
             postgresqlPlan.limit.getOrElse(PostgresqlQueryProcessor.DefaultLimit)
           )
-          logDebug("QUERY: " + sqlQuery)
           logInfo("QUERY: " + sqlQuery)
 
           import scala.collection.JavaConversions._
