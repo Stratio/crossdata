@@ -20,11 +20,13 @@ import java.util.Properties
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
+import com.stratio.crossdata.connector.postgresql.PostgresqlQueryProcessor
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.Partition
-import org.apache.spark.sql.crossdata.exceptions.CrossdataException
+import org.apache.spark.sql.catalyst.CatalystTypeConverters
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources.BaseRelation
 
@@ -40,8 +42,21 @@ class PostgresqlXDRelation( url: String,
 
   override val schema: StructType = userSchema.getOrElse(JDBCRDD.resolveTable(url, table, properties))
 
-  override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] =
-    throw new CrossdataException("Native buildScan not implemented yet", null)
+  override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
+    logDebug(s"Processing ${optimizedLogicalPlan.toString()}")
+    val queryExecutor = PostgresqlQueryProcessor(this, optimizedLogicalPlan, this.properties)
+
+    val toCatalyst = CatalystTypeConverters.createToCatalystConverter(optimizedLogicalPlan.schema)
+    val toScala = CatalystTypeConverters.createToScalaConverter(optimizedLogicalPlan.schema)
+
+    queryExecutor.execute() map { rows =>
+      rows map { row =>
+        val iRow = toCatalyst(row)
+        toScala(iRow).asInstanceOf[GenericRowWithSchema]
+      }
+    }
+
+  }
 
     /**
     * Checks the ability to execute a [[LogicalPlan]].

@@ -22,7 +22,7 @@ import com.stratio.crossdata.test.BaseXDTest
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.junit.JUnitRunner
-
+// TODO Delete this file
 @RunWith(classOf[JUnitRunner])
 class TestPostgresqlDriverIT extends BaseXDTest
 with BeforeAndAfterAll {
@@ -45,6 +45,7 @@ with BeforeAndAfterAll {
   while (tables.next()) {
     val table = tables.getString(3)
     val columns = metadata.getColumns(null, null, table.toLowerCase, null)
+
     while(columns.next()) {
       val columnName = columns.getString(4)
       val idColumnType = columns.getInt(5)

@@ -55,6 +55,8 @@ object CoreConfig {
   val CatalogClassConfigKey = s"$CatalogConfigKey.$ClassConfigKey"
   val CatalogPrefixConfigKey = s"$CatalogConfigKey.$PrefixKey" // TODO rename prefix to catalogIdentifier
   val StreamingCatalogClassConfigKey = s"$StreamingConfigKey.$CatalogConfigKey.$ClassConfigKey"
+
+  val SecurityEnabledKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.enabled"
   val SecurityClassConfigKey = s"$SecurityConfigKey.$SecurityManagerConfigKey.$ClassConfigKey"
 
   val SparkSqlConfigPrefix = "config.spark.sql" //WARNING!! XDServer is using this path to read its parameters
