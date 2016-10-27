@@ -21,7 +21,7 @@ ITSERVICES:
       env:
         - MAX_HEAP=256M
   - POSTGRESQL:
-      image: postgres:9.3
+      image: postgresql:9.3
       sleep: 10
   - HADOOP:
       image: stratio/hadoop:2.7.2
