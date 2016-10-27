@@ -118,8 +118,12 @@ sealed trait postgresqlDefaultTestConstants {
   val driver: String = "org.postgresql.Driver"
   val postgresqlHost: String = Try(config.getStringList("postgresql.host")).map(_.get(0)).getOrElse("127.0.0.1")
 
+  //CD postgresql docker has this database, user and password defined
+  val database = "hakama"
+  val user = "hakama"
+  val password = "hakama"
 
-  val url: String = s"jdbc:postgresql://$postgresqlHost:5432/postgres?user=postgres&password=mysecretpassword"
+  val url: String = s"jdbc:postgresql://$postgresqlHost:5432/$database?user=$user&password=$password"
   val schema = ListMap("id" -> "integer", "age" -> "integer", "comment" -> "text", "enrolled" -> "boolean", "name" -> "text")
   val pk = "id" :: "age" :: "comment" :: Nil
   val indexedColumn = "name"
