@@ -19,6 +19,7 @@ package com.stratio.crossdata.connector.postgresql
 import java.sql.{Connection, DriverManager, Statement}
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest
 import org.apache.spark.sql.crossdata.test.SharedXDContextWithDataTest.SparkTable
 import org.scalatest.Suite
@@ -91,8 +92,6 @@ trait PostgresqlWithSharedContext extends SharedXDContextWithDataTest
   }
 
   override protected def cleanTestData: Unit = {
-//    client.get._2.execute(s"DROP TABLE $postgresqlSchema.$UnregisteredTable")
-//    client.get._2.execute(s"DROP TABLE $postgresqlSchema.$Table")
     client.get._2.execute(s"DROP SCHEMA $postgresqlSchema CASCADE")
   }
 
@@ -112,12 +111,15 @@ trait PostgresqlWithSharedContext extends SharedXDContextWithDataTest
 
 sealed trait postgresqlDefaultTestConstants {
 
+  private lazy val config = ConfigFactory.load()
   val postgresqlSchema = "highschool"
   val Table = "students"
   val UnregisteredTable = "teachers"
   val driver: String = "org.postgresql.Driver"
+  val postgresqlHost: String = Try(config.getStringList("posgresql.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
 
-  val url: String = s"jdbc:postgresql://localhost:5432/postgres?user=postgres&password=mysecretpassword"
+
+  val url: String = s"jdbc:postgresql://$postgresqlHost:5432/postgres?user=postgres&password=mysecretpassword"
   val schema = ListMap("id" -> "integer", "age" -> "integer", "comment" -> "text", "enrolled" -> "boolean", "name" -> "text")
   val pk = "id" :: "age" :: "comment" :: Nil
   val indexedColumn = "name"
