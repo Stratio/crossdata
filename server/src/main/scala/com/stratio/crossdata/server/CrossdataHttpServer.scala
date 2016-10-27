@@ -29,6 +29,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.unmarshalling._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Flow, Source}
 import akka.util.{ByteString, Timeout}
@@ -140,7 +141,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
                       implicit val jsonStreamingSupport = EntityStreamingSupport.json()
                         .withFramingRenderer(
-                          Flow[ByteString].intersperse(ByteString.empty, ByteString("\n"), ByteString.empty)
+                          Flow[ByteString].intersperse(ByteString("\n"))
                         )
 
                       implicit val _: StructType = schema
