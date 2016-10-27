@@ -6,7 +6,7 @@ CROSSBUILDAT:
   
 ITSERVICES:
   - ZOOKEEPER:
-      image: stratio/zookeeper:3.4.6
+      image: stratio/zookeeper-sec:3.5.1-0.1.0
   - MONGODB:
       image: stratio/mongo:3.0.4
       sleep: 10
