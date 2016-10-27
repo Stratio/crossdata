@@ -116,7 +116,7 @@ sealed trait postgresqlDefaultTestConstants {
   val Table = "students"
   val UnregisteredTable = "teachers"
   val driver: String = "org.postgresql.Driver"
-  val postgresqlHost: String = Try(config.getStringList("posgresql.hosts")).map(_.get(0)).getOrElse("127.0.0.1")
+  val postgresqlHost: String = Try(config.getStringList("postgresql.host")).map(_.get(0)).getOrElse("127.0.0.1")
 
 
   val url: String = s"jdbc:postgresql://$postgresqlHost:5432/postgres?user=postgres&password=mysecretpassword"
