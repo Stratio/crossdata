@@ -42,6 +42,7 @@ import com.stratio.crossdata.driver.exceptions.TLSInvalidAuthException
 import org.apache.spark.sql.Row
 import org.json4s.jackson
 
+import scala.collection.generic.SeqFactory
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -148,35 +149,52 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
     val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
 
-    val response = for {
-      requestEntity <- Marshal(securitizeCommand(sqlCommand)).to[RequestEntity] // Performs the request to server
-      httpResponse <- http.singleRequest(HttpRequest(POST, s"$protocol://$serverHttp/query/${sqlCommand.requestId}", entity = requestEntity))
-      bytesSource = httpResponse.entity.dataBytes // This is the stream of bytes of the answer data...
-      framesSource = bytesSource.filterNot(bs => bs.isEmpty || bs == ByteString("\n")) //...empty lines get removed...
-      rawSchemaAndRawRowsSource = framesSource.prefixAndTail[ByteString](1) //remaining get transformed to ByteStrings.
-      // From the raw lines stream, a new stream providing the first one and a stream of the remaining ones is created
-      sink = Sink.head[(Seq[ByteString], Source[ByteString, NotUsed])] //Its single elements get extracted by future...
-      (Seq(rawSchema), rawRows) <- rawSchemaAndRawRowsSource.toMat(sink)(Keep.right).run /*.. which, once completed,
-      provides a ByteString with the serialized schema and the stream of remaining lines: The bulk of serialized rows.*/
-      StreamedSchema(schema) <- Unmarshal(HttpEntity(ContentTypes.`application/json`, rawSchema)).to[StreamedSuccessfulSQLResult]
-      rrows <- { // Having de-serialized the schema, it can be used to deserialize each row at the un-marshalling phase
+    // Performs the request to server
+    val response = Marshal(securitizeCommand(sqlCommand)).to[RequestEntity] flatMap { requestEntity =>
+      val request = HttpRequest(POST, s"$protocol://$serverHttp/query/${sqlCommand.requestId}", entity = requestEntity)
+       http.singleRequest(request) flatMap { httpResponse =>
 
-        implicit val json4sJacksonFormats = this.json4sJacksonFormats + new StreamedRowSerializer(schema)
+         if(httpResponse.status == StatusCodes.OK) { // OK Responses will be served through streaming
 
-        val um: Unmarshaller[ResponseEntity, StreamedSuccessfulSQLResult] = json4sUnmarshaller
+           val bytesSource = httpResponse.entity.dataBytes // This is the stream of bytes of the answer data...
+           val framesSource = bytesSource.filterNot(bs => bs.isEmpty || bs == ByteString("\n")) //...empty lines get removed...
+           val rawSchemaAndRawRowsSource = framesSource.prefixAndTail[ByteString](1) //remaining get transformed to ByteStrings.
 
-        rawRows.mapAsync(1) { bs => /* TODO: Study the implications of increasing the level of parallelism in
-                                     *       the unmarshalling phase. */
-            val entity = HttpEntity(ContentTypes.`application/json`, bs)
-            um(entity)
-          }
-        }.runFold(List.empty[Row]) { case (acc: List[Row], StreamedRow(row, None)) => row::acc
+           // From the raw lines stream, a new stream providing the first one and a stream of the remaining ones is created
+           val sink = Sink.head[(Seq[ByteString], Source[ByteString, NotUsed])] //Its single elements get extracted by future...
 
-      }
+           for { /*.. which, once completed,
+                    provides a ByteString with the serialized schema and the stream of remaining lines:
+                    The bulk of serialized rows.*/
+             (Seq(rawSchema), rawRows) <- rawSchemaAndRawRowsSource.toMat(sink)(Keep.right).run
+             StreamedSchema(schema) <- Unmarshal(HttpEntity(ContentTypes.`application/json`, rawSchema)).to[StreamedSuccessfulSQLResult]
 
-    } yield SuccessfulSQLResult(rrows.reverse toArray, schema) /* TODO: Performance could be increased if
+             // Having de-serialized the schema, it can be used to deserialize each row at the un-marshalling phase
+             rrows <- {
+               implicit val json4sJacksonFormats = this.json4sJacksonFormats + new StreamedRowSerializer(schema)
+
+               val um: Unmarshaller[ResponseEntity, StreamedSuccessfulSQLResult] = json4sUnmarshaller
+
+               rawRows.mapAsync(1) { bs => /* TODO: Study the implications of increasing the level of parallelism in
+                                            *       the unmarshalling phase. */
+                 val entity = HttpEntity(ContentTypes.`application/json`, bs)
+                 um(entity)
+               }
+             }.runFold(List.empty[Row]) { case (acc: List[Row], StreamedRow(row, None)) => row::acc }
+
+           } yield SuccessfulSQLResult(rrows.reverse toArray, schema) /* TODO: Performance could be increased if
                                                               `SuccessfulSQLResult`#resultSet were of type `Seq[Row]`*/
 
+         } else {
+
+             Unmarshal(httpResponse.entity).to[SQLReply] map {
+               case SQLReply(_, result: SQLResult) => result
+             }
+
+         }
+
+       }
+    }
 
     new SQLResponse(sqlCommand.requestId, response) {
       override def cancelCommand(): Future[QueryCancelledReply] = {

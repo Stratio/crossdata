@@ -19,15 +19,15 @@ import com.stratio.crossdata.common.serializers.XDSerializationTest.TestCase
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
-import org.json4s.jackson.JsonMethods._
-import org.json4s.Extraction
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+
+import scala.collection.mutable.WrappedArray
 
 @RunWith(classOf[JUnitRunner])
 class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSerializer {
 
-  val schema = StructType(List(
+  lazy val schema = StructType(List(
     StructField("int",IntegerType,true),
     StructField("bigint",LongType,true),
     StructField("long",LongType,true),
@@ -52,14 +52,14 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
     StructField("structofstruct",StructType(StructField("field1",TimestampType,true)::StructField("field2", IntegerType, true)::StructField("struct1",StructType(StructField("structField1",StringType,true)::StructField("structField2",IntegerType,true)::Nil),true)::Nil),true)
   ))
 
-  val values: Array[Any] =  Array(
+  lazy val values: Array[Any] =  Array(
     2147483647,
     9223372036854775807L,
     9223372036854775807L,
     "string",
     true,
-    3.3,
-    3.3F,
+    3.0,
+    3.0F,
     Decimal(12),
     Decimal(22),
     Decimal(32.0),
@@ -68,16 +68,15 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
     java.sql.Timestamp.valueOf("2015-11-30 10:00:00.0"),
     12.toShort,
     "abcde".getBytes,
-    new GenericArrayData(Array(4, 42)),
-    new GenericArrayData(Array("hello", "world")),
+    WrappedArray make Array(4, 42),
+    WrappedArray make Array("hello", "world"),
     ArrayBasedMapData(Map("b" -> 2)),
     ArrayBasedMapData(Map("a" -> "A", "b" -> "B")),
-    new GenericRowWithSchema(Array(99,98), StructType(StructField("field1", IntegerType)::StructField("field2", IntegerType)::Nil)),
-    new GenericArrayData(
-      Array(
+    new GenericRowWithSchema(Array(99,98), StructType(StructField("field1", IntegerType)
+      ::StructField("field2", IntegerType)::Nil)),
+    WrappedArray make Array(
       new GenericRowWithSchema(Array(1,2), StructType(StructField("field1", IntegerType)::StructField("field2", IntegerType)::Nil)),
       new GenericRowWithSchema(Array(3,4), StructType(StructField("field1", IntegerType)::StructField("field2", IntegerType)::Nil))
-      )
     ),
     new GenericRowWithSchema(
       Array(
@@ -98,11 +97,11 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
     )
   )
 
-  val rowWithNoSchema = Row.fromSeq(values)
-  val rowWithSchema = new GenericRowWithSchema(values, schema)
+  lazy val rowWithNoSchema = Row.fromSeq(values)
+  lazy val rowWithSchema = new GenericRowWithSchema(values, schema)
 
 
-  implicit val formats = json4sJacksonFormats
+  implicit val formats = json4sJacksonFormats + new RowSerializer(schema)
   
 
   override def testCases: Seq[TestCase] = Seq(
