@@ -5,12 +5,8 @@ CROSSBUILDAT:
   - 'scala-2.11'
   
 ITSERVICES:
-  - SPARK:
-      image: stratio/spark:1.6.1
-      env:
-        - SPARK_MODE=master
   - ZOOKEEPER:
-      image: stratio/zookeeper:3.4.6
+      image: jplock/zookeeper:3.5.1-alpha
   - MONGODB:
       image: stratio/mongo:3.0.4
       sleep: 10
@@ -19,11 +15,6 @@ ITSERVICES:
       sleep: 10
       env:
         - ES_JAVA_OPTS="-Des.cluster.name=%%JUID -Des.network.host=%%OWNHOSTNAME"
-  - SPARK:
-      image: stratio/spark:1.6.1
-      env:
-        - SPARK_MODE=slave
-        - SPARK_MASTER_HOST=%%SPARK#0
   - CASSANDRA:
       image: stratio/cassandra-lucene-index:2.2.5.3
       sleep: 10
@@ -46,7 +37,6 @@ ITPARAMETERS: >
     -Dmongo.hosts.0=%%MONGODB
     -Delasticsearch.hosts.0=%%ELASTICSEARCH
     -Delasticsearch.cluster=%%JUID
-    -Dspark.master=spark://%%SPARK:7077
     -Dhdfs.namenode=hdfs://%%HADOOP:8020
     -Dhdfs.user="Stratio"
     -Djars.externalJars="/root"

@@ -140,10 +140,14 @@ class XDAuthorizationIT extends BaseXDTest with BeforeAndAfterAll {
   private def createNewBasicProvider(securityManagerClass: String = CoreConfig.DefaultSecurityManager): XDSessionProvider = {
     val securityManagerConfigString = s"${CoreConfig.SecurityClassConfigKey}=$securityManagerClass"
     val catalogIdentifierConfigString = s"${CoreConfig.CatalogPrefixConfigKey}=${SecurityManagerTestConstants.CatalogIdentifier}"
+    val securityManagerEnabledConfigString = s"${CoreConfig.SecurityEnabledKey}=true"
 
     val config = ConfigFactory.parseString(securityManagerConfigString).withFallback{
       ConfigFactory.parseString(catalogIdentifierConfigString)
+    }.withFallback{
+      ConfigFactory.parseString(securityManagerEnabledConfigString)
     }
+
     new BasicSessionProvider(_sparkContext, config)
   }
 
