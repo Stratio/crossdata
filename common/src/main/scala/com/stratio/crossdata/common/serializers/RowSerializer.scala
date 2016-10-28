@@ -60,10 +60,10 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (ArrayType(ty, _), JArray(arr)) =>
         mutable.WrappedArray make arr.map(extractField(ty, _)).toArray
       /* Maps will be serialized as sub-objects so keys are constrained to be strings */
-      case (MapType(StringType, vt, _), JObject(fields)) =>
-        val (keys, values) = fields.unzip
-        val unserValues = values map (jval => extractField(vt, jval))
-        ArrayBasedMapDataNotDeprecated(keys.toArray, unserValues.toArray)
+      case (MapType(kt, vt, _), JObject(JField("map", JObject(JField("keys", JArray(mapKeys)) :: JField("values", JArray(mapValues)) :: _) ) :: _)) =>
+        val unserKeys = mapKeys map (jval => extractField(kt, jval))
+        val unserValues = mapValues map (jval => extractField(vt, jval))
+        ArrayBasedMapDataNotDeprecated(unserKeys.toArray, unserValues.toArray)
       case (st: StructType, JObject(JField("values",JArray(values))::_)) =>
         deserializeWithSchema(st, values, true)
     }
@@ -106,14 +106,15 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
           case v: ArrayDataNotDeprecated => JArray(v.array.toList.map(v => Extraction.decompose(v)))
           case v: mutable.WrappedArray[_] => JArray(v.toList.map(v => Extraction.decompose(v)))
         }
-      case (MapType(StringType, vt, _), v: MapDataNotDeprecated) =>
+      case (MapType(kt, vt, _), v: MapDataNotDeprecated) =>
         /* Maps will be serialized as sub-objects so keys are constrained to be strings */
-        val serKeys = v.keyArray().array.map(v => v.toString)
+        val serKeys = v.keyArray().array.map(v => serializeField(kt -> v))
         val serValues = v.valueArray.array.map(v => serializeField(vt -> v))
-        JObject(
-          (v.keyArray.array zip serValues) map {
-            case (k: String, v) => JField(k, v)
-          } toList
+        JField("map",
+          JObject(
+            JField("keys", JArray(serKeys.toList)),
+            JField("values", JArray(serValues.toList))
+          )
         )
       case (st: StructType, v: Row) => serializeWithSchema(st, v, true)
     }
