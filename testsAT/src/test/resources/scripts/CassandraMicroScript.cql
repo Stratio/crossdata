@@ -14,3 +14,18 @@ insert into "KUYA"."TKUYAKCL"("COD_PERSOCL","COD_OFIPALCL","DES_SUBSEGLO","COD_B
 CREATE TABLE "KUYA"."TKUYAKEV"("COD_SEMAMES" varchar PRIMARY KEY,"DES_UNIREF" varchar,"DES_EVENMDV" varchar,"IMP_RETRANSA" int,"IMP_REINCRE" int,"DES_BANMM" varchar,"DES_UNIMMDV"varchar,"DES_NIVMM" VARCHAR,"DES_DTMM" varchar,"DES_ZOMM" varchar,"DES_CBCMM" varchar,"DES_OFIMM" varchar,"COD_DATIMP"varchar,"IMP_BASTRANS" int,"IMP_BASINCRE" int,"IMP_BATRAINI" int,"IMP_CUMPLIMI" int,"QNU_BASEVMDV" int,"DES_OFIPA" varchar,"DES_SEGCLM" varchar,"COD_BANCSBM" varchar,"COD_OFIMM" varchar,"DES_EVENCORT" varchar,"AUD_TIM" TIMESTAMP,"COD_CONTIGO" int);
 CREATE TABLE "KUYA"."TKUYAKSE"("COD_SEMAMES" VARCHAR PRIMARY KEY, "DES_UNIREF" varchar, "DES_EVENMDV" varchar, "QNU_RENUMMDV" int, "IMP_RECUMPLI" int, "IMP_RETRANSA" int, "IMP_RETRAINI" int, "IMP_REINCRE" int, "QNU_BASEVMDV" int, "IMP_BASTRANS" int, "IMP_BATRAINI" int, "IMP_OBJPROP" int, "IMP_BASINCRE" int, "DES_BANMM" varchar, "IMP_CUMPLIMI" int, "DES_UNIMMDV" varchar, "DES_NIVMM" varchar, "DES_DTMM" varchar, "DES_ZOMM" varchar, "DES_CBCMM" varchar, "DES_OFIMM" varchar, "COD_DATIMP" varchar, "QNU_RAKEVMDV" int, "QNU_RAKNICON" int, "QNU_RAKTRANS" int, "QNU_INCRETO" int, "DES_OFIPA" varchar, "QNU_RANKMAX" int, "DES_SEGCLM" varchar, "COD_BANCSBM" varchar, "COD_OFIMM" varchar, "DES_EVENCORT" varchar, "AUD_TIM" TIMESTAMP, "COD_CONTIGO" int);
 CREATE TABLE "KUYA"."TKUYAKPR" ("COD_SEMAMES" varchar primary key, "DES_UNIREF" varchar, "DES_EVENMDV" varchar, "IMP_RETRANSA" int, "IMP_REINCRE" int, "DES_BANMM" varchar, "DES_PRODMDV" varchar, "DES_UNIMMDV" varchar, "DES_NIVMM" VARCHAR, "DES_DTMM" varchar, "DES_ZOMM" varchar, "DES_CBCMM" varchar, "DES_OFIMM" varchar, "COD_DATIMP" varchar, "IMP_BASTRANS" int, "IMP_BASINCRE" int, "QNU_TOPRODUC" int, "DES_OFIPA" varchar, "COD_BANCSBM" varchar, "COD_OFIMM" varchar, "DES_EVENCORT" varchar, "AUD_TIM" TIMESTAMP, "COD_CONTIGO" int);
+CREATE KEYSPACE databasetest WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };
+CREATE TABLE databasetest.tabletest(ident INT PRIMARY KEY, name TEXT, money DOUBLE, new BOOLEAN, date Timestamp);
+INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (0, 'name_0', 10.2 ,true,'1999-11-30');
+INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (1, 'name_1', 11.2 ,true,'2001-01-01');
+INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (2, 'name_2', 12.2 ,true,'2002-02-02');
+INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (3, 'name_3', 13.2 ,true,'2003-03-03');
+INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (4, 'name_4', 14.2 ,true,'2004-04-04');
+INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (5, 'name_5', 15.2 ,true,'2005-05-05');
+INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (6, 'name_6', 16.2 ,true,'2006-06-06');
+INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (7, 'name_7', 17.2 ,true,'2007-07-07');
+INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (8, 'name_8', 18.2 ,true,'2008-08-08');
+INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (9, 'name_9', 19.2 ,true,'2009-09-09');
+CREATE TABLE databasetest.tab1(name TEXT PRIMARY KEY);
+INSERT INTO databasetest.tab1(name) VALUES ('name_0');
+INSERT INTO databasetest.tab1(name) VALUES ('name_1');

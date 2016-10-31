@@ -8,6 +8,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * HTTP/HTTPS Communication layer with transparent driver.
 * Bug Fixes:
     * Cancellation message is now delivered to the client.
+* Updated dependencies with curator and stratio-commons-utils compatible with Zookeeper 3.5.x    
 
 ## 1.6.0 (September 2016)
 

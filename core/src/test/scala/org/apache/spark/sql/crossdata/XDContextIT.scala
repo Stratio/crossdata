@@ -183,8 +183,6 @@ class XDContextIT extends SharedXDContextTest {
 
   }
 
-
-
   it should "succesfully parse a CROSS JOIN" in {
 
     val crossJoin = "SELECT * FROM table1 CROSS JOIN table2"
@@ -193,7 +191,6 @@ class XDContextIT extends SharedXDContextTest {
     xdContext.parseSql(crossJoin) shouldBe Project(UnresolvedAlias(UnresolvedStar(None)):: Nil, Join(UnresolvedRelation(TableIdentifier("table1")), UnresolvedRelation(TableIdentifier("table2")), Inner, None))
 
   }
-
 
 //  it must "execute jar app previously uploaded" in {
 //    val file = File(s"TestAddApp.jar")
