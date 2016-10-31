@@ -5,6 +5,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 ## 1.8.0 (upcoming)
 
 * Pending changelog
+* Updated dependencies with curator and stratio-commons-utils compatible with Zookeeper 3.5.x
 
 ## 1.7.0 (upcoming)
 
