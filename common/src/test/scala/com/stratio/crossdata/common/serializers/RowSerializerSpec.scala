@@ -19,6 +19,7 @@ import com.stratio.crossdata.common.serializers.XDSerializationTest.TestCase
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.catalyst.util.ArrayBasedMapData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -47,6 +48,7 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
     StructField("arraystring",ArrayType(StringType,true),true),
     StructField("mapstringint",MapType(StringType,IntegerType,true),true),
     StructField("mapstringstring",MapType(StringType,StringType,true),true),
+    StructField("maptimestampinteger",MapType(TimestampType,IntegerType,true),true),
     StructField("struct",StructType(StructField("field1",IntegerType,true)::StructField("field2",IntegerType,true) ::Nil), true),
     StructField("arraystruct",ArrayType(StructType(StructField("field1",IntegerType,true)::StructField("field2", IntegerType,true)::Nil),true),true),
     StructField("structofstruct",StructType(StructField("field1",TimestampType,true)::StructField("field2", IntegerType, true)::StructField("struct1",StructType(StructField("structField1",StringType,true)::StructField("structField2",IntegerType,true)::Nil),true)::Nil),true)
@@ -72,6 +74,7 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
     WrappedArray make Array("hello", "world"),
     ArrayBasedMapData(Map("b" -> 2)),
     ArrayBasedMapData(Map("a" -> "A", "b" -> "B")),
+    ArrayBasedMapData(Map(java.sql.Timestamp.valueOf("2015-11-30 10:00:00.0") -> 25, java.sql.Timestamp.valueOf("2015-11-30 10:00:00.0") -> 12)),
     new GenericRowWithSchema(Array(99,98), StructType(StructField("field1", IntegerType)
       ::StructField("field2", IntegerType)::Nil)),
     WrappedArray make Array(
@@ -102,7 +105,7 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
 
 
   implicit val formats = json4sJacksonFormats + new RowSerializer(schema)
-  
+
 
   override def testCases: Seq[TestCase] = Seq(
     TestCase("marshall & unmarshall a row with no schema", rowWithNoSchema),
