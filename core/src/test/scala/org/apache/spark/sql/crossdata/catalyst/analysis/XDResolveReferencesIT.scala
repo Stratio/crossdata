@@ -155,5 +155,9 @@ class XDResolveReferencesIT extends SharedXDContextTest{
 
     xdContext.sql("SELECT * FROM test INNER JOIN test.test ON test.test.test = col.test").count() shouldBe 2
   }
-  
+
+  it must "resolve qualified count distinct queries with qualified filters" in {
+    xdContext.sql("SELECT count(distinct test) FROM test WHERE test.test.test = 4").count() shouldBe 1
+  }
+
 }
