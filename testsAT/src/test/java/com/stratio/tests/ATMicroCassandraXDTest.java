@@ -53,11 +53,13 @@ public class ATMicroCassandraXDTest extends BaseTest {
 		logger.info("Connecting to Cassandra Cluster");
 		cassandra.connect();
 		logger.info("Checking if the catalog exists");
-		if (cassandra.existsKeyspace(catalog, false)) {
+		if (cassandra.existsKeyspace(catalog, false) || cassandra.existsKeyspace("databasetest", false) ) {
 			logger.info("The catalog exists");
 			cassandra.executeQuery("DROP KEYSPACE \"KUYA\"");
+			cassandra.executeQuery("DROP KEYSPACE databasetest");
 			logger.info("The catalog has benn dropped");
 		}
+
 		cassandra.loadTestData(catalog, "/scripts/CassandraMicroScript.cql");
 		List<String> tables = cassandra.getTables(catalog);
 		String connector = "Cassandra-Micro";
