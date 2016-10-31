@@ -36,7 +36,7 @@ import akka.util.{ByteString, Timeout}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
 import com.stratio.crossdata.common._
-import com.stratio.crossdata.common.result.{StreamedSchema, StreamedSuccessfulSQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.common.result.{ErrorSQLResult, StreamedSchema, StreamedSuccessfulSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.util.HdfsUtils
@@ -157,7 +157,8 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
                   }
                 case other =>
-                  complete(StatusCodes.ServerError, s"Internal XD server error: $other")
+                  val httpErrorReply = SQLReply(rq.cmd.requestId, ErrorSQLResult(s"Internal XD server error: $other"))
+                  complete(StatusCodes.ServerError -> httpErrorReply)
               }
           }
 
