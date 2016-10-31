@@ -153,7 +153,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
                       complete(responseStream)
 
-                    case _ => complete(StatusCodes.InternalServerError -> reply)
+                    case _ => complete(reply)
 
                   }
                 case other =>
