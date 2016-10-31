@@ -19,7 +19,6 @@ import com.stratio.crossdata.common.serializers.XDSerializationTest.TestCase
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.catalyst.util.ArrayBasedMapData
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -74,9 +73,9 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
     WrappedArray make Array("hello", "world"),
     ArrayBasedMapData(Map("b" -> 2)),
     ArrayBasedMapData(Map("a" -> "A", "b" -> "B")),
-    ArrayBasedMapData(Map(java.sql.Timestamp.valueOf("2015-11-30 10:00:00.0") -> 25, java.sql.Timestamp.valueOf("2015-11-30 10:00:00.0") -> 12)),
     new GenericRowWithSchema(Array(99,98), StructType(StructField("field1", IntegerType)
       ::StructField("field2", IntegerType)::Nil)),
+    WrappedArray make Array(
     WrappedArray make Array(
       new GenericRowWithSchema(Array(1,2), StructType(StructField("field1", IntegerType)::StructField("field2", IntegerType)::Nil)),
       new GenericRowWithSchema(Array(3,4), StructType(StructField("field1", IntegerType)::StructField("field2", IntegerType)::Nil))
@@ -104,7 +103,7 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
   lazy val rowWithSchema = new GenericRowWithSchema(values, schema)
 
 
-  implicit val formats = json4sJacksonFormats + RowSerializer(schema)
+  implicit val formats = json4sJacksonFormats + new RowSerializer(schema)
 
 
   override def testCases: Seq[TestCase] = Seq(
