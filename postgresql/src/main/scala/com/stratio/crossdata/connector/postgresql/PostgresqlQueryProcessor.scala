@@ -20,10 +20,10 @@ import java.util.Properties
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.expressions.aggregate.Count
-import org.apache.spark.sql.catalyst.expressions.{Alias, Expression, GenericRowWithSchema, Literal, NamedExpression}
+import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Expression, GenericRowWithSchema, GetArrayItem, Literal, NamedExpression, SortOrder}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
-import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Limit, LogicalPlan}
+import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Limit, LogicalPlan, Sort}
 import org.apache.spark.sql.catalyst.util.{DateTimeUtils, GenericArrayData}
 import org.apache.spark.sql.execution.datasources.jdbc.{PostgresqlUtils, PostgresqlXDRelation}
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter._
@@ -56,6 +56,7 @@ object PostgresqlQueryProcessor {
   def buildNativeQuery(tableQN: String,
                        requiredColumns: Seq[String],
                        filters: Array[SourceFilter],
+                       sortFields: Seq[SortOrder],
                        limit: Int): PostgresQuery = {
 
     def filterToSQL(filter: SourceFilter): Option[String] = Option(filter match {
@@ -97,8 +98,11 @@ object PostgresqlQueryProcessor {
     // TODO review this. AND is needed?
     val filter = if (filters.nonEmpty) filters.flatMap(filterToSQL).mkString("WHERE ", " AND ", "") else ""
     val columns = requiredColumns.map(columnName).mkString(", ")
+    val orderBy = "ORDER BY " + (if(sortFields.nonEmpty) sortFields.map{ s =>
+      columnName(s.child.toString) + (if(s.isAscending) " ASC" else " DESC")
+    }.mkString(",") else "")
 
-    s"SELECT $columns FROM $tableQN $filter LIMIT $limit"
+    s"SELECT $columns FROM $tableQN $filter $orderBy LIMIT $limit"
   }
 
 }
@@ -130,14 +134,21 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
 
             case AggregationLogicalPlan(projects, groupingExpression, _, _, _) =>
               require(groupingExpression.isEmpty)
-
               projects.map(buildAggregationExpression)
+
+            case SortLogicalPlan(projects, _, _, _, _) => projects.map(_.toString())
+          }
+
+          val sortFields = postgresqlPlan.basePlan match {
+            case SortLogicalPlan(_, sortOrders, _, _, _) => sortOrders
+            case _ => Seq.empty[SortOrder]
           }
 
           val sqlQuery = buildNativeQuery(
             postgresRelation.table,
             projectsString,
             postgresqlPlan.filters,
+            sortFields,
             postgresqlPlan.limit.getOrElse(PostgresqlQueryProcessor.DefaultLimit)
           )
           logInfo("QUERY: " + sqlQuery)
@@ -168,6 +179,8 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
 
         case Aggregate(_, _, child) =>
           findBasePlan(child)
+
+//        case Sort(_, _, child) => findBasePlan(child)
 
         case PhysicalOperation(projectList, filterList, _) =>
           CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
