@@ -96,9 +96,12 @@ case class ErrorSQLResult(message: String, cause: Option[Throwable] = None) exte
     cause.map(throwable => new RuntimeException(message, throwable)).getOrElse(new RuntimeException(message))
 }
 
+object StreamedSuccessfulSQLResult {
+  implicit def schema2streamed(schema: StructType): StreamedSuccessfulSQLResult = StreamedSchema(schema)
+  implicit def row2streamed(row: Row)(implicit providedSchema: StructType): StreamedSuccessfulSQLResult =
+    StreamedRow(row, Some(providedSchema))
+}
 
-
-
-
-
-
+sealed trait StreamedSuccessfulSQLResult
+case class StreamedSchema(schema: StructType) extends StreamedSuccessfulSQLResult
+case class StreamedRow(row: Row, providedSchema: Option[StructType] = None) extends StreamedSuccessfulSQLResult
