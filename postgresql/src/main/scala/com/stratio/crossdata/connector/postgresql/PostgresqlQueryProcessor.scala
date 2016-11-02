@@ -98,9 +98,9 @@ object PostgresqlQueryProcessor {
     // TODO review this. AND is needed?
     val filter = if (filters.nonEmpty) filters.flatMap(filterToSQL).mkString("WHERE ", " AND ", "") else ""
     val columns = requiredColumns.map(columnName).mkString(", ")
-    val orderBy = "ORDER BY " + (if(sortFields.nonEmpty) sortFields.map{ s =>
+    val orderBy = if(sortFields.nonEmpty) "ORDER BY " + sortFields.map{ s =>
       columnName(s.child.toString) + (if(s.isAscending) " ASC" else " DESC")
-    }.mkString(",") else "")
+    }.mkString(",") else ""
 
     s"SELECT $columns FROM $tableQN $filter $orderBy LIMIT $limit"
   }
