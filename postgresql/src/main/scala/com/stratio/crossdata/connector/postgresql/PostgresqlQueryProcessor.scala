@@ -32,6 +32,8 @@ import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.{Decimal, _}
 import org.apache.spark.unsafe.types.UTF8String
 
+import scala.util.Try
+
 object PostgresqlQueryProcessor {
 
   type PostgresQuery = String
@@ -123,7 +125,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
       }
     }
 
-    try {
+    Try {
       validatedNativePlan.map { postgresqlPlan =>
         if (postgresqlPlan.limit.exists(_ == 0)) {
           Array.empty[Row]
@@ -162,9 +164,11 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
         }
       }
 
-    } catch {
-      case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage); None
-    }
+    } recover{
+      case exc: Exception =>
+        log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage)
+        None
+    } get
 
   }
 
