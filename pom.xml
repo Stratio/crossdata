@@ -101,8 +101,8 @@
         <module>server</module>
         <module>streaming</module>
         <module>testsIT</module>
-        <module>dist</module>
         <module>zeppelin</module>
+        <module>dist</module>
     </modules>
 
     <properties>

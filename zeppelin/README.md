@@ -11,13 +11,13 @@ To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apach
 
 # Install Zeppelin
 
-https://github.com/apache/incubator-zeppelin => git checkout v0.6.0
+https://github.com/apache/incubator-zeppelin => git checkout v0.6.2
 
 mvn clean package -DskipTests
 
 #### Crossdata Interpreter
 
-/path/to/zeppelin/bin/install-interpreter.sh --name crossdata -t org.apache.zeppelin:zeppelin-crossdata_2.11:1.6.0-SNAPSHOT
+/path/to/zeppelin/bin/install-interpreter.sh --name crossdata -t org.apache.zeppelin:zeppelin-crossdata_2.11:1.8.0-SNAPSHOT
 
 Add interpreter class name ("org.apache.zeppelin.crossdata.CrossdataInterpreter") to 'zeppelin.interpreters' property in your conf/zeppelin-site.xml file
 

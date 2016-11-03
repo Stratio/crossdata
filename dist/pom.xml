@@ -36,6 +36,11 @@
                     <version>${project.parent.version}</version>
                     <classifier>jar-with-dependencies</classifier>
                 </dependency>
+                <dependency>
+                    <groupId>org.apache.zeppelin</groupId>
+                    <artifactId>zeppelin-crossdata_${scala.binary.version}</artifactId>
+                    <version>${project.parent.version}</version>
+                </dependency>
             </dependencies>
             <build>
                 <plugins>
@@ -195,6 +200,12 @@
                                         ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/com/stratio/crossdata/crossdata-driver_${scala.binary.version}/${project.parent.version}
                                     </from>
                                     <to>/opt/sds/crossdata/lib</to>
+                                </copyDirectory>
+                                <copyDirectory>
+                                    <from>
+                                        ${project.build.directory}/crossdata-dist-${project.parent.version}/lib/org/apache/zeppelin/zeppelin-crossdata_${scala.binary.version}/${project.parent.version}
+                                    </from>
+                                    <to>/opt/sds/crossdata/lib/zeppelin</to>
                                 </copyDirectory>
                                 <copyDirectory>
                                     <from>
