@@ -27,6 +27,9 @@ private[crossdata] trait ExternalCatalogAPI extends XDAppsCatalog{
   def persistView(viewIdentifier: ViewIdentifier, plan: LogicalPlan, sqlText: String): Unit
   def persistIndex(crossdataIndex: CrossdataIndex): Unit
 
+  def dropRelation(tableIdentifier: TableIdentifier): Unit
+  // TODO: Implement dropAllRelations
+
   def dropTable(tableIdentifier: TableIdentifier): Unit
   def dropAllTables(): Unit
 

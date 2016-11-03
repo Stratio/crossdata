@@ -23,7 +23,7 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, Crossdata
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 
 object CatalogChain {
@@ -180,6 +180,12 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
     } else {
       persistentCatalogs.foreach(_.saveIndex(crossdataIndex))
     }
+
+  override def dropRelation(tableIdentifier: TableIdentifier): Unit =
+    Try(dropView(tableIdentifier)).orElse(Try(dropTable(tableIdentifier))).recoverWith {
+      case _: Exception =>
+        Failure(new RuntimeException(s"Relation $tableIdentifier can't be deleted because it doesn't exist"))
+    } get
 
   override def dropTable(tableIdentifier: TableIdentifier): Unit = {
     val strTable = tableIdentifier.unquotedString

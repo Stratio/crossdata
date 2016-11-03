@@ -149,16 +149,7 @@ private[crossdata] case class DropTable(tableIdentifier: TableIdentifier) extend
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    if(sqlContext.catalog.tableExists(tableIdentifier)){
-      sqlContext.catalog.lookupRelation(tableIdentifier) match {
-        case Subquery(_, Project(_,_)) =>
-          sqlContext.catalog.dropView(tableIdentifier)
-        case _ =>
-          sqlContext.catalog.dropTable(tableIdentifier)
-      }
-    } else {
-      sqlContext.catalog.dropTable(tableIdentifier) //Force launching exception from catalog
-    }
+    sqlContext.catalog.dropRelation(tableIdentifier)
 
     Seq.empty
   }
