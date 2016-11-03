@@ -22,7 +22,7 @@ import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Subquery}
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Project, Subquery}
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.XDCatalog._
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon._
@@ -148,7 +148,18 @@ private[crossdata] case class ImportTablesUsingWithOptions(datasource: String, o
 private[crossdata] case class DropTable(tableIdentifier: TableIdentifier) extends RunnableCommand {
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
-    sqlContext.catalog.dropTable(tableIdentifier)
+
+    if(sqlContext.catalog.tableExists(tableIdentifier)){
+      sqlContext.catalog.lookupRelation(tableIdentifier) match {
+        case Subquery(_, Project(_,_)) =>
+          sqlContext.catalog.dropView(tableIdentifier)
+        case _ =>
+          sqlContext.catalog.dropTable(tableIdentifier)
+      }
+    } else {
+      sqlContext.catalog.dropTable(tableIdentifier) //Force launching exception from catalog
+    }
+
     Seq.empty
   }
 
