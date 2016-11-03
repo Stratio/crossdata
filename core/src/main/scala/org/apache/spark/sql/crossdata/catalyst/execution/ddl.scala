@@ -149,7 +149,7 @@ private[crossdata] case class DropTable(tableIdentifier: TableIdentifier) extend
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
 
-    sqlContext.catalog.dropRelation(tableIdentifier)
+    sqlContext.catalog.dropTable(tableIdentifier)
 
     Seq.empty
   }

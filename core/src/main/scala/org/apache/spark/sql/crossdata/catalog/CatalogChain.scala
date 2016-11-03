@@ -181,12 +181,6 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
       persistentCatalogs.foreach(_.saveIndex(crossdataIndex))
     }
 
-  override def dropRelation(tableIdentifier: TableIdentifier): Unit =
-    Try(dropView(tableIdentifier)).orElse(Try(dropTable(tableIdentifier))).recoverWith {
-      case _: Exception =>
-        Failure(new RuntimeException(s"Relation $tableIdentifier can't be deleted because it doesn't exist"))
-    } get
-
   override def dropTable(tableIdentifier: TableIdentifier): Unit = {
     val strTable = tableIdentifier.unquotedString
     if (!tableExists(tableIdentifier)) throw new RuntimeException(s"Table $strTable can't be deleted because it doesn't exist")
@@ -198,6 +192,11 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
     temporaryCatalogs foreach (_.dropTable(normalize(tableIdentifier)))
     persistentCatalogs foreach (_.dropTable(normalize(tableIdentifier)))
+
+    // tableExists checks if the tableIdentifier is present in both views and tables maps but the above operations are
+    // related only to the tables map, therefore, if the tableIdentifier corresponds to a view, the view will remain.
+    if (tableExists(tableIdentifier)) dropView(tableIdentifier)
+
   }
 
   override def dropAllTables(): Unit = {
