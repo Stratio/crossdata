@@ -22,19 +22,19 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0</version>
+    <version>0.6.2</version>
   </parent>
 
   <artifactId>zeppelin-crossdata_2.11</artifactId>
   <packaging>jar</packaging>
-  <version>1.7.0-SNAPSHOT</version>
+  <version>1.8.0-SNAPSHOT</version>
   <name>Zeppelin: Crossdata</name>
   <description>Zeppelin interpreter for Crossdata</description>
   <url>https://github.com/Stratio/Crossdata</url>
 
   <properties>
     <zeppelin.home>zeppelin_home</zeppelin.home>
-    <crossdata.version>${project.version}</crossdata.version>
+    <crossdata.version>1.8.0-SNAPSHOT</crossdata.version>
     <!-- Scala version and cross build properties -->
     <scala.binary.version>2.11</scala.binary.version>
     <scala.version>2.11.8</scala.version>
@@ -83,7 +83,7 @@
 
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>
+        <version>1.4.1</version>
         <executions>
           <execution>
             <id>enforce</id>

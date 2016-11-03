@@ -102,6 +102,7 @@
         <module>streaming</module>
         <module>testsIT</module>
         <module>dist</module>
+        <module>zeppelin</module>
     </modules>
 
     <properties>
