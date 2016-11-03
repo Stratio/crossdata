@@ -19,7 +19,7 @@ import java.io._
 import java.util.UUID
 
 import com.stratio.crossdata.common.crossdata
-import com.stratio.crossdata.common.result.{ErrorSQLResult, SQLResult}
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.driver.Driver
 import jline.console.history.FileHistory
 import jline.console.{ConsoleReader, UserInterruptException}
@@ -45,14 +45,8 @@ object BasicShell extends App {
 
 
   val user = options.getOrElse("user", "xd_shell").toString
-  val http = options.get("http") match {
-    case Some(bool: Boolean) => bool
-    case _ => false
-  }
-  val asyncEnabled = options.get("async") match {
-    case Some(bool: Boolean) => bool
-    case _ => false
-  }
+  val http = options.get("http") collect { case bool: Boolean => bool } getOrElse false
+  val asyncEnabled = options.get("async") collect { case bool: Boolean => bool } getOrElse false
 
   val timeout: Duration = options.get("timeout") map {
     case x: Int => x seconds
@@ -164,12 +158,13 @@ object BasicShell extends App {
 
   private def printResult(queryId: UUID, result: SQLResult) = {
     console.println(s"Result for query ID: $queryId")
-    if (result.hasError) {
-      console.println("ERROR")
-      console.println(result.asInstanceOf[ErrorSQLResult].message)
-    } else {
-      console.println("SUCCESS")
-      result.prettyResult.foreach(l => console.println(l))
+    result match {
+      case SuccessfulSQLResult(sqlResult, _) =>
+        console.println("SUCCESS")
+        result.prettyResult.foreach(l => console.println(l))
+      case ErrorSQLResult(message, _) =>
+        console.println("ERROR")
+        console.println(message)
     }
   }
 
