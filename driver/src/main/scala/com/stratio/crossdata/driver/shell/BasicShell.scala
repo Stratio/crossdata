@@ -16,17 +16,19 @@
 package com.stratio.crossdata.driver.shell
 
 import java.io._
+import java.util.UUID
 
 import com.stratio.crossdata.common.crossdata
-import com.stratio.crossdata.common.result.ErrorSQLResult
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SQLResult}
 import com.stratio.crossdata.driver.Driver
 import jline.console.history.FileHistory
 import jline.console.{ConsoleReader, UserInterruptException}
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 object BasicShell extends App {
 
@@ -36,47 +38,41 @@ object BasicShell extends App {
   val HistoryFile = "history.txt"
   val PersistentHistory = new File(HistoryPath.concat(HistoryFile))
 
-  require(args.length <= 6, "usage --user username --http true/false(default) --timeout-in-seconds 120")
+  require(args.length <= 6, "usage --user username [--timeout 120] [--http] [--async]")
 
-  val arglist = args.toList
+  val argsReader = new ShellArgsReader(args.toList)
+  val options = argsReader.options
 
-  type OptionMap = Map[String, Any]
-
-  def nextOption(map: OptionMap, list: List[String]): OptionMap = {
-    list match {
-      case Nil => map
-      case "--user" :: username :: tail =>
-        nextOption(map ++ Map("user" -> username), tail)
-      case "--http" :: bool :: tail =>
-        nextOption(map ++ Map("http" -> bool.toBoolean), tail)
-      case "--timeout-in-seconds" :: timeout :: tail =>
-        nextOption(map ++ Map("timeout" -> timeout.toInt), tail)
-    }
-  }
-
-  val options = nextOption(Map(), arglist)
 
   val user = options.getOrElse("user", "xd_shell").toString
-  val http = options.getOrElse("http", false) match {
-    case x: Boolean => x
+  val http = options.get("http") match {
+    case Some(bool: Boolean) => bool
     case _ => false
   }
+  val asyncEnabled = options.get("async") match {
+    case Some(bool: Boolean) => bool
+    case _ => false
+  }
+
   val timeout: Duration = options.get("timeout") map {
     case x: Int => x seconds
     case _ => Duration.Inf
   } getOrElse Duration.Inf
 
+  val password = "" // TODO read the password
+
   logger.info(s"user: $user http enabled ${http.toString} timeout(seconds): $timeout")
 
-  val password = "" // TODO read the password
+  createHistoryDirectory(HistoryPath)
+  val console = new ConsoleReader()
+  console.setEchoCharacter(Character.valueOf(0)) //Avoid echoing
+  initialize(console)
+  runConsole(console)
 
   private def createHistoryDirectory(historyPath: String): Boolean = {
     val historyPathFile = new File(historyPath)
     !historyPathFile.exists && historyPathFile.mkdirs
   }
-
-  createHistoryDirectory(HistoryPath)
-
 
   private def getLine(reader: ConsoleReader): Option[String] =
     Try(reader.readLine).recoverWith {
@@ -102,7 +98,7 @@ object BasicShell extends App {
     console.flush
   }
 
-  def loadHistory(console: ConsoleReader): Unit = {
+  private def loadHistory(console: ConsoleReader): Unit = {
     if (PersistentHistory.exists) {
       logger.info("Loading history...")
       console.setHistory(new FileHistory(PersistentHistory))
@@ -111,17 +107,13 @@ object BasicShell extends App {
     }
   }
 
-  val console = new ConsoleReader()
-
-  def initialize(console: ConsoleReader) = {
+  private def initialize(console: ConsoleReader) = {
     console.setHandleUserInterrupt(true)
     console.setExpandEvents(false)
     console.setPrompt("CROSSDATA> ")
     loadHistory(console)
   }
 
-
-  initialize(console)
 
   private def runConsole(console: ConsoleReader): Unit = {
 
@@ -149,21 +141,37 @@ object BasicShell extends App {
       if (line.get.trim.nonEmpty) {
 
         val sqlResponse = driver.sql(line.get)
-        val result = sqlResponse.waitForResult(timeout)
-        console.println(s"Result for query ID: ${sqlResponse.id}")
-        if (result.hasError) {
-          console.println("ERROR")
-          console.println(result.asInstanceOf[ErrorSQLResult].message)
+
+        if (asyncEnabled) {
+          console.println(s"Started asynchronous execution with query ID: ${sqlResponse.id}")
+          console.println()
+
+          sqlResponse.sqlResult onComplete {
+            case Success(sqlResult) =>
+              printResult(sqlResponse.id, sqlResult)
+            case Failure(throwable) =>
+              console.println(s"Unexpected error while processing the query ${throwable.getMessage}")
+          }
+
         } else {
-          console.println("SUCCESS")
-          result.prettyResult.foreach(l => console.println(l))
+          printResult(sqlResponse.id, sqlResponse.waitForResult(timeout))
         }
+
       }
       console.flush
     }
   }
 
-  runConsole(console)
+  private def printResult(queryId: UUID, result: SQLResult) = {
+    console.println(s"Result for query ID: $queryId")
+    if (result.hasError) {
+      console.println("ERROR")
+      console.println(result.asInstanceOf[ErrorSQLResult].message)
+    } else {
+      console.println("SUCCESS")
+      result.prettyResult.foreach(l => console.println(l))
+    }
+  }
 
   sys addShutdownHook {
     close(console)
