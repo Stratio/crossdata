@@ -180,7 +180,10 @@ class HttpDriver private[driver](driverConf: DriverConf,
                  val entity = HttpEntity(ContentTypes.`application/json`, bs)
                  um(entity)
                }
-             }.runFold(List.empty[Row]) { case (acc: List[Row], StreamedRow(row, None)) => row::acc; case _ => Nil }
+             }.runFold(List.empty[Row]) {
+               case (acc: List[Row], StreamedRow(row, None)) => row::acc
+               case _ => Nil
+             }
 
            } yield SuccessfulSQLResult(rrows.reverse toArray, schema) /* TODO: Performance could be increased if
                                                               `SuccessfulSQLResult`#resultSet were of type `Seq[Row]`*/
