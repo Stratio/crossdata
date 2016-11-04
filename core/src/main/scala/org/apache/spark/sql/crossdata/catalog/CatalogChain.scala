@@ -23,7 +23,7 @@ import org.apache.spark.sql.crossdata.catalog.XDCatalog.{CrossdataApp, Crossdata
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDCatalogCommon, XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.models.{EphemeralQueryModel, EphemeralStatusModel, EphemeralTableModel}
 
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 
 object CatalogChain {
@@ -192,6 +192,11 @@ private[crossdata] class CatalogChain private(val temporaryCatalogs: Seq[XDTempo
 
     temporaryCatalogs foreach (_.dropTable(normalize(tableIdentifier)))
     persistentCatalogs foreach (_.dropTable(normalize(tableIdentifier)))
+
+    // tableExists checks if the tableIdentifier is present in both views and tables maps but the above operations are
+    // related only to the tables map, therefore, if the tableIdentifier corresponds to a view, the view will remain.
+    if (tableExists(tableIdentifier)) dropView(tableIdentifier)
+
   }
 
   override def dropAllTables(): Unit = {
