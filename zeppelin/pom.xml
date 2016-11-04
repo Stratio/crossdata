@@ -66,6 +66,7 @@
   </dependencies>
 
   <build>
+    <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
 
       <plugin>
@@ -173,7 +174,6 @@
           <skip>true</skip>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
