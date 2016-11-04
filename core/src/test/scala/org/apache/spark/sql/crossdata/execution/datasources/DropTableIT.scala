@@ -56,4 +56,24 @@ class DropTableIT extends SharedXDContextTest {
     sql(s"DROP TABLE $DatabaseName.$TableName")
     _xdContext.catalog.tableExists(TableIdentifier(TableName, Some(DatabaseName))) shouldBe false
   }
+
+
+  it should "remove a view when table doesn't exists but view with its name exists in the catalog" in {
+    val viewName = s"tmpTableDrop$TableName"
+
+    _xdContext.catalog.persistTableMetadata(CrossdataTable(TableIdentifier(TableName, None).normalize, Some(Schema), DatasourceName, opts = Map("path" -> "fakepath")))
+    _xdContext.catalog.tableExists(TableIdentifier(TableName)) shouldBe true
+    _xdContext.catalog.tableExists(TableIdentifier(viewName)) shouldBe false
+
+    sql(s"CREATE TABLE $viewName AS SELECT col FROM $TableName")
+    _xdContext.catalog.tableExists(TableIdentifier(viewName)) shouldBe true
+
+    sql(s"DROP TABLE $viewName")
+    _xdContext.catalog.tableExists(TableIdentifier(viewName)) shouldBe false
+
+    sql(s"DROP TABLE $TableName")
+    _xdContext.catalog.tableExists(TableIdentifier(TableName)) shouldBe false
+  }
+
+
 }
