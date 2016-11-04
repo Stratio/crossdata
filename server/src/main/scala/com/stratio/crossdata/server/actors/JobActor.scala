@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.server.actors
 
+import java.util.UUID
 import java.util.concurrent.{CancellationException, Executor}
 
 import akka.actor.{Actor, ActorRef, Props}
@@ -56,7 +57,7 @@ object JobActor {
 
     case object GetJobStatus
 
-    case class CancelJob(cancellationRequester: ActorRef)
+    case class CancelJob(cancellationRequester: ActorRef, cancellationRequestId: Option[UUID])
 
     case object StartJob
   }
@@ -136,12 +137,14 @@ class JobActor(
 
       context.become(receive(st.copy(runningTask = Some(runningTask))))
 
-    case CancelJob(cancellationRequester) =>
+    case CancelJob(cancellationRequester, cancelRequestId) =>
       st.runningTask.foreach{ tsk =>
         logger.debug(s"Cancelling ${self.path}'s task ")
         import context.dispatcher
-        tsk.future onFailure { case _: CancellationException =>
-          cancellationRequester ! QueryCancelledReply(command.requestId)
+        cancelRequestId foreach { cancelRqId =>
+          tsk.future onFailure { case _: CancellationException =>
+            cancellationRequester ! QueryCancelledReply(command.requestId, cancelRqId)
+          }
         }
         tsk.cancel()
       }

@@ -116,8 +116,10 @@ class ClusterClientDriver private[driver](driverConf: DriverConf,
       case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
         val futureReply = askCommand(securitizeCommand(sqlCommand)).map {
-          case SQLReply(_, sqlResult) => sqlResult
-          case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
+          case SQLReply(_, sqlResult) =>
+            sqlResult
+          case other =>
+            throw new RuntimeException(s"SQLReply expected. Received: $other")
         }
         new SQLResponse(sqlCommand.requestId, futureReply) {
           // TODO cancel sync => 5 secs

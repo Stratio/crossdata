@@ -132,7 +132,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
         sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
 
     case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, Some(cancellationRequester)), _) =>
-      st.jobsById(JobId(id, queryId)) ! CancelJob(cancellationRequester)
+      st.jobsById(JobId(id, queryId)) ! CancelJob(cancellationRequester, Some(cc.requestId))
   }
 
 
@@ -256,7 +256,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
   }
 
   def gracefullyKill(victim: ActorRef): Unit = {
-    victim ! CancelJob
+    victim ! CancelJob(self, None)
     victim ! PoisonPill
   }
 
