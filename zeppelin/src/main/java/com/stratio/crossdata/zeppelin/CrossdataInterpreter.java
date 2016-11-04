@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.crossdata;
+package com.stratio.crossdata.zeppelin;
 
 import com.stratio.crossdata.common.result.ErrorSQLResult;
 import com.stratio.crossdata.common.result.SQLResult;
