@@ -82,7 +82,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
   private def obtainHttpContext: HttpExt = {
     val ext = Http(system)
-    if(driverConf.httpTlsEnable){ //Set for all the requests the Https configurated context with keystores
+    if(driverConf.httpTlsEnable){ //Set for all the requests the Https configured context with key stores
       ext.setDefaultClientHttpsContext(getTlsContext)
     }
     ext
