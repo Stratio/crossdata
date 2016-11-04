@@ -223,6 +223,15 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>com.stratio.mojo</groupId>
+        <artifactId>scala-cross-build-maven-plugin</artifactId>
+        <version>0.1.0-RC3</version>
+        <configuration>
+          <defaultScalaBinaryVersion>${default.scala.binary.version}</defaultScalaBinaryVersion>
+          <defaultScalaVersion>${default.scala.version}</defaultScalaVersion>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
