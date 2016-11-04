@@ -180,11 +180,10 @@ class HttpDriver private[driver](driverConf: DriverConf,
                  val entity = HttpEntity(ContentTypes.`application/json`, bs)
                  um(entity)
                }
-             }.runFold(List.empty[Row]) { case (acc: List[Row], StreamedRow(row, None)) => row::acc }
+             }.runFold(List.empty[Row]) { case (acc: List[Row], StreamedRow(row, None)) => row::acc; case _ => Nil }
 
            } yield SuccessfulSQLResult(rrows.reverse toArray, schema) /* TODO: Performance could be increased if
                                                               `SuccessfulSQLResult`#resultSet were of type `Seq[Row]`*/
-
          } else {
 
              Unmarshal(httpResponse.entity).to[SQLReply] map {
@@ -202,8 +201,8 @@ class HttpDriver private[driver](driverConf: DriverConf,
         simpleRequest(
           securitizeCommand(command),
           s"query/${command.requestId}", {
-            case reply: QueryCancelledReply => reply
-          }: PartialFunction[SQLReply, QueryCancelledReply]
+            reply: QueryCancelledReply => reply
+          }
         )
       }
     }

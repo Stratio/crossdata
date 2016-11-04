@@ -46,11 +46,8 @@ object JobActor {
   trait JobEvent
 
   object Events {
-
     case object JobCompleted extends JobEvent
-
     case class JobFailed(err: Throwable) extends JobEvent
-
   }
 
   object Commands {
@@ -59,7 +56,7 @@ object JobActor {
 
     case object GetJobStatus
 
-    case object CancelJob
+    case class CancelJob(cancellationRequester: ActorRef)
 
     case object StartJob
   }
@@ -124,7 +121,7 @@ class JobActor(
           requester ! queryRes
           self ! JobCompleted
         case Failure(_: CancellationException) => // Job cancellation
-          requester ! QueryCancelledReply(command.requestId)
+          requester ! SQLReply(command.requestId, ErrorSQLResult("Query cancelled"))
           self ! JobCompleted
         case Failure(e: ExecutionException) => self ! JobFailed(e.getCause) // Spark exception
         case Failure(reason) => self ! JobFailed(reason) // Job failure
@@ -139,9 +136,13 @@ class JobActor(
 
       context.become(receive(st.copy(runningTask = Some(runningTask))))
 
-    case CancelJob =>
+    case CancelJob(cancellationRequester) =>
       st.runningTask.foreach{ tsk =>
         logger.debug(s"Cancelling ${self.path}'s task ")
+        import context.dispatcher
+        tsk.future onFailure { case _: CancellationException =>
+          cancellationRequester ! QueryCancelledReply(command.requestId)
+        }
         tsk.cancel()
       }
 
@@ -155,9 +156,10 @@ class JobActor(
       context.parent ! event
       requester ! SQLReply(command.requestId, ErrorSQLResult(e.getMessage, Some(new Exception(e.getMessage))))
       throw e //Let It Crash: It'll be managed by its supervisor
-    case JobCompleted if sender == self =>
+
+    case msg @ JobCompleted if sender == self =>
       logger.debug(s"Completed or cancelled ${self.path} task")
-      context.parent ! JobCompleted
+      context.parent ! msg
   }
 
   private def launchTask: Cancellable[SQLReply] = {
