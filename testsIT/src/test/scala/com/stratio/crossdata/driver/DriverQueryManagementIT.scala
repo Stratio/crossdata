@@ -27,7 +27,7 @@ import org.scalatest.junit.JUnitRunner
 import scala.concurrent.duration._
 
 @RunWith(classOf[JUnitRunner])
-class DriverQueryManagement extends EndToEndTest with ScalaFutures {
+class DriverQueryManagementIT extends EndToEndTest with ScalaFutures {
 
   driverFactories foreach { case (factory, description) =>
 
