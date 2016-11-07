@@ -25,6 +25,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.junit.JUnitRunner
 
 import scala.concurrent.duration._
+import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
 class DriverQueryManagementIT extends EndToEndTest with ScalaFutures {
@@ -58,5 +59,7 @@ class DriverQueryManagementIT extends EndToEndTest with ScalaFutures {
     }
 
   }
+
+  override def stop(): Unit = Try(super.stop()) //TODO
 
 }
