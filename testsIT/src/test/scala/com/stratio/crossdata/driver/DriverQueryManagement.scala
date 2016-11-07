@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.driver.test
+package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
 import com.stratio.crossdata.common.QueryCancelledReply
 import com.stratio.crossdata.common.result.ErrorSQLResult
-import com.stratio.crossdata.driver.EndToEndTest
+import com.stratio.crossdata.driver.test.Utils._
 import org.junit.runner.RunWith
-
-import scala.concurrent.duration._
-
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.junit.JUnitRunner
 
-import com.stratio.crossdata.driver.test.Utils._
+import scala.concurrent.duration._
 
 @RunWith(classOf[JUnitRunner])
 class DriverQueryManagement extends EndToEndTest with ScalaFutures {
