@@ -120,23 +120,36 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
       post {
         entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
 
+          implicit val _ = Timeout(requestExecutionTimeout)
+
+          def completeWithErrorResult(desc: String) = {
+            val httpErrorReply = SQLReply(rq.cmd.requestId, ErrorSQLResult(desc))
+            complete(StatusCodes.InternalServerError -> httpErrorReply)
+          }
+
           rq.cmd match {
 
-            case _: CloseSessionCommand => // Commands with no confirmation
+            case _: CloseSessionCommand =>  // Commands with no confirmation
 
               serverActor ! rq
               complete(StatusCodes.OK)
 
-            case _ =>                      // Commands requiring confirmation
+            case _: CancelQueryExecution => // Management commands
 
-              implicit val _ = Timeout(requestExecutionTimeout)
+              onSuccess(serverActor ? rq) {
+                case qcr: QueryCancelledReply => complete(qcr)
+              }
+
+            case _ =>                       // SQL Commands
 
               onComplete(serverActor ? rq) {
+
                 case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
                   complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
+
                 case Success(reply: ServerReply) =>
                   reply match {
-                    case qcr: QueryCancelledReply => complete(qcr)
+
                     case SQLReply(_, SuccessfulSQLResult(resultSet, schema)) =>
 
                       implicit val jsonStreamingSupport = EntityStreamingSupport.json()
@@ -153,12 +166,11 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
                       complete(responseStream)
 
-                    case _ => complete(reply)
+                    case _ => complete(StatusCodes.InternalServerError -> reply)
 
                   }
                 case other =>
-                  val httpErrorReply = SQLReply(rq.cmd.requestId, ErrorSQLResult(s"Internal XD server error: $other"))
-                  complete(StatusCodes.ServerError -> httpErrorReply)
+                  completeWithErrorResult(s"Internal XD server error: $other")
               }
           }
 
