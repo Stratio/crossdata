@@ -9,10 +9,19 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 
 ## 1.7.0 (upcoming)
 
-* Pluggable security manager, enabling authorization and auditing
+* Zookeeper security through Kerberos.
+* Spark-Mesosphere dependency instead of Apache Spark.
+* Pluggable security manager, enabling authorization and auditing.
 * HTTP/HTTPS Communication layer with transparent driver.
+* Kerberos support for HDFS
+* TLS mutual validation for HTTP
+* Vault support for retrieve secrets (keytabs, tls certificates...)
+* Updated dependencies with curator and stratio-commons-utils compatible with Zookeeper 3.5.x
 * Bug Fixes:
-    * Cancellation message is now delivered to the client.
+   * Cancellation message is now delivered to the client.
+* Updated dependencies with curator and stratio-commons-utils compatible with Zookeeper 3.5.x
+* Asynchronous shell implemented
+* "Create table as select" without datasource
 
 ## 1.6.0 (September 2016)
 
