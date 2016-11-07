@@ -110,7 +110,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       logger.debug(s"Session identifier $session")
       sessionProvider.session(id) match {
         case Success(xdSession) =>
-          val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, sender(), timeout))
+          val jobActor = context.actorOf(JobActor.props(xdSession, sqlCommand, requester, timeout))
           jobActor ! StartJob
           context.become(
             ready(st.copy(jobsById = st.jobsById + (JobId(id, sqlCommand.queryId) -> jobActor)))
@@ -118,7 +118,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
         case Failure(error) =>
           logger.warn(s"Received message with an unknown sessionId $id", error)
-          sender ! SQLReply(
+          requester ! SQLReply(
             sqlCommand.requestId,
             ErrorSQLResult(s"Unable to recover the session ${session.id}. Cause: ${error.getMessage}")
           )
@@ -131,8 +131,8 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       else
         sender ! SQLReply(addAppCommand.requestId, ErrorSQLResult("App can't be stored in the catalog"))
 
-    case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, _), _) =>
-      st.jobsById(JobId(id, queryId)) ! CancelJob
+    case CommandEnvelope(cc@CancelQueryExecution(queryId), session@Session(id, Some(cancellationRequester)), _) =>
+      st.jobsById(JobId(id, queryId)) ! CancelJob(cancellationRequester, Some(cc.requestId))
   }
 
 
@@ -256,7 +256,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
   }
 
   def gracefullyKill(victim: ActorRef): Unit = {
-    victim ! CancelJob
+    victim ! CancelJob(self, None)
     victim ! PoisonPill
   }
 

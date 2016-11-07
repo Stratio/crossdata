@@ -145,6 +145,7 @@ object BasicShell extends App {
               printResult(sqlResponse.id, sqlResult)
             case Failure(throwable) =>
               console.println(s"Unexpected error while processing the query ${throwable.getMessage}")
+              console.flush
           }
 
         } else {
@@ -152,7 +153,6 @@ object BasicShell extends App {
         }
 
       }
-      console.flush
     }
   }
 
@@ -166,6 +166,7 @@ object BasicShell extends App {
         console.println("ERROR")
         console.println(message)
     }
+    console.flush
   }
 
   sys addShutdownHook {

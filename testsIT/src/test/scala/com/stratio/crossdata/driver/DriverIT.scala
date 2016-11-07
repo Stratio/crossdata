@@ -17,7 +17,6 @@ package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
-import com.stratio.crossdata.common.QueryCancelledReply
 import com.stratio.crossdata.common.result.{ErrorSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.driver.test.Utils._
 import org.junit.runner.RunWith
@@ -37,7 +36,6 @@ class DriverIT extends EndToEndTest with ScalaFutures {
     implicit val ctx = DriverTestContext(factory)
 
     val factoryDesc = s" $description"
-
 
     "CrossdataDriver" should "return an ErrorResult when running an unparseable query" + factoryDesc in {
 
@@ -185,26 +183,6 @@ class DriverIT extends EndToEndTest with ScalaFutures {
         driver.sql(s"SELECT * FROM $driverTable").waitForResult().resultSet should not be empty
         driver.sql(s"SELECT * FROM $anotherDriverTable").waitForResult().hasError shouldBe true
       }
-    }
-
-
-    it should "be able to cancel queries" + factoryDesc ignore {
-      assumeCrossdataUpAndRunning()
-
-      withDriverDo { driver =>
-
-        driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
-
-        val queryRq = driver.sql("SELECT DEBUG_SLEEP_MS(2000) FROM jsonTable")
-        val cancellationResponseFuture = queryRq.cancelCommand()
-
-        whenReady(cancellationResponseFuture) { res =>
-          res shouldBe a[QueryCancelledReply]
-        } (PatienceConfig(timeout = 3 seconds))
-
-
-      }
-
     }
 
   }
