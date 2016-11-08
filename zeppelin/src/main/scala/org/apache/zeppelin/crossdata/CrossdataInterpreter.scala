@@ -15,8 +15,6 @@
  */
 package org.apache.zeppelin.crossdata
 
-import java.sql.ResultSet
-
 import com.stratio.crossdata.common.result.ErrorSQLResult
 import com.stratio.crossdata.common.result.SQLResult
 import com.stratio.crossdata.common.result.SuccessfulSQLResult
