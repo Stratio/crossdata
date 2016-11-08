@@ -46,12 +46,12 @@ object CrossdataInterpreter {
 class CrossdataInterpreter(property: Properties) extends Interpreter(property) {
   private var driver: JavaDriver = _
 
-  def open() {
+  def open() = {
     val seeds: java.util.List[String] = (getProperty(CrossdataInterpreter.CROSSDATA_SEEDS_PROPERTY).split(",")).toList
     driver = new JavaDriver(new DriverConf().setClusterContactPoint(seeds))
   }
 
-  def close() {
+  def close() = {
     driver.closeSession
   }
 
@@ -99,7 +99,7 @@ class CrossdataInterpreter(property: Properties) extends Interpreter(property) {
     s"%table ${msg.append(System.lineSeparator).toString}"
   }
 
-  def cancel(context: InterpreterContext) {
+  def cancel(context: InterpreterContext) = {
     // TODO do nothing
   }
 
