@@ -19,27 +19,33 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
+import akka.NotUsed
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.cluster.pubsub.DistributedPubSub
 import akka.cluster.pubsub.DistributedPubSubMediator.{Publish, SendToAll}
+import akka.http.scaladsl.common.EntityStreamingSupport
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.unmarshalling._
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.FileIO
-import akka.util.Timeout
+import akka.stream.scaladsl.{FileIO, Flow, Source}
+import akka.util.{ByteString, Timeout}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
 import com.stratio.crossdata.common._
+import com.stratio.crossdata.common.result.{ErrorSQLResult, StreamedSchema, StreamedSuccessfulSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.{Config, ConfigException}
 import org.apache.log4j.Logger
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
+import org.apache.spark.sql.types.StructType
 import org.json4s.jackson
 
 import scala.concurrent.Future
@@ -114,26 +120,57 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
       post {
         entity(as[CommandEnvelope]) { rq: CommandEnvelope =>
 
+          implicit val _ = Timeout(requestExecutionTimeout)
+
+          def completeWithErrorResult(desc: String) = {
+            val httpErrorReply = SQLReply(rq.cmd.requestId, ErrorSQLResult(desc))
+            complete(StatusCodes.InternalServerError -> httpErrorReply)
+          }
+
           rq.cmd match {
 
-            case _: CloseSessionCommand => // Commands with no confirmation
+            case _: CloseSessionCommand =>  // Commands with no confirmation
 
               serverActor ! rq
               complete(StatusCodes.OK)
 
-            case _ =>                      // Commands requiring confirmation
+            case _: CancelQueryExecution => // Management commands
 
-              implicit val _ = Timeout(requestExecutionTimeout)
+              onSuccess(serverActor ? rq) {
+                case qcr: QueryCancelledReply => complete(qcr)
+              }
+
+            case _ =>                       // SQL Commands
 
               onComplete(serverActor ? rq) {
+
                 case Success(SQLReply(requestId, _)) if requestId != rq.cmd.requestId =>
                   complete(StatusCodes.ServerError, s"Request ids do not match: (${rq.cmd.requestId}, $requestId)")
+
                 case Success(reply: ServerReply) =>
                   reply match {
-                    case qcr: QueryCancelledReply => complete(qcr)
-                    case _ => complete(reply)
+
+                    case SQLReply(_, SuccessfulSQLResult(resultSet, schema)) =>
+
+                      implicit val jsonStreamingSupport = EntityStreamingSupport.json()
+                        .withFramingRenderer(
+                          Flow[ByteString].intersperse(ByteString("\n"))
+                        )
+
+                      implicit val _: StructType = schema
+
+                      val responseStream: Source[StreamedSuccessfulSQLResult, NotUsed] =
+                        Source.fromIterator(() => resultSet.toIterator).map(
+                          row => row: StreamedSuccessfulSQLResult
+                        ) prepend Source.single(schema)
+
+                      complete(responseStream)
+
+                    case _ => complete(StatusCodes.InternalServerError -> reply)
+
                   }
-                case other => complete(StatusCodes.ServerError, s"Internal XD server error: $other")
+                case other =>
+                  completeWithErrorResult(s"Internal XD server error: $other")
               }
           }
 

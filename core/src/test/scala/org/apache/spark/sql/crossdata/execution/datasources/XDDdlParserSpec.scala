@@ -227,6 +227,19 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
   }
 
+  it should "successfully parse a CREATE TABLE into a CreateView RunnableCommand" in {
+
+    val sentence = "CREATE TABLE vn AS SELECT * FROM tn"
+    val logicalPlan = parser.parse(sentence)
+    logicalPlan shouldBe a [CreateView]
+    logicalPlan match {
+      case CreateView(tableIdent, lPlan, sqlView) =>
+        tableIdent shouldBe TableIdentifier("vn")
+        sqlView.trim shouldBe  "SELECT * FROM tn"
+    }
+
+  }
+
   it should "successfully parse a CREATE TEMPORARY VIEW into a CreateTempView RunnableCommand" in {
 
     val sourceSentence = "SELECT * FROM tn"
@@ -241,10 +254,38 @@ class XDDdlParserSpec extends BaseXDTest with MockitoSugar{
 
   }
 
+  it should "successfully parse a CREATE TEMPORARY TABLE into a CreateTempView RunnableCommand" in {
+
+    val sourceSentence = "SELECT * FROM tn"
+    val sentence = s"CREATE TEMPORARY TABLE vn AS $sourceSentence"
+    val logicalPlan = parser.parse(sentence)
+    logicalPlan shouldBe a [CreateTempView]
+    logicalPlan match {
+      case CreateTempView(tableIdent, lPlan, sql) =>
+        tableIdent shouldBe TableIdentifier("vn")
+        sql.map(_.trim) shouldBe Some(sourceSentence)
+    }
+
+  }
+
   it should "successfully parse a CREATE VIEW(...) into a CreateView RunnableCommand" in {
 
     val sourceSentence = "SELECT * FROM tn"
     val sentence = s"CREATE VIEW rareView(airport) AS $sourceSentence"
+    val logicalPlan = parser.parse(sentence)
+    logicalPlan shouldBe a [CreateView]
+    logicalPlan match {
+      case CreateView(tableIdent, lPlan, sql) =>
+        tableIdent shouldBe TableIdentifier("rareView")
+        sql.trim shouldBe sourceSentence
+    }
+
+  }
+
+  it should "successfully parse a CREATE TABLE(...) into a CreateView RunnableCommand" in {
+
+    val sourceSentence = "SELECT * FROM tn"
+    val sentence = s"CREATE TABLE rareView(airport) AS $sourceSentence"
     val logicalPlan = parser.parse(sentence)
     logicalPlan shouldBe a [CreateView]
     logicalPlan match {

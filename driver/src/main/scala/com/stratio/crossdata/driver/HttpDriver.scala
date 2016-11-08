@@ -15,35 +15,39 @@
  */
 package com.stratio.crossdata.driver
 
-import java.io.{FileInputStream, InputStream}
-import java.security.{KeyStore, SecureRandom}
+import java.security.SecureRandom
 import java.util.UUID
 import javax.net.ssl.{KeyManagerFactory, SSLContext, SSLException, TrustManagerFactory}
 
+import akka.NotUsed
 import akka.actor.ActorRef
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.http.scaladsl.{Http, HttpExt, HttpsConnectionContext}
 import akka.http.scaladsl.marshalling.{Marshal, Marshaller}
-import akka.http.scaladsl.model.{HttpMethod, HttpRequest, RequestEntity, ResponseEntity}
-import akka.stream.{ActorMaterializer, StreamTcpException, TLSClientAuth}
+import akka.http.scaladsl.model._
+import akka.stream.{ActorMaterializer, TLSClientAuth}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.{KeyStoreUtils, Session}
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
 import org.slf4j.{Logger, LoggerFactory}
 import akka.http.scaladsl.model.HttpMethods._
-import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
+import akka.http.scaladsl.unmarshalling.{Unmarshaller, _}
+import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.util.ByteString
 import com.stratio.crossdata.common._
-import com.stratio.crossdata.common.serializers.CrossdataCommonSerializer
+import com.stratio.crossdata.common.serializers.{CrossdataCommonSerializer, StreamedRowSerializer}
 import com.stratio.crossdata.driver.actor.HttpSessionBeaconActor
 import com.stratio.crossdata.driver.exceptions.TLSInvalidAuthException
+import org.apache.spark.sql.Row
 import org.json4s.jackson
 
+import scala.collection.generic.SeqFactory
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 
 class HttpDriver private[driver](driverConf: DriverConf,
@@ -78,7 +82,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
   private def obtainHttpContext: HttpExt = {
     val ext = Http(system)
-    if(driverConf.httpTlsEnable){ //Set for all the requests the Https configurated context with keystores
+    if(driverConf.httpTlsEnable){ //Set for all the requests the Https configured context with key stores
       ext.setDefaultClientHttpsContext(getTlsContext)
     }
     ext
@@ -145,22 +149,63 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
     val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
 
-    val response = simpleRequest(
-      securitizeCommand(sqlCommand),
-      s"query/${sqlCommand.requestId}",
-      {
-        case SQLReply(_, result: SQLResult) =>
-          result
-      } : PartialFunction[SQLReply, SQLResult]
-    )
+    // Performs the request to server
+    val response = Marshal(securitizeCommand(sqlCommand)).to[RequestEntity] flatMap { requestEntity =>
+      val request = HttpRequest(POST, s"$protocol://$serverHttp/query/${sqlCommand.requestId}", entity = requestEntity)
+       http.singleRequest(request) flatMap { httpResponse =>
+
+         if(httpResponse.status == StatusCodes.OK) { // OK Responses will be served through streaming
+
+           val bytesSource = httpResponse.entity.dataBytes // This is the stream of bytes of the answer data...
+           val framesSource = bytesSource.filterNot(bs => bs.isEmpty || bs == ByteString("\n")) //...empty lines get removed...
+           val rawSchemaAndRawRowsSource = framesSource.prefixAndTail[ByteString](1) //remaining get transformed to ByteStrings.
+
+           // From the raw lines stream, a new stream providing the first one and a stream of the remaining ones is created
+           val sink = Sink.head[(Seq[ByteString], Source[ByteString, NotUsed])] //Its single elements get extracted by future...
+
+           for { /*.. which, once completed,
+                    provides a ByteString with the serialized schema and the stream of remaining lines:
+                    The bulk of serialized rows.*/
+             (Seq(rawSchema), rawRows) <- rawSchemaAndRawRowsSource.toMat(sink)(Keep.right).run
+             StreamedSchema(schema) <- Unmarshal(HttpEntity(ContentTypes.`application/json`, rawSchema)).to[StreamedSuccessfulSQLResult]
+
+             // Having de-serialized the schema, it can be used to deserialize each row at the un-marshalling phase
+             rrows <- {
+               implicit val json4sJacksonFormats = this.json4sJacksonFormats + new StreamedRowSerializer(schema)
+
+               val um: Unmarshaller[ResponseEntity, StreamedSuccessfulSQLResult] = json4sUnmarshaller
+
+               rawRows.mapAsync(1) { bs => /* TODO: Study the implications of increasing the level of parallelism in
+                                            *       the unmarshalling phase. */
+                 val entity = HttpEntity(ContentTypes.`application/json`, bs)
+                 um(entity)
+               }
+             }.runFold(List.empty[Row]) {
+               case (acc: List[Row], StreamedRow(row, None)) => row::acc
+               case _ => Nil
+             }
+
+           } yield SuccessfulSQLResult(rrows.reverse toArray, schema) /* TODO: Performance could be increased if
+                                                              `SuccessfulSQLResult`#resultSet were of type `Seq[Row]`*/
+         } else {
+
+             Unmarshal(httpResponse.entity).to[SQLReply] map {
+               case SQLReply(_, result: SQLResult) => result
+             }
+
+         }
+
+       }
+    }
 
     new SQLResponse(sqlCommand.requestId, response) {
       override def cancelCommand(): Future[QueryCancelledReply] = {
         val command = CancelQueryExecution(sqlCommand.queryId)
         simpleRequest(
           securitizeCommand(command),
-          s"query/${command.requestId}",
-          { case reply: QueryCancelledReply => reply }: PartialFunction[SQLReply, QueryCancelledReply]
+          s"query/${command.requestId}", {
+            reply: QueryCancelledReply => reply
+          }
         )
       }
     }

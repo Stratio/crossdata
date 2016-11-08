@@ -24,8 +24,50 @@ Feature: [CROSSDATA-677] Microstrategy - Tests Queries
     When I execute 'select a11.DES_PRODMDV DES_PRODMDV,a11.COD_SEMAMES COD_SEMAMES,a11.DES_DTMM DES_DTMM,a11.DES_CBCMM DES_CBCMM,a11.DES_ZOMM DES_ZOMM,a11.DES_OFIMM DES_OFIMM,a11.DES_NIVMM DES_NIVMM,a11.COD_DATIMP COD_BANCSB,max(a11.COD_OFIMM) COD_OFICI,max(a11.DES_OFIPA) DES_OFIPA,max(a11.COD_BANCSBM) COD_BANCSB0,a11.DES_UNIMMDV DES_UNIMMDV,a11.DES_EVENMDV DES_EVENMDV,a11.COD_CONTIGO COD_CONTIGO,max(a12.DES_CONTIGO) DES_CONTIGO,max(a12.COD_ORDCONTI) COD_ORDCONTI,sum(a11.IMP_BASINCRE) WJXBFS1,sum(a11.IMP_BASTRANS) WJXBFS2,sum(a11.IMP_REINCRE) WJXBFS3,sum(a11.IMP_RETRANSA) WJXBFS4,sum(a11.QNU_TOPRODUC) WJXBFS5 from KUYA.TKUYAKPR a11 join KUYA.TKUYAKGO a12 on (a11.COD_CONTIGO = a12.COD_CONTIGO) where (a11.COD_SEMAMES in ('8.20a26JUN') and ((a11.COD_BANCSBM = '0182' and (a11.DES_OFIPA like '%0013%' or a11.COD_OFIMM = '0013')) or (a11.COD_BANCSBM = '0182' and (a11.DES_OFIPA like '%6051%' or a11.COD_OFIMM = '6051')))) group by a11.DES_PRODMDV,a11.COD_SEMAMES,a11.DES_DTMM,a11.DES_CBCMM,a11.DES_ZOMM,a11.DES_OFIMM,a11.DES_NIVMM,a11.COD_DATIMP,a11.DES_UNIMMDV,a11.DES_EVENMDV,a11.COD_CONTIGO'
     Then an exception 'IS NOT' thrown
 
+  Scenario: [CROSSDATA-728] MICRO SELECT COUNT(DISTINCT * )
+    When I execute 'SELECT count(distinct ident) FROM databasetest.tabletest'
+    Then an exception 'IS NOT' thrown
+    Then The result has to have '1' rows
+      |_c0-long|
+      | 10     |
 
+  Scenario: [CROSSDATA-728] MICRO SELECT COUNT(DISTINCT * ) with alias
+    When I execute 'SELECT count(distinct ident) as count_distinct FROM databasetest.tabletest'
+    Then an exception 'IS NOT' thrown
+    Then The result has to have '1' rows
+      |count_distinct-long|
+      | 10     |
 
+  Scenario: [CROSSDATA-728] MICRO SELECT COUNT(DISTINCT * ) with alias
+    When I execute 'SELECT count(distinct ident) as count_distinct FROM databasetest.tabletest WHERE ident > 4'
+    Then an exception 'IS NOT' thrown
+    Then The result has to have '1' rows
+      |count_distinct-long|
+      | 5     |
 
-
+  Scenario: [CROSSDATA-717] MICRO SELECT + CROSS JOIN
+    When I execute 'SELECT tabletest.ident ,tab1.name FROM databasetest.tabletest CROSS JOIN databasetest.tab1'
+    Then an exception 'IS NOT' thrown
+    Then The result has to have '20' rows
+      |ident-integer|  name-string|
+      |    5        |name_5       |
+      |    5        |name_5       |
+      |    1        |name_1       |
+      |    1        |name_1       |
+      |    8        |name_8       |
+      |    8        |name_8       |
+      |    0        |name_0       |
+      |    0        |name_0       |
+      |    2        |name_2       |
+      |    2        |name_2       |
+      |    4        |name_4       |
+      |    4        |name_4       |
+      |    7        |name_7       |
+      |    7        |name_7       |
+      |    6        |name_6       |
+      |    6        |name_6       |
+      |    9        |name_9       |
+      |    9        |name_9       |
+      |    3        |name_3       |
+      |    3        |name_3       |
 
