@@ -44,7 +44,7 @@ object CrossdataInterpreter {
 }
 
 class CrossdataInterpreter(property: Properties) extends Interpreter(property) {
-  private var driver: JavaDriver = null
+  private var driver: JavaDriver = _
 
   def open() {
     val seeds: java.util.List[String] = (getProperty(CrossdataInterpreter.CROSSDATA_SEEDS_PROPERTY).split(",")).toList
@@ -52,67 +52,51 @@ class CrossdataInterpreter(property: Properties) extends Interpreter(property) {
   }
 
   def close() {
-    driver.closeSession()
+    driver.closeSession
   }
 
   def interpret(sql: String, context: InterpreterContext): InterpreterResult = {
+
     val secondsTimeout: Long = (getProperty(CrossdataInterpreter.CROSSDATA_TIMEOUT_SEC)).toLong
-    val timeout: Duration = if (secondsTimeout <= 0) Duration.Inf
-    else new FiniteDuration(secondsTimeout, TimeUnit.SECONDS)
-    val sqlResult: SQLResult = driver.sql(sql, timeout)
-    if (sqlResult.hasError && classOf[ErrorSQLResult].isInstance(sqlResult)) new InterpreterResult(InterpreterResult.Code.ERROR, classOf[ErrorSQLResult].cast(sqlResult).message)
-    else if (classOf[SuccessfulSQLResult].isInstance(sqlResult)) {
-      val schema: StructType = classOf[SuccessfulSQLResult].cast(sqlResult).schema
-      val resultSet: Array[Row] = sqlResult.resultSet
-      if (resultSet.length <= 0) new InterpreterResult(InterpreterResult.Code.SUCCESS, "%text EMPTY result")
-      else new InterpreterResult(InterpreterResult.Code.SUCCESS, resultToZeppelinMsg(resultSet, schema))
+
+    val timeout: Duration = if (secondsTimeout <= 0) Duration.Inf else new FiniteDuration(secondsTimeout, TimeUnit.SECONDS)
+
+    driver.sql(sql, timeout) match {
+      case er: ErrorSQLResult => new InterpreterResult(InterpreterResult.Code.ERROR, er.message)
+      case esr: SuccessfulSQLResult if esr.resultSet.length <= 0 => new InterpreterResult(InterpreterResult.Code.SUCCESS, "%text EMPTY result")
+      case sr: SuccessfulSQLResult if sr.resultSet.length > 0 => new InterpreterResult(InterpreterResult.Code.SUCCESS, resultToZeppelinMsg(sr))
+      case other: SQLResult => new InterpreterResult(InterpreterResult.Code.ERROR, s"Unexpected result: ${other.toString}")
     }
-    else new InterpreterResult(InterpreterResult.Code.ERROR, "Unexpected result: " + sqlResult.toString)
+  }
+
+  private def resultToZeppelinMsg(sqlResult: SQLResult): String = {
+    resultToZeppelinMsg(sqlResult.resultSet, sqlResult.schema)
   }
 
   private def resultToZeppelinMsg(resultSet: Array[Row], schema: StructType): String = {
     val defaultLimit: Int = getProperty(CrossdataInterpreter.CROSSDATA_DEFAULT_LIMIT).toInt
     val msg: StringBuilder = new StringBuilder
     // Add columns names
-    var resultsHeader: String = ""
-    for (colName <- schema.fieldNames) {
-      if (resultsHeader.isEmpty) resultsHeader = colName
-      else resultsHeader += "\t" + colName
-    }
-    msg.append(resultsHeader).append(System.lineSeparator)
+
+    msg.append(schema.fieldNames.mkString("\t")).append(System.lineSeparator)
+
     //Add rows
     // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
     // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
     // NullType, NumericType, ShortType, StringType, StructType
-    val resultLength: Int = Math.min(defaultLimit, resultSet.length)
-    val numFields: Int = schema.fieldNames.length
-    var r: Int = 0
-    while (r < resultLength) {
-      {
-        val row: Row = resultSet(r)
-        var i: Int = 0
-        while (i < numFields) {
-          {
-            if (!row.isNullAt(i)) msg.append(row.apply(i).toString)
-            else msg.append("null")
-            if (i != numFields - 1) msg.append("\t")
-          }
-          {
-            i += 1; i - 1
-          }
-        }
-        msg.append(System.lineSeparator)
+    resultSet.take(Math.min(defaultLimit, resultSet.length)) foreach { r =>
+      val arrayRow: Array[String] = for (i <- r.length) yield {
+        if(r.isNullAt(i)) "null" else r.apply(i).toString
       }
-      {
-        r += 1; r - 1
-      }
+      msg.append(s"${arrayRow.mkString("\t")}${System.lineSeparator}")
     }
+
     if (resultSet.length > defaultLimit) {
       // TODO use default limit -> Improve driver API
       msg.append(System.lineSeparator).append("<font color=red>Results are limited by ").append(defaultLimit).append(".</font>")
     }
-    msg.append(System.lineSeparator)
-    "%table " + msg.toString
+
+    s"%table ${msg.append(System.lineSeparator).toString}"
   }
 
   def cancel(context: InterpreterContext) {
