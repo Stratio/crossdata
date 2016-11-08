@@ -2,10 +2,9 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
-## 1.8.0 (upcoming)
+## 1.8.0 (November)
 
-* Query cancellation service for both HTTP & ClusterClient channels.
-* Updated dependencies with curator and stratio-commons-utils compatible with Zookeeper 3.5.x
+* Pending
 
 ## 1.7.0 (upcoming)
 
@@ -16,12 +15,12 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Kerberos support for HDFS
 * TLS mutual validation for HTTP
 * Vault support for retrieve secrets (keytabs, tls certificates...)
-* Updated dependencies with curator and stratio-commons-utils compatible with Zookeeper 3.5.x
 * Bug Fixes:
    * Cancellation message is now delivered to the client.
 * Updated dependencies with curator and stratio-commons-utils compatible with Zookeeper 3.5.x
 * Asynchronous shell implemented
 * "Create table as select" without datasource
+* Query cancellation service for both HTTP & ClusterClient channels
 
 ## 1.6.0 (September 2016)
 
