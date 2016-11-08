@@ -112,7 +112,7 @@ private[crossdata] trait ServerReply {
   def requestId: UUID
 }
 
-private[crossdata] case class QueryCancelledReply(requestId: UUID) extends ServerReply
+private[crossdata] case class QueryCancelledReply(requestId: UUID, cancellationRequest: UUID) extends ServerReply
 
 private[crossdata] case class SQLReply(requestId: UUID, sqlResult: SQLResult) extends ServerReply
 
