@@ -2,11 +2,11 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
-## 1.8.0 (November)
+## 1.8.0 (upcoming)
 
 * Pending
 
-## 1.7.0 (upcoming)
+## 1.7.0 (November 2016)
 
 * Zookeeper security through Kerberos.
 * Spark-Mesosphere dependency instead of Apache Spark.
