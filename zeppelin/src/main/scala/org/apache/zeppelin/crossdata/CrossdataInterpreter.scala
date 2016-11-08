@@ -85,8 +85,8 @@ class CrossdataInterpreter(property: Properties) extends Interpreter(property) {
     // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
     // NullType, NumericType, ShortType, StringType, StructType
     resultSet.take(Math.min(defaultLimit, resultSet.length)) foreach { r =>
-      val arrayRow: Array[String] = for (i <- r.length) yield {
-        if(r.isNullAt(i)) "null" else r.apply(i).toString
+      val arrayRow: Seq[String] = for (i <- 0 until r.length) yield {
+        if(r.isNullAt(i)) "null" else r(i).toString
       }
       msg.append(s"${arrayRow.mkString("\t")}${System.lineSeparator}")
     }
