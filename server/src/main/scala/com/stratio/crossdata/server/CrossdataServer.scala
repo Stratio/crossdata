@@ -133,11 +133,14 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscove
         actorName)
 
       val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
-      ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
-
       val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
-      ClusterClientReceptionist(actorSystem).registerService(serverActor)
-      ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
+
+      //Enable only if cluster client is enabled
+      if(serverConfig.getBoolean(ServerConfig.ClusterClientEnabled)){
+        ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
+        ClusterClientReceptionist(actorSystem).registerService(serverActor)
+        ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
+      }
 
       implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()
