@@ -21,6 +21,7 @@ Only listing significant user-visible, not internal code cleanups and minor bug 
 * Asynchronous shell implemented
 * "Create table as select" without datasource
 * Query cancellation service for both HTTP & ClusterClient channels
+* Bug with mute shell fixed
 
 ## 1.6.0 (September 2016)
 
