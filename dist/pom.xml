@@ -12,7 +12,6 @@
 
     <artifactId>dist_2.11</artifactId>
     <name>Dist</name>
-    <version>1.7.0-RC2-SNAPSHOT</version>
 
     <profiles>
         <profile>
