@@ -59,7 +59,6 @@ object BasicShell extends App {
 
   createHistoryDirectory(HistoryPath)
   val console = new ConsoleReader()
-  console.setEchoCharacter(Character.valueOf(0)) //Avoid echoing
   initialize(console)
   runConsole(console)
 
