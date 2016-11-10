@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.connector.postgresql
+package org.apache.spark.sql.execution.datasources.jdbc
 
 import java.sql.{Date, ResultSet, ResultSetMetaData, Timestamp}
 import java.util.Properties
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import org.apache.spark.sql.catalyst.expressions.aggregate.Count
-import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Expression, GenericRowWithSchema, GetArrayItem, Literal, NamedExpression, SortOrder}
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.{CatalystTypeConverters, InternalRow}
+import org.apache.spark.sql.catalyst.expressions.aggregate._
+import org.apache.spark.sql.catalyst.expressions.{Alias, AttributeReference, AttributeSet, Expression, GenericInternalRowWithSchema, GenericRowWithSchema, Literal, NamedExpression, SortOrder}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
-import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Limit, LogicalPlan, Sort}
+import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.catalyst.util.{DateTimeUtils, GenericArrayData}
-import org.apache.spark.sql.execution.datasources.jdbc.{PostgresqlUtils, PostgresqlXDRelation}
 import org.apache.spark.sql.sources.CatalystToCrossdataAdapter._
-import org.apache.spark.sql.sources.{Filter => SourceFilter}
-import org.apache.spark.sql.sources._
+import org.apache.spark.sql.sources.{Filter => SourceFilter, _}
 import org.apache.spark.sql.types.{Decimal, _}
 import org.apache.spark.unsafe.types.UTF8String
 
 import scala.util.Try
 
-object PostgresqlQueryProcessor {
+object PostgresqlQueryProcessor extends SparkLoggerComponent{
 
   type PostgresQuery = String
   type ColumnName = String
@@ -52,6 +51,8 @@ object PostgresqlQueryProcessor {
 
   private def columnName(att: String): String = att.split("#").head.trim
 
+  private def attributeSetToString(attr: AttributeSet): String = attr.toSeq.map(attr =>columnName(attr.toString)).mkString(",")
+
   def apply(postgresRelation: PostgresqlXDRelation, logicalPlan: LogicalPlan, props: Properties): PostgresqlQueryProcessor =
     new PostgresqlQueryProcessor(postgresRelation, logicalPlan, props)
 
@@ -59,6 +60,7 @@ object PostgresqlQueryProcessor {
                        requiredColumns: Seq[String],
                        filters: Array[SourceFilter],
                        sortFields: Seq[SortOrder],
+                       groupingFields: Seq[Expression],
                        limit: Int): PostgresQuery = {
 
     def filterToSQL(filter: SourceFilter): Option[String] = Option(filter match {
@@ -100,11 +102,16 @@ object PostgresqlQueryProcessor {
     // TODO review this. AND is needed?
     val filter = if (filters.nonEmpty) filters.flatMap(filterToSQL).mkString("WHERE ", " AND ", "") else ""
     val columns = requiredColumns.map(columnName).mkString(", ")
+
     val orderBy = if(sortFields.nonEmpty) "ORDER BY " + sortFields.map{ s =>
       columnName(s.child.toString) + (if(s.isAscending) " ASC" else " DESC")
     }.mkString(",") else ""
 
-    s"SELECT $columns FROM $tableQN $filter $orderBy LIMIT $limit"
+    val groupBy = if(groupingFields.nonEmpty) "GROUP BY " + groupingFields.map{ exp =>
+      attributeSetToString(exp.references)
+    }.mkString(",") else ""
+
+    s"SELECT $columns FROM $tableQN $filter $groupBy $orderBy LIMIT $limit"
   }
 
 }
@@ -117,11 +124,26 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
 
   def execute(): Option[Array[Row]] = {
 
-    def buildAggregationExpression(names: Expression): String = {
+    def aggregateFunctionToSQL(aggregateFunction: AggregateFunction, alias: Option[String]): String = {
+      aggregateFunction match {
+        case max: Max => s"MAX(${attributeSetToString(max.references)})${alias.getOrElse("")}"
+        case min: Min => s"MIN(${attributeSetToString(min.references)})${alias.getOrElse("")}"
+        case sum: Sum=> s"SUM(${attributeSetToString(sum.references)})${alias.getOrElse("")}"
+        case avg: Average => s"AVG(${attributeSetToString(avg.references)})${alias.getOrElse("")}"
+        case count: Count =>
+          // TODO count.references is always null in the optimized plan, so we can't get the correct field
+          val fields = if(count.references.nonEmpty) attributeSetToString(count.references) else "*"
+          s"COUNT($fields)${alias.getOrElse("")}"
+      }
+
+    }
+
+    def buildAggregationExpression(names: Expression, alias: Option[String] = None): String = {
+
       names match {
-        case Alias(child, _) => buildAggregationExpression(child)
-        case Count(children) => s"count(${children.map(buildAggregationExpression).mkString(",")})"
+        case Alias(child, name) => buildAggregationExpression(child, Option(s" AS $name"))
         case Literal(1, _) => "*"
+        case AggregateExpression(aggregateFunction, _, _) => aggregateFunctionToSQL(aggregateFunction, alias)
       }
     }
 
@@ -134,9 +156,15 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
             case SimpleLogicalPlan(projects, _, _, _) =>
               projects.map(_.toString())
 
-            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) =>
-              require(groupingExpression.isEmpty)
-              projects.map(buildAggregationExpression)
+            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) if groupingExpression.isEmpty =>
+              logInfo("\n\n  groupingExpression empty  \n\n")
+              projects.map(field => buildAggregationExpression(field, None))
+            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) if groupingExpression.nonEmpty =>
+              logInfo(s"\n\n  groupingExpression Non empty\n projects ${projects.toString()}\n grouping ${groupingExpression.toString()} \n\n")
+              projects.map{
+                case attr: AttributeReference => attr.toString()
+                case expr: Expression => buildAggregationExpression(expr)
+              }
 
             case SortLogicalPlan(projects, _, _, _, _) => projects.map(_.toString())
           }
@@ -146,11 +174,17 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
             case _ => Seq.empty[SortOrder]
           }
 
+          val groupingFields = postgresqlPlan.basePlan match {
+            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) => groupingExpression
+            case _ => Seq.empty[Expression]
+          }
+
           val sqlQuery = buildNativeQuery(
             postgresRelation.table,
             projectsString,
             postgresqlPlan.filters,
             sortFields,
+            groupingFields,
             postgresqlPlan.limit.getOrElse(PostgresqlQueryProcessor.DefaultLimit)
           )
           logInfo("QUERY: " + sqlQuery)
@@ -166,7 +200,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
 
     } recover{
       case exc: Exception =>
-        log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage)
+        log.warn(s"Exception executing the native query:\n $logicalPlan", exc.getMessage)
         None
     } get
 
@@ -184,7 +218,8 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
         case Aggregate(_, _, child) =>
           findBasePlan(child)
 
-//        case Sort(_, _, child) => findBasePlan(child)
+//        case Filter(aggFilter, child) =>
+//          findBasePlan(child) // This filter is for HAVING clause
 
         case PhysicalOperation(projectList, filterList, _) =>
           CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
@@ -328,9 +363,14 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
   }
 
   private[this] def resultToRow(nCols: Int, rs: ResultSet, schema: StructType): Row = {
+    //TODO move
+    val toScala = CatalystTypeConverters.createToScalaConverter(schema)
+
+
     val values = new Array[Any](nCols)
     (0 until nCols).foreach( i => values(i) = getValue(i, rs, schema))
-    new GenericRowWithSchema(values, schema)
+    new GenericRowWithSchema(values.map(toScala), schema)
+
   }
 
   //to convert ResultSet to Array[Row]

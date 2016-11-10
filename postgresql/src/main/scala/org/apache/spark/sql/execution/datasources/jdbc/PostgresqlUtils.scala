@@ -19,6 +19,7 @@ package org.apache.spark.sql.execution.datasources.jdbc
 import java.sql.{Connection, SQLException, Statement}
 import java.util.Properties
 
+import com.stratio.crossdata.util.using
 import org.apache.spark.Partition
 import org.apache.spark.sql.types._
 
@@ -31,6 +32,13 @@ object PostgresqlUtils {
   val driverClassName: String = "org.postgresql.Driver"
 
   def withClientDo[T](parameters: Map[String, String])(f: (Connection, Statement) => T): T = {
+//  TODO use using inside withclientDo
+//    using (buildConnection(parameters)) { connection =>
+//      using(connection.createStatement()){ statement =>
+//         f(connection, statement)
+//      }
+//    }
+//
     val connection = buildConnection(parameters)
     val statement = connection.createStatement()
     try {
