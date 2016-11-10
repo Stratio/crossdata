@@ -69,7 +69,7 @@ trait DriverFactory {
                   authentication: Authentication = generateDefaultAuth): Driver = {
     val driver = newDriver(driverConf, authentication)
 
-    driver.openSession().recover {
+    driver.openSession(authentication.user).recover {
       case e: TLSInvalidAuthException => throw e
       case e: Exception => throw new RuntimeException(s"Cannot establish connection to XDServer: timed out after $InitializationTimeout",e)
     } get
@@ -133,7 +133,7 @@ object Driver extends DriverFactory {
 }
 
 
-abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected[crossdata] val auth: Authentication) {
+abstract class Driver(protected[crossdata] val driverConf: DriverConf) {
 
   import Driver._
 
@@ -143,7 +143,7 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected
 
 
   // TODO 2.0 remove openSession
-  protected[driver] def openSession(): Try[Boolean]
+  protected[driver] def openSession(user:String): Try[Boolean]
 
   /**
     * Executes a SQL sentence.
@@ -313,7 +313,7 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf, protected
   def closeSession(): Unit
 
   protected def securitizeCommand(command: Command): CommandEnvelope =
-    CommandEnvelope(command, driverSession, auth.user)
+    CommandEnvelope(command, driverSession)
 
 
   private def getFlattenedFields(fieldName: String, dataType: DataType): Seq[FieldMetadata] = dataType match {

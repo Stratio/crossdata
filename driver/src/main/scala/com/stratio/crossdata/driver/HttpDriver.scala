@@ -52,7 +52,7 @@ import scala.util.{Failure, Try}
 
 class HttpDriver private[driver](driverConf: DriverConf,
                                  auth: Authentication
-                                ) extends Driver(driverConf, auth) with CrossdataCommonSerializer {
+                                ) extends Driver(driverConf) with CrossdataCommonSerializer {
 
   import Driver._
 
@@ -130,8 +130,8 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
   }
 
-  protected[driver] def openSession(): Try[Boolean] = {
-    val command = OpenSessionCommand()
+  protected[driver] def openSession(user:String): Try[Boolean] = {
+    val command = OpenSessionCommand(user)
     val response = simpleRequest(
       securitizeCommand(command),
       s"query/${command.requestId}",
