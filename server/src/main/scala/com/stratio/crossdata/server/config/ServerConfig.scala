@@ -31,6 +31,9 @@ object ServerConfig {
   val ServerBasicConfig = "server-reference.conf"
   val ParentConfigName = "crossdata-server"
 
+  //Cluster client enabled
+  val ClusterClientEnabled = "config.cluster-client.enabled"
+
 
   val SparkSqlConfigPrefix = CoreConfig.SparkSqlConfigPrefix
 

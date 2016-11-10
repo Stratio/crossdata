@@ -18,23 +18,20 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
-    <artifactId>zeppelin</artifactId>
-    <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0</version>
+    <artifactId>parent_2.11</artifactId>
+    <groupId>com.stratio.crossdata</groupId>
+    <version>1.8.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>zeppelin-crossdata_2.11</artifactId>
   <packaging>jar</packaging>
-  <version>1.7.0-SNAPSHOT</version>
   <name>Zeppelin: Crossdata</name>
   <description>Zeppelin interpreter for Crossdata</description>
   <url>https://github.com/Stratio/Crossdata</url>
 
   <properties>
     <zeppelin.home>zeppelin_home</zeppelin.home>
-    <crossdata.version>${project.version}</crossdata.version>
     <!-- Scala version and cross build properties -->
     <scala.binary.version>2.11</scala.binary.version>
     <scala.version>2.11.8</scala.version>
@@ -42,25 +39,15 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
-      <version>${project.parent.version}</version>
+      <version>${zeppelin.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.stratio.crossdata</groupId>
       <artifactId>crossdata-driver_${scala.binary.version}</artifactId>
-      <version>${crossdata.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
 
     <!--TEST-->
@@ -79,11 +66,12 @@
   </dependencies>
 
   <build>
+    <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
 
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>
+        <version>1.4.1</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -178,7 +166,6 @@
           </execution>
         </executions>
       </plugin>
-
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
@@ -187,41 +174,12 @@
           <skip>true</skip>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
           <skip>true</skip>
         </configuration>
-      </plugin>
-
-      <!-- Plugin to compile Scala code -->
-      <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>compile</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <phase>compile</phase>
-          </execution>
-          <execution>
-            <id>test-compile</id>
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-            <phase>test-compile</phase>
-          </execution>
-          <execution>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

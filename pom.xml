@@ -101,6 +101,7 @@
         <module>server</module>
         <module>streaming</module>
         <module>testsIT</module>
+        <module>zeppelin</module>
         <module>dist</module>
     </modules>
 
@@ -133,6 +134,7 @@
         <scala_2.11.version>2.11.8</scala_2.11.version>
         <default.scala.binary.version>2.11</default.scala.binary.version>
         <default.scala.version>${scala_2.11.version}</default.scala.version>
+        <zeppelin.version>0.6.2</zeppelin.version>
     </properties>
 
 
