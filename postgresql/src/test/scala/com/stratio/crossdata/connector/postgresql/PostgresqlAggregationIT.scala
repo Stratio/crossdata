@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class PostgresqlAgregationIT extends PostgresqlWithSharedContext{
+class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
 
 //  "The Postgresql connector" should s"support a (SELECT MAX() ) natively" in {
 //    assumeEnvironmentIsUpAndRunning
