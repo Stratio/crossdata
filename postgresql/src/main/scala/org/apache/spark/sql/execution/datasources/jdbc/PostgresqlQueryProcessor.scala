@@ -122,7 +122,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
 
   import PostgresqlQueryProcessor._
 
-  def execute(): Option[Array[Row]] = {
+  def execute(): Option[Array[InternalRow]] = {
 
     def aggregateFunctionToSQL(aggregateFunction: AggregateFunction, alias: Option[String]): String = {
       aggregateFunction match {
@@ -150,7 +150,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
     Try {
       validatedNativePlan.map { postgresqlPlan =>
         if (postgresqlPlan.limit.exists(_ == 0)) {
-          Array.empty[Row]
+          Array.empty[InternalRow]
         } else {
           val projectsString: Seq[String] = postgresqlPlan.basePlan match {
             case SimpleLogicalPlan(projects, _, _, _) =>
@@ -187,7 +187,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
             groupingFields,
             postgresqlPlan.limit.getOrElse(PostgresqlQueryProcessor.DefaultLimit)
           )
-          logInfo("QUERY: " + sqlQuery)
+          logInfo("\nQUERY: " + sqlQuery)
 
           import scala.collection.JavaConversions._
           PostgresqlUtils.withClientDo(props.toMap) { (_, stm) =>
@@ -200,7 +200,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
 
     } recover{
       case exc: Exception =>
-        log.warn(s"Exception executing the native query:\n $logicalPlan", exc.getMessage)
+        log.warn(s"Exception executing the native query:\n $logicalPlan", exc)
         None
     } get
 
@@ -362,28 +362,26 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
     }
   }
 
-  private[this] def resultToRow(nCols: Int, rs: ResultSet, schema: StructType): Row = {
-    //TODO move
-    val toScala = CatalystTypeConverters.createToScalaConverter(schema)
-
+  private[this] def resultToRow(nCols: Int, rs: ResultSet, schema: StructType): InternalRow = {
 
     val values = new Array[Any](nCols)
     (0 until nCols).foreach( i => values(i) = getValue(i, rs, schema))
-    new GenericRowWithSchema(values.map(toScala), schema)
+    new GenericInternalRowWithSchema(values, schema)
 
   }
 
   //to convert ResultSet to Array[Row]
-  private[this] def sparkResultFromPostgresql(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
+  private[this] def sparkResultFromPostgresql(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[InternalRow] = {
 
     val nCols = resultSet.getMetaData.getColumnCount
-    val schema = resultSchema(resultSet)
+//    val schema = resultSchema(resultSet)
 
-    new Iterator[Row] {
+
+    new Iterator[InternalRow] {
       private var hasnext: Boolean = resultSet.next
       override def hasNext: Boolean = hasnext
-      override def next(): Row = {
-        val rs = resultToRow(nCols, resultSet, schema)
+      override def next(): InternalRow = {
+        val rs = resultToRow(nCols, resultSet, logicalPlan.schema)
         hasnext = resultSet.next
         rs
       }
