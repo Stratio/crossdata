@@ -26,7 +26,7 @@ import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.Partition
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
-import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
+import org.apache.spark.sql.catalyst.expressions.{GenericInternalRow, GenericRowWithSchema}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources.BaseRelation
 
@@ -46,13 +46,11 @@ class PostgresqlXDRelation( url: String,
     logDebug(s"Processing ${optimizedLogicalPlan.toString()}")
     val queryExecutor = PostgresqlQueryProcessor(this, optimizedLogicalPlan, this.properties)
 
-    val toCatalyst = CatalystTypeConverters.createToCatalystConverter(optimizedLogicalPlan.schema)
     val toScala = CatalystTypeConverters.createToScalaConverter(optimizedLogicalPlan.schema)
 
     queryExecutor.execute() map { rows =>
       rows map { row =>
-        val iRow = toCatalyst(row)
-        toScala(iRow).asInstanceOf[GenericRowWithSchema]
+        toScala(row).asInstanceOf[GenericRowWithSchema]
       }
     }
 

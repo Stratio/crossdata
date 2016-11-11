@@ -20,8 +20,9 @@ import java.util.Properties
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import org.apache.spark.sql.catalyst.expressions.aggregate.Count
-import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Expression, GenericRowWithSchema, GetArrayItem, Literal, NamedExpression, SortOrder}
+import org.apache.spark.sql.catalyst.expressions.{Alias, Attribute, Expression, GenericInternalRowWithSchema, GenericRowWithSchema, GetArrayItem, Literal, NamedExpression, SortOrder}
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.{CatalystTypeConverters, InternalRow, SQLBuilder}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Limit, LogicalPlan, Sort}
 import org.apache.spark.sql.catalyst.util.{DateTimeUtils, GenericArrayData}
@@ -113,57 +114,24 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
 
   import PostgresqlQueryProcessor._
 
-  def execute(): Option[Array[Row]] = {
-
-    def buildAggregationExpression(names: Expression): String = {
-      names match {
-        case Alias(child, _) => buildAggregationExpression(child)
-        case Count(children) => s"count(${children.map(buildAggregationExpression).mkString(",")})"
-        case Literal(1, _) => "*"
-      }
-    }
+  def execute(): Option[Array[InternalRow]] = {
 
     try {
-      validatedNativePlan.map { postgresqlPlan =>
-        if (postgresqlPlan.limit.exists(_ == 0)) {
-          Array.empty[Row]
-        } else {
-          val projectsString: Seq[String] = postgresqlPlan.basePlan match {
-            case SimpleLogicalPlan(projects, _, _, _) =>
-              projects.map(_.toString())
+      /* validatedNativePlan.map { postgresqlPlan =>
+            if (postgresqlPlan.limit.exists(_ == 0)) {
+              Array.empty[Row]
+            } else {*/
+      new SQLBuilder(logicalPlan).toSQL.map { sqlQuery =>
 
-            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) =>
-              require(groupingExpression.isEmpty)
-              projects.map(buildAggregationExpression)
-
-            case SortLogicalPlan(projects, _, _, _, _) => projects.map(_.toString())
-          }
-
-          val sortFields = postgresqlPlan.basePlan match {
-            case SortLogicalPlan(_, sortOrders, _, _, _) => sortOrders
-            case _ => Seq.empty[SortOrder]
-          }
-
-          val sqlQuery = buildNativeQuery(
-            postgresRelation.table,
-            projectsString,
-            postgresqlPlan.filters,
-            sortFields,
-            postgresqlPlan.limit.getOrElse(PostgresqlQueryProcessor.DefaultLimit)
-          )
-          logInfo("QUERY: " + sqlQuery)
-
-          import scala.collection.JavaConversions._
-          PostgresqlUtils.withClientDo(props.toMap) { (_, stm) =>
-            val resultSet = stm.executeQuery(sqlQuery)
-            sparkResultFromPostgresql(postgresqlPlan.projects.map(_.name).toArray, resultSet)
-          }
-
+        logInfo("QUERY: " + sqlQuery)
+        import scala.collection.JavaConversions._
+        PostgresqlUtils.withClientDo(props.toMap) { (_, stm) =>
+          val resultSet = stm.executeQuery(sqlQuery)
+          sparkResultFromPostgresql(resultSet, logicalPlan.schema)
         }
       }
-
     } catch {
-      case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc.getMessage); None
+      case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc); None
     }
 
   }
@@ -323,22 +291,22 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
     }
   }
 
-  private[this] def resultToRow(nCols: Int, rs: ResultSet, schema: StructType): Row = {
+  private[this] def resultToRow(nCols: Int, rs: ResultSet, schema: StructType): InternalRow = {
     val values = new Array[Any](nCols)
     (0 until nCols).foreach( i => values(i) = getValue(i, rs, schema))
-    new GenericRowWithSchema(values, schema)
+
+    new GenericInternalRowWithSchema(values, schema)
   }
 
   //to convert ResultSet to Array[Row]
-  private[this] def sparkResultFromPostgresql(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[Row] = {
+  private[this] def sparkResultFromPostgresql(resultSet: ResultSet, schema: StructType): Array[InternalRow] = {
 
     val nCols = resultSet.getMetaData.getColumnCount
-    val schema = resultSchema(resultSet)
 
-    new Iterator[Row] {
+    new Iterator[InternalRow] {
       private var hasnext: Boolean = resultSet.next
       override def hasNext: Boolean = hasnext
-      override def next(): Row = {
+      override def next(): InternalRow = {
         val rs = resultToRow(nCols, resultSet, schema)
         hasnext = resultSet.next
         rs
