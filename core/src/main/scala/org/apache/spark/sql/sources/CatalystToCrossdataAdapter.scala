@@ -124,7 +124,6 @@ object CatalystToCrossdataAdapter {
         Seq(Ignored -> ignoredExpr)
     }
 
-
     val columnExpressions: Map[ExpressionType, Seq[Expression]] = projects.flatMap {
       extractRequestedColumns
     } groupBy (_._1) mapValues (_.map(_._2))
@@ -151,18 +150,6 @@ object CatalystToCrossdataAdapter {
       case Sort(sortOrder, _, _ ) => SortLogicalPlan(requestedColumns, sortOrder, filters, att2udf, att2itemAccess)
 
     } getOrElse simpleLogicalPlan
-
-//    val aggregatePlan: Option[(Seq[Expression], Seq[NamedExpression])] = logicalPlan.collectFirst {
-//      case Aggregate(groupingExpression, aggregationExpression, child) => (groupingExpression, aggregationExpression)
-//    }
-//
-//    val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
-//      val requestedColumns: Seq[Attribute] =
-//        columnExpressions.getOrElse(Requested, Seq.empty) collect { case a: Attribute => a }
-//      SimpleLogicalPlan(requestedColumns, filters, att2udf, att2itemAccess)
-//    } { case (groupingExpression, selectExpression)  =>
-//      AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)
-//    }
 
     val projectReport = columnExpressions.getOrElse(Ignored, Seq.empty)
     CrossdataExecutionPlan(baseLogicalPlan, ProjectReport(projectReport), filterReport)

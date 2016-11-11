@@ -17,7 +17,6 @@
 package com.stratio.crossdata.connector.postgresql
 
 import org.apache.spark.sql.crossdata.ExecutionType._
-import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
