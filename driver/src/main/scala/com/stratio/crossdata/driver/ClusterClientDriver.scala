@@ -38,7 +38,7 @@ import scala.util.Try
 
 
 class ClusterClientDriver private[driver](driverConf: DriverConf,
-                                          auth: Authentication) extends Driver(driverConf, auth) {
+                                          auth: Authentication) extends Driver(driverConf) {
 
   import Driver._
 
@@ -78,10 +78,10 @@ class ClusterClientDriver private[driver](driverConf: DriverConf,
 
   private var sessionBeacon: Option[ActorRef] = None
 
-  override protected[driver] def openSession(): Try[Boolean] = {
+  override protected[driver] def openSession(user:String): Try[Boolean] = {
     val res = Try {
       val promise = Promise[ServerReply]()
-      proxyActor ! (securitizeCommand(OpenSessionCommand()), promise)
+      proxyActor ! (securitizeCommand(OpenSessionCommand(user)), promise)
       Await.result(promise.future.mapTo[OpenSessionReply].map(_.isOpen), InitializationTimeout)
     }
 

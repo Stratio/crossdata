@@ -75,7 +75,7 @@ class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
 
   // Commands reception: Checks whether the command can be run at this Server passing it to the execution method if so
   def AddJarMessages(st: State): Receive = {
-    case CommandEnvelope(addJarCommand: AddJARCommand, session@Session(id, requester), _) =>
+    case CommandEnvelope(addJarCommand: AddJARCommand, session@Session(id, requester)) =>
       logger.debug(s"Add JAR received ${addJarCommand.requestId}: ${addJarCommand.path}. Actor ${self.path.toStringWithoutAddress}")
       logger.debug(s"Session identifier $session")
       //TODO  Maybe include job controller if it is necessary as in sql command
