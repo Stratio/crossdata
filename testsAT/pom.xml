@@ -12,7 +12,7 @@
     <groupId>com.stratio.crossdata.testsAT</groupId>
     <artifactId>parent_2.11</artifactId>
     <name>Stratio Crossdata TestAT</name>
-    <version>1.7.0</version>
+    <version>1.7.1-RC1-SNAPSHOT</version>
 
     <properties>
         <scala.binary.version>2.11</scala.binary.version>
