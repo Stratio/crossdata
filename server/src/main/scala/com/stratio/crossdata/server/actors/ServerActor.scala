@@ -187,19 +187,19 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       sender ! ClusterStateReply(sc.cmd.requestId, cluster.state, members)
     }
 
-    case sc@CommandEnvelope(os: OpenSessionCommand, session) =>
-      val open = sessionProvider.newSession(session.id, os.user) match {
+    case sc@CommandEnvelope(OpenSessionCommand(user), Session(sid,_)) =>
+      val open = sessionProvider.newSession(sid, user) match {
         case Success(_) =>
-          logger.info(s"new session with sessionID=${session.id} has been created")
+          logger.info(s"new session with sessionID=${sid} has been created")
           true
         case Failure(error) =>
-          logger.error(s"failure while creating the session with sessionID=${session.id}")
+          logger.error(s"failure while creating the session with sessionID=${sid}")
           false
       }
       sender ! OpenSessionReply(sc.cmd.requestId, isOpen = open)
 
 
-      context.actorSelection("/user/client-monitor") ! DoCheck(session.id, expectedClientHeartbeatPeriod)
+      context.actorSelection("/user/client-monitor") ! DoCheck(sid, expectedClientHeartbeatPeriod)
 
     case sc@CommandEnvelope(_: CloseSessionCommand, session )=>
       closeSessionTerminatingJobs(session.id)(st)
