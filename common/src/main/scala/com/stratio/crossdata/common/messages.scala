@@ -89,7 +89,7 @@ case class AddAppCommand(path: String,alias:String,clss:String,
 }
 case class ClusterStateCommand() extends Command
 
-case class OpenSessionCommand() extends Command
+case class OpenSessionCommand( user: String) extends Command
 
 case class CloseSessionCommand() extends Command
 
@@ -104,8 +104,7 @@ private[crossdata] case class CancelQueryExecution(queryId: UUID) extends Contro
    and the user. This assumption will be taken for granted until the model of session management changes from
    trusted-client management to server management.
  */
-// TODO Remove user from CommandEnvelope and add to OpenSessionCommand()
-private[crossdata] case class CommandEnvelope(cmd: Command, session: Session, user: String)
+private[crossdata] case class CommandEnvelope(cmd: Command, session: Session)
 
 // Server -> Driver messages
 private[crossdata] trait ServerReply {
