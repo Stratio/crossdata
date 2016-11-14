@@ -35,18 +35,6 @@ object expressionsSQLBuilder {
 
   def prettyName(any: Any): String = any.getClass.getSimpleName.toLowerCase
 
-/*
-  def aggExpressionContains(aggregateExpression: Seq[NamedExpression], namedExpression: NamedExpression): Boolean = {
-      aggregateExpression.contains(namedExpression) || {
-        aggregateExpression.exists{
-          case Alias(aExp: AggregateExpression, _) =>
-            aExp.references.contains(namedExpression)
-          case _ => false
-        }
-      }
-    }
-*/
-
   def partFunctionNamedExpressionToSQL(aliasContext: AliasContext): PartialFunction[Expression, String] = {
     case attributeReference: AttributeReference =>
 
