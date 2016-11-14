@@ -83,9 +83,9 @@ object ServerConfig {
   val DefaultHTTPRequestExecutionTimeout = 4 hour
 }
 
-trait ServerConfig extends NumberActorConfig {
+class ServerConfig extends NumberActorConfig {
 
-  val logger: Logger
+  private val logger: Logger = Logger.getLogger(classOf[ServerConfig])
 
   lazy val clusterName = config.getString(ServerConfig.ServerClusterNameKey)
   lazy val actorName = config.getString(ServerConfig.ServerActorNameKey)
