@@ -420,6 +420,8 @@
                         <exclude>**/org/apache/spark/sql/crossdata/catalyst/analysis/AnalysisTest.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/test/acceptance/TestXDContext.scala</exclude>
                         <exclude>**/org/apache/spark/sql/crossdata/catalyst/analysis/DistinctAggregationRewriterXD.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/catalyst/SQLBuilder.scala</exclude>
+                        <exclude>**/org/apache/spark/sql/catalyst/expressionsSQLBuilder.scala</exclude>
                         <exclude>**/hazelcast.xml</exclude>
                         <exclude>**/testAT/**</exclude>
                         <exclude>**/unix/**</exclude>

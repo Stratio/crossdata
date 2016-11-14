@@ -20,7 +20,8 @@ import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.CatalystTypeConverters.convertToScala
 import org.apache.spark.sql.catalyst.expressions
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, LogicalPlan, Sort}
+import org.apache.spark.sql.catalyst.plans.logical.Aggregate
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalyst.{EvaluateNativeUDF, NativeUDF}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources
@@ -64,12 +65,6 @@ object CatalystToCrossdataAdapter {
                                     override val collectionRandomAccesses: Map[Attribute, GetArrayItem]
                                      ) extends BaseLogicalPlan(projects, filters, udfsMap, collectionRandomAccesses)
 
-  case class SortLogicalPlan(override val projects: Seq[NamedExpression],
-                             orderFields: Seq[SortOrder],
-                             override val filters: Array[SourceFilter],
-                             override val udfsMap: Map[Attribute, NativeUDF],
-                             override val collectionRandomAccesses: Map[Attribute, GetArrayItem]
-                            ) extends BaseLogicalPlan(projects, filters, udfsMap, collectionRandomAccesses)
 
   /**
    * Transforms a Catalyst Logical Plan to a Crossdata Logical Plan
@@ -124,6 +119,7 @@ object CatalystToCrossdataAdapter {
         Seq(Ignored -> ignoredExpr)
     }
 
+
     val columnExpressions: Map[ExpressionType, Seq[Expression]] = projects.flatMap {
       extractRequestedColumns
     } groupBy (_._1) mapValues (_.map(_._2))
@@ -138,18 +134,18 @@ object CatalystToCrossdataAdapter {
 
     val (filters, filterReport) = selectFilters(pushedFilters, att2udf.keySet, att2itemAccess)
 
-    lazy val requestedColumns: Seq[Attribute] =
-      columnExpressions.getOrElse(Requested, Seq.empty) collect { case a: Attribute => a }
+    val aggregatePlan: Option[(Seq[Expression], Seq[NamedExpression])] = logicalPlan.collectFirst {
+      case Aggregate(groupingExpression, aggregationExpression, child) => (groupingExpression, aggregationExpression)
+    }
 
-    lazy val simpleLogicalPlan = SimpleLogicalPlan(requestedColumns, filters, att2udf, att2itemAccess)
 
-    val baseLogicalPlan = logicalPlan.collectFirst{
-      case Aggregate(groupingExpression, selectExpression, _) =>
-        AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)
-
-      case Sort(sortOrder, _, _ ) => SortLogicalPlan(requestedColumns, sortOrder, filters, att2udf, att2itemAccess)
-
-    } getOrElse simpleLogicalPlan
+    val baseLogicalPlan = aggregatePlan.fold[BaseLogicalPlan] {
+      val requestedColumns: Seq[Attribute] =
+        columnExpressions.getOrElse(Requested, Seq.empty) collect { case a: Attribute => a }
+      SimpleLogicalPlan(requestedColumns, filters, att2udf, att2itemAccess)
+    } { case (groupingExpression, selectExpression) =>
+      AggregationLogicalPlan(selectExpression, groupingExpression, filters, att2udf, att2itemAccess)
+    }
 
     val projectReport = columnExpressions.getOrElse(Ignored, Seq.empty)
     CrossdataExecutionPlan(baseLogicalPlan, ProjectReport(projectReport), filterReport)

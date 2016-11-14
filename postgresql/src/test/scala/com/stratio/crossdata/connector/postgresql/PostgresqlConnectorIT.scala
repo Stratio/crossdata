@@ -24,6 +24,7 @@ import org.scalatest.junit.JUnitRunner
 class PostgresqlConnectorIT extends PostgresqlWithSharedContext {
 
   Seq(Native, Spark) foreach { executionType =>
+
     "The Postgresql connector" should s"support a (SELECT *) for $executionType execution" in {
       assumeEnvironmentIsUpAndRunning
       val dataframe = sql(s"SELECT * FROM $Table ")
