@@ -131,7 +131,8 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscove
           Props(
             classOf[ServerActor],
             xdCluster,
-            sessionProvider)),
+            sessionProvider,
+            sConfig)),
         sConfig.actorName)
 
       val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
