@@ -103,7 +103,7 @@ trait PostgresqlWithSharedContext extends SharedXDContextWithDataTest
   } toOption
 
   abstract override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
-    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $Table")
+    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $postgresqlSchema.$Table")
 
   override val runningError: String = "Postgresql and Spark must be up and running"
 

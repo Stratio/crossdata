@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.connector.postgresql
 
-import org.apache.spark.sql.crossdata.ExecutionType
+import org.apache.spark.sql.crossdata.{ExecutionType, XDDataFrame}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -96,16 +96,17 @@ class PostgresqlFilterIT extends PostgresqlWithSharedContext {
   it should s"support a (SELECT * ... WHERE ... IS NULL ) natively" in {
     assumeEnvironmentIsUpAndRunning
 
-    val result = sql(s"SELECT * FROM $Table WHERE id IS NULL ").collect(ExecutionType.Native)
+    val df = _xdContext.sql(s"SELECT * FROM $postgresqlSchema.$Table WHERE id IS NULL ").asInstanceOf[XDDataFrame]
+    val result = df.collect(ExecutionType.Native)
     result should have length 0
   }
-// IS NOT NULL disappear in optimizedPlan
+/*// IS NOT NULL disappear in optimizedPlan
   it should s"support a (SELECT * ... WHERE ... IS NOT NULL ) natively" in {
     assumeEnvironmentIsUpAndRunning
 
-    val result = sql(s"SELECT * FROM $Table WHERE id IS NOT NULL ").collect(ExecutionType.Native)
+    val result = sql(s"SELECT * FROM $postgresqlSchema.$Table WHERE id IS NOT NULL ").collect(ExecutionType.Native)
     result should have length 10
-  }
+  }*/
   /*
 
     it should s"support a (SELECT * ... WHERE COLUMN IN (...) ) natively" in {

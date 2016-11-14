@@ -31,7 +31,7 @@ import org.apache.spark.sql.sources.{Filter => SourceFilter, _}
 import org.apache.spark.sql.types.{Decimal, _}
 import org.apache.spark.unsafe.types.UTF8String
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 object PostgresqlQueryProcessor extends SparkLoggerComponent{
 
@@ -53,8 +53,8 @@ object PostgresqlQueryProcessor extends SparkLoggerComponent{
 
   private def attributeSetToString(attr: AttributeSet): String = attr.toSeq.map(attr =>columnName(attr.toString)).mkString(",")
 
-  def apply(postgresRelation: PostgresqlXDRelation, logicalPlan: LogicalPlan, props: Properties): PostgresqlQueryProcessor =
-    new PostgresqlQueryProcessor(postgresRelation, logicalPlan, props)
+  def apply(postgresRelation: PostgresqlXDRelation, logicalPlan: LogicalPlan, props: Properties, sqlText: Option[String]): PostgresqlQueryProcessor =
+    new PostgresqlQueryProcessor(postgresRelation, logicalPlan, props, sqlText)
 
   def buildNativeQuery(tableQN: String,
                        requiredColumns: Seq[String],
@@ -117,7 +117,10 @@ object PostgresqlQueryProcessor extends SparkLoggerComponent{
 }
 
 
-class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPlan: LogicalPlan, props: Properties)
+class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
+                               logicalPlan: LogicalPlan,
+                               props: Properties,
+                               sqlText: Option[String])
   extends SparkLoggerComponent {
 
   import PostgresqlQueryProcessor._
@@ -144,6 +147,16 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
         case Alias(child, name) => buildAggregationExpression(child, Option(s" AS $name"))
         case Literal(1, _) => "*"
         case AggregateExpression(aggregateFunction, _, _) => aggregateFunctionToSQL(aggregateFunction, alias)
+      }
+    }
+
+    def executeQuery(sql: String): Array[InternalRow] = {
+      logInfo("\nQUERY: " + sql)
+
+      import scala.collection.JavaConversions._
+      PostgresqlUtils.withClientDo(props.toMap) { (_, stm) =>
+        val resultSet = stm.executeQuery(sqlText.get)
+        sparkResultFromPostgresql(resultSet)
       }
     }
 
@@ -187,14 +200,8 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
             groupingFields,
             postgresqlPlan.limit.getOrElse(PostgresqlQueryProcessor.DefaultLimit)
           )
-          logInfo("\nQUERY: " + sqlQuery)
 
-          import scala.collection.JavaConversions._
-          PostgresqlUtils.withClientDo(props.toMap) { (_, stm) =>
-            val resultSet = stm.executeQuery(sqlQuery)
-            sparkResultFromPostgresql(postgresqlPlan.projects.map(_.name).toArray, resultSet)
-          }
-
+          Try(executeQuery(sqlQuery)).getOrElse(executeQuery(sqlText.get))
         }
       }
 
@@ -371,7 +378,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
   }
 
   //to convert ResultSet to Array[Row]
-  private[this] def sparkResultFromPostgresql(requiredColumns: Array[ColumnName], resultSet: ResultSet): Array[InternalRow] = {
+  private[this] def sparkResultFromPostgresql(resultSet: ResultSet): Array[InternalRow] = {
 
     val nCols = resultSet.getMetaData.getColumnCount
 //    val schema = resultSchema(resultSet)

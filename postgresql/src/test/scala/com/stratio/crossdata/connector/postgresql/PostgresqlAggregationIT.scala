@@ -37,19 +37,19 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
 //    result(0).getLong(0) should be (55)
 //
 //  }
-
-  it should s"support a (SELECT AVG()) natively" in {
-    assumeEnvironmentIsUpAndRunning
-
-    val df = sql(s"SELECT AVG(id) FROM $Table")
-    println(df.queryExecution.optimizedPlan)
-
-    val result = df.collect()
-
-    result(0).getDecimal(0) shouldBe a [java.math.BigDecimal]
-
-  }
-
+//
+//  it should s"support a (SELECT AVG()) natively" in {
+//    assumeEnvironmentIsUpAndRunning
+//
+//    val df = sql(s"SELECT AVG(id) FROM $postgresqlSchema.$Table")
+//    println(df.queryExecution.optimizedPlan)
+//
+//    val result = df.collect()
+//
+//    result(0).getDecimal(0) shouldBe a [java.math.BigDecimal]
+//
+//  }
+//
 //  it should s"support a (SELECT Count()) natively" in {
 //    assumeEnvironmentIsUpAndRunning
 //
@@ -91,6 +91,21 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
 //    result should have length 10
 //    result(0).getLong(1) should be (1)
 //  }
+
+
+  it should s"support a (SELECT Count()) ... GROUP BY ... ORDER BY COUNT(id) natively" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $postgresqlSchema.$Table GROUP BY id, comment HAVING COUNT(id) = 1")
+
+    println(df.queryExecution.optimizedPlan)
+
+    df.show
+    val result = df.collect()
+
+    result should have length 10
+    result(0).getLong(1) should be (1)
+  }
 //
 //
 //  it should s"support a (SELECT Count()) ... GROUP BY ... ORDER BY alias natively" in {
@@ -103,8 +118,5 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
 //    result should have length 10
 //    result(0).getLong(1) should be (1)
 //  }
-
-
-
 
 }

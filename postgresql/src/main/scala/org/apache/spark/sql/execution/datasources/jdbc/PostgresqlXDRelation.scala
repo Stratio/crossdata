@@ -41,9 +41,11 @@ class PostgresqlXDRelation( url: String,
 
   override val schema: StructType = userSchema.getOrElse(JDBCRDD.resolveTable(url, table, properties))
 
-  override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
+  override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = buildScan(optimizedLogicalPlan, None)
+
+  override def buildScan(optimizedLogicalPlan: LogicalPlan, sqlText: Option[String]): Option[Array[Row]] = {
     logDebug(s"Processing ${optimizedLogicalPlan.toString()}")
-    val queryExecutor = PostgresqlQueryProcessor(this, optimizedLogicalPlan, this.properties)
+    val queryExecutor = PostgresqlQueryProcessor(this, optimizedLogicalPlan, this.properties, sqlText)
 
     val toScala = CatalystTypeConverters.createToScalaConverter(optimizedLogicalPlan.schema)
 
@@ -54,6 +56,8 @@ class PostgresqlXDRelation( url: String,
     }
 
   }
+
+
 
     /**
     * Checks the ability to execute a [[LogicalPlan]].
