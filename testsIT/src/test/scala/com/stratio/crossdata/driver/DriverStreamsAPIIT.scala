@@ -20,8 +20,6 @@ import java.nio.file.Paths
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.testkit.scaladsl.TestSink
-import akka.testkit.TestProbe
-import com.stratio.crossdata.common.QueryCancelledReply
 import com.stratio.crossdata.driver.test.Utils._
 import org.apache.spark.sql.Row
 import org.junit.runner.RunWith

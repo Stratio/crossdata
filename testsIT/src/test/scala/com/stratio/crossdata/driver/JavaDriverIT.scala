@@ -17,14 +17,19 @@ package com.stratio.crossdata.driver
 
 import java.nio.file.Paths
 
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream.testkit.scaladsl.TestSink
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.JavaTableName
 import com.stratio.crossdata.driver.test.Utils._
+import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class JavaDriverIT extends EndToEndTest{
+class JavaDriverIT extends EndToEndTest with ScalaFutures{
 
   driverFactories foreach { case (factory, description) =>
 
@@ -64,6 +69,31 @@ class JavaDriverIT extends EndToEndTest{
 
     }
 
+  }
+
+  Seq(Driver.http -> "through HTTP") foreach { case (factory, description) =>
+
+    implicit val ctx = DriverTestContext(factory)
+    val factoryDesc = s" $description"
+
+    it should "return a SuccessfulQueryResult when executing a select *" + factoryDesc in {
+      assumeCrossdataUpAndRunning()
+      withJavaDriverDo { driver =>
+
+        driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')")
+
+        val sqlStreamedResult = driver.sqlStreamSource("SELECT * FROM jsonTable")
+
+        val javadslSource = sqlStreamedResult.javaStreamedResult
+        sqlStreamedResult.schema.fieldNames should contain allOf("id", "title")
+        implicit val _: ActorSystem =  ActorSystem()
+        javadslSource.runWith(TestSink.probe[Row](ActorSystem()), ActorMaterializer())
+            .requestNext(Row(1, "Crossdata"))
+            .requestNext(Row(2, "Fuse"))
+            .request(1).expectComplete()
+
+        }
+      }
   }
 
 }

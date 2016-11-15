@@ -107,6 +107,8 @@ case class ErrorSQLResult(message: String, cause: Option[Throwable] = None) exte
 
 trait StreamedSQLResult extends SQLResult {
   val streamedResult: Source[Row, NotUsed]
+  val javaStreamedResult: akka.stream.javadsl.Source[Row, NotUsed] = streamedResult.asJava
+
   override def resultSet: Array[Row] = {
     implicit val aSystem: ActorSystem = ActorSystem()
     implicit  val aMater: ActorMaterializer = ActorMaterializer()
@@ -118,7 +120,6 @@ trait StreamedSQLResult extends SQLResult {
     Await.result(sqlResult, Duration.Inf).reverse.toArray
   }
 }
-
 
 case class StreamedSuccessfulSQLResult(streamedResult: Source[Row, NotUsed], schema: StructType) extends StreamedSQLResult {
   val hasError: Boolean = false
