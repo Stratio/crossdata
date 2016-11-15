@@ -36,7 +36,7 @@ import akka.util.{ByteString, Timeout}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
 import com.stratio.crossdata.common._
-import com.stratio.crossdata.common.result.{ErrorSQLResult, StreamedSchema, StreamedSuccessfulSQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.util.HdfsUtils
@@ -158,10 +158,10 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
                         )
 
                       implicit val _: StructType = schema
-
-                      val responseStream: Source[StreamedSuccessfulSQLResult, NotUsed] =
-                        Source.fromIterator(() => resultSet.toIterator).map(
-                          row => row: StreamedSuccessfulSQLResult
+                      import InternalStreamedSuccessfulSQLResult._
+                      val responseStream: Source[InternalStreamedSuccessfulSQLResult, NotUsed] =
+                        Source.fromIterator(() => resultSet.toIterator).map(row =>
+                          row: InternalStreamedSuccessfulSQLResult
                         ) prepend Source.single(schema)
 
                       complete(responseStream)

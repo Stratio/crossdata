@@ -15,9 +15,11 @@
  */
 package com.stratio.crossdata.driver
 
+import akka.NotUsed
 import akka.actor.{ActorSystem, Address}
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.cluster.MemberStatus
+import akka.stream.scaladsl.Source
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
@@ -160,6 +162,8 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf) {
     * @return A SQLResponse with the id and the result set.
     */
   def sql(query: String): SQLResponse
+
+  def sqlStreamSource(query: String): Future[StreamedSQLResult]
 
   /**
     * Add Jar to the XD Context

@@ -121,7 +121,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
     result.recover {
       case e: SSLException if driverConf.httpTlsEnable =>
-        throw TLSInvalidAuthException("Possible invalid authentication (check if you have a valid TLS certificate configured in your driver).",e)
+        throw TLSInvalidAuthException("Possible invalid authentication (check if you have a valid TLS certificate configured in your driver).", e)
 
       case exception if defaultValue.isDefined =>
         logger.error(exception.getMessage, exception)
@@ -130,7 +130,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
   }
 
-  protected[driver] def openSession(user:String): Try[Boolean] = {
+  protected[driver] def openSession(user: String): Try[Boolean] = {
     val command = OpenSessionCommand(user)
     val response = simpleRequest(
       securitizeCommand(command),
@@ -167,13 +167,13 @@ class HttpDriver private[driver](driverConf: DriverConf,
                     provides a ByteString with the serialized schema and the stream of remaining lines:
                     The bulk of serialized rows.*/
              (Seq(rawSchema), rawRows) <- rawSchemaAndRawRowsSource.toMat(sink)(Keep.right).run
-             StreamedSchema(schema) <- Unmarshal(HttpEntity(ContentTypes.`application/json`, rawSchema)).to[StreamedSuccessfulSQLResult]
+             StreamedSchema(schema) <- Unmarshal(HttpEntity(ContentTypes.`application/json`, rawSchema)).to[InternalStreamedSuccessfulSQLResult]
 
              // Having de-serialized the schema, it can be used to deserialize each row at the un-marshalling phase
              rrows <- {
                implicit val json4sJacksonFormats = this.json4sJacksonFormats + new StreamedRowSerializer(schema)
 
-               val um: Unmarshaller[ResponseEntity, StreamedSuccessfulSQLResult] = json4sUnmarshaller
+               val um: Unmarshaller[ResponseEntity, InternalStreamedSuccessfulSQLResult] = json4sUnmarshaller
 
                rawRows.mapAsync(1) { bs => /* TODO: Study the implications of increasing the level of parallelism in
                                             *       the unmarshalling phase. */
@@ -211,6 +211,66 @@ class HttpDriver private[driver](driverConf: DriverConf,
     }
 
   }
+
+
+  override def sqlStreamSource(query: String): Future[StreamedSQLResult] = {
+
+    val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
+
+    // Performs the request to server
+    val response = Marshal(securitizeCommand(sqlCommand)).to[RequestEntity] flatMap { requestEntity =>
+
+      val request = HttpRequest(POST, s"$protocol://$serverHttp/query/${sqlCommand.requestId}", entity = requestEntity)
+      http.singleRequest(request) flatMap { httpResponse =>
+
+        if (httpResponse.status == StatusCodes.OK) {
+          // OK Responses will be served through streaming
+
+          val bytesSource = httpResponse.entity.dataBytes // This is the stream of bytes of the answer data...
+          val framesSource = bytesSource.filterNot(bs => bs.isEmpty || bs == ByteString("\n")) //...empty lines get removed...
+          val rawSchemaAndRawRowsSource = framesSource.prefixAndTail[ByteString](1) //remaining get transformed to ByteStrings.
+
+          // From the raw lines stream, a new stream providing the first one and a stream of the remaining ones is created
+          val sink = Sink.head[(Seq[ByteString], Source[ByteString, NotUsed])] //Its single elements get extracted by future...
+
+          for {/*.. which, once completed,
+                    provides a ByteString with the serialized schema and the stream of remaining lines:
+                    The bulk of serialized rows.*/
+            (Seq(rawSchema), rawRows) <- rawSchemaAndRawRowsSource.toMat(sink)(Keep.right).run
+            StreamedSchema(schema) <- Unmarshal(HttpEntity(ContentTypes.`application/json`, rawSchema)).to[InternalStreamedSuccessfulSQLResult]
+
+          } yield {
+
+            // Having de-serialized the schema, it can be used to deserialize each row at the un-marshalling phase
+            implicit val json4sJacksonFormats = this.json4sJacksonFormats + new StreamedRowSerializer(schema)
+
+            val um: Unmarshaller[ResponseEntity, InternalStreamedSuccessfulSQLResult] = json4sUnmarshaller
+
+            val a: Source[Row, NotUsed] = rawRows.mapAsync(1) { bs =>
+              val entity = HttpEntity(ContentTypes.`application/json`, bs)
+              um(entity).mapTo[StreamedRow].map(_.row)
+            }
+
+            StreamedSuccessfulSQLResult(a, schema)
+          }
+
+        } else {
+
+          Unmarshal(httpResponse.entity).to[SQLReply].map {
+            case SQLReply(_, ErrorSQLResult(message, cause)) => StreamedErrorSQLResult(message, cause)
+          }
+
+
+        }
+
+      }
+    }
+
+    response
+
+
+  }
+
 
   override def addJar(path: String, toClassPath: Option[Boolean] = None): SQLResponse =
     apiNotSupported("addJar")
