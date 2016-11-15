@@ -20,10 +20,13 @@ import java.util.Properties
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
+import com.stratio.crossdata.connector.postgresql.PostgresqlQueryProcessor
+import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.Partition
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
-import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.catalyst.expressions.{GenericInternalRow, GenericRowWithSchema}
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources.BaseRelation
 import org.apache.spark.sql.types.StructType

@@ -13,106 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.sql.execution.datasources.jdbc
+package com.stratio.crossdata.connector.postgresql
 
-import java.sql.{Date, ResultSet, ResultSetMetaData, Timestamp}
+import java.sql.ResultSet
 import java.util.Properties
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.{CatalystTypeConverters, InternalRow}
-import org.apache.spark.sql.catalyst.expressions.aggregate._
-import org.apache.spark.sql.catalyst.expressions.{Alias, AttributeReference, AttributeSet, Expression, GenericInternalRowWithSchema, GenericRowWithSchema, Literal, NamedExpression, SortOrder}
-import org.apache.spark.sql.catalyst.planning.PhysicalOperation
-import org.apache.spark.sql.catalyst.plans.logical._
+import org.apache.spark.sql.catalyst.expressions.{GenericInternalRowWithSchema, Literal}
+import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
 import org.apache.spark.sql.catalyst.util.{DateTimeUtils, GenericArrayData}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter._
-import org.apache.spark.sql.sources.{Filter => SourceFilter, _}
+import org.apache.spark.sql.catalyst.{InternalRow, SQLBuilder}
+import org.apache.spark.sql.execution.datasources.jdbc.{PostgresqlUtils, PostgresqlXDRelation}
 import org.apache.spark.sql.types.{Decimal, _}
 import org.apache.spark.unsafe.types.UTF8String
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
-object PostgresqlQueryProcessor extends SparkLoggerComponent{
+object PostgresqlQueryProcessor {
 
   type PostgresQuery = String
   type ColumnName = String
   val DefaultLimit = 10000
 
-  case class PostgresqlPlan(basePlan: BaseLogicalPlan, limit: Option[Int]){
-    def projects: Seq[NamedExpression] = basePlan.projects
-    def filters: Array[SourceFilter] = basePlan.filters
-  }
-
-  def quoteString(in: Any): String = in match {
-    case s @ (_:String | _: Timestamp | _: Date) => s"'$s'"
-    case other => other.toString
-  }
-
-  private def columnName(att: String): String = att.split("#").head.trim
-
-  private def attributeSetToString(attr: AttributeSet): String = attr.toSeq.map(attr =>columnName(attr.toString)).mkString(",")
-
   def apply(postgresRelation: PostgresqlXDRelation, logicalPlan: LogicalPlan, props: Properties, sqlText: Option[String]): PostgresqlQueryProcessor =
     new PostgresqlQueryProcessor(postgresRelation, logicalPlan, props, sqlText)
-
-  def buildNativeQuery(tableQN: String,
-                       requiredColumns: Seq[String],
-                       filters: Array[SourceFilter],
-                       sortFields: Seq[SortOrder],
-                       groupingFields: Seq[Expression],
-                       limit: Int): PostgresQuery = {
-
-    def filterToSQL(filter: SourceFilter): Option[String] = Option(filter match {
-        case EqualTo(attr, value) => s"${columnName(attr)} = ${quoteString(value)}"
-        case EqualNullSafe(attr, value) =>
-          s"(NOT (${columnName(attr)} != ${quoteString(value)} OR ${columnName(attr)} IS NULL OR " +
-            s"${quoteString(value)} IS NULL) OR (${columnName(attr)} IS NULL AND ${quoteString(value)} IS NULL))"
-        case LessThan(attr, value) => s"${columnName(attr)} < ${quoteString(value)}"
-        case GreaterThan(attr, value) => s"${columnName(attr)} > ${quoteString(value)}"
-        case LessThanOrEqual(attr, value) => s"${columnName(attr)} <= ${quoteString(value)}"
-        case GreaterThanOrEqual(attr, value) => s"${columnName(attr)} >= ${quoteString(value)}"
-        case IsNull(attr) => s"${columnName(attr)} IS NULL"
-        case IsNotNull(attr) => s"${columnName(attr)} IS NOT NULL"
-        case StringStartsWith(attr, value) => s"${columnName(attr)} LIKE '$value%'"
-        case StringEndsWith(attr, value) => s"${columnName(attr)} LIKE '%$value'"
-        case StringContains(attr, value) => s"${columnName(attr)} LIKE '%$value%'"
-        case In(attr, values) => s"${columnName(attr)} IN ${values.map(quoteString).mkString("(", ",", ")")}"
-        case Not(f) => filterToSQL(f).map(p => s"(NOT ($p))").getOrElse(null)
-        case Or(f1, f2) =>
-          // We can't compile Or filter unless both sub-filters are compiled successfully.
-          // It applies too for the following And filter.
-          // If we can make sure compileFilter supports all filters, we can remove this check.
-          val or = Seq(f1, f2).flatMap(filterToSQL)
-          if (or.size == 2) {
-            "(" + or.map(p => s"($p)").mkString(" OR ") + ")"
-          } else {
-            null
-          }
-        case And(f1, f2) =>
-          val and = Seq(f1, f2).flatMap(filterToSQL)
-          if (and.size == 2) {
-            "(" + and.map(p => s"($p)").mkString(" AND ") + ")"
-          } else {
-            null
-          }
-        case _ => null
-      })
-
-    // TODO review this. AND is needed?
-    val filter = if (filters.nonEmpty) filters.flatMap(filterToSQL).mkString("WHERE ", " AND ", "") else ""
-    val columns = requiredColumns.map(columnName).mkString(", ")
-
-    val orderBy = if(sortFields.nonEmpty) "ORDER BY " + sortFields.map{ s =>
-      columnName(s.child.toString) + (if(s.isAscending) " ASC" else " DESC")
-    }.mkString(",") else ""
-
-    val groupBy = if(groupingFields.nonEmpty) "GROUP BY " + groupingFields.map{ exp =>
-      attributeSetToString(exp.references)
-    }.mkString(",") else ""
-
-    s"SELECT $columns FROM $tableQN $filter $groupBy $orderBy LIMIT $limit"
-  }
 
 }
 
@@ -127,161 +51,34 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
 
   def execute(): Option[Array[InternalRow]] = {
 
-    def aggregateFunctionToSQL(aggregateFunction: AggregateFunction, alias: Option[String]): String = {
-      aggregateFunction match {
-        case max: Max => s"MAX(${attributeSetToString(max.references)})${alias.getOrElse("")}"
-        case min: Min => s"MIN(${attributeSetToString(min.references)})${alias.getOrElse("")}"
-        case sum: Sum=> s"SUM(${attributeSetToString(sum.references)})${alias.getOrElse("")}"
-        case avg: Average => s"AVG(${attributeSetToString(avg.references)})${alias.getOrElse("")}"
-        case count: Count =>
-          // TODO count.references is always null in the optimized plan, so we can't get the correct field
-          val fields = if(count.references.nonEmpty) attributeSetToString(count.references) else "*"
-          s"COUNT($fields)${alias.getOrElse("")}"
-      }
-
-    }
-
-    def buildAggregationExpression(names: Expression, alias: Option[String] = None): String = {
-
-      names match {
-        case Alias(child, name) => buildAggregationExpression(child, Option(s" AS $name"))
-        case Literal(1, _) => "*"
-        case AggregateExpression(aggregateFunction, _, _) => aggregateFunctionToSQL(aggregateFunction, alias)
-      }
-    }
-
     def executeQuery(sql: String): Array[InternalRow] = {
-      logInfo("\nQUERY: " + sql)
+      logInfo(s"QUERY: $sql")
 
       import scala.collection.JavaConversions._
       PostgresqlUtils.withClientDo(props.toMap) { (_, stm) =>
-        val resultSet = stm.executeQuery(sqlText.get)
-        sparkResultFromPostgresql(resultSet)
+        val resultSet = stm.executeQuery(sql)
+        sparkResultFromPostgresql(resultSet, logicalPlan.schema)
       }
     }
 
-    Try {
-      validatedNativePlan.map { postgresqlPlan =>
-        if (postgresqlPlan.limit.exists(_ == 0)) {
-          Array.empty[InternalRow]
-        } else {
-          val projectsString: Seq[String] = postgresqlPlan.basePlan match {
-            case SimpleLogicalPlan(projects, _, _, _) =>
-              projects.map(_.toString())
+    val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
-            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) if groupingExpression.isEmpty =>
-              logInfo("\n\n  groupingExpression empty  \n\n")
-              projects.map(field => buildAggregationExpression(field, None))
-            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) if groupingExpression.nonEmpty =>
-              logInfo(s"\n\n  groupingExpression Non empty\n projects ${projects.toString()}\n grouping ${groupingExpression.toString()} \n\n")
-              projects.map{
-                case attr: AttributeReference => attr.toString()
-                case expr: Expression => buildAggregationExpression(expr)
-              }
+    try {
+      new SQLBuilder(logicalPlan).toSQL.map { sqlQuery =>
+        if (limit.exists(_ == 0)) Array.empty[InternalRow]
+        else {
 
-            case SortLogicalPlan(projects, _, _, _, _) => projects.map(_.toString())
+          Try(executeQuery(sqlQuery)).getOrElse{
+            //TODO change this get
+            val directQuery = sqlText.get
+            val sqlWithLimit = s"$directQuery LIMIT ${limit.getOrElse(DefaultLimit)}"
+            executeQuery(sqlWithLimit)
           }
 
-          val sortFields = postgresqlPlan.basePlan match {
-            case SortLogicalPlan(_, sortOrders, _, _, _) => sortOrders
-            case _ => Seq.empty[SortOrder]
-          }
-
-          val groupingFields = postgresqlPlan.basePlan match {
-            case AggregationLogicalPlan(projects, groupingExpression, _, _, _) => groupingExpression
-            case _ => Seq.empty[Expression]
-          }
-
-          val sqlQuery = buildNativeQuery(
-            postgresRelation.table,
-            projectsString,
-            postgresqlPlan.filters,
-            sortFields,
-            groupingFields,
-            postgresqlPlan.limit.getOrElse(PostgresqlQueryProcessor.DefaultLimit)
-          )
-
-          Try(executeQuery(sqlQuery)).getOrElse(executeQuery(sqlText.get))
         }
       }
-
-    } recover{
-      case exc: Exception =>
-        log.warn(s"Exception executing the native query:\n $logicalPlan", exc)
-        None
-    } get
-
-  }
-
-  def validatedNativePlan: Option[PostgresqlPlan] = {
-    lazy val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
-
-    def findBasePlan(lplan: LogicalPlan): Option[BaseLogicalPlan] = {
-      lplan match {
-        // TODO lines below seem to be duplicated in ExtendedPhysicalOperation when finding filters and projects
-        case Limit(_, child) =>
-          findBasePlan(child)
-
-        case Aggregate(_, _, child) =>
-          findBasePlan(child)
-
-//        case Filter(aggFilter, child) =>
-//          findBasePlan(child) // This filter is for HAVING clause
-
-        case PhysicalOperation(projectList, filterList, _) =>
-          CatalystToCrossdataAdapter.getConnectorLogicalPlan(logicalPlan, projectList, filterList) match {
-            case CrossdataExecutionPlan(_, ProjectReport(exprIgnored), FilterReport(filtersIgnored, _)) if filtersIgnored.nonEmpty || exprIgnored.nonEmpty =>
-              None
-            case CrossdataExecutionPlan(basePlan, _, _) =>
-              Some(basePlan)
-          }
-
-      }
-    }
-    findBasePlan(logicalPlan) collect{ case bp if checkNativeFilters(bp.filters) => PostgresqlPlan(bp, limit)}
-  }
-
-  private[this] def checkNativeFilters(filters: Array[SourceFilter]): Boolean = filters.forall {
-      case _: EqualTo => true
-      case _: EqualNullSafe => true
-      case _: LessThan => true
-      case _: GreaterThan => true
-      case _: LessThanOrEqual => true
-      case _: GreaterThanOrEqual => true
-      case _: IsNull => true
-      case _: IsNotNull => true
-      case _: StringStartsWith => true
-      case _: StringEndsWith => true
-      case _: StringContains => true
-      case _: In => true
-      case _: Not => true
-      case _: Or => true
-      case _: And  => true
-      case _ => false
-    }
-
-  private[this] def resultSchema(rs: ResultSet): StructType = {
-    try {
-      val rsmd = rs.getMetaData
-      val ncols = rsmd.getColumnCount
-      val fields = new Array[StructField](ncols)
-      var i = 0
-      while (i < ncols) {
-        val columnName = rsmd.getColumnLabel(i + 1)
-        val dataType = rsmd.getColumnType(i + 1)
-        //val typeName = rsmd.getColumnTypeName(i + 1)
-        val fieldSize = rsmd.getPrecision(i + 1)
-        val fieldScale = rsmd.getScale(i + 1)
-        val isSigned = rsmd.isSigned(i + 1)
-        val nullable = rsmd.isNullable(i + 1) != ResultSetMetaData.columnNoNulls
-        val metadata = new MetadataBuilder().putString("name", columnName)
-        val columnType = PostgresqlUtils.getCatalystType(dataType, fieldSize, fieldScale, isSigned)
-        fields(i) = StructField(columnName, columnType, nullable, metadata.build())
-        i = i + 1
-      }
-      new StructType(fields)
     } catch {
-      case e: Exception => throw new Exception(e.getMessage)
+      case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc); None
     }
   }
 
@@ -370,25 +167,22 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
   }
 
   private[this] def resultToRow(nCols: Int, rs: ResultSet, schema: StructType): InternalRow = {
-
     val values = new Array[Any](nCols)
     (0 until nCols).foreach( i => values(i) = getValue(i, rs, schema))
-    new GenericInternalRowWithSchema(values, schema)
 
+    new GenericInternalRowWithSchema(values, schema)
   }
 
   //to convert ResultSet to Array[Row]
-  private[this] def sparkResultFromPostgresql(resultSet: ResultSet): Array[InternalRow] = {
 
+  private[this] def sparkResultFromPostgresql(resultSet: ResultSet, schema: StructType): Array[InternalRow] = {
     val nCols = resultSet.getMetaData.getColumnCount
-//    val schema = resultSchema(resultSet)
-
 
     new Iterator[InternalRow] {
       private var hasnext: Boolean = resultSet.next
       override def hasNext: Boolean = hasnext
       override def next(): InternalRow = {
-        val rs = resultToRow(nCols, resultSet, logicalPlan.schema)
+        val rs = resultToRow(nCols, resultSet, schema)
         hasnext = resultSet.next
         rs
       }
@@ -396,3 +190,4 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
   }
 
 }
+
