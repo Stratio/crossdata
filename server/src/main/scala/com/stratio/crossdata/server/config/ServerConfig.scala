@@ -83,7 +83,7 @@ object ServerConfig {
   val DefaultHTTPRequestExecutionTimeout = 4 hour
 }
 
-class ServerConfig extends NumberActorConfig {
+class ServerConfig(userConfig: Option[Config] = None) extends NumberActorConfig {
 
   private val logger: Logger = Logger.getLogger(classOf[ServerConfig])
 
@@ -166,7 +166,7 @@ class ServerConfig extends NumberActorConfig {
         )
       }.getOrElse(defaultConfig)
 
-    ConfigFactory.load(finalConfig)
+    ConfigFactory.load(userConfig map (_.withFallback(finalConfig)) getOrElse (finalConfig))
   }
 
   private def extractDurationField(key: String): Duration = Try(

@@ -49,9 +49,9 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscove
   private var system: Option[ActorSystem] = None
   private var bindingFuture: Option[Future[ServerBinding]] = None
 
-  private val sConfig: ServerConfig = new ServerConfig() //TODO: Inconsistent with serverConfig, look how to fix that
+  private val sConfig: ServerConfig = new ServerConfig(progrConfig)
 
-  override protected lazy val serverConfig = progrConfig map (_.withFallback(sConfig.config)) getOrElse (sConfig.config)
+  override protected lazy val serverConfig = sConfig.config
 
   private lazy val sparkContext: SparkContext = {
     val sparkParams = serverConfig.entrySet()
