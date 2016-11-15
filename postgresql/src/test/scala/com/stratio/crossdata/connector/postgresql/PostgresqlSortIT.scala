@@ -25,7 +25,7 @@ class PostgresqlSortIT extends PostgresqlWithSharedContext{
   "The Postgresql connector" should s"support a (SELECT * .. ORDER BY DESC ) natively" in {
     assumeEnvironmentIsUpAndRunning
 
-    val df = sql(s"SELECT * FROM $Table ORDER BY id DESC")
+    val df = sql(s"SELECT * FROM $postgresqlSchema.$Table ORDER BY id DESC")
     val result = df.collect(ExecutionType.Native)
     result(0).getInt(0) should be (10)
 
@@ -34,7 +34,7 @@ class PostgresqlSortIT extends PostgresqlWithSharedContext{
   it should s"support a (SELECT * .. ORDER BY DESC ) with alias natively" in {
     assumeEnvironmentIsUpAndRunning
 
-    val df = sql(s"SELECT comment, id as idalias FROM $Table ORDER BY idalias DESC")
+    val df = sql(s"SELECT comment, id as idalias FROM $postgresqlSchema.$Table ORDER BY idalias DESC")
     val result = df.collect(ExecutionType.Native)
     result(0).getString(0) should be ("Comment 10")
 
@@ -43,7 +43,7 @@ class PostgresqlSortIT extends PostgresqlWithSharedContext{
   it should s"support a (SELECT * .. ORDER BY ASC) natively" in {
     assumeEnvironmentIsUpAndRunning
 
-    val df = sql(s"SELECT * FROM $Table ORDER BY id ASC")
+    val df = sql(s"SELECT * FROM $postgresqlSchema.$Table ORDER BY id ASC")
     val result = df.collect(ExecutionType.Native)
     result(0).getInt(0) should be (1)
 

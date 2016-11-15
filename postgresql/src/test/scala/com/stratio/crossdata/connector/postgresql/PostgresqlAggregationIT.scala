@@ -15,18 +15,18 @@
  */
 package com.stratio.crossdata.connector.postgresql
 
-import org.apache.spark.sql.crossdata.ExecutionType
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.crossdata.{ExecutionType, XDDataFrame}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
 
-
-    "The Postgresql connector" should s"support a (SELECT MAX() ) natively" in {
+  "The Postgresql connector" should s"support a (SELECT MAX() ) natively" in {
       assumeEnvironmentIsUpAndRunning
 
-      val df = sql(s"SELECT MAX(id) as maxim FROM $Table")
+      val df = sql(s"SELECT MAX(id) as maxim FROM $postgresqlSchema.$Table")
       println(df.queryExecution.optimizedPlan)
       val result = df.collect(ExecutionType.Native)
       result(0).getInt(0) should be (10)
@@ -36,7 +36,7 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
     it should s"support a (SELECT MIN()) natively" in {
       assumeEnvironmentIsUpAndRunning
 
-      val df = sql(s"SELECT MIN(id) FROM $Table")
+      val df = sql(s"SELECT MIN(id) FROM $postgresqlSchema.$Table")
       println(df.queryExecution.optimizedPlan)
 
       val result = df.collect(ExecutionType.Native)
@@ -47,7 +47,7 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
     it should s"support a (SELECT SUM()) natively" in {
       assumeEnvironmentIsUpAndRunning
 
-      val df = sql(s"SELECT SUM(id) FROM $Table")
+      val df = sql(s"SELECT SUM(id) FROM $postgresqlSchema.$Table")
       println(df.queryExecution.optimizedPlan)
 
       val result = df.collect(ExecutionType.Native)
@@ -58,19 +58,16 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
   it should s"support a (SELECT AVG()) natively" in {
     assumeEnvironmentIsUpAndRunning
 
-    val df = sql(s"SELECT AVG(id) FROM $Table")
-    println(df.queryExecution.optimizedPlan)
-
+    val df = sql(s"SELECT AVG(id) FROM $postgresqlSchema.$Table")
     val result = df.collect(ExecutionType.Native)
-
     val avg: Double = 5.5
-    val a = result(0).getDouble(0) shouldBe avg
+    result(0).getDouble(0) shouldBe avg
   }
 
     it should s"support a (SELECT Count()) natively" in {
       assumeEnvironmentIsUpAndRunning
 
-      val df = sql(s"SELECT COUNT(id) FROM $Table")
+      val df = sql(s"SELECT COUNT(id) FROM $postgresqlSchema.$Table")
       println(df.queryExecution.optimizedPlan)
 
       val result = df.collect(ExecutionType.Native)
@@ -81,7 +78,7 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
     it should s"support a (SELECT Count()) ... GROUP BY ... natively" in {
       assumeEnvironmentIsUpAndRunning
 
-      val df = sql(s"SELECT comment, COUNT(id) as count FROM $Table GROUP BY id, comment")
+      val df = sql(s"SELECT comment, COUNT(id) as count FROM $postgresqlSchema.$Table GROUP BY id, comment")
       println(df.queryExecution.optimizedPlan)
       val result = df.collect(ExecutionType.Native)
       result should have length 10
@@ -91,7 +88,7 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
     it should s"support a (SELECT Count()) ...WHERE ...  GROUP BY ... natively" in {
       assumeEnvironmentIsUpAndRunning
 
-      val df = sql(s"SELECT comment, COUNT(id) as count FROM $Table WHERE id > 5 GROUP BY id, comment")
+      val df = sql(s"SELECT comment, COUNT(id) as count FROM $postgresqlSchema.$Table WHERE id > 5 GROUP BY id, comment")
       println(df.queryExecution.optimizedPlan)
       val result = df.collect(ExecutionType.Native)
       result should have length 5
@@ -101,7 +98,7 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
     it should s"support a (SELECT Count()) ... GROUP BY ... ORDER BY COUNT(id) natively" in {
       assumeEnvironmentIsUpAndRunning
 
-      val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $Table GROUP BY id, comment ORDER BY COUNT(id)")
+      val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $postgresqlSchema.$Table GROUP BY id, comment ORDER BY COUNT(id)")
 
       println(df.queryExecution.optimizedPlan)
       val result = df.collect(ExecutionType.Native)
@@ -113,7 +110,7 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
     it should s"support a (SELECT Count()) ... GROUP BY ... ORDER BY alias natively" in {
       assumeEnvironmentIsUpAndRunning
 
-      val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $Table GROUP BY id, comment ORDER BY countalias")
+      val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $postgresqlSchema.$Table GROUP BY id, comment ORDER BY countalias")
 
       println(df.queryExecution.optimizedPlan)
       val result = df.collect(ExecutionType.Native)
@@ -125,7 +122,7 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
   it should s"support a (SELECT Count()) ... GROUP BY ... ORDER BY alias ... HAVING alias natively" in {
     assumeEnvironmentIsUpAndRunning
 
-    val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $Table GROUP BY id, comment HAVING countalias < 5 ORDER BY countalias ")
+    val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $postgresqlSchema.$Table GROUP BY id, comment HAVING countalias < 5 ORDER BY countalias ")
 
     println(df.queryExecution.optimizedPlan)
     val result = df.collect(ExecutionType.Native)
@@ -138,7 +135,7 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
   it should s"support a (SELECT Count()) ... GROUP BY ... ORDER BY alias ... HAVING  natively" in {
     assumeEnvironmentIsUpAndRunning
 
-    val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $Table GROUP BY id, comment HAVING COUNT(id) < 5 ORDER BY countalias ")
+    val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $postgresqlSchema.$Table GROUP BY id, comment HAVING COUNT(id) < 5 ORDER BY countalias ")
 
     println(df.queryExecution.optimizedPlan)
     val result = df.collect(ExecutionType.Native)

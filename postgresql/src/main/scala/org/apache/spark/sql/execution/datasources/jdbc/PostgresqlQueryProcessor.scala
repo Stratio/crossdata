@@ -15,55 +15,71 @@
  */
 package com.stratio.crossdata.connector.postgresql
 
-import java.sql.{Date, ResultSet, ResultSetMetaData, Timestamp}
+import java.sql.ResultSet
 import java.util.Properties
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import org.apache.spark.sql.catalyst.expressions.{GenericInternalRowWithSchema, Literal, NamedExpression, SortOrder}
-import org.apache.spark.sql.catalyst.planning.PhysicalOperation
-import org.apache.spark.sql.catalyst.plans.logical.{Aggregate, Limit, LogicalPlan}
+import org.apache.spark.sql.catalyst.expressions.{GenericInternalRowWithSchema, Literal}
+import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
 import org.apache.spark.sql.catalyst.util.{DateTimeUtils, GenericArrayData}
 import org.apache.spark.sql.catalyst.{InternalRow, SQLBuilder}
 import org.apache.spark.sql.execution.datasources.jdbc.{PostgresqlUtils, PostgresqlXDRelation}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter._
-import org.apache.spark.sql.sources.{Filter => SourceFilter, _}
 import org.apache.spark.sql.types.{Decimal, _}
 import org.apache.spark.unsafe.types.UTF8String
+
+import scala.util.Try
 
 object PostgresqlQueryProcessor {
 
   type PostgresQuery = String
   type ColumnName = String
-  val DefaultLimit = 10000 // TODO keep default limit?
+  val DefaultLimit = 10000
 
-  def apply(postgresRelation: PostgresqlXDRelation, logicalPlan: LogicalPlan, props: Properties): PostgresqlQueryProcessor =
-    new PostgresqlQueryProcessor(postgresRelation, logicalPlan, props)
+  def apply(postgresRelation: PostgresqlXDRelation, logicalPlan: LogicalPlan, props: Properties, sqlText: Option[String]): PostgresqlQueryProcessor =
+    new PostgresqlQueryProcessor(postgresRelation, logicalPlan, props, sqlText)
 
 }
 
 
-class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPlan: LogicalPlan, props: Properties)
+class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
+                               logicalPlan: LogicalPlan,
+                               props: Properties,
+                               sqlText: Option[String])
   extends SparkLoggerComponent {
+
+  import PostgresqlQueryProcessor._
 
   def execute(): Option[Array[InternalRow]] = {
 
-    //if (logicalPlan.limit.exists(_ == 0)) { // TODO return empty internal row when limit 0 exists
-    //  Array.empty[Row]
-    //} else {
+    def executeQuery(sql: String): Array[InternalRow] = {
+      logInfo(s"QUERY: $sql")
+
+      import scala.collection.JavaConversions._
+      PostgresqlUtils.withClientDo(props.toMap) { (_, stm) =>
+        val resultSet = stm.executeQuery(sql)
+        sparkResultFromPostgresql(resultSet, logicalPlan.schema)
+      }
+    }
+
+    val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
+
     try {
       new SQLBuilder(logicalPlan).toSQL.map { sqlQuery =>
+        if (limit.exists(_ == 0)) Array.empty[InternalRow]
+        else {
 
-        logInfo("QUERY: " + sqlQuery)
-        import scala.collection.JavaConversions._
-        PostgresqlUtils.withClientDo(props.toMap) { (_, stm) =>
-          val resultSet = stm.executeQuery(sqlQuery)
-          sparkResultFromPostgresql(resultSet, logicalPlan.schema)
+          Try(executeQuery(sqlQuery)).getOrElse{
+            //TODO change this get
+            val directQuery = sqlText.get
+            val sqlWithLimit = s"$directQuery LIMIT ${limit.getOrElse(DefaultLimit)}"
+            executeQuery(sqlWithLimit)
+          }
+
         }
       }
     } catch {
       case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc); None
     }
-
   }
 
   private def getValue(idx: Int, rs: ResultSet, schema: StructType) : Any = {
@@ -158,8 +174,8 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
   }
 
   //to convert ResultSet to Array[Row]
-  private[this] def sparkResultFromPostgresql(resultSet: ResultSet, schema: StructType): Array[InternalRow] = {
 
+  private[this] def sparkResultFromPostgresql(resultSet: ResultSet, schema: StructType): Array[InternalRow] = {
     val nCols = resultSet.getMetaData.getColumnCount
 
     new Iterator[InternalRow] {
@@ -174,3 +190,4 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation, logicalPl
   }
 
 }
+
