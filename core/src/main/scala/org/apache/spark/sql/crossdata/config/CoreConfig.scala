@@ -86,11 +86,11 @@ object CoreConfig {
   }
 }
 
-trait CoreConfig extends Logging {
+class CoreConfig extends Logging {
 
   import CoreConfig._
 
-  val logger: Logger
+  private lazy val logger: Logger = Logger.getLogger(classOf[CoreConfig])
 
   val config: Config = {
 

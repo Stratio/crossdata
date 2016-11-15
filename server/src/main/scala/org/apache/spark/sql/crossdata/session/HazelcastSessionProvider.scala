@@ -62,7 +62,7 @@ class HazelcastSessionProvider(sc: SparkContext,
       }
     }
 
-  override lazy val logger = Logger.getLogger(classOf[HazelcastSessionProvider])
+  private lazy val logger = Logger.getLogger(classOf[HazelcastSessionProvider])
 
   private lazy val sqlConf: SQLConf = configToSparkSQL(serverConfig, new SQLConf) // TODO Crossdata 1.8+ user server config should be replaced with user core config
 

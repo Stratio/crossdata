@@ -42,13 +42,15 @@ object XDSessionProvider {
 abstract class XDSessionProvider(
                                   @transient val sc: SparkContext,
                                   protected val userCoreConfig: Config
-                                ) extends CoreConfig {
+                                ) {
 
   import XDSessionProvider._
 
-  lazy val logger = Logger.getLogger(getClass)
+  val coreConfig = new CoreConfig
 
-  protected lazy val finalCoreConfig = userCoreConfig.withFallback(config)
+  private lazy val logger = Logger.getLogger(getClass)
+
+  protected lazy val finalCoreConfig = userCoreConfig.withFallback(coreConfig.config)
 
   protected lazy val catalogConfig = Try(finalCoreConfig.getConfig(CoreConfig.CatalogConfigKey)).recover {
     case exception: ConfigException =>
@@ -110,7 +112,7 @@ class BasicSessionProvider(
 
   import XDSessionProvider._
 
-  override lazy val logger = Logger.getLogger(classOf[BasicSessionProvider])
+  private lazy val logger = Logger.getLogger(classOf[BasicSessionProvider])
 
   // TODO Update DOC => user can set spark sql properties by adding crossdata-core.config.spark.<spark_option>=<option_value>
   private lazy val sqlConf: SQLConf = configToSparkSQL(finalCoreConfig, new SQLConf)

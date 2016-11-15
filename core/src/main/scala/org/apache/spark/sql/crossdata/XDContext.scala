@@ -88,8 +88,8 @@ class XDContext protected(@transient val sc: SparkContext,
      methods is called.
      */
 
-  xdConfig = userCoreConfig.fold(config) { userConf =>
-    userConf.withFallback(config)
+  xdConfig = userCoreConfig.fold(coreConfig.config) { userConf =>
+    userConf.withFallback(coreConfig.config)
   }
 
   catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
@@ -360,14 +360,16 @@ class XDContext protected(@transient val sc: SparkContext,
   * This XDContext object contains utility functions to create a singleton XDContext instance,
   * or to get the last created XDContext instance.
   */
-object XDContext extends CoreConfig {
+object XDContext {
 
   /* TODO: Remove the config attributes from the companion object!!!
       AS WELL AS change the companion object so it doesn't extends `CoreConfig`!!!!
    */
 
+  val coreConfig = new CoreConfig
+
   //This is definitely NOT right and will only work as long a single instance of XDContext exits
-  override lazy val logger = Logger.getLogger(classOf[XDContext])
+  private lazy val logger = Logger.getLogger(classOf[XDContext])
 
   var xdConfig: Config = _
   //This is definitely NOT right and will only work as long a single instance of XDContext exits
