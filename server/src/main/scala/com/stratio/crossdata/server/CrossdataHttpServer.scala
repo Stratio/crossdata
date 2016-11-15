@@ -109,7 +109,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
               case _ => logger.error("Problem deleting the temporary file.")
             }
             //Send a broadcast message to all servers
-            mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), session, user))
+            mediator ! Publish(AddJarTopic, CommandEnvelope(AddJARCommand(hdfsPath, hdfsConfig = Option(hdfsConfig)), session))
             hdfsPath
           }
         }
