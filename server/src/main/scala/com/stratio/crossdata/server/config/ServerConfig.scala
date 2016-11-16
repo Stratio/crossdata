@@ -85,6 +85,8 @@ object ServerConfig {
 
 class ServerConfig(userConfig: Option[Config] = None) extends NumberActorConfig {
 
+  //TODO: Encapsulate all the properties in order to protect the directaccess to "config" object
+
   private val logger: Logger = Logger.getLogger(classOf[ServerConfig])
 
   lazy val clusterName = config.getString(ServerConfig.ServerClusterNameKey)
