@@ -42,14 +42,12 @@ import scala.concurrent.Future
 import scala.util.Try
 
 
-class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscoveryProvider {
+class CrossdataServer(sConfig: ServerConfig) extends ServiceDiscoveryProvider {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
   private var system: Option[ActorSystem] = None
   private var bindingFuture: Option[Future[ServerBinding]] = None
-
-  private val sConfig: ServerConfig = new ServerConfig(progrConfig)
 
   override protected lazy val serverConfig = sConfig.config
 

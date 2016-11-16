@@ -54,7 +54,7 @@ class TLSAuthNoCertificateIT extends EndToEndTest {
       case (config, (key, value)) => config.withValue(key, value)
     }
 
-    crossdataServer = Some(new CrossdataServer(Some(tlsConfig)))
+    crossdataServer = Some(new CrossdataServer(new ServerConfig(Some(tlsConfig))))
     crossdataServer.foreach(_.start())
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID, this.getClass.getSimpleName)))
   }

@@ -18,6 +18,7 @@ package com.stratio.crossdata.driver
 import java.util.UUID
 
 import com.stratio.crossdata.server.CrossdataServer
+import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.crossdata.XDSession
 import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
@@ -31,7 +32,7 @@ trait EndToEndTest extends BaseXDTest with BeforeAndAfterAll {
   val UserId = "kravets"
 
   def init() = {
-    crossdataServer = Some(new CrossdataServer)
+    crossdataServer = Some(new CrossdataServer(new ServerConfig))
     crossdataServer.foreach(_.start())
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID, UserId)))
 
