@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.server
 
+import com.stratio.crossdata.server.config.ServerConfig
 import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.collection.JavaConversions._
@@ -33,7 +34,7 @@ object CrossdataApplication extends App {
     case _ => None
   }
 
-  val crossdataServer = new CrossdataServer(params)
+  val crossdataServer = new CrossdataServer(new ServerConfig(params))
   crossdataServer.start()
 
 }
