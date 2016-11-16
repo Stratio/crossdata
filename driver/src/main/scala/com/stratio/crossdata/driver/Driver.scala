@@ -163,6 +163,13 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf) {
     */
   def sql(query: String): SQLResponse
 
+  /**
+    * Executes a SQL sentence whose result contains a [[Source]] of [[Row]]s'
+    * Thus, the user can take advantage of the 'Akka Streams' API to consume/transform the stream of rows
+    *
+    * @param query The SQL Command.
+    * @return A Future with the streamed result.
+    */
   def sqlStreamSource(query: String): Future[StreamedSQLResult]
 
   /**
