@@ -157,45 +157,21 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
          if(httpResponse.status == StatusCodes.OK) { // OK Responses will be served through streaming
 
-           val bytesSource = httpResponse.entity.dataBytes // This is the stream of bytes of the answer data...
-           val framesSource = bytesSource.filterNot(bs => bs.isEmpty || bs == ByteString("\n")) //...empty lines get removed...
-           val rawSchemaAndRawRowsSource = framesSource.prefixAndTail[ByteString](1) //remaining get transformed to ByteStrings.
-
-           // From the raw lines stream, a new stream providing the first one and a stream of the remaining ones is created
-           val sink = Sink.head[(Seq[ByteString], Source[ByteString, NotUsed])] //Its single elements get extracted by future...
-
-           for { /*.. which, once completed,
-                    provides a ByteString with the serialized schema and the stream of remaining lines:
-                    The bulk of serialized rows.*/
-             (Seq(rawSchema), rawRows) <- rawSchemaAndRawRowsSource.toMat(sink)(Keep.right).run
-             StreamedSchema(schema) <- Unmarshal(HttpEntity(ContentTypes.`application/json`, rawSchema)).to[InternalStreamedSuccessfulSQLResult]
-
-             // Having de-serialized the schema, it can be used to deserialize each row at the un-marshalling phase
-             rrows <- {
-               implicit val json4sJacksonFormats = this.json4sJacksonFormats + new StreamedRowSerializer(schema)
-
-               val um: Unmarshaller[ResponseEntity, InternalStreamedSuccessfulSQLResult] = json4sUnmarshaller
-
-               rawRows.mapAsync(1) { bs => /* TODO: Study the implications of increasing the level of parallelism in
-                                            *       the unmarshalling phase. */
-                 val entity = HttpEntity(ContentTypes.`application/json`, bs)
-                 um(entity)
-               }
-             }.runFold(List.empty[Row]) {
+           deserializeSchemaAndRows(httpResponse.entity.dataBytes).flatMap { case (schema, streamedRowSource) =>
+             val rows = streamedRowSource.runFold(List.empty[Row]) {
                case (acc: List[Row], StreamedRow(row, None)) => row::acc
                case _ => Nil
              }
-
-           } yield SuccessfulSQLResult(rrows.reverse toArray, schema) /* TODO: Performance could be increased if
-                                                              `SuccessfulSQLResult`#resultSet were of type `Seq[Row]`*/
+             rows.map{ rowList =>
+               /* TODO: Performance could be increased if `SuccessfulSQLResult`#resultSet were of type `Seq[Row]`*/
+               SuccessfulSQLResult(rowList.reverse toArray, schema)
+             }
+           }
          } else {
-
              Unmarshal(httpResponse.entity).to[SQLReply] map {
                case SQLReply(_, result: SQLResult) => result
              }
-
          }
-
        }
     }
 
@@ -245,8 +221,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
     rawSchemaAndRawRowsSource.toMat(sink)(Keep.right).run.flatMap { case (Seq(rawSchema), rawRows) =>
       Unmarshal(HttpEntity(ContentTypes.`application/json`, rawSchema)).to[InternalStreamedSuccessfulSQLResult].map {
-        case StreamedSchema(schema) =>
-          // Having de-serialized the schema, it can be used to deserialize each row at the un-marshalling phase
+        case StreamedSchema(schema) => // Having de-serialized the schema, it can be used to deserialize each row at the un-marshalling phase
           (schema, deserializeRows(schema, rawRows))
       }
     }
