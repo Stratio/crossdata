@@ -106,14 +106,14 @@ case class ErrorSQLResult(message: String, cause: Option[Throwable] = None) exte
 
 
 trait StreamedSQLResult extends SQLResult {
-  val streamedResult: Source[Row, NotUsed]
-  val javaStreamedResult: akka.stream.javadsl.Source[Row, NotUsed] = streamedResult.asJava
+  val rowsSource: Source[Row, NotUsed]
+  val javaRowsSource: akka.stream.javadsl.Source[Row, NotUsed] = rowsSource.asJava
 
   override def resultSet: Array[Row] = {
     implicit val aSystem: ActorSystem = ActorSystem()
     implicit  val aMater: ActorMaterializer = ActorMaterializer()
 
-    val sqlResult = streamedResult.runFold(List.empty[Row]) {
+    val sqlResult = rowsSource.runFold(List.empty[Row]) {
       case (acc: List[Row], row: Row) => row :: acc
       case _ => Nil
     }
@@ -121,13 +121,13 @@ trait StreamedSQLResult extends SQLResult {
   }
 }
 
-case class StreamedSuccessfulSQLResult(streamedResult: Source[Row, NotUsed], schema: StructType) extends StreamedSQLResult {
+case class StreamedSuccessfulSQLResult(rowsSource: Source[Row, NotUsed], schema: StructType) extends StreamedSQLResult {
   val hasError: Boolean = false
 }
 
 case class StreamedErrorSQLResult(message: String, cause: Option[Throwable] = None) extends StreamedSQLResult {
   val hasError = true
-  override lazy val streamedResult = throw mkException
+  override lazy val rowsSource = throw mkException
   override lazy val schema = throw mkException
 
   private def mkException: Exception =

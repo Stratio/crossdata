@@ -48,7 +48,7 @@ class ClusterClientDriver private[driver](driverConf: DriverConf,
 
   lazy val driverSession: Session = SessionManager.createSession(auth, proxyActor)
 
-  override def sqlStreamSource(query: String): Future[StreamedSQLResult] =
+  override def sqlStreamedResult(query: String): Future[StreamedSQLResult] =
     throw new RuntimeException("ClusterClient implementation does not support streams API; use HttpDriver instead")
 
   private lazy val clusterClientActor = {

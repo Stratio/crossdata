@@ -170,7 +170,7 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf) {
     * @param query The SQL Command.
     * @return A Future with the streamed result.
     */
-  def sqlStreamSource(query: String): Future[StreamedSQLResult]
+  def sqlStreamedResult(query: String): Future[StreamedSQLResult]
 
   /**
     * Add Jar to the XD Context

@@ -47,10 +47,10 @@ class DriverStreamsAPIIT extends EndToEndTest with ScalaFutures {
 
         driver.sql(s"CREATE TEMPORARY TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/tabletest.json").toURI).toString}')").waitForResult()
 
-        whenReady(driver.sqlStreamSource("SELECT * FROM jsonTable")) { streamedSQLResult =>
+        whenReady(driver.sqlStreamedResult("SELECT * FROM jsonTable")) { streamedSQLResult =>
           streamedSQLResult.schema.fieldNames should contain allOf("id", "title")
 
-          streamedSQLResult.streamedResult.runWith(TestSink.probe[Row])
+          streamedSQLResult.rowsSource.runWith(TestSink.probe[Row])
             .requestNext(Row(1, "Crossdata"))
             .requestNext(Row(2, "Fuse"))
             .request(1).expectComplete()

@@ -101,7 +101,7 @@ class JavaDriver private(driverConf: DriverConf,
     scalaDriver.sql(sqlText).waitForResult(timeoutDuration)
 
   def sqlStreamSource(query: String): StreamedSQLResult =
-    Await.result(scalaDriver.sqlStreamSource(query), Duration.Inf)
+    Await.result(scalaDriver.sqlStreamedResult(query), Duration.Inf)
 
   def importTables(dataSourceProvider: String, options: java.util.Map[String, String]): SQLResult =
     scalaDriver.importTables(dataSourceProvider, options.toMap)

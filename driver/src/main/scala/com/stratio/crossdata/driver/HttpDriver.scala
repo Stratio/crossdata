@@ -190,7 +190,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
   }
 
 
-  override def sqlStreamSource(query: String): Future[StreamedSQLResult] = {
+  override def sqlStreamedResult(query: String): Future[StreamedSQLResult] = {
 
     val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
     Marshal(securitizeCommand(sqlCommand)).to[RequestEntity] flatMap { requestEntity =>

@@ -84,7 +84,7 @@ class JavaDriverIT extends EndToEndTest with ScalaFutures{
 
         val sqlStreamedResult = driver.sqlStreamSource("SELECT * FROM jsonTable")
 
-        val javadslSource = sqlStreamedResult.javaStreamedResult
+        val javadslSource = sqlStreamedResult.javaRowsSource
         sqlStreamedResult.schema.fieldNames should contain allOf("id", "title")
         implicit val _: ActorSystem =  ActorSystem()
         javadslSource.runWith(TestSink.probe[Row](ActorSystem()), ActorMaterializer())
