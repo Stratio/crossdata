@@ -41,8 +41,8 @@ import scala.util.{Failure, Success}
 object ServerActor {
   val ManagementTopic: String = "jobsManagement"
 
-  def props(cluster: Cluster, sessionProvider: XDSessionProvider): Props =
-    Props(new ServerActor(cluster, sessionProvider))
+  def props(cluster: Cluster, sessionProvider: XDSessionProvider, serverConfig: ServerConfig): Props =
+    Props(new ServerActor(cluster, sessionProvider, serverConfig))
 
   case class JobId(sessionId: UUID, queryId: UUID)
 
@@ -61,8 +61,8 @@ object ServerActor {
 }
 
 // TODO it should only accept messages from known sessions
-class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
-  extends Actor with ServerConfig {
+class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider, serverConfig: ServerConfig)
+  extends Actor {
 
   import ServerActor.ManagementMessages._
   import ServerActor._
@@ -199,7 +199,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
       sender ! OpenSessionReply(sc.cmd.requestId, isOpen = open)
 
 
-      context.actorSelection("/user/client-monitor") ! DoCheck(sid, expectedClientHeartbeatPeriod)
+      context.actorSelection("/user/client-monitor") ! DoCheck(sid, serverConfig.expectedClientHeartbeatPeriod)
 
     case sc@CommandEnvelope(_: CloseSessionCommand, session )=>
       closeSessionTerminatingJobs(session.id)(st)
@@ -249,7 +249,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
     sessionProvider.closeSession(sessionId)
   }
 
-  private def sentenceToDeath(victim: ActorRef): Unit = completedJobTTL match {
+  private def sentenceToDeath(victim: ActorRef): Unit = serverConfig.completedJobTTL match {
     case finite: FiniteDuration =>
       context.system.scheduler.scheduleOnce(finite, self, FinishJob(victim))(context.dispatcher)
     case _ => // Reprieve by infinite limit
@@ -261,7 +261,7 @@ class ServerActor(cluster: Cluster, sessionProvider: XDSessionProvider)
   }
 
   //TODO: Use number of tries and timeout configuration parameters
-  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(retryNoAttempts, retryCountWindow) {
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(serverConfig.retryNoAttempts, serverConfig.retryCountWindow) {
     case _ => Restart //Crashed job gets restarted (or not, depending on `retryNoAttempts` and `retryCountWindow`)
   }
 }
