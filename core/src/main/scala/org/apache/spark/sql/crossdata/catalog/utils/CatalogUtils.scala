@@ -32,7 +32,7 @@ object CatalogUtils extends Logging {
     else DerbyClass
 
     val externalCatalogClass = Class.forName(externalCatalogName)
-    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[CatalystConf])
+    val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[CatalystConf],classOf[Config])
 
     constr.newInstance(catalystConf,catalogConfig).asInstanceOf[XDPersistentCatalog]
   }
