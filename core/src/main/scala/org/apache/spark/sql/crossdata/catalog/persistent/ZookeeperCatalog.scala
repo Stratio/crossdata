@@ -34,16 +34,15 @@ import scala.util.Try
   *
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
-class ZookeeperCatalog(override val catalystConf: CatalystConf)
+class ZookeeperCatalog(override val catalystConf: CatalystConf, catalogConfig: Config)
   extends PersistentCatalogWithCache(catalystConf){
 
   import XDCatalog._
 
-  protected[crossdata] lazy val config: Config = XDContext.catalogConfig
-  @transient lazy val tableDAO = new TableTypesafeDAO(config)
-  @transient lazy val viewDAO = new ViewTypesafeDAO(config)
-  @transient lazy val appDAO = new AppTypesafeDAO(config)
-  @transient lazy val indexDAO = new IndexTypesafeDAO(config)
+  @transient lazy val tableDAO = new TableTypesafeDAO(catalogConfig)
+  @transient lazy val viewDAO = new ViewTypesafeDAO(catalogConfig)
+  @transient lazy val appDAO = new AppTypesafeDAO(catalogConfig)
+  @transient lazy val indexDAO = new IndexTypesafeDAO(catalogConfig)
 
 
   override def lookupTable(tableIdentifier: TableIdentifierNormalized): Option[CrossdataTable] = {
@@ -190,7 +189,7 @@ class ZookeeperCatalog(override val catalystConf: CatalystConf)
 
   override def isAvailable: Boolean = {
     //TODO this method must be changed when Stratio Commons provide a status connection of Zookeeper
-    val value = XDContext.catalogConfig.getString("zookeeper.connectionString")
+    val value = catalogConfig.getString("zookeeper.connectionString")
     val address = value.split(":")
     Try(new Socket(address(0), address(1).toInt)).map { s =>
       s.close()

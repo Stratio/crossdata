@@ -21,6 +21,7 @@ package org.apache.spark.sql.crossdata.test
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.{SQLConf, SQLContext}
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.{SparkConf, SparkContext}
 
 
@@ -35,7 +36,7 @@ import TestXDContext._
 /**
   * A special [[SQLContext]] prepared for testing.
   */
-private[sql] class TestXDContext private(sc: SparkContext, coreConfig: Config)
+private[sql] class TestXDContext private(sc: SparkContext, coreConfig: CoreConfig)
   extends XDContext(sc, coreConfig) {
 
   def this() {
@@ -43,7 +44,7 @@ private[sql] class TestXDContext private(sc: SparkContext, coreConfig: Config)
       "local[2]",
       "test-xd-context",
       DefaultTestSparkConf
-    ), ConfigFactory.empty())
+    ), new CoreConfig)
   }
 
   def this(catalogConfig: Config) {
@@ -51,7 +52,7 @@ private[sql] class TestXDContext private(sc: SparkContext, coreConfig: Config)
       "local[2]",
       "test-xd-context",
       DefaultTestSparkConf
-    ), catalogConfig)
+    ), new CoreConfig(Some(catalogConfig)))
   }
 
 }

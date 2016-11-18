@@ -46,7 +46,7 @@ abstract class XDSessionProvider(
 
   import XDSessionProvider._
 
-  val coreConfig = new CoreConfig
+  val coreConfig = new CoreConfig //TODO: BAD. It should be one coreConfig per XDContext
 
   private lazy val logger = Logger.getLogger(getClass)
 
@@ -174,6 +174,6 @@ class BasicSessionProvider(
 
   private def buildSession(sqlConf: XDSQLConf, xDTemporaryCatalog: XDTemporaryCatalog, userConfig: Option[Config] = None): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalog :: Nil)
-    new XDSession(sharedState, sessionState, userConfig)
+    new XDSession(sharedState, sessionState, new CoreConfig(userConfig))
   }
 }

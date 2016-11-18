@@ -25,7 +25,7 @@ import scala.util.Try
 
 object ServiceDiscoveryConfigHelper {
 
-  val coreConfig = new CoreConfig
+  val coreConfig = new CoreConfig //TODO: BAD. It should be one coreConfig per XDContext
 
   private lazy val logger: Logger = Logger.getLogger(this.getClass)
 

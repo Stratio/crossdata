@@ -31,9 +31,9 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Try
 
-class ZookeeperStreamingCatalog(val catalystConf: CatalystConf, serverConfig: Config) extends XDStreamingCatalog {
+class ZookeeperStreamingCatalog(val catalystConf: CatalystConf, catalogConfig: Config) extends XDStreamingCatalog {
 
-  private[spark] val streamingConfig = serverConfig.getConfig(CoreConfig.StreamingConfigKey)
+  private[spark] val streamingConfig = catalogConfig.getConfig(CoreConfig.StreamingConfigKey)
   private[spark] val ephemeralTableDAO =
     new EphemeralTableTypesafeDAO(streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
   private[spark] val ephemeralQueriesDAO =
