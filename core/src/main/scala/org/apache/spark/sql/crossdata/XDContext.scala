@@ -99,7 +99,7 @@ class XDContext protected(@transient val sc: SparkContext,
 
     val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(conf)
     val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(conf, catalogConfig)
-    val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(conf, coreConfig.config) //TODO: Should be ServerConfig?????
+    val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(conf, coreConfig.config) //TODO: Should be StreamingCatalogConfig? Encapsulate?????
 
     val catalogs: List[XDCatalogCommon] = temporaryCatalog :: externalCatalog :: streamingCatalog.toList
     CatalogChain(catalogs: _*)(self)

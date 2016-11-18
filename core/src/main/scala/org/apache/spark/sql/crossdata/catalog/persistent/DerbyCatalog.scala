@@ -18,9 +18,10 @@ package org.apache.spark.sql.crossdata.catalog.persistent
 import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet}
 
 import com.stratio.crossdata.util.using
+import com.typesafe.config.Config
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.CrossdataVersion
-import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, StringNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, StringNormalized, TableIdentifierNormalized, XDCatalog, persistent}
 
 import scala.annotation.tailrec
 import scala.util.Try
@@ -64,7 +65,7 @@ object DerbyCatalog {
   *
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
-class DerbyCatalog(override val catalystConf: CatalystConf)
+class DerbyCatalog(override val catalystConf: CatalystConf, catalogConfig: Config)
   extends PersistentCatalogWithCache(catalystConf) {
 
   import DerbyCatalog._

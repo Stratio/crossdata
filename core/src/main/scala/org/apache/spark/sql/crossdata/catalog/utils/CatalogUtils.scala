@@ -25,16 +25,16 @@ import org.apache.spark.sql.crossdata.config.CoreConfig
 
 object CatalogUtils extends Logging {
 
-  protected[crossdata] def externalCatalog(catalystConf: CatalystConf, config: Config): XDPersistentCatalog = {
+  protected[crossdata] def externalCatalog(catalystConf: CatalystConf, catalogConfig: Config): XDPersistentCatalog = {
     import CoreConfig.DerbyClass
-    val externalCatalogName = if (config.hasPath(CoreConfig.ClassConfigKey))
-      config.getString(CoreConfig.ClassConfigKey)
+    val externalCatalogName = if (catalogConfig.hasPath(CoreConfig.ClassConfigKey))
+      catalogConfig.getString(CoreConfig.ClassConfigKey)
     else DerbyClass
 
     val externalCatalogClass = Class.forName(externalCatalogName)
     val constr: Constructor[_] = externalCatalogClass.getConstructor(classOf[CatalystConf])
 
-    constr.newInstance(catalystConf).asInstanceOf[XDPersistentCatalog]
+    constr.newInstance(catalystConf,catalogConfig).asInstanceOf[XDPersistentCatalog]
   }
 
   protected[crossdata] def streamingCatalog(catalystConf: CatalystConf, coreConfig: Config): Option[XDStreamingCatalog] = {
