@@ -45,8 +45,7 @@ class CrossdataInterpreter(property: Properties) extends Interpreter(property) {
     val driverConf = new DriverConf
 
     driver = if(getProperty(CrossdataInterpreter.CROSSDATA_HTTP_CONNECTION).toBoolean){
-      val httpHostAndPort = seeds(0).split(":") match { case Array(a, b) => (a, b) }
-      driverConf.setHttpHostAndPort(httpHostAndPort._1, httpHostAndPort._2.toInt)
+      seeds(0).split(":") match { case Array(host, port) => driverConf.setHttpHostAndPort(host, port.toInt) }
       Driver.http.newSession(driverConf)
     } else {
       Driver.newSession(seeds, driverConf)
