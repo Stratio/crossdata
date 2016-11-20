@@ -41,7 +41,7 @@ object ResourceManagerActor {
 
 }
 
-class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider) extends Actor with ServerConfig {
+class ResourceManagerActor(cluster: Cluster, sessionProvider: XDSessionProvider) extends Actor {
 
   import ResourceManagerActor._
 
