@@ -57,7 +57,7 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
       zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress, "prefix" -> "crossdataCluster")
       catalogConf = parseZookeeperCatalogConfig(zookeeperConf)
       xDContext = XDContext.getOrCreate(sc, new CoreConfig(parseCatalogConfig(catalogConf)))
-      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), xDContext.catalogConfig)
+      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), xDContext.coreConfig.config)
     }
 
     if (consumer == null) {
