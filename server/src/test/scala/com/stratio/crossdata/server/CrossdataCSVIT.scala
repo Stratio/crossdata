@@ -24,9 +24,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class CrossdataCSVIT extends SharedXDContextTest with ServerConfig {
-
-  override lazy val logger = Logger.getLogger(classOf[CrossdataCSVIT])
+class CrossdataCSVIT extends SharedXDContextTest {
 
   "Crossdata" should "execute csv queries" in {
 
