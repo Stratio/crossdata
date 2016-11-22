@@ -22,31 +22,30 @@ import javax.net.ssl.{KeyManagerFactory, SSLContext, SSLException, TrustManagerF
 import akka.NotUsed
 import akka.actor.ActorRef
 import akka.cluster.ClusterEvent.CurrentClusterState
-import akka.http.scaladsl.{Http, HttpExt, HttpsConnectionContext}
 import akka.http.scaladsl.marshalling.{Marshal, Marshaller}
-import akka.http.scaladsl.model._
-import akka.stream.{ActorMaterializer, TLSClientAuth}
-import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.common.security.{KeyStoreUtils, Session}
-import com.stratio.crossdata.driver.config.DriverConf
-import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
-import org.slf4j.{Logger, LoggerFactory}
 import akka.http.scaladsl.model.HttpMethods._
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.{Unmarshaller, _}
+import akka.http.scaladsl.{Http, HttpExt, HttpsConnectionContext}
 import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.stream.{ActorMaterializer, TLSClientAuth}
 import akka.util.ByteString
 import com.stratio.crossdata.common._
+import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.security.{KeyStoreUtils, Session}
 import com.stratio.crossdata.common.serializers.{CrossdataCommonSerializer, StreamedRowSerializer}
 import com.stratio.crossdata.driver.actor.HttpSessionBeaconActor
+import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.exceptions.TLSInvalidAuthException
+import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import org.json4s.jackson
+import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.generic.SeqFactory
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Try}
 
@@ -157,7 +156,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
          if(httpResponse.status == StatusCodes.OK) { // OK Responses will be served through streaming
 
-           deserializeSchemaAndRows(httpResponse.entity.dataBytes).flatMap { case (schema, streamedRowSource) =>
+           receiveSchemaAndRows(httpResponse.entity.dataBytes).flatMap { case (schema, streamedRowSource) =>
              val rows = streamedRowSource.runFold(List.empty[Row]) {
                case (acc: List[Row], StreamedRow(row, None)) => row::acc
                case _ => Nil
@@ -199,7 +198,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
       http.singleRequest(request) flatMap { httpResponse =>
 
         if (httpResponse.status == StatusCodes.OK) {  // OK Responses will be served through streaming
-          deserializeSchemaAndRows(httpResponse.entity.dataBytes).map { case (schema, streamedRowSource) =>
+          receiveSchemaAndRows(httpResponse.entity.dataBytes).map { case (schema, streamedRowSource) =>
             val rows = streamedRowSource.map { case streamedRow: StreamedRow => streamedRow.row }
             StreamedSuccessfulSQLResult(rows, schema)
           }
@@ -212,7 +211,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
     }
   }
 
-  private def deserializeSchemaAndRows(bytesSource: Source[ByteString, Any]): Future[(StructType, Source[InternalStreamedSuccessfulSQLResult, NotUsed])] = {
+  private def receiveSchemaAndRows(bytesSource: Source[ByteString, Any]): Future[(StructType, Source[InternalStreamedSuccessfulSQLResult, NotUsed])] = {
     val framesSource = bytesSource.filterNot(bs => bs.isEmpty || bs == ByteString("\n")) //...empty lines get removed...
     val rawSchemaAndRawRowsSource = framesSource.prefixAndTail[ByteString](1) //remaining get transformed to ByteStrings.
 
