@@ -45,17 +45,23 @@ trait PostgresqlWithSharedContext extends SharedXDContextWithDataTest
 
     statement.execute(s"CREATE SCHEMA $postgresqlSchema")
 
+    // Basic table
     statement.execute(
       s"""CREATE TABLE $postgresqlSchema.$Table (${stringifySchema(schema)},
           |PRIMARY KEY (${pk.mkString(", ")}))""".stripMargin.replaceAll("\n", " "))
+
+    // Aggregation table
+    statement.execute(
+      s"""CREATE TABLE $postgresqlSchema.$aggregationTable (${stringifySchema(schemaAgg)},
+          |PRIMARY KEY (${pkAgg.mkString(", ")}))""".stripMargin.replaceAll("\n", " "))
 
     if(indexedColumn.nonEmpty){
       statement.execute(s"CREATE INDEX student_index ON $postgresqlSchema.$Table (name)")
     }
 
-    def insertRow(row: List[Any]): Unit = {
+    def insertRow(row: List[Any], tableName: String, tableSchema: ListMap[String, String]): Unit = {
       statement.execute(
-        s"""INSERT INTO $postgresqlSchema.$Table(${schema.map(p => p._1).mkString(", ")})
+        s"""INSERT INTO $tableName (${tableSchema.map(p => p._1).mkString(", ")})
             | VALUES (${parseRow(row)})""".stripMargin.replaceAll("\n", ""))
     }
 
@@ -72,7 +78,9 @@ trait PostgresqlWithSharedContext extends SharedXDContextWithDataTest
       }
     }
 
-    testData.foreach(insertRow(_))
+    testData.foreach(data => insertRow(data, s"$postgresqlSchema.$Table", schema))
+    //TODO fix this. It appears a [ character
+    testDataAggTable.foreach(data => insertRow(data, s"$postgresqlSchema.$aggregationTable", schemaAgg))
 
     //This creates a new table in the schema which will not be initially registered at the Spark
     if(UnregisteredTable.nonEmpty){
@@ -103,7 +111,8 @@ trait PostgresqlWithSharedContext extends SharedXDContextWithDataTest
   } toOption
 
   abstract override def sparkRegisterTableSQL: Seq[SparkTable] = super.sparkRegisterTableSQL :+
-    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $postgresqlSchema.$Table")
+    str2sparkTableDesc(s"CREATE TEMPORARY TABLE $postgresqlSchema.$Table") :+
+    SparkTable(s"CREATE TEMPORARY TABLE $postgresqlSchema.$aggregationTable", aggTableOptions)
 
   override val runningError: String = "Postgresql and Spark must be up and running"
 
@@ -114,6 +123,7 @@ sealed trait postgresqlDefaultTestConstants {
   private lazy val config = ConfigFactory.load()
   val postgresqlSchema = "highschool"
   val Table = "students"
+  val aggregationTable = "studentsAgg"
   val UnregisteredTable = "teachers"
   val driver: String = "org.postgresql.Driver"
   val postgresqlHost: String = Try(config.getStringList("postgresql.host")).map(_.get(0)).getOrElse("127.0.0.1")
@@ -125,12 +135,27 @@ sealed trait postgresqlDefaultTestConstants {
 
   val url: String = s"jdbc:postgresql://$postgresqlHost:5432/$database?user=$user&password=$password"
   val schema = ListMap("id" -> "integer", "age" -> "integer", "comment" -> "text", "enrolled" -> "boolean", "name" -> "text")
-  val pk = "id" :: "age" :: "comment" :: Nil
+  val schemaAgg = ListMap("id" -> "integer", "mark" -> "numeric(4,2)", "country" -> "text")
+
+  val pk = "id" :: "comment" :: Nil
+  val pkAgg = "id" :: "mark" :: Nil
   val indexedColumn = "name"
+
+  val aggTableOptions = Map("url" -> url, "dbtable" -> s"$postgresqlSchema.$aggregationTable")
 
   val testData = (for (a <- 1 to 10) yield {
     a :: (10 + a) :: s"Comment $a" :: (a % 2 == 0) :: s"Name $a" :: Nil
   }).toList
+
+  val testDataAgg = (for (a <- 1 to 10) yield {
+    a :: a.toDouble + 0.25d :: {if(a < 6) "ES" else "US"} :: Nil
+  }).toList
+
+  val testDataAggTable =  testDataAgg ++ testData.map{ row =>
+    List(row(0).asInstanceOf[Int] + 10,
+      row(1).asInstanceOf[Int].toDouble +0.25,
+      row(2))
+  }
 
   val SourceProvider = "com.stratio.crossdata.connector.postgresql"
 }
