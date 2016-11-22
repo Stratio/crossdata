@@ -35,16 +35,14 @@ import org.apache.spark.SparkContext
 import scala.collection.JavaConversions._
 
 
-class CrossdataServer extends Daemon with ServerConfig {
+class CrossdataServer extends ServerConfig {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
   var system: Option[ActorSystem] = None
   var xdContext: Option[XDContext] = None
 
-  override def init(p1: DaemonContext): Unit = ()
-
-  override def start(): Unit = {
+  def start(): Unit = {
 
     val sparkParams = config.entrySet()
       .map(e => (e.getKey, e.getValue.unwrapped().toString))
@@ -95,12 +93,11 @@ class CrossdataServer extends Daemon with ServerConfig {
     }
   }
 
-  override def stop(): Unit = {
-    xdContext.foreach(_.sc.stop())
-    system.foreach(_.shutdown())
+  /**
+    * Just for test purposes
+    */
+  def stop(): Unit = {
     logger.info("Crossdata Server stopped")
   }
-
-  override def destroy(): Unit = ()
 
 }

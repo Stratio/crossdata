@@ -15,29 +15,10 @@
  */
 package com.stratio.crossdata.server
 
-import scala.annotation.tailrec
 
 object CrossdataApplication extends App {
 
   val crossdataServer = new CrossdataServer
-
-  crossdataServer.init(null)
   crossdataServer.start()
-  commandLoop()
-  crossdataServer.stop()
-  crossdataServer.destroy()
-
-  /**
-   * This method make a command loop.
-   * @return  nothing.
-   * */
-  @tailrec
-  private def commandLoop(): Unit = {
-    Console.readLine() match {
-      case "quit" | "exit" => sys.exit()
-      case _ =>
-    }
-    commandLoop()
-  }
 
 }
