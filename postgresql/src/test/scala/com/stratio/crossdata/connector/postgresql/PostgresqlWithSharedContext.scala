@@ -79,7 +79,6 @@ trait PostgresqlWithSharedContext extends SharedXDContextWithDataTest
     }
 
     testData.foreach(data => insertRow(data, s"$postgresqlSchema.$Table", schema))
-    //TODO fix this. It appears a [ character
     testDataAggTable.foreach(data => insertRow(data, s"$postgresqlSchema.$aggregationTable", schemaAgg))
 
     //This creates a new table in the schema which will not be initially registered at the Spark
