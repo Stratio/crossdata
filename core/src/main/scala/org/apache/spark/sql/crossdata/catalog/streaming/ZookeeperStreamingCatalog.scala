@@ -41,7 +41,7 @@ class ZookeeperStreamingCatalog(val catalystConf: CatalystConf, catalogConfig: C
   private[spark] val ephemeralTableStatusDAO =
     new EphemeralTableStatusTypesafeDAO(streamingConfig.getConfig(CoreConfig.CatalogConfigKey))
 
-  
+
 
   override def relation(tableIdent: TableIdentifierNormalized)(implicit sqlContext: SQLContext): Option[LogicalPlan] = {
     import XDCatalogCommon._

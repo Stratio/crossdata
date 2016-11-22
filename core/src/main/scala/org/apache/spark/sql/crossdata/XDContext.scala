@@ -345,12 +345,6 @@ class XDContext protected(@transient val sc: SparkContext,
   */
 object XDContext {
 
-  /* TODO: Remove the config attributes from the companion object!!!
-      AS WELL AS change the companion object so it doesn't extends `CoreConfig`!!!!
-   */
-
-  val coreConfig = new CoreConfig
-
   //This is definitely NOT right and will only work as long a single instance of XDContext exits
   private lazy val logger = Logger.getLogger(classOf[XDContext])
 
