@@ -81,6 +81,7 @@ class PostgresqlXDRelation( url: String,
       case Limit(_, _) | Project(_, _) | Filter(_, _) => true
       case _: Sort => true
       case _: Aggregate => true
+        //TODO case _: Subquery => true
       case _ => false
     }
     case bn: BinaryNode => bn match {
