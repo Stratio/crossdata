@@ -24,9 +24,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class CrossdataAvroIT extends SharedXDContextTest with ServerConfig {
-
-  override lazy val logger = Logger.getLogger(classOf[CrossdataAvroIT])
+class CrossdataAvroIT extends SharedXDContextTest {
 
   "Crossdata" should "execute avro queries" in {
 

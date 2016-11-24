@@ -42,14 +42,14 @@ import scala.concurrent.Future
 import scala.util.Try
 
 
-class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscoveryProvider with ServerConfig{
+class CrossdataServer(sConfig: ServerConfig) extends ServiceDiscoveryProvider {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
   private var system: Option[ActorSystem] = None
   private var bindingFuture: Option[Future[ServerBinding]] = None
 
-  override protected lazy val serverConfig = progrConfig map (_.withFallback(config)) getOrElse (config)
+  override protected lazy val serverConfig = sConfig.config
 
   private lazy val sparkContext: SparkContext = {
     val sparkParams = serverConfig.entrySet()
@@ -83,7 +83,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscove
     val finalHzConfig = sdHelper.fold(hzConfig)(_.hzConfig)
 
     sessionProviderOpt = Some {
-      if (isHazelcastEnabled)
+      if (sConfig.isHazelcastEnabled)
         new HazelcastSessionProvider(
           sparkContext,
           serverConfig = serverConfig,
@@ -106,7 +106,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscove
       logger.info(s"Seed nodes: ${e.getValue}")
     }
 
-    system = Some(ActorSystem(clusterName, finalConfig))
+    system = Some(ActorSystem(sConfig.clusterName, finalConfig))
 
     system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
 
@@ -123,14 +123,15 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscove
         }
       }
 
-      val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
+      val resizer = DefaultResizer(lowerBound = sConfig.minServerActorInstances, upperBound = sConfig.maxServerActorInstances)
       val serverActor = actorSystem.actorOf(
-        RoundRobinPool(minServerActorInstances, Some(resizer)).props(
+        RoundRobinPool(sConfig.minServerActorInstances, Some(resizer)).props(
           Props(
             classOf[ServerActor],
             xdCluster,
-            sessionProvider)),
-        actorName)
+            sessionProvider,
+            sConfig)),
+        sConfig.actorName)
 
       val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
       val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))

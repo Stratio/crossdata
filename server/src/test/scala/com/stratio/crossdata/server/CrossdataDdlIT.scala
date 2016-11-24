@@ -28,9 +28,7 @@ import org.scalatest.junit.JUnitRunner
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class CrossdataDdlIT extends SharedXDContextTest with ServerConfig{
-
-  override lazy val logger = Logger.getLogger(classOf[CrossdataDdlIT])
+class CrossdataDdlIT extends SharedXDContextTest {
 
   val MongoHost: String = {
     Try(ConfigFactory.load().getStringList("mongo.hosts")).map(_.get(0)).getOrElse("127.0.0.1")

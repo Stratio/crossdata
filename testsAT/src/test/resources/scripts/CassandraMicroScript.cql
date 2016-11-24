@@ -29,3 +29,6 @@ INSERT INTO databasetest.tabletest(ident,name,money,new,date) VALUES (9, 'name_9
 CREATE TABLE databasetest.tab1(name TEXT PRIMARY KEY);
 INSERT INTO databasetest.tab1(name) VALUES ('name_0');
 INSERT INTO databasetest.tab1(name) VALUES ('name_1');
+CREATE TABLE databasetest.tabmap(user_id text PRIMARY KEY, mapcolumn map<timestamp,text>);
+INSERT INTO databasetest.tabmap (user_id, mapcolumn) VALUES ( 'frodo', { '2013-9-22 12:01'  : 'birthday wishes to Bilbo', '2013-10-1 18:00' : 'Check into Inn of Prancing Pony' });
+INSERT INTO databasetest.tabmap (user_id, mapcolumn) VALUES ( 'bilbo', { '2014-9-22 12:01'  : 'birthday wishes to Frodo', '2014-10-1 18:00' : 'Check into Inn of Prancing Pony' });
