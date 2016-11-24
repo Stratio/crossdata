@@ -71,3 +71,10 @@ Feature: [CROSSDATA-677] Microstrategy - Tests Queries
       |    3        |name_3       |
       |    3        |name_3       |
 
+
+  Scenario:[CROSSDATA-808] SELECT * FROM table with map(timestamp, string)
+    When I execute 'SELECT * FROM databasetest.tabmap'
+    Then an exception 'IS NOT' thrown
+    Then The result has to have '2' rows native
+      |user_id-string| mapcolumn-map|
+
