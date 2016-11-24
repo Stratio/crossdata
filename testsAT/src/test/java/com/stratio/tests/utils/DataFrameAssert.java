@@ -64,6 +64,13 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
         return this;
     }
 
+    public DataFrameAssert hasLengthNative(int length){
+        if(actual.collect(ExecutionType.Native()).length != length){
+            failWithMessage("Expected DataFrame length to be <%s> but was <%s>", length, actual.collect().length);
+        }
+        return this;
+    }
+
     public DataFrameAssert hasFlattenedLength(int length){
         if(actual.flattenedCollect().length != length){
             failWithMessage("Expected DataFrame length to be <%s> but was <%s>", length, actual.collect().length);
