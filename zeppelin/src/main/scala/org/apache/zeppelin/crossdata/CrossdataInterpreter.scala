@@ -15,40 +15,42 @@
  */
 package org.apache.zeppelin.crossdata
 
-import com.stratio.crossdata.common.result.ErrorSQLResult
-import com.stratio.crossdata.common.result.SQLResult
-import com.stratio.crossdata.common.result.SuccessfulSQLResult
-import com.stratio.crossdata.driver.JavaDriver
-import com.stratio.crossdata.driver.config.DriverConf
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.StructType
-import org.apache.zeppelin.interpreter.Interpreter
-import org.apache.zeppelin.interpreter.InterpreterContext
-import org.apache.zeppelin.interpreter.InterpreterResult
-import org.apache.zeppelin.scheduler.Scheduler
-import org.apache.zeppelin.scheduler.SchedulerFactory
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration.FiniteDuration
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.driver.Driver
+import com.stratio.crossdata.driver.config.DriverConf
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.StructType
 import org.apache.zeppelin.interpreter.Interpreter.FormType
+import org.apache.zeppelin.interpreter.{Interpreter, InterpreterContext, InterpreterResult}
+import org.apache.zeppelin.scheduler.{Scheduler, SchedulerFactory}
 
 import scala.collection.JavaConversions._
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 object CrossdataInterpreter {
   private val CROSSDATA_SEEDS_PROPERTY: String = "crossdata.seeds"
+  private val CROSSDATA_HTTP_CONNECTION: String = "crossdata.http"
   private val CROSSDATA_DEFAULT_LIMIT: String = "crossdata.defaultLimit"
   private val CROSSDATA_TIMEOUT_SEC: String = "crossdata.timeoutSeconds"
 }
 
 class CrossdataInterpreter(property: Properties) extends Interpreter(property) {
-  private var driver: JavaDriver = _
+  private var driver: Driver = _
 
   def open() = {
     val seeds: java.util.List[String] = (getProperty(CrossdataInterpreter.CROSSDATA_SEEDS_PROPERTY).split(",")).toList
-    driver = new JavaDriver(new DriverConf().setClusterContactPoint(seeds))
+    val driverConf = new DriverConf
+
+    driver = if(getProperty(CrossdataInterpreter.CROSSDATA_HTTP_CONNECTION).toBoolean){
+      seeds(0).split(":") match { case Array(host, port) => driverConf.setHttpHostAndPort(host, port.toInt) }
+      Driver.http.newSession(driverConf)
+    } else {
+      Driver.newSession(seeds, driverConf)
+    }
+
   }
 
   def close() = {
@@ -61,7 +63,7 @@ class CrossdataInterpreter(property: Properties) extends Interpreter(property) {
 
     val timeout: Duration = if (secondsTimeout <= 0) Duration.Inf else new FiniteDuration(secondsTimeout, TimeUnit.SECONDS)
 
-    driver.sql(sql, timeout) match {
+    driver.sql(sql).waitForResult(timeout) match {
       case er: ErrorSQLResult => new InterpreterResult(InterpreterResult.Code.ERROR, er.message)
       case esr: SuccessfulSQLResult if esr.resultSet.length <= 0 => new InterpreterResult(InterpreterResult.Code.SUCCESS, "%text EMPTY result")
       case sr: SuccessfulSQLResult if sr.resultSet.length > 0 => new InterpreterResult(InterpreterResult.Code.SUCCESS, resultToZeppelinMsg(sr))
@@ -107,6 +109,7 @@ class CrossdataInterpreter(property: Properties) extends Interpreter(property) {
 
   def getProgress(context: InterpreterContext): Int = 0
 
-  override def getScheduler: Scheduler = SchedulerFactory.singleton.createOrGetParallelScheduler("interpreter_" + this.hashCode, 10)
+  override def getScheduler: Scheduler =
+    SchedulerFactory.singleton.createOrGetParallelScheduler(s"interpreter_${this.hashCode}", 10)
 }
 
