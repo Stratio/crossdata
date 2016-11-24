@@ -29,20 +29,18 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.BodyPart
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.unmarshalling._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Flow, Source}
 import akka.util.{ByteString, Timeout}
 import com.stratio.crossdata.common.security.Session
 import com.stratio.crossdata.common.util.akka.keepalive.LiveMan.HeartBeat
 import com.stratio.crossdata.common._
-import com.stratio.crossdata.common.result.{ErrorSQLResult, StreamedSchema, StreamedSuccessfulSQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.common.result.{ErrorSQLResult, StreamedSuccessfulSQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.server.actors.ResourceManagerActor
 import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.util.HdfsUtils
 import com.typesafe.config.{Config, ConfigException}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.serializers.CrossdataSerializer
 import org.apache.spark.sql.types.StructType
