@@ -66,35 +66,20 @@ import scala.util.{Failure, Success, Try}
   * @param sc A [[SparkContext]].
   */
 class XDContext protected(@transient val sc: SparkContext,
-                          @transient private val userCoreConfig: Option[Config] = None
+                          @transient val coreConfig: CoreConfig
+                          //@transient private val userCoreConfig: Option[Config] = None
                          ) extends SQLContext(sc) with Logging {
   self =>
 
   def this(sc: SparkContext) =
-    this(sc, None)
-
-  def this(sc: SparkContext, config: Config) =
-    this(sc, Some(config))
+    this(sc, new CoreConfig)
 
   import CoreConfig._
   import XDContext._
 
-  /* TODO: Remove the config attributes from the companion object!!!
-     This only works because you can only have a SQLContext per running instance
-     but its a dirty trick to avoid typesafe's Config serialization when sending the tasks
-     to each worker.
+  lazy val catalogConfig = coreConfig.catalogConfig
 
-     Config should be changed by a map and implicitly converted into `Config` whenever one of its
-     methods is called.
-     */
-
-  xdConfig = userCoreConfig.fold(config) { userConf =>
-    userConf.withFallback(config)
-  }
-
-  catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
-
-  private lazy val catalogIdentifier: String = Try(xdConfig.getString(CatalogPrefixConfigKey)).recover {
+  private lazy val catalogIdentifier: String = Try(coreConfig.config.getString(CatalogPrefixConfigKey)).recover {
     case _: ConfigException =>
       logger.warn("Catalog identifier not found. Using the default identifier may cause some problems")
       CoreConfig.DefaultCatalogIdentifier
@@ -106,9 +91,7 @@ class XDContext protected(@transient val sc: SparkContext,
     new XDQueryExecution(this, plan, catalogIdentifier)
 
   override protected[sql] lazy val conf: SQLConf =
-    userCoreConfig.map { coreConfig =>
-      configToSparkSQL(coreConfig, new SQLConf)
-    }.getOrElse(new SQLConf)
+    configToSparkSQL(coreConfig.config, new SQLConf) //TODO: BAD!!!! It has to be ServerConfig or move that properties to CoreConfig
 
 
   @transient
@@ -116,7 +99,7 @@ class XDContext protected(@transient val sc: SparkContext,
 
     val temporaryCatalog: XDTemporaryCatalog = new HashmapCatalog(conf)
     val externalCatalog: XDPersistentCatalog = CatalogUtils.externalCatalog(conf, catalogConfig)
-    val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(conf, xdConfig)
+    val streamingCatalog: Option[XDStreamingCatalog] = CatalogUtils.streamingCatalog(conf, coreConfig.config) //TODO: Should be StreamingCatalogConfig? Encapsulate?????
 
     val catalogs: List[XDCatalogCommon] = temporaryCatalog :: externalCatalog :: streamingCatalog.toList
     CatalogChain(catalogs: _*)(self)
@@ -246,8 +229,8 @@ class XDContext protected(@transient val sc: SparkContext,
   def addJar(path: String, toClasspath: Option[Boolean] = None) = {
     super.addJar(path)
     if ((path.toLowerCase.startsWith("hdfs://")) && (toClasspath.getOrElse(true))) {
-      val hdfsIS: InputStream = HdfsUtils(xdConfig.getConfig(CoreConfig.HdfsKey)).getFile(path)
-      val file: java.io.File = createFile(hdfsIS, s"${xdConfig.getConfig(CoreConfig.JarsRepo).getString("externalJars")}/${path.split("/").last}")
+      val hdfsIS: InputStream = HdfsUtils(coreConfig.config.getConfig(CoreConfig.HdfsKey)).getFile(path)
+      val file: java.io.File = createFile(hdfsIS, s"${coreConfig.config.getConfig(CoreConfig.JarsRepo).getString("externalJars")}/${path.split("/").last}")
       addToClasspath(file)
     } else if (scala.reflect.io.File(path).exists) {
       val file = new java.io.File(path)
@@ -284,7 +267,7 @@ class XDContext protected(@transient val sc: SparkContext,
   def executeApp(appName: String, arguments: Seq[String], submitOptions: Option[Map[String, String]] = None): Seq[Row] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     val crossdataApp = catalog.lookupApp(appName).getOrElse(sys.error(s"There is not any app called $appName"))
-    val launcherConfig = xdConfig.getConfig(CoreConfig.LauncherKey)
+    val launcherConfig = coreConfig.config.getConfig(CoreConfig.LauncherKey)
     SparkJobLauncher.getSparkJob(launcherConfig, this.sparkContext.master, crossdataApp.appClass, arguments, crossdataApp.jar, crossdataApp.appAlias, submitOptions) match {
       case Failure(exception) =>
         logError(exception.getMessage, exception)
@@ -327,7 +310,7 @@ class XDContext protected(@transient val sc: SparkContext,
     * @param indexIdentifier the index to be dropped.
     */
   def dropGlobalIndex(indexIdentifier: IndexIdentifier): Unit =
-  catalog.dropIndex(indexIdentifier)
+    catalog.dropIndex(indexIdentifier)
 
 
   /**
@@ -337,7 +320,7 @@ class XDContext protected(@transient val sc: SparkContext,
     * @param opts
     */
   def importTables(datasource: String, opts: Map[String, String]): Unit =
-  ImportTablesUsingWithOptions(datasource, opts).run(this)
+    ImportTablesUsingWithOptions(datasource, opts).run(this)
 
 
   /**
@@ -346,7 +329,7 @@ class XDContext protected(@transient val sc: SparkContext,
     * @return if connection is possible
     */
   def checkCatalogConnection: Boolean =
-  catalog.checkConnectivity
+    catalog.checkConnectivity
 
 
   def createDataFrame(rows: Seq[Row], schema: StructType): DataFrame =
@@ -360,18 +343,14 @@ class XDContext protected(@transient val sc: SparkContext,
   * This XDContext object contains utility functions to create a singleton XDContext instance,
   * or to get the last created XDContext instance.
   */
-object XDContext extends CoreConfig {
-
-  /* TODO: Remove the config attributes from the companion object!!!
-      AS WELL AS change the companion object so it doesn't extends `CoreConfig`!!!!
-   */
+object XDContext {
 
   //This is definitely NOT right and will only work as long a single instance of XDContext exits
-  override lazy val logger = Logger.getLogger(classOf[XDContext])
+  private lazy val logger = Logger.getLogger(classOf[XDContext])
 
-  var xdConfig: Config = _
+  //var xdConfig: Config = _
   //This is definitely NOT right and will only work as long a single instance of XDContext exits
-  var catalogConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
+  //var catalogConfig: Config = _ //This is definitely NOT right and will only work as long a single instance of XDContext exits
 
 
   @transient private val INSTANTIATION_LOCK = new Object()
@@ -386,11 +365,11 @@ object XDContext extends CoreConfig {
     * This function can be used to create a singleton SQLContext object that can be shared across
     * the JVM.
     */
-  def getOrCreate(sparkContext: SparkContext, userConfig: Option[Config] = None): XDContext = {
+  def getOrCreate(sparkContext: SparkContext, coreConfig: CoreConfig): XDContext = {
     INSTANTIATION_LOCK.synchronized {
       Option(lastInstantiatedContext.get()).filter(
         _.getClass == classOf[XDContext]
-      ).getOrElse(new XDContext(sparkContext, userConfig))
+      ).getOrElse(new XDContext(sparkContext, coreConfig))
     }
     lastInstantiatedContext.get()
   }

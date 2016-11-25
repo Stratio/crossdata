@@ -23,11 +23,13 @@ import org.apache.spark.sql.crossdata.config.CoreConfig
 import scala.concurrent.Future
 import scala.util.Try
 
-object ServiceDiscoveryConfigHelper extends CoreConfig {
+object ServiceDiscoveryConfigHelper {
 
-  override val logger: Logger = Logger.getLogger(this.getClass)
+  val coreConfig = new CoreConfig //TODO: BAD. It should be one coreConfig per XDContext
 
-  val ClusterPrefix = Try(config.getString("catalog.prefix")).toOption
+  private lazy val logger: Logger = Logger.getLogger(this.getClass)
+
+  val ClusterPrefix = Try(coreConfig.config.getString("catalog.prefix")).toOption
 
   ClusterPrefix.foreach{ p =>
     logger.info(s"Cluster prefix for service discovery: $p")

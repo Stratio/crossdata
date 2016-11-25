@@ -19,11 +19,12 @@ import java.lang.Boolean
 import java.nio.file.Paths
 
 import com.stratio.crossdata.test.BaseXDTest
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.crossdata.catalog.persistent.DerbyCatalog
 import org.apache.spark.sql.crossdata.catalog.temporary.HashmapCatalog
 import org.apache.spark.sql.crossdata.catalyst.execution.PersistDataSourceTable
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 import org.apache.spark.sql.execution.ExecutedCommand
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
@@ -58,8 +59,9 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
       }
 
       new XDSession(
-        new XDSharedState(_sparkContext,sqlConf, new DerbyCatalog(sqlConf), None, None),
-        new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
+        new XDSharedState(_sparkContext,sqlConf, new DerbyCatalog(sqlConf, ConfigFactory.empty), None, None),
+        new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil),
+        new CoreConfig
       )
     }
 
@@ -185,8 +187,9 @@ class XDSessionIT extends BaseXDTest with BeforeAndAfterAll {
   private def createNewDefaultSession: XDSession = {
     val sqlConf = new SQLConf
     new XDSession(
-      new XDSharedState(_sparkContext, sqlConf, new DerbyCatalog(sqlConf), None, None),
-      new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
+      new XDSharedState(_sparkContext, sqlConf, new DerbyCatalog(sqlConf, ConfigFactory.empty), None, None),
+      new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil),
+      new CoreConfig
     )
   }
 

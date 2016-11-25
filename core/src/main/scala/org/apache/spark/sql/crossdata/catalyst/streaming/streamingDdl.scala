@@ -186,7 +186,7 @@ private[crossdata] case class StartProcess(tableIdentifier: String) extends Logi
 
   override def run(sqlContext: SQLContext): Seq[Row] = {
     val xdContext = sqlContext.asInstanceOf[XDContext]
-    val sparkJob = SparkJobLauncher.getSparkStreamingJob(xdContext, XDContext.xdConfig, tableIdentifier)
+    val sparkJob = SparkJobLauncher.getSparkStreamingJob(xdContext, xdContext.coreConfig, tableIdentifier)
 
     sparkJob match {
       case Failure(exception) =>

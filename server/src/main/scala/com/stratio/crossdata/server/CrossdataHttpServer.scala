@@ -98,7 +98,7 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
 
           logger.info("Recieved file")
           complete {
-            val hdfsConfig = XDContext.xdConfig.getConfig("hdfs")
+            val hdfsConfig = XDContext.coreConfig.config.getConfig("hdfs") //TODO: Encapsulate
             val hdfsPath = writeJarToHdfs(hdfsConfig, path)
             val session = Session(sessionUUID, null)
             val user = "fileupload"

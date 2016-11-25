@@ -25,6 +25,7 @@ import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata._
 import org.apache.spark.sql.crossdata.catalog.interfaces.{XDPersistentCatalog, XDStreamingCatalog, XDTemporaryCatalog}
 import org.apache.spark.sql.crossdata.catalog.utils.CatalogUtils
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.config.CoreConfig._
 import org.apache.spark.sql.crossdata.session.XDSessionProvider.SessionID
 
@@ -62,7 +63,7 @@ class HazelcastSessionProvider(sc: SparkContext,
       }
     }
 
-  override lazy val logger = Logger.getLogger(classOf[HazelcastSessionProvider])
+  private lazy val logger = Logger.getLogger(classOf[HazelcastSessionProvider])
 
   private lazy val sqlConf: SQLConf = configToSparkSQL(serverConfig, new SQLConf) // TODO Crossdata 1.8+ user server config should be replaced with user core config
 
@@ -135,9 +136,9 @@ class HazelcastSessionProvider(sc: SparkContext,
                             sessionID: SessionID,
                             sqlConf: XDSQLConf,
                             xDTemporaryCatalogs: Seq[XDTemporaryCatalog],
-                            coreConfig: Option[Config] = None): XDSession = {
+                            userConfig: Option[Config] = None): XDSession = {
     val sessionState = new XDSessionState(sqlConf, xDTemporaryCatalogs)
-    new XDSession(sharedState, sessionState, coreConfig)
+    new XDSession(sharedState, sessionState, new CoreConfig(userConfig))
   }
 
 }

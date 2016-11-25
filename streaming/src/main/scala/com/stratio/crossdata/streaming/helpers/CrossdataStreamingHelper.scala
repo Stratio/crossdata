@@ -23,6 +23,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.crossdata.XDContext
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.{Seconds, StreamingContext}
@@ -99,7 +100,7 @@ object CrossdataStreamingHelper extends SparkLoggerComponent {
     val sqlTableName = ephemeralTable.name
     val query = ephemeralQuery.sql
     val kafkaOptionsMerged = mergeKafkaOptions(ephemeralQuery, kafkaOptions)
-    val xdContext = XDContext.getOrCreate(rdd.context, parseCatalogConfig(catalogConf))
+    val xdContext = XDContext.getOrCreate(rdd.context, new CoreConfig(parseCatalogConfig(catalogConf)))
     // TODO add sampling ratio
     val dfReader = xdContext.read
     val dfReaderWithschema = ephemeralTable.schema.map(dfReader.schema).getOrElse(dfReader)

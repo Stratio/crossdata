@@ -17,6 +17,7 @@ package org.apache.spark.sql.crossdata.catalog.persistent
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
+import com.typesafe.config.Config
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
 import org.apache.spark.sql.crossdata.{CrossdataVersion, XDContext}
@@ -72,16 +73,15 @@ object MySQLXDCatalog {
   *
   * @param catalystConf An implementation of the [[CatalystConf]].
   */
-class MySQLXDCatalog(override val catalystConf: CatalystConf)
+class MySQLXDCatalog(override val catalystConf: CatalystConf, catalogConfig: Config)
   extends PersistentCatalogWithCache(catalystConf) {
 
   import MySQLXDCatalog._
   import XDCatalog._
 
 
-  protected lazy val config = XDContext.catalogConfig
-  private lazy val db = config.getString(Database)
-  protected lazy val tablesPrefix = Try(s"${config.getString(PrefixConfig)}_") getOrElse ("") //prefix_
+  private lazy val db = catalogConfig.getString(Database)
+  protected lazy val tablesPrefix = Try(s"${catalogConfig.getString(PrefixConfig)}_") getOrElse ("") //prefix_
   protected lazy val tableWithTableMetadata = s"$tablesPrefix$DefaultTablesMetadataTable"
   protected lazy val tableWithViewMetadata = s"$tablesPrefix$DefaultViewsMetadataTable"
   protected lazy val tableWithAppJars = s"$tablesPrefix$DefaultAppsMetadataTable"
@@ -89,10 +89,10 @@ class MySQLXDCatalog(override val catalystConf: CatalystConf)
 
   @transient lazy val connection: Connection = {
 
-    val driver = config.getString(Driver)
-    val user = config.getString(User)
-    val pass = config.getString(Pass)
-    val url = config.getString(Url)
+    val driver = catalogConfig.getString(Driver)
+    val user = catalogConfig.getString(User)
+    val pass = catalogConfig.getString(Pass)
+    val url = catalogConfig.getString(Url)
 
     Class.forName(driver)
     try {

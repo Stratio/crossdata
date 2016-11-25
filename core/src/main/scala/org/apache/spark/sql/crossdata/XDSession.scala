@@ -21,6 +21,7 @@ import org.apache.spark.Logging
 import org.apache.spark.sql.SQLConf
 import org.apache.spark.sql.crossdata.catalog.interfaces.XDCatalogCommon
 import org.apache.spark.sql.crossdata.catalog.{CatalogChain, XDCatalog}
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 
 object XDSession {
@@ -38,9 +39,9 @@ object XDSession {
 class XDSession(
                  @transient private val xdSharedState: XDSharedState,
                  @transient private val xdSessionState: XDSessionState,
-                 @transient private val userCoreConfig: Option[Config] = None
+                 @transient override val coreConfig: CoreConfig
                )
-  extends XDContext(xdSharedState.sc, userCoreConfig) with Logging {
+  extends XDContext(xdSharedState.sc, coreConfig) with Logging {
 
   @transient
   override protected[sql] lazy val catalog: XDCatalog = {

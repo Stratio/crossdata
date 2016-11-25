@@ -86,11 +86,16 @@ object CoreConfig {
   }
 }
 
-trait CoreConfig extends Logging {
+class CoreConfig(userConfig: Option[Config] = None) extends Logging {
 
   import CoreConfig._
 
-  val logger: Logger
+  private lazy val logger: Logger = Logger.getLogger(classOf[CoreConfig])
+
+
+  //TODO: CatalogConfig to CatalogConfig and not Config
+  def catalogConfig: Config =
+    Try(config.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
 
   val config: Config = {
 
@@ -145,7 +150,7 @@ trait CoreConfig extends Logging {
 
     defaultConfig = systemPropertiesConfig.withFallback(defaultConfig)
 
-    ConfigFactory.load(defaultConfig)
+    ConfigFactory.load(userConfig map (_.withFallback(defaultConfig)) getOrElse (defaultConfig))
   }
 }
 

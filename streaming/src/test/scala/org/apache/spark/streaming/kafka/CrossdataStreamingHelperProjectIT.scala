@@ -24,6 +24,7 @@ import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
 import org.apache.spark.sql.catalyst.SimpleCatalystConf
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.sql.crossdata.catalog.streaming.ZookeeperStreamingCatalog
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.models.ConnectionModel
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.{SparkConf, SparkContext}
@@ -55,8 +56,8 @@ class CrossdataStreamingHelperProjectIT extends BaseSparkStreamingXDTest with Co
       kafkaTestUtils.setup()
       zookeeperConf = Map("connectionString" -> kafkaTestUtils.zkAddress, "prefix" -> "crossdataCluster")
       catalogConf = parseZookeeperCatalogConfig(zookeeperConf)
-      xDContext = XDContext.getOrCreate(sc, parseCatalogConfig(catalogConf))
-      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), XDContext.xdConfig) //TODO Replace XDContext.xdConfig when refactoring CoreConfig
+      xDContext = XDContext.getOrCreate(sc, new CoreConfig(parseCatalogConfig(catalogConf)))
+      zookeeperStreamingCatalog = new ZookeeperStreamingCatalog(new SimpleCatalystConf(true), xDContext.coreConfig.config)
     }
 
     if (consumer == null) {

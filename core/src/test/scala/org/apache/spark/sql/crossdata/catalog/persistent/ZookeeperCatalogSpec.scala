@@ -27,14 +27,20 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class ZookeeperCatalogSpec extends BaseXDTest {
 
-  private class ZookeeperCatalogWithMockedConfig(override val catalystConf: CatalystConf) extends ZookeeperCatalog(catalystConf) {
-    override lazy val config: Config =
-      ConfigFactory.load("catalogspec/zookeeper-catalog-test-properties.conf").getConfig(Seq(CoreConfig.ParentConfigName, CoreConfig.CatalogConfigKey) mkString ".")
-  }
+  lazy val defaultConfig: Config = new CoreConfig().catalogConfig
+
+  lazy val mockedConfig: Config =
+    ConfigFactory.load("catalogspec/zookeeper-catalog-test-properties.conf").getConfig(Seq(CoreConfig.ParentConfigName, CoreConfig.CatalogConfigKey) mkString ".")
+
+  private class ZookeeperCatalogExposedConfig(override val catalystConf: CatalystConf, val catalogConfig: Config)
+    extends ZookeeperCatalog(catalystConf, catalogConfig)
+
+  private class ZookeeperStreamingCatalogExposedConfig(override val catalystConf: CatalystConf, val catalogConfig: Config)
+    extends ZookeeperStreamingCatalog(catalystConf, catalogConfig)
 
   it should "get the cluster name from the config" in {
-    val catalog = new ZookeeperCatalogWithMockedConfig(new SimpleCatalystConf(true))
-    catalog.config.getString("prefix") shouldBe "crossdataClusterTest"
+    val catalog = new ZookeeperCatalogExposedConfig(new SimpleCatalystConf(true), mockedConfig)
+    catalog.catalogConfig.getString("prefix") shouldBe "crossdataClusterTest"
     catalog.tableDAO.dao.entity shouldBe "stratio/crossdata/crossdataClusterTest_tables"
     catalog.viewDAO.dao.entity shouldBe "stratio/crossdata/crossdataClusterTest_views"
     catalog.appDAO.dao.entity shouldBe "stratio/crossdata/crossdataClusterTest_apps"
@@ -52,19 +58,19 @@ class ZookeeperCatalogSpec extends BaseXDTest {
   }
 
   it should "work with the default values if cluster name is not specified" in {
-    val catalog = new ZookeeperCatalog(new SimpleCatalystConf(true))
-    an[Exception] shouldBe thrownBy(catalog.config.getString("prefix"))
+    val catalog = new ZookeeperCatalogExposedConfig(new SimpleCatalystConf(true), defaultConfig)
+    an[Exception] shouldBe thrownBy(catalog.catalogConfig.getString("prefix"))
     catalog.tableDAO.dao.entity shouldBe "stratio/crossdata/tables"
     catalog.viewDAO.dao.entity shouldBe "stratio/crossdata/views"
     catalog.appDAO.dao.entity shouldBe "stratio/crossdata/apps"
     catalog.indexDAO.dao.entity shouldBe "stratio/crossdata/indexes"
 
     //Ephemeral
-    val streamingCatalog = new ZookeeperStreamingCatalog(
+    val streamingCatalog = new ZookeeperStreamingCatalogExposedConfig(
       new SimpleCatalystConf(true),
       ConfigFactory.load("catalogspec/zookeeper-streaming-catalog-without-prefix.conf").getConfig(CoreConfig.ParentConfigName)
     )
-    an[Exception] shouldBe thrownBy(catalog.config.getString("streaming.catalog.zookeeper.prefix"))
+    an[Exception] shouldBe thrownBy(catalog.catalogConfig.getString("streaming.catalog.zookeeper.prefix"))
     streamingCatalog.ephemeralQueriesDAO.dao.entity shouldBe "stratio/crossdata/ephemeralqueries"
     streamingCatalog.ephemeralTableDAO.dao.entity shouldBe "stratio/crossdata/ephemeraltables"
     streamingCatalog.ephemeralTableStatusDAO.dao.entity shouldBe "stratio/crossdata/ephemeraltablestatus"

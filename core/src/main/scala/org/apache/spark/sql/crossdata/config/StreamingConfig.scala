@@ -17,16 +17,20 @@ package org.apache.spark.sql.crossdata.config
 
 
 import org.apache.log4j.Logger
+import org.apache.spark.Logging
 import org.apache.spark.sql.crossdata.config.StreamingConstants._
 import org.apache.spark.sql.crossdata.models._
 import org.apache.spark.sql.types.StructType
+
 import scala.collection.JavaConversions._
 
-object StreamingConfig extends CoreConfig {
+object StreamingConfig extends Logging {
 
-  override lazy val logger = Logger.getLogger("StreamingConfig")
+  private val coreConfig = new CoreConfig
 
-  lazy val streamingConfig = config.getConfig(StreamingConstants.StreamingConfPath)
+  private lazy val logger = Logger.getLogger("StreamingConfig")
+
+  lazy val streamingConfig = coreConfig.config.getConfig(StreamingConstants.StreamingConfPath)
 
   lazy val streamingConfigMap: Map[String, String] =
     streamingConfig.entrySet().map(entry => (entry.getKey, streamingConfig.getAnyRef(entry.getKey).toString)).toMap

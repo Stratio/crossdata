@@ -35,10 +35,10 @@ import scala.util.{Properties, Try}
 
 object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
 
-  def getSparkStreamingJob(xdContext: XDContext, crossdataConfig: Config, ephemeralTableName: String)
+  def getSparkStreamingJob(xdContext: XDContext, coreConfig: CoreConfig, ephemeralTableName: String)
                           (implicit executionContext: ExecutionContext): Try[SparkJob] = Try {
-    val streamingConfig = crossdataConfig.getConfig(StreamingConfPath)
-    val launcherConfig=crossdataConfig.getConfig(LauncherKey)
+    val streamingConfig = coreConfig.config.getConfig(StreamingConfPath)
+    val launcherConfig = coreConfig.config.getConfig(LauncherKey)
     val sparkHome =
       Properties.envOrNone("SPARK_HOME").orElse(Try(launcherConfig.getString(SparkHomeKey)).toOption).getOrElse(
         throw new RuntimeException("You must set the $SPARK_HOME path in configuration or environment")
@@ -47,14 +47,14 @@ object SparkJobLauncher extends SparkLoggerComponent with CrossdataSerializer {
     val eTable = xdContext.catalog.getEphemeralTable(ephemeralTableName).getOrElse(notFound(ephemeralTableName))
     val appName = s"${eTable.name}_${UUID.randomUUID()}"
     val zkConfigEncoded: String = encode(render(streamingConfig, ZooKeeperStreamingCatalogPath))
-    val catalogConfigEncoded: String = encode(render(crossdataConfig, CoreConfig.CatalogConfigKey))
+    val catalogConfigEncoded: String = encode(render(coreConfig.config, CoreConfig.CatalogConfigKey))
     val appArgs = Seq(eTable.name, zkConfigEncoded, catalogConfigEncoded)
     val master = streamingConfig.getString(SparkMasterKey)
     val jar = streamingConfig.getString(AppJarKey)
     val jars = Try(streamingConfig.getStringList(ExternalJarsKey).toSeq).getOrElse(Seq.empty)
     val sparkConfig: Map[String, String] = sparkConf(streamingConfig)
     if (master.toLowerCase.contains("mesos")) {
-      val hdfsPath = getHdfsPath(crossdataConfig, jar)
+      val hdfsPath = getHdfsPath(coreConfig.config, jar)
       getJob(sparkHome, StreamingConstants.MainClass, appArgs, appName, master, hdfsPath, sparkConfig, jars)(executionContext)
 
     } else {
