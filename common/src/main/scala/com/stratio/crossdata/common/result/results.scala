@@ -15,9 +15,17 @@
  */
 package com.stratio.crossdata.common.result
 
+import akka.NotUsed
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Source
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
+
+import scala.concurrent._
+import scala.concurrent.duration.Duration
+import scala.util.{Success, Try}
 
 
 trait Result {
@@ -96,12 +104,45 @@ case class ErrorSQLResult(message: String, cause: Option[Throwable] = None) exte
     cause.map(throwable => new RuntimeException(message, throwable)).getOrElse(new RuntimeException(message))
 }
 
-object StreamedSuccessfulSQLResult {
-  implicit def schema2streamed(schema: StructType): StreamedSuccessfulSQLResult = StreamedSchema(schema)
-  implicit def row2streamed(row: Row)(implicit providedSchema: StructType): StreamedSuccessfulSQLResult =
+
+trait StreamedSQLResult extends SQLResult {
+  val rowsSource: Source[Row, NotUsed]
+  val javaRowsSource: akka.stream.javadsl.Source[Row, NotUsed] = rowsSource.asJava
+
+  override def resultSet: Array[Row] = {
+    implicit val aSystem: ActorSystem = ActorSystem()
+    implicit  val aMater: ActorMaterializer = ActorMaterializer()
+
+    val sqlResult = rowsSource.runFold(List.empty[Row]) {
+      case (acc: List[Row], row: Row) => row :: acc
+      case _ => Nil
+    }
+    Await.result(sqlResult, Duration.Inf).reverse.toArray
+  }
+}
+
+case class StreamedSuccessfulSQLResult(rowsSource: Source[Row, NotUsed], schema: StructType) extends StreamedSQLResult {
+  val hasError: Boolean = false
+}
+
+case class StreamedErrorSQLResult(message: String, cause: Option[Throwable] = None) extends StreamedSQLResult {
+  val hasError = true
+  override lazy val rowsSource = throw mkException
+  override lazy val schema = throw mkException
+
+  private def mkException: Exception =
+    cause.map(throwable => new RuntimeException(message, throwable)).getOrElse(new RuntimeException(message))
+}
+
+
+object InternalStreamedSuccessfulSQLResult {
+  implicit def schema2streamed(schema: StructType): InternalStreamedSuccessfulSQLResult = StreamedSchema(schema)
+  implicit def row2streamed(row: Row)(implicit providedSchema: StructType): InternalStreamedSuccessfulSQLResult =
     StreamedRow(row, Some(providedSchema))
 }
 
-sealed trait StreamedSuccessfulSQLResult
-case class StreamedSchema(schema: StructType) extends StreamedSuccessfulSQLResult
-case class StreamedRow(row: Row, providedSchema: Option[StructType] = None) extends StreamedSuccessfulSQLResult
+sealed trait InternalStreamedSuccessfulSQLResult
+
+case class StreamedSchema(schema: StructType) extends InternalStreamedSuccessfulSQLResult
+
+case class StreamedRow(row: Row, providedSchema: Option[StructType] = None) extends InternalStreamedSuccessfulSQLResult

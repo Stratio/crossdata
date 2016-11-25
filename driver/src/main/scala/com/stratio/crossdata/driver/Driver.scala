@@ -15,9 +15,11 @@
  */
 package com.stratio.crossdata.driver
 
+import akka.NotUsed
 import akka.actor.{ActorSystem, Address}
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.cluster.MemberStatus
+import akka.stream.scaladsl.Source
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
@@ -160,6 +162,15 @@ abstract class Driver(protected[crossdata] val driverConf: DriverConf) {
     * @return A SQLResponse with the id and the result set.
     */
   def sql(query: String): SQLResponse
+
+  /**
+    * Executes a SQL sentence whose result contains a [[Source]] of [[Row]]s'
+    * Thus, the user can take advantage of the 'Akka Streams' API to consume/transform the stream of rows
+    *
+    * @param query The SQL Command.
+    * @return A Future with the streamed result.
+    */
+  def sqlStreamedResult(query: String): Future[StreamedSQLResult]
 
   /**
     * Add Jar to the XD Context

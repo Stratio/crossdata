@@ -8,22 +8,7 @@ Feature: CassandraSelectUDFS
     When I execute 'SELECT ident, now() AS actual FROM tabletest'
     Then The result has to have '10' rows
       |ident-integer|actual-timestamp     |
-
-  Scenario: [CASSANDRA NATIVE, CROSSDATA-31] SELECT ident, dateOf(now()) AS now FROM tabletest
-    When I execute 'SELECT ident, dateOf(now()) AS now FROM tabletest'
-    Then The result has to have '10' rows
-      |ident-integer|now-timestamp    |
-
-  Scenario: [CASSANDRA NATIVE, CROSSDATA-31] SELECT ident, unixTimestampOf(now()) AS now FROM tabletest
-    When I execute 'SELECT ident, unixTimestampOf(now()) AS now FROM tabletest'
-    Then The result has to have '10' rows
-      |ident-integer|now-long     |
-
-  Scenario: [CASSANDRA NATIVE, CROSSDATA-31] SELECT dateOf(now()) as t FROM tabletest
-    When I execute 'SELECT dateOf(now()) as t FROM tabletest'
-    Then The result has to have '10' rows
-      |t-timestamp|
-
+    
   Scenario: [CASSANDRA NATIVE, CROSSDATA-31, CROSSDATA-89] SELECT ident, cassandra_now() FROM tabletest;
     When I execute 'SELECT ident, cassandra_now() FROM tabletest'
     Then The result has to have '10' rows
@@ -38,11 +23,6 @@ Feature: CassandraSelectUDFS
     When I execute 'SELECT ident, cassandra_dateOf(cassandra_now()) AS now FROM tabletest'
     Then The result has to have '10' rows
       |ident-integer|now-timestamp    |
-
-  Scenario: [CASSANDRA NATIVE, CROSSDATA-31,CROSSDATA-89] SELECT ident, unixTimestampOf(now()) AS now FROM tabletest
-    When I execute 'SELECT ident, cassandra_unixTimestampOf(cassandra_now()) AS now FROM tabletest'
-    Then The result has to have '10' rows
-      |ident-integer|now-long     |
 
   Scenario: [CASSANDRA NATIVE, CROSSDATA-31 , CROSSDATA-89] SELECT cassandra_dateOf(cassandra_now()) as t FROM tabletest
     When I execute 'SELECT cassandra_dateOf(cassandra_now()) as t FROM tabletest'

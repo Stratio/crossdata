@@ -108,6 +108,7 @@ Feature: VIEWS
     Then an exception 'IS NOT' thrown
     Then I execute 'SELECT * FROM viewTest5'
     Then an exception 'IS NOT' thrown
-    And The result has to have '1' rows ignoring the order:
+    And The result has to have '2' rows ignoring the order:
       | name-string   |
       | name_0        |
+      | name_2        |
