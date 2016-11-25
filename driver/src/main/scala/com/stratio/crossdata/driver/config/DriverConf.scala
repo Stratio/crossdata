@@ -200,16 +200,13 @@ class DriverConf extends Logging {
 
     val finalConfigWithSystemProperties = systemPropertiesConfig.withFallback(finalConfig)
 
-    val finalConfigWithEnvVars = {
-      if (finalConfigWithSystemProperties.hasPath("config.cluster.servers")) {
-        val serverNodes = finalConfigWithSystemProperties.getString("config.cluster.servers")
-        defaultConfig.withValue(
+    val finalConfigWithEnvVars=
+      Try(finalConfigWithSystemProperties.getString(DriverConfigHosts)).map{
+        strCluster => finalConfigWithSystemProperties.withValue(
           DriverConfigHosts,
-          ConfigValueFactory.fromIterable(serverNodes.split(",").toList))
-      } else {
-        finalConfigWithSystemProperties
-      }
-    }
+          ConfigValueFactory.fromIterable(strCluster.split(",").toList)
+        )
+      }.getOrElse(finalConfigWithSystemProperties)
 
     logger.debug(s"Cluster.hosts = ${finalConfigWithEnvVars.getAnyRef(DriverConfigHosts)}")
 

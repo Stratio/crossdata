@@ -27,7 +27,7 @@ object CatalogUtils extends Logging {
 
   protected[crossdata] def externalCatalog(catalystConf: CatalystConf, config: Config): XDPersistentCatalog = {
     import CoreConfig.DerbyClass
-    val externalCatalogName = if (config.hasPath(CoreConfig.ClassConfigKey))
+    val externalCatalogName = if (config.hasPath(CoreConfig.ClassConfigKey) && !config.getString(CoreConfig.ClassConfigKey).isEmpty)
       config.getString(CoreConfig.ClassConfigKey)
     else DerbyClass
 
