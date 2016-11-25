@@ -17,13 +17,15 @@ package com.stratio.crossdata.driver
 
 import java.util.UUID
 
+import akka.NotUsed
 import akka.actor.{ActorPath, ActorRef}
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.cluster.client.{ClusterClient, ClusterClientSettings}
+import akka.stream.scaladsl.Source
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.driver.actor.{ProxyActor, ServerClusterClientParameters, ClusterClientSessionBeaconActor}
+import com.stratio.crossdata.driver.actor.{ClusterClientSessionBeaconActor, ProxyActor, ServerClusterClientParameters}
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
 import org.slf4j.{Logger, LoggerFactory}
@@ -45,6 +47,9 @@ class ClusterClientDriver private[driver](driverConf: DriverConf,
   override protected def logger: Logger = LoggerFactory.getLogger(classOf[ClusterClientDriver])
 
   lazy val driverSession: Session = SessionManager.createSession(auth, proxyActor)
+
+  override def sqlStreamedResult(query: String): Future[StreamedSQLResult] =
+    throw new RuntimeException("ClusterClient implementation does not support streams API; use HttpDriver instead")
 
   private lazy val clusterClientActor = {
 

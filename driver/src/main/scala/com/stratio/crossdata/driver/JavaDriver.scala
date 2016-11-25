@@ -16,7 +16,7 @@
 package com.stratio.crossdata.driver
 
 import akka.actor.Address
-import com.stratio.crossdata.common.result.SQLResult
+import com.stratio.crossdata.common.result.{SQLResult, StreamedSQLResult}
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.metadata.{FieldMetadata, JavaTableName}
 import com.stratio.crossdata.driver.session.Authentication
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 object JavaDriver {
@@ -100,6 +100,8 @@ class JavaDriver private(driverConf: DriverConf,
   def sql(sqlText: String, timeoutDuration: Duration): SQLResult =
     scalaDriver.sql(sqlText).waitForResult(timeoutDuration)
 
+  def sqlStreamSource(query: String): StreamedSQLResult =
+    Await.result(scalaDriver.sqlStreamedResult(query), Duration.Inf)
 
   def importTables(dataSourceProvider: String, options: java.util.Map[String, String]): SQLResult =
     scalaDriver.importTables(dataSourceProvider, options.toMap)
