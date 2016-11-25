@@ -26,6 +26,8 @@ import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.{Http, HttpsConnectionContext}
 import akka.routing.{DefaultResizer, RoundRobinPool}
 import akka.stream.{ActorMaterializer, TLSClientAuth}
+import akka.cluster.pubsub.DistributedPubSub
+import akka.cluster.pubsub.DistributedPubSubMediator.Put
 import com.stratio.crossdata.common.security.KeyStoreUtils
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
@@ -133,6 +135,8 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscove
         actorName)
 
       val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
+      DistributedPubSub(actorSystem).mediator ! Put(clientMonitor)
+
       val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
 
       //Enable only if cluster client is enabled
