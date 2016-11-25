@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.common.serializers
 
-import com.stratio.crossdata.common.result.{StreamedRow, StreamedSchema, StreamedSuccessfulSQLResult}
+import com.stratio.crossdata.common.result.{InternalStreamedSuccessfulSQLResult, InternalStreamedSuccessfulSQLResult$, StreamedRow, StreamedSchema}
 import org.json4s.JsonAST.{JField, JObject}
 import org.json4s.{CustomSerializer, Extraction, Formats}
 import StreamedSuccessfulSQLResultSerializerHelper._
@@ -26,7 +26,7 @@ private[serializers] object StreamedSuccessfulSQLResultSerializerHelper {
   val RowLabel = "streamedRow"
 }
 
-object StreamedSuccessfulSQLResultSerializer extends CustomSerializer[StreamedSuccessfulSQLResult](
+object StreamedSuccessfulSQLResultSerializer extends CustomSerializer[InternalStreamedSuccessfulSQLResult](
   formats => (
     {
       case JObject(JField(SchemaLabel, jSchema)::Nil) =>
@@ -41,7 +41,7 @@ object StreamedSuccessfulSQLResultSerializer extends CustomSerializer[StreamedSu
   )
 )
 
-class StreamedRowSerializer(schema: StructType) extends CustomSerializer[StreamedSuccessfulSQLResult](
+class StreamedRowSerializer(schema: StructType) extends CustomSerializer[InternalStreamedSuccessfulSQLResult](
   formats => (
     {
       case JObject(JField(RowLabel, jRow)::Nil) =>
