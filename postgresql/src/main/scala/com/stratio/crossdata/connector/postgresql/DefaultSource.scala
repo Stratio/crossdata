@@ -16,13 +16,16 @@
 
 package com.stratio.crossdata.connector.postgresql
 
+import java.sql.{Connection, Statement}
+
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
-import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import org.apache.spark.sql.execution.datasources.jdbc.PostgresqlUtils._
 import org.apache.spark.sql.execution.datasources.jdbc.{JDBCPartitioningInfo, PostgresqlXDRelation, DefaultSource => JdbcDS}
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.execution.datasources.jdbc.PostgresqlUtils._
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import org.postgresql.util.PSQLException
 
 import scala.util.Try
 
@@ -86,18 +89,23 @@ class DefaultSource
                               parameters: Map[String, String],
                               data: DataFrame): BaseRelation = ???
 
-  override def generateConnectorOpts(item: Table, opts: Map[String, String] = Map.empty): Map[String, String] = ???
+  override def generateConnectorOpts(item: Table, opts: Map[String, String] = Map.empty): Map[String, String] = Map(
+      dbTable -> s"${item.database.get}.${item.tableName}"
+    ) ++ opts
 
   override def dropExternalTable(context: SQLContext,
                                  options: Map[String, String]): Try[Unit] = {
 
-
     val table: String = options.getOrElse(dbTable,
       throw new RuntimeException(s"$dbTable property must be declared"))
 
+    //schema and table have to be specified in dbtable parameter
+    require(table.split("[.]").length == 2)
+    val dropTableQueryString = s"DROP TABLE $table"
+
     Try {
-      withClientDo(options){ (client, statement) =>
-        statement.executeUpdate(s"DROP TABLE $table")
+      withClientDo(options){ (_, statement) =>
+        statement.execute(dropTableQueryString)
       }
     }
   }
@@ -127,9 +135,21 @@ class DefaultSource
   }
 
   def getSchemaAndTableName(tableQF: String): (String, String) = {
-    val splitTable = tableQF.split(".")
+    val splitTable = tableQF.split("[.]")
     if(splitTable.length == 2) (splitTable(0), splitTable(1))
-    else throw new Exception("Table should be specified in 'schema.table' format")
+    else throw new Exception("dbtable should be specified in 'schema.table' format")
+  }
+
+  def createSchemaIfNotExists(conn: Connection, statement: Statement, postgresqlSchema: String) : Unit = {
+    val resultSet = conn.getMetaData.getSchemas
+    val schemas = new Iterator[String] {
+      def hasNext = resultSet.next()
+      def next() : String = resultSet.getString(1).trim
+    }
+
+    if(!schemas.contains(postgresqlSchema.trim.toLowerCase()))
+      statement.execute(s"CREATE SCHEMA $postgresqlSchema")
+
   }
 
   override def createExternalTable(context: SQLContext,
@@ -138,18 +158,24 @@ class DefaultSource
                                    schema: StructType,
                                    options: Map[String, String]): Option[Table] = {
 
-    val stringSchema = structTypeToStringSchema(schema)
+    require(postgresqlSchema.nonEmpty)
+    val dbSchema = postgresqlSchema.get
+    val tableQF = s"$dbSchema.$tableName"
 
-    try{
-      withClientDo(options){ (client, statement) =>
-        statement.execute(s"CREATE TABLE $tableName ($stringSchema)")
+    val stringSchema = structTypeToStringSchema(schema)
+    val pkFields = options.get(pkKey).map(fields => fields.split(",").mkString(","))
+    val pkString = if(pkFields.nonEmpty) s", PRIMARY KEY(${pkFields.get})" else ""
+
+    try {
+      withClientDo(options){ (conn, statement) =>
+        createSchemaIfNotExists(conn, statement, dbSchema)
+        statement.execute(s"CREATE TABLE $tableQF ($stringSchema$pkString)")
       }
 
-      val (table, dbSchema) = getSchemaAndTableName(tableName)
-      Option(Table(table, Option(dbSchema), Option(schema)))
+      Option(Table(tableName, postgresqlSchema, Option(schema)))
     } catch {
-      case e: IllegalArgumentException =>
-        throw e
+      case e: IllegalArgumentException => throw e
+      case e: PSQLException => throw e // TODO What should we do when table already exists?
       case e: Exception =>
         sys.error(e.getMessage)
         None
@@ -161,5 +187,8 @@ class DefaultSource
 object DefaultSource {
 
   val dbTable = "dbtable"
+  //comma separed columns
+  val pkKey = "primary_key"  //TODO Document this parameter
+
 }
 
