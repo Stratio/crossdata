@@ -22,7 +22,7 @@ hose {
             'healthcheck': 2181
             ],
         ['MONGODB':[
-            'image: 'stratio/mongo:3.0.4',
+            'image': 'stratio/mongo:3.0.4',
             'sleep': 30,
             'healthcheck': 27017]],
         ['ELASTICSEARCH':[
