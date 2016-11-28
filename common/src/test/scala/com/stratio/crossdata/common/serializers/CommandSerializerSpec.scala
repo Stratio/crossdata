@@ -34,7 +34,7 @@ class CommandSerializerSpec extends XDSerializationTest[Command] with CrossdataC
     TestCase("marshall & unmarshall a SQLCommand 0", SQLCommand("select * from highschool")),
     TestCase("marshall & unmarshall a SQLCommand 1", SQLCommand("select * from highschool", flattenResults = true)),
     TestCase("marshall & unmarshall a SQLCommand 2", SQLCommand("select * from highschool", timeout = Some(5 seconds))),
-    TestCase("marshall & unmarshall an OpenSessionCommand", OpenSessionCommand()),
+    TestCase("marshall & unmarshall an OpenSessionCommand", OpenSessionCommand("usr")),
     TestCase("marshall & unmarshall an CloseSessionCommand", CloseSessionCommand()),
     TestCase("marshall & unmarshall an CancelQueryExecution", CancelQueryExecution(UUID.randomUUID()))
   )

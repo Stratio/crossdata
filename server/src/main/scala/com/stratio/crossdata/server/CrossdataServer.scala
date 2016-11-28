@@ -26,6 +26,8 @@ import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.{Http, HttpsConnectionContext}
 import akka.routing.{DefaultResizer, RoundRobinPool}
 import akka.stream.{ActorMaterializer, TLSClientAuth}
+import akka.cluster.pubsub.DistributedPubSub
+import akka.cluster.pubsub.DistributedPubSubMediator.Put
 import com.stratio.crossdata.common.security.KeyStoreUtils
 import com.stratio.crossdata.common.util.akka.keepalive.KeepAliveMaster
 import com.stratio.crossdata.server.actors.{ResourceManagerActor, ServerActor}
@@ -42,14 +44,14 @@ import scala.concurrent.Future
 import scala.util.Try
 
 
-class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscoveryProvider with ServerConfig{
+class CrossdataServer(sConfig: ServerConfig) extends ServiceDiscoveryProvider {
 
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
   private var system: Option[ActorSystem] = None
   private var bindingFuture: Option[Future[ServerBinding]] = None
 
-  override protected lazy val serverConfig = progrConfig map (_.withFallback(config)) getOrElse (config)
+  override protected lazy val serverConfig = sConfig.config
 
   private lazy val sparkContext: SparkContext = {
     val sparkParams = serverConfig.entrySet()
@@ -83,7 +85,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscove
     val finalHzConfig = sdHelper.fold(hzConfig)(_.hzConfig)
 
     sessionProviderOpt = Some {
-      if (isHazelcastEnabled)
+      if (sConfig.isHazelcastEnabled)
         new HazelcastSessionProvider(
           sparkContext,
           serverConfig = serverConfig,
@@ -106,7 +108,7 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscove
       logger.info(s"Seed nodes: ${e.getValue}")
     }
 
-    system = Some(ActorSystem(clusterName, finalConfig))
+    system = Some(ActorSystem(sConfig.clusterName, finalConfig))
 
     system.fold(throw new RuntimeException("Actor system cannot be started")) { actorSystem =>
 
@@ -123,21 +125,27 @@ class CrossdataServer(progrConfig: Option[Config] = None) extends ServiceDiscove
         }
       }
 
-      val resizer = DefaultResizer(lowerBound = minServerActorInstances, upperBound = maxServerActorInstances)
+      val resizer = DefaultResizer(lowerBound = sConfig.minServerActorInstances, upperBound = sConfig.maxServerActorInstances)
       val serverActor = actorSystem.actorOf(
-        RoundRobinPool(minServerActorInstances, Some(resizer)).props(
+        RoundRobinPool(sConfig.minServerActorInstances, Some(resizer)).props(
           Props(
             classOf[ServerActor],
             xdCluster,
-            sessionProvider)),
-        actorName)
+            sessionProvider,
+            sConfig)),
+        sConfig.actorName)
 
       val clientMonitor = actorSystem.actorOf(KeepAliveMaster.props(serverActor), "client-monitor")
-      ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
+      DistributedPubSub(actorSystem).mediator ! Put(clientMonitor)
 
       val resourceManagerActor = actorSystem.actorOf(ResourceManagerActor.props(Cluster(actorSystem), sessionProvider))
-      ClusterClientReceptionist(actorSystem).registerService(serverActor)
-      ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
+
+      //Enable only if cluster client is enabled
+      if(serverConfig.getBoolean(ServerConfig.ClusterClientEnabled)){
+        ClusterClientReceptionist(actorSystem).registerService(clientMonitor)
+        ClusterClientReceptionist(actorSystem).registerService(serverActor)
+        ClusterClientReceptionist(actorSystem).registerService(resourceManagerActor)
+      }
 
       implicit val httpSystem = actorSystem
       implicit val materializer = ActorMaterializer()

@@ -17,13 +17,15 @@ package com.stratio.crossdata.driver
 
 import java.util.UUID
 
+import akka.NotUsed
 import akka.actor.{ActorPath, ActorRef}
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.cluster.client.{ClusterClient, ClusterClientSettings}
+import akka.stream.scaladsl.Source
 import com.stratio.crossdata.common._
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.security.Session
-import com.stratio.crossdata.driver.actor.{ProxyActor, ServerClusterClientParameters, ClusterClientSessionBeaconActor}
+import com.stratio.crossdata.driver.actor.{ClusterClientSessionBeaconActor, ProxyActor, ServerClusterClientParameters}
 import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
 import org.slf4j.{Logger, LoggerFactory}
@@ -38,13 +40,16 @@ import scala.util.Try
 
 
 class ClusterClientDriver private[driver](driverConf: DriverConf,
-                                          auth: Authentication) extends Driver(driverConf, auth) {
+                                          auth: Authentication) extends Driver(driverConf) {
 
   import Driver._
 
   override protected def logger: Logger = LoggerFactory.getLogger(classOf[ClusterClientDriver])
 
   lazy val driverSession: Session = SessionManager.createSession(auth, proxyActor)
+
+  override def sqlStreamedResult(query: String): Future[StreamedSQLResult] =
+    throw new RuntimeException("ClusterClient implementation does not support streams API; use HttpDriver instead")
 
   private lazy val clusterClientActor = {
 
@@ -78,10 +83,10 @@ class ClusterClientDriver private[driver](driverConf: DriverConf,
 
   private var sessionBeacon: Option[ActorRef] = None
 
-  override protected[driver] def openSession(): Try[Boolean] = {
+  override protected[driver] def openSession(user:String): Try[Boolean] = {
     val res = Try {
       val promise = Promise[ServerReply]()
-      proxyActor ! (securitizeCommand(OpenSessionCommand()), promise)
+      proxyActor ! (securitizeCommand(OpenSessionCommand(user)), promise)
       Await.result(promise.future.mapTo[OpenSessionReply].map(_.isOpen), InitializationTimeout)
     }
 
@@ -116,8 +121,10 @@ class ClusterClientDriver private[driver](driverConf: DriverConf,
       case _ =>
         val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
         val futureReply = askCommand(securitizeCommand(sqlCommand)).map {
-          case SQLReply(_, sqlResult) => sqlResult
-          case other => throw new RuntimeException(s"SQLReply expected. Received: $other")
+          case SQLReply(_, sqlResult) =>
+            sqlResult
+          case other =>
+            throw new RuntimeException(s"SQLReply expected. Received: $other")
         }
         new SQLResponse(sqlCommand.requestId, futureReply) {
           // TODO cancel sync => 5 secs

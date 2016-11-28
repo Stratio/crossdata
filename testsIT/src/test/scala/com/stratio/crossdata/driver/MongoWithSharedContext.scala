@@ -20,6 +20,7 @@ import java.util.UUID
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
 import com.stratio.crossdata.server.CrossdataServer
+import com.stratio.crossdata.server.config.ServerConfig
 import com.stratio.crossdata.test.BaseXDTest
 import com.stratio.datasource.mongodb.config.MongodbConfig
 import com.typesafe.config.ConfigFactory
@@ -68,7 +69,7 @@ class MongoWithSharedContext extends BaseXDTest with MongoConstants with BeforeA
 
 
   def init() = {
-    crossdataServer = Some(new CrossdataServer)
+    crossdataServer = Some(new CrossdataServer(new ServerConfig))
     crossdataServer.foreach(_.start())
     crossdataServer.foreach(_.sessionProviderOpt.foreach(_.newSession(SessionID, UserId)))
 

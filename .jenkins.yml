@@ -6,7 +6,7 @@ CROSSBUILDAT:
   
 ITSERVICES:
   - ZOOKEEPER:
-      image: jplock/zookeeper:3.5.1-alpha
+      image: jplock/zookeeper:3.5.2-alpha
   - MONGODB:
       image: stratio/mongo:3.0.4
       sleep: 10

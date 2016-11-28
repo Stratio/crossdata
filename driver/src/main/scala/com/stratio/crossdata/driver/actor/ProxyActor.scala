@@ -73,24 +73,27 @@ class ProxyActor(clusterClientActor: ActorRef, driver: ClusterClientDriver) exte
   // Process messages from the Crossdata Driver.
   def sendToServer(promisesByIds: PromisesByIds): Receive = {
 
-    case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _, _) =>
+    case secureSQLCommand @ CommandEnvelope(sqlCommand: SQLCommand, _) =>
       logger.info(s"Sending query: ${sqlCommand.sql} with requestID=${sqlCommand.requestId} & queryID=${sqlCommand.queryId}")
       clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(addJARCommand @ AddJARCommand(path, _, _, _), session, _) =>
+    case secureSQLCommand @ CommandEnvelope(addJARCommand @ AddJARCommand(path, _, _, _), session) =>
       import context.dispatcher
       val shipmentResponse: Future[SQLReply] = sendJarToServers(addJARCommand, path, session)
       shipmentResponse pipeTo sender
 
-    case secureSQLCommand @ CommandEnvelope(clusterStateCommand: ClusterStateCommand, _, _) =>
+    case secureSQLCommand @ CommandEnvelope(clusterStateCommand: ClusterStateCommand, _) =>
       logger.debug(s"Send cluster state with requestID=${clusterStateCommand.requestId}")
       clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
-    case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss, _), _, _) =>
+    case secureSQLCommand @ CommandEnvelope(aCmd @ AddAppCommand(path, alias, clss, _), _) =>
       clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath,secureSQLCommand, localAffinity=false)
 
-    case secureSQLCommand @ CommandEnvelope(_: OpenSessionCommand | _: CloseSessionCommand, _, _) =>
+    case secureSQLCommand @ CommandEnvelope(_: OpenSessionCommand | _: CloseSessionCommand, _) =>
       clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = true)
+
+    case secureSQLCommand @ CommandEnvelope(_: ControlCommand, _) =>
+      clusterClientActor ! ClusterClient.Send(ServerClusterClientParameters.ServerPath, secureSQLCommand, localAffinity = false)
 
     case sqlCommand: SQLCommand =>
       logger.warn(s"Command message not securitized: ${sqlCommand.sql}. Message won't be sent to the Crossdata cluster")
@@ -126,10 +129,10 @@ class ProxyActor(clusterClientActor: ActorRef, driver: ClusterClientDriver) exte
             case reply @ SQLReply(_, result) =>
               logger.info(s"Successful SQL execution: $result")
               p.success(reply)
-            // TODO review query cancelation
-            case reply @ QueryCancelledReply(id) =>
-              logger.info(s"Query $id cancelled")
-              p.success(reply)
+            case reply @ QueryCancelledReply(queryRqId, cancellationRqId) =>
+              logger.info(s"Query $queryRqId cancelled")
+              p.success(SQLReply(queryRqId, ErrorSQLResult("Query cancelled")))
+              promisesByIds.promises.get(cancellationRqId).foreach(_.success(reply))
             case reply @ ClusterStateReply(_, clusterState, _) =>
               logger.debug(s"Cluster snapshot received $clusterState")
               p.success(reply)

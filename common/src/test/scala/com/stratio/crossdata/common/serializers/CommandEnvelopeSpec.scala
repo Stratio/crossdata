@@ -34,15 +34,15 @@ class CommandEnvelopeSpec extends XDSerializationTest[CommandEnvelope] with Cros
   override def testCases: Seq[TestCase] = Seq(
     TestCase(
       "marshall & unmarshall a SQLCommand within a CommandEnvelope",
-      CommandEnvelope(SQLCommand("select * from highschool"), session, "usr")
+      CommandEnvelope(SQLCommand("select * from highschool"), session)
     ),
     TestCase(
       "marshall & unmarshall a OpenSessionCommand within a CommandEnvelope",
-      CommandEnvelope(OpenSessionCommand(), session, "usr")
+      CommandEnvelope(OpenSessionCommand("usr"), session)
     ),
     TestCase(
       "marshall & unmarshall a CancelQueryExecution within a CommandEnvelope",
-      CommandEnvelope(CancelQueryExecution(UUID.randomUUID()), session, "usr")
+      CommandEnvelope(CancelQueryExecution(UUID.randomUUID()), session)
     )
   )
 }

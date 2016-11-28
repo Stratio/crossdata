@@ -22,37 +22,37 @@ import javax.net.ssl.{KeyManagerFactory, SSLContext, SSLException, TrustManagerF
 import akka.NotUsed
 import akka.actor.ActorRef
 import akka.cluster.ClusterEvent.CurrentClusterState
-import akka.http.scaladsl.{Http, HttpExt, HttpsConnectionContext}
 import akka.http.scaladsl.marshalling.{Marshal, Marshaller}
-import akka.http.scaladsl.model._
-import akka.stream.{ActorMaterializer, TLSClientAuth}
-import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.common.security.{KeyStoreUtils, Session}
-import com.stratio.crossdata.driver.config.DriverConf
-import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
-import org.slf4j.{Logger, LoggerFactory}
 import akka.http.scaladsl.model.HttpMethods._
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.{Unmarshaller, _}
+import akka.http.scaladsl.{Http, HttpExt, HttpsConnectionContext}
 import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.stream.{ActorMaterializer, TLSClientAuth}
 import akka.util.ByteString
 import com.stratio.crossdata.common._
+import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.security.{KeyStoreUtils, Session}
 import com.stratio.crossdata.common.serializers.{CrossdataCommonSerializer, StreamedRowSerializer}
 import com.stratio.crossdata.driver.actor.HttpSessionBeaconActor
+import com.stratio.crossdata.driver.config.DriverConf
 import com.stratio.crossdata.driver.exceptions.TLSInvalidAuthException
+import com.stratio.crossdata.driver.session.{Authentication, SessionManager}
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.StructType
 import org.json4s.jackson
+import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.generic.SeqFactory
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Try}
 
 
 class HttpDriver private[driver](driverConf: DriverConf,
                                  auth: Authentication
-                                ) extends Driver(driverConf, auth) with CrossdataCommonSerializer {
+                                ) extends Driver(driverConf) with CrossdataCommonSerializer {
 
   import Driver._
 
@@ -82,7 +82,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
   private def obtainHttpContext: HttpExt = {
     val ext = Http(system)
-    if(driverConf.httpTlsEnable){ //Set for all the requests the Https configurated context with keystores
+    if(driverConf.httpTlsEnable){ //Set for all the requests the Https configured context with key stores
       ext.setDefaultClientHttpsContext(getTlsContext)
     }
     ext
@@ -121,7 +121,7 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
     result.recover {
       case e: SSLException if driverConf.httpTlsEnable =>
-        throw TLSInvalidAuthException("Possible invalid authentication (check if you have a valid TLS certificate configured in your driver).",e)
+        throw TLSInvalidAuthException("Possible invalid authentication (check if you have a valid TLS certificate configured in your driver).", e)
 
       case exception if defaultValue.isDefined =>
         logger.error(exception.getMessage, exception)
@@ -130,8 +130,8 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
   }
 
-  protected[driver] def openSession(): Try[Boolean] = {
-    val command = OpenSessionCommand()
+  protected[driver] def openSession(user: String): Try[Boolean] = {
+    val command = OpenSessionCommand(user)
     val response = simpleRequest(
       securitizeCommand(command),
       s"query/${command.requestId}",
@@ -156,43 +156,21 @@ class HttpDriver private[driver](driverConf: DriverConf,
 
          if(httpResponse.status == StatusCodes.OK) { // OK Responses will be served through streaming
 
-           val bytesSource = httpResponse.entity.dataBytes // This is the stream of bytes of the answer data...
-           val framesSource = bytesSource.filterNot(bs => bs.isEmpty || bs == ByteString("\n")) //...empty lines get removed...
-           val rawSchemaAndRawRowsSource = framesSource.prefixAndTail[ByteString](1) //remaining get transformed to ByteStrings.
-
-           // From the raw lines stream, a new stream providing the first one and a stream of the remaining ones is created
-           val sink = Sink.head[(Seq[ByteString], Source[ByteString, NotUsed])] //Its single elements get extracted by future...
-
-           for { /*.. which, once completed,
-                    provides a ByteString with the serialized schema and the stream of remaining lines:
-                    The bulk of serialized rows.*/
-             (Seq(rawSchema), rawRows) <- rawSchemaAndRawRowsSource.toMat(sink)(Keep.right).run
-             StreamedSchema(schema) <- Unmarshal(HttpEntity(ContentTypes.`application/json`, rawSchema)).to[StreamedSuccessfulSQLResult]
-
-             // Having de-serialized the schema, it can be used to deserialize each row at the un-marshalling phase
-             rrows <- {
-               implicit val json4sJacksonFormats = this.json4sJacksonFormats + new StreamedRowSerializer(schema)
-
-               val um: Unmarshaller[ResponseEntity, StreamedSuccessfulSQLResult] = json4sUnmarshaller
-
-               rawRows.mapAsync(1) { bs => /* TODO: Study the implications of increasing the level of parallelism in
-                                            *       the unmarshalling phase. */
-                 val entity = HttpEntity(ContentTypes.`application/json`, bs)
-                 um(entity)
-               }
-             }.runFold(List.empty[Row]) { case (acc: List[Row], StreamedRow(row, None)) => row::acc }
-
-           } yield SuccessfulSQLResult(rrows.reverse toArray, schema) /* TODO: Performance could be increased if
-                                                              `SuccessfulSQLResult`#resultSet were of type `Seq[Row]`*/
-
+           receiveSchemaAndRows(httpResponse.entity.dataBytes).flatMap { case (schema, streamedRowSource) =>
+             val rows = streamedRowSource.runFold(List.empty[Row]) {
+               case (acc: List[Row], StreamedRow(row, None)) => row::acc
+               case _ => Nil
+             }
+             rows.map{ rowList =>
+               /* TODO: Performance could be increased if `SuccessfulSQLResult`#resultSet were of type `Seq[Row]`*/
+               SuccessfulSQLResult(rowList.reverse toArray, schema)
+             }
+           }
          } else {
-
              Unmarshal(httpResponse.entity).to[SQLReply] map {
                case SQLReply(_, result: SQLResult) => result
              }
-
          }
-
        }
     }
 
@@ -202,12 +180,60 @@ class HttpDriver private[driver](driverConf: DriverConf,
         simpleRequest(
           securitizeCommand(command),
           s"query/${command.requestId}", {
-            case reply: QueryCancelledReply => reply
-          }: PartialFunction[SQLReply, QueryCancelledReply]
+            reply: QueryCancelledReply => reply
+          }
         )
       }
     }
 
+  }
+
+
+  override def sqlStreamedResult(query: String): Future[StreamedSQLResult] = {
+
+    val sqlCommand = new SQLCommand(query, retrieveColNames = driverConf.getFlattenTables)
+    Marshal(securitizeCommand(sqlCommand)).to[RequestEntity] flatMap { requestEntity =>
+
+      val request = HttpRequest(POST, s"$protocol://$serverHttp/query/${sqlCommand.requestId}", entity = requestEntity)
+      http.singleRequest(request) flatMap { httpResponse =>
+
+        if (httpResponse.status == StatusCodes.OK) {  // OK Responses will be served through streaming
+          receiveSchemaAndRows(httpResponse.entity.dataBytes).map { case (schema, streamedRowSource) =>
+            val rows = streamedRowSource.map { case streamedRow: StreamedRow => streamedRow.row }
+            StreamedSuccessfulSQLResult(rows, schema)
+          }
+        } else {
+          Unmarshal(httpResponse.entity).to[SQLReply].map {
+            case SQLReply(_, ErrorSQLResult(message, cause)) => StreamedErrorSQLResult(message, cause)
+          }
+        }
+      }
+    }
+  }
+
+  private def receiveSchemaAndRows(bytesSource: Source[ByteString, Any]): Future[(StructType, Source[InternalStreamedSuccessfulSQLResult, NotUsed])] = {
+    val framesSource = bytesSource.filterNot(bs => bs.isEmpty || bs == ByteString("\n")) //...empty lines get removed...
+    val rawSchemaAndRawRowsSource = framesSource.prefixAndTail[ByteString](1) //remaining get transformed to ByteStrings.
+
+    // From the raw lines stream, a new stream providing the first one and a stream of the remaining ones is created
+    val sink = Sink.head[(Seq[ByteString], Source[ByteString, NotUsed])] //Its single elements get extracted by future...
+
+    rawSchemaAndRawRowsSource.toMat(sink)(Keep.right).run.flatMap { case (Seq(rawSchema), rawRows) =>
+      Unmarshal(HttpEntity(ContentTypes.`application/json`, rawSchema)).to[InternalStreamedSuccessfulSQLResult].map {
+        case StreamedSchema(schema) => // Having de-serialized the schema, it can be used to deserialize each row at the un-marshalling phase
+          (schema, deserializeRows(schema, rawRows))
+      }
+    }
+  }
+
+  private def deserializeRows(schema: StructType, rawRows: Source[ByteString, NotUsed]): Source[InternalStreamedSuccessfulSQLResult, NotUsed] = {
+    implicit val json4sJacksonFormats = this.json4sJacksonFormats + new StreamedRowSerializer(schema)
+    val um: Unmarshaller[ResponseEntity, InternalStreamedSuccessfulSQLResult] = json4sUnmarshaller
+
+    rawRows.mapAsync(1) { bs =>
+      val entity = HttpEntity(ContentTypes.`application/json`, bs)
+      um(entity)
+    }
   }
 
   override def addJar(path: String, toClassPath: Option[Boolean] = None): SQLResponse =

@@ -102,6 +102,7 @@
         <module>server</module>
         <module>streaming</module>
         <module>testsIT</module>
+        <module>zeppelin</module>
         <module>dist</module>
     </modules>
 
@@ -127,6 +128,7 @@
         <common.utils.version>0.7.0</common.utils.version>
         <guava.version>18.0</guava.version>
         <curator.version>3.2.0</curator.version>
+        <crossdata-auth-iface.version>0.1.0</crossdata-auth-iface.version>
         <!-- Scala version and cross build properties -->
         <scala.binary.version>2.11</scala.binary.version>
         <scala.version>2.11.8</scala.version>
@@ -134,6 +136,7 @@
         <scala_2.11.version>2.11.8</scala_2.11.version>
         <default.scala.binary.version>2.11</default.scala.binary.version>
         <default.scala.version>${scala_2.11.version}</default.scala.version>
+        <zeppelin.version>0.6.2</zeppelin.version>
     </properties>
 
 

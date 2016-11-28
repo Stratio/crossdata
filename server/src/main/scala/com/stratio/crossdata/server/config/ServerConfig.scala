@@ -31,6 +31,9 @@ object ServerConfig {
   val ServerBasicConfig = "server-reference.conf"
   val ParentConfigName = "crossdata-server"
 
+  //Cluster client enabled
+  val ClusterClientEnabled = "config.cluster-client.enabled"
+
 
   val SparkSqlConfigPrefix = CoreConfig.SparkSqlConfigPrefix
 
@@ -80,9 +83,11 @@ object ServerConfig {
   val DefaultHTTPRequestExecutionTimeout = 4 hour
 }
 
-trait ServerConfig extends NumberActorConfig {
+class ServerConfig(userConfig: Option[Config] = None) extends NumberActorConfig {
 
-  val logger: Logger
+  //TODO: Encapsulate all the properties in order to protect the directaccess to "config" object
+
+  private val logger: Logger = Logger.getLogger(classOf[ServerConfig])
 
   lazy val clusterName = config.getString(ServerConfig.ServerClusterNameKey)
   lazy val actorName = config.getString(ServerConfig.ServerActorNameKey)
@@ -163,7 +168,7 @@ trait ServerConfig extends NumberActorConfig {
         )
       }.getOrElse(defaultConfig)
 
-    ConfigFactory.load(finalConfig)
+    ConfigFactory.load(userConfig map (_.withFallback(finalConfig)) getOrElse (finalConfig))
   }
 
   private def extractDurationField(key: String): Duration = Try(
