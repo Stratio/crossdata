@@ -2,7 +2,11 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
-## 1.7.1 (Upcoming)
+## 1.7.2 (Upcoming)
+
+* Pending changelog
+
+## 1.7.1 (November 25, 2016)
 
 * Bug fixing: Sessions expiration
 
