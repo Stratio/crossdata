@@ -98,22 +98,22 @@ hose {
         | """
 
     DEV = { config ->
-        doCompile(config)
+        doCompile(conf: config, crossbuild: 'scala-2.11')
 
         parallel(UT: {
-            doUT(config)
+            doUT(conf: config, crossbuild: 'scala-2.11')
         }, IT: {
-            doIT(config)
+            doIT(conf: config, crossbuild: 'scala-2.11')
         }, failFast: config.FAILFAST)
 
-        doPackage(config)
+        doPackage(conf: config, crossbuild: 'scala-2.11')
 
         parallel(DOC: {
-           doDoc(config)
+           doDoc(conf: config, crossbuild: 'scala-2.11')
          },QC: {
-            doStaticAnalysis(config)
+            doStaticAnalysis(conf: config, crossbuild: 'scala-2.11')
         }, DEPLOY: {
-            doDeploy(config)
+            doDeploy(conf: config, crossbuild: 'scala-2.11')
         }, DOCKER: {
             doDocker(conf: config, crossbuild: 'scala-2.11')
         }, failFast: config.FAILFAST)
