@@ -122,7 +122,7 @@ sealed trait postgresqlDefaultTestConstants {
   private lazy val config = ConfigFactory.load()
   val postgresqlSchema = "highschool"
   val Table = "students"
-  val aggregationTable = "studentsAgg"
+  val aggregationTable = "studentsagg"
   val UnregisteredTable = "teachers"
   val driver: String = "org.postgresql.Driver"
   val postgresqlHost: String = Try(config.getStringList("postgresql.host")).map(_.get(0)).getOrElse("127.0.0.1")

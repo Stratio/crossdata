@@ -49,6 +49,9 @@ object PostgresqlUtils {
     }
   }
 
+  def resolveSchema(url: String, table: String, properties: Properties): StructType =
+    JDBCRDD.resolveTable(url, table, properties)
+
   /**
     * Maps a JDBC type to a Catalyst type.
     *

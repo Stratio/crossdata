@@ -25,25 +25,31 @@ class PostgresqlDropExternalTableIT extends PostgresqlWithSharedContext {
 
   val dropSchema = "dropschema"
 
+  def createExternalTable(dropTable: String) = {
+    val create =
+    s"""|CREATE EXTERNAL TABLE $dropSchema.$dropTable (
+        |id Integer,
+        |name String,
+        |booleanFile Boolean,
+        |timeTime Timestamp
+        |)
+        |USING $SourceProvider
+        |OPTIONS (
+        |url '$url',
+        |dbtable '$dropSchema.$dropTable',
+        |primary_key_string 'id'
+        |)
+    """.stripMargin.replaceAll("\n", " ")
+    xdContext.sql(create).collect()
+  }
+
+  def dropTables = client.get._2.execute(s"DROP SCHEMA $dropSchema CASCADE")
+
   "The Postgresql connector" should "execute a DROP EXTERNAL TABLE" in {
+
     val dropTable = "drop1"
+    createExternalTable(dropTable)
 
-    val createTableQueryString1 =
-      s"""|CREATE EXTERNAL TABLE $dropSchema.$dropTable (
-          |id Integer,
-          |name String,
-          |booleanFile Boolean,
-          |timeTime Timestamp
-          |)
-          |USING $SourceProvider
-          |OPTIONS (
-          |url '$url',
-          |dbtable '$dropSchema.$dropTable',
-          |primary_key_string 'id'
-          |)
-      """.stripMargin.replaceAll("\n", " ")
-
-    sql(createTableQueryString1).collect()
     //Precondition
     xdContext.table(s"$dropSchema.$dropTable") should not be null
 
@@ -55,28 +61,13 @@ class PostgresqlDropExternalTableIT extends PostgresqlWithSharedContext {
     an[Exception] shouldBe thrownBy(xdContext.table(s"$dropSchema.$dropTable"))
 
     client.get._1.getMetaData.getTables(null, dropSchema, dropTable, null).next() shouldBe false
-
-    client.get._2.execute(s"drop schema $dropSchema cascade")
+    dropTables
   }
 
   "The Postgresql connector" should "execute a DROP EXTERNAL TABLE without specify database" in {
-    val dropTable = "drop2"
 
-    val createTableQueryString2 =
-      s"""|CREATE EXTERNAL TABLE $dropSchema.$dropTable (
-          |id Integer,
-          |name String,
-          |booleanFile Boolean,
-          |timeTime Timestamp
-          |)
-          |USING $SourceProvider
-          |OPTIONS (
-          |url '$url',
-          |dbtable '$dropSchema.$dropTable',
-          |primary_key_string 'id'
-          |)
-      """.stripMargin.replaceAll("\n", " ")
-    sql(createTableQueryString2).collect()
+    val dropTable = "drop2"
+    createExternalTable(dropTable)
 
     //Postgresql datasource doesn't allow tables without specify schema
     an[Exception] should be thrownBy xdContext.table(dropTable)
@@ -86,8 +77,7 @@ class PostgresqlDropExternalTableIT extends PostgresqlWithSharedContext {
     an[Exception] shouldBe thrownBy (sql(dropExternalTableQuery).collect())
 
     client.get._1.getMetaData.getTables(null, dropSchema, dropTable, null).next() shouldBe true
-    client.get._2.execute(s"DROP SCHEMA $dropSchema CASCADE")
-
+    dropTables
   }
 
 

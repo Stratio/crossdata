@@ -29,6 +29,8 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.sources.BaseRelation
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.execution.datasources.jdbc.PostgresqlUtils._
+
 
 class PostgresqlXDRelation( url: String,
                             table: String,
@@ -40,7 +42,7 @@ class PostgresqlXDRelation( url: String,
   with NativeScan
   with SparkLoggerComponent {
 
-  override val schema: StructType = userSchema.getOrElse(JDBCRDD.resolveTable(url, table, properties))
+  override val schema: StructType = userSchema.getOrElse(resolveSchema(url, table, properties))
 
   override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = buildScan(optimizedLogicalPlan, None)
 

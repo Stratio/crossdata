@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class PostgresqlImportTablesIT extends PostgresqlWithSharedContext {
 
-/*  it should "import all tables from datasource" in {
+  it should "import all tables from datasource" in {
     assumeEnvironmentIsUpAndRunning
 
     def tableCountInHighschool: Long = xdContext.sql("SHOW TABLES").count
@@ -50,7 +50,7 @@ class PostgresqlImportTablesIT extends PostgresqlWithSharedContext {
   it should "infer schema after import all tables from a Postgresql Database" in {
     assumeEnvironmentIsUpAndRunning
 
-    val (cluster, session) = createOtherTables
+    val (conn, statement) = createOtherTables
     val importQuery =
       s"""
          |IMPORT TABLES
@@ -61,28 +61,27 @@ class PostgresqlImportTablesIT extends PostgresqlWithSharedContext {
       """.stripMargin
 
     try {
-      sql(importQuery)
-
       xdContext.dropTempTable(s"$postgresqlSchema.$Table")
+      sql(importQuery)
 
       xdContext.tableNames().size should be > 1
       xdContext.table(s"$postgresqlSchema.$Table").schema should have length 5
     } finally {
-      cleanOtherTables(cluster, session)
+      cleanOtherTables(conn, statement)
     }
   }
 
   it should "infer schema after import all tables from a postgresql schema" in {
     assumeEnvironmentIsUpAndRunning
 
-    val (cluster, session) = createOtherTables
+    val (conn, statement) = createOtherTables
 
     val importQuery =
       s"""
          |IMPORT TABLES
          |USING $SourceProvider
          |OPTIONS (
-         |url "$url"
+         |url "$url",
          |schema "highschool"
          |)
     """.stripMargin
@@ -95,9 +94,9 @@ class PostgresqlImportTablesIT extends PostgresqlWithSharedContext {
       // imported tables should be ignored after importing twice
       sql(importQuery).collect().forall( row => row.getBoolean(1)) shouldBe true
       xdContext.tableNames()  should  contain (s"$postgresqlSchema.$Table")
-      xdContext.tableNames()  should  not contain "NewKeyspace.NewTable" //TODO change this table
+      xdContext.tableNames()  should  not contain "newschema.newtable"
     } finally {
-      cleanOtherTables(cluster, session)
+      cleanOtherTables(conn, statement)
     }
   }
 
@@ -110,9 +109,8 @@ class PostgresqlImportTablesIT extends PostgresqlWithSharedContext {
          |IMPORT TABLES
          |USING $SourceProvider
          |OPTIONS (
-         |url "$url"
+         |url "$url",
          |dbtable "$postgresqlSchema.$Table"
-         |
          |)
     """.stripMargin
 
@@ -133,7 +131,7 @@ class PostgresqlImportTablesIT extends PostgresqlWithSharedContext {
          |IMPORT TABLES
          |USING $SourceProvider
          |OPTIONS (
-         | url "$url"
+         | url "$url",
          | dbtable "$Table"
          |)
     """.stripMargin
@@ -170,14 +168,14 @@ class PostgresqlImportTablesIT extends PostgresqlWithSharedContext {
   def createOtherTables(): (Connection, Statement) ={
     val  (conn, statement) =  prepareClient.get
 
-    statement.execute(s"CREATE SCHEMA NewKeyspace")
-    statement.execute(s"CREATE TABLE NewKeyspace.NewTable (id integer, coolstuff text, PRIMARY KEY (id))")
+    statement.execute(s"CREATE SCHEMA newschema")
+    statement.execute(s"CREATE TABLE newschema.newtable(id integer, coolstuff text, PRIMARY KEY (id))")
 
     (conn, statement)
   }
 
   def cleanOtherTables(conn: Connection, statement: Statement): Unit ={
-    statement.execute(s"DROP SCHEMA NewSchema CASCADE")
+    statement.execute(s"DROP SCHEMA newschema CASCADE")
 
     statement.close()
     conn.close()
@@ -190,7 +188,7 @@ class PostgresqlImportTablesIT extends PostgresqlWithSharedContext {
 
     val options = Map(
       "url" -> url,
-      "dbtable" ->  s"$postgresqlSchema$Table"
+      "dbtable" ->  s"$postgresqlSchema.$Table"
     )
 
     //Experimentation
@@ -199,5 +197,5 @@ class PostgresqlImportTablesIT extends PostgresqlWithSharedContext {
     //Expectations
     xdContext.tableNames() should contain(s"$postgresqlSchema.$Table")
     xdContext.tableNames() should not contain "highschool.teachers"
-  }*/
+  }
 }

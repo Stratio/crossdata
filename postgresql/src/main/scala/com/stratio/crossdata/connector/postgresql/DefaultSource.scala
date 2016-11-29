@@ -16,7 +16,8 @@
 
 package com.stratio.crossdata.connector.postgresql
 
-import java.sql.{Connection, Statement}
+import java.sql.{Connection, ResultSet, Statement}
+import java.util.Properties
 
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
@@ -112,26 +113,58 @@ class DefaultSource
 
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
-    val tableName: String = options.getOrElse(dbTable,
-      throw new RuntimeException(s"$dbTable property must be declared"))
-
+    val optionURL = options.get(url)
+    require(optionURL.nonEmpty)
+    val URL = optionURL.get
+    val properties = mapToPropertiesWithDriver(options)
+    val schema =  options.get(schema)
+    val tableQF = options.get(dbTable)
     try{
       withClientDo(options){ (client, statement) =>
-        //TODO Test get schemas and tables from a database
-        val schemas = client.getMetaData.getSchemas
-        client.getMetaData.getCatalogs
+        if(schema.isDefined){
+          val rsTables = client.getMetaData.getTables(null, schema.get, "%", Array("TABLE"))
+          var table: List[String] = Nil
+          while(rsTables.next())
+            table = rsTables.getString("TABLE_NAME") :: table
+          table.map{ table =>
+            val sparkSchema = resolveSchema(URL, s"${schema.get}.$table", properties)
+            Table(table, schema, Some(sparkSchema))
+          }
+        }
+        else if(tableQF.isDefined) {
+          val tableAndSchema = tableQF.get.split("[.]")
+          require(tableAndSchema.length == 2)
+          val sparkSchema = resolveSchema(URL, tableQF.get, properties)
+          Seq(Table(tableAndSchema(1), Some(tableAndSchema(0)), Some(sparkSchema)))
+        }
+        else {
+          val metadata = client.getMetaData
+          val rsSchemas = metadata.getSchemas
+          val schemas = new Iterator[String] {
+            def hasNext = rsSchemas.next()
+            def next() : String = rsSchemas.getString(1).trim
+          }.toList
+          schemas.flatMap{ schema =>
+            val rsTables = metadata.getTables(null, schema, "%", Array("TABLE"))
+            var table: List[String] = Nil
+            while(rsTables.next())
+              table = rsTables.getString("TABLE_NAME") :: table
+
+            table.map{ table =>
+              val sparkSchema = resolveSchema(URL, s"$schema.$table", properties)
+              Table(table, Some(schema), Some(sparkSchema))
+            }
+          }
+        }
       }
 
-      val (table, dbSchema) = getSchemaAndTableName(tableName)
-      Seq(Table(table, Option(dbSchema), None))
     } catch {
-      case e: IllegalArgumentException =>
-        throw e
+      case e: IllegalArgumentException => throw e
+      case e: PSQLException => throw e //TODO
       case e: Exception =>
         sys.error(e.getMessage)
         Seq.empty
     }
-
   }
 
   def getSchemaAndTableName(tableQF: String): (String, String) = {
@@ -140,16 +173,21 @@ class DefaultSource
     else throw new Exception("dbtable should be specified in 'schema.table' format")
   }
 
+//  def resultSetToIterator[T](rs: ResultSet, next :(ResultSet) => T) : Iterator[T] = new Iterator[T] {
+//    def hasNext = rs.next()
+//    def next() : T = next
+//  }
+
   def createSchemaIfNotExists(conn: Connection, statement: Statement, postgresqlSchema: String) : Unit = {
-    val resultSet = conn.getMetaData.getSchemas
+    val rs = conn.getMetaData.getSchemas
+//    val schemas = resultSetToIterator[String](resultSet, resultSet => resultSet.getString(1))
     val schemas = new Iterator[String] {
-      def hasNext = resultSet.next()
-      def next() : String = resultSet.getString(1).trim
+          def hasNext = rs.next()
+          def next() : String = rs.getString(1)
     }
 
     if(!schemas.contains(postgresqlSchema.trim.toLowerCase()))
       statement.execute(s"CREATE SCHEMA $postgresqlSchema")
-
   }
 
   override def createExternalTable(context: SQLContext,
@@ -186,6 +224,8 @@ class DefaultSource
 
 object DefaultSource {
 
+  val url = "url"
+  val schema = "schema"
   val dbTable = "dbtable"
   //comma separed columns
   val pkKey = "primary_key"  //TODO Document this parameter
