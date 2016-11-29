@@ -115,7 +115,7 @@ hose {
         }, DEPLOY: {
             doDeploy(config)
         }, DOCKER: {
-            doDocker(config)
+            doDocker(conf: config, crossbuild: 'scala-2.11')
         }, failFast: config.FAILFAST)
 
         doAT(conf: config, groups: ['micro-cassandra'])
