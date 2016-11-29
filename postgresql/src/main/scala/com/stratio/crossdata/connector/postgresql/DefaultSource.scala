@@ -117,19 +117,20 @@ class DefaultSource
     require(optionURL.nonEmpty)
     val URL = optionURL.get
     val properties = mapToPropertiesWithDriver(options)
-    val schema =  options.get(schema)
+    val postgresqlSchema =  options.get(schema)
     val tableQF = options.get(dbTable)
     try{
       withClientDo(options){ (client, statement) =>
-        if(schema.isDefined){
-          val rsTables = client.getMetaData.getTables(null, schema.get, "%", Array("TABLE"))
-          var table: List[String] = Nil
-          while(rsTables.next())
-            table = rsTables.getString("TABLE_NAME") :: table
-          table.map{ table =>
-            val sparkSchema = resolveSchema(URL, s"${schema.get}.$table", properties)
-            Table(table, schema, Some(sparkSchema))
+        if(postgresqlSchema.isDefined){
+          val rsTables = client.getMetaData.getTables(null, postgresqlSchema.get, "%", Array("TABLE"))
+          val itTables = new Iterator[String]{
+            def hasNext = rsTables.next()
+            def next: String = rsTables.getString("TABLE_NAME")
           }
+          itTables.map{ table =>
+            val sparkSchema = resolveSchema(URL, s"${postgresqlSchema.get}.$table", properties)
+            Table(table, postgresqlSchema, Some(sparkSchema))
+          }.toSeq
         }
         else if(tableQF.isDefined) {
           val tableAndSchema = tableQF.get.split("[.]")
@@ -146,11 +147,13 @@ class DefaultSource
           }.toList
           schemas.flatMap{ schema =>
             val rsTables = metadata.getTables(null, schema, "%", Array("TABLE"))
-            var table: List[String] = Nil
-            while(rsTables.next())
-              table = rsTables.getString("TABLE_NAME") :: table
 
-            table.map{ table =>
+            val itTables = new Iterator[String]{
+              def hasNext = rsTables.next()
+              def next: String = rsTables.getString("TABLE_NAME")
+            }
+
+            itTables.map{ table =>
               val sparkSchema = resolveSchema(URL, s"$schema.$table", properties)
               Table(table, Some(schema), Some(sparkSchema))
             }
