@@ -111,6 +111,11 @@ class DefaultSource
     }
   }
 
+  def resultSetToIterator(rs: ResultSet, functionNext: ResultSet => String) : Iterator[String] = new Iterator[String] {
+    def hasNext: Boolean = rs.next()
+    def next(): String = functionNext(rs)
+  }
+
   override def listTables(context: SQLContext, options: Map[String, String]): Seq[Table] = {
 
     val optionURL = options.get(url)
@@ -120,13 +125,11 @@ class DefaultSource
     val postgresqlSchema =  options.get(schema)
     val tableQF = options.get(dbTable)
     try{
-      withClientDo(options){ (client, statement) =>
+      withClientDo(options){ (client, _) =>
         if(postgresqlSchema.isDefined){
           val rsTables = client.getMetaData.getTables(null, postgresqlSchema.get, "%", Array("TABLE"))
-          val itTables = new Iterator[String]{
-            def hasNext = rsTables.next()
-            def next: String = rsTables.getString("TABLE_NAME")
-          }
+          val itTables = resultSetToIterator(rsTables, rsTables => rsTables.getString("TABLE_NAME"))
+
           itTables.map{ table =>
             val sparkSchema = resolveSchema(URL, s"${postgresqlSchema.get}.$table", properties)
             Table(table, postgresqlSchema, Some(sparkSchema))
@@ -141,17 +144,11 @@ class DefaultSource
         else {
           val metadata = client.getMetaData
           val rsSchemas = metadata.getSchemas
-          val schemas = new Iterator[String] {
-            def hasNext = rsSchemas.next()
-            def next() : String = rsSchemas.getString(1).trim
-          }.toList
-          schemas.flatMap{ schema =>
-            val rsTables = metadata.getTables(null, schema, "%", Array("TABLE"))
+          val itSchemas = resultSetToIterator(rsSchemas, rsSchemas => rsSchemas.getString(1).trim).toList
 
-            val itTables = new Iterator[String]{
-              def hasNext = rsTables.next()
-              def next: String = rsTables.getString("TABLE_NAME")
-            }
+          itSchemas.flatMap{ schema =>
+            val rsTables = metadata.getTables(null, schema, "%", Array("TABLE"))
+            val itTables = resultSetToIterator(rsTables, rsTables => rsTables.getString("TABLE_NAME"))
 
             itTables.map{ table =>
               val sparkSchema = resolveSchema(URL, s"$schema.$table", properties)
@@ -170,24 +167,9 @@ class DefaultSource
     }
   }
 
-  def getSchemaAndTableName(tableQF: String): (String, String) = {
-    val splitTable = tableQF.split("[.]")
-    if(splitTable.length == 2) (splitTable(0), splitTable(1))
-    else throw new Exception("dbtable should be specified in 'schema.table' format")
-  }
-
-//  def resultSetToIterator[T](rs: ResultSet, next :(ResultSet) => T) : Iterator[T] = new Iterator[T] {
-//    def hasNext = rs.next()
-//    def next() : T = next
-//  }
-
   def createSchemaIfNotExists(conn: Connection, statement: Statement, postgresqlSchema: String) : Unit = {
     val rs = conn.getMetaData.getSchemas
-//    val schemas = resultSetToIterator[String](resultSet, resultSet => resultSet.getString(1))
-    val schemas = new Iterator[String] {
-          def hasNext = rs.next()
-          def next() : String = rs.getString(1)
-    }
+    val schemas = resultSetToIterator(rs, rs => rs.getString(1))
 
     if(!schemas.contains(postgresqlSchema.trim.toLowerCase()))
       statement.execute(s"CREATE SCHEMA $postgresqlSchema")

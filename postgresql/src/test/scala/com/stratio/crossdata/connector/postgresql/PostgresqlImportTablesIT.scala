@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class PostgresqlImportTablesIT extends PostgresqlWithSharedContext {
 
-  it should "import all tables from datasource" in {
+  it should "import all tables from a Postgresql Database" in {
     assumeEnvironmentIsUpAndRunning
 
     def tableCountInHighschool: Long = xdContext.sql("SHOW TABLES").count
