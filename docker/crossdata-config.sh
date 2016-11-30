@@ -23,7 +23,7 @@ function setDriverConfig() {
 function standaloneConfig() {
     AKKAIP="akka.tcp://CrossdataServerCluster@${DOCKER_HOST}:13420"
     #TODO: Test instead of XD_SEED : CROSSDATA_SERVER_AKKA_CLUSTER_SEED_NODES
-    if [ -z ${XD_SEED} ]; then
+    if [ -z "$XD_SEED" ]; then
      export CROSSDATA_SERVER_AKKA_CLUSTER_SEED_NODES=${AKKAIP}
      sed -i "s|<member>127.0.0.1</member>|<member>${DOCKER_HOST}</member>|" /etc/sds/crossdata/server/hazelcast.xml
     else
@@ -35,10 +35,10 @@ function standaloneConfig() {
     #TODO: Check environment vars for hostname and bind hostname & ports
     export CROSSDATA_SERVER_AKKA_REMOTE_NETTY_TCP_HOSTNAME=${DOCKER_HOST}
     export CROSSDATA_SERVER_AKKA_REMOTE_NETTY_TCP_BIND_HOSTNAME=${DOCKER_HOST}
-    if [ -z ${XD_SEED} ]; then
-         crossdata_driver_config_cluster_hosts="[${DOCKER_HOST}:13420]"
+    if [ -z "$XD_SEED" ]; then
+         crossdata_driver_config_cluster_hosts="\[${DOCKER_HOST}:13420\]"
     else
-         crossdata_driver_config_cluster_hosts="[${DOCKER_HOST}:13420, ${XD_SEED}]"
+         crossdata_driver_config_cluster_hosts="\[${DOCKER_HOST}:13420, ${XD_SEED}\]"
     fi
 }
 
