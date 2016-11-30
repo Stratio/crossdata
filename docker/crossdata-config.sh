@@ -17,7 +17,7 @@ function setHazelcastConfig() {
 }
 
 function setDriverConfig() {
-    export crossdata_driver_config_cluster_hosts=[$1:$2]
+    export crossdata_driver_config_cluster_hosts="[$1:$2]"
 }
 
 function standaloneConfig() {
@@ -36,9 +36,9 @@ function standaloneConfig() {
     export CROSSDATA_SERVER_AKKA_REMOTE_NETTY_TCP_HOSTNAME=${DOCKER_HOST}
     export CROSSDATA_SERVER_AKKA_REMOTE_NETTY_TCP_BIND_HOSTNAME=${DOCKER_HOST}
     if [ -z ${XD_SEED} ]; then
-         crossdata_driver_config_cluster_hosts=[${DOCKER_HOST}:13420]
+         crossdata_driver_config_cluster_hosts="[${DOCKER_HOST}:13420]"
     else
-         crossdata_driver_config_cluster_hosts=[${DOCKER_HOST}:13420, ${XD_SEED}]
+         crossdata_driver_config_cluster_hosts="[${DOCKER_HOST}:13420, ${XD_SEED}]"
     fi
 }
 
