@@ -21,6 +21,7 @@ import java.util.Properties
 
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
+import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
 import org.apache.spark.sql.execution.datasources.jdbc.PostgresqlUtils._
 import org.apache.spark.sql.execution.datasources.jdbc.{JDBCPartitioningInfo, PostgresqlXDRelation, DefaultSource => JdbcDS}
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, SchemaRelationProvider}
@@ -85,10 +86,42 @@ class DefaultSource
     new PostgresqlXDRelation(url, table, parts, properties, sqlContext, Some(schema))
   }
 
+
+  def tableExists(parameters: Map[String, String], tableQF: String): Boolean = {
+
+    val (schema, table) = {
+      val schemaTable = tableQF.split("[.]")
+      (schemaTable(0), schemaTable(1))
+    }
+    try {
+      withClientDo(parameters){ (conn, _) =>
+        val rs = conn.getMetaData.getTables(null, schema, table, Array("TABLE"))
+        rs.next()
+      }
+    }
+    catch {
+      case e: Exception => throw e
+    }
+  }
+
   override def createRelation(sqlContext: SQLContext,
                               mode: SaveMode,
                               parameters: Map[String, String],
-                              data: DataFrame): BaseRelation = ???
+                              data: DataFrame): BaseRelation = {
+
+    val (url, table, parts, properties) = getRelationParams(parameters)
+
+    val PostgresqlRelation = new PostgresqlXDRelation(url, table, parts, properties, sqlContext, Some(data.schema))
+    mode match {
+      case Append => PostgresqlRelation.insert(data, overwrite = false)
+      case Overwrite => PostgresqlRelation.insert(data, overwrite = true)
+      case ErrorIfExists => if (tableExists(parameters, table)) PostgresqlRelation.insert(data, overwrite = false)
+        else throw new UnsupportedOperationException(s"SaveMode is set to ErrorIfExists and $table already exists")
+      case Ignore => if (tableExists(parameters, table)) PostgresqlRelation.insert(data, overwrite = false)
+
+    }
+    PostgresqlRelation
+  }
 
   override def generateConnectorOpts(item: Table, opts: Map[String, String] = Map.empty): Map[String, String] = Map(
       dbTable -> s"${item.database.get}.${item.tableName}"
