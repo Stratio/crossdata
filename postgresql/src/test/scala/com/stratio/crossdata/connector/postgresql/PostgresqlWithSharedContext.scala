@@ -136,7 +136,7 @@ sealed trait postgresqlDefaultTestConstants {
   val schema = ListMap("id" -> "integer", "age" -> "integer", "comment" -> "text", "enrolled" -> "boolean", "name" -> "text")
   val schemaAgg = ListMap("id" -> "integer", "mark" -> "numeric(4,2)", "country" -> "text")
 
-  val pk = "id" :: "comment" :: Nil
+  val pk = "id" :: "name" :: Nil
   val pkAgg = "id" :: "mark" :: Nil
   val indexedColumn = "name"
 
@@ -150,7 +150,7 @@ sealed trait postgresqlDefaultTestConstants {
     a :: a.toDouble + 0.25d :: {if(a < 6) "ES" else "US"} :: Nil
   }).toList
 
-  val testDataAggTable =  testDataAgg ++ testData.map{ row =>
+  lazy val testDataAggTable =  testDataAgg ++ testData.map{ row =>
     List(row(0).asInstanceOf[Int] + 10,
       row(1).asInstanceOf[Int].toDouble +0.25,
       row(2))
