@@ -67,14 +67,14 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
     FiniteDuration(config.getDuration(ServerConfig.Http.RequestExecutionTimeout).toMillis, TimeUnit.MILLISECONDS)
   ).recover{
     case configExc: ConfigException =>
-      logger.warn("Http request execution timeout not found. Using the default value $HttpRequestEx", configExc)
+      logger.warn(s"Http request execution timeout not found. Using the default value ${ServerConfig.DefaultHTTPRequestExecutionTimeout}", configExc)
       ServerConfig.DefaultHTTPRequestExecutionTimeout
   } get
 
   type SessionDirective[Session] = Directive[Tuple1[Session]]
 
-  lazy val route =
-    path("upload" / JavaUUID) { sessionUUID =>
+  lazy val routeAPI = 
+   path("upload" / JavaUUID) { sessionUUID =>
       entity(as[Multipart.FormData]) { formData =>
         // collect all parts of the multipart as it arrives into a map
         var path = ""
@@ -195,6 +195,9 @@ class CrossdataHttpServer(config: Config, serverActor: ActorRef, implicit val sy
       }
 
     } ~ complete("Welcome to Crossdata HTTP Server")
+
+
+  lazy val route = withRequestTimeout(requestExecutionTimeout)(routeAPI)
 
   //TODO: Remove this debugging tool when a minimal stable API has been reached
   /*val getRqEnt = extract[HttpRequest] { rqCtx =>

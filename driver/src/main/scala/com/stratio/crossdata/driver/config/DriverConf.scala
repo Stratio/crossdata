@@ -259,8 +259,6 @@ object DriverConf {
     val Host = "akka-http.host"
     val Port = "akka-http.port"
 
-    val RequestExecutionTimeout = "akka-http.request-execution-timeout"
-
     val HostConnectionPoolClientIdleTimeout = "akka.http.host-connection-pool.client.idle-timeout"
     val ClientIdleTimeout = "akka.http.client.idle-timeout"
 
