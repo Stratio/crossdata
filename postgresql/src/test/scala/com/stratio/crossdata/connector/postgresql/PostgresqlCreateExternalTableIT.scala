@@ -15,6 +15,7 @@
  */
 package com.stratio.crossdata.connector.postgresql
 
+import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -147,7 +148,74 @@ class PostgresqlCreateExternalTableIT extends PostgresqlWithSharedContext {
           |)
       """.stripMargin.replaceAll("\n", " ")
 
-    an [org.postgresql.util.PSQLException] shouldBe thrownBy(sql(createTableQueryString2).collect())
+    an [CrossdataException] shouldBe thrownBy(sql(createTableQueryString2).collect())
+    client.get._2.execute(s"DROP TABLE $postgresqlSchema.$newTable")
+    client.get._2.execute(s"DROP TABLE $postgresqlSchema.$newTable2")
+  }
+
+  it should "execute create external table if not exists" in {
+    val newTable = "tableifnotexists"
+
+    val createTableQueryString =
+      s"""|CREATE EXTERNAL TABLE IF NOT EXISTS $postgresqlSchema.$newTable(
+          |id Integer,
+          |name String,
+          |booleanFile Boolean,
+          |timeTime Timestamp
+          |)
+          |USING $SourceProvider
+          |OPTIONS (
+          |url '$url',
+          |primary_key 'id'
+          |)
+      """.stripMargin.replaceAll("\n", " ")
+
+    try {
+      //Experimentation
+      sql(createTableQueryString).collect()
+
+      //Expectations
+      val table = xdContext.table(s"$postgresqlSchema.$newTable")
+      table should not be null
+      table.schema.fieldNames should contain("name")
+
+      val resultSet = client.get._2.executeQuery(s"SELECT * FROM $postgresqlSchema.$newTable")
+      resultSet.getMetaData.getColumnName(2) should be("name")
+
+    } finally {
+      client.get._2.execute(s"DROP TABLE $postgresqlSchema.$newTable")
+    }
+
+  }
+
+  it should "execute create external table if not exists when table already exists" in {
+    val newTable = "tablealreadyexists"
+
+    val createTableQueryString =
+      s"""|CREATE EXTERNAL TABLE IF NOT EXISTS $postgresqlSchema.$newTable(
+          |id Integer,
+          |name String,
+          |booleanFile Boolean,
+          |timeTime Timestamp
+          |)
+          |USING $SourceProvider
+          |OPTIONS (
+          |url '$url',
+          |primary_key 'id'
+          |)
+      """.stripMargin.replaceAll("\n", " ")
+
+    try {
+      //Experimentation
+      client.get._2.execute(s"CREATE TABLE $postgresqlSchema.$newTable (id text, age integer, primary key (id))")
+
+      //Expectations TODO should we get an exception?
+      an [Exception] should be thrownBy sql(createTableQueryString).collect()
+
+    } finally {
+      client.get._2.execute(s"DROP TABLE $postgresqlSchema.$newTable")
+    }
+
   }
 
 }

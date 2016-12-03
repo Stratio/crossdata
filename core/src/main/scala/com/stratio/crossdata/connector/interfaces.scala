@@ -132,7 +132,17 @@ trait NativeFunctionExecutor {
   */
 trait TableManipulation extends GenerateConnectorOptions{
 
+  def createExternalTable(context: SQLContext,
+                          tableName: String,
+                          databaseName: Option[String],
+                          schema: StructType,
+                          options: Map[String, String],
+                          allowExisting: Boolean): Option[TableInventory.Table] = {
+    require(allowExisting, "create external table if not exists is not supported")
+    createExternalTable(context, tableName, databaseName, schema, options)
+  }
 
+  @deprecated
   def createExternalTable(context: SQLContext,
                           tableName: String,
                           databaseName: Option[String],
