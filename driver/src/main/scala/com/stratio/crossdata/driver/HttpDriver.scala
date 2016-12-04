@@ -167,9 +167,17 @@ class HttpDriver private[driver](driverConf: DriverConf,
              }
            }
          } else {
-             Unmarshal(httpResponse.entity).to[SQLReply] map {
-               case SQLReply(_, result: SQLResult) => result
+
+             httpResponse.entity match {
+               // TODO Server should return json content by wrapping the text plain response http://stackoverflow.com/questions/34620297/how-to-generically-wrap-a-rejection-with-akka-http
+               case HttpEntity.Strict(ContentTypes.`text/plain(UTF-8)`, content) =>
+                 Future.successful(ErrorSQLResult(content.utf8String))
+               case entity =>
+                 Unmarshal(entity).to[SQLReply] map {
+                   case SQLReply(_, result: SQLResult) => result
+                 }
              }
+
          }
        }
     }
@@ -187,7 +195,6 @@ class HttpDriver private[driver](driverConf: DriverConf,
     }
 
   }
-
 
   override def sqlStreamedResult(query: String): Future[StreamedSQLResult] = {
 
