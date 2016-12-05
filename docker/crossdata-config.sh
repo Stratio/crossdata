@@ -33,8 +33,14 @@ function standaloneConfig() {
     fi
 
     #TODO: Check environment vars for hostname and bind hostname & ports
-    export CROSSDATA_SERVER_AKKA_REMOTE_NETTY_TCP_HOSTNAME=${DOCKER_HOST}
+    if [ -n "$CROSSDATA_SERVER_AKKA_REMOTE_NETTY_TCP_HOSTNAME" ]; then
+        setHazelcastConfig ${CROSSDATA_SERVER_AKKA_REMOTE_NETTY_TCP_HOSTNAME} 5701
+    else
+        export CROSSDATA_SERVER_AKKA_REMOTE_NETTY_TCP_HOSTNAME=${DOCKER_HOST}
+    fi
+
     export CROSSDATA_SERVER_AKKA_REMOTE_NETTY_TCP_BIND_HOSTNAME=${DOCKER_HOST}
+
     if [ -z "$XD_SEED" ]; then
          crossdata_driver_config_cluster_hosts="\[${DOCKER_HOST}:13420\]"
     else
