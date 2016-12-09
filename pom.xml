@@ -93,6 +93,7 @@
 
     <modules>
         <module>core</module>
+        <module>core2</module>
         <module>cassandra</module>
         <module>mongodb</module>
         <module>elasticsearch</module>
