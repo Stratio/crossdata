@@ -25,11 +25,12 @@ function standaloneConfig() {
     #TODO: Test instead of XD_SEED : CROSSDATA_SERVER_AKKA_CLUSTER_SEED_NODES
     if [ -z ${XD_SEED} ]; then
      export CROSSDATA_SERVER_AKKA_CLUSTER_SEED_NODES=${AKKAIP}
-     sed -i "s|<member>127.0.0.1</member>|<member>${DOCKER_HOST}</member>|" /etc/sds/crossdata/server/hazelcast.xml
     else
      SEED_IP="akka.tcp://CrossdataServerCluster@${XD_SEED}:13420"
      export CROSSDATA_SERVER_AKKA_CLUSTER_SEED_NODES=${SEED_IP},${AKKAIP}
-     sed -i "s|<member>127.0.0.1</member>|<member>${XD_SEED}</member>|" /etc/sds/crossdata/server/hazelcast.xml
+     # TODO: Study whether it is worth of making hazelcast nodes available when auto discovery is disabled.
+     #       If so, find a better way of editing hazelcast.xml. The method commented below is as flimsy as it gets.
+     #sed -i "s|<member>127.0.0.1</member>|<member>${XD_SEED}</member>|" /etc/sds/crossdata/server/hazelcast.xml
     fi
 
     #TODO: Check environment vars for hostname and bind hostname & ports
