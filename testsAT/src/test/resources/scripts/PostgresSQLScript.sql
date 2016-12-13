@@ -1,0 +1,12 @@
+CREATE SCHEMA databasetest;
+CREATE TABLE databasetest.crossdatanumbers (col_1 smallint, col_2 integer, col_3 bigint, col_4 decimal, col_5 numeric, col_6 real, col_7 double precision, col_8 smallserial, col_9 serial, col_10 bigserial);
+INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (-32768,-2147483648,-9223372036854775808,-1000.0001,-1000.0001,20000.00,2.00000000000000,1,1,1);
+INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (-100,-100,-100,-100.001,-100.001,20000.00,2000000.00000000,10,10,10);
+INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (-10,-10,-10,-10.01,-10.01,20000.00,20000000.0000000,100,100,100);
+INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (-1,-1,-1,-1.1,-1.1,20000.00,200000000.000000,1000,1000,1000);
+INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (0,0,0,0.0,0.0,20.00000,2000000000.00000,10000,10000,10000);
+INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (1,1,1,1.1,1.1,200.0000,20000000000.0000,20000,100000,100000);
+INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (10,10,10,10.01,10.01,2000.000,200000000000.000,25000,1000000,1000000);
+INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (100,100,100,100.001,100.001,20000.00,2000000000000.00,26000,10000000,10000000);
+INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (1000,1000,1000,1000.0001,1000.0001,200000.0,20000000000000.0,30000,100000000,100000000);
+INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (32767,2147483647, 9223372036854775807,10000.00001,10000.00001,2000000,200000000000000,32767,2147483647,9223372036854775807);
