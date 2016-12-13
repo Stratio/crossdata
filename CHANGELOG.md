@@ -2,6 +2,10 @@
 
 Only listing significant user-visible, not internal code cleanups and minor bug fixes. 
 
+## 1.9.0 (upcoming)
+
+* Pending changelog
+
 ## 1.8.0 (upcoming)
 
 * Make Akka Http timeouts configurable
