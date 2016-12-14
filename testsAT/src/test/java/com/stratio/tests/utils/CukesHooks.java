@@ -290,7 +290,7 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
                 StringBuilder sqlPostgreURL = new StringBuilder("jdbc:postgresql://").append(postgreSQL_hostname).append(":").append(postgreSQL_port);
                 sqlPostgreURL.append("/").append(postgreSQL_database).append("?user=").append(postgreSQL_user).append("&password=");
                 sqlPostgreURL.append(postgreSQL_password);
-                StringBuilder sqlPostgreSQL = new StringBuilder("IMPORT TABLES USING com.stratio.crossdata.connector.postgresql OPTIONS(\"");
+                StringBuilder sqlPostgreSQL = new StringBuilder("IMPORT TABLES USING com.stratio.crossdata.connector.postgresql OPTIONS ( url \"");
                 sqlPostgreSQL.append(sqlPostgreURL).append("\")");
                 commonspec.getLogger().info("IMPORTING TABLES FROM POSTGRESQL");
                 commonspec.getLogger().info("QUERY:" + sqlPostgreSQL.toString());

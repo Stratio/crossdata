@@ -17,6 +17,7 @@ package com.stratio.tests.utils;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 
@@ -607,9 +608,8 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                                     + "but  was <%s>", i,
                             columnExpected[0], actualRow.get(i).getClass().getName());
                 }
-                if(!actualRow.getString(i).equals(tableRow.get(i))){
-                    return equals = false;
-
+                if(!actualRow.getString(i).trim().equals(tableRow.get(i))){
+                   return equals = false;
                 }
                 break;
             case "timestamp":
@@ -622,6 +622,20 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                     return equals = false;
                 }
                 break;
+                case "decimal(38,18)":
+                    if (!(actualRow.get(i) instanceof java.lang.Number)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.Number\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(i).getClass().getName());
+                    }
+                Float aux=Float.parseFloat(tableRow.get(i));
+                DecimalFormat df = new DecimalFormat("0.00");
+                df.setMaximumFractionDigits(18);
+                df.format(aux);
+                if(!actualRow.getDecimal(i).equals((aux))){
+                        return equals = false;
+                    }
+                    break;
             default:
                 failWithMessage("The type <%s> is not implemented", columnExpected[1]);
             }
