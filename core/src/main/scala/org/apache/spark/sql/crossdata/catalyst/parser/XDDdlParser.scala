@@ -153,13 +153,12 @@ class XDDdlParser(parseQuery: String => LogicalPlan, xDContext: XDContext) exten
   }
 
   protected lazy val createExternalTable: Parser[LogicalPlan] = {
-
-    CREATE ~> EXTERNAL ~> TABLE ~> tableIdentifier ~ tableCols ~ (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
-      case tableName ~ columns ~ provider ~ opts =>
+    CREATE ~> EXTERNAL ~> TABLE ~> (IF ~> NOT <~ EXISTS).? ~ tableIdentifier ~ tableCols ~ (USING ~> className) ~ (OPTIONS ~> options).? ^^ {
+      case allowExisting ~ tableName ~ columns ~ provider ~ opts =>
         val userSpecifiedSchema = StructType(columns)
         val options = opts.getOrElse(Map.empty[String, String])
 
-        CreateExternalTable(tableName, userSpecifiedSchema, provider, options)
+        CreateExternalTable(tableName, userSpecifiedSchema, provider, options, allowExisting.isEmpty)
     }
   }
 

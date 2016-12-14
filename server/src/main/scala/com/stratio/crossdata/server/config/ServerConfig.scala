@@ -66,7 +66,7 @@ object ServerConfig {
     val Host = "akka-http.host"
     val Port = "akka-http.port"
 
-    val RequestExecutionTimeout = "akka-http.request-execution-timeout"
+    val RequestExecutionTimeout = "akka.http.server.request-timeout"
 
     //TLS akka-http client authentication
     object TLS {

@@ -109,6 +109,16 @@ class DriverConf extends Logging {
     this
   }
 
+  def setHttpClientIdleTimeout(seconds: Int): DriverConf = {
+    userSettings.put(Http.ClientIdleTimeout, ConfigValueFactory.fromAnyRef(seconds * 1000))
+    this
+  }
+
+  def setHttpHostConnectionPoolClientIdleTimeout(seconds: Int): DriverConf = {
+    userSettings.put(Http.HostConnectionPoolClientIdleTimeout, ConfigValueFactory.fromAnyRef(seconds * 1000))
+    this
+  }
+
   private[crossdata] def get(key: String): AnyRef = {
     getOption(key).getOrElse(throw new NoSuchElementException(key))
   }
@@ -249,7 +259,8 @@ object DriverConf {
     val Host = "akka-http.host"
     val Port = "akka-http.port"
 
-    val RequestExecutionTimeout = "akka-http.request-execution-timeout"
+    val HostConnectionPoolClientIdleTimeout = "akka.http.host-connection-pool.client.idle-timeout"
+    val ClientIdleTimeout = "akka.http.client.idle-timeout"
 
     //TLS akka-http client authentication
     object TLS {

@@ -17,11 +17,11 @@
 package com.stratio.crossdata.connector.postgresql
 
 import java.sql.{Connection, ResultSet, Statement}
-import java.util.Properties
 
 import com.stratio.crossdata.connector.TableInventory.Table
 import com.stratio.crossdata.connector.{TableInventory, TableManipulation}
 import org.apache.spark.sql.SaveMode.{Append, ErrorIfExists, Ignore, Overwrite}
+import org.apache.spark.sql.crossdata.exceptions.CrossdataException
 import org.apache.spark.sql.execution.datasources.jdbc.PostgresqlUtils._
 import org.apache.spark.sql.execution.datasources.jdbc.{JDBCPartitioningInfo, PostgresqlXDRelation, DefaultSource => JdbcDS}
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, SchemaRelationProvider}
@@ -193,7 +193,7 @@ class DefaultSource
 
     } catch {
       case e: IllegalArgumentException => throw e
-      case e: PSQLException => throw e //TODO
+      case e: PSQLException => throw e
       case e: Exception =>
         sys.error(e.getMessage)
         Seq.empty
@@ -206,6 +206,28 @@ class DefaultSource
 
     if(!schemas.contains(postgresqlSchema.trim.toLowerCase()))
       statement.execute(s"CREATE SCHEMA $postgresqlSchema")
+  }
+
+
+  override def createExternalTable(context: SQLContext,
+                                   tableName: String,
+                                   postgresqlSchema: Option[String],
+                                   schema: StructType,
+                                   options: Map[String, String],
+                                   allowExisting: Boolean): Option[Table] = {
+
+    require(postgresqlSchema.nonEmpty)
+    val dbSchema = postgresqlSchema.get
+    val tableQF = s"$dbSchema.$tableName"
+
+    val exists = tableExists(options, tableQF)
+    if(exists && allowExisting) throw new CrossdataException(s"Can't create external table $tableQF because it already exists")
+    else if(exists && !allowExisting) None /*** TODO What should we return?
+      - Option(Table(tableName, postgresqlSchema, None)) we register userSpecifiedSchema and it could be incoherent with database table
+      - None returns an error
+      - Another Exception
+      ***/
+    else createExternalTable(context, tableName, postgresqlSchema, schema, options)
   }
 
   override def createExternalTable(context: SQLContext,
@@ -231,7 +253,7 @@ class DefaultSource
       Option(Table(tableName, postgresqlSchema, Option(schema)))
     } catch {
       case e: IllegalArgumentException => throw e
-      case e: PSQLException => throw e // TODO What should we do when table already exists?
+      case e: PSQLException => throw e
       case e: Exception =>
         sys.error(e.getMessage)
         None
