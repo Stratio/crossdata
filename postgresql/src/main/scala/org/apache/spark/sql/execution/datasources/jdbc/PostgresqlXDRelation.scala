@@ -20,13 +20,13 @@ import java.util.Properties
 
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
-import com.stratio.crossdata.connector.postgresql.PostgresqlQueryProcessor
 import org.apache.spark.Partition
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.execution.datasources.LogicalRelation
-import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.sources.{BaseRelation, Filter}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.execution.datasources.jdbc.PostgresqlUtils._
@@ -39,10 +39,23 @@ class PostgresqlXDRelation( url: String,
                             @transient override val sqlContext: SQLContext,
                             userSchema: Option[StructType] = None)
   extends JDBCRelation(url, table, parts)(sqlContext)
-  with NativeScan
-  with SparkLoggerComponent {
+    with NativeScan
+    with SparkLoggerComponent {
 
   override val schema: StructType = userSchema.getOrElse(resolveSchema(url, table, properties))
+
+  override def buildScan(requiredColumns: Array[String], filters: Array[Filter]): RDD[Row] = {
+    // Rely on a type erasure hack to pass RDD[InternalRow] back as RDD[Row]
+    PostgresqlRDD.scanTable(
+      sqlContext.sparkContext,
+      schema,
+      url,
+      properties,
+      table,
+      requiredColumns,
+      filters,
+      parts).asInstanceOf[RDD[Row]]
+  }
 
   override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = buildScan(optimizedLogicalPlan, None)
 
@@ -60,7 +73,7 @@ class PostgresqlXDRelation( url: String,
 
   }
 
-    /**
+  /**
     * Checks the ability to execute a [[LogicalPlan]].
     *
     * @param logicalStep      isolated plan
@@ -79,7 +92,7 @@ class PostgresqlXDRelation( url: String,
       case Limit(_, _) | Project(_, _) | Filter(_, _) => true
       case _: Sort => true
       case _: Aggregate => true
-        //TODO case _: Subquery => true
+      //TODO case _: Subquery => true
       case _ => false
     }
     case bn: BinaryNode => bn match {

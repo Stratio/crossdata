@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.connector.postgresql
+package org.apache.spark.sql.execution.datasources.jdbc
 
 import java.sql.ResultSet
 import java.util.Properties
@@ -23,7 +23,6 @@ import org.apache.spark.sql.catalyst.expressions.{GenericInternalRowWithSchema, 
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
 import org.apache.spark.sql.catalyst.util.{DateTimeUtils, GenericArrayData}
 import org.apache.spark.sql.catalyst.{InternalRow, SQLBuilder}
-import org.apache.spark.sql.execution.datasources.jdbc.{PostgresqlUtils, PostgresqlXDRelation}
 import org.apache.spark.sql.types.{Decimal, _}
 import org.apache.spark.unsafe.types.UTF8String
 
@@ -114,7 +113,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
       case BooleanType => rs.getBoolean(rsIdx)
       case DateType =>  val dateVal = rs.getDate(rsIdx)
         if (dateVal != null) {
-           DateTimeUtils.fromJavaDate(dateVal)
+          DateTimeUtils.fromJavaDate(dateVal)
         } else null
 
       case TimestampType =>
@@ -190,4 +189,3 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
   }
 
 }
-
