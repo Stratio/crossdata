@@ -40,3 +40,8 @@ INSERT INTO databasetest.crossdataboolean(col_1) VALUES ('n');
 INSERT INTO databasetest.crossdataboolean(col_1) VALUES ('no');
 INSERT INTO databasetest.crossdataboolean(col_1) VALUES ('off');
 INSERT INTO databasetest.crossdataboolean(col_1) VALUES ('0');
+CREATE TYPE databasetest.crossdatatype AS ENUM('type1', 'type2', 'type3');
+CREATE TABLE databasetest.crossdataenum(col_1 databasetest.crossdatatype);
+INSERT INTO databasetest.crossdataenum(col_1) VALUES ('type1');
+INSERT INTO databasetest.crossdataenum(col_1) VALUES ('type2');
+INSERT INTO databasetest.crossdataenum(col_1) VALUES ('type3');
