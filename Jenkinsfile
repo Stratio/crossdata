@@ -1,4 +1,4 @@
-@Library('libpipelines@feature/xunit') _
+@Library('libpipelines@master') _
 
 hose {
     MAIL = 'crossdata'
