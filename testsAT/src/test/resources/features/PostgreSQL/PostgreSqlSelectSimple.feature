@@ -39,7 +39,7 @@ Feature: PostgreSQL Simple Select
             |example_9|example_9|example_9|example_9 |example_9|
             |example_10|example_10|example_10|example_10|example_10|
 
-    Scenario:
+    Scenario:[POSTGRESQL NATIVE-BOOLEAN TYPES] Select * FROM databasetest.crossdataboolean
         When I execute 'SELECT * FROM databasetest.crossdataboolean'
         Then The result has to have '14' rows ignoring the order:
             |col_1-boolean  |
@@ -57,3 +57,58 @@ Feature: PostgreSQL Simple Select
             | false         |
             | false         |
             | false         |
+
+    Scenario:[POSTGRESQL NATIVE-CROSSDATA TYPES] Select * FROM databasetest.crossdatauuid
+        When I execute 'SELECT * FROM databasetest.crossdatauuid'
+        Then The result has to have '5' rows ignoring the order:
+            |col_1-string                        |
+            |a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11|
+            |a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11|
+            |a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11|
+            |a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11|
+            |a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11|
+
+    Scenario:[POSTGRESQL NATIVE-ARRAYS TYPES]Select * FROM databasetest.crossdataarray
+        When I execute 'SELECT col_1, col_2 FROM databasetest.crossdataarray'
+        Then The result has to have '2' rows:
+            | col_1-string | col_2-array<int> |
+            | Bill  | 10000,10000,10000,10000 |
+            | Carol | 20000,25000,25000,25000 |
+
+    Scenario:[POSTGRESQL NATIVE-TIMESTAMP]Select * FROM databasetest.crossdatatimestamp
+        When I execute 'SELECT * FROM databasetest.crossdatatimestamp'
+        Then The result has to have '1' rows:
+            | col_1-timestamp | col_2-timestamp |
+            | 2016-12-15 15:12:32.459957  | 2016-12-16 00:12:32.459957  |
+
+    Scenario:[POSTGRESQL NATIVE-DATE]Select * FROM databasetest.crossdatadate
+        When I execute 'SELECT * FROM databasetest.crossdatadate'
+        Then The result has to have '14' rows:
+            |col_1-date |
+            |1999-01-08 |
+            |1999-01-08 |
+            |1999-01-08 |
+            |1999-01-18 |
+            |2003-01-02 |
+            |1999-01-08 |
+            |1999-01-08 |
+            |1999-01-08 |
+            |1999-01-08 |
+            |1999-01-08 |
+            |1999-01-08 |
+            |1999-01-08 |
+            |1999-01-08 |
+            |1999-01-08 |
+
+    Scenario:[POSTGRESQL NATIVE-TIME]Select * FROM databasetest.crossdatatime
+        When I execute 'SELECT * FROM databasetest.crossdatatime'
+        Then The result has to have '6' rows:
+            | col_1-timestamp | col_2-timestamp |
+            | 1970-01-01 04:05:06.789 | 1970-01-01 13:05:06.0  |
+            | 1970-01-01 04:05:06.0  | 1970-01-01 09:05:06.0  |
+            | 1970-01-01 04:05:00.0  | 1970-01-01 12:05:06.0  |
+            | 1970-01-01 04:05:06.0  | 1970-01-01 13:05:06.0  |
+            | 1970-01-01 04:05:00.0  | 1970-01-01 13:05:00.0  |
+            | 1970-01-01 16:05:00.0  | 1970-01-02 01:05:00.0  |
+
+
