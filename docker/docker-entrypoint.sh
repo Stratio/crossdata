@@ -2,9 +2,9 @@
 
 DOCKER_HOST="hostname -f"
 if [[ "$(hostname -f)" =~ \. ]]; then
-  DOCKER_HOST="$(hostname -f)"
+  export DOCKER_HOST="$(hostname -f)"
 else
-  DOCKER_HOST="$(hostname -i)"
+  export DOCKER_HOST="$(hostname -i)"
 fi
 
 ####################################################
