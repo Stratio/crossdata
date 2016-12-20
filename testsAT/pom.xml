@@ -159,6 +159,11 @@
             <version>${crossdata.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.stratio.crossdata.connector</groupId>
+            <artifactId>crossdata-postgresql_${scala.binary.version}</artifactId>
+            <version>${crossdata.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>1.1.7</version>

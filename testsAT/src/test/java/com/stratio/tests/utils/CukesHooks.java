@@ -281,6 +281,25 @@ public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumber
                     commonspec.getXdContext().executeQuery(sqlElasticSearch.toString());
                 }
                 break;
+            case "postgreSQL":
+                String postgreSQL_hostname = System.getProperty("POSTGRESQL_HOSTNAME", "127.0.0.1");
+                String postgreSQL_port = System.getProperty("POSTGRESQL_PORT", "5432");
+                String postgreSQL_database = System.getProperty("POSTGRESQL_DATABASE", "hakama");
+                String postgreSQL_user = System.getProperty("POSTGRESQL_USER", "hakama");
+                String postgreSQL_password = System.getProperty("POSTGRESQL_PASSWORD", "hakama");
+                StringBuilder sqlPostgreURL = new StringBuilder("jdbc:postgresql://").append(postgreSQL_hostname).append(":").append(postgreSQL_port);
+                sqlPostgreURL.append("/").append(postgreSQL_database).append("?user=").append(postgreSQL_user).append("&password=");
+                sqlPostgreURL.append(postgreSQL_password);
+                StringBuilder sqlPostgreSQL = new StringBuilder("IMPORT TABLES USING com.stratio.crossdata.connector.postgresql OPTIONS ( url \"");
+                sqlPostgreSQL.append(sqlPostgreURL).append("\")");
+                commonspec.getLogger().info("IMPORTING TABLES FROM POSTGRESQL");
+                commonspec.getLogger().info("QUERY:" + sqlPostgreSQL.toString());
+                if (ThreadProperty.get("Driver").equals("javaDriver")) {
+                    commonspec.getXdDriver().executeSyncQuery(sqlPostgreSQL.toString());
+                } else {
+                    commonspec.getXdContext().executeQuery(sqlPostgreSQL.toString());
+                }
+                break;
             default:
                 break;
         }
