@@ -1,6 +1,10 @@
 #!/bin/bash -xe
+
+CATALOG_CLASS_PREFIX="org.apache.spark.sql.crossdata.catalog.persistent"
+
 function jdbcCatalog() {
-    export crossdata_core_catalog_jdbc_driver=${1:-3306}
+    DEFAULT_CATALOG="$CATALOG_CLASS_PREFIX.DerbyCatalog"
+    export crossdata_core_catalog_jdbc_driver=${1:-$DEFAULT_CATALOG}
     export crossdata_core_catalog_jdbc_url=$2
     export crossdata_core_catalog_jdbc_name=$3
     export crossdata_core_catalog_jdbc_user=$4
@@ -16,9 +20,9 @@ function zookeeperCatalog() {
 }
 
 
-if [$# > 0 ]; then
+if [ $# > 0 ]; then
 if [ "x$1x" != "xx" ]; then
- export crossdata_core_catalog_class="\"org.apache.spark.sql.crossdata.catalog.persistent.$1Catalog\""
+ export crossdata_core_catalog_class="\"${CATALOG_CLASS_PREFIX}.$1Catalog\""
  if [ "$1" == "MySQL" ]; then
     export jdbcCatalog "org.mariadb.jdbc.Driver" ${XD_CATALOG_HOST} ${XD_CATALOG_DB_NAME} ${XD_CATALOG_DB_USER} ${XD_CATALOG_DB_PASS}
  fi

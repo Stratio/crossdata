@@ -94,12 +94,19 @@ function marathonConfig() {
         fi
         echo -e "$NAMEADDR\t$XD_EXTERNAL_IP" >> /etc/hosts
     fi
+
 }
+
+####################################################
+## Vault and secrets (configured if enabled)
+####################################################
+if [ ! -z ${VAULT_HOST} ]; then
+    source security-config.sh
+fi
 
 ####################################################
 ## Main
 ####################################################
-
 if [ -z ${MARATHON_APP_ID} ]; then
     standaloneConfig
 else
