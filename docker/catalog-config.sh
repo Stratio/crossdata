@@ -22,7 +22,7 @@ function zookeeperCatalog() {
 
 if [ $# > 0 ]; then
 if [ "x$1x" != "xx" ]; then
- export crossdata_core_catalog_class="\"${CATALOG_CLASS_PREFIX}.$1Catalog\""
+ export crossdata_core_catalog_class="${CATALOG_CLASS_PREFIX}.$1Catalog"
  if [ "$1" == "MySQL" ]; then
     jdbcCatalog "org.mariadb.jdbc.Driver" ${XD_CATALOG_HOST} ${XD_CATALOG_DB_NAME} ${XD_CATALOG_DB_USER} ${XD_CATALOG_DB_PASS}
  fi
