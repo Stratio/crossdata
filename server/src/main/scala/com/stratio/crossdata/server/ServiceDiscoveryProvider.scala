@@ -48,11 +48,6 @@ trait ServiceDiscoveryProvider {
   private def getLocalSeed: String =
     s"${Try(serverConfig.getString("akka.remote.netty.tcp.hostname")).getOrElse("127.0.0.1")}:${Try(serverConfig.getInt("akka.remote.netty.tcp.port")).getOrElse("13420")}"
 
-  private def getLocalSeed(xdCluster: Cluster): String = {
-    val selfAddress = xdCluster.selfAddress
-    s"${selfAddress.host.getOrElse("127.0.0.1")}:${selfAddress.port.getOrElse("13420")}"
-  }
-
   private def getLocalMember: String = {
     val defaultAddr = "127.0.0.1"
     val defaultPort = "5701"
@@ -62,12 +57,6 @@ trait ServiceDiscoveryProvider {
       case addrStr => Some(s"$addrStr:$defaultPort")
     } getOrElse s"$defaultAddr:$defaultPort"
   }
-
-  private def getLocalMember(hsp: HazelcastSessionProvider): String = {
-    val selfAddress = hsp.gelLocalMember.getAddress
-    s"${selfAddress.getHost}:${selfAddress.getPort}"
-  }
-
 
   protected def startServiceDiscovery(sdch: SDCH) = {
     // Start ZK connection
@@ -185,6 +174,8 @@ trait ServiceDiscoveryProvider {
     val newSeeds = (Set(localSeed) ++ currentSeeds.split(",").toSet).map(m => m.trim).filter(_.nonEmpty)
     dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
 
+    logger.info(s"Service discovery config - Cluster seeds: ${newSeeds.mkString(",")}")
+
     val protocol = s"akka.${
       if (Try(serverConfig.getBoolean("akka.remote.netty.ssl.enable-ssl")).getOrElse(false)) "ssl." else ""
     }tcp"
@@ -211,6 +202,8 @@ trait ServiceDiscoveryProvider {
       Set(localMember)
     }).map(m => m.trim).filter(_.nonEmpty)
 
+    logger.info(s"Service discovery config - Provider members: ${newMembers.mkString(",")}")
+
     dClient.setData.forPath(pathForMembers, newMembers.mkString(",").getBytes)
     val modifiedHzConfig = hzConfig.setNetworkConfig(
       hzConfig.getNetworkConfig.setJoin(
@@ -226,7 +219,7 @@ trait ServiceDiscoveryProvider {
     val pathForMembers = h.sdch.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
 
-    val updatedMembers = Set(getLocalMember(hsp)) ++ sessionProviderOpt.map {
+    val updatedMembers = Set(getLocalMember) ++ sessionProviderOpt.map {
       case hzSP: HazelcastSessionProvider =>
         hzSP.getHzMembers.to[Set].map { m =>
           s"${m.getAddress.getHost}:${m.getAddress.getPort}"
@@ -248,8 +241,8 @@ trait ServiceDiscoveryProvider {
   }
 
   private def updateClusterSeeds(xCluster: Cluster, h: SDH) = {
-    val currentSeeds = xCluster.state.members.filter(_.roles.contains("server")).map(
-      m => s"${m.address.host.getOrElse("127.0.0.1")}:${m.address.port.getOrElse("13420")}") + getLocalSeed(xCluster)
+    val currentSeeds = getLocalSeed + xCluster.state.members.filter(_.roles.contains("server")).map(
+      m => s"${m.address.host.getOrElse("127.0.0.1")}:${m.address.port.getOrElse("13420")}")
     val pathForSeeds = h.sdch.getOrElse(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     logger.info(s"Updating seeds: ${currentSeeds.mkString(",")}")
