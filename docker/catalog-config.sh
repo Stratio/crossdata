@@ -3,8 +3,7 @@
 CATALOG_CLASS_PREFIX="org.apache.spark.sql.crossdata.catalog.persistent"
 
 function jdbcCatalog() {
-    DEFAULT_CATALOG="$CATALOG_CLASS_PREFIX.DerbyCatalog"
-    export crossdata_core_catalog_jdbc_driver=${1:-$DEFAULT_CATALOG}
+    export crossdata_core_catalog_jdbc_driver=$1
     export crossdata_core_catalog_jdbc_url=$2
     export crossdata_core_catalog_jdbc_name=$3
     export crossdata_core_catalog_jdbc_user=$4
@@ -20,20 +19,16 @@ function zookeeperCatalog() {
 }
 
 
-if [ $# > 0 ]; then
-if [ "x$1x" != "xx" ]; then
- export crossdata_core_catalog_class="${CATALOG_CLASS_PREFIX}.$1Catalog"
- if [ "$1" == "MySQL" ]; then
-    jdbcCatalog "org.mariadb.jdbc.Driver" ${XD_CATALOG_HOST} ${XD_CATALOG_DB_NAME} ${XD_CATALOG_DB_USER} ${XD_CATALOG_DB_PASS}
- fi
- if [ "$1" == "PostgreSQL" ]; then
-    jdbcCatalog "org.postgresql.Driver" ${XD_CATALOG_HOST} ${XD_CATALOG_DB_NAME} ${XD_CATALOG_DB_USER} ${XD_CATALOG_DB_PASS}
- fi
- if [ "$1" == "Zookeeper" ]; then
-    zookeeperCatalog ${XD_CATALOG_ZOOKEEPER_CONNECTION_STRING} ${XD_CATALOG_ZOOKEEPER_CONNECTION_TIMEOUT} ${XD_CATALOG_ZOOKEEPER_SESSION_TIMEOUT} ${XD_CATALOG_ZOOKEEPER_RETRY_ATTEMPS} ${XD_CATALOG_ZOOKEEPER_RETRY_INTERVAL}
- fi
- if [ "x$2x" != "xx" ]; then
-    export crossdata_core_catalog_prefix=${2:-crossdataCluster}
- fi
+export crossdata_core_catalog_class="${CATALOG_CLASS_PREFIX}.$1Catalog"
+if [ "$1" == "MySQL" ]; then
+   jdbcCatalog "org.mariadb.jdbc.Driver" ${XD_CATALOG_HOST} ${XD_CATALOG_DB_NAME} ${XD_CATALOG_DB_USER} ${XD_CATALOG_DB_PASS}
 fi
+if [ "$1" == "PostgreSQL" ]; then
+   jdbcCatalog "org.postgresql.Driver" ${XD_CATALOG_HOST} ${XD_CATALOG_DB_NAME} ${XD_CATALOG_DB_USER} ${XD_CATALOG_DB_PASS}
+fi
+if [ "$1" == "Zookeeper" ]; then
+   zookeeperCatalog ${XD_CATALOG_ZOOKEEPER_CONNECTION_STRING} ${XD_CATALOG_ZOOKEEPER_CONNECTION_TIMEOUT} ${XD_CATALOG_ZOOKEEPER_SESSION_TIMEOUT} ${XD_CATALOG_ZOOKEEPER_RETRY_ATTEMPS} ${XD_CATALOG_ZOOKEEPER_RETRY_INTERVAL}
+fi
+if [ "x$2x" != "xx" ]; then
+   export crossdata_core_catalog_prefix=${2:-crossdataCluster}
 fi

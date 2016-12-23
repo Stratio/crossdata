@@ -10,7 +10,8 @@ fi
 ####################################################
 ## XD Catalog
 ####################################################
-source catalog-config.sh $XD_CATALOG $XD_CATALOG_PREFIX
+CROSSDATA_CATALOG=${XD_CATALOG:-Derby}
+source catalog-config.sh $CROSSDATA_CATALOG $XD_CATALOG_PREFIX
 
 
 ####################################################

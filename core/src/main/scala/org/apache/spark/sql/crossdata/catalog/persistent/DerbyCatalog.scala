@@ -18,12 +18,11 @@ package org.apache.spark.sql.crossdata.catalog.persistent
 import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet}
 
 import com.stratio.crossdata.util.using
-import org.apache.spark.sql.catalyst.{CatalystConf, TableIdentifier}
+import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.crossdata.CrossdataVersion
-import org.apache.spark.sql.crossdata.catalog.{IndexIdentifierNormalized, TableIdentifierNormalized, StringNormalized, XDCatalog, persistent}
+import org.apache.spark.sql.crossdata.catalog._
 
 import scala.annotation.tailrec
-import scala.util.Try
 
 // TODO refactor SQL catalog implementations
 object DerbyCatalog {
