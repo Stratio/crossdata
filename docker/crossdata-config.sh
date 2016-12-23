@@ -101,7 +101,7 @@ function marathonConfig() {
 ## Vault and secrets (configured if enabled)
 ####################################################
 if [ ! -z ${VAULT_HOST} ]; then
-    source security-config.sh
+    source security-config.sh $1
 fi
 
 ####################################################

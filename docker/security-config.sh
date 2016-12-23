@@ -44,7 +44,7 @@ source kerberos-server-config.sh
 #######################################################
 ## Gosec-plugin config
 #######################################################
-source gosec-config.sh
+source gosec-config.sh $1
 
 #######################################################
 ## HDFS security

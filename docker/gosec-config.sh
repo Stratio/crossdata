@@ -4,6 +4,11 @@
 ## Get Gosec-plugin LDAP user and pass and set XD vars
 #######################################################
 
+if ["$1" != "skipSecManager"]; then
+    export CROSSDATA_SECURITY_MANAGER_CLASS=com.stratio.gosec.dyplon.plugins.crossdata.GoSecCrossdataSecurityManager
+    export CROSSDATA_SECURITY_MANAGER_ENABLED=true
+fi
+
 ### Get LDAP user and pass
 export XD_GOSEC_PLUGIN_LDAP_USER=$(curl -k -L -H "X-Vault-Token:$VAULT_TOKEN"  "https://$VAULT_HOST:$VAULT_PORT/v1/crossdata/$TENANT_NAME/gosec-plugin/ldap" -s | jq -r ".data .\"user\"")
 export XD_GOSEC_PLUGIN_LDAP_PASS=$(curl -k -L -H "X-Vault-Token:$VAULT_TOKEN"  "https://$VAULT_HOST:$VAULT_PORT/v1/crossdata/$TENANT_NAME/gosec-plugin/ldap" -s | jq -r ".data .\"pass\"")

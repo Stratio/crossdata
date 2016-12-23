@@ -23,7 +23,7 @@ source catalog-config.sh $XD_CATALOG $XD_CATALOG_PREFIX
 ####################################################
 ## Crossdata Config
 ####################################################
-source crossdata-config.sh
+source crossdata-config.sh $1
 case "$SERVER_MODE" in
  "shell") # This mode will launch a crossdata shell instead of a crossdata server
     if [ "$SHELL_SERVERADDR" -a "$SHELL_SERVERPORT" ]; then
