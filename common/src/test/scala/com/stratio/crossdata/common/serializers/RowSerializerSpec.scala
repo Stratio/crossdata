@@ -117,8 +117,15 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
 
   it should " be able to recover Double values when their schema type is misleading" in {
 
-    val schema = StructType(List(StructField("decimaldouble", DecimalType(10,1),true)))
-    val row = Row.fromSeq(Array(32.1))
+    val row = Row.fromSeq(
+      Array(32.0, 32.0F, BigDecimal(32.0), "32.0", 32L, 32)
+    )
+
+    val schema = StructType (
+      (0 until row.size) map { idx =>
+        StructField(s"decimaldouble$idx", DecimalType(10,1), true)
+      } toList
+    )
 
     val formats = json4sJacksonFormats + new RowSerializer(schema)
 
@@ -126,7 +133,9 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
     val extracted = parse(serialized, false).extract[Row](formats, implicitly[Manifest[Row]])
 
     inside(extracted) {
-      case r: Row => r.get(0) shouldBe Decimal(32.1)
+      case r: Row => r.toSeq foreach { cellValue =>
+        cellValue shouldBe Decimal(32.0)
+      }
     }
 
   }
