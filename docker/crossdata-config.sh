@@ -63,37 +63,16 @@ function marathonConfig() {
 
 
     ########################################################################################################
-    #If XD_EXTERNAL_IP and MARATHON_APP_LABEL_HAPROXY_1_PORT are not specified assume we are working in HTTP mode
-    #Scenary: HAProxy exposing Akka http port, and creating an internal cluster using netty and autodiscovery through Zookeeper
+    # Working in HTTP mode
+    # Scenary: HAProxy exposing Akka http port, and creating an internal cluster using netty and
+    #          autodiscovery through Zookeeper
     ########################################################################################################
-    if [ -z ${XD_EXTERNAL_IP} ] && [ -z ${MARATHON_APP_LABEL_HAPROXY_1_PORT} ]; then
-        setCrossdataDir ${HOST} ${PORT_13420}
-        setCrossdataBindHost ${HOST} ${PORT_13420}
-        setHazelcastConfig ${HOST} ${PORT_5701}
-        setDriverConfig ${HOST} ${PORT_13420}
-        # CROSSDATA_SERVER_CONFIG_HTTP_SERVER_PORT is set with the port provided by Marathon-LB
-        export CROSSDATA_SERVER_CONFIG_HTTP_SERVER_PORT=$PORT_13422
-    else
-        #Scenary: HAProxy exposing the akka netty port with the external IP. Supported only for one instance of Crossdata
-        if [ -z ${XD_EXTERNAL_IP} ] || [ -z ${MARATHON_APP_LABEL_HAPROXY_1_PORT} ]; then
-            echo "ERROR: Env var XD_EXTERNAL_IP and label HAPROXY_1_PORT must be provided together using Marathon&Haproxy in TCP mode" 1>&2
-            exit 1 # terminate and indicate error
-        else
-            #Hostname and port of haproxy
-            setCrossdataDir ${XD_EXTERNAL_IP} ${MARATHON_APP_LABEL_HAPROXY_1_PORT}
-            #Bind address for local
-            setCrossdataBindHost ${DOCKER_HOST} ${PORT_13420}
-            #Driver
-            setDriverConfig ${XD_EXTERNAL_IP} ${MARATHON_APP_LABEL_HAPROXY_1_PORT}
-        fi
-        # When using ClusterClient External IP, the hosts-files get updated in order to keep a consistent
-        # binding address in AKKA.
-        export NAMEADDR="$(hostname -i)"
-        if [ -n "$HAPROXY_SERVER_INTERNAL_ADDRESS" ]; then
-          export NAMEADDR=$HAPROXY_SERVER_INTERNAL_ADDRESS
-        fi
-        echo -e "$NAMEADDR\t$XD_EXTERNAL_IP" >> /etc/hosts
-    fi
+    setCrossdataDir ${HOST} ${PORT_13420}
+    setCrossdataBindHost ${HOST} ${PORT_13420}
+    setHazelcastConfig ${HOST} ${PORT_5701}
+    setDriverConfig ${HOST} ${PORT_13420}
+    # CROSSDATA_SERVER_CONFIG_HTTP_SERVER_PORT is set with the port provided by Marathon-LB
+    export CROSSDATA_SERVER_CONFIG_HTTP_SERVER_PORT=$PORT_13422
 
 }
 
