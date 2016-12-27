@@ -118,7 +118,7 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
   it should " be able to recover Double values when their schema type is misleading" in {
 
     val row = Row.fromSeq(
-      Array(32.0, 32.0F, BigDecimal(32.0), "32.0", 32L, 32)
+      Array(32.0, 32.0F, BigDecimal(32.0), new java.math.BigDecimal(32.0), "32.0", 32L, 32)
     )
 
     val schema = StructType (
