@@ -95,6 +95,8 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (DoubleType, v: Double) => JDouble(v)
       case (LongType, v: Long) => JInt(v)
       case (_: DecimalType, v: Decimal) => JDecimal(v.toBigDecimal)
+      case (_: DecimalType, v: Double) => JDecimal(BigDecimal(v))
+      case (_: DecimalType, v: Float) => JDecimal(BigDecimal(v))
       case (ByteType, v: Byte) => JInt(v.toInt)
       case (BinaryType, v: Array[Byte]) => JString(new String(v))
       case (BooleanType, v: Boolean) => JBool(v)

@@ -20,13 +20,16 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.catalyst.util.ArrayBasedMapData
+import org.json4s.Extraction
+import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.junit.runner.RunWith
+import org.scalatest.Inside
 import org.scalatest.junit.JUnitRunner
 
 import scala.collection.mutable.WrappedArray
 
 @RunWith(classOf[JUnitRunner])
-class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSerializer {
+class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSerializer with Inside {
 
   lazy val schema = StructType(List(
     StructField("int",IntegerType,true),
@@ -111,5 +114,21 @@ class RowSerializerSpec extends XDSerializationTest[Row] with CrossdataCommonSer
     TestCase("marshall & unmarshall a row with no schema", rowWithNoSchema),
     TestCase("marshall & unmarshall a row with schema", rowWithSchema)
   )
+
+  it should " be able to recover Double values when their schema type is misleading" in {
+
+    val schema = StructType(List(StructField("decimaldouble", DecimalType(10,1),true)))
+    val row = Row.fromSeq(Array(32.1))
+
+    val formats = json4sJacksonFormats + new RowSerializer(schema)
+
+    val serialized = compact(render(Extraction.decompose(row)(formats)))
+    val extracted = parse(serialized, false).extract[Row](formats, implicitly[Manifest[Row]])
+
+    inside(extracted) {
+      case r: Row => r.get(0) shouldBe Decimal(32.1)
+    }
+
+  }
 
 }
