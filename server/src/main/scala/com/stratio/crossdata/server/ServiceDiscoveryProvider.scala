@@ -183,7 +183,7 @@ trait ServiceDiscoveryProvider {
     val localSeed = getLocalSeed
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     val currentSeeds = new String(dClient.getData.forPath(pathForSeeds))
-    val newSeeds = (Set(localSeed) ++ currentSeeds.split(",").toSet).map(m => m.trim).filter(_.nonEmpty)
+    val newSeeds = (localSeed +: currentSeeds.split(",")).map(m => m.trim).filter(_.nonEmpty)
     dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
 
     logger.info(s"Service discovery config - Cluster seeds: ${newSeeds.mkString(",")}")
@@ -194,7 +194,7 @@ trait ServiceDiscoveryProvider {
 
     val modifiedAkkaConfig = serverConfig.withValue(
       "akka.cluster.seed-nodes",
-      ConfigValueFactory.fromIterable(newSeeds.map { s =>
+      ConfigValueFactory.fromIterable(newSeeds.toSeq.map { s =>
         val hostPort = s.split(":")
         new Address(protocol,
           serverConfig.getString("config.cluster.name"),
@@ -209,9 +209,9 @@ trait ServiceDiscoveryProvider {
     val currentMembers = new String(dClient.getData.forPath(pathForMembers))
 
     val newMembers = (if (localMember.split(":").head != "127.0.0.1") {
-      currentMembers.split(",").toSet + localMember
+      localMember +: currentMembers.split(",")
     } else {
-      Set(localMember)
+      Array(localMember)
     }).map(m => m.trim).filter(_.nonEmpty)
 
     logger.info(s"Service discovery config - Provider members: ${newMembers.mkString(",")}")
@@ -278,13 +278,13 @@ trait ServiceDiscoveryProvider {
     val pathForMembers = h.sdch.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
 
-    val updatedMembers = Set(getLocalMember) ++ sessionProviderOpt.map {
+    val updatedMembers = getLocalMember +: sessionProviderOpt.map {
       case hzSP: HazelcastSessionProvider =>
-        hzSP.getHzMembers.to[Set].map { m =>
+        hzSP.getHzMembers.to[Seq].map { m =>
           s"${m.getAddress.getHost}:${m.getAddress.getPort}"
         }
-      case _ => Set.empty
-    }.getOrElse(Set.empty)
+      case _ => Seq.empty
+    }.getOrElse(Seq.empty)
 
     logger.info(s"Updating members: ${updatedMembers.mkString(",")}")
     h.curatorClient.setData.forPath(pathForMembers, updatedMembers.mkString(",").getBytes)
