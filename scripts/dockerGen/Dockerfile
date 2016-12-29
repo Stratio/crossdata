@@ -4,7 +4,7 @@ MAINTAINER Stratio Crossdata team "crossdata@stratio.com"
 # USAGE: build --build-arg PKG=<crossdata-version> -t <docker-name> <output-path>
 # USAGE Example: docker build --build-arg PKG=1.8.0-RC2-SNAPSHOT -t crossdata-enterprise .
 
-COPY . /
+COPY dockerfiles/* /
 
 VOLUME /usr/lib/mesos
 
