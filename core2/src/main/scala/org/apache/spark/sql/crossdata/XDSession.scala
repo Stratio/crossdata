@@ -3,6 +3,8 @@ package org.apache.spark.sql.crossdata
 import java.beans.Introspector
 import java.util.concurrent.atomic.AtomicReference
 
+import com.stratio.common.utils.components.logger.impl.Slf4jLoggerComponent
+
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
@@ -35,7 +37,7 @@ import scala.util.control.NonFatal
 class XDSession private(
                               @transient override val sparkContext: SparkContext,
                               @transient private val existingSharedState: Option[SharedState])
-    extends Serializable with XDLogging with SparkSession{ self =>
+    extends Serializable with Slf4jLoggerComponent with SparkSession{ self =>
 
     private[sql] def this(sc: SparkContext) {
       this(sc, None)
