@@ -1,43 +1,42 @@
+
 package org.apache.spark.sql.crossdata
 
+import com.stratio.common.utils.components.logger.impl.Slf4jLoggerComponent
 import java.beans.Introspector
 import java.util.concurrent.atomic.AtomicReference
-
-import com.stratio.common.utils.components.logger.impl.Slf4jLoggerComponent
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
 import scala.util.control.NonFatal
-import org.apache.spark.{SPARK_VERSION, SparkConf, SparkContext, sql, _}
+import org.apache.spark.{SPARK_VERSION, SparkConf, SparkContext}
 import org.apache.spark.annotation.{DeveloperApi, Experimental}
 import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.internal.Logging
+import org.apache.spark.internal.config.CATALOG_IMPLEMENTATION
 import org.apache.spark.rdd.RDD
 import org.apache.spark.scheduler.{SparkListener, SparkListenerApplicationEnd}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalog.Catalog
-import org.apache.spark.sql.catalyst.{InternalRow, JavaTypeInference, ScalaReflection, TableIdentifier}
-import org.apache.spark.sql.catalyst.encoders.{RowEncoder, _}
+import org.apache.spark.sql.catalyst._
+import org.apache.spark.sql.catalyst.encoders._
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
 import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, Range}
+import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.LogicalRelation
-import org.apache.spark.sql.execution.{LogicalRDD, RDDConversions, python}
-import org.apache.spark.sql.{DataFrameReader, Dataset, Encoder, Encoders, Row, SQLImplicits, _}
 import org.apache.spark.sql.execution.ui.SQLListener
 import org.apache.spark.sql.internal.{CatalogImpl, SessionState, SharedState}
 import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.streaming.{DataStreamReader, StreamingQuery, StreamingQueryManager}
-import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.streaming._
+import org.apache.spark.sql.types.{DataType, LongType, StructType}
 import org.apache.spark.sql.util.ExecutionListenerManager
 import org.apache.spark.util.Utils
 
-import scala.reflect.ClassTag
-import scala.util.control.NonFatal
-
-
 class XDSession private(
-                              @transient override val sparkContext: SparkContext,
-                              @transient private val existingSharedState: Option[SharedState])
-    extends Serializable with Slf4jLoggerComponent with SparkSession{ self =>
+                         @transient override val sparkContext: SparkContext,
+                         @transient private val existingSharedState: Option[SharedState])
+  extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent {self =>
+
 
     private[sql] def this(sc: SparkContext) {
       this(sc, None)
@@ -78,7 +77,7 @@ class XDSession private(
         SparkSession.sessionStateClassName(sparkContext.conf),
         self)
     }
-*/
+
     /**
       * A wrapped version of this session in the form of a [[SQLContext]], for backward compatibility.
       *
@@ -641,7 +640,10 @@ class XDSession private(
         AttributeReference(f.name, f.dataType, f.nullable)()
       }
     }
+
+  */
 }
+
 
 // TODO XDSession => Remove Hive => Require user(vs default??) or throw a new exception
 // TODO XDSession => XDSessionProvider => builder => it is in charge of create new XDSession
@@ -651,7 +653,7 @@ object XDSession {
   /**
     * Builder for [[XDSession]].
     */
-  class Builder extends XDLogging {
+  class Builder extends Slf4jLoggerComponent {
 
     private[this] val options = new scala.collection.mutable.HashMap[String, String]
 
@@ -749,7 +751,7 @@ object XDSession {
       * @since 2.0.0
       */
     def getOrCreate(userId: String): SparkSession = synchronized { // TODO session => one foreach user
-      var session: SparkSession = null
+    var session: SparkSession = null
 
       // Global synchronization so we will only set the default session once.
       SparkSession.synchronized {
@@ -804,7 +806,7 @@ object XDSession {
   // Private methods from now on
   ////////////////////////////////////////////////////////////////////////////////////////
 
-  /*
+
   private val HIVE_SHARED_STATE_CLASS_NAME = "org.apache.spark.sql.hive.HiveSharedState"
   private val HIVE_SESSION_STATE_CLASS_NAME = "org.apache.spark.sql.hive.HiveSessionState"
 
@@ -820,7 +822,7 @@ object XDSession {
       case "hive" => HIVE_SESSION_STATE_CLASS_NAME
       case "in-memory" => classOf[SessionState].getCanonicalName
     }
-  }*/
+  }
 
   /**
     * Helper method to create an instance of [[T]] using a single-arg constructor that
@@ -839,18 +841,19 @@ object XDSession {
     }
   }
 
-/*  /**
-    * Return true if Hive classes can be loaded, otherwise false.
-    */
-  private[spark] def hiveClassesArePresent: Boolean = {
-    try {
-      Utils.classForName(HIVE_SESSION_STATE_CLASS_NAME)
-      Utils.classForName(HIVE_SHARED_STATE_CLASS_NAME)
-      Utils.classForName("org.apache.hadoop.hive.conf.HiveConf")
-      true
-    } catch {
-      case _: ClassNotFoundException | _: NoClassDefFoundError => false
-    }
-  }*/
+  /*  /**
+      * Return true if Hive classes can be loaded, otherwise false.
+      */
+    private[spark] def hiveClassesArePresent: Boolean = {
+      try {
+        Utils.classForName(HIVE_SESSION_STATE_CLASS_NAME)
+        Utils.classForName(HIVE_SHARED_STATE_CLASS_NAME)
+        Utils.classForName("org.apache.hadoop.hive.conf.HiveConf")
+        true
+      } catch {
+        case _: ClassNotFoundException | _: NoClassDefFoundError => false
+      }
+    }*/
 
 }
+
