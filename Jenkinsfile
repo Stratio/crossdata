@@ -1,4 +1,4 @@
-@Library('libpipelines@feature/multibranch') _
+@Library('libpipelines@master') _
 
 hose {
     MAIL = 'crossdata'
@@ -14,6 +14,13 @@ hose {
     PKGMODULESNAMES = ['stratio-crossdata-scala211']
     DEBARCH = 'all'
     RPMARCH = 'noarch'
+    
+    UT_FLAKINESS_PERCENTAGE = 0
+    UT_NEW_FLAKINESS_PERCENTAGE = 0
+    IT_FLAKINESS_PERCENTAGE = 0
+    IT_NEW_FLAKINESS_PERCENTAGE = 0
+    AT_FLAKINESS_PERCENTAGE = 0
+    AT_NEW_FLAKINESS_PERCENTAGE = 0
 
     ITSERVICES = [
         ['ZOOKEEPER': [

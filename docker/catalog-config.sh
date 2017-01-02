@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 function jdbcCatalog() {
-    crossdata_core_catalog_jdbc_driver=$1:3306
+    crossdata_core_catalog_jdbc_driver=${1:-3306}
     crossdata_core_catalog_jdbc_url=$2
     crossdata_core_catalog_jdbc_name=$3
     crossdata_core_catalog_jdbc_user=$4
@@ -8,11 +8,11 @@ function jdbcCatalog() {
 }
 
 function zookeeperCatalog() {
-    crossdata_core_catalog_zookeeper_connectionString=$1:=localhost:2181
-    crossdata_core_catalog_zookeeper_connectionTimeout=$2:=15000
-    crossdata_core_catalog_zookeeper_sessionTimeout=$3:=60000
-    crossdata_core_catalog_zookeeper_retryAttempts=$4:=5
-    crossdata_core_catalog_zookeeper_retryInterval=$5:=10000
+    crossdata_core_catalog_zookeeper_connectionString=${1:-localhost:2181}
+    crossdata_core_catalog_zookeeper_connectionTimeout=${2:-15000}
+    crossdata_core_catalog_zookeeper_sessionTimeout=${3:-60000}
+    crossdata_core_catalog_zookeeper_retryAttempts=${4:-5}
+    crossdata_core_catalog_zookeeper_retryInterval=${5:-10000}
 }
 
 
@@ -29,7 +29,7 @@ if [ "x$1x" != "xx" ]; then
     zookeeperCatalog ${XD_CATALOG_ZOOKEEPER_CONNECTION_STRING} ${XD_CATALOG_ZOOKEEPER_CONNECTION_TIMEOUT} ${XD_CATALOG_ZOOKEEPER_SESSION_TIMEOUT} ${XD_CATALOG_ZOOKEEPER_RETRY_ATTEMPS} ${XD_CATALOG_ZOOKEEPER_RETRY_INTERVAL}
  fi
  if [ "x$2x" != "xx" ]; then
-    crossdata_core_catalog_prefix=$2:=crossdataCluster
+    crossdata_core_catalog_prefix=${2:-crossdataCluster}
  fi
 fi
 fi

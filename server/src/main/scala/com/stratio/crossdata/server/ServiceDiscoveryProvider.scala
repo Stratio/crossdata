@@ -53,8 +53,15 @@ trait ServiceDiscoveryProvider {
     s"${selfAddress.host.getOrElse("127.0.0.1")}:${selfAddress.port.getOrElse("13420")}"
   }
 
-  private def getLocalMember: String =
-    s"${Try(hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.getMembers.head).getOrElse("127.0.0.1:5701")}"
+  private def getLocalMember: String = {
+    val defaultAddr = "127.0.0.1"
+    val defaultPort = "5701"
+    hzConfig.getNetworkConfig.getJoin.getTcpIpConfig.getMembers.headOption flatMap {
+      case addrStr if addrStr.isEmpty => None
+      case addrStr if addrStr contains ':' => Some(addrStr)
+      case addrStr => Some(s"$addrStr:$defaultPort")
+    } getOrElse s"$defaultAddr:$defaultPort"
+  }
 
   private def getLocalMember(hsp: HazelcastSessionProvider): String = {
     val selfAddress = hsp.gelLocalMember.getAddress
