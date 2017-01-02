@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.serializers
+package org.apache.spark.sql.crossdata.serializers
 
 import com.stratio.crossdata.test.BaseXDTest
 import org.json4s.jackson.JsonMethods._

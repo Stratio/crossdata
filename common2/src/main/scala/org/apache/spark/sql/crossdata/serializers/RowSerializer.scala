@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.serializers
+package org.apache.spark.sql.crossdata.serializers
 
 import java.sql.Timestamp
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.{GenericRow, GenericRowWithSchema}
+import org.apache.spark.sql.catalyst.util.{DateTimeUtils, ArrayBasedMapData => ArrayBasedMapDataNotDeprecated, ArrayData => ArrayDataNotDeprecated, MapData => MapDataNotDeprecated}
 import org.apache.spark.sql.types._
 import org.json4s.JsonAST.{JNumber, JObject}
 import org.json4s.JsonDSL._
 import org.json4s._
-import org.apache.spark.sql.catalyst.util.{DateTimeUtils, ArrayBasedMapData => ArrayBasedMapDataNotDeprecated, ArrayData => ArrayDataNotDeprecated, MapData => MapDataNotDeprecated}
-import org.apache.spark.sql.crossdata.serializers.StructTypeSerializer
 
 import scala.collection.mutable
 
@@ -56,7 +55,7 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (ByteType, JInt(v)) => v.toByte
       case (BinaryType, JString(binaryStr)) => binaryStr.getBytes
       case (BooleanType, JBool(v)) => v
-      //case (udt: UserDefinedType[_], jobj) => extractField(udt.sqlType -> jobj)
+      case (udt: UserDefinedType[_], jobj) => extractField(udt.sqlType -> jobj)
       case (ArrayType(ty, _), JArray(arr)) =>
         mutable.WrappedArray make arr.map(extractField(ty, _)).toArray
       /* Maps will be serialized as sub-objects so keys are constrained to be strings */
@@ -102,7 +101,7 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (BooleanType, v: Boolean) => JBool(v)
       case (DateType, v: Int) => JString(DateTimeUtils.toJavaDate(v).toString)
       case (DateType, v: java.sql.Date) => JString(v.toString)
-      //case (udt: UserDefinedType[_], v) => serializeField(udt.sqlType -> v)
+      case (udt: UserDefinedType[_], v) => serializeField(udt.sqlType -> v)
       case (ArrayType(ty, _), v) =>
         v match {
           case v: ArrayDataNotDeprecated => JArray(v.array.toList.map(v => Extraction.decompose(v)))

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.serializers.akka
+package org.apache.spark.sql.crossdata.serializers.akka
 
 import akka.cluster.MemberStatus
-import com.stratio.crossdata.common.serializers.akka.AkkaMemberStatusSerializerHelper._
+import org.apache.spark.sql.crossdata.serializers.akka.AkkaMemberStatusSerializerHelper._
 import org.json4s.JsonAST.{JField, JObject, JString}
 import org.json4s.JsonDSL._
 import org.json4s.{CustomSerializer, Extraction}

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.serializers
+package org.apache.spark.sql.crossdata.serializers
 
-import com.stratio.crossdata.common.serializers.XDSerializationTest.TestCase
+import org.apache.spark.sql.crossdata.serializers.XDSerializationTest.TestCase
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types._
 import org.apache.spark.sql.catalyst.util.ArrayBasedMapData
+import org.apache.spark.sql.types._
 import org.json4s.Extraction
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.junit.runner.RunWith

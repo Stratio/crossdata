@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.common.serializers
+package org.apache.spark.sql.crossdata.serializers
 
-import com.stratio.crossdata.common.result.{InternalStreamedSuccessfulSQLResult, InternalStreamedSuccessfulSQLResult$, StreamedRow, StreamedSchema}
+import com.stratio.crossdata.common.result.{InternalStreamedSuccessfulSQLResult, StreamedRow, StreamedSchema}
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.crossdata.serializers.StreamedSuccessfulSQLResultSerializerHelper._
+import org.apache.spark.sql.types.StructType
 import org.json4s.JsonAST.{JField, JObject}
 import org.json4s.{CustomSerializer, Extraction, Formats}
-import StreamedSuccessfulSQLResultSerializerHelper._
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.StructType
 private[serializers] object StreamedSuccessfulSQLResultSerializerHelper {
   val SchemaLabel = "streamedSchema"
   val RowLabel = "streamedRow"
