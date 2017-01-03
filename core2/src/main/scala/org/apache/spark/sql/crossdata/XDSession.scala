@@ -1,4 +1,3 @@
-
 package org.apache.spark.sql.crossdata
 
 import com.stratio.common.utils.components.logger.impl.Slf4jLoggerComponent
@@ -16,7 +15,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.internal.config.CATALOG_IMPLEMENTATION
 import org.apache.spark.rdd.RDD
 import org.apache.spark.scheduler.{SparkListener, SparkListenerApplicationEnd}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.catalog.Catalog
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.encoders._
@@ -32,28 +31,21 @@ import org.apache.spark.sql.types.{DataType, LongType, StructType}
 import org.apache.spark.sql.util.ExecutionListenerManager
 import org.apache.spark.util.Utils
 
+//TODO Spark2.0 => use SparkSession instead => just the custom Builder/CompanionObject
 class XDSession private(
                          @transient override val sparkContext: SparkContext,
                          @transient private val existingSharedState: Option[SharedState])
-  extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent {self =>
+  extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent { self =>
 
 
-    private[sql] def this(sc: SparkContext) {
-      this(sc, None)
-    }
+  private[sql] def this(sc: SparkContext) {
+    this(sc, None)
+  }
 
-    sparkContext.assertNotStopped()
 
-    /**
-      * The version of Spark on which this application is running.
-      *
-      * @since 2.0.0
-      */
-    override def version: String = SPARK_VERSION
-
-    /* ----------------------- *
-     |  Session-related state  |
-     * ----------------------- */
+  /* ----------------------- *
+   |  Session-related state  |
+   * ----------------------- */
 
    /* /**
       * State shared across sessions, including the [[SparkContext]], cached data, listener,
