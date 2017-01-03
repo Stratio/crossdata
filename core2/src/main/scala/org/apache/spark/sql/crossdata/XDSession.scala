@@ -21,6 +21,7 @@ import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.encoders._
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
 import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, Range}
+import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.execution.ui.SQLListener
@@ -31,10 +32,9 @@ import org.apache.spark.sql.types.{DataType, LongType, StructType}
 import org.apache.spark.sql.util.ExecutionListenerManager
 import org.apache.spark.util.Utils
 
-//TODO Spark2.0 => use SparkSession instead => just the custom Builder/CompanionObject
 class XDSession private(
                          @transient override val sparkContext: SparkContext,
-                         @transient private val existingSharedState: Option[SharedState])
+                         @transient private val existingSharedState: Option[XDSharedState])
   extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent { self =>
 
 
@@ -42,41 +42,29 @@ class XDSession private(
     this(sc, None)
   }
 
+  /**
+    * State shared across sessions, including the [[SparkContext]], cached data, listener,
+    * and a catalog that interacts with external systems.
+    */
+  @transient
+  private[sql] override lazy val sharedState: SharedState =
+    existingSharedState.getOrElse(new XDSharedState(sparkContext))
+
+
+  /**
+    * State isolated across sessions, including SQL configurations, temporary tables, registered
+    * functions, and everything else that accepts a [[org.apache.spark.sql.internal.SQLConf]].
+    */
+  @transient
+  private[sql] override lazy val sessionState: SessionState =
+    new XDSessionState(self)
+
 
   /* ----------------------- *
    |  Session-related state  |
    * ----------------------- */
 
-   /* /**
-      * State shared across sessions, including the [[SparkContext]], cached data, listener,
-      * and a catalog that interacts with external systems.
-      */
-    @transient
-    private[sql] lazy val sharedState: SharedState = {
-      existingSharedState.getOrElse(
-        SparkSession.reflect[SharedState, SparkContext](
-          SparkSession.sharedStateClassName(sparkContext.conf),
-          sparkContext))
-    }
-
-    /**
-      * State isolated across sessions, including SQL configurations, temporary tables, registered
-      * functions, and everything else that accepts a [[org.apache.spark.sql.internal.SQLConf]].
-      */
-    @transient
-    private[sql] lazy val sessionState: SessionState = {
-      SparkSession.reflect[SessionState, SparkSession](
-        SparkSession.sessionStateClassName(sparkContext.conf),
-        self)
-    }
-
-    /**
-      * A wrapped version of this session in the form of a [[SQLContext]], for backward compatibility.
-      *
-      * @since 2.0.0
-      */
-    @transient
-  override val sqlContext: SQLContext = new SQLContext(this)
+   /*
 
     /**
       * Runtime configuration interface for Spark.
