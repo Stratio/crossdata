@@ -29,6 +29,7 @@ class XDQueryExecution(sparkSession: SparkSession, parsedPlan: LogicalPlan, cata
     with Slf4jLoggerComponent {
 
   lazy val authorized: LogicalPlan = {
+    val a = "debug"
     // TODO assertAnalyzed() execute sqlContext.analyzer.execute(authorized) twice??
 
     // TODO Spark2.0

@@ -17,6 +17,7 @@ package org.apache.spark.sql.crossdata.execution
 
 import com.stratio.common.utils.components.logger.impl.Slf4jLoggerComponent
 import com.stratio.crossdata.connector.NativeScan
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.InternalRow
@@ -53,6 +54,8 @@ class XDPlan(optimizedPlan: LogicalPlan, sparkPlan: => SparkPlan) extends SparkP
 
 
   // Use SparkPlan implementation TODO Spark2.0 override every method to improve performance ??
+
+  override protected def sparkContext: SparkContext = sparkPlan.sqlContext.sparkContext
 
   override protected def doExecute(): RDD[InternalRow] = sparkPlan.execute()
 
