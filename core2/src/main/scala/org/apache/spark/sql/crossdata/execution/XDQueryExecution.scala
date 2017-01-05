@@ -19,6 +19,7 @@ import com.stratio.common.utils.components.logger.impl.Slf4jLoggerComponent
 import com.stratio.crossdata.security._
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.crossdata.execution.auth.AuthDirectivesExtractor
 import org.apache.spark.sql.execution._
 
 /**
@@ -29,7 +30,7 @@ class XDQueryExecution(sparkSession: SparkSession, parsedPlan: LogicalPlan, cata
     with Slf4jLoggerComponent {
 
   lazy val authorized: LogicalPlan = {
-    val a = "debug"
+
     // TODO assertAnalyzed() execute sqlContext.analyzer.execute(authorized) twice??
 
     // TODO Spark2.0
@@ -53,6 +54,7 @@ class XDQueryExecution(sparkSession: SparkSession, parsedPlan: LogicalPlan, cata
     }
     */
 
+
     parsedPlan
   }
 
@@ -65,11 +67,11 @@ class XDQueryExecution(sparkSession: SparkSession, parsedPlan: LogicalPlan, cata
 
   // Extracts
   // TODO Spark2.0
-  /*lazy val resourcesAndActions: Seq[(Resource, Action)] = {
+  lazy val resourcesAndActions: Seq[(Resource, Action)] = {
     val crossdataInstances: Seq[String] = Seq(sys.env.getOrElse(Resource.CrossdataClusterNameEnvVar, "unknown")) // TODO get crossdataInstances
 
     val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
     authDirectivesExtractor.extractResourcesAndActions(parsedPlan)
-  }*/
+  }
 
 }
