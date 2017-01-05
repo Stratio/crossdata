@@ -51,6 +51,8 @@ class ShellArgsReader(private val arglist: List[String]) {
         nextOption(map ++ Map("user" -> username), tail)
       case "--timeout" :: timeout :: tail =>
         nextOption(map ++ Map("timeout" -> timeout.toInt), tail)
+      case "--query" :: query :: tail =>
+        nextOption(map ++ Map("query" -> query), tail)
       case BooleanOptionDisabledByDefault(optName, boolValue, tail) if booleanOptions contains optName =>
         nextOption(map ++ Map(optName -> boolValue), tail)
     }

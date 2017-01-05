@@ -38,11 +38,10 @@ object BasicShell extends App {
   val HistoryFile = "history.txt"
   val PersistentHistory = new File(HistoryPath.concat(HistoryFile))
 
-  require(args.length <= 6, "usage --user username [--timeout 120] [--http] [--async]")
+  require(args.length <= 8, "usage --user username [--timeout 120] [--http] [--async] [--query \"show tables\"")
 
   val argsReader = new ShellArgsReader(args.toList)
   val options = argsReader.options
-
 
   val user = options.getOrElse("user", "xd_shell").toString
   val http = options.get("http") collect { case bool: Boolean => bool } getOrElse false
@@ -54,6 +53,9 @@ object BasicShell extends App {
   } getOrElse Duration.Inf
 
   val password = "" // TODO read the password
+
+  val query: Option[String] =
+    options get ("query") map { str => str.toString }
 
   logger.info(s"user: $user http enabled ${http.toString} timeout(seconds): $timeout")
 
@@ -123,34 +125,41 @@ object BasicShell extends App {
     console.println()
     console.flush
 
-    while (true) {
-      val line = getLine(console)
+    def executeQuery(query: String): Unit = {
+      val sqlResponse = driver.sql(query)
 
-      if (checkEnd(line)) {
-        close(console)
-        System.exit(0)
-      }
+      if (asyncEnabled) {
+        console.println(s"Started asynchronous execution with query ID: ${sqlResponse.id}")
+        console.println()
 
-      if (line.get.trim.nonEmpty) {
-
-        val sqlResponse = driver.sql(line.get)
-
-        if (asyncEnabled) {
-          console.println(s"Started asynchronous execution with query ID: ${sqlResponse.id}")
-          console.println()
-
-          sqlResponse.sqlResult onComplete {
-            case Success(sqlResult) =>
-              printResult(sqlResponse.id, sqlResult)
-            case Failure(throwable) =>
-              console.println(s"Unexpected error while processing the query ${throwable.getMessage}")
-              console.flush
-          }
-
-        } else {
-          printResult(sqlResponse.id, sqlResponse.waitForResult(timeout))
+        sqlResponse.sqlResult onComplete {
+          case Success(sqlResult) =>
+            printResult(sqlResponse.id, sqlResult)
+          case Failure(throwable) =>
+            console.println(s"Unexpected error while processing the query ${throwable.getMessage}")
+            console.flush
         }
 
+      } else {
+        printResult(sqlResponse.id, sqlResponse.waitForResult(timeout))
+      }
+    }
+
+    query map { queryToExecute =>
+      executeQuery(queryToExecute)
+    } getOrElse {
+
+      while (true) {
+        val line = getLine(console)
+
+        if (checkEnd(line)) {
+          close(console)
+          System.exit(0)
+        }
+
+        if (line.get.trim.nonEmpty) {
+          executeQuery(line.get)
+        }
       }
     }
   }

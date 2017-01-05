@@ -34,6 +34,11 @@ class ShellArgsReaderSpec extends BaseXDTest {
 
   }
 
+  it should "parse a query passed as parameter" in {
+    val opts = new ShellArgsReader(List("--query", "show tables")).options
+    opts("query") shouldBe "show tables"
+  }
+
   it should "parse boolean options indicating the value" in {
     val opts = new ShellArgsReader(List("--http", "true")).options
     opts("http") shouldBe true
