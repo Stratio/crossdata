@@ -38,7 +38,7 @@ object BasicShell extends App {
   val HistoryFile = "history.txt"
   val PersistentHistory = new File(HistoryPath.concat(HistoryFile))
 
-  require(args.length <= 8, "usage --user username [--timeout 120] [--http] [--async] [--query \"show tables\"")
+  require(args.length <= 8, "usage --user username [--timeout 120] [--tcp] [--async] [--query \"show tables\"")
 
   val argsReader = new ShellArgsReader(args.toList)
   val options = argsReader.options
@@ -57,7 +57,7 @@ object BasicShell extends App {
   val query: Option[String] =
     options get ("query") map { str => str.toString }
 
-  logger.info(s"user: $user \n tcp enabled: ${tcp.toString} \n timeout(seconds): $timeout")
+  logger.info(s"user: $user tcp enabled: ${tcp.toString} timeout(seconds): $timeout")
 
   createHistoryDirectory(HistoryPath)
   val console = new ConsoleReader()
