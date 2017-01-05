@@ -44,7 +44,7 @@ object BasicShell extends App {
   val options = argsReader.options
 
   val user = options.getOrElse("user", "xd_shell").toString
-  val http = options.get("http") collect { case bool: Boolean => bool } getOrElse false
+  val tcp = options.get("tcp") collect { case bool: Boolean => bool } getOrElse false
   val asyncEnabled = options.get("async") collect { case bool: Boolean => bool } getOrElse false
 
   val timeout: Duration = options.get("timeout") map {
@@ -57,7 +57,7 @@ object BasicShell extends App {
   val query: Option[String] =
     options get ("query") map { str => str.toString }
 
-  logger.info(s"user: $user http enabled ${http.toString} timeout(seconds): $timeout")
+  logger.info(s"user: $user \n tcp enabled: ${tcp.toString} \n timeout(seconds): $timeout")
 
   createHistoryDirectory(HistoryPath)
   val console = new ConsoleReader()
@@ -112,10 +112,10 @@ object BasicShell extends App {
 
   private def runConsole(console: ConsoleReader): Unit = {
 
-    val driver = if (http) {
-      Driver.http.newSession(user, password)
-    } else {
+    val driver = if (tcp) {
       Driver.newSession(user, password)
+    } else {
+      Driver.http.newSession(user, password)
     }
 
     console.println()
@@ -147,6 +147,8 @@ object BasicShell extends App {
 
     query map { queryToExecute =>
       executeQuery(queryToExecute)
+      close(console)
+      System.exit(0) //Retrieve error code. Refine the executeQuery method for that
     } getOrElse {
 
       while (true) {

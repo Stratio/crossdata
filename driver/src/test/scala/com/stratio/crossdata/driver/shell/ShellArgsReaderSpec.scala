@@ -23,13 +23,13 @@ import org.scalatest.junit.JUnitRunner
 class ShellArgsReaderSpec extends BaseXDTest {
 
   "ShellArgsReader" should "parse boolean options adding a flag" in {
-    val opts = new ShellArgsReader(List("--http")).options
+    val opts = new ShellArgsReader(List("--tcp")).options
 
-    opts("http") shouldBe true
+    opts("tcp") shouldBe true
     opts.get("async") shouldBe empty
 
-    val options = new ShellArgsReader(List("--http", "--async")).options
-    options("http") shouldBe true
+    val options = new ShellArgsReader(List("--tcp", "--async")).options
+    options("tcp") shouldBe true
     options("async") shouldBe true
 
   }
@@ -40,11 +40,11 @@ class ShellArgsReaderSpec extends BaseXDTest {
   }
 
   it should "parse boolean options indicating the value" in {
-    val opts = new ShellArgsReader(List("--http", "true")).options
-    opts("http") shouldBe true
+    val opts = new ShellArgsReader(List("--tcp", "true")).options
+    opts("tcp") shouldBe true
 
-    val options = new ShellArgsReader(List("--http", "false")).options
-    options("http") shouldBe false
+    val options = new ShellArgsReader(List("--tcp", "false")).options
+    options("tcp") shouldBe false
   }
 
 }

@@ -20,7 +20,7 @@ class ShellArgsReader(private val arglist: List[String]) {
 
   type OptionMap = Map[String, Any]
 
-  val booleanOptions = Seq("http", "async")
+  val booleanOptions = Seq("tcp", "async")
   val options = nextOption(Map(), arglist)
 
   object BooleanOptionDisabledByDefault {
