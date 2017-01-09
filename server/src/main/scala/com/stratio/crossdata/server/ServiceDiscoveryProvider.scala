@@ -259,13 +259,15 @@ trait ServiceDiscoveryProvider {
     *
     */
   private def updateClusterSeeds(xCluster: Cluster, h: SDH): String = {
-    val currentSeeds = getLocalSeed + xCluster.state.members.filter(_.roles.contains("server")).map(
+    val currentSeeds: Set[String] = xCluster.state.members.filter(_.roles.contains("server")).map(
       m => s"${m.address.host.getOrElse("127.0.0.1")}:${m.address.port.getOrElse("13420")}")
+    val newSeeds: Seq[String] = (getLocalSeed +: currentSeeds.toSeq) distinct
     val pathForSeeds = h.sdch.getOrElse(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForSeeds)
-    logger.info(s"Updating seeds: ${currentSeeds.mkString(",")}")
-    h.curatorClient.setData.forPath(pathForSeeds, currentSeeds.mkString(",").getBytes)
-    currentSeeds
+    val newSeedsStr = newSeeds.mkString(",")
+    logger.info(s"Updating seeds: $newSeedsStr")
+    h.curatorClient.setData.forPath(pathForSeeds, newSeedsStr.getBytes)
+    newSeedsStr
   }
 
   /**
