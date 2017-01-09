@@ -17,15 +17,20 @@ package org.apache.spark.sql.crossdata
 
 import java.nio.file.Paths
 
+import com.typesafe.config.ConfigFactory
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.{UnresolvedAlias, UnresolvedRelation, UnresolvedStar}
 import org.apache.spark.sql.catalyst.plans.Inner
 import org.apache.spark.sql.catalyst.plans.logical.{Join, Project}
+import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 import org.apache.spark.sql.crossdata.test.SharedXDSession
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Row, SaveMode}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+
+import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
 class XDSessionIT extends SharedXDSession {
@@ -39,9 +44,7 @@ class XDSessionIT extends SharedXDSession {
   "A XDSession" should "perform a collect with a collection" in {
 
     val df: DataFrame = spark.createDataFrame(spark.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
-    Thread.sleep(100)
     df.createOrReplaceTempView("records")
-    Thread.sleep(100)
     val result: Array[Row] = sql("SELECT * FROM records").collect()
 
     result should have length 5
@@ -205,5 +208,85 @@ class XDSessionIT extends SharedXDSession {
 //
 //  }
 
+
+/* TODO Spark2.0
+  "XDSession" should "be able to isolate config" in {
+
+    val SparkSQLTungstenProperty = "spark.sql.tungsten.enabled"
+    val XDTungstenProperty = "config.spark.sql.tungsten.enabled"
+
+    val xdSession1 = {
+
+      val (coreConfig, sqlConf) = {
+        val sessionConfig: Map[String, AnyRef] = Map(XDTungstenProperty -> Boolean.TRUE)
+        val coreConfig = ConfigFactory.parseMap(sessionConfig)
+        val sqlConf = new SQLConf
+
+        sessionConfig.foreach { case (k, v) => sqlConf.setConfString(k.stripPrefix("config."), v.toString) }
+        (coreConfig, sqlConf)
+      }
+
+      new XDSession(
+        new XDSharedState(_sparkContext,sqlConf, new DerbyCatalog(sqlConf), None, None),
+        new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
+      )
+    }
+
+    val xdSession2 = createNewDefaultSession
+
+    xdSession1.conf.getConfString(SparkSQLTungstenProperty) shouldBe "true"
+    Try(xdSession2.conf.getConfString(SparkSQLTungstenProperty)).toOption shouldBe None
+
+    xdSession1.conf.setConfString(SparkSQLTungstenProperty, "false")
+    xdSession2.conf.setConfString(SparkSQLTungstenProperty, "true")
+
+    xdSession1.conf.getConfString(SparkSQLTungstenProperty) shouldBe "false"
+    xdSession2.conf.getConfString(SparkSQLTungstenProperty) shouldBe "true"
+  }
+
+  "XDSession" should "be able to isolate temporary catalogs and share persistent catalogs" in {
+
+    val tempTableName = "records"
+    val persTableName = "recordsPers"
+
+    val xdSession1 = createNewDefaultSession
+    val xdSession2 = createNewDefaultSession
+
+    val df: DataFrame = xdSession2.createDataFrame(xdSession2.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
+    df.registerTempTable(tempTableName)
+
+    xdSession2.table(tempTableName).collect should not be empty
+    a [RuntimeException] shouldBe thrownBy{
+      xdSession1.table(tempTableName).collect should not be empty
+    }
+
+    df.write.format("json").mode(SaveMode.Overwrite).option("path", s"/tmp/$persTableName").saveAsTable(persTableName)
+
+    xdSession2.table(persTableName).collect should not be empty
+    xdSession1.table(persTableName).collect should not be empty
+
+    xdSession2.dropAllTables()
+
+  }
+
+  override protected def beforeAll(): Unit = {
+    _sparkContext = new SparkContext(
+      "local[2]",
+      "test-xdsession",
+      new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.sql.shuffle.partitions", "3")
+    )
+  }
+
+  override protected def afterAll(): Unit = {
+    _sparkContext.stop()
+  }
+
+  private def createNewDefaultSession: XDSession = {
+    val sqlConf = new SQLConf
+    new XDSession(
+      new XDSharedState(_sparkContext, sqlConf, new DerbyCatalog(sqlConf), None, None),
+      new XDSessionState(sqlConf, new HashmapCatalog(sqlConf) :: Nil)
+    )
+  }*/
 
 }
