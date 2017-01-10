@@ -19,7 +19,7 @@ import java.io._
 import java.util.UUID
 
 import com.stratio.crossdata.common.crossdata
-import com.stratio.crossdata.common.result.{ErrorSQLResult, SQLResult, SuccessfulSQLResult}
+import com.stratio.crossdata.common.result.{ErrorSQLResult, SQLResponse, SQLResult, SuccessfulSQLResult}
 import com.stratio.crossdata.driver.Driver
 import jline.console.history.FileHistory
 import jline.console.{ConsoleReader, UserInterruptException}
@@ -125,30 +125,51 @@ object BasicShell extends App {
     console.println()
     console.flush
 
-    def executeQuery(query: String): Unit = {
-      val sqlResponse = driver.sql(query)
+    def executeQuery(query: String): SQLResponse =
+      driver.sql(query)
 
+    def executeQueryAsync(query: String, onSuccess: SQLResponse => Unit, onFailure: SQLResponse => Unit): SQLResponse = {
+      val sqlResponse = executeQuery(query)
+
+      sqlResponse.sqlResult onComplete {
+        case Success(sqlResult) =>
+          onSuccess(sqlResponse)
+        case Failure(throwable) =>
+          onFailure(sqlResponse)
+      }
+      sqlResponse
+    }
+
+    def executeQuerySync(query: String, onSuccess: SQLResponse => Unit, onFailure: SQLResponse => Unit): SQLResponse = {
+      val sqlResponse = executeQueryAsync(query, onSuccess, onFailure)
+      //Wait
+      sqlResponse.waitForResult(timeout)
+      sqlResponse
+    }
+
+    def execute(query: String, onSuccess: SQLResponse => Unit, onFailure: SQLResponse => Unit): Unit = {
       if (asyncEnabled) {
-        console.println(s"Started asynchronous execution with query ID: ${sqlResponse.id}")
-        console.println()
-
-        sqlResponse.sqlResult onComplete {
-          case Success(sqlResult) =>
-            printResult(sqlResponse.id, sqlResult)
-          case Failure(throwable) =>
-            console.println(s"Unexpected error while processing the query ${throwable.getMessage}")
-            console.flush
-        }
-
+        executeQueryAsync(query, onSuccess, onFailure)
       } else {
-        printResult(sqlResponse.id, sqlResponse.waitForResult(timeout))
+        executeQuerySync(query, onSuccess, onFailure)
       }
     }
 
     query map { queryToExecute =>
-      executeQuery(queryToExecute)
-      close(console)
-      System.exit(0) //Retrieve error code. Refine the executeQuery method for that
+
+      executeQuerySync(queryToExecute,
+        {success =>
+          printResult(success)
+          close(console)
+          System.exit(0)
+        },
+        {error =>
+          printError(error)
+          close(console)
+          System.exit(-1)
+        }
+      )
+
     } getOrElse {
 
       while (true) {
@@ -157,26 +178,35 @@ object BasicShell extends App {
         if (checkEnd(line)) {
           close(console)
           System.exit(0)
-        }
-
-        if (line.get.trim.nonEmpty) {
-          executeQuery(line.get)
+        } else if (line.get.trim.nonEmpty) {
+          execute(line.get, printResult, printError)
         }
       }
     }
   }
 
-  private def printResult(queryId: UUID, result: SQLResult) = {
-    console.println(s"Result for query ID: $queryId")
-    result match {
-      case SuccessfulSQLResult(sqlResult, _) =>
-        console.println("SUCCESS")
-        result.prettyResult.foreach(l => console.println(l))
-      case ErrorSQLResult(message, _) =>
-        console.println("ERROR")
-        console.println(message)
+  private def printResult(sqlResponse: SQLResponse) : Unit = {
+    console.println(s"Result for query ID: ${sqlResponse.id}")
+
+    sqlResponse.sqlResult map { result =>
+      result match {
+        case SuccessfulSQLResult(sqlResult, _) =>
+          console.println("SUCCESS")
+          result.prettyResult.foreach(l => console.println(l))
+        case ErrorSQLResult(message, _) =>
+          console.println("ERROR")
+          console.println(message)
+      }
+      console.flush
     }
-    console.flush
+  }
+
+  private def printError(sqlResponse: SQLResponse) = {
+    sqlResponse.sqlResult onFailure {
+      case t =>
+        console.println(s"Unexpected error while processing the query with id ${sqlResponse.id}: ${t.getMessage}")
+        console.flush
+    }
   }
 
   sys addShutdownHook {
