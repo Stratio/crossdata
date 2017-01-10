@@ -128,58 +128,54 @@ object BasicShell extends App {
     def executeQuery(query: String): SQLResponse =
       driver.sql(query)
 
-    def executeQueryAsync(query: String, onSuccess: SQLResponse => Unit, onFailure: SQLResponse => Unit): SQLResponse = {
+    def executeQueryAsync(query: String): SQLResponse = {
       val sqlResponse = executeQuery(query)
 
       sqlResponse.sqlResult onComplete {
         case Success(sqlResult) =>
-          onSuccess(sqlResponse)
+          printResult(sqlResponse)
         case Failure(throwable) =>
-          onFailure(sqlResponse)
+          printError(sqlResponse)
       }
       sqlResponse
     }
 
-    def executeQuerySync(query: String, onSuccess: SQLResponse => Unit, onFailure: SQLResponse => Unit): SQLResponse = {
-      val sqlResponse = executeQueryAsync(query, onSuccess, onFailure)
+    def executeQuerySync(query: String): SQLResponse = {
+      val sqlResponse = executeQueryAsync(query)
       //Wait
       sqlResponse.waitForResult(timeout)
       sqlResponse
     }
 
-    def execute(query: String, onSuccess: SQLResponse => Unit, onFailure: SQLResponse => Unit): Unit = {
+    def execute(query: String): Unit = {
       if (asyncEnabled) {
-        executeQueryAsync(query, onSuccess, onFailure)
+        executeQueryAsync(query)
       } else {
-        executeQuerySync(query, onSuccess, onFailure)
+        executeQuerySync(query)
       }
     }
 
-    query map { queryToExecute =>
+    while (true) {
+      if (query.isDefined) {
+        val queryStr = query.get
 
-      executeQuerySync(queryToExecute,
-        {success =>
-          printResult(success)
-          close(console)
-          System.exit(0)
-        },
-        {error =>
-          printError(error)
-          close(console)
-          System.exit(-1)
+        val result = executeQuerySync(queryStr)
+        result.sqlResult onFailure {
+          case t =>
+            close(console)
+            System.exit(-1)
         }
-      )
 
-    } getOrElse {
-
-      while (true) {
+        close(console)
+        System.exit(0)
+      } else {
         val line = getLine(console)
 
         if (checkEnd(line)) {
           close(console)
           System.exit(0)
         } else if (line.get.trim.nonEmpty) {
-          execute(line.get, printResult, printError)
+          execute(line.get)
         }
       }
     }
