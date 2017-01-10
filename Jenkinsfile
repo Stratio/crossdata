@@ -54,7 +54,7 @@ hose {
             'healthcheck': 9092,
             'env': ['ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181']]],
         ['POSTGRESQL':[
-                    'image': 'qa.stratio.com/postgresql:9.3',
+                    'image': 'postgresql:9.3',
                     'sleep': 30,
                     'healthcheck': 5432]]
     ]
@@ -96,7 +96,7 @@ hose {
             'healthcheck': 13422
             ]],
         ['POSTGRESQL':[
-                  'image': 'qa.stratio.com/postgresql:9.3',
+                  'image': 'postgresql:9.3',
                   'sleep': 30,
                   'healthcheck': 5432]]
     ]
