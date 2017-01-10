@@ -52,10 +52,15 @@ hose {
             'image': 'stratio/kafka:0.8.2.1',
             'sleep': 30,
             'healthcheck': 9092,
-            'env': ['ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181']]]
+            'env': ['ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181']]],
+        ['POSTGRESQL':[
+                    'image': 'qa.stratio.com/postgresql:9.3',
+                    'sleep': 30,
+                    'healthcheck': 5432]]
     ]
 
     ITPARAMETERS = """
+        |    -Dpostgresql.host.0=%%POSTGRESQL
         |    -Dcassandra.hosts.0=%%CASSANDRA
         |    -Dmongo.hosts.0=%%MONGODB
         |    -Delasticsearch.hosts.0=%%ELASTICSEARCH
@@ -65,7 +70,7 @@ hose {
         |    -Djars.externalJars="/root"
         |    -Dcatalog.zookeeper.connectionString=%%ZOOKEEPER:2181
         |    -Dstreaming.catalog.zookeeper.connectionString=%%ZOOKEEPER:2181
-        |   -Dstreaming.receiver.kafka.connection=%%KAFKA:9092
+        |    -Dstreaming.receiver.kafka.connection=%%KAFKA:9092
         |    -Dstreaming.receiver.zookeeper.connectionString=%%ZOOKEEPER:2181
         |    -Dlauncher.sparkHome=/opt/sds/spark/
         | """
@@ -89,10 +94,15 @@ hose {
             'image': 'stratio/crossdata-scala211:%%VERSION',
             'sleep': 30,
             'healthcheck': 13422
-            ]]
+            ]],
+        ['POSTGRESQL':[
+                  'image': 'qa.stratio.com/postgresql:9.3',
+                  'sleep': 30,
+                  'healthcheck': 5432]]
     ]
 
     ATPARAMETERS = """
+        |    -DPOSTGRESQL_HOSTNAME=%%POSTGRESQL
         |    -DCROSSDATA_HOST=%%CROSSDATA:13420
         |    -DCASSANDRA_HOST=%%CASSANDRA
         |    -DCASSANDRA_CLUSTER="Stratio cluster"
