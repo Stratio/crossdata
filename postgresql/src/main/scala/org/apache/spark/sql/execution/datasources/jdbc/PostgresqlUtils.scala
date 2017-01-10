@@ -181,7 +181,6 @@ object PostgresqlUtils {
     ans.toArray
   }
 
-
   private def getPostgresqlType(dataType: DataType): String = dataType match {
     case StringType => "TEXT"
     case BinaryType => "BYTEA"
