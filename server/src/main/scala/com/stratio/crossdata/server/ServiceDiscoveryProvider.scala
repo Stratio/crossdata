@@ -258,7 +258,7 @@ trait ServiceDiscoveryProvider {
     * Overrides the cluster seeds on the remote server of the service discovery according to the cluster state.
     *
     */
-  private def updateClusterSeeds(xCluster: Cluster, h: SDH): String = {
+  private def updateClusterSeeds(xCluster: Cluster, h: SDH): Seq[String] = {
     val currentSeeds: Set[String] = xCluster.state.members.filter(_.roles.contains("server")).map(
       m => s"${m.address.host.getOrElse("127.0.0.1")}:${m.address.port.getOrElse("13420")}")
     val newSeeds: Seq[String] = (getLocalSeed +: currentSeeds.toSeq) distinct
@@ -267,7 +267,7 @@ trait ServiceDiscoveryProvider {
     val newSeedsStr = newSeeds.mkString(",")
     logger.info(s"Updating seeds: $newSeedsStr")
     h.curatorClient.setData.forPath(pathForSeeds, newSeedsStr.getBytes)
-    newSeedsStr
+    newSeeds
   }
 
   /**
@@ -275,7 +275,7 @@ trait ServiceDiscoveryProvider {
     * the current members.
     *
     */
-  private def updateClusterMembers(h: SDH, hsp: HazelcastSessionProvider): Stat = {
+  private def updateClusterMembers(h: SDH, hsp: HazelcastSessionProvider): Seq[String] = {
 
     val pathForMembers = h.sdch.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
@@ -288,8 +288,12 @@ trait ServiceDiscoveryProvider {
       case _ => Seq.empty
     }.getOrElse(Seq.empty)
 
-    logger.info(s"Updating members: ${updatedMembers.mkString(",")}")
-    h.curatorClient.setData.forPath(pathForMembers, updatedMembers.mkString(",").getBytes)
+    val newMembers = updatedMembers distinct
+    val newMembersStr = newMembers.mkString(",")
+
+    logger.info(s"Updating members: $newMembersStr")
+    h.curatorClient.setData.forPath(pathForMembers, newMembersStr.getBytes)
+    newMembers
   }
 
 }
