@@ -19,7 +19,7 @@ import com.stratio.crossdata.connector.NativeScan
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.Literal
-import org.apache.spark.sql.{Dataset, Row}
+import org.apache.spark.sql.{Dataset, Row, SparkSession}
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.test.SharedXDSession
 import org.apache.spark.sql.execution.datasources.LogicalRelation
@@ -29,13 +29,21 @@ import org.junit.runner.RunWith
 import org.scalatest.Inside
 import org.scalatest.junit.JUnitRunner
 
-
-
 @RunWith(classOf[JUnitRunner])
-class DataFrameIT extends SharedXDSession with Inside {
+class DataFrameIT extends SharedXDSession with Inside with XDDatasetFunctions{
 
   lazy val sparkRows: Array[Row] = spark.createDataFrame(spark.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).collect()
   lazy val nativeRows = Array(InternalRow(2))
+
+  /* SPARK
+  val sparkSession = SparkSession.builder().appName("mySession").enableHiveSupport().getOrCreate()
+  sparkSession.newSession()
+  */
+
+  /*val xdSessionProvider: BasicSessionProvider = new SessionProvider(config)
+  val xdSession = XDSessionProvider = xdSesssionProvider.newSession("unai")
+  xdSessionProvider.newSession("david")
+*/
 
   "A XDDataFrame (select * from nativeRelation)" should "be executed natively" in {
     val result = Dataset.ofRows(spark, LogicalRelation(mockNativeRelation, None, None)).collect()
@@ -81,6 +89,20 @@ class DataFrameIT extends SharedXDSession with Inside {
     result should have length 1
     result(0)(0) should equal(nativeRows(0).getInt(0))
   }
+
+
+  "A Dataset" should "allow to configure the execution type" in {
+    val result = Dataset.ofRows(spark, LogicalRelation(mockNativeRelation, None, None)).collect(ExecutionType.Native)
+    result should have length 1
+    result(0)(0) should equal(nativeRows(0).getInt(0))
+  }
+
+  "A Dataset" should "allow to execute a flattenedColect" in {
+    val result = Dataset.ofRows(spark, LogicalRelation(mockNativeRelation, None, None)).flattenedCollect()
+    /* TODO test    result should have length 1
+    result(0)(0) should equal(nativeRows(0).getInt(0))*/
+  }
+
 
 
   val mockNonNativeRelation = new MockBaseRelation

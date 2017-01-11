@@ -28,16 +28,18 @@ import org.apache.spark.sql.execution.datasources.LogicalRelation
 
 
 // TODO call-by-name in order to avoid do things when the native execution is available
-class XDPlan(optimizedPlan: LogicalPlan, sparkPlan: => SparkPlan) extends SparkPlan {
+class XDPlan(optimizedPlan: LogicalPlan, sPlan: => SparkPlan) extends SparkPlan {
 
   import XDPlan._
+
+  lazy val sparkPlan: SparkPlan = sPlan
 
   override def executeCollect(): Array[InternalRow] = {
 
     // TODO Spark2.0 try native execution
 
     val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(optimizedPlan)
-    nativeQueryExecutor.flatMap(executeNativeQuery(_, optimizedPlan)).getOrElse(sparkPlan.executeCollect())
+    nativeQueryExecutor.flatMap(executeNativeQuery(_, optimizedPlan)).getOrElse(sPlan.executeCollect())
 
   }
 
@@ -46,7 +48,7 @@ class XDPlan(optimizedPlan: LogicalPlan, sparkPlan: => SparkPlan) extends SparkP
     val newPlan = Limit(Literal(n), optimizedPlan) // TODO check limits in optimizedPlan
 
     val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(newPlan)
-    nativeQueryExecutor.flatMap(executeNativeQuery(_, newPlan)).getOrElse(sparkPlan.executeTake(n))
+    nativeQueryExecutor.flatMap(executeNativeQuery(_, newPlan)).getOrElse(sPlan.executeTake(n))
 
   }
 
@@ -55,31 +57,19 @@ class XDPlan(optimizedPlan: LogicalPlan, sparkPlan: => SparkPlan) extends SparkP
 
   // Use SparkPlan implementation TODO Spark2.0 override every method to improve performance ??
 
-  override protected def sparkContext: SparkContext = sparkPlan.sqlContext.sparkContext
+  override protected def sparkContext: SparkContext = sPlan.sqlContext.sparkContext
 
-  override protected def doExecute(): RDD[InternalRow] = sparkPlan.execute()
+  override protected def doExecute(): RDD[InternalRow] = sPlan.execute()
 
-  override def output: Seq[Attribute] = sparkPlan.output
+  override def output: Seq[Attribute] = sPlan.output
 
-  override def children: Seq[SparkPlan] = sparkPlan.children
+  override def children: Seq[SparkPlan] = sPlan.children
 
-  override def productElement(n: Int): Any = sparkPlan.productElement(n)
+  override def productElement(n: Int): Any = sPlan.productElement(n)
 
-  override def productArity: Int = sparkPlan.productArity
+  override def productArity: Int = sPlan.productArity
 
-  override def canEqual(that: Any): Boolean = sparkPlan.canEqual(that)
-
-
-
-
-
-
-
-
-
-
-
-
+  override def canEqual(that: Any): Boolean = sPlan.canEqual(that)
 
 }
 
@@ -138,7 +128,7 @@ object XDPlan extends Slf4jLoggerComponent{
     * @return an array that contains all of [[Row]]s in this [[LogicalPlan]]
     *         or None if the provider cannot resolve the entire [[LogicalPlan]] natively.
     */
-  private def executeNativeQuery(provider: NativeScan, plan: LogicalPlan): Option[Array[InternalRow]] = {
+  def executeNativeQuery(provider: NativeScan, plan: LogicalPlan): Option[Array[InternalRow]] = {
     val containsSubfields = notSupportedProject(plan)
     val planSupported = !containsSubfields && plan.map(lp => lp).forall(provider.isSupported(_, plan))
     if(planSupported) {
