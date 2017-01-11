@@ -105,7 +105,7 @@ object BasicShell extends App {
   private def initialize(console: ConsoleReader) = {
     console.setHandleUserInterrupt(true)
     console.setExpandEvents(false)
-    console.setPrompt("CROSSDATA> ")
+    console.setPrompt("CROSSDATA> ") //TODO:Not waiting...
     loadHistory(console)
   }
 
@@ -159,9 +159,15 @@ object BasicShell extends App {
       if (query.isDefined) {
         val queryStr = query.get
 
-        val result = executeQuerySync(queryStr)
-        result.sqlResult onFailure {
+        val result = executeQuerySync(queryStr).sqlResult
+        result onFailure {
           case t =>
+            close(console)
+            System.exit(-1)
+        }
+
+        result onSuccess {
+          case ErrorSQLResult(message, _) =>
             close(console)
             System.exit(-1)
         }
