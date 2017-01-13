@@ -78,7 +78,7 @@ object BasicShell extends App {
 
 
   private def checkEnd(line: Option[String]): Boolean =
-    line.isEmpty || {
+    !line.isEmpty && {
       val trimmedLine = line.get
       trimmedLine.equalsIgnoreCase("exit") || trimmedLine.equalsIgnoreCase("quit")
     }
@@ -105,7 +105,7 @@ object BasicShell extends App {
   private def initialize(console: ConsoleReader) = {
     console.setHandleUserInterrupt(true)
     console.setExpandEvents(false)
-    console.setPrompt("CROSSDATA> ") //TODO:Not waiting...
+    console.setPrompt("CROSSDATA> ")
     loadHistory(console)
   }
 
@@ -147,7 +147,7 @@ object BasicShell extends App {
       sqlResponse
     }
 
-    def execute(query: String): Unit = {
+    def execute(query: String): SQLResponse = {
       if (asyncEnabled) {
         executeQueryAsync(query)
       } else {
@@ -155,36 +155,37 @@ object BasicShell extends App {
       }
     }
 
-    while (true) {
-      if (query.isDefined) {
-        val queryStr = query.get
-
-        val result = executeQuerySync(queryStr).sqlResult
-        result onFailure {
-          case t =>
-            close(console)
-            System.exit(-1)
-        }
-
-        result onSuccess {
-          case ErrorSQLResult(message, _) =>
-            close(console)
-            System.exit(-1)
-        }
-
+    def shellLoop(query: Option[String], continue: Boolean): Unit = { //Option for readLine?? Is a bit strange
+      if(checkEnd(query)){
         close(console)
         System.exit(0)
-      } else {
-        val line = getLine(console)
+      } else if(query.isDefined && query.get.trim.nonEmpty) {
+        val result = execute(query.get).sqlResult
+        if(continue){
+          shellLoop(getLine(console), true)
+        } else {
+          //WARN: Using async shell and --query option will generate strange behaviours
+          result onFailure {
+            case t =>
+              close(console)
+              System.exit(-1)
+          }
 
-        if (checkEnd(line)) {
-          close(console)
-          System.exit(0)
-        } else if (line.get.trim.nonEmpty) {
-          execute(line.get)
+          result onSuccess {
+            case ErrorSQLResult(message, _) =>
+              close(console)
+              System.exit(-1)
+            case _ =>
+              close(console)
+              System.exit(0)
+          }
         }
+      } else {
+        shellLoop(getLine(console), true)
       }
     }
+
+    shellLoop(query, !query.isDefined)
   }
 
   private def printResult(sqlResponse: SQLResponse) : Unit = {
@@ -209,10 +210,6 @@ object BasicShell extends App {
         console.println(s"Unexpected error while processing the query with id ${sqlResponse.id}: ${t.getMessage}")
         console.flush
     }
-  }
-
-  sys addShutdownHook {
-    close(console)
   }
 
 }
