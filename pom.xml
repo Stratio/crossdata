@@ -92,19 +92,19 @@
     </developers>
 
     <modules>
-        <module>common</module>
+        <!--<module>common</module>-->
         <module>common2</module>
-        <module>core</module>
+        <!--<module>core</module>-->
         <module>core2</module>
-        <module>cassandra</module>
-        <module>mongodb</module>
-        <module>elasticsearch</module>
-        <module>driver</module>
-        <module>server</module>
-        <module>streaming</module>
-        <module>testsIT</module>
-        <module>zeppelin</module>
-        <module>dist</module>
+        <!--<module>cassandra</module>-->
+        <!--<module>mongodb</module>-->
+        <!--<module>elasticsearch</module>-->
+        <!--<module>driver</module>-->
+        <!--<module>server</module>-->
+        <!--<module>streaming</module>-->
+        <!--<module>testsIT</module>-->
+        <!--<module>zeppelin</module>-->
+        <!--<module>dist</module>-->
     </modules>
 
     <properties>

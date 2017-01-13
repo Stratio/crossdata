@@ -67,15 +67,17 @@ class XDSessionState(
   override lazy val analyzer: Analyzer = {
     new Analyzer(catalog, conf) {
 
-      override lazy val batches: Seq[Batch] = Seq(
+      lazy val batches: Seq[Batch] = Seq(
         Batch("Substitution", fixedPoint,
           CTESubstitution,
           WindowsSubstitution,
-          EliminateUnions),
+          EliminateUnions,
+          new SubstituteUnresolvedOrdinals(conf)),
         Batch("Resolution", fixedPoint,
           ResolveTableValuedFunctions ::
             ResolveRelations ::
             ResolveReferences ::
+            ResolveCreateNamedStruct ::
             ResolveDeserializer ::
             ResolveNewInstance ::
             ResolveUpCast ::
@@ -105,7 +107,8 @@ class XDSessionState(
         Batch("FixNullability", Once,
           FixNullability),
         Batch("Cleanup", fixedPoint,
-          CleanupAliases))
+          CleanupAliases)
+      )
 
       /* TODO old rules => override lazy val batches: Seq[Batch] = Seq(
         Batch("Substitution", fixedPoint,
@@ -139,12 +142,13 @@ class XDSessionState(
       )*/
 
       override val extendedResolutionRules =
-        AnalyzeCreateTableAsSelect(sparkSession) ::
+        AnalyzeCreateTable(sparkSession) ::
           PreprocessTableInsertion(conf) ::
           new FindDataSourceTable(sparkSession) ::
           DataSourceAnalysis(conf) ::
           (if (conf.runSQLonFile) new ResolveDataSource(sparkSession) :: Nil else Nil)
-
+        }
+      }
       /* TODO old rules => override val extendedResolutionRules =
         ResolveAggregateAlias ::
           ResolveReferencesXD(conf) ::
@@ -154,7 +158,7 @@ class XDSessionState(
           Nil
         */
 
-      override val extendedCheckRules = Seq(datasources.PreWriteCheck(conf, catalog))
+      override val extendedCheckRules = Seq(PreWriteCheck(conf, catalog), HiveOnlyCheck)
     }
 
   }

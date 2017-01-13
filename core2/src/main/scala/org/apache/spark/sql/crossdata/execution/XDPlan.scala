@@ -52,9 +52,6 @@ class XDPlan(optimizedPlan: LogicalPlan, sPlan: => SparkPlan) extends SparkPlan 
 
   }
 
-
-
-
   // Use SparkPlan implementation TODO Spark2.0 override every method to improve performance ??
 
   override protected def sparkContext: SparkContext = sPlan.sqlContext.sparkContext

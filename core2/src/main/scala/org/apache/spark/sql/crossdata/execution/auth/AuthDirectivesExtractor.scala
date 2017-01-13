@@ -20,11 +20,12 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.{InsertIntoTable, LogicalPlan}
 import org.apache.spark.sql.catalyst.{TableIdentifier, plans}
+import org.apache.spark.sql.execution.datasources.CreateTempViewUsing
 //import org.apache.spark.sql.crossdata.XDSQLConf
 //import org.apache.spark.sql.crossdata.catalyst.execution.{AddApp, AddJar, CreateExternalTable, CreateGlobalIndex, CreateTempView, CreateView, DropAllTables, DropExternalTable, DropTable, DropView, ExecuteApp, ImportTablesUsingWithOptions, InsertIntoTable => XDInsertIntoTable}
 import org.apache.spark.sql.crossdata.execution.XDQueryExecution
 import org.apache.spark.sql.execution._
-import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTableUsingAsSelect, RefreshTable/*, DescribeCommand => LogicalDescribeCommand*/}
+import org.apache.spark.sql.execution.datasources.{CreateTabl, RefreshTable/*, DescribeCommand => LogicalDescribeCommand*/}
 
 class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier: String) {
 
@@ -47,10 +48,10 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
 
   private[auth] def createPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
-    case CreateTableUsing(tableIdent, _, _, isTemporary, _, _, _, _, _) =>
+    /*case CreateTableUsing(tableIdent, _, _, isTemporary, _, _, _, _, _) =>
       (catalogResource, Write)
 
-    /*case CreateView(viewIdentifier, selectPlan, _) =>
+    case CreateView(viewIdentifier, selectPlan, _) =>
       collectTableResources(selectPlan).map((_, Read)) :+ (catalogResource, Write)
 
     case CreateTempView(viewIdentifier, selectPlan, _) =>
@@ -61,10 +62,17 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
 
     case _: CreateExternalTable =>
       (catalogResource, Write) :+ (allDatastoreResource, Write)
-    */
 
     case CreateTableUsingAsSelect(tableIdent, _, isTemporary, _, _, _, selectPlan) =>
       collectTableResources(selectPlan).map((_, Read)) :+ (catalogResource, Write) :+ (allDatastoreResource, Write)
+*/
+
+    /* TODO Spark 2.1
+    case CreateTable(catalogTable, saveMode, tableDesc) =>
+
+    review => case CreateTempViewUsing(tableIdent,userSpecifiedSchema, replace, global, provider, options) =>
+      (tableResource(tableIdent), Read) :+ (catalogResource, Write) :+ (allDatastoreResource, Write)
+    */
 
   }
 
