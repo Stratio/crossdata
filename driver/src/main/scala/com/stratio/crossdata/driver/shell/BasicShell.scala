@@ -196,11 +196,12 @@ object BasicShell extends App {
         case SuccessfulSQLResult(sqlResult, _) =>
           console.println("SUCCESS")
           result.prettyResult.foreach(l => console.println(l))
+          console.flush
         case ErrorSQLResult(message, _) =>
           console.println("ERROR")
           console.println(message)
+          console.flush
       }
-      console.flush
     }
   }
 
