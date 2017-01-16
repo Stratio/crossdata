@@ -136,9 +136,17 @@ class DerbyCatalog(override val conf: CatalystConf = new SimpleCatalystConf(true
 
     val statement = connection.createStatement
     val dbFilter = databaseName.fold("")(dbName => s"WHERE $DatabaseField ='$dbName'")
-    val resultSet = statement.executeQuery(s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
+    val resultSetTables = statement.executeQuery(
+      s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithTableMetadata $dbFilter")
 
-    getSequenceAux(resultSet, resultSet.next).map(tableId => (tableId, false)).toSeq
+    val TablesSeq = getSequenceAux(resultSetTables, resultSetTables.next).map(tableId => (tableId, false)).toSeq
+
+    val resultSetViews = statement.executeQuery(
+      s"SELECT $DatabaseField, $TableNameField FROM $db.$tableWithViewMetadata $dbFilter")
+
+    val ViewsSeq = getSequenceAux(resultSetViews, resultSetViews.next).map(tableId => (tableId, false)).toSeq
+
+    TablesSeq ++ ViewsSeq
   }
 
   override def persistTableMetadata(crossdataTable: CrossdataTable): Unit =
