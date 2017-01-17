@@ -78,8 +78,8 @@ object BasicShell extends App {
 
 
   private def checkEnd(line: Option[String]): Boolean =
-    !line.isEmpty && {
-      val trimmedLine = line.get
+    line.exists { l =>
+      val trimmedLine = l.trim
       trimmedLine.equalsIgnoreCase("exit") || trimmedLine.equalsIgnoreCase("quit")
     }
 
@@ -109,6 +109,18 @@ object BasicShell extends App {
     loadHistory(console)
   }
 
+  private def printFrame(statements: Seq[String]) = {
+    def mkOuterLine(statements: Seq[String]): String = {
+      val spacesLength = 2
+      statements.map(str => "-"*(str.length+spacesLength)).mkString("+", "+", "+")
+    }
+
+    val outerLine: String = mkOuterLine(statements)
+
+    console.println(outerLine)
+    console.println(statements.mkString("| ", " | ", " |"))
+    console.println(outerLine)
+  }
 
   private def runConsole(console: ConsoleReader): Unit = {
 
@@ -119,9 +131,7 @@ object BasicShell extends App {
     }
 
     console.println()
-    console.println("+-----------------+-------------------------+---------------------------+")
-    console.println(s"| CROSSDATA ${crossdata.CrossdataVersion} | Powered by Apache Spark | Easy access to big things |")
-    console.println("+-----------------+-------------------------+---------------------------+")
+    printFrame(Seq(s"CROSSDATA ${crossdata.CrossdataVersion}", "Powered by Apache Spark", "Easy access to big things"))
     console.println()
     console.flush
 
@@ -133,84 +143,82 @@ object BasicShell extends App {
 
       sqlResponse.sqlResult onComplete {
         case Success(sqlResult) =>
-          printResult(sqlResponse)
+          printResult(sqlResponse.id, sqlResult)
         case Failure(throwable) =>
-          printError(sqlResponse)
+          printError(sqlResponse.id, throwable)
       }
+
       sqlResponse
     }
 
     def executeQuerySync(query: String): SQLResponse = {
-      val sqlResponse = executeQueryAsync(query)
-      //Wait
-      sqlResponse.waitForResult(timeout)
+      val sqlResponse = executeQuery(query)
+      printResult(sqlResponse.id, sqlResponse.waitForResult(timeout))
       sqlResponse
     }
 
-    def execute(query: String): SQLResponse = {
-      if (asyncEnabled) {
+    def execute(query: String): SQLResponse =
+     if (asyncEnabled) {
         executeQueryAsync(query)
       } else {
         executeQuerySync(query)
       }
-    }
+
 
     def shellLoop(query: Option[String], continue: Boolean): Unit = { //Option for readLine?? Is a bit strange
+
       if(checkEnd(query)){
         close(console)
         System.exit(0)
-      } else if(query.isDefined && query.get.trim.nonEmpty) {
-        val result = execute(query.get).sqlResult
-        if(continue){
-          shellLoop(getLine(console), true)
-        } else {
-          //WARN: Using async shell and --query option will generate strange behaviours
-          result onFailure {
-            case t =>
-              close(console)
-              System.exit(-1)
-          }
+      } else {
+        //WARN: Using async shell and --query option will generate strange behaviours
 
-          result onSuccess {
-            case ErrorSQLResult(message, _) =>
-              close(console)
-              System.exit(-1)
-            case _ =>
-              close(console)
-              System.exit(0)
+        val validQuery = query.filter(_.trim.nonEmpty)
+
+        if (continue) {
+          validQuery.foreach(execute)
+          shellLoop(getLine(console), continue = true)
+        } else {
+
+          if (validQuery.isEmpty) {
+            close(console)
+            System.exit(-1)
+          } else {
+            validQuery.foreach{ q =>
+              execute(q).sqlResult onComplete {
+                case Success(_: SuccessfulSQLResult) =>
+                  close(console)
+                  System.exit(0)
+                case Success(_: ErrorSQLResult) | Failure(_) =>
+                  close(console)
+                  System.exit(-1)
+              }
+            }
           }
         }
-      } else {
-        shellLoop(getLine(console), true)
       }
     }
 
-    shellLoop(query, !query.isDefined)
+    shellLoop(query, query.isEmpty)
   }
 
-  private def printResult(sqlResponse: SQLResponse) : Unit = {
-    console.println(s"Result for query ID: ${sqlResponse.id}")
-
-    sqlResponse.sqlResult map { result =>
-      result match {
-        case SuccessfulSQLResult(sqlResult, _) =>
+  private def printResult(responseId: UUID, sResult: SQLResult) : Unit = {
+    console.println(s"Result for query ID: $responseId")
+    sResult match {
+        case result @ SuccessfulSQLResult(sqlResult, _) =>
           console.println("SUCCESS")
           result.prettyResult.foreach(l => console.println(l))
-          console.flush
+          console.flush()
         case ErrorSQLResult(message, _) =>
           console.println("ERROR")
           console.println(message)
-          console.flush
-      }
+          console.flush()
     }
   }
 
-  private def printError(sqlResponse: SQLResponse) = {
-    sqlResponse.sqlResult onFailure {
-      case t =>
-        console.println(s"Unexpected error while processing the query with id ${sqlResponse.id}: ${t.getMessage}")
-        console.flush
-    }
+  private def printError(responseId: UUID, throwable: Throwable) = {
+    console.println(s"Unexpected error while processing the query with id $responseId: ${throwable.getMessage}")
+    console.flush()
   }
 
 }
