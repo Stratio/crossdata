@@ -107,7 +107,6 @@
 
     <properties>
         <spark.version>1.6.2</spark.version>
-        <gosec.version>0.5.0-SNAPSHOT</gosec.version>
         <scalatest.version>2.2.5</scalatest.version>
         <easymock.version>3.4</easymock.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
