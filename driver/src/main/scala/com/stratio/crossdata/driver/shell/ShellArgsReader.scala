@@ -20,7 +20,7 @@ class ShellArgsReader(private val arglist: List[String]) {
 
   type OptionMap = Map[String, Any]
 
-  val booleanOptions = Seq("http", "async")
+  val booleanOptions = Seq("tcp", "async")
   val options = nextOption(Map(), arglist)
 
   object BooleanOptionDisabledByDefault {
@@ -51,6 +51,8 @@ class ShellArgsReader(private val arglist: List[String]) {
         nextOption(map ++ Map("user" -> username), tail)
       case "--timeout" :: timeout :: tail =>
         nextOption(map ++ Map("timeout" -> timeout.toInt), tail)
+      case "--query" :: query :: tail =>
+        nextOption(map ++ Map("query" -> query), tail)
       case BooleanOptionDisabledByDefault(optName, boolValue, tail) if booleanOptions contains optName =>
         nextOption(map ++ Map(optName -> boolValue), tail)
     }
