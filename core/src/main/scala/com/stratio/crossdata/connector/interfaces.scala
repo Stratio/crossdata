@@ -34,6 +34,11 @@ import scala.util.Try
 @DeveloperApi
 trait NativeScan extends PushDownable {
   def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]]
+  def buildScan(optimizedLogicalPlan: LogicalPlan, sqlText: Option[String] = None): Option[Array[Row]] =
+    if(sqlText.nonEmpty)
+      throw new RuntimeException("Direct SQL not supported")
+    else
+      buildScan(optimizedLogicalPlan)
 }
 
 /**
@@ -127,7 +132,17 @@ trait NativeFunctionExecutor {
   */
 trait TableManipulation extends GenerateConnectorOptions{
 
+  def createExternalTable(context: SQLContext,
+                          tableName: String,
+                          databaseName: Option[String],
+                          schema: StructType,
+                          options: Map[String, String],
+                          allowExisting: Boolean): Option[TableInventory.Table] = {
+    require(allowExisting, "create external table if not exists is not supported")
+    createExternalTable(context, tableName, databaseName, schema, options)
+  }
 
+  @deprecated
   def createExternalTable(context: SQLContext,
                           tableName: String,
                           databaseName: Option[String],

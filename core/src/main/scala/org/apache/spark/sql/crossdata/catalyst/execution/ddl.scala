@@ -448,7 +448,7 @@ private[crossdata] case class CreateGlobalIndex(
 
         case tableManipulation: TableManipulation =>
 
-          val tableInventory = tableManipulation.createExternalTable(sqlContext, tableIdent.table, tableIdent.database, userSpecifiedSchema, options)
+          val tableInventory = tableManipulation.createExternalTable(sqlContext, tableIdent.table, tableIdent.database, userSpecifiedSchema, options, allowExisting)
           tableInventory.map { tableInventory =>
             val optionsWithTable = tableManipulation.generateConnectorOpts(tableInventory, options)
             val identifier = TableIdentifier(tableIdent.table, tableIdent.database).normalize(sqlContext.conf)
