@@ -25,6 +25,7 @@ import jline.console.history.FileHistory
 import jline.console.{ConsoleReader, UserInterruptException}
 import org.apache.log4j.Logger
 
+import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -164,7 +165,7 @@ object BasicShell extends App {
         executeQuerySync(query)
       }
 
-
+    @tailrec
     def shellLoop(query: Option[String], continue: Boolean): Unit = { //Option for readLine?? Is a bit strange
 
       if(checkEnd(query)){
@@ -207,7 +208,7 @@ object BasicShell extends App {
     sResult match {
         case result @ SuccessfulSQLResult(sqlResult, _) =>
           console.println("SUCCESS")
-          result.prettyResult.foreach(l => console.println(l))
+          result.prettyResult.foreach(console.println)
           console.flush()
         case ErrorSQLResult(message, _) =>
           console.println("ERROR")
