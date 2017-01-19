@@ -80,7 +80,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
       case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc); None
     }
   }
-
+//spark code
   private def getValue(idx: Int, rs: ResultSet, schema: StructType) : Any = {
     val metadata = schema.fields(idx).metadata
     val rsIdx= idx+1

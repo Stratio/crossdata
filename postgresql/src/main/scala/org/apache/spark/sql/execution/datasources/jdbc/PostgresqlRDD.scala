@@ -35,7 +35,7 @@ import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
 case class JDBCPartition(whereClause: String, idx: Int) extends Partition {
   override def index: Int = idx
 }
-
+//spark code: changes only in compileFilter
 object PostgresqlRDD extends Logging {
 
   /**

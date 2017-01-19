@@ -35,6 +35,7 @@ import org.apache.spark.sql.execution.datasources.jdbc.PostgresqlXDRelation
   * representations (e.g. logical plans that operate on local Scala collections), or are simply not
   * supported by this builder (yet).
   */
+//spark code: With some changes to adapt postgresql dialect
 class SQLBuilder(logicalPlan: LogicalPlan) extends Logging {
 
   import org.apache.spark.sql.catalyst.expressionsSQLBuilder._
