@@ -18,6 +18,7 @@ package org.apache.spark.streaming.kafka
 
 import com.stratio.crossdata.streaming.kafka.KafkaInput
 import com.stratio.crossdata.streaming.test.{BaseSparkStreamingXDTest, CommonValues}
+import org.apache.spark.sql.crossdata.models.ConnectionModel
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkContext, SparkConf}
 import org.junit.runner.RunWith
@@ -47,16 +48,20 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
   override def afterAll : Unit = {
     kafkaTestUtils.teardown()
   }
-/*
+
   test("Kafka input stream with kafkaOptionsModel from Map of values") {
     ssc = new StreamingContext(sc, Milliseconds(1000))
     val valuesToSent = Map("a" -> 5, "b" -> 3, "c" -> 10)
     kafkaTestUtils.createTopic(TopicTest)
     kafkaTestUtils.sendMessages(TopicTest, valuesToSent)
 
-    val kafkaStreamModelZk = kafkaStreamModel.copy(connection = Seq(
-      connectionHostModel.copy(consumerPort = kafkaTestUtils.zkAddress.split(":").last)
-    ))
+    val consumerHostZK = kafkaTestUtils.zkAddress.split(":").last
+    val consumerPortZK = kafkaStreamModel.connection.zkConnection.head.port
+
+    val kafkaStreamModelZk = kafkaStreamModelSelect.copy(
+      connection = connectionHostModel.copy(
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK))))
+
     val input = new KafkaInput(kafkaStreamModelZk)
     val stream = input.createStream(ssc)
     val result = new mutable.HashMap[String, Long]() with mutable.SynchronizedMap[String, Long]
@@ -82,9 +87,13 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
     kafkaTestUtils.createTopic(TopicTestProject)
     kafkaTestUtils.sendMessages(TopicTestProject, valuesToSent)
 
-    val kafkaStreamModelZk = kafkaStreamModelProject.copy(connection = Seq(
-      connectionHostModel.copy(consumerPort = kafkaTestUtils.zkAddress.split(":").last)
-    ))
+    val consumerHostZK = kafkaTestUtils.zkAddress.split(":").last
+    val consumerPortZK = kafkaStreamModelProject.connection.zkConnection.head.port
+
+    val kafkaStreamModelZk = kafkaStreamModelSelect.copy(
+      connection = connectionHostModel.copy(
+        zkConnection = Seq(ConnectionModel(consumerHostZK, consumerPortZK))))
+
     val input = new KafkaInput(kafkaStreamModelZk)
     val stream = input.createStream(ssc)
     val result = new mutable.MutableList[String]()
@@ -100,5 +109,5 @@ class KafkaStreamIT extends BaseSparkStreamingXDTest with CommonValues {
       assert(valuesToSent === result)
     }
   }
-  */
+
 }
