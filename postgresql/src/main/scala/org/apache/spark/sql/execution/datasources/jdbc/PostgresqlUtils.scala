@@ -83,46 +83,6 @@ object PostgresqlUtils {
     if (sb.length < 2) "" else sb.substring(2)
   }
 
-  /**
-    * Given a partitioning schematic (a column of integral type, a number of
-    * partitions, and upper and lower bounds on the column's value), generate
-    * WHERE clauses for each partition so that each row in the table appears
-    * exactly once.  The parameters minValue and maxValue are advisory in that
-    * incorrect values may cause the partitioning to be poor, but no data
-    * will fail to be represented.
-    */
-  //spark code from JDBCRelation
-  def columnPartition(partitioning: JDBCPartitioningInfo): Array[Partition] = {
-    if (partitioning == null) return Array[Partition](JDBCPartition(null, 0))
-
-    val numPartitions = partitioning.numPartitions
-    val column = partitioning.column
-    if (numPartitions == 1) return Array[Partition](JDBCPartition(null, 0))
-    // Overflow and silliness can happen if you subtract then divide.
-    // Here we get a little roundoff, but that's (hopefully) OK.
-    val stride: Long = (partitioning.upperBound / numPartitions
-      - partitioning.lowerBound / numPartitions)
-    var i: Int = 0
-    var currentValue: Long = partitioning.lowerBound
-    var ans = new ArrayBuffer[Partition]()
-    while (i < numPartitions) {
-      val lowerBound = if (i != 0) s"$column >= $currentValue" else null
-      currentValue += stride
-      val upperBound = if (i != numPartitions - 1) s"$column < $currentValue" else null
-      val whereClause =
-        if (upperBound == null) {
-          lowerBound
-        } else if (lowerBound == null) {
-          upperBound
-        } else {
-          s"$lowerBound AND $upperBound"
-        }
-      ans += JDBCPartition(whereClause, i)
-      i = i + 1
-    }
-    ans.toArray
-  }
-
   private def getPostgresqlType(dataType: DataType): String = dataType match {
     case StringType => "TEXT"
     case BinaryType => "BYTEA"
@@ -140,9 +100,3 @@ object PostgresqlUtils {
   }
 
 }
-
-case class JDBCPartitioningInfo(
-                                 column: String,
-                                 lowerBound: Long,
-                                 upperBound: Long,
-                                 numPartitions: Int)

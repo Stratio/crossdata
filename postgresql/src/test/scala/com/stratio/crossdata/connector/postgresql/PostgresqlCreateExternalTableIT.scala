@@ -147,7 +147,7 @@ class PostgresqlCreateExternalTableIT extends PostgresqlWithSharedContext {
           |)
       """.stripMargin.replaceAll("\n", " ")
 
-    an [org.postgresql.util.PSQLException] shouldBe thrownBy(sql(createTableQueryString2).collect())
+    an [RuntimeException] shouldBe thrownBy(sql(createTableQueryString2).collect())
   }
 
 }
