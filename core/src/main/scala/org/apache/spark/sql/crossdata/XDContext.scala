@@ -235,7 +235,7 @@ class XDContext protected(@transient val sc: SparkContext,
   }
 
   override def sql(sqlText: String): DataFrame = {
-    XDDataFrame(this, parseSql(sqlText))
+    XDDataFrame(this, parseSql(sqlText), Some(sqlText))
   }
 
   /**

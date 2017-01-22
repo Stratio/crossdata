@@ -34,6 +34,8 @@ import scala.util.Try
 @DeveloperApi
 trait NativeScan extends PushDownable {
   def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]]
+  def buildScan(optimizedLogicalPlan: LogicalPlan, sqlText: Option[String] = None): Option[Array[Row]] =
+      buildScan(optimizedLogicalPlan)
 }
 
 /**
