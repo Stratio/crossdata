@@ -34,7 +34,7 @@ object PostgresqlQueryProcessor {
   type ColumnName = String
   val DefaultLimit = 10000
 
-  def apply(postgresRelation: PostgresqlXDRelation, logicalPlan: LogicalPlan, props: Properties, sqlText: Option[String]): PostgresqlQueryProcessor =
+  def apply(postgresRelation: PostgresqlXDRelation, logicalPlan: LogicalPlan, props: Properties, sqlText: String): PostgresqlQueryProcessor =
     new PostgresqlQueryProcessor(postgresRelation, logicalPlan, props, sqlText)
 
 }
@@ -43,7 +43,7 @@ object PostgresqlQueryProcessor {
 class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
                                logicalPlan: LogicalPlan,
                                props: Properties,
-                               sqlText: Option[String])
+                               sqlText: String)
   extends SparkLoggerComponent {
 
   import PostgresqlQueryProcessor._
@@ -68,9 +68,7 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
         else {
 
           Try(executeQuery(sqlQuery)).getOrElse{
-            //TODO change this get
-            val directQuery = sqlText.get
-            val sqlWithLimit = s"$directQuery LIMIT ${limit.getOrElse(DefaultLimit)}"
+            val sqlWithLimit = s"$sqlText LIMIT ${limit.getOrElse(DefaultLimit)}"
             executeQuery(sqlWithLimit)
           }
 

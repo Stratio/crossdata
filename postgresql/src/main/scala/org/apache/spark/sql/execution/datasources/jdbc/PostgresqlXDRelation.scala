@@ -57,9 +57,10 @@ class PostgresqlXDRelation( url: String,
       parts).asInstanceOf[RDD[Row]]
   }
 
-  override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = buildScan(optimizedLogicalPlan, None)
+  override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] =
+    throw new RuntimeException("This method should not be called. Sql needed")
 
-  override def buildScan(optimizedLogicalPlan: LogicalPlan, sqlText: Option[String]): Option[Array[Row]] = {
+  override def buildScan(optimizedLogicalPlan: LogicalPlan, sqlText: String): Option[Array[Row]] = {
     logDebug(s"Processing ${optimizedLogicalPlan.toString()}")
     val queryExecutor = PostgresqlQueryProcessor(this, optimizedLogicalPlan, this.properties, sqlText)
 
