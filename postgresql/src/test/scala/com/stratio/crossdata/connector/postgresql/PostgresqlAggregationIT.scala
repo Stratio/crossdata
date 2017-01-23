@@ -15,8 +15,7 @@
  */
 package com.stratio.crossdata.connector.postgresql
 
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.crossdata.{ExecutionType, XDDataFrame}
+import org.apache.spark.sql.crossdata.ExecutionType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -27,7 +26,6 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
       assumeEnvironmentIsUpAndRunning
 
       val df = sql(s"SELECT MAX(id) as maxim FROM $postgresqlSchema.$Table")
-      println(df.queryExecution.optimizedPlan)
       val result = df.collect(ExecutionType.Native)
       result(0).getInt(0) should be (10)
 
@@ -37,7 +35,6 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
       assumeEnvironmentIsUpAndRunning
 
       val df = sql(s"SELECT MIN(id) FROM $postgresqlSchema.$Table")
-      println(df.queryExecution.optimizedPlan)
 
       val result = df.collect(ExecutionType.Native)
       result(0).getInt(0) should be (1)
@@ -48,7 +45,6 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
       assumeEnvironmentIsUpAndRunning
 
       val df = sql(s"SELECT SUM(id) FROM $postgresqlSchema.$Table")
-      println(df.queryExecution.optimizedPlan)
 
       val result = df.collect(ExecutionType.Native)
       result(0).getLong(0) should be (55)
@@ -68,7 +64,6 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
       assumeEnvironmentIsUpAndRunning
 
       val df = sql(s"SELECT COUNT(id) FROM $postgresqlSchema.$Table")
-      println(df.queryExecution.optimizedPlan)
 
       val result = df.collect(ExecutionType.Native)
       result(0).getLong(0) should be (10)
@@ -79,7 +74,6 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
       assumeEnvironmentIsUpAndRunning
 
       val df = sql(s"SELECT comment, COUNT(id) as count FROM $postgresqlSchema.$Table GROUP BY id, comment")
-      println(df.queryExecution.optimizedPlan)
       val result = df.collect(ExecutionType.Native)
       result should have length 10
       result(0).getLong(1) should be (1)
@@ -89,7 +83,6 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
       assumeEnvironmentIsUpAndRunning
 
       val df = sql(s"SELECT comment, COUNT(id) as count FROM $postgresqlSchema.$Table WHERE id > 5 GROUP BY id, comment")
-      println(df.queryExecution.optimizedPlan)
       val result = df.collect(ExecutionType.Native)
       result should have length 5
       result(0).getLong(1) should be (1)
@@ -100,7 +93,6 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
 
       val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $postgresqlSchema.$Table GROUP BY id, comment ORDER BY COUNT(id)")
 
-      println(df.queryExecution.optimizedPlan)
       val result = df.collect(ExecutionType.Native)
       result should have length 10
       result(0).getLong(1) should be (1)
@@ -112,7 +104,6 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
 
       val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $postgresqlSchema.$Table GROUP BY id, comment ORDER BY countalias")
 
-      println(df.queryExecution.optimizedPlan)
       val result = df.collect(ExecutionType.Native)
       result should have length 10
       result(0).getLong(1) should be (1)
@@ -124,7 +115,6 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
 
     val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $postgresqlSchema.$Table GROUP BY id, comment HAVING countalias < 5 ORDER BY countalias ")
 
-    println(df.queryExecution.optimizedPlan)
     val result = df.collect(ExecutionType.Native)
     result should have length 10
     result(0).getLong(1) should be (1)
@@ -137,7 +127,6 @@ class PostgresqlAggregationIT extends PostgresqlWithSharedContext{
 
     val df = sql(s"SELECT comment, COUNT(id) as countalias FROM $postgresqlSchema.$Table GROUP BY id, comment HAVING COUNT(id) < 5 ORDER BY countalias ")
 
-    println(df.queryExecution.optimizedPlan)
     val result = df.collect(ExecutionType.Native)
     result should have length 10
     result(0).getLong(1) should be (1)

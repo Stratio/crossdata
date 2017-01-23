@@ -1,21 +1,18 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * Modifications and adaptations - Copyright (C) 2015 Stratio (http://stratio.com)
  */
-
 package org.apache.spark.sql.catalyst
 
 import javax.xml.bind.DatatypeConverter
@@ -29,37 +26,37 @@ import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 
 // TODO remove when upgrading to Spark2.0: this methods have already been implemented in Spark2.0
-object expressionsSQLBuilder {
+object ExpressionsSQLBuilder {
 
   case class AliasContext(aliasSupported: Boolean = true, logicalPlan: Option[LogicalPlan] = None)
 
   def prettyName(any: Any): String = any.getClass.getSimpleName.toLowerCase
 
   def partFunctionNamedExpressionToSQL(aliasContext: AliasContext): PartialFunction[Expression, String] = {
-    case attributeReference: AttributeReference =>
+    case attributeReference @ AttributeReference(attName, _, _, _) =>
 
       val name = if (aliasContext.aliasSupported || aliasContext.logicalPlan.isEmpty) {
-        attributeReference.name
+        attName
       } else {
         aliasContext.logicalPlan.get.collectFirst {
           // postgres does not support alias in the group by, so the alias in the aggregation is replaced by the sql of the expression
           // TODO use pattern matching + unapply instead
           case Aggregate(_, aggregateExpressions, _) =>
             aggregateExpressions.collectFirst {
-              case Alias(aExp: Expression, aliasName) if attributeReference.name == aliasName =>
+              case Alias(aExp: Expression, aliasName) if attName == aliasName =>
                 aExp.sql
-            } getOrElse attributeReference.name
+            } getOrElse attName
           // TODO case Project(...) => check whether the project contains alias or not
-        } getOrElse attributeReference.name
+        } getOrElse attName
       }
 
       val qualifiersString =
-        if (attributeReference.qualifiers.isEmpty) "" else attributeReference.qualifiers.map("" + _ + "").mkString("", ".", ".")
+        if (attributeReference.qualifiers.isEmpty) "" else attributeReference.qualifiers.mkString("", ".", ".")
       s"$qualifiersString$name"
 
     case al: Alias =>
       val qualifiersString =
-        if (al.qualifiers.isEmpty) "" else al.qualifiers.map("" + _ + "").mkString("", ".", ".")
+        if (al.qualifiers.isEmpty) "" else al.qualifiers.mkString("", ".", ".")
       s"${al.child.sql} AS $qualifiersString${al.name}"
   }
 

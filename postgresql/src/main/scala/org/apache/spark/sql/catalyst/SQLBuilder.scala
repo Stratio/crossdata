@@ -38,7 +38,7 @@ import org.apache.spark.sql.execution.datasources.jdbc.PostgresqlXDRelation
 //spark code: With some changes to adapt postgresql dialect
 class SQLBuilder(logicalPlan: LogicalPlan) extends Logging {
 
-  import org.apache.spark.sql.catalyst.expressionsSQLBuilder._
+  import org.apache.spark.sql.catalyst.ExpressionsSQLBuilder._
 
   def toSQL: Option[String] = {
     val canonicalizedPlan = Canonicalizer.execute(logicalPlan)

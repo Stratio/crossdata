@@ -302,7 +302,9 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       // TODO handle failed executions which are currently wrapped within the option, so these jobs will appear duplicated
       // TODO the plan should notice the native execution
       withNewExecutionId{
-        provider.buildScan(queryExecution.optimizedPlan, sqlText)
+        sqlText.map(provider.buildScan(queryExecution.optimizedPlan, _))
+          .getOrElse(provider.buildScan(queryExecution.optimizedPlan))
+
       }
     } else
       None
