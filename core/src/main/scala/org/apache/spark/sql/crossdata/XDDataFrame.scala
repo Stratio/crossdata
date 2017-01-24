@@ -47,6 +47,10 @@ private[sql] object XDDataFrame {
     new XDDataFrame(sqlContext, logicalPlan)
   }
 
+  def apply(sqlContext: SQLContext, logicalPlan: LogicalPlan, sqlText: Option[String]): DataFrame = {
+    new XDDataFrame(sqlContext, logicalPlan, sqlText)
+  }
+
   /**
    * Finds a [[org.apache.spark.sql.sources.BaseRelation]] mixing-in [[NativeScan]] supporting native execution.
    *
@@ -94,19 +98,23 @@ private[sql] object XDDataFrame {
  * Extends a [[DataFrame]] to provide native access to datasources when performing Spark actions.
  */
 class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
-                               @transient override val queryExecution: QueryExecution)
+                               @transient override val queryExecution: QueryExecution,
+                               val sqlText: Option[String] = None)
   extends DataFrame(sqlContext, queryExecution) with SparkLoggerComponent {
 
-  def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = {
+  def this(sqlContext: SQLContext, logicalPlan: LogicalPlan, sqlText: Option[String]) = {
     this(sqlContext, {
       val qe = sqlContext.executePlan(logicalPlan)
       if (sqlContext.conf.dataFrameEagerAnalysis) {
         qe.assertAnalyzed() // This should force analysis and throw errors if there are any
       }
       qe
-    }
+    },
+      sqlText
     )
   }
+
+  def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = this(sqlContext, logicalPlan, None)
 
   /**
    * @inheritdoc
@@ -294,7 +302,9 @@ class XDDataFrame private[sql](@transient override val sqlContext: SQLContext,
       // TODO handle failed executions which are currently wrapped within the option, so these jobs will appear duplicated
       // TODO the plan should notice the native execution
       withNewExecutionId{
-        provider.buildScan(queryExecution.optimizedPlan)
+        sqlText.map(provider.buildScan(queryExecution.optimizedPlan, _))
+          .getOrElse(provider.buildScan(queryExecution.optimizedPlan))
+
       }
     } else
       None

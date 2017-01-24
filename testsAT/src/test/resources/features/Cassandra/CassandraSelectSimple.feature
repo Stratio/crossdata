@@ -185,4 +185,4 @@ Feature: CassandraSelectSimple
       When I execute 'SELECT new AS alias, count(*) as count FROM tabletest GROUP BY alias'
       Then The spark result has to have '1' rows:
       | alias-boolean | count-long |
-      |true           | 10            |
+      |true           | 10         |
