@@ -21,38 +21,8 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ElasticSearchNewTypesIT extends ElasticDataTypesWithSharedContext {
+class ElasticSearchNewTypesIT extends ElasticDataTypes {
 
-  var row: Row = _
-
-  protected override def beforeAll(): Unit = {
-    super.beforeAll()
-    assumeEnvironmentIsUpAndRunning
-    val dataframe = sql(s"SELECT * FROM $Type where id = 1")
-    Seq(Spark, Native).foreach { executionType =>
-
-      val rows = dataframe.collect(executionType)
-      //Expectations
-      rows should have length 1
-      row = rows(0)
-    }
-  }
-
-
-  // TODO replace old test when values are checked
-
-
-      dataTest.zipWithIndex.foreach { case (colMetadata, idx) =>
-        "A ElasticSearchQueryProcessor " should
-          s"Return ${colMetadata.sparkSqlType} type in correct format (test column `${colMetadata.fieldName}`)" in {
-          val field = row.get(idx)
-          colMetadata.typeValidation(field)
-        }
-      }
-
-
-    // TODO test values
-
-
+  doTypesTest("ElasticSearch")
 
 }
