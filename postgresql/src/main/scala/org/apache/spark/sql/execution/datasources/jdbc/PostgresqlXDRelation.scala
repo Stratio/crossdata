@@ -97,7 +97,7 @@ class PostgresqlXDRelation( url: String,
       case _ => false
     }
     case bn: BinaryNode => bn match {
-      case _: Join => true
+      case Join(_, _,_, _) | Union(_, _) | Intersect(_, _) | Except(_, _) => true
       case _ => false
     }
     case unsupportedLogicalPlan =>logDebug(s"LogicalPlan $unsupportedLogicalPlan cannot be executed natively"); false

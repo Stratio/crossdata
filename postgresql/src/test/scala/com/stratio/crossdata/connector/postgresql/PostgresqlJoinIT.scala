@@ -77,4 +77,31 @@ class PostgresqlJoinIT extends PostgresqlWithSharedContext {
     result should have length 20
   }
 
+  it should s"support a UNION natively" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val df = sql(s"SELECT id FROM $postgresqlSchema.$Table UNION ALL SELECT id FROM $postgresqlSchema.$aggregationTable")
+    val result = df.collect(ExecutionType.Native)
+
+    result should have length 30
+  }
+
+  it should s"support a INTERSECT natively" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val df = sql(s"SELECT id FROM $postgresqlSchema.$Table INTERSECT SELECT id FROM $postgresqlSchema.$aggregationTable")
+    val result = df.collect(ExecutionType.Native)
+
+    result should have length 10
+  }
+
+  it should s"support a EXCEPT natively" in {
+    assumeEnvironmentIsUpAndRunning
+
+    val df = sql(s"SELECT id FROM $postgresqlSchema.$Table EXCEPT SELECT id FROM $postgresqlSchema.$aggregationTable")
+    val result = df.collect(ExecutionType.Native)
+
+    result should have length 0
+  }
+
 }
