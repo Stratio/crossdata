@@ -63,22 +63,19 @@ class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
     val limit: Option[Int] = logicalPlan.collectFirst { case Limit(Literal(num: Int, _), _) => num }
 
     try {
-      new SQLBuilder(logicalPlan).toSQL.map { sqlQuery =>
-        if (limit.exists(_ == 0)) Array.empty[InternalRow]
-        else {
-
-          Try(executeQuery(sqlQuery)).getOrElse{
-            val sqlWithLimit = s"$sqlText LIMIT ${limit.getOrElse(DefaultLimit)}"
-            executeQuery(sqlWithLimit)
-          }
-
+      if (limit.exists(_ == 0)) Some(Array.empty[InternalRow])
+      else {
+        lazy val sqlWithLimit = s"$sqlText LIMIT ${limit.getOrElse(DefaultLimit)}"
+        lazy val executeDirectQuery = Some(executeQuery(sqlWithLimit))
+        new SQLBuilder(logicalPlan).toSQL.fold(executeDirectQuery){ sqlQuery =>
+          Try(Some(executeQuery(sqlQuery))).getOrElse{executeDirectQuery}
         }
       }
     } catch {
       case exc: Exception => log.warn(s"Exception executing the native query $logicalPlan", exc); None
     }
   }
-//spark code
+  //spark code
   private def getValue(idx: Int, rs: ResultSet, schema: StructType) : Any = {
     val metadata = schema.fields(idx).metadata
     val rsIdx= idx+1
