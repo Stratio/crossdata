@@ -39,10 +39,20 @@ trait ElasticDataTypes extends ElasticWithSharedContext
     "es.port" -> s"$ElasticRestPort",
     "es.nativePort" -> s"$ElasticNativePort",
     "es.cluster" -> s"$ElasticClusterName",
-    "es.nodes.wan.only" -> "true"
+    "es.nodes.wan.only" -> "true",
+    "es.read.field.as.array.include" -> Seq(
+      "arrayint"
+    ).mkString(",")
   )
 
-  protected case class ESColumnData(elasticType: TypedFieldDefinition, data: () => Any)
+  protected case class ESColumnData(elasticType: Option[TypedFieldDefinition], data: () => Any)
+  protected object ESColumnData {
+    def apply(data: () => Any): ESColumnData = ESColumnData(None, data)
+    def apply(elasticType: TypedFieldDefinition, data: () => Any): ESColumnData = ESColumnData(Some(elasticType), data)
+  }
+
+
+  override val arrayFlattenTestColumn: String = "arraystruct"
 
   protected val dataTest: Seq[(SparkSQLColDef, ESColumnData)] = Seq(
     (SparkSQLColDef("id", "INT",  _ shouldBe a[java.lang.Integer]), ESColumnData("id" typed IntegerType, () => 1)),
@@ -109,6 +119,34 @@ trait ElasticDataTypes extends ElasticWithSharedContext
       )
     ),
     (
+      SparkSQLColDef("arrayint", "ARRAY<INT>", _ shouldBe a[Seq[_]]),
+      ESColumnData(() => Seq(1,2,3,4))
+    ),
+    (
+      SparkSQLColDef("arraystruct", "ARRAY<STRUCT<field1: LONG, field2: LONG>>", _ shouldBe a[Seq[_]]),
+      ESColumnData(
+        "arraystruct" nested(
+          "field1" typed LongType,
+          "field2" typed LongType
+        ),
+        () =>
+        Array(
+          Map(
+            "field1" -> 11,
+            "field2" -> 12
+          ),
+          Map(
+            "field1" -> 21,
+            "field2" -> 22
+          ),
+          Map(
+            "field1" -> 31,
+            "field2" -> 32
+          )
+        )
+      )
+    )/*,
+    (
       SparkSQLColDef(
         "arraystructarraystruct",
         "ARRAY<STRUCT<stringfield: STRING, arrayfield: ARRAY<STRUCT<field1: INT, field2: INT>>>>",
@@ -120,34 +158,31 @@ trait ElasticDataTypes extends ElasticWithSharedContext
         }
       ),
       ESColumnData(
-        "arraystructarraystruct" multi (
-          "structarraystruct" inner (
-            "stringfield" typed StringType,
-            "arrayfield" multi (
-              "struct" inner (
-                "field1" typed IntegerType,
-                "field2" typed IntegerType
-              )
-            )
+        "arraystructarraystruct" nested (
+          "stringfield" typed StringType,
+          "arrayfield" nested (
+            "field1" typed IntegerType,
+            "field2" typed IntegerType
           )
         ),
-        () => List(
+        () => Array(
           Map(
             "stringfield" -> "hello",
-            "arrayfield" -> List(
+            "arrayfield" -> Array(
               Map(
-                "field1" -> 1,
-                "field2" -> 2
+                "field1" -> 10,
+                "field2" -> 20
               )
             )
           )
         )
       )
-    )
+    )*/
   )
 
 
   override protected def typesSet: Seq[SparkSQLColDef] = dataTest.map(_._1)
+
 
   abstract override def saveTestData: Unit = {
     require(saveTypesData > 0, emptyTypesSetError)
@@ -168,8 +203,8 @@ trait ElasticDataTypes extends ElasticWithSharedContext
 
   override def typeMapping(): MappingDefinition =
     Type fields (
-      dataTest map {
-        case (_, ESColumnData(mapping, _)) => mapping
+      dataTest collect {
+        case (_, ESColumnData(Some(mapping), _)) => mapping
       }: _*
     )
 
