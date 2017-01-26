@@ -23,9 +23,9 @@ import org.apache.spark.sql.catalyst.expressions.{Attribute, Literal}
 import org.apache.spark.sql.catalyst.planning.PhysicalOperation
 import org.apache.spark.sql.catalyst.plans.logical.{Limit, LogicalPlan}
 import org.apache.spark.sql.{Row, sources}
-import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, FilterReport, ProjectReport, SimpleLogicalPlan, CrossdataExecutionPlan}
+import org.apache.spark.sql.sources.CatalystToCrossdataAdapter.{BaseLogicalPlan, CrossdataExecutionPlan, FilterReport, ProjectReport, SimpleLogicalPlan}
 import org.apache.spark.sql.sources.{CatalystToCrossdataAdapter, Filter => SourceFilter}
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.types.{StructField, StructType, ArrayType}
 import org.elasticsearch.action.search.SearchResponse
 
 import scala.util.{Failure, Try}
@@ -101,8 +101,6 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       case sources.StringStartsWith(attribute, value) => prefixQuery(attribute, value.toLowerCase)
     }
 
-    import scala.collection.JavaConversions._
-
     val searchFilters = sFilters.collect {
       case sources.EqualTo(attribute, value) => termQuery(attribute, value)
       case sources.GreaterThan(attribute, value) => rangeQuery(attribute).from(value).includeLower(false)
@@ -131,6 +129,7 @@ class ElasticSearchQueryProcessor(val logicalPlan: LogicalPlan, val parameters: 
       val subDocuments = schemaProvided.toSeq flatMap {
         _.fields collect {
           case StructField(name, _: StructType, _, _) => name
+          case StructField(name, ArrayType(_: StructType, _), _, _) => name
         }
       }
       val stringFields: Seq[String] = fields.view map (_.name) filterNot (subDocuments contains _)
