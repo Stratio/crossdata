@@ -39,7 +39,6 @@ object PostgresqlQueryProcessor {
 
 }
 
-
 class PostgresqlQueryProcessor(postgresRelation: PostgresqlXDRelation,
                                logicalPlan: LogicalPlan,
                                props: Properties,
