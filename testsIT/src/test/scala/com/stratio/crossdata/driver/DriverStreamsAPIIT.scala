@@ -55,7 +55,7 @@ class DriverStreamsAPIIT extends EndToEndTest with ScalaFutures {
             .requestNext(Row(2, "Fuse"))
             .request(1).expectComplete()
 
-        }(PatienceConfig(timeout = 2 seconds))
+        }(PatienceConfig(timeout = 4 seconds))
 
       }
     }

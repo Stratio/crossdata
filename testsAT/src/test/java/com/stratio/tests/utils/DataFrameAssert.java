@@ -17,6 +17,7 @@ package com.stratio.tests.utils;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 
@@ -288,6 +289,31 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                         }
                         for(int j = 0; j < obtainedResult.size(); j++){
                             if(!obtainedResultList.get(j).equals(expectedResult[j])) {
+                                failWithMessage("Expected value for row <%s> and position <%s> for column <%s> to be "
+                                                + "<%s> but was <%s>",
+                                        i,j,
+                                        columnExpected[0], expectedResult[j],
+                                        obtainedResultList.get(j));
+                            }
+                        }
+                        break;
+                    case "array<int>":
+                        if (!(actualRow.get(x) instanceof scala.collection.mutable.ArrayBuffer)){
+                            failWithMessage("Expected type for row <%s> for column <%s> to be an \"array\" "
+                                            + "but  was <%s>", i,
+                                    columnExpected[0], actualRow.get(x).getClass().getName());
+                        }
+                        obtainedResult = (scala.collection.mutable
+                                .Buffer<String>)actualRow.get(x);
+                        obtainedResultList = JavaConverters.bufferAsJavaListConverter(obtainedResult).asJava();
+                        expectedResult = table.get(i + 1).get(x).split(",");
+                        if(obtainedResult.size() != expectedResult.length){
+                            failWithMessage("Expected length of array to be <%s> but was <%s>", expectedResult.length,
+                                    obtainedResultList
+                                            .size());
+                        }
+                        for(int j = 0; j < obtainedResult.size(); j++){
+                            if(!Integer.valueOf(obtainedResultList.get(j)).equals(Integer.valueOf(expectedResult[j]))) {
                                 failWithMessage("Expected value for row <%s> and position <%s> for column <%s> to be "
                                                 + "<%s> but was <%s>",
                                         i,j,
@@ -607,9 +633,8 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                                     + "but  was <%s>", i,
                             columnExpected[0], actualRow.get(i).getClass().getName());
                 }
-                if(!actualRow.getString(i).equals(tableRow.get(i))){
-                    return equals = false;
-
+                if(!actualRow.getString(i).trim().equals(tableRow.get(i))){
+                   return equals = false;
                 }
                 break;
             case "timestamp":
@@ -622,6 +647,20 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                     return equals = false;
                 }
                 break;
+                case "decimal(38,18)":
+                    if (!(actualRow.get(i) instanceof java.lang.Number)){
+                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.Number\" "
+                                        + "but  was <%s>", i,
+                                columnExpected[0], actualRow.get(i).getClass().getName());
+                    }
+                Float aux=Float.parseFloat(tableRow.get(i));
+                DecimalFormat df = new DecimalFormat("0.00");
+                df.setMaximumFractionDigits(18);
+                df.format(aux);
+                if(!actualRow.getDecimal(i).equals((aux))){
+                        return equals = false;
+                    }
+                    break;
             default:
                 failWithMessage("The type <%s> is not implemented", columnExpected[1]);
             }
@@ -791,6 +830,31 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                         }
                     }
                     break;
+                    case "array<int>":
+                        if (!(actualRow.get(x) instanceof scala.collection.mutable.ArrayBuffer)){
+                            failWithMessage("Expected type for row <%s> for column <%s> to be an \"array\" "
+                                            + "but  was <%s>", i,
+                                    columnExpected[0], actualRow.get(x).getClass().getName());
+                        }
+                        obtainedResult = (scala.collection.mutable
+                                .Buffer<String>)actualRow.get(x);
+                        obtainedResultList = JavaConverters.bufferAsJavaListConverter(obtainedResult).asJava();
+                        expectedResult = table.get(i + 1).get(x).split(",");
+                        if(obtainedResult.size() != expectedResult.length){
+                            failWithMessage("Expected length of array to be <%s> but was <%s>", expectedResult.length,
+                                    obtainedResultList
+                                            .size());
+                        }
+                        for(int j = 0; j < obtainedResult.size(); j++){
+                            if(!Integer.valueOf(obtainedResultList.get(j)).equals(Integer.valueOf(expectedResult[j]))) {
+                                failWithMessage("Expected value for row <%s> and position <%s> for column <%s> to be "
+                                                + "<%s> but was <%s>",
+                                        i,j,
+                                        columnExpected[0], expectedResult[j],
+                                        obtainedResultList.get(j));
+                            }
+                        }
+                        break;
                 default:
                     failWithMessage("The type <%s> is not implemented", columnExpected[1]);
                 }

@@ -20,6 +20,9 @@ ITSERVICES:
       sleep: 10
       env:
         - MAX_HEAP=256M
+  - POSTGRESQL:
+      image: postgresql:9.3
+      sleep: 10
   - HADOOP:
       image: stratio/hadoop:2.7.2
       sleep: 10
@@ -33,6 +36,7 @@ ITSERVICES:
 
 
 ITPARAMETERS: >
+    -Dpostgresql.host.0=%%POSTGRESQL
     -Dcassandra.hosts.0=%%CASSANDRA
     -Dmongo.hosts.0=%%MONGODB
     -Delasticsearch.hosts.0=%%ELASTICSEARCH

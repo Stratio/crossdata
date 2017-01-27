@@ -54,6 +54,10 @@
             <artifactId>crossdata-elasticsearch_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.stratio.crossdata.connector</groupId>
+            <artifactId>crossdata-postgresql_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
             <!--TODO remove csv data source when upgrading spark-->
             <groupId>com.databricks</groupId>
             <artifactId>spark-csv_${scala.binary.version}</artifactId>
