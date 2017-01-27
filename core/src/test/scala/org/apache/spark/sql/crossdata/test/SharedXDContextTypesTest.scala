@@ -52,21 +52,12 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
                                                                  * the types test table.
                                                                  */
 
+  val arrayFlattenTestColumn: String = "arraystructarraystruct" /* Column used to test flattening of arrays */
 
   //Template: This is the template implementation and shouldn't be modified in any specific test
 
-  def doTypesTest(datasourceName: String): Unit = {
-    for(executionType <- ExecutionType.Spark::ExecutionType.Native::Nil)
-      datasourceName should s"provide the right types for $executionType execution" in {
-        assumeEnvironmentIsUpAndRunning
-        val dframe = sql("SELECT " + typesSet.map(_.colname).mkString(", ") + s" FROM $dataTypesTableName")
-        for(
-          (tpe, i) <- typesSet zipWithIndex;
-          typeCheck <- tpe.typeCheck
-        ) typeCheck(dframe.collect(executionType).head(i))
-      }
-
-    //Multi-level column flat test
+  protected def multilevelFlattenTests(datasourceName: String): Unit = {
+    //Multi-level column flatten test
 
     it should "provide flattened column names through the `annotatedCollect` method" in {
       val dataFrame = sql("SELECT structofstruct.struct1.structField1 FROM typesCheckTable")
@@ -81,8 +72,24 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
       rows.length shouldBe 1
     }
 
+    it should "be able to flatten whole rows" in {
+      val dataFrame = sql("SELECT * FROM typesCheckTable")
+      val rows = dataFrame.flattenedCollect()
+      val hasComposedTypes = rows.head.schema.fields exists { field =>
+        field.dataType match {
+          case _: StructType | _: ArrayType => true
+          case _ => false
+        }
+      }
+      hasComposedTypes shouldBe false
+    }
+  }
+
+  protected def arrayFlattenTests(datasourceName: String): Unit = {
+    //Multi-level column, with nested arrays, flatten test
+
     it should "be able to vertically flatten results for array columns" in {
-      val dataFrame = sql(s"SELECT arraystructarraystruct FROM typesCheckTable")
+      val dataFrame = sql(s"SELECT $arrayFlattenTestColumn FROM typesCheckTable")
       val res = dataFrame.flattenedCollect()
 
       // No array columns should be found in the result schema
@@ -100,7 +107,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
     }
 
     it should "correctly apply user limits to a vertically flattened array column" in {
-      val dataFrame = sql(s"SELECT arraystructarraystruct FROM typesCheckTable LIMIT 1")
+      val dataFrame = sql(s"SELECT $arrayFlattenTestColumn FROM typesCheckTable LIMIT 1")
       val res = dataFrame.flattenedCollect()
       res.length shouldBe 1
     }
@@ -110,6 +117,24 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
       val res = dataFrame.flattenedCollect()
       res.length shouldBe 1
     }
+
+  }
+
+  def doTypesTest(datasourceName: String): Unit = {
+
+    for(executionType <- ExecutionType.Spark::ExecutionType.Native::Nil)
+      datasourceName should s"provide the right types for $executionType execution" in {
+        assumeEnvironmentIsUpAndRunning
+        val dframe = sql("SELECT " + typesSet.map(_.colname).mkString(", ") + s" FROM $dataTypesTableName")
+        for(
+          (tpe, i) <- typesSet zipWithIndex;
+          typeCheck <- tpe.typeCheck
+        ) typeCheck(dframe.collect(executionType).head(i))
+      }
+
+    multilevelFlattenTests(datasourceName)
+
+    arrayFlattenTests(datasourceName)
 
   }
 
@@ -167,6 +192,7 @@ trait SharedXDContextTypesTest extends SharedXDContextWithDataTest {
 }
 
 object SharedXDContextTypesTest {
+
   val dataTypesTableName = "typesCheckTable"
   case class SparkSQLColDef(colname: String, sqlType: String, typeCheck: Option[Any => Unit] = None)
   object SparkSQLColDef {
