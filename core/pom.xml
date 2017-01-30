@@ -35,6 +35,12 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
@@ -59,10 +65,7 @@
         <dependency>
             <groupId>com.stratio.common</groupId>
             <artifactId>common-utils_${scala.binary.version}</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-common_${scala.binary.version}</artifactId>
+            <version>${common.utils.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>

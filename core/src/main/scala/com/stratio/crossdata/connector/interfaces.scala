@@ -17,11 +17,12 @@ package com.stratio.crossdata.connector
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.catalyst.NativeUDF
 import org.apache.spark.sql.sources.{DataSourceRegister, Filter}
 import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.{Row, SQLContext}
 
 import scala.util.Try
 
@@ -33,7 +34,7 @@ import scala.util.Try
  */
 @DeveloperApi
 trait NativeScan extends PushDownable {
-  def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]]
+  def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[InternalRow]]
 }
 
 /**

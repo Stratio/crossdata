@@ -15,24 +15,27 @@
  */
 package org.apache.spark.sql.crossdata.execution
 
+import com.stratio.common.utils.components.logger.impl.Slf4jLoggerComponent
 import com.stratio.crossdata.security._
-import org.apache.log4j.Logger
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.execution.auth.AuthDirectivesExtractor
-import org.apache.spark.sql.crossdata.{XDContext, XDSQLConf}
+//import org.apache.spark.sql.crossdata.execution.auth.AuthDirectivesExtractor
 import org.apache.spark.sql.execution._
 
 /**
   * @inheritdoc
   */
-class XDQueryExecution(sqlContext: SQLContext, parsedPlan: LogicalPlan, catalogIdentifier: String) extends QueryExecution(sqlContext, parsedPlan){
-
-  lazy val logger = Logger.getLogger(classOf[XDQueryExecution])
+class XDQueryExecution(sparkSession: SparkSession, parsedPlan: LogicalPlan, catalogIdentifier: String)
+  extends QueryExecution(sparkSession, parsedPlan)
+    with Slf4jLoggerComponent {
 
   lazy val authorized: LogicalPlan = {
+
     // TODO assertAnalyzed() execute sqlContext.analyzer.execute(authorized) twice??
-    val xdContext = sqlContext.asInstanceOf[XDContext]
+
+    // TODO Spark2.1
+    /*val xdContext = sparkSession.sqlContext.asInstanceOf[XDContext]
 
     xdContext.securityManager.foreach { securityManager =>
       val userId = xdContext.conf.getConfString(XDSQLConf.UserIdPropertyKey)
@@ -49,20 +52,26 @@ class XDQueryExecution(sqlContext: SQLContext, parsedPlan: LogicalPlan, catalogI
       if (!isAuthorized) {
         throw new RuntimeException("Operation not authorized") // TODO specify the resource/action?
       }
-    }
+    }*/
 
     parsedPlan
   }
 
-  override lazy val analyzed: LogicalPlan = sqlContext.analyzer.execute(authorized)
+  override lazy val analyzed: LogicalPlan = sparkSession.sessionState.analyzer.execute(authorized)
+
+
+  // Wrap the SparkPlan so that the native execution can be tried => [executeCollect]
+  override lazy val executedPlan: SparkPlan = new XDPlan(optimizedPlan, prepareForExecution(sparkPlan)) // TODO sparkPlan is evaluated??
 
 
   // Extracts
+  // TODO Spark2.1
   lazy val resourcesAndActions: Seq[(Resource, Action)] = {
     val crossdataInstances: Seq[String] = Seq(sys.env.getOrElse(Resource.CrossdataClusterNameEnvVar, "unknown")) // TODO get crossdataInstances
 
     val authDirectivesExtractor = new AuthDirectivesExtractor(crossdataInstances, catalogIdentifier)
     authDirectivesExtractor.extractResourcesAndActions(parsedPlan)
+
   }
 
 }
