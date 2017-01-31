@@ -113,18 +113,18 @@ hose {
             doIT(conf: config, crossbuild: 'scala-2.11')
         }, failFast: config.FAILFAST)
 
-        doPackage(conf: config, crossbuild: 'scala-2.11')
+        //doPackage(conf: config, crossbuild: 'scala-2.11') //TODO: Restore when all modules migrated
 
         parallel(DOC: {
            doDoc(conf: config, crossbuild: 'scala-2.11')
          },QC: {
             doStaticAnalysis(conf: config, crossbuild: 'scala-2.11')
-        }, DEPLOY: {
+        }, /*DEPLOY: {
             doDeploy(conf: config, crossbuild: 'scala-2.11')
         }, DOCKER: {
             doDocker(conf: config, crossbuild: 'scala-2.11')
-        }, failFast: config.FAILFAST)
+        },*/ failFast: config.FAILFAST) //TODO: Restore when all modules migrated
 
-        doAT(conf: config, groups: ['micro-cassandra'])
+        //doAT(conf: config, groups: ['micro-cassandra']) //TODO: Restore when all modules migrated
      }
 }
