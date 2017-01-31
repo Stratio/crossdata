@@ -20,12 +20,12 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.plans.logical.{InsertIntoTable, LogicalPlan}
 import org.apache.spark.sql.catalyst.{TableIdentifier, plans}
-import org.apache.spark.sql.crossdata.XDSQLConf
-import org.apache.spark.sql.crossdata.catalyst.execution.{AddApp, AddJar, CreateExternalTable, CreateGlobalIndex, CreateTempView, CreateView, DropAllTables, DropExternalTable, DropTable, DropView, ExecuteApp, ImportTablesUsingWithOptions, InsertIntoTable => XDInsertIntoTable}
-import org.apache.spark.sql.crossdata.catalyst.streaming._
+import org.apache.spark.sql.execution.datasources.CreateTempViewUsing
+//import org.apache.spark.sql.crossdata.XDSQLConf
+//import org.apache.spark.sql.crossdata.catalyst.execution.{AddApp, AddJar, CreateExternalTable, CreateGlobalIndex, CreateTempView, CreateView, DropAllTables, DropExternalTable, DropTable, DropView, ExecuteApp, ImportTablesUsingWithOptions, InsertIntoTable => XDInsertIntoTable}
 import org.apache.spark.sql.crossdata.execution.XDQueryExecution
 import org.apache.spark.sql.execution._
-import org.apache.spark.sql.execution.datasources.{CreateTableUsing, CreateTableUsingAsSelect, RefreshTable, DescribeCommand => LogicalDescribeCommand}
+import org.apache.spark.sql.execution.datasources.{CreateTable, RefreshTable/*, DescribeCommand => LogicalDescribeCommand*/}
 
 class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier: String) {
 
@@ -36,19 +36,19 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
   private[auth] def extResAndOps =
     createPlanToResourcesAndOps orElse
       insertPlanToResourcesAndOps orElse
-      dropPlanToResourcesAndOps orElse
-      streamingPlanToResourcesAndOps orElse
-      insecurePlanToResourcesAndOps orElse
-      metadataPlanToResourcesAndOps orElse
+      // dropPlanToResourcesAndOps orElse
+      // streamingPlanToResourcesAndOps orElse
+      // insecurePlanToResourcesAndOps orElse
+      // metadataPlanToResourcesAndOps orElse
       cachePlanToResourcesAndOps orElse
-      configCommandPlanToResourcesAndOps orElse
+      //configCommandPlanToResourcesAndOps orElse
       queryPlanToResourcesAndOps
 
   implicit def tupleToSeq(tuple: (Resource, Action)): Seq[(Resource, Action)] = Seq(tuple)
 
   private[auth] def createPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
-    case CreateTableUsing(tableIdent, _, _, isTemporary, _, _, _) =>
+    /*case CreateTableUsing(tableIdent, _, _, isTemporary, _, _, _, _, _) =>
       (catalogResource, Write)
 
     case CreateView(viewIdentifier, selectPlan, _) =>
@@ -65,21 +65,30 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
 
     case CreateTableUsingAsSelect(tableIdent, _, isTemporary, _, _, _, selectPlan) =>
       collectTableResources(selectPlan).map((_, Read)) :+ (catalogResource, Write) :+ (allDatastoreResource, Write)
+*/
+
+    /* TODO Spark 2.1
+    case CreateTable(catalogTable, saveMode, tableDesc) =>
+
+    review => case CreateTempViewUsing(tableIdent,userSpecifiedSchema, replace, global, provider, options) =>
+      (tableResource(tableIdent), Read) :+ (catalogResource, Write) :+ (allDatastoreResource, Write)
+    */
+
+    PartialFunction.empty // TODO: Spark 2.1, remove empty partial function
 
   }
 
   private[auth] def insertPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
-
+    /*
     case XDInsertIntoTable(tableIdentifier, _, _) =>
       (tableResource(tableIdentifier), Write) :+ (allDatastoreResource, Write)
-
+    */
     case InsertIntoTable(writePlan, _, selectPlan, _, _) =>
       collectTableResources(writePlan).map((_, Write)) ++ collectTableResources(selectPlan).map((_, Read)) :+ (allDatastoreResource, Write)
 
   }
 
-  private[auth] def dropPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
-
+  /*private[auth] def dropPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
     case DropTable(tableIdentifier) =>
       (catalogResource, Write) :+ (tableResource(tableIdentifier), Drop)
 
@@ -92,8 +101,9 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
     case DropAllTables =>
       (catalogResource, Write) :+ (allTableResource, Drop)
 
-  }
+  }*/
 
+  /*
   private[auth] def streamingPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
     case lPlan@ShowAllEphemeralStatuses => throw new RuntimeException(s"Unauthorized command: $lPlan")
     case lPlan@DropAllEphemeralTables => throw new RuntimeException(s"Unauthorized command: $lPlan")
@@ -108,16 +118,19 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
     case lPlan@ShowEphemeralTables => throw new RuntimeException(s"Unauthorized command: $lPlan")
     case lPlan: StopProcess => throw new RuntimeException(s"Unauthorized command: $lPlan")
     case lPlan: StartProcess => throw new RuntimeException(s"Unauthorized command: $lPlan")
-  }
 
+  }*/
+
+  /*
   private[auth] def insecurePlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
     case lPlan: CreateGlobalIndex => throw new RuntimeException(s"Unauthorized command: $lPlan")
     case lPlan: AddApp => throw new RuntimeException(s"Unauthorized command: $lPlan")
     case lPlan: ExecuteApp => throw new RuntimeException(s"Unauthorized command: $lPlan")
     case lPlan: AddJar => throw new RuntimeException(s"Unauthorized command: $lPlan")
   }
+*/
 
-  private[auth] def metadataPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
+  /*private[auth] def metadataPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
     case ShowTablesCommand(databaseOpt) =>
       (catalogResource, Describe)
@@ -130,9 +143,10 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
 
     case showFunctions: plans.logical.ShowFunctions =>
       Seq.empty
-  }
 
-  private[auth] def configCommandPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
+  }*/
+
+  /*private[auth] def configCommandPlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
 
     case lPlan@SetCommand(Some((key, value))) if key == XDSQLConf.UserIdPropertyKey =>
       throw new RuntimeException(s"Unauthorized command: $lPlan")
@@ -140,10 +154,11 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
     case SetCommand(Some((key, value))) =>
       logger.info(s"Set command received: $key=$value)") // TODO log
       Seq.empty
-  }
+
+  }*/
 
   private[auth] def cachePlanToResourcesAndOps: PartialFunction[LogicalPlan, Seq[(Resource, Action)]] = {
-
+/*
     case CacheTableCommand(tableName, Some(toCachePlan), _) =>
       collectTableResources(toCachePlan).map((_, Read)) :+ (catalogResource, Write) :+ (allTableResource, Cache)
 
@@ -155,6 +170,7 @@ class AuthDirectivesExtractor(crossdataInstances: Seq[String], catalogIdentifier
 
     case ClearCacheCommand =>
       (allTableResource, Cache)
+*/
 
     case RefreshTable(tableIdentifier) =>
       (tableResource(tableIdentifier), Cache)

@@ -18,40 +18,55 @@
 
 package org.apache.spark.sql.crossdata.test
 
-import com.typesafe.config.{Config, ConfigFactory}
-import org.apache.spark.sql.{SQLConf, SQLContext}
-import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.crossdata.XDSession
+import org.apache.spark.sql.crossdata.session.XDSessionState
+import org.apache.spark.sql.internal.{SQLConf, SessionState}
 
+/**
+  * A special [[SparkSession]] prepared for testing.
+  */
+private[sql] class TestXDSession(sc: SparkContext) extends XDSession(sc) { self =>
+  def this(sparkConf: SparkConf) {
+    this(new SparkContext("local[2]", "test-sql-context",
+      sparkConf.set("spark.sql.testkey", "true")))
+  }
 
-object TestXDContext{
+  def this() {
+    this(TestXDSession.DefaultTestSparkConf)
+  }
 
-  val DefaultTestSparkConf: SparkConf = new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.sql.shuffle.partitions", "3")
+ /* @transient
+  protected[sql] override lazy val sessionState: SessionState = new XDSessionState(self) {
+    override lazy val conf: SQLConf = {
+      new SQLConf {
+        clear()
+        override def clear(): Unit = {
+          super.clear()
+          // Make sure we start with the default test configs even after clear
+          TestXDSession.overrideConfs.foreach { case (key, value) => setConfString(key, value) }
+        }
+      }
+    }
+  }*/
 
 }
 
-import TestXDContext._
 
-/**
-  * A special [[SQLContext]] prepared for testing.
-  */
-private[sql] class TestXDContext private(sc: SparkContext, coreConfig: Config)
-  extends XDContext(sc, coreConfig) {
+private[sql] object TestXDSession {
 
-  def this() {
-    this(new SparkContext(
-      "local[2]",
-      "test-xd-context",
-      DefaultTestSparkConf
-    ), ConfigFactory.empty())
-  }
+  val DefaultTestSparkConf: SparkConf = new SparkConf().set("spark.cores.max", "2").set("spark.sql.testkey", "true").set("spark.sql.shuffle.partitions", "3")
 
-  def this(catalogConfig: Config) {
-    this(new SparkContext(
-      "local[2]",
-      "test-xd-context",
-      DefaultTestSparkConf
-    ), catalogConfig)
-  }
+  /**
+    * A map used to store all confs that need to be overridden in sql/core unit tests.
+    */
+  val overrideConfs: Map[String, String] =
+    Map(
+      // Fewer shuffle partitions to speed up testing.
+      SQLConf.SHUFFLE_PARTITIONS.key -> "3"
+      // TODO SQLConf.CROSS_JOINS_ENABLED
+    )
+
 
 }

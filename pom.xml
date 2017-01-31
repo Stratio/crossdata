@@ -93,9 +93,9 @@
 
     <modules>
         <!--<module>common</module>-->
-        <module>common2</module>
+        <module>common</module>
         <!--<module>core</module>-->
-        <module>core2</module>
+        <module>core</module>
         <!--<module>cassandra</module>-->
         <!--<module>mongodb</module>-->
         <!--<module>elasticsearch</module>-->
@@ -108,7 +108,7 @@
     </modules>
 
     <properties>
-        <spark.version>1.6.2</spark.version>
+        <spark.version>2.1.0</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
         <easymock.version>3.4</easymock.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
@@ -126,7 +126,7 @@
         <derby.version>10.10.1.1</derby.version>
         <jackson4s.version>3.2.10</jackson4s.version>
         <mockito.version>1.10.19</mockito.version>
-        <common.utils.version>0.7.0</common.utils.version>
+        <common.utils.version>0.8.0-SNAPSHOT</common.utils.version>
         <guava.version>18.0</guava.version>
         <curator.version>3.2.0</curator.version>
         <crossdata-auth-iface.version>0.1.0</crossdata-auth-iface.version>
