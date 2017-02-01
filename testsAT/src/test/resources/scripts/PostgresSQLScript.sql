@@ -10,11 +10,7 @@ INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 
 INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (100,100,100,100.001,100.001,20000.00,2000000000000.00,26000,10000000,10000000);
 INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (1000,1000,1000,1000.0001,1000.0001,200000.0,20000000000000.0,30000,100000000,100000000);
 INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (32767,2147483647, 9223372036854775807,10000.00001,10000.00001,2000000,200000000000000,32767,2147483647,9223372036854775807);
-CREATE TABLE databasetest.crossdatamonetary(col_1 money);
-INSERT INTO databasetest.crossdatamonetary(col_1) VALUES (-10.08);
-INSERT INTO databasetest.crossdatamonetary(col_1) VALUES (0.00);
-INSERT INTO databasetest.crossdatamonetary(col_1) VALUES (10.08);
-CREATE TABLE databasetest.crossdatacharacter(col_1 character varying(10), col_2 varchar(10),col_3 character(10),col_4 char(10), col_5 text);
+CREATE TABLE databasetest.crossdatacharacter(col_1 character varying(9), col_2 varchar(9),col_3 character(9),col_4 char(9), col_5 text);
 INSERT INTO databasetest.crossdatacharacter(col_1,col_2,col_3,col_4,col_5) VALUES ('example_1','example_1','example_1','example_1','example_1');
 INSERT INTO databasetest.crossdatacharacter(col_1,col_2,col_3,col_4,col_5) VALUES ('example_2','example_2','example_2','example_2','example_2');
 INSERT INTO databasetest.crossdatacharacter(col_1,col_2,col_3,col_4,col_5) VALUES ('example_3','example_3','example_3','example_3','example_3');
@@ -24,7 +20,6 @@ INSERT INTO databasetest.crossdatacharacter(col_1,col_2,col_3,col_4,col_5) VALUE
 INSERT INTO databasetest.crossdatacharacter(col_1,col_2,col_3,col_4,col_5) VALUES ('example_7','example_7','example_7','example_7','example_7');
 INSERT INTO databasetest.crossdatacharacter(col_1,col_2,col_3,col_4,col_5) VALUES ('example_8','example_8','example_8','example_8','example_8');
 INSERT INTO databasetest.crossdatacharacter(col_1,col_2,col_3,col_4,col_5) VALUES ('example_9','example_9','example_9','example_9','example_9');
-INSERT INTO databasetest.crossdatacharacter(col_1,col_2,col_3,col_4,col_5) VALUES ('example_10','example_10','example_10','example_10','example_10');
 CREATE TABLE databasetest.crossdataboolean(col_1 boolean);
 INSERT INTO databasetest.crossdataboolean(col_1) VALUES (TRUE);
 INSERT INTO databasetest.crossdataboolean(col_1) VALUES ('t');
@@ -46,9 +41,9 @@ INSERT INTO databasetest.crossdatauuid(col_1) VALUES ('{a0eebc99-9c0b-4ef8-bb6d-
 INSERT INTO databasetest.crossdatauuid(col_1) VALUES ('a0eebc999c0b4ef8bb6d6bb9bd380a11');
 INSERT INTO databasetest.crossdatauuid(col_1) VALUES ('a0ee-bc99-9c0b-4ef8-bb6d-6bb9-bd38-0a11');
 INSERT INTO databasetest.crossdatauuid(col_1) VALUES ('{a0eebc99-9c0b4ef8-bb6d6bb9-bd380a11}');
-CREATE TABLE databasetest.crossdataarray(col_1 text,col_2 integer[],col_3 text[][]);
-INSERT INTO databasetest.crossdataarray(col_1, col_2,col_3) VALUES ('Bill','{10000, 10000, 10000, 10000}','{{"meeting", "lunch"}, {"training", "presentation"}}');
-INSERT INTO databasetest.crossdataarray(col_1, col_2,col_3)    VALUES ('Carol','{20000, 25000, 25000, 25000}','{{"breakfast", "consulting"}, {"meeting", "lunch"}}');
+CREATE TABLE databasetest.crossdataarray(col_1 text,col_2 integer[]);
+INSERT INTO databasetest.crossdataarray(col_1, col_2) VALUES ('Bill','{10000, 10000, 10000, 10000}');
+INSERT INTO databasetest.crossdataarray(col_1, col_2)    VALUES ('Carol','{20000, 25000, 25000, 25000}');
 SET timezone = 'America/Los_Angeles';
 CREATE TABLE databasetest.crossdatatimestamp(col_1 timestamp, col_2 timestamp with time zone not null default NOW());
 INSERT INTO databasetest.crossdatatimestamp(col_1, col_2) VALUES ('2016-12-15 15:12:32.459957', '2016-12-15 15:12:32.459957');
@@ -74,39 +69,62 @@ INSERT INTO databasetest.crossdatatime(col_1, col_2) VALUES ('04:05','2003-04-12
 INSERT INTO databasetest.crossdatatime(col_1, col_2) VALUES ('040506','040506 -8:00');
 INSERT INTO databasetest.crossdatatime(col_1, col_2) VALUES ('04:05 AM','04:05 AM -800');
 INSERT INTO databasetest.crossdatatime(col_1, col_2) VALUES ('04:05 PM','04:05 PM -8');
-CREATE TABLE databasetest.crossdataarray(col_1 text,col_2 integer[],col_3 text[][]);
-INSERT INTO databasetest.crossdataarray(col_1, col_2,col_3) VALUES ('Bill','{10000, 10000, 10000, 10000}','{{"meeting", "lunch"}, {"training", "presentation"}}');
-INSERT INTO databasetest.crossdataarray(col_1, col_2,col_3)    VALUES ('Carol','{20000, 25000, 25000, 25000}','{{"breakfast", "consulting"}, {"meeting", "lunch"}}');
-CREATE TYPE databasetest.crossdatatype AS ENUM('type1', 'type2', 'type3');
-CREATE TABLE databasetest.crossdataenum(col_1 databasetest.crossdatatype);
-INSERT INTO databasetest.crossdataenum(col_1) VALUES ('type1');
-INSERT INTO databasetest.crossdataenum(col_1) VALUES ('type2');
-INSERT INTO databasetest.crossdataenum(col_1) VALUES ('type3');
-CREATE TABLE databasetest.crossdatageometric(col_1 point, col_2 line, col_3 lseg, col_4 box, col_5 path, col_6 polygon, col_7 circle);
-CREATE TABLE databasetest.crossdatanetwork(col_1 cidr, col_2 inet);
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('192.168.100.128/25','192.168.100.128/25');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('192.168/24','192.168.0.0/24');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('192.168/25','192.168.0.0/25');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('192.168.1','192.168.1.0');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('192.168','192.168.0.0');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('128.1','128.1.0.0');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('128','128.0.0.0');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('128.1.2','128.1.2.0');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('10.1.2','10.1.2.0');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('10.1','10.1.0.0');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('10','10.0.0.0');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('10.1.2.3','10.1.2.3');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('2001:4f8:3:ba::/64','2001:4f8:3:ba::/64');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('2001:4f8:3:ba:2e0:81ff:fe22:d1f1/128','2001:4f8:3:ba:2e0:81ff:fe22:d1f1/128');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('::ffff:1.2.3.0/120','::ffff:1.2.3.0/120');
-INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('::ffff:1.2.3.0/128','::ffff:1.2.3.0/128');
-CREATE TABLE databasetest.crossdatamacaddr(col_1 macaddr);
-INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('08:00:2b:01:02:03');
-INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('08-00-2b-01-02-03');
-INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('08002b:010203');
-INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('08002b-010203');
-INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('0800.2b01.0203');
-INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('08002b010203');
-CREATE TABLE databasetest.crossdatabit (col_1 BIT(3), col_2 BIT VARYING(5));
-INSERT INTO databasetest.crossdatabit(col_1, col_2) VALUES (B'101', B'00');
-INSERT INTO databasetest.crossdatabit(col_1, col_2) VALUES (B'100', B'101');
+
+-- Not supported types:
+-- - text[][] any [][] is not supported
+-- - money
+-- - Enum type
+-- - point
+-- - line
+-- - lseg
+-- - box
+-- - path
+-- - polygon
+-- - circle
+-- - cidr
+-- - col_2
+-- - inet
+-- - macaddr
+-- - BIT()
+-- - BIT VARYING()
+
+--CREATE TABLE databasetest.crossdataarray(col_1 text,col_2 integer[],col_3 text[][]);
+--INSERT INTO databasetest.crossdataarray(col_1, col_2,col_3) VALUES ('Bill','{10000, 10000, 10000, 10000}','{{"meeting", "lunch"}, {"training", "presentation"}}');
+--INSERT INTO databasetest.crossdataarray(col_1, col_2,col_3)    VALUES ('Carol','{20000, 25000, 25000, 25000}','{{"breakfast", "consulting"}, {"meeting", "lunch"}}');
+--CREATE TABLE databasetest.crossdatamonetary(col_1 money);
+--INSERT INTO databasetest.crossdatamonetary(col_1) VALUES (-10.08);
+--INSERT INTO databasetest.crossdatamonetary(col_1) VALUES (0.00);
+--INSERT INTO databasetest.crossdatamonetary(col_1) VALUES (10.08);
+--CREATE TYPE databasetest.crossdatatype AS ENUM('type1', 'type2', 'type3');
+--CREATE TABLE databasetest.crossdataenum(col_1 databasetest.crossdatatype);
+--INSERT INTO databasetest.crossdataenum(col_1) VALUES ('type1');
+--INSERT INTO databasetest.crossdataenum(col_1) VALUES ('type2');
+--INSERT INTO databasetest.crossdataenum(col_1) VALUES ('type3');
+--CREATE TABLE databasetest.crossdatageometric(col_1 point, col_2 line, col_3 lseg, col_4 box, col_5 path, col_6 polygon, col_7 circle);
+--CREATE TABLE databasetest.crossdatanetwork(col_1 cidr, col_2 inet);
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('192.168.100.128/25','192.168.100.128/25');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('192.168/24','192.168.0.0/24');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('192.168/25','192.168.0.0/25');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('192.168.1','192.168.1.0');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('192.168','192.168.0.0');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('128.1','128.1.0.0');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('128','128.0.0.0');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('128.1.2','128.1.2.0');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('10.1.2','10.1.2.0');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('10.1','10.1.0.0');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('10','10.0.0.0');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('10.1.2.3','10.1.2.3');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('2001:4f8:3:ba::/64','2001:4f8:3:ba::/64');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('2001:4f8:3:ba:2e0:81ff:fe22:d1f1/128','2001:4f8:3:ba:2e0:81ff:fe22:d1f1/128');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('::ffff:1.2.3.0/120','::ffff:1.2.3.0/120');
+--INSERT INTO databasetest.crossdatanetwork(col_1, col_2) VALUES ('::ffff:1.2.3.0/128','::ffff:1.2.3.0/128');
+--CREATE TABLE databasetest.crossdatamacaddr(col_1 macaddr);
+--INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('08:00:2b:01:02:03');
+--INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('08-00-2b-01-02-03');
+--INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('08002b:010203');
+--INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('08002b-010203');
+--INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('0800.2b01.0203');
+--INSERT INTO databasetest.crossdatamacaddr(col_1) VALUES ('08002b010203');
+--CREATE TABLE databasetest.crossdatabit (col_1 BIT(3), col_2 BIT VARYING(5));
+--INSERT INTO databasetest.crossdatabit(col_1, col_2) VALUES (B'101', B'00');
+--INSERT INTO databasetest.crossdatabit(col_1, col_2) VALUES (B'100', B'101');
