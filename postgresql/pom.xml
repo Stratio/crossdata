@@ -12,7 +12,7 @@
     <artifactId>crossdata-postgresql_2.11</artifactId>
     <packaging>jar</packaging>
     <name>Postgresql Connector</name>
-    <description>Crossdata Cassandra Connector</description>
+    <description>Crossdata Postgresql Connector</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <dependencies>
