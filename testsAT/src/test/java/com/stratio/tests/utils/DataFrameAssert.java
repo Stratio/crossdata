@@ -18,8 +18,10 @@ package com.stratio.tests.utils;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import org.apache.spark.sql.crossdata.ExecutionType;
 import org.apache.spark.sql.crossdata.XDDataFrame;
@@ -28,6 +30,11 @@ import org.assertj.core.api.AbstractAssert;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.Row;
 import scala.collection.JavaConverters;
+import scala.collection.mutable.WrappedArray;
+import scala.reflect.ClassTag;
+
+import static net.sourceforge.htmlunit.corejs.javascript.TopLevel.Builtins.Function;
+
 /**
  * Created by hdominguez on 19/10/15.
  */
@@ -186,7 +193,19 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                                             + "but  was <%s>", i,
                                     columnExpected[0], actualRow.get(x).getClass().getName());
                         }
-                        if(!actualRow.getDecimal(x).equals(Decimal.apply(table.get(i + 1).get(x)))){
+                        if(!actualRow.getDecimal(x).equals(Decimal.apply(table.get(i + 1).get(x)).toJavaBigDecimal())){
+                            failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
+                                    columnExpected[0], Decimal.apply(table.get(i + 1).get(x)),
+                                    actualRow.getDecimal(x));
+                        }
+                        break;
+                    case "decimal(38,18)":
+                        if (!(actualRow.get(x) instanceof java.math.BigDecimal)){
+                            failWithMessage("Expected type for row <%s> for column <%s> to be \"java.math.BigDecimal\" "
+                                            + "but  was <%s>", i,
+                                    columnExpected[0], actualRow.get(x).getClass().getName());
+                        }
+                        if(!actualRow.getDecimal(x).equals(Decimal.apply(table.get(i + 1).get(x)).toJavaBigDecimal())){
                             failWithMessage("Expected value for row <%s> for column <%s> to be <%s> but was <%s>", i,
                                     columnExpected[0], Decimal.apply(table.get(i + 1).get(x)),
                                     actualRow.getDecimal(x));
@@ -272,56 +291,91 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                                     actualRow.getTimestamp(x));
                         }
                         break;
-                    case "array<string>":
-                        if (!(actualRow.get(x) instanceof scala.collection.mutable.ArrayBuffer)){
-                            failWithMessage("Expected type for row <%s> for column <%s> to be an \"array\" "
-                                        + "but  was <%s>", i,
-                                columnExpected[0], actualRow.get(x).getClass().getName());
-                        }
-                        scala.collection.mutable.Buffer<String> obtainedResult = (scala.collection.mutable
-                                .Buffer<String>)actualRow.get(x);
-                        List<String> obtainedResultList = JavaConverters.bufferAsJavaListConverter(obtainedResult).asJava();
-                        String[] expectedResult = table.get(i + 1).get(x).split(",");
-                        if(obtainedResult.size() != expectedResult.length){
-                            failWithMessage("Expected length of array to be <%s> but was <%s>", expectedResult.length,
-                                    obtainedResultList
-                                    .size());
-                        }
-                        for(int j = 0; j < obtainedResult.size(); j++){
-                            if(!obtainedResultList.get(j).equals(expectedResult[j])) {
-                                failWithMessage("Expected value for row <%s> and position <%s> for column <%s> to be "
-                                                + "<%s> but was <%s>",
-                                        i,j,
-                                        columnExpected[0], expectedResult[j],
-                                        obtainedResultList.get(j));
-                            }
-                        }
-                        break;
-                    case "array<int>":
-                        if (!(actualRow.get(x) instanceof scala.collection.mutable.ArrayBuffer)){
+                    case "array<string>": {
+                        if (!(actualRow.get(x) instanceof scala.collection.mutable.ArrayBuffer)) {
                             failWithMessage("Expected type for row <%s> for column <%s> to be an \"array\" "
                                             + "but  was <%s>", i,
                                     columnExpected[0], actualRow.get(x).getClass().getName());
                         }
-                        obtainedResult = (scala.collection.mutable
-                                .Buffer<String>)actualRow.get(x);
-                        obtainedResultList = JavaConverters.bufferAsJavaListConverter(obtainedResult).asJava();
-                        expectedResult = table.get(i + 1).get(x).split(",");
-                        if(obtainedResult.size() != expectedResult.length){
+
+                        List<String> obtainedResultList;
+
+                        if (actualRow.get(x) instanceof scala.collection.mutable.ArrayBuffer) {
+                            scala.collection.mutable.Buffer<String> obtainedResult = (scala.collection.mutable
+                                    .Buffer<String>) actualRow.get(x);
+                            obtainedResultList = JavaConverters.bufferAsJavaListConverter(obtainedResult).asJava();
+                        } else {
+                            scala.collection.mutable.WrappedArray<Integer> wrappedArrayResultInteger =
+                                    (scala.collection.mutable.WrappedArray<Integer>) actualRow.get(x);
+
+                            Integer[] data = new Integer[wrappedArrayResultInteger.size()];
+                            wrappedArrayResultInteger.copyToArray(data, 0, wrappedArrayResultInteger.size());
+
+                            List<String> stringList = new ArrayList<String>(data.length);
+                            for (int j = 0; j < data.length; j++)
+                                stringList.add(String.valueOf(data[j]));
+
+                            obtainedResultList = stringList;
+                        }
+                        String[] expectedResult = table.get(i + 1).get(x).split(",");
+                        if (obtainedResultList.size() != expectedResult.length) {
                             failWithMessage("Expected length of array to be <%s> but was <%s>", expectedResult.length,
                                     obtainedResultList
                                             .size());
                         }
-                        for(int j = 0; j < obtainedResult.size(); j++){
-                            if(!Integer.valueOf(obtainedResultList.get(j)).equals(Integer.valueOf(expectedResult[j]))) {
+                        for (int j = 0; j < obtainedResultList.size(); j++) {
+                            if (!obtainedResultList.get(j).equals(expectedResult[j])) {
                                 failWithMessage("Expected value for row <%s> and position <%s> for column <%s> to be "
                                                 + "<%s> but was <%s>",
-                                        i,j,
+                                        i, j,
                                         columnExpected[0], expectedResult[j],
                                         obtainedResultList.get(j));
                             }
                         }
                         break;
+                    }
+                    case "array<int>": {
+                        if (!(actualRow.get(x) instanceof scala.collection.mutable.ArrayBuffer) & !(actualRow.get(x) instanceof scala.collection.mutable.WrappedArray)) {
+                            failWithMessage("Expected type for row <%s> for column <%s> to be an \"array\" "
+                                            + "but  was <%s>", i,
+                                    columnExpected[0], actualRow.get(x).getClass().getName());
+                        }
+                        List<String> obtainedResultList;
+                        if (actualRow.get(x) instanceof scala.collection.mutable.ArrayBuffer) {
+                            scala.collection.mutable.Buffer<String> obtainedResult = (scala.collection.mutable
+                                    .Buffer<String>) actualRow.get(x);
+                            obtainedResultList = JavaConverters.bufferAsJavaListConverter(obtainedResult).asJava();
+                        } else {
+                            scala.collection.mutable.WrappedArray<Integer> wrappedArrayResultInteger =
+                                    (scala.collection.mutable.WrappedArray<Integer>) actualRow.get(x);
+
+                            Integer[] data = new Integer[wrappedArrayResultInteger.size()];
+                            wrappedArrayResultInteger.copyToArray(data, 0, wrappedArrayResultInteger.size());
+
+                            List<String> stringList = new ArrayList<String>(data.length);
+                            for (int j = 0; j < data.length; j++)
+                                stringList.add(String.valueOf(data[j]));
+
+                            obtainedResultList = stringList;
+                        }
+
+                        String[] expectedResult = table.get(i + 1).get(x).split(",");
+                        if (obtainedResultList.size() != expectedResult.length) {
+                            failWithMessage("Expected length of array to be <%s> but was <%s>", expectedResult.length,
+                                    obtainedResultList
+                                            .size());
+                        }
+                        for (int j = 0; j < obtainedResultList.size(); j++) {
+                            if (!Integer.valueOf(obtainedResultList.get(j)).equals(Integer.valueOf(expectedResult[j]))) {
+                                failWithMessage("Expected value for row <%s> and position <%s> for column <%s> to be "
+                                                + "<%s> but was <%s>",
+                                        i, j,
+                                        columnExpected[0], expectedResult[j],
+                                        obtainedResultList.get(j));
+                            }
+                        }
+                        break;
+                    }
                 default:
                     failWithMessage("The type <%s> is not implemented", columnExpected[1]);
                 }
@@ -567,7 +621,18 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                                     + "but  was <%s>", i,
                             columnExpected[0], actualRow.get(i).getClass().getName());
                 }
-                if(!actualRow.getDecimal(i).equals(Decimal.apply(tableRow.get(i)))){
+                if(!actualRow.getDecimal(i).equals(Decimal.apply(tableRow.get(i)).toJavaBigDecimal())){
+                    return equals = false;
+
+                }
+                break;
+            case "decimal(38,18)":
+                if (!(actualRow.get(i) instanceof java.math.BigDecimal)){
+                    failWithMessage("Expected type for row <%s> for column <%s> to be \"java.math.BigDecimal\" "
+                                    + "but  was <%s>", i,
+                            columnExpected[0], actualRow.get(i).getClass().getName());
+                }
+                if(!actualRow.getDecimal(i).equals(Decimal.apply(tableRow.get(i)).toJavaBigDecimal())){
                     return equals = false;
 
                 }
@@ -647,20 +712,7 @@ public class DataFrameAssert extends AbstractAssert<DataFrameAssert, XDDataFrame
                     return equals = false;
                 }
                 break;
-                case "decimal(38,18)":
-                    if (!(actualRow.get(i) instanceof java.lang.Number)){
-                        failWithMessage("Expected type for row <%s> for column <%s> to be \"java.lang.Number\" "
-                                        + "but  was <%s>", i,
-                                columnExpected[0], actualRow.get(i).getClass().getName());
-                    }
-                Float aux=Float.parseFloat(tableRow.get(i));
-                DecimalFormat df = new DecimalFormat("0.00");
-                df.setMaximumFractionDigits(18);
-                df.format(aux);
-                if(!actualRow.getDecimal(i).equals((aux))){
-                        return equals = false;
-                    }
-                    break;
+
             default:
                 failWithMessage("The type <%s> is not implemented", columnExpected[1]);
             }

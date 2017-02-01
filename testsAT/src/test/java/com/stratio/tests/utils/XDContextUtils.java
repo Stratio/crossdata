@@ -93,7 +93,7 @@ public class XDContextUtils {
         }
 
         public void showDataframe(){
-            df.show();
+            df.show(false);
         }
 
         public void clearXDF(){
