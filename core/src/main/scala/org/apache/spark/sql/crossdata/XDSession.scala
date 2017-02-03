@@ -198,19 +198,20 @@ object XDSession {
     * Builder for [[XDSession]].
     */
   class Builder extends SparkSessionBuilder {
+
     private[this] val options = new scala.collection.mutable.HashMap[String, String]
     private[this] var userSuppliedContext: Option[SparkContext] = None
 
-    override def config(key: String, value: String): SparkSessionBuilder = synchronized {
+    override def config(key: String, value: String): Builder = synchronized {
       options += key -> value
       this
     }
 
-    override def config(key: String, value: Long): SparkSessionBuilder = config(key, value)
-    override def config(key: String, value: Double): SparkSessionBuilder = config(key, value)
-    override def config(key: String, value: Boolean): SparkSessionBuilder = config(key, value)
+    override def config(key: String, value: Long): Builder = config(key, value)
+    override def config(key: String, value: Double): Builder = config(key, value)
+    override def config(key: String, value: Boolean): Builder = config(key, value)
 
-    override def config(conf: SparkConf): SparkSessionBuilder = synchronized {
+    override def config(conf: SparkConf): Builder = synchronized {
       conf.getAll.foreach { case (k, v) => options += k -> v }
       this
     }
@@ -235,7 +236,7 @@ object XDSession {
       *
       * @since 2.0.0
       */
-    def getOrCreate(userId: String): SparkSession = synchronized { // TODO session => one foreach user
+    override def getOrCreate(): SparkSession = synchronized { // TODO session => one foreach user
 
       var session: SparkSession = null
 
@@ -276,6 +277,13 @@ object XDSession {
 
       return session
     }
+
+    /**
+      * Sets session user.
+      *
+      */
+    def user(userId: String): Builder = config("crossdata.security.user", userId) //TODO: Prop key in object?
+
   }
 
   /**
