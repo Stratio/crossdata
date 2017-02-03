@@ -190,93 +190,35 @@ class XDSession private(
 
 // TODO XDSession => Remove Hive => Require user(vs default??) or throw a new exception
 // TODO XDSession => XDSessionProvider => builder => it is in charge of create new XDSession
-
 object XDSession {
+
+  import SparkSession.{Builder => SparkSessionBuilder}
 
   /**
     * Builder for [[XDSession]].
     */
-  class Builder extends Slf4jLoggerComponent {
-
+  class Builder extends SparkSessionBuilder {
     private[this] val options = new scala.collection.mutable.HashMap[String, String]
-
     private[this] var userSuppliedContext: Option[SparkContext] = None
 
-    private[spark] def sparkContext(sparkContext: SparkContext): Builder = synchronized {
-      userSuppliedContext = Option(sparkContext)
-      this
-    }
-
-    /**
-      * Sets a name for the application, which will be shown in the Spark web UI.
-      * If no application name is set, a randomly generated name will be used.
-      *
-      * @since 2.0.0
-      */
-    def appName(name: String): Builder = config("spark.app.name", name)
-
-    /**
-      * Sets a config option. Options set using this method are automatically propagated to
-      * both [[SparkConf]] and SparkSession's own configuration.
-      *
-      * @since 2.0.0
-      */
-    def config(key: String, value: String): Builder = synchronized {
+    override def config(key: String, value: String): SparkSessionBuilder = synchronized {
       options += key -> value
       this
     }
 
-    /**
-      * Sets a config option. Options set using this method are automatically propagated to
-      * both [[SparkConf]] and SparkSession's own configuration.
-      *
-      * @since 2.0.0
-      */
-    def config(key: String, value: Long): Builder = synchronized {
-      options += key -> value.toString
-      this
-    }
+    override def config(key: String, value: Long): SparkSessionBuilder = config(key, value)
+    override def config(key: String, value: Double): SparkSessionBuilder = config(key, value)
+    override def config(key: String, value: Boolean): SparkSessionBuilder = config(key, value)
 
-    /**
-      * Sets a config option. Options set using this method are automatically propagated to
-      * both [[SparkConf]] and SparkSession's own configuration.
-      *
-      * @since 2.0.0
-      */
-    def config(key: String, value: Double): Builder = synchronized {
-      options += key -> value.toString
-      this
-    }
-
-    /**
-      * Sets a config option. Options set using this method are automatically propagated to
-      * both [[SparkConf]] and SparkSession's own configuration.
-      *
-      * @since 2.0.0
-      */
-    def config(key: String, value: Boolean): Builder = synchronized {
-      options += key -> value.toString
-      this
-    }
-
-    /**
-      * Sets a list of config options based on the given [[SparkConf]].
-      *
-      * @since 2.0.0
-      */
-    def config(conf: SparkConf): Builder = synchronized {
+    override def config(conf: SparkConf): SparkSessionBuilder = synchronized {
       conf.getAll.foreach { case (k, v) => options += k -> v }
       this
     }
 
-    /**
-      * Sets the Spark master URL to connect to, such as "local" to run locally, "local[4]" to
-      * run locally with 4 cores, or "spark://master:7077" to run on a Spark standalone cluster.
-      *
-      * @since 2.0.0
-      */
-    def master(master: String): Builder = config("spark.master", master)
-
+    override private[spark] def sparkContext(sparkContext: SparkContext): Builder = synchronized {
+      userSuppliedContext = Option(sparkContext)
+      this
+    }
 
     /**
       * Gets an existing [[SparkSession]] or, if there is no existing one, creates a new
@@ -294,7 +236,8 @@ object XDSession {
       * @since 2.0.0
       */
     def getOrCreate(userId: String): SparkSession = synchronized { // TODO session => one foreach user
-    var session: SparkSession = null
+
+      var session: SparkSession = null
 
       // Global synchronization so we will only set the default session once.
       SparkSession.synchronized {
