@@ -74,61 +74,25 @@ Feature: PostgreSQL Select with AND OR filters
       |false|
       |false|
 
-  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatime where col_1 = '1970-01-01 04:05:06.789 ' AND col_2='04:05:06-08';
-    When I execute 'SELECT * FROM databasetest.crossdatatime where col_1 = '1970-01-01 04:05:06.789' AND col_2='04:05:06-08''
+  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatimestamp where col_1 = '2016-12-15 15:12:32.459957' OR col_2='2016-12-15 15:12:32.459958';
+    When I execute 'SELECT * FROM databasetest.crossdatatimestamp where col_1 = '2016-12-15 15:12:32.459957' OR col_2='2016-12-15 15:12:32.459958''
+    Then The result has to have '1' rows:
+      | col_1-timestamp                 | col_2-timestamp               |
+      |2016-12-15 15:12:32.459957|2016-12-16 00:12:32.459957|
+
+  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatimestamp where col_1 = '2016-12-15 15:12:32.459957' OR col_2='2016-12-15 15:12:32.459958';
+    When I execute 'SELECT * FROM databasetest.crossdatatimestamp where col_1 = '2016-12-15 15:12:32.459957' AND col_2='2016-12-15 15:12:32.459958''
+    Then The result has to have '0' rows:
+      | col_1-timestamp                 | col_2-timestamp               |
+
+  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatime where col_1 = '1970-01-01 04:05:06.789' OR col_2='13:05:06';
+    When I execute 'SELECT * FROM databasetest.crossdatatime where col_1 = '1970-01-01 04:05:06.789' OR col_2='13:05:06''
     Then The result has to have '1' rows:
       | col_1-timestamp                 | col_2-timestamp               |
       |1970-01-01 04:05:06.789|1970-01-01 13:05:06.0|
 
-  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatime where col_1 = '1970-01-01 04:05:06.789 ' OR col_2='04:05:06-08';
-    When I execute 'SELECT * FROM databasetest.crossdatatime where col_1 = '1970-01-01 04:05:06.789' OR col_2='04:05:06-08''
-    Then The result has to have '2' rows:
+  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatime where col_1 = '1970-01-01 04:05:06.789 ' OR col_2='04:05:06';
+    When I execute 'SELECT * FROM databasetest.crossdatatime where col_1 = '1970-01-01 04:05:06.789' OR col_2='13:05:06''
+    Then The result has to have '1' rows:
       | col_1-timestamp                 | col_2-timestamp               |
-      |1970-01-01 04:05:06.789  |1970-01-01 13:05:06.0|
-      |1970-01-01 04:05:06  |1970-01-01 13:05:06.0|
-
-###########################################################################################################################################################################
-
-#  #TIMESTAMP
-#  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatimestamp where col_1 = '2016-12-15 15:12:32.459957';
-#    When I execute 'SELECT * FROM databasetest.crossdatatimestamp where col_1 = '2016-12-15 15:12:32.459957''
-#    Then The result has to have '1' rows:
-#      | col_1-timestamp                     | col_2-timestamp                    |
-#      |2016-12-15 15:12:32.459957 |2016-12-16 00:12:32.459957|
-#
-#  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatimestamp where col_2='2016-12-16 00:12:32.459957';
-#    When I execute 'SELECT * FROM databasetest.crossdatatimestamp where col_2='2016-12-16 00:12:32.459957' '
-#    Then The result has to have '1' rows:
-#      | col_1-timestamp                     | col_2-timestamp                    |
-#      |2016-12-15 15:12:32.459957 |2016-12-16 00:12:32.459957|
-#
-#  #DATE
-#  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatadate where col_1 = '1999-01-08';
-#    When I execute 'SELECT * FROM databasetest.crossdatadate where col_1 = '1999-01-08''
-#    Then The result has to have '12' rows:
-#      | col_1-date     |
-#      |1999-01-08|
-#      |1999-01-08|
-#      |1999-01-08|
-#      |1999-01-08|
-#      |1999-01-08|
-#      |1999-01-08|
-#      |1999-01-08|
-#      |1999-01-08|
-#      |1999-01-08|
-#      |1999-01-08|
-#      |1999-01-08|
-#      |1999-01-08|
-#  #TIME
-#  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatime where col_1 = '1970-01-01 04:05:06.789';
-#    When I execute 'SELECT * FROM databasetest.crossdatatime where col_1 = '1970-01-01 04:05:06.789''
-#    Then The result has to have '1' rows:
-#      | col_1-timestamp                 | col_2-timestamp               |
-#      |1970-01-01 04:05:06.789|1970-01-01 13:05:06.0|
-#
-#  Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatime where col_2='04:05:06-08';
-#    When I execute 'SELECT * FROM databasetest.crossdatatime where col_2='04:05:06-08''
-#    Then The result has to have '2' rows:
-#      | col_1-timestamp                 | col_2-timestamp               |
-#      |1970-01-01 04:05:06.789  |1970-01-01 13:05:06.0|
-#      |1970-01-01 04:05:06  |1970-01-01 13:05:06.0|
+      |1970-01-01 04:05:06.789|1970-01-01 13:05:06.0|

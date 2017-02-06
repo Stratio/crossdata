@@ -47,6 +47,9 @@ INSERT INTO databasetest.crossdataarray(col_1, col_2)    VALUES ('Carol','{20000
 SET timezone = 'America/Los_Angeles';
 CREATE TABLE databasetest.crossdatatimestamp(col_1 timestamp, col_2 timestamp with time zone not null default NOW());
 INSERT INTO databasetest.crossdatatimestamp(col_1, col_2) VALUES ('2016-12-15 15:12:32.459957', '2016-12-15 15:12:32.459957');
+INSERT INTO databasetest.crossdatatimestamp(col_1, col_2) VALUES ('2016-12-15 15:12:32.459958', '2016-12-15 15:12:32.459958');
+INSERT INTO databasetest.crossdatatimestamp(col_1, col_2) VALUES ('2016-12-15 15:12:32.459959', '2016-12-15 15:12:32.459959');
+INSERT INTO databasetest.crossdatatimestamp(col_1, col_2) VALUES ('2016-12-15 15:12:32.459960', '2016-12-15 15:12:32.459960');
 CREATE TABLE databasetest.crossdatadate(col_1 DATE);
 INSERT INTO databasetest.crossdatadate(col_1) VALUES ('1999-01-08');
 INSERT INTO databasetest.crossdatadate(col_1) VALUES ('January 8, 1999');
@@ -62,6 +65,11 @@ INSERT INTO databasetest.crossdatadate(col_1) VALUES ('19990108');
 INSERT INTO databasetest.crossdatadate(col_1) VALUES ('990108');
 INSERT INTO databasetest.crossdatadate(col_1) VALUES ('1999.008');
 INSERT INTO databasetest.crossdatadate(col_1) VALUES ('J2451187');
+INSERT INTO databasetest.crossdatadate(col_1) VALUES ('1999-01-09');
+INSERT INTO databasetest.crossdatadate(col_1) VALUES ('1999-01-19');
+INSERT INTO databasetest.crossdatadate(col_1) VALUES ('1999-01-11');
+INSERT INTO databasetest.crossdatadate(col_1) VALUES ('1999-01-12');
+
 CREATE TABLE databasetest.crossdatatime(col_1 time, col_2 time with time zone);
 INSERT INTO databasetest.crossdatatime(col_1, col_2) VALUES ('04:05:06.789','04:05:06 PST');
 INSERT INTO databasetest.crossdatatime(col_1, col_2) VALUES ('04:05:06','2003-04-12 04:05:06 America/New_York');
@@ -69,6 +77,8 @@ INSERT INTO databasetest.crossdatatime(col_1, col_2) VALUES ('04:05','2003-04-12
 INSERT INTO databasetest.crossdatatime(col_1, col_2) VALUES ('040506','040506 -8:00');
 INSERT INTO databasetest.crossdatatime(col_1, col_2) VALUES ('04:05 AM','04:05 AM -800');
 INSERT INTO databasetest.crossdatatime(col_1, col_2) VALUES ('04:05 PM','04:05 PM -8');
+
+-- Time datatype does not work correctly with spark because is translated to timestamp
 
 -- Not supported types:
 -- - text[][] any [][] is not supported

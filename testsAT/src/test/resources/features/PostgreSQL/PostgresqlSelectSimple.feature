@@ -67,28 +67,35 @@ Feature: PostgreSQL Simple Select
 
     Scenario:[POSTGRESQL NATIVE-TIMESTAMP]Select * FROM databasetest.crossdatatimestamp
         When I execute 'SELECT * FROM databasetest.crossdatatimestamp'
-        Then The result has to have '1' rows:
+        Then The result has to have '4' rows:
             | col_1-timestamp | col_2-timestamp |
-            | 2016-12-15 15:12:32.459957  | 2016-12-16 00:12:32.459957  |
+            |2016-12-15 15:12:32.459957|2016-12-16 00:12:32.459957|
+            |2016-12-15 15:12:32.459958|2016-12-16 00:12:32.459958|
+            |2016-12-15 15:12:32.459959|2016-12-16 00:12:32.459959|
+            |2016-12-15 15:12:32.45996 |2016-12-16 00:12:32.45996 |
 
     Scenario:[POSTGRESQL NATIVE-DATE]Select * FROM databasetest.crossdatadate
         When I execute 'SELECT * FROM databasetest.crossdatadate'
-        Then The result has to have '14' rows:
+        Then The result has to have '18' rows:
             |col_1-date |
-            |1999-01-08 |
-            |1999-01-08 |
-            |1999-01-08 |
-            |1999-01-18 |
-            |2003-01-02 |
-            |1999-01-08 |
-            |1999-01-08 |
-            |1999-01-08 |
-            |1999-01-08 |
-            |1999-01-08 |
-            |1999-01-08 |
-            |1999-01-08 |
-            |1999-01-08 |
-            |1999-01-08 |
+            |1999-01-08|
+            |1999-01-08|
+            |1999-01-08|
+            |1999-01-18|
+            |2003-01-02|
+            |1999-01-08|
+            |1999-01-08|
+            |1999-01-08|
+            |1999-01-08|
+            |1999-01-08|
+            |1999-01-08|
+            |1999-01-08|
+            |1999-01-08|
+            |1999-01-08|
+            |1999-01-09|
+            |1999-01-19|
+            |1999-01-11|
+            |1999-01-12|
 
     Scenario:[POSTGRESQL NATIVE-TIME]Select * FROM databasetest.crossdatatime
         When I execute 'SELECT * FROM databasetest.crossdatatime'

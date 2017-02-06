@@ -131,6 +131,13 @@ Feature: PostgreSql Select with equals filter
       |a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11|
       |a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11|
 
+  #ARRAY<int>
+  Scenario:[POSTGRESQL NATIVE-ARRAYS TYPES]Select * FROM databasetest.crossdataarray where col_2[1] = 10000
+    When I execute 'SELECT col_1, col_2 FROM databasetest.crossdataarray where col_2[1] = 10000 '
+    Then The result has to have '1' rows:
+      | col_1-string | col_2-array<int> |
+      | Bill  | 10000,10000,10000,10000 |
+
   #TIMESTAMP
   Scenario: [CROSSDATA-841 : POSTGRESQL NATIVE] SELECT * FROM databasetest.crossdatatimestamp where col_1 = '2016-12-15 15:12:32.459957';
     When I execute 'SELECT * FROM databasetest.crossdatatimestamp where col_1 = '2016-12-15 15:12:32.459957''

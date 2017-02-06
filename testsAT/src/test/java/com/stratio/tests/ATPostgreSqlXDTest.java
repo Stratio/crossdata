@@ -32,9 +32,17 @@ import java.util.List;
 
 //Indicar feature
 @CucumberOptions(features = {
-        "src/test/resources/features/PostgreSQL/PostgreSqlSelectAndOrFilter.feature"
-//        "src/test/resources/features/PostgreSQL/PostgreSqlSelectSimple.feature" //DONE
-//        "src/test/resources/features/PostgreSQL/PostgreSqlSelectEqualsFilter.feature" // DONE
+        "src/test/resources/features/PostgreSQL/PostgresqlNotBetweenFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlBetweenFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlLimit.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlInFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlLessFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlLessEqualFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlGreaterFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlGreaterEqualsFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlSelectAndOrFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlSelectSimple.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlSelectEqualsFilter.feature"
 })
 public class ATPostgreSqlXDTest extends BaseTest {
 
