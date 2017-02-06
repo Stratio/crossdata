@@ -58,7 +58,9 @@ object ElasticSearchRowConverter {
       // TODO: Note that if a nested subdocument is targeted, it won't work and this algorithm should be made recursive.
       (hitFields.get(name) orElse subDocuments.get(name)).flatMap(Option(_)) map {
         ((value: Any) => enforceCorrectType(value, schemaMap(name))) compose {
-          case hitField: SearchHitField => hitField.getValue
+          case hitField: SearchHitField =>
+            if(hitField.getValues.size()>1) hitField.getValues
+            else hitField.getValue
           case other => other
         }
       } orNull
@@ -85,6 +87,7 @@ object ElasticSearchRowConverter {
         case DateType => toDate(value)
         case BinaryType => toBinary(value)
         case schema: StructType => toRow(value, schema)
+        case ArrayType(elementType: DataType, _) => toArray(value, elementType)
         case _ =>
           sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
           value
@@ -172,6 +175,11 @@ object ElasticSearchRowConverter {
       val rowValues = schema.fields map (field => enforceCorrectType(m.get(field.name), field.dataType))
       new GenericRowWithSchema(rowValues, schema)
     case _ => sys.error(s"Unsupported datatype conversion [${value.getClass}},Row")
+  }
+
+  def toArray(value: Any, elementType: DataType): Seq[Any] = value match {
+    case arr: util.ArrayList[Any] =>
+      arr.toArray.map(enforceCorrectType(_, elementType))
   }
 
 }
