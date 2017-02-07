@@ -30,6 +30,8 @@ import scala.collection.mutable.BufferLike
 import scala.collection.{GenTraversableOnce, immutable, mutable}
 import scala.reflect.ClassTag
 
+object XDDatasetFunctions extends XDDatasetFunctions
+
 trait XDDatasetFunctions {
 
   implicit def dataset2xddataset[T : ClassTag](ds: Dataset[T]): XDDataset[T] = new XDDataset[T](ds)

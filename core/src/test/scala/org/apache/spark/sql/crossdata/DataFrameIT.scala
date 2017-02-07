@@ -16,10 +16,11 @@
 package org.apache.spark.sql.crossdata
 
 import com.stratio.crossdata.connector.NativeScan
+
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.Literal
-import org.apache.spark.sql.{Dataset, Row, SparkSession}
+import org.apache.spark.sql.{Dataset, Row}
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.crossdata.test.SharedXDSession
 import org.apache.spark.sql.execution.datasources.LogicalRelation
@@ -28,14 +29,15 @@ import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.Inside
 import org.scalatest.junit.JUnitRunner
+import org.apache.spark.sql.crossdata.XDDatasetFunctions._
 
 @RunWith(classOf[JUnitRunner])
-class DataFrameIT extends SharedXDSession with Inside with XDDatasetFunctions{
+class DataFrameIT extends SharedXDSession with Inside {
 
   lazy val sparkRows: Array[Row] = spark.createDataFrame(spark.sparkContext.parallelize(Seq(Row(1))), StructType(Array(StructField("id", IntegerType)))).collect()
   lazy val nativeRows = Array(InternalRow(2))
 
-  /* SPARK
+   /* SPARK
   val sparkSession = SparkSession.builder().appName("mySession").enableHiveSupport().getOrCreate()
   sparkSession.newSession()
   */
@@ -102,6 +104,31 @@ class DataFrameIT extends SharedXDSession with Inside with XDDatasetFunctions{
     /* TODO test    result should have length 1
     result(0)(0) should equal(nativeRows(0).getInt(0))*/
   }
+
+
+  "A DataSet from a class that implicitly is XDDataset " should "be fail natively" in {
+
+    val person=new Person("Paco",7)
+    val personDS=Seq(person)
+    val sparkFake = spark
+    import sparkFake.implicits._
+    val myDs=spark.createDataset(personDS)
+
+    a[RuntimeException] should be thrownBy myDs.collect(ExecutionType.Native)
+
+  }
+
+  //TODO When Postgres or Cassandra datasource be available uncomment this test
+//  "A XDDataSet from a cassandra/postgres " should "be execute natively" in {
+//    val cassandraDs = spark.read.format("cassandra").load()
+//    val sparkFake = spark
+//    import sparkFake.implicits._
+//    val result = cassandraDs.as[Person].collect(ExecutionType.Native)
+//
+//    result should have length 1
+//    result(0).age should be (7)
+//  }
+
 
 
 
