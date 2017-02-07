@@ -18,8 +18,8 @@
 -->
 <aspectj>
 	<aspects>
-		<aspect name="com.stratio.cucumber.aspects.ReplacementAspect" />
-        <aspect name="com.stratio.cucumber.aspects.AssertJAspect" />
+		<aspect name="com.stratio.qa.aspects.ReplacementAspect" />
+        <aspect name="com.stratio.qa.aspects.AssertJAspect" />
 	</aspects>
     <weaver
             options="-Xlint:ignore -Xset:weaveJavaPackages=true,weaveJavaxPackages=true">
