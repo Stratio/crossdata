@@ -20,7 +20,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.stratio.qa.cucumber.testng.CucumberRunner;
-import com.stratio.tests.utils.BaseTest;
+import com.stratio.qa.utils.BaseTest;
 import com.stratio.qa.utils.ThreadProperty;
 
 import cucumber.api.CucumberOptions;

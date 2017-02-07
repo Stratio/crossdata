@@ -13,29 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.tests.utils;
+package com.stratio.qa.specs;
 
-import com.stratio.crossdata.driver.JavaDriver;
+/**
+ * Created by hdominguez on 13/10/15.
+ */
+public class BaseSpec{
 
-public class XDContextUtil {
+    protected Common commonspec;
 
-    private static XDContextUtil instance = new XDContextUtil();
-    private final XDContextUtils cUtils = new XDContextUtils();
-    private final XDJavaDriver xdDriver = new XDJavaDriver();
-
-    private XDContextUtil() {
+    public Common getCommonSpec() {
+        return this.commonspec;
     }
-
-    public static XDContextUtil getInstance() {
-        return instance;
-    }
-
-    public XDContextUtils getXdContext() {
-        return cUtils;
-    }
-
-    public XDJavaDriver getXdDriver() {
-        return xdDriver;
-    }
-
 }

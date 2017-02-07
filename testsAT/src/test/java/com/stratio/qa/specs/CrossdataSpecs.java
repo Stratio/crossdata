@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.testsAT.specs;
+package com.stratio.qa.specs;
 
 
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import static com.stratio.tests.utils.DataFrameAssert.asserThat;
-import static com.stratio.tests.utils.SQLResultAssert.asserThat;
-import static com.stratio.tests.utils.FlattenerMetadataAssert.asserThat;
+import static com.stratio.qa.utils.DataFrameAssert.asserThat;
+import static com.stratio.qa.utils.SQLResultAssert.asserThat;
+import static com.stratio.qa.utils.FlattenerMetadataAssert.asserThat;
 import static org.hamcrest.Matchers.equalTo;
 import com.stratio.qa.exceptions.DBException;
 import com.stratio.qa.utils.ThreadProperty;

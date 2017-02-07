@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 
 import com.stratio.qa.cucumber.testng.CucumberRunner;
 import com.stratio.qa.exceptions.DBException;
-import com.stratio.tests.utils.BaseTest;
+import com.stratio.qa.utils.BaseTest;
 import com.stratio.qa.utils.CassandraUtils;
 import com.stratio.qa.utils.ThreadProperty;
 

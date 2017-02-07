@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.tests.utils;
+package com.stratio.qa.utils;
 
-import com.stratio.qa.utils.ThreadProperty;
 import gherkin.formatter.model.Background;
 import gherkin.formatter.model.Examples;
 import gherkin.formatter.model.Feature;
@@ -32,8 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import com.stratio.qa.cucumber.testng.ICucumberFormatter;
 import com.stratio.qa.cucumber.testng.ICucumberReporter;
-import com.stratio.crossdata.testsAT.specs.BaseSpec;
-import com.stratio.crossdata.testsAT.specs.Common;
+import com.stratio.qa.specs.BaseSpec;
+import com.stratio.qa.specs.Common;
 
 
 public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumberFormatter {

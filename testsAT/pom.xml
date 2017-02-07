@@ -84,7 +84,7 @@
                         </property>
                         <property>
                             <name>listener</name>
-                            <value>com.stratio.tests.utils.JaCoCoClient</value>
+                            <value>com.stratio.qa.utils.JaCoCoClient</value>
                         </property>
                     </properties>
                     <argLine>-Xmx2048m -javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/1.8.8/aspectjweaver-1.8.8.jar

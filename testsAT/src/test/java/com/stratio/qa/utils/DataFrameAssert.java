@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.tests.utils;
+package com.stratio.qa.utils;
 
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 import org.apache.spark.sql.crossdata.ExecutionType;
 import org.apache.spark.sql.crossdata.XDDataFrame;
@@ -30,10 +28,6 @@ import org.assertj.core.api.AbstractAssert;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.Row;
 import scala.collection.JavaConverters;
-import scala.collection.mutable.WrappedArray;
-import scala.reflect.ClassTag;
-
-import static net.sourceforge.htmlunit.corejs.javascript.TopLevel.Builtins.Function;
 
 /**
  * Created by hdominguez on 19/10/15.
