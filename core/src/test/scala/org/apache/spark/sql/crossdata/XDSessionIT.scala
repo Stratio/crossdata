@@ -60,7 +60,7 @@ class XDSessionIT extends SharedXDSession with ScalaFutures {
     val sessionsFuture: Future[Seq[XDSession]] = Future.sequence {
       (1 to 10) map { _ =>
         Future {
-          XDSession.builder.master("local[1]").newUserSession("pablo")
+          XDSession.builder.master("local[1]").create("pablo")
         }
       }
     }

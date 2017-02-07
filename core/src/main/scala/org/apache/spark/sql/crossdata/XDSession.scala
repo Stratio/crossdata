@@ -231,6 +231,9 @@ object XDSession {
 
     override def master(master: String): Builder = config("spark.master", master)
 
+    override def enableHiveSupport(): Builder =
+      throw new RuntimeException("Crossdata is not compatible with Hive")
+
     override private[spark] def sparkContext(sparkContext: SparkContext): Builder = synchronized {
       userSuppliedContext = Option(sparkContext)
       this
@@ -245,7 +248,12 @@ object XDSession {
       * Builds a new session for a given user id.
       *
       */
-    def newUserSession(userId: String): XDSession = {
+    def create(userId: String): XDSession = synchronized {
+      /*
+       * TODO: Analyse the security risks derived from having the user
+       * in the config and move its value to a XDSession attribute if
+       * those risks are of real importance.
+       */
       config("crossdata.security.user", userId)
 
       // Extreacted from [[SparkSession]]'s getOrCreate:
@@ -270,10 +278,7 @@ object XDSession {
       val session = new XDSession(sparkContext)
       options.foreach { case (k, v) => session.sessionState.conf.setConfString(k, v) }
 
-      //TODO: Register listener?
-
       session
-
     }
 
   }
@@ -284,10 +289,7 @@ object XDSession {
     * @since 2.0.0
     */
   def builder(): Builder = new Builder
-
-  /** A global SQL listener used for the SQL UI. */
-  private[sql] val sqlListener = new AtomicReference[SQLListener]()
-
+  
   ////////////////////////////////////////////////////////////////////////////////////////
   // Private methods from now on
   ////////////////////////////////////////////////////////////////////////////////////////
