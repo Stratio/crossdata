@@ -15,6 +15,7 @@
  */
 package com.stratio.tests.utils;
 
+import com.stratio.qa.utils.ThreadProperty;
 import gherkin.formatter.model.Background;
 import gherkin.formatter.model.Examples;
 import gherkin.formatter.model.Feature;
@@ -29,11 +30,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.stratio.cucumber.testng.ICucumberFormatter;
-import com.stratio.cucumber.testng.ICucumberReporter;
+import com.stratio.qa.cucumber.testng.ICucumberFormatter;
+import com.stratio.qa.cucumber.testng.ICucumberReporter;
 import com.stratio.crossdata.testsAT.specs.BaseSpec;
 import com.stratio.crossdata.testsAT.specs.Common;
-import com.stratio.tests.*;
+
 
 public class CukesHooks extends BaseSpec implements ICucumberReporter, ICucumberFormatter {
 

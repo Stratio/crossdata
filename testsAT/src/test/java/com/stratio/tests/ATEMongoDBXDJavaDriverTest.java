@@ -31,9 +31,9 @@ import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
-import com.stratio.cucumber.testng.CucumberRunner;
+import com.stratio.qa.cucumber.testng.CucumberRunner;
 import com.stratio.tests.utils.BaseTest;
-import com.stratio.tests.utils.ThreadProperty;
+import com.stratio.qa.utils.ThreadProperty;
 
 import cucumber.api.CucumberOptions;
 

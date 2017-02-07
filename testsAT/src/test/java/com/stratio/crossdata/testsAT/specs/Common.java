@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.testsAT.specs;
 
-import com.stratio.specs.CommonG;
+import com.stratio.qa.specs.CommonG;
 import com.stratio.tests.utils.XDContextUtil;
 import com.stratio.tests.utils.XDContextUtils;
 import com.stratio.tests.utils.XDJavaDriver;

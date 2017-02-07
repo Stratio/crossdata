@@ -15,7 +15,7 @@
  */
 package com.stratio.crossdata.testsAT.specs;
 
-import com.stratio.specs.BaseGSpec;
+import com.stratio.qa.specs.BaseGSpec;
 
 /**
  * Created by hdominguez on 13/10/15.

@@ -15,31 +15,15 @@
  */
 package com.stratio.tests.utils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.UUID;
 
-import com.stratio.crossdata.common.SQLCommand;
 import com.stratio.crossdata.common.result.SQLResult;
 import com.stratio.crossdata.driver.JavaDriver;
 import com.stratio.crossdata.driver.config.DriverConf;
 import com.stratio.crossdata.driver.metadata.FieldMetadata;
 import com.stratio.crossdata.driver.metadata.JavaTableName;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigList;
-import com.typesafe.config.ConfigMergeable;
-import com.typesafe.config.ConfigOrigin;
-import com.typesafe.config.ConfigRenderOptions;
-import com.typesafe.config.ConfigValue;
-import com.typesafe.config.ConfigValueFactory;
-import com.typesafe.config.ConfigValueType;
+
 
 public class XDJavaDriver {
 

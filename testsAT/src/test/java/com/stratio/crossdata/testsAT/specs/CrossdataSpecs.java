@@ -24,8 +24,8 @@ import static com.stratio.tests.utils.DataFrameAssert.asserThat;
 import static com.stratio.tests.utils.SQLResultAssert.asserThat;
 import static com.stratio.tests.utils.FlattenerMetadataAssert.asserThat;
 import static org.hamcrest.Matchers.equalTo;
-import com.stratio.exceptions.DBException;
-import com.stratio.tests.utils.ThreadProperty;
+import com.stratio.qa.exceptions.DBException;
+import com.stratio.qa.utils.ThreadProperty;
 
 /**
  * Created by hdominguez on 13/10/15.

@@ -44,10 +44,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import com.mongodb.BasicDBObjectBuilder;
-import com.stratio.cucumber.testng.CucumberRunner;
+import com.stratio.qa.cucumber.testng.CucumberRunner;
 import com.stratio.tests.utils.BaseTest;
-import com.stratio.tests.utils.CassandraUtils;
-import com.stratio.tests.utils.ThreadProperty;
+import com.stratio.qa.utils.CassandraUtils;
+import com.stratio.qa.utils.ThreadProperty;
 import java.text.ParseException;
 import cucumber.api.CucumberOptions;
 
