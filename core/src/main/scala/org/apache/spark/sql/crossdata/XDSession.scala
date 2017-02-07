@@ -2,6 +2,7 @@ package org.apache.spark.sql.crossdata
 
 import com.stratio.common.utils.components.logger.impl.Slf4jLoggerComponent
 import java.beans.Introspector
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import scala.collection.JavaConverters._
@@ -37,6 +38,15 @@ class XDSession private(
                          @transient private val existingSharedState: Option[XDSharedState])
   extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent { self =>
 
+
+  import XDSession.SessionId
+
+  /**
+    * Unique session id
+    */
+  val id: SessionId = UUID.randomUUID() /* Note that `randomUUID` is thread safe:
+                                         * http://bugs.java.com/view_bug.do?bug_id=6611830
+                                         */
 
   private[sql] def this(sc: SparkContext) {
     this(sc, None)
@@ -194,6 +204,8 @@ object XDSession {
 
   import SparkSession.{Builder => SparkSessionBuilder}
 
+  type SessionId = UUID
+
   /**
     * Builder for [[XDSession]].
     */
@@ -216,73 +228,53 @@ object XDSession {
       this
     }
 
+
+    override def master(master: String): Builder = config("spark.master", master)
+
     override private[spark] def sparkContext(sparkContext: SparkContext): Builder = synchronized {
       userSuppliedContext = Option(sparkContext)
       this
     }
 
-    /**
-      * Gets an existing [[SparkSession]] or, if there is no existing one, creates a new
-      * one based on the options set in this builder.
-      *
-      * This method first checks whether there is a valid thread-local SparkSession,
-      * and if yes, return that one. It then checks whether there is a valid global
-      * default SparkSession, and if yes, return that one. If no valid global default
-      * SparkSession exists, the method creates a new SparkSession and assigns the
-      * newly created SparkSession as the global default.
-      *
-      * In case an existing SparkSession is returned, the config options specified in
-      * this builder will be applied to the existing SparkSession.
-      *
-      * @since 2.0.0
-      */
-    override def getOrCreate(): SparkSession = synchronized { // TODO session => one foreach user
-
-      var session: SparkSession = null
-
-      // Global synchronization so we will only set the default session once.
-      SparkSession.synchronized {
-
-        // Create a new one.
-        val sparkContext = userSuppliedContext.getOrElse {
-          // set app name if not given
-          val randomAppName = java.util.UUID.randomUUID().toString
-          val sparkConf = new SparkConf()
-          options.foreach { case (k, v) => sparkConf.set(k, v) }
-          if (!sparkConf.contains("spark.app.name")) {
-            sparkConf.setAppName(randomAppName)
-          }
-          val sc = SparkContext.getOrCreate(sparkConf)
-          // maybe this is an existing SparkContext, update its SparkConf which maybe used
-          // by SparkSession
-          options.foreach { case (k, v) => sc.conf.set(k, v) }
-          if (!sc.conf.contains("spark.app.name")) {
-            sc.conf.setAppName(randomAppName)
-          }
-          sc
-        }
-
-        session = new SparkSession(sparkContext)
-        options.foreach { case (k, v) => session.conf.set(k, v) }
-
-        // Register a successfully instantiated context to the singleton. This should be at the
-        // end of the class definition so that the singleton is updated only if there is no
-        // exception in the construction of the instance.
-        sparkContext.addSparkListener(new SparkListener {
-          override def onApplicationEnd(applicationEnd: SparkListenerApplicationEnd): Unit = {
-            sqlListener.set(null)
-          }
-        })
-      }
-
-      return session
+    override def getOrCreate(): SparkSession = {
+      log.warn("Avoid calling `XDSession#getOrCreate` when using Crossdata as a library")
+      super.getOrCreate()
     }
 
     /**
-      * Sets session user.
+      * Builds a new session for a given user id.
       *
       */
-    def user(userId: String): Builder = config("crossdata.security.user", userId) //TODO: Prop key in object?
+    def newUserSession(userId: String): XDSession = {
+      config("crossdata.security.user", userId)
+
+      // Extreacted from [[SparkSession]]'s getOrCreate:
+      // No active nor global default session. Create a new one.
+      val sparkContext = userSuppliedContext.getOrElse {
+        // set app name if not given
+        val randomAppName = java.util.UUID.randomUUID().toString
+        val sparkConf = new SparkConf()
+        options.foreach { case (k, v) => sparkConf.set(k, v) }
+        if (!sparkConf.contains("spark.app.name")) {
+          sparkConf.setAppName(randomAppName)
+        }
+        val sc = SparkContext.getOrCreate(sparkConf)
+        // maybe this is an existing SparkContext, update its SparkConf which maybe used
+        // by SparkSession
+        options.foreach { case (k, v) => sc.conf.set(k, v) }
+        if (!sc.conf.contains("spark.app.name")) {
+          sc.conf.setAppName(randomAppName)
+        }
+        sc
+      }
+      val session = new XDSession(sparkContext)
+      options.foreach { case (k, v) => session.sessionState.conf.setConfString(k, v) }
+
+      //TODO: Register listener?
+
+      session
+
+    }
 
   }
 

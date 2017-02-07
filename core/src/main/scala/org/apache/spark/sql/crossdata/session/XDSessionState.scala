@@ -61,56 +61,8 @@ class XDSessionState(
 
   // TODO override def refreshTable(tableName: String): Unit = super.refreshTable(tableName)
   // TODO override def analyze(tableName: String): Unit = super.analyze(tableName)
-   /**
-    * Logical query plan analyzer for resolving unresolved attributes and relations.
-    */
-  override lazy val analyzer: Analyzer = {
-    new Analyzer(catalog, conf) {
 
-      override lazy val batches: Seq[Batch] = Seq(
-        Batch("Substitution", fixedPoint,
-          CTESubstitution,
-          WindowsSubstitution,
-          EliminateUnions,
-          new SubstituteUnresolvedOrdinals(conf)),
-        Batch("Resolution", fixedPoint,
-          ResolveTableValuedFunctions ::
-            ResolveRelations ::
-            ResolveReferences ::
-            ResolveCreateNamedStruct ::
-            ResolveDeserializer ::
-            ResolveNewInstance ::
-            ResolveUpCast ::
-            ResolveGroupingAnalytics ::
-            ResolvePivot ::
-            ResolveOrdinalInOrderByAndGroupBy ::
-            ResolveMissingReferences ::
-            ExtractGenerator ::
-            ResolveGenerate ::
-            ResolveFunctions ::
-            ResolveAliases ::
-            ResolveSubquery ::
-            ResolveWindowOrder ::
-            ResolveWindowFrame ::
-            ResolveNaturalAndUsingJoin ::
-            ExtractWindowExpressions ::
-            GlobalAggregates ::
-            ResolveAggregateFunctions ::
-            TimeWindowing ::
-            ResolveInlineTables ::
-            TypeCoercion.typeCoercionRules ++
-              extendedResolutionRules : _*),
-        Batch("Nondeterministic", Once,
-          PullOutNondeterministic),
-        Batch("UDF", Once,
-          HandleNullInputsForUDF),
-        Batch("FixNullability", Once,
-          FixNullability),
-        Batch("Cleanup", fixedPoint,
-          CleanupAliases)
-      )
-
-      /* TODO old rules => override lazy val batches: Seq[Batch] = Seq(
+      /* TODO (ANALYZER) old rules => override lazy val batches: Seq[Batch] = Seq(
         Batch("Substitution", fixedPoint,
           CTESubstitution,
           WindowsSubstitution),
@@ -141,15 +93,7 @@ class XDSessionState(
           CleanupAliases)
       )*/
 
-      override val extendedResolutionRules =
-        AnalyzeCreateTable(sparkSession) ::
-          PreprocessTableInsertion(conf) ::
-          new FindDataSourceTable(sparkSession) ::
-          DataSourceAnalysis(conf) ::
-          (if (conf.runSQLonFile) new ResolveDataSource(sparkSession) :: Nil else Nil)
-        }
-      }
-      /* TODO old rules => override val extendedResolutionRules =
+      /* TODO (ANALYZER) old rules => override val extendedResolutionRules =
         ResolveAggregateAlias ::
           ResolveReferencesXD(conf) ::
           ExtractPythonUDFs ::
