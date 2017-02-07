@@ -2,15 +2,16 @@
 
 DOCKER_HOST="hostname -f"
 if [[ "$(hostname -f)" =~ \. ]]; then
-  DOCKER_HOST="$(hostname -f)"
+  export DOCKER_HOST="$(hostname -f)"
 else
-  DOCKER_HOST="$(hostname -i)"
+  export DOCKER_HOST="$(hostname -i)"
 fi
 
 ####################################################
 ## XD Catalog
 ####################################################
-source catalog-config.sh $XD_CATALOG $XD_CATALOG_PREFIX
+CROSSDATA_CATALOG=${XD_CATALOG:-Derby}
+source catalog-config.sh $CROSSDATA_CATALOG $XD_CATALOG_PREFIX
 
 
 ####################################################
@@ -23,7 +24,7 @@ source catalog-config.sh $XD_CATALOG $XD_CATALOG_PREFIX
 ####################################################
 ## Crossdata Config
 ####################################################
-source crossdata-config.sh
+source crossdata-config.sh $1
 case "$SERVER_MODE" in
  "shell") # This mode will launch a crossdata shell instead of a crossdata server
     if [ "$SHELL_SERVERADDR" -a "$SHELL_SERVERPORT" ]; then

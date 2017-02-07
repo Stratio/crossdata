@@ -78,8 +78,8 @@ abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XD
       throw new UnsupportedOperationException(msg)
     } else {
       logInfo(s"Persisting view ${viewIdentifier.unquotedString}")
-      viewCache.put(viewIdentifier, plan)
       persistViewMetadata(viewIdentifier, sqlText)
+      viewCache.put(viewIdentifier, plan)
     }
   }
 
@@ -91,8 +91,8 @@ abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XD
       throw new UnsupportedOperationException(s"The table $tableIdentifier already exists")
     } else {
       logInfo(s"Persisting table ${crossdataTable.tableIdentifier.table}")
-      tableCache.put(tableIdentifier, table)
       persistTableMetadata(crossdataTable.copy(schema = Option(table.schema)))
+      tableCache.put(tableIdentifier, table)
     }
   }
 
@@ -105,8 +105,8 @@ abstract class PersistentCatalogWithCache(catalystConf: CatalystConf) extends XD
       throw new UnsupportedOperationException(s"The index $indexIdentifier already exists")
     } else {
       logInfo(s"Persisting index ${crossdataIndex.indexIdentifier}")
-      indexCache.put(crossdataIndex.tableIdentifier, crossdataIndex)
       persistIndexMetadata(crossdataIndex)
+      indexCache.put(crossdataIndex.tableIdentifier, crossdataIndex)
     }
 
   }
