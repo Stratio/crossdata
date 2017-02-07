@@ -24,16 +24,18 @@ import org.apache.spark.sql.catalyst.analysis.{UnresolvedAlias, UnresolvedRelati
 import org.apache.spark.sql.catalyst.plans.Inner
 import org.apache.spark.sql.catalyst.plans.logical.{Join, Project}
 import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
-import org.apache.spark.sql.crossdata.test.SharedXDSession
+import org.apache.spark.sql.crossdata.test.{SharedXDSession, TestXDSession}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SaveMode}
 import org.junit.runner.RunWith
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.junit.JUnitRunner
 
+import scala.concurrent.duration._
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
-class XDSessionIT extends SharedXDSession {
+class XDSessionIT extends SharedXDSession with ScalaFutures {
 
   /*"A DefaultCatalog" should "be case sensitive" in {
     val xdCatalog = xdContext.catalog
@@ -49,16 +51,26 @@ class XDSessionIT extends SharedXDSession {
 
     result should have length 5
   }
-/*
-  it must "return a XDDataFrame when executing a SQL query" in {
 
-    val df: DataFrame = xdContext.createDataFrame(xdContext.sparkContext.parallelize((1 to 5).map(i => Row(s"val_$i"))), StructType(Array(StructField("id", StringType))))
-    df.registerTempTable("records")
+  it should "generate unique sessions id's" in {
 
-    val dataframe = xdContext.sql("SELECT * FROM records")
-    dataframe shouldBe a[XDDataFrame]
+    import scala.concurrent.Future
+    import scala.concurrent.ExecutionContext.Implicits.global
+    
+    val sessionsFuture: Future[Seq[XDSession]] = Future.sequence {
+      (1 to 10) map { _ =>
+        Future {
+          XDSession.builder.master("local[1]").create("pablo")
+        }
+      }
+    }
+
+    whenReady(sessionsFuture) { sessions: Seq[XDSession] =>
+      sessions.map(_.id).toSet should have size 10
+    } (PatienceConfig(timeout = 2 seconds))
+
   }
-*/
+
 /*
   it must "plan a PersistDataSource when creating a table " in {
     val dataframe = xdContext.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/core-reference.conf").toURI()).toString}')")

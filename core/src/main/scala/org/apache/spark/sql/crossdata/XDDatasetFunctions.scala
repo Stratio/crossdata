@@ -30,7 +30,6 @@ import scala.collection.mutable.BufferLike
 import scala.collection.{GenTraversableOnce, immutable, mutable}
 import scala.reflect.ClassTag
 
-
 trait XDDatasetFunctions {
 
   implicit def dataset2xddataset[T : ClassTag](ds: Dataset[T]): XDDataset[T] = new XDDataset[T](ds)
@@ -104,8 +103,6 @@ trait XDDatasetFunctions {
   class XDDataFrame(dataset: Dataset[Row]) {
 
     def flattenedCollect(): Array[Row] = {
-
-      val a = dataset
 
       def flattenProjectedColumns(exp: Expression, prev: List[String] = Nil): (List[String], Boolean) = exp match {
         case GetStructField(child, _, Some(fieldName))  =>
