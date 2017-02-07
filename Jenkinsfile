@@ -102,6 +102,7 @@ hose {
     ]
 
     ATPARAMETERS = """
+	|    -Duser.timezone=Europe/Madrid
         |    -DPOSTGRESQL_HOSTNAME=%%POSTGRESQL
         |    -DCROSSDATA_HOST=%%CROSSDATA:13420
         |    -DCASSANDRA_HOST=%%CASSANDRA
