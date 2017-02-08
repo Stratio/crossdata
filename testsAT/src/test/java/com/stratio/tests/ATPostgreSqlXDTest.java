@@ -29,6 +29,7 @@ import java.sql.DriverManager;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.TimeZone;
 
 //Indicar feature
 @CucumberOptions(features = {
@@ -55,11 +56,15 @@ public class ATPostgreSqlXDTest extends BaseTest {
     private String postgreSQL_password = System.getProperty("POSTGRESQL_PASSWORD", "hakama");
     CassandraUtils functions = new CassandraUtils();
 
-	public ATPostgreSqlXDTest() {
+
+    public ATPostgreSqlXDTest() {
 	}
 
 	@BeforeClass(groups = {"postgreSQL"})
 	public void setUp() {
+        logger.info("\n\n\n\n\n Default timezone: " + TimeZone.getDefault().toString());
+//        System.setProperty("user.timezone", "Europe/Madrid");
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Madrid")); //works
         String connector = "postgreSQL";
         ThreadProperty.set("Connector", connector);
         ThreadProperty.set("Driver", "context");
