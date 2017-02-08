@@ -118,11 +118,6 @@ hose {
     DEV = { config ->
         doCompile(conf: config, crossbuild: 'scala-2.11')
 
-        parallel(UT: {
-            doUT(conf: config, crossbuild: 'scala-2.11')
-        }, IT: {
-            doIT(conf: config, crossbuild: 'scala-2.11')
-        }, failFast: config.FAILFAST)
 
         doPackage(conf: config, crossbuild: 'scala-2.11')
 
