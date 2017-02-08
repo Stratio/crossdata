@@ -55,7 +55,7 @@ hose {
             'env': ['ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181']]],
         ['POSTGRESQL':[
                     'image': 'postgresql:9.3',
-                    'sleep': 30,
+                    'sleep': 90,
                     'healthcheck': 5432]]
     ]
 
@@ -115,8 +115,25 @@ hose {
 
     DEV = { config ->
         doCompile(conf: config, crossbuild: 'scala-2.11')
+
+        parallel(UT: {
+            doUT(conf: config, crossbuild: 'scala-2.11')
+        }, IT: {
+            doIT(conf: config, crossbuild: 'scala-2.11')
+        }, failFast: config.FAILFAST)
+
         doPackage(conf: config, crossbuild: 'scala-2.11')
-        doDocker(conf: config, crossbuild: 'scala-2.11')
+
+        parallel(DOC: {
+           doDoc(conf: config, crossbuild: 'scala-2.11')
+         },QC: {
+            doStaticAnalysis(conf: config, crossbuild: 'scala-2.11')
+        }, DEPLOY: {
+            doDeploy(conf: config, crossbuild: 'scala-2.11')
+        }, DOCKER: {
+            doDocker(conf: config, crossbuild: 'scala-2.11')
+        }, failFast: config.FAILFAST)
+
         doAT(conf: config, groups: ['micro-cassandra', 'postgreSQL'])
      }
 }
