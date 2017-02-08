@@ -97,7 +97,7 @@ hose {
             'env':['CROSSDATA_JAVA_OPTS="-Xmx2048m -Xms2048m -D>-Duser.timezone=Europe/Madrid"']]],
         ['POSTGRESQL':[
                   'image': 'postgresql:9.3',
-                  'sleep': 30,
+                  'sleep': 90,
                   'healthcheck': 5432]]
     ]
 
@@ -116,20 +116,8 @@ hose {
 
     DEV = { config ->
         doCompile(conf: config, crossbuild: 'scala-2.11')
-
-
         doPackage(conf: config, crossbuild: 'scala-2.11')
-
-        parallel(DOC: {
-           doDoc(conf: config, crossbuild: 'scala-2.11')
-         },QC: {
-            doStaticAnalysis(conf: config, crossbuild: 'scala-2.11')
-        }, DEPLOY: {
-            doDeploy(conf: config, crossbuild: 'scala-2.11')
-        }, DOCKER: {
-            doDocker(conf: config, crossbuild: 'scala-2.11')
-        }, failFast: config.FAILFAST)
-
+        doDocker(conf: config, crossbuild: 'scala-2.11')
         doAT(conf: config, groups: ['micro-cassandra', 'postgreSQL'])
      }
 }

@@ -62,9 +62,9 @@ public class ATPostgreSqlXDTest extends BaseTest {
 
 	@BeforeClass(groups = {"postgreSQL"})
 	public void setUp() {
-        logger.info("\n\n\n\n\n Default timezone: " + TimeZone.getDefault().toString());
-//        System.setProperty("user.timezone", "Europe/Madrid");
+        logger.info("Default timezone: " + TimeZone.getDefault().toString());
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Madrid")); //works
+        logger.info("Default timezone before set: " + TimeZone.getDefault().toString());
         String connector = "postgreSQL";
         ThreadProperty.set("Connector", connector);
         ThreadProperty.set("Driver", "context");
