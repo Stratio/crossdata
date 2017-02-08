@@ -73,6 +73,16 @@ public class ATPostgreSqlXDTest extends BaseTest {
             return;
         }
         logger.info("PostgreSQL JDBC Driver Registered!");
+
+        String postgresqlParams = "Postgresql parameters: " +
+                "\nPostgresql hostname: " +  postgreSQL_hostname +
+                "\nPostgresql Port: " + postgreSQL_port +
+                "\nPostgresql database: " + postgreSQL_database +
+                "\nPostgresql user: " +  postgreSQL_user +
+                "\nPostgresql password: " + postgreSQL_password;
+
+        logger.info(postgresqlParams);
+
         Connection connection = null;
         try {
             connection = DriverManager.getConnection(
