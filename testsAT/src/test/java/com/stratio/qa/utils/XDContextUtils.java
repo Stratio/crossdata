@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.tests.utils;
+package com.stratio.qa.utils;
 
 import java.util.HashMap;
 
@@ -93,7 +93,7 @@ public class XDContextUtils {
         }
 
         public void showDataframe(){
-            df.show();
+            df.show(false);
         }
 
         public void clearXDF(){

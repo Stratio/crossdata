@@ -67,5 +67,5 @@ Feature: MongoSelectEqualsFilter
     When I execute 'SELECT ident, names[0] as nombre FROM tablearray WHERE names[0]  = 'names_00''
     Then The result has to have '1' rows:
       | ident-integer | nombre-string   |
-      |    0          | names_00     |
+      |    0          | names_00        |
 

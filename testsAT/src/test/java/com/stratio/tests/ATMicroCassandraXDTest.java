@@ -15,11 +15,11 @@
  */
 package com.stratio.tests;
 
-import com.stratio.cucumber.testng.CucumberRunner;
-import com.stratio.exceptions.DBException;
-import com.stratio.tests.utils.BaseTest;
-import com.stratio.tests.utils.CassandraUtils;
-import com.stratio.tests.utils.ThreadProperty;
+import com.stratio.qa.cucumber.testng.CucumberRunner;
+import com.stratio.qa.exceptions.DBException;
+import com.stratio.qa.utils.BaseTest;
+import com.stratio.qa.utils.CassandraUtils;
+import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.CucumberOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

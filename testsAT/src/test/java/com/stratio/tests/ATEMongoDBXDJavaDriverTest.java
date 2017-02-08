@@ -16,9 +16,7 @@
 package com.stratio.tests;
 
 import java.net.UnknownHostException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.TimeZone;
 
 import org.testng.annotations.AfterClass;
@@ -31,9 +29,9 @@ import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
-import com.stratio.cucumber.testng.CucumberRunner;
-import com.stratio.tests.utils.BaseTest;
-import com.stratio.tests.utils.ThreadProperty;
+import com.stratio.qa.cucumber.testng.CucumberRunner;
+import com.stratio.qa.utils.BaseTest;
+import com.stratio.qa.utils.ThreadProperty;
 
 import cucumber.api.CucumberOptions;
 

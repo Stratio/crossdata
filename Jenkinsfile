@@ -55,7 +55,7 @@ hose {
             'env': ['ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181']]],
         ['POSTGRESQL':[
                     'image': 'postgresql:9.3',
-                    'sleep': 30,
+                    'sleep': 60,
                     'healthcheck': 5432]]
     ]
 
@@ -93,12 +93,10 @@ hose {
         ['CROSSDATA':[
             'image': 'stratio/crossdata-scala211:%%VERSION',
             'sleep': 30,
-            'healthcheck': 13422
-            ]],
+            'healthcheck': 13422]],
         ['POSTGRESQL':[
                   'image': 'postgresql:9.3',
-                  'sleep': 30,
-                  'healthcheck': 5432]]
+                  'sleep': 60]]
     ]
 
     ATPARAMETERS = """
@@ -135,7 +133,7 @@ hose {
             doDocker(conf: config, crossbuild: 'scala-2.11')
         }, failFast: config.FAILFAST)
 
-        doAT(conf: config, groups: ['micro-cassandra'])
+        doAT(conf: config, groups: ['micro-cassandra', 'postgreSQL'])
      }
 }
 

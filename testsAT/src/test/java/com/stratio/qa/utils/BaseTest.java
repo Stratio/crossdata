@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.tests.utils;
+package com.stratio.qa.utils;
 
 import java.lang.reflect.Method;
 
+import com.stratio.qa.utils.BaseGTest;
+import com.stratio.qa.utils.ThreadProperty;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -24,8 +26,6 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
-
-import com.stratio.crossdata.testsAT.specs.Common;
 
 abstract public class BaseTest extends BaseGTest {
 
