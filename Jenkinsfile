@@ -55,7 +55,7 @@ hose {
             'env': ['ZOOKEEPER_HOSTS=%%ZOOKEEPER:2181']]],
         ['POSTGRESQL':[
                     'image': 'postgresql:9.3',
-                    'sleep': 90,
+                    'sleep': 60,
                     'healthcheck': 5432]]
     ]
 
@@ -93,11 +93,10 @@ hose {
         ['CROSSDATA':[
             'image': 'stratio/crossdata-scala211:%%VERSION',
             'sleep': 30,
-            'healthcheck': 13422,
-            'env':['CROSSDATA_JAVA_OPTS="-Xmx2048m -Xms2048m']]],
+            'healthcheck': 13422]],
         ['POSTGRESQL':[
                   'image': 'postgresql:9.3',
-                  'sleep': 90]]
+                  'sleep': 60]]
     ]
 
     ATPARAMETERS = """
