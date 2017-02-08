@@ -94,7 +94,7 @@ hose {
             'image': 'stratio/crossdata-scala211:%%VERSION',
             'sleep': 30,
             'healthcheck': 13422,
-            'env':['CROSSDATA_JAVA_OPTS="-Xmx2048m -Xms2048m -Duser.timezone=Europe/Madrid"']]],
+            'env':['CROSSDATA_JAVA_OPTS="-Xmx2048m -Xms2048m']]],
         ['POSTGRESQL':[
                   'image': 'postgresql:9.3',
                   'sleep': 90]]
