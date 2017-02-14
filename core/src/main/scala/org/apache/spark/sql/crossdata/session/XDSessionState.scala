@@ -24,6 +24,7 @@ import org.apache.spark.sql.catalyst.parser.ParserInterface
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDSession
 import org.apache.spark.sql.crossdata.catalyst.ExtractNativeUDFs
+import org.apache.spark.sql.crossdata.catalyst.catalog.XDSessionCatalog
 import org.apache.spark.sql.crossdata.execution.XDQueryExecution
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.execution._
@@ -40,7 +41,6 @@ class XDSessionState(
 
   // TODO override val conf: SQLConf = _
   // TODO override val functionRegistry: FunctionRegistry = _
-  // TODO override val catalog: SessionCatalog = _
   // TODO override val udf: UDFRegistration = _
   // TODO override val analyzer: Analyzer = _
   // TODO override val optimizer: Optimizer = _
@@ -48,6 +48,15 @@ class XDSessionState(
 
   // TODO override def planner: SparkPlanner = super.planner
   // TODO is needed?? def executeSql(sql: String): QueryExecution = executePlan(sqlParser.parsePlan(sql))
+
+  override lazy val catalog: SessionCatalog = new XDSessionCatalog(
+    sparkSession.sharedState.externalCatalog,
+    sparkSession.sharedState.globalTempViewManager,
+    functionResourceLoader,
+    functionRegistry,
+    conf,
+    newHadoopConf()
+  )
 
   override def executePlan(plan: LogicalPlan): QueryExecution = {
     /*val catalogIdentifier: String = Try(xdConfig.getString(CatalogPrefixConfigKey)).recover {
