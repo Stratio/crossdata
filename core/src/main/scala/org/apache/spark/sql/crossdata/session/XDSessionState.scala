@@ -25,6 +25,9 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDSession
 import org.apache.spark.sql.crossdata.catalyst.ExtractNativeUDFs
 import org.apache.spark.sql.crossdata.catalyst.catalog.XDSessionCatalog
+
+import org.apache.spark.sql.crossdata.catalyst.catalog.temporary.implementations.DefaultTemporaryCatalog
+
 import org.apache.spark.sql.crossdata.execution.XDQueryExecution
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.execution._
@@ -50,6 +53,7 @@ class XDSessionState(
   // TODO is needed?? def executeSql(sql: String): QueryExecution = executePlan(sqlParser.parsePlan(sql))
 
   override lazy val catalog: SessionCatalog = new XDSessionCatalog(
+    DefaultTemporaryCatalog, //TODO: Next iterations requiring value propagation will need a distributed temp map.
     sparkSession.sharedState.externalCatalog,
     sparkSession.sharedState.globalTempViewManager,
     functionResourceLoader,
