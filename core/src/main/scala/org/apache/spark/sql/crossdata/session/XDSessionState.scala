@@ -25,7 +25,9 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.crossdata.XDSession
 import org.apache.spark.sql.crossdata.catalyst.ExtractNativeUDFs
 import org.apache.spark.sql.crossdata.catalyst.catalog.XDSessionCatalog
+
 import org.apache.spark.sql.crossdata.catalyst.catalog.temporary.implementations.DefaultTemporaryCatalog
+
 import org.apache.spark.sql.crossdata.execution.XDQueryExecution
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.execution._
