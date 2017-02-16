@@ -16,18 +16,22 @@
 package org.apache.spark.sql.crossdata.session
 
 import com.stratio.crossdata.security.CrossdataSecurityManager
+import com.typesafe.config.Config
+import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.catalyst.catalog.ExternalCatalog
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.internal.SharedState
 
 
 final class XDSharedState(
-                           @transient val sc: SparkContext //,
+                           @transient val sc: SparkContext,
+                           @transient private val userCoreConfig: Option[Config] = None
                            //val sqlConf: SQLConf,
                            //val externalCatalog: XDCatalogCommon,
                            //val streamingCatalog: Option[XDStreamingCatalog],
                            //@transient val securityManager: Option[CrossdataSecurityManager]
-                         ) extends SharedState(sc){
+                         ) extends SharedState(sc) with CoreConfig{
 
   // TODO XDCatalog Spark2.0 => SPIKE fallback? override val externalCatalog: ExternalCatalog = super.externalCatalog
 }

@@ -5,6 +5,8 @@ import java.beans.Introspector
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
+import com.typesafe.config.ConfigFactory
+
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
@@ -21,6 +23,7 @@ import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.encoders._
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
 import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, Range}
+import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.LogicalRelation
@@ -32,11 +35,19 @@ import org.apache.spark.sql.types.{DataType, LongType, StructType}
 import org.apache.spark.sql.util.ExecutionListenerManager
 import org.apache.spark.util.Utils
 
+import scala.util.Try
+
 // TODO add implicits => flattenCollect and collect(ExecutionType)
 class XDSession private(
                          @transient override val sparkContext: SparkContext,
                          @transient private val existingSharedState: Option[XDSharedState])
   extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent { self =>
+
+
+  val xdConfig = userCoreConfig.fold(config) { userConf =>
+    userConf.withFallback(config)
+  }
+  val catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
 
 
   import XDSession.SessionId
