@@ -43,13 +43,6 @@ class XDSession private(
                          @transient private val existingSharedState: Option[XDSharedState])
   extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent { self =>
 
-
-  val xdConfig = userCoreConfig.fold(config) { userConf =>
-    userConf.withFallback(config)
-  }
-  val catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
-
-
   import XDSession.SessionId
 
   /**
