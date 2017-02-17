@@ -20,7 +20,6 @@ import com.typesafe.config.Config
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.catalyst.catalog.ExternalCatalog
-import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.internal.SharedState
 
 
@@ -31,7 +30,7 @@ final class XDSharedState(
                            //val externalCatalog: XDCatalogCommon,
                            //val streamingCatalog: Option[XDStreamingCatalog],
                            //@transient val securityManager: Option[CrossdataSecurityManager]
-                         ) extends SharedState(sc) with CoreConfig{
+                         ) extends SharedState(sc) {
 
   // TODO XDCatalog Spark2.0 => SPIKE fallback? override val externalCatalog: ExternalCatalog = super.externalCatalog
 }

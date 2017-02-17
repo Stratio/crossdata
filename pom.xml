@@ -126,7 +126,7 @@
         <derby.version>10.10.1.1</derby.version>
         <jackson4s.version>3.2.10</jackson4s.version>
         <mockito.version>1.10.19</mockito.version>
-        <common.utils.version>0.8.0</common.utils.version>
+        <common.utils.version>0.8.0-SNAPSHOT</common.utils.version>
         <guava.version>18.0</guava.version>
         <curator.version>3.2.0</curator.version>
         <crossdata-auth-iface.version>0.1.0</crossdata-auth-iface.version>
