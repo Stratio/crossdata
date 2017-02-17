@@ -23,7 +23,6 @@ import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.encoders._
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
 import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, Range}
-import org.apache.spark.sql.crossdata.config.CoreConfig
 import org.apache.spark.sql.crossdata.session.{XDSessionState, XDSharedState}
 import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.LogicalRelation
@@ -42,12 +41,6 @@ class XDSession private(
                          @transient override val sparkContext: SparkContext,
                          @transient private val existingSharedState: Option[XDSharedState])
   extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent { self =>
-
-
-  val xdConfig = userCoreConfig.fold(config) { userConf =>
-    userConf.withFallback(config)
-  }
-  val catalogConfig = Try(xdConfig.getConfig(CoreConfig.CatalogConfigKey)).getOrElse(ConfigFactory.empty())
 
 
   import XDSession.SessionId
