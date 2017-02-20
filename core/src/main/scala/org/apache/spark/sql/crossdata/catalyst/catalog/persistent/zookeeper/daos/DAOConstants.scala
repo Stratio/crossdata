@@ -1,4 +1,4 @@
-package org.apache.spark.sql.crossdata.daos
+package org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos
 
 import java.util.UUID
 

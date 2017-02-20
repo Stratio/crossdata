@@ -1,23 +1,23 @@
-package org.apache.spark.sql.crossdata.catalyst.catalog.persistent
+package org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper
 
-import org.apache.spark.sql.catalyst.catalog.CatalogTypes.TablePartitionSpec
-import org.apache.spark.sql.catalyst.catalog._
-import org.apache.spark.sql.catalyst.expressions.Expression
-import org.apache.spark.sql.crossdata.XDSession
 import com.typesafe.config.Config
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.crossdata.daos.impl.DatabaseTypesafeDAO
+import org.apache.spark.sql.catalyst.catalog.CatalogTypes.TablePartitionSpec
+import org.apache.spark.sql.catalyst.catalog._
+import org.apache.spark.sql.catalyst.expressions.Expression
+import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, TableDAO, ViewDAO}
 
 class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends ExternalCatalog {
 
+
   // TODO we need a Catalog Config
-//  protected[crossdata] lazy val config: Config = XDSharedState.catalogConfig
+  protected[crossdata] lazy val config: Config = ??? //XDSharedState.catalogConfig
 
   //TODO we need to define diferents DAOs to keep catalog information
-//  @transient lazy val DatabaseDAO = new DatabaseTypesafeDAO(config) // TODO Should be a MapDAO??
-//  @transient lazy val tableDAO = new TableTypesafeDAO(config)
-//  @transient lazy val viewDAO = new ViewTypesafeDAO(config)
+  @transient lazy val DatabaseDAO = new DatabaseDAO(config) // TODO Should be a MapDAO??
+  @transient lazy val tableDAO = new TableDAO(config)
+  @transient lazy val viewDAO = new ViewDAO(config)
 
 
   override def createDatabase(dbDefinition: CatalogDatabase, ignoreIfExists: Boolean): Unit = ???
