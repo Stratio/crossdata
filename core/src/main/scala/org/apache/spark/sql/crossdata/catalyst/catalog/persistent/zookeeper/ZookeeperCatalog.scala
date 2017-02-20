@@ -1,25 +1,32 @@
 package org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper
 
+import java.util.Properties
+
 import com.stratio.common.utils.components.dao.GenericDAOComponent
 import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.catalyst.analysis.DatabaseAlreadyExistsException
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.analysis.{DatabaseAlreadyExistsException, NoSuchDatabaseException, NoSuchTableException, TableAlreadyExistsException}
 import org.apache.spark.sql.catalyst.catalog.CatalogTypes.TablePartitionSpec
 import org.apache.spark.sql.catalyst.catalog._
 import org.apache.spark.sql.catalyst.expressions.Expression
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.models.{CatalogEntityModel, DatabaseModel, TableModel}
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, TableDAO}
 
-import scala.util.{Failure, Success, Try}
-import scala.reflect.runtime.universe.TypeTag
+import scala.util.{Failure, Try}
+
 
 class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends ExternalCatalog {
 
 
   // TODO we need a Catalog Config
-  protected[crossdata] lazy val config: Config = ??? //XDSharedState.catalogConfig
+//  protected[crossdata] lazy val config: Config = ??? //XDSharedState.catalogConfig
+
+  val defaultProperties = new Properties()
+  defaultProperties.setProperty("zookeeper.connectionString" , "127.0.0.1:2181")
+  protected[crossdata] lazy val config: Config = ConfigFactory.parseProperties(defaultProperties)
 
   trait DaoContainer[M <: CatalogEntityModel] {
     val daoComponent: GenericDAOComponent[M] with SparkLoggerComponent
@@ -36,6 +43,9 @@ class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends Exter
     val entityName: String = "Table or view"
   }
 
+  // Erroneous dbName when db is not set in CatalogTable.identifier
+  private val unknown = "unknown"
+
   private def getCatalogEntity[M <: CatalogEntityModel : Manifest](id: String)(
     implicit daoContainer: DaoContainer[M]
   ): Option[M] = {
@@ -47,9 +57,30 @@ class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends Exter
     daoComponent.dao.get(id).recoverWith(logFailure).toOption.flatten
   }
 
-  private def listCatalogEntities[M <: CatalogEntityModel]: Seq[String] = {
+  private def listCatalogEntities[M <: CatalogEntityModel: Manifest](
+    implicit daoContainer: DaoContainer[M]
+  ): Seq[M] = {
     //TODO Add genetic key listing method and use it
-    ???
+    import daoContainer._
+    val logFailure: PartialFunction[Throwable, Try[Seq[M]]] = { case cause =>
+      daoComponent.logger.warn(s"$entityName doesn't exists. Error:\n " + cause)
+      Failure(cause)
+    }
+    daoComponent.dao.getAll().recoverWith(logFailure).get //TODO review this get
+  }
+
+  private def getDBName(databaseModel: DatabaseModel): String = databaseModel.db.name
+
+  private def getDBNameWithPattern(databaseModel: DatabaseModel, pattern: String): Option[String] = {
+    val dbName = getDBName(databaseModel)
+    if(dbName.contains(pattern)) Some(dbName) else None
+  }
+
+  private def getTableName(tableModel: TableModel): String = tableModel.tableDefinition.identifier.table
+
+  private def getTableNameWithPattern(tableModel: TableModel, pattern: String): Option[String] = {
+    val tableName = getTableName(tableModel)
+    if(tableName.contains(pattern)) Some(tableName) else None
   }
 
   override def createDatabase(dbDefinition: CatalogDatabase, ignoreIfExists: Boolean): Unit = {
@@ -60,11 +91,20 @@ class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends Exter
   }
 
   override def dropDatabase(db: String, ignoreIfNotExists: Boolean, cascade: Boolean): Unit = {
-    //TODO ignoreifNotExists and cascade(delete all tables of this db if cascade == true)
-    tableAndViewDAOContainer.daoComponent.dao.delete(db)
+    if(ignoreIfNotExists && !databaseExists(db))
+      throw new NoSuchDatabaseException(db)
+    if(cascade)
+      listTables(db).foreach(table => dropTable(db, table, true, true))
+
+    databaseDAOContainer.daoComponent.dao.delete(db)
   }
 
-  override def alterDatabase(dbDefinition: CatalogDatabase): Unit = ???
+  override def alterDatabase(dbDefinition: CatalogDatabase): Unit = {
+    val dbName = dbDefinition.name
+    requireDbExists(dbName)
+    val dao = databaseDAOContainer.daoComponent.dao
+    dao.update(dbName, DatabaseModel(dbDefinition))
+  }
 
   override def getDatabase(db: String): CatalogDatabase = {
     requireDbExists(db)
@@ -74,31 +114,73 @@ class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends Exter
   override def databaseExists(db: String): Boolean =
     getCatalogEntity[DatabaseModel](db).isDefined
 
-  override def listDatabases(): Seq[String] = ???
+  override def listDatabases(): Seq[String] = listCatalogEntities[DatabaseModel].map(getDBName)
 
-  override def listDatabases(pattern: String): Seq[String] = ???
+  override def listDatabases(pattern: String): Seq[String] =
+    listCatalogEntities[DatabaseModel].flatMap(db => getDBNameWithPattern(db, pattern))
 
   override def setCurrentDatabase(db: String): Unit = ???
 
-  override def createTable(tableDefinition: CatalogTable, ignoreIfExists: Boolean): Unit = ???
+  // TODO TableIdentifier.database doesn't make sense as option
+  // TODO should DAO check db and table in its operations? tableEntity = db.table? force to specify db?
 
-  override def dropTable(db: String, table: String, ignoreIfNotExists: Boolean, purge: Boolean): Unit = ???
+  override def createTable(tableDefinition: CatalogTable, ignoreIfExists: Boolean): Unit = {
+    val dao = tableAndViewDAOContainer.daoComponent.dao
+    val tableName = tableDefinition.identifier.table
+    val dbName = tableDefinition.identifier.database.getOrElse(throw new NoSuchTableException(unknown, tableName)) //TODO review exception
+    if(!ignoreIfExists && tableExists(dbName, tableName))
+      throw new TableAlreadyExistsException(dbName, tableName)
+    dao.create(tableName, TableModel(tableDefinition)) //TODO id in create method should be database.table
+  }
 
-  override def renameTable(db: String, oldName: String, newName: String): Unit = ???
+  override def dropTable(db: String, table: String, ignoreIfNotExists: Boolean, purge: Boolean): Unit = {
+    if(ignoreIfNotExists && !tableExists(db, table))
+      throw new NoSuchTableException(db, table)
 
-  override def alterTable(tableDefinition: CatalogTable): Unit = ???
+    tableAndViewDAOContainer.daoComponent.dao.delete(table) // TODO and db info not used? purge??
+  }
 
-  override def getTable(db: String, table: String): CatalogTable = ???
+  override def renameTable(db: String, oldName: String, newName: String): Unit = {
+    requireTableExists(db, oldName)
+    val dao = tableAndViewDAOContainer.daoComponent.dao
+    val oldTable = getTable(db, oldName)
+    val newTable = oldTable.copy(identifier = TableIdentifier(newName, Some(db)))
+    dao.update(oldName, TableModel(newTable))
+  }
 
-  override def getTableOption(db: String, table: String): Option[CatalogTable] = ???
+  override def alterTable(tableDefinition: CatalogTable): Unit = {
+    val tableName = tableDefinition.identifier.table
+    val dbName = tableDefinition.identifier.database.getOrElse(throw new NoSuchTableException(unknown, tableName)) //TODO review exception
+    requireTableExists(dbName, tableName)
+    val dao = tableAndViewDAOContainer.daoComponent.dao
+    dao.update(tableName, TableModel(tableDefinition))
+  }
 
-  override def tableExists(db: String, table: String): Boolean = ???
+  override def getTable(db: String, table: String): CatalogTable = {
+    requireTableExists(db, table)
+    getCatalogEntity[TableModel](table).get.tableDefinition
+  }
 
-  override def listTables(db: String): Seq[String] = ???
+  override def getTableOption(db: String, table: String): Option[CatalogTable] =
+    getCatalogEntity[TableModel](table).map(t => t.tableDefinition)
 
-  override def listTables(db: String, pattern: String): Seq[String] = ???
+  override def tableExists(db: String, table: String): Boolean = getCatalogEntity[TableModel](table).isDefined
 
-  override def loadTable(db: String, table: String, loadPath: String, isOverwrite: Boolean, holdDDLTime: Boolean): Unit = ???
+  override def listTables(db: String): Seq[String] =
+    listCatalogEntities[TableModel].filter { table =>
+      val dbName = table.tableDefinition.identifier.database
+      if(dbName.isDefined) dbName.get == db else false
+    }.map(getTableName)
+
+  override def listTables(db: String, pattern: String): Seq[String] =
+    listCatalogEntities[TableModel].filter { table =>
+      val dbName = table.tableDefinition.identifier.database
+      if(dbName.isDefined) dbName.get == db else false
+    }.flatMap(table => getTableNameWithPattern(table, pattern))
+
+  override def loadTable(db: String, table: String, loadPath: String, isOverwrite: Boolean, holdDDLTime: Boolean): Unit =
+    throw new UnsupportedOperationException("loadTable is not implemented")
+
 
   override def loadPartition(db: String, table: String, loadPath: String, partition: TablePartitionSpec, isOverwrite: Boolean, holdDDLTime: Boolean, inheritTableSpecs: Boolean): Unit = ???
 
