@@ -6,7 +6,10 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.catalyst.catalog.CatalogTypes.TablePartitionSpec
 import org.apache.spark.sql.catalyst.catalog._
 import org.apache.spark.sql.catalyst.expressions.Expression
+import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.models.{DatabaseModel, TableModel}
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, TableDAO, ViewDAO}
+
+import scala.util.{Failure, Success}
 
 class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends ExternalCatalog {
 
@@ -20,9 +23,40 @@ class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends Exter
   @transient lazy val viewDAO = new ViewDAO(config)
 
 
-  override def createDatabase(dbDefinition: CatalogDatabase, ignoreIfExists: Boolean): Unit = ???
+  //TODO is possible one method to get each model?? use getorelse instead of match
+  // With this methods We avoid get all elements for the catalog
+  private def getDB(dbName: String): Option[DatabaseModel] = {
+    DatabaseDAO.dao.get(dbName) match {
+      case Success(model) => model
+      case Failure(e) => DatabaseDAO.logger.warn("Database doesn't exists. Error:\n " + e); None
+    }
+  }
 
-  override def dropDatabase(db: String, ignoreIfNotExists: Boolean, cascade: Boolean): Unit = ???
+  private def getTable(tableName: String): Option[TableModel] = {
+    tableDAO.dao.get(tableName) match {
+      case Success(model) => model
+      case Failure(e) => tableDAO.logger.warn("Table doesn't exists. Error:\n " + e); None
+    }
+  }
+
+  private def getView(viewName: String): Option[TableModel] = {
+    viewDAO.dao.get(viewName) match {
+      case Success(model) => model
+      case Failure(e) => viewDAO.logger.warn("View doesn't exists. Error:\n " + e); None
+    }
+  }
+
+
+  override def createDatabase(dbDefinition: CatalogDatabase, ignoreIfExists: Boolean): Unit = {
+    //TODO ignoreIfExists
+    DatabaseDAO.dao.create(DatabaseDAO.dao.entity, DatabaseModel(dbDefinition))
+  }
+
+  override def dropDatabase(db: String, ignoreIfNotExists: Boolean, cascade: Boolean): Unit = {
+    //TODO ignoreifNotExists and cascade(delete all tables of this db if cascade == true)
+    DatabaseDAO.dao.delete(db)
+
+  }
 
   override def alterDatabase(dbDefinition: CatalogDatabase): Unit = ???
 
