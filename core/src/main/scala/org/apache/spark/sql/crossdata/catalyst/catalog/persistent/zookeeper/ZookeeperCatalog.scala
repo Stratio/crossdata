@@ -1,15 +1,19 @@
 package org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper
 
+import com.stratio.common.utils.components.dao.GenericDAOComponent
+import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
 import com.typesafe.config.Config
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.catalyst.analysis.DatabaseAlreadyExistsException
 import org.apache.spark.sql.catalyst.catalog.CatalogTypes.TablePartitionSpec
 import org.apache.spark.sql.catalyst.catalog._
 import org.apache.spark.sql.catalyst.expressions.Expression
-import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.models.{DatabaseModel, TableModel}
-import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, TableDAO, ViewDAO}
+import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.models.{CatalogEntityModel, DatabaseModel, TableModel}
+import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, TableDAO}
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
+import scala.reflect.runtime.universe.TypeTag
 
 class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends ExternalCatalog {
 
@@ -17,52 +21,58 @@ class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends Exter
   // TODO we need a Catalog Config
   protected[crossdata] lazy val config: Config = ??? //XDSharedState.catalogConfig
 
-  //TODO we need to define diferents DAOs to keep catalog information
-  @transient lazy val DatabaseDAO = new DatabaseDAO(config) // TODO Should be a MapDAO??
-  @transient lazy val tableDAO = new TableDAO(config)
-  @transient lazy val viewDAO = new ViewDAO(config)
-
-
-  //TODO is possible one method to get each model?? use getorelse instead of match
-  // With this methods We avoid get all elements for the catalog
-  private def getDB(dbName: String): Option[DatabaseModel] = {
-    DatabaseDAO.dao.get(dbName) match {
-      case Success(model) => model
-      case Failure(e) => DatabaseDAO.logger.warn("Database doesn't exists. Error:\n " + e); None
-    }
+  trait DaoContainer[M <: CatalogEntityModel] {
+    val daoComponent: GenericDAOComponent[M] with SparkLoggerComponent
+    val entityName: String
   }
 
-  private def getTable(tableName: String): Option[TableModel] = {
-    tableDAO.dao.get(tableName) match {
-      case Success(model) => model
-      case Failure(e) => tableDAO.logger.warn("Table doesn't exists. Error:\n " + e); None
-    }
+  implicit lazy val databaseDAOContainer = new DaoContainer[DatabaseModel] {
+    val daoComponent = new DatabaseDAO(config)
+    val entityName: String = "Database"
   }
 
-  private def getView(viewName: String): Option[TableModel] = {
-    viewDAO.dao.get(viewName) match {
-      case Success(model) => model
-      case Failure(e) => viewDAO.logger.warn("View doesn't exists. Error:\n " + e); None
-    }
+  implicit lazy val tableAndViewDAOContainer = new DaoContainer[TableModel] {
+    val daoComponent = new TableDAO(config)
+    val entityName: String = "Table or view"
   }
 
+  private def getCatalogEntity[M <: CatalogEntityModel : Manifest](id: String)(
+    implicit daoContainer: DaoContainer[M]
+  ): Option[M] = {
+    import daoContainer._
+    val logFailure: PartialFunction[Throwable, Try[Option[M]]] = { case cause =>
+      daoComponent.logger.warn(s"$entityName doesn't exists. Error:\n " + cause)
+      Failure(cause)
+    }
+    daoComponent.dao.get(id).recoverWith(logFailure).toOption.flatten
+  }
+
+  private def listCatalogEntities[M <: CatalogEntityModel]: Seq[String] = {
+    //TODO Add genetic key listing method and use it
+    ???
+  }
 
   override def createDatabase(dbDefinition: CatalogDatabase, ignoreIfExists: Boolean): Unit = {
-    //TODO ignoreIfExists
-    DatabaseDAO.dao.create(DatabaseDAO.dao.entity, DatabaseModel(dbDefinition))
+    val dao = databaseDAOContainer.daoComponent.dao
+    if(!ignoreIfExists && databaseExists(dbDefinition.name))
+      throw new DatabaseAlreadyExistsException(dbDefinition.name)
+    dao.create(dbDefinition.name, DatabaseModel(dbDefinition))
   }
 
   override def dropDatabase(db: String, ignoreIfNotExists: Boolean, cascade: Boolean): Unit = {
     //TODO ignoreifNotExists and cascade(delete all tables of this db if cascade == true)
-    DatabaseDAO.dao.delete(db)
-
+    tableAndViewDAOContainer.daoComponent.dao.delete(db)
   }
 
   override def alterDatabase(dbDefinition: CatalogDatabase): Unit = ???
 
-  override def getDatabase(db: String): CatalogDatabase = ???
+  override def getDatabase(db: String): CatalogDatabase = {
+    requireDbExists(db)
+    getCatalogEntity[DatabaseModel](db).get.db
+  }
 
-  override def databaseExists(db: String): Boolean = ???
+  override def databaseExists(db: String): Boolean =
+    getCatalogEntity[DatabaseModel](db).isDefined
 
   override def listDatabases(): Seq[String] = ???
 
