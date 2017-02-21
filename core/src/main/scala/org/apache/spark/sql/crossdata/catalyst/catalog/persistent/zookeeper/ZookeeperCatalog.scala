@@ -130,14 +130,14 @@ class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends Exter
     val dbName = tableDefinition.identifier.database.getOrElse(throw new NoSuchTableException(unknown, tableName)) //TODO review exception
     if(!ignoreIfExists && tableExists(dbName, tableName))
       throw new TableAlreadyExistsException(dbName, tableName)
-    dao.create(tableName, TableModel(tableDefinition)) //TODO id in create method should be database.table
+    dao.create(s"$dbName.$tableName", TableModel(tableDefinition)) //TODO id in create method should be database.table
   }
 
   override def dropTable(db: String, table: String, ignoreIfNotExists: Boolean, purge: Boolean): Unit = {
     if(ignoreIfNotExists && !tableExists(db, table))
       throw new NoSuchTableException(db, table)
 
-    tableAndViewDAOContainer.daoComponent.dao.delete(table) // TODO and db info not used? purge??
+    tableAndViewDAOContainer.daoComponent.dao.delete(s"$db.$table") // TODO and db info not used? purge??
   }
 
   override def renameTable(db: String, oldName: String, newName: String): Unit = {
@@ -145,26 +145,26 @@ class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends Exter
     val dao = tableAndViewDAOContainer.daoComponent.dao
     val oldTable = getTable(db, oldName)
     val newTable = oldTable.copy(identifier = TableIdentifier(newName, Some(db)))
-    dao.update(oldName, TableModel(newTable))
+    dao.update(s"$db.$oldName", TableModel(newTable))
   }
 
   override def alterTable(tableDefinition: CatalogTable): Unit = {
     val tableName = tableDefinition.identifier.table
-    val dbName = tableDefinition.identifier.database.getOrElse(throw new NoSuchTableException(unknown, tableName)) //TODO review exception
+    val dbName = tableDefinition.identifier.database.getOrElse(throw new NoSuchTableException(unknown, tableName))
     requireTableExists(dbName, tableName)
     val dao = tableAndViewDAOContainer.daoComponent.dao
-    dao.update(tableName, TableModel(tableDefinition))
+    dao.update(s"$dbName.$tableName", TableModel(tableDefinition))
   }
 
   override def getTable(db: String, table: String): CatalogTable = {
     requireTableExists(db, table)
-    getCatalogEntity[TableModel](table).get.tableDefinition
+    getCatalogEntity[TableModel](s"$db.$table").get.tableDefinition
   }
 
   override def getTableOption(db: String, table: String): Option[CatalogTable] =
-    getCatalogEntity[TableModel](table).map(t => t.tableDefinition)
+    getCatalogEntity[TableModel](s"$db.$table").map(t => t.tableDefinition)
 
-  override def tableExists(db: String, table: String): Boolean = getCatalogEntity[TableModel](table).isDefined
+  override def tableExists(db: String, table: String): Boolean = getCatalogEntity[TableModel](s"$db.$table").isDefined
 
   override def listTables(db: String): Seq[String] =
     listCatalogEntities[TableModel].filter { table =>

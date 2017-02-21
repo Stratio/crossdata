@@ -6,8 +6,4 @@ import org.apache.spark.sql.crossdata
 case class DatabaseModel(db: CatalogDatabase,
                          options: Map[String, String] = Map.empty,
                          version: String = crossdata.CrossdataVersion
-                        ) extends CatalogEntityModel {
-
-  override def entryId: String = db.name
-
-}
+                        ) extends CatalogEntityModel
