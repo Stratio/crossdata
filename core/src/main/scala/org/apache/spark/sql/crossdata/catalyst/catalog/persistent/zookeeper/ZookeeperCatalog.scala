@@ -59,15 +59,7 @@ class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends Exter
 
   private def listCatalogEntities[M <: CatalogEntityModel: Manifest](
     implicit daoContainer: DaoContainer[M]
-  ): Seq[M] = {
-    //TODO Add genetic key listing method and use it
-    import daoContainer._
-    val logFailure: PartialFunction[Throwable, Try[Seq[M]]] = { case cause =>
-      daoComponent.logger.warn(s"$entityName doesn't exists. Error:\n " + cause)
-      Failure(cause)
-    }
-    daoComponent.dao.getAll().recoverWith(logFailure).get //TODO review this get
-  }
+  ): Seq[M] = daoContainer.daoComponent.dao.getAll().get
 
   private def getDBName(databaseModel: DatabaseModel): String = databaseModel.db.name
 
@@ -119,7 +111,7 @@ class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends Exter
   override def listDatabases(pattern: String): Seq[String] =
     listCatalogEntities[DatabaseModel].flatMap(db => getDBNameWithPattern(db, pattern))
 
-  override def setCurrentDatabase(db: String): Unit = ???
+  override def setCurrentDatabase(db: String): Unit = { /* no-op */ }
 
   // TODO TableIdentifier.database doesn't make sense as option
   // TODO should DAO check db and table in its operations? tableEntity = db.table? force to specify db?
