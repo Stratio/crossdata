@@ -241,10 +241,11 @@ object XDSession {
       val configFile = new File(pathToConf)
 
       if (configFile.exists && configFile.canRead) {
+        log.info(s"Configuration file loaded ( ${configFile.getAbsolutePath} ).")
         val conf = ConfigFactory.parseFile(configFile)
         config(conf)
       } else {
-        log.warn(s"Configuration file ( ${pathToConf} ) is not accessible.")
+        log.warn(s"Configuration file ( ${configFile.getAbsolutePath} ) is not accessible.")
       }
 
       this
@@ -341,7 +342,6 @@ object XDSession {
       */
     private def setCatalogConf(conf: Config) = {
       if (conf.hasPath(s"$ParentConfPrefix.$CatalogConfPrefix")) {
-
         import scala.collection.JavaConversions._
         conf
           .withOnlyPath(s"$ParentConfPrefix.$CatalogConfPrefix")
@@ -352,7 +352,6 @@ object XDSession {
           }
       } else {
         log.info(s"No catalog configuration was found in configuration")
-        ConfigFactory.empty()
       }
     }
 
