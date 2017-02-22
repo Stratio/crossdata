@@ -365,7 +365,13 @@ object XDSession {
       }
 
       import scala.collection.JavaConversions._
-      ConfigFactory.parseMap(catalogConf.toMap[String, String])
+      ConfigFactory.parseMap {
+        catalogConf
+          .map { t =>
+            (t._1.replaceFirst(s"$ParentConfPrefix.$CatalogConfPrefix.", ""), t._2)
+          }
+          .toMap[String, String]
+      }
     }
 
   }
