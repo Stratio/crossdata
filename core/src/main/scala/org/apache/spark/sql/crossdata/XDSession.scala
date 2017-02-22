@@ -6,7 +6,7 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory, ConfigValue}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -38,7 +38,9 @@ import org.apache.spark.util.Utils
 // TODO add implicits => flattenCollect and collect(ExecutionType)
 class XDSession private(
                          @transient override val sparkContext: SparkContext,
-                         @transient private val existingSharedState: Option[XDSharedState])
+                         @transient private val existingSharedState: Option[XDSharedState],
+                         @transient val catalogConfig: Config
+                       )
   extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent { self =>
 
 
@@ -51,8 +53,8 @@ class XDSession private(
                                          * http://bugs.java.com/view_bug.do?bug_id=6611830
                                          */
 
-  private[sql] def this(sc: SparkContext) {
-    this(sc, None)
+  private[sql] def this(sc: SparkContext, catalogConf: Config = ConfigFactory.empty()) {
+    this(sc, None, catalogConf)
   }
 
   /**
@@ -218,6 +220,7 @@ object XDSession {
     private[this] var userSuppliedContext: Option[SparkContext] = None
     private[this] val ParentConfPrefix = "crossdata-core"
     private[this] val SparkConfPrefix = "spark"
+    private[this] val CatalogConfPrefix = "config.catalog"
 
     override def config(key: String, value: String): Builder = synchronized {
       options += key -> value
@@ -230,6 +233,7 @@ object XDSession {
 
     def config(conf: Config): Builder = synchronized {
       setSparkConf(conf)
+      setCatalogConf(conf)
       this
     }
 
@@ -298,7 +302,9 @@ object XDSession {
         }
         sc
       }
-      val session = new XDSession(sparkContext)
+
+      val catalogConf = extractCatalogConf()
+      val session = new XDSession(sparkContext, catalogConf)
       options.foreach { case (k, v) => session.sessionState.conf.setConfString(k, v) }
 
       session
@@ -327,6 +333,40 @@ object XDSession {
       } else {
         log.info(s"No spark configuration was found in configuration")
       }
+    }
+
+    /**
+      * Set  Catalog configuration from Typesafe Config
+      * @param conf
+      */
+    private def setCatalogConf(conf: Config) = {
+      if (conf.hasPath(s"$ParentConfPrefix.$CatalogConfPrefix")) {
+
+        import scala.collection.JavaConversions._
+        conf
+          .withOnlyPath(s"$ParentConfPrefix.$CatalogConfPrefix")
+          .entrySet()
+          .map(entry => (entry.getKey, entry.getValue.unwrapped().toString))
+          .foreach {
+            case (key, value) => config(key, value)
+          }
+      } else {
+        log.info(s"No catalog configuration was found in configuration")
+        ConfigFactory.empty()
+      }
+    }
+
+    /**
+      * Extract Catalog configuration from options map
+      * @return Catalog configuration
+      */
+    private def extractCatalogConf(): Config = {
+      val catalogConf = options.filter {
+        case (key, _) => key.startsWith(s"$ParentConfPrefix.$CatalogConfPrefix")
+      }
+
+      import scala.collection.JavaConversions._
+      ConfigFactory.parseMap(catalogConf.toMap[String, String])
     }
 
   }
