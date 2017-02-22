@@ -15,6 +15,7 @@
  */
 package org.apache.spark.sql.crossdata
 
+import java.io.File
 import java.nio.file.Paths
 
 import com.typesafe.config.ConfigFactory
@@ -68,7 +69,22 @@ class XDSessionIT extends SharedXDSession with ScalaFutures {
     whenReady(sessionsFuture) { sessions: Seq[XDSession] =>
       sessions.map(_.id).toSet should have size 10
     } (PatienceConfig(timeout = 2 seconds))
+  }
 
+  it should "load catalog config from file" in {
+
+    val session = XDSession
+      .builder()
+      .config("src/test/resources/zookeeper-catalog.conf")
+      .create("user")
+
+    session.catalogConfig.isEmpty shouldBe false
+    session.catalogConfig.getString("zookeeper.connectionString") shouldBe "localhost:2181"
+    session.catalogConfig.getInt("zookeeper.connectionTimeout") shouldBe 15000
+    session.catalogConfig.getInt("zookeeper.sessionTimeout") shouldBe 60000
+    session.catalogConfig.getInt("zookeeper.retryAttempts") shouldBe 5
+    session.catalogConfig.getInt("zookeeper.retryInterval") shouldBe 10000
+    session.catalogConfig.getString("prefix") shouldBe "crossdataCluster"
   }
 
 /*
