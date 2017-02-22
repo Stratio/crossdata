@@ -39,7 +39,7 @@ import scala.util.Try
 // TODO add implicits => flattenCollect and collect(ExecutionType)
 class XDSession private(
                          @transient override val sparkContext: SparkContext,
-                         @transient private val existingSharedState: Option[XDSharedState])
+                         @transient private val existingSharedState: Option[SharedState])
   extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent { self =>
 
 
@@ -62,7 +62,7 @@ class XDSession private(
     */
   @transient
   private[sql] override lazy val sharedState: SharedState =
-    existingSharedState.getOrElse(new XDSharedState(sparkContext))
+    existingSharedState.getOrElse(XDSharedState(sparkContext))
 
 
   /**
