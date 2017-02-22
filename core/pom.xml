@@ -69,6 +69,10 @@
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-common_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-auth-interface_${scala.binary.version}</artifactId>
             <version>${crossdata-auth-iface.version}</version>
         </dependency>

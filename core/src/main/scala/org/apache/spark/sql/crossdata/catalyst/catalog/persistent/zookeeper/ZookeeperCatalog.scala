@@ -12,21 +12,25 @@ import org.apache.spark.sql.catalyst.analysis.{DatabaseAlreadyExistsException, N
 import org.apache.spark.sql.catalyst.catalog.CatalogTypes.TablePartitionSpec
 import org.apache.spark.sql.catalyst.catalog._
 import org.apache.spark.sql.catalyst.expressions.Expression
+import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.XDExternalCatalog.TypesafeConfigSettings
+import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.XDExternalCatalog
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.models.{CatalogEntityModel, DatabaseModel, TableModel}
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, TableDAO}
 
 import scala.util.{Failure, Try}
 
 
-class ZookeeperCatalog(conf: SparkConf, hadoopConf: Configuration) extends ExternalCatalog {
+class ZookeeperCatalog(settings: TypesafeConfigSettings)
+  extends XDExternalCatalog[TypesafeConfigSettings](settings) {
 
+  import settings.config
 
   // TODO we need a Catalog Config
 //  protected[crossdata] lazy val config: Config = ??? //XDSharedState.catalogConfig
 
-  val defaultProperties = new Properties()
+  /*val defaultProperties = new Properties()
   defaultProperties.setProperty("zookeeper.connectionString" , "127.0.0.1:2181")
-  protected[crossdata] lazy val config: Config = ConfigFactory.parseProperties(defaultProperties)
+  protected[crossdata] lazy val config: Config = ConfigFactory.parseProperties(defaultProperties)*/
 
   trait DaoContainer[M <: CatalogEntityModel] {
     val daoComponent: GenericDAOComponent[M] with SparkLoggerComponent

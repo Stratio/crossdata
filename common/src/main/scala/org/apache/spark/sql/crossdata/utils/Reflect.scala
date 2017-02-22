@@ -16,7 +16,7 @@ object Reflect {
     * Helper method to create an instance of [[T]] using a single-arg constructor that
     * accepts an [[Arg]].
     */
-  private def reflect[T, Arg <: AnyRef](
+  def reflect[T, Arg <: AnyRef](
                                          className: String,
                                          ctorArg: Arg)(implicit ctorArgTag: ClassTag[Arg]): T = {
     try {
