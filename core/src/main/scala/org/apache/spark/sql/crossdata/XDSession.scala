@@ -2,8 +2,11 @@ package org.apache.spark.sql.crossdata
 
 import com.stratio.common.utils.components.logger.impl.Slf4jLoggerComponent
 import java.beans.Introspector
+import java.io.File
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
+
+import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -213,6 +216,8 @@ object XDSession {
 
     private[this] val options = new scala.collection.mutable.HashMap[String, String]
     private[this] var userSuppliedContext: Option[SparkContext] = None
+    private[this] val ParentConfPrefix = "crossdata-core"
+    private[this] val SparkConfPrefix = "spark"
 
     override def config(key: String, value: String): Builder = synchronized {
       options += key -> value
@@ -222,6 +227,24 @@ object XDSession {
     override def config(key: String, value: Long): Builder = config(key, value)
     override def config(key: String, value: Double): Builder = config(key, value)
     override def config(key: String, value: Boolean): Builder = config(key, value)
+
+    def config(conf: Config): Builder = synchronized {
+      setSparkConf(conf)
+      this
+    }
+
+    def config(pathToConf: String): Builder = synchronized {
+      val configFile = new File(pathToConf)
+
+      if (configFile.exists && configFile.canRead) {
+        val conf = ConfigFactory.parseFile(configFile)
+        config(conf)
+      } else {
+        log.warn(s"Configuration file ( ${pathToConf} ) is not accessible.")
+      }
+
+      this
+    }
 
     override def config(conf: SparkConf): Builder = synchronized {
       conf.getAll.foreach { case (k, v) => options += k -> v }
@@ -279,6 +302,31 @@ object XDSession {
       options.foreach { case (k, v) => session.sessionState.conf.setConfString(k, v) }
 
       session
+    }
+
+    /**
+      * Set Spark related configuration from Typesafe Config
+      * @param conf
+      */
+    private def setSparkConf(conf: Config): Unit = {
+      if (conf.hasPath(s"$ParentConfPrefix.$SparkConfPrefix")) {
+
+        val sparkConf: Config = conf
+          .getConfig(ParentConfPrefix)
+          .withOnlyPath(SparkConfPrefix)
+
+        import scala.collection.JavaConversions._
+
+        sparkConf
+          .entrySet()
+          .map(entry => (entry.getKey, entry.getValue.unwrapped().toString))
+          .foreach {
+            case (key, value) => config(key, value)
+          }
+
+      } else {
+        log.info(s"No spark configuration was found in configuration")
+      }
     }
 
   }
