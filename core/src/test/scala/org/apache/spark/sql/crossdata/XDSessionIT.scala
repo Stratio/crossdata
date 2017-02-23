@@ -72,10 +72,11 @@ class XDSessionIT extends SharedXDSession with ScalaFutures {
   }
 
   it should "load catalog config from file" in {
+    val configFile = new File("src/test/resources/zookeeper-catalog.conf")
 
     val session = XDSession
       .builder()
-      .config("src/test/resources/zookeeper-catalog.conf")
+      .config(configFile)
       .create("user")
 
     session.catalogConfig.isEmpty shouldBe false

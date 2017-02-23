@@ -220,7 +220,7 @@ object XDSession {
     private[this] var userSuppliedContext: Option[SparkContext] = None
     private[this] val ParentConfPrefix = "crossdata-core"
     private[this] val SparkConfPrefix = "spark"
-    private[this] val CatalogConfPrefix = "config.catalog"
+    private[this] val CatalogConfPrefix = "catalog"
 
     override def config(key: String, value: String): Builder = synchronized {
       options += key -> value
@@ -237,9 +237,7 @@ object XDSession {
       this
     }
 
-    def config(pathToConf: String): Builder = synchronized {
-      val configFile = new File(pathToConf)
-
+    def config(configFile: File): Builder = synchronized {
       if (configFile.exists && configFile.canRead) {
         log.info(s"Configuration file loaded ( ${configFile.getAbsolutePath} ).")
         val conf = ConfigFactory.parseFile(configFile)
