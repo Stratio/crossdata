@@ -41,7 +41,8 @@ import scala.util.Try
 class XDSession private(
                          @transient override val sparkContext: SparkContext,
                          @transient private val existingSharedState: Option[XDSharedState],
-                         @transient val catalogConfig: Config
+                         //TODO: Make this attribute just a parameter
+                         @transient private[crossdata] val catalogConfig: Config
                        )
   extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent { self =>
 
@@ -65,7 +66,7 @@ class XDSession private(
     */
   @transient
   private[sql] override lazy val sharedState: XDSharedState =
-    existingSharedState.getOrElse(new XDSharedState(sparkContext))
+    existingSharedState.getOrElse(new XDSharedState(sparkContext/*, catalogConfig*/))
 
 
   /**
@@ -284,7 +285,7 @@ object XDSession {
        */
       config("crossdata.security.user", userId)
 
-      // Extreacted from [[SparkSession]]'s getOrCreate:
+      // Extracted from [[SparkSession]]'s getOrCreate:
       // No active nor global default session. Create a new one.
       val sparkContext = userSuppliedContext.getOrElse {
         // set app name if not given
