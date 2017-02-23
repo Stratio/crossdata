@@ -23,47 +23,42 @@ import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.XDExternalCata
 import org.apache.spark.sql.internal.SharedState
 import org.apache.spark.sql.internal.StaticSQLConf.CATALOG_IMPLEMENTATION
 
-object XDSharedState {
+import org.apache.spark.sql.crossdata.utils.Reflect._
 
-  def apply(
-             sparkContext: SparkContext,
-             userCoreConfig: Option[Config] = None
-            //val sqlConf: SQLConf,
-            //val externalCatalog: XDCatalogCommon,
-            //val streamingCatalog: Option[XDStreamingCatalog],
-            //@transient val securityManager: Option[CrossdataSecurityManager]
-  ): SharedState = {
+class XDSharedState(
+                     sparkContext: SparkContext,
+                     userCoreConfig: Option[Config] = None
+                     //val sqlConf: SQLConf,
+                     //val externalCatalog: XDCatalogCommon,
+                     //val streamingCatalog: Option[XDStreamingCatalog],
+                     //@transient val securityManager: Option[CrossdataSecurityManager]
+                   ) extends {
 
-    import org.apache.spark.sql.crossdata.utils.Reflect._
 
-    new {
+  //TODO: Change catalog config origin and path
+  override val externalCatalog: ExternalCatalog = {
+    for (config <- userCoreConfig; key = "catalog.class"; if config.hasPath(key)) yield {
+      reflect[ExternalCatalog, ExternalCatalogSettings](
+        config.getString(key), //TODO: Change catalog config origin and path
+        TypesafeConfigSettings(config.getConfig("catalog")) //TODO: Change catalog config origin and path
+      )
+    }
+  } getOrElse {
+    // Fallback to SPARK's default behaviour
 
-      //TODO: Change catalog config origin and path
-      override val externalCatalog: ExternalCatalog = {
-        for(config <- userCoreConfig; key = "catalog.class"; if config.hasPath(key)) yield {
-          reflect[ExternalCatalog, ExternalCatalogSettings](
-            config.getString(key), //TODO: Change catalog config origin and path
-            TypesafeConfigSettings(config.getConfig("catalog")) //TODO: Change catalog config origin and path
-          )
-        }
-      } getOrElse { // Fallback to SPARK's default behaviour
+    val HIVE_EXTERNAL_CATALOG_CLASS_NAME = "org.apache.spark.sql.hive.HiveExternalCatalog"
 
-        val HIVE_EXTERNAL_CATALOG_CLASS_NAME = "org.apache.spark.sql.hive.HiveExternalCatalog"
-
-        def externalCatalogClassName(conf: SparkConf): String = {
-          conf.get(CATALOG_IMPLEMENTATION) match {
-            case "hive" => HIVE_EXTERNAL_CATALOG_CLASS_NAME
-            case "in-memory" => classOf[InMemoryCatalog].getCanonicalName
-          }
-        }
-
-        reflect[ExternalCatalog, SparkConf, Configuration](
-          externalCatalogClassName(sparkContext.conf),
-          sparkContext.conf,
-          sparkContext.hadoopConfiguration)
+    def externalCatalogClassName(conf: SparkConf): String = {
+      conf.get(CATALOG_IMPLEMENTATION) match {
+        case "hive" => HIVE_EXTERNAL_CATALOG_CLASS_NAME
+        case "in-memory" => classOf[InMemoryCatalog].getCanonicalName
       }
+    }
 
-    } with SharedState(sparkContext)
-
+    reflect[ExternalCatalog, SparkConf, Configuration](
+      externalCatalogClassName(sparkContext.conf),
+      sparkContext.conf,
+      sparkContext.hadoopConfiguration)
   }
-}
+
+} with SharedState(sparkContext)
