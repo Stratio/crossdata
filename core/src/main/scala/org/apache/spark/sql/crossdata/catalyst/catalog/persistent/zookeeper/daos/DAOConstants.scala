@@ -10,7 +10,9 @@ object DAOConstants {
 
   val BaseZKPath = "stratio/crossdata"
   val DatabasesPath = "databases"
-  val TablesViewsPath = "tablesviews"
+  val TablesViewsPath = s"$DatabasesPath/tablesviews"
+  val PartitionsPath = s"$TablesViewsPath/partitions"
+  val FuntionsPath = s"$DatabasesPath/funtions"
   val AppsPath = "apps"
   val IndexesPath = "indexes"
   val EphemeralTablesPath = "ephemeraltables"
