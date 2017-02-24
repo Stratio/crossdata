@@ -66,7 +66,7 @@ class XDSession private(
     */
   @transient
   private[sql] override lazy val sharedState: XDSharedState =
-    existingSharedState.getOrElse(new XDSharedState(sparkContext/*, catalogConfig*/))
+    existingSharedState.getOrElse(new XDSharedState(sparkContext, catalogConfig))
 
 
   /**
@@ -383,27 +383,6 @@ object XDSession {
     * @since 2.0.0
     */
   def builder(): Builder = new Builder
-  
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // Private methods from now on
-  ////////////////////////////////////////////////////////////////////////////////////////
-
-  /**
-    * Helper method to create an instance of [[T]] using a single-arg constructor that
-    * accepts an [[Arg]].
-    */
-  private def reflect[T, Arg <: AnyRef](
-                                         className: String,
-                                         ctorArg: Arg)(implicit ctorArgTag: ClassTag[Arg]): T = {
-    try {
-      val clazz = Utils.classForName(className)
-      val ctor = clazz.getDeclaredConstructor(ctorArgTag.runtimeClass)
-      ctor.newInstance(ctorArg).asInstanceOf[T]
-    } catch {
-      case NonFatal(e) =>
-        throw new IllegalArgumentException(s"Error while instantiating '$className':", e)
-    }
-  }
 
 }
 
