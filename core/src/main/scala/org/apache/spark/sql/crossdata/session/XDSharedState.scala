@@ -39,7 +39,7 @@ object XDSharedState {
     val classKey: String = "class"
 
     if (catalogConfig.hasPath(classKey))
-      reflect[ExternalCatalog, ExternalCatalogSettings](
+      reflect[ExternalCatalog, TypesafeConfigSettings](
         catalogConfig.getString(classKey),
         TypesafeConfigSettings(catalogConfig)
       )
