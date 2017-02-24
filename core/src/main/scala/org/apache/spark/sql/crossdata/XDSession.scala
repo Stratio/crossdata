@@ -35,11 +35,14 @@ import org.apache.spark.sql.types.{DataType, LongType, StructType}
 import org.apache.spark.sql.util.ExecutionListenerManager
 import org.apache.spark.util.Utils
 
+import scala.util.Try
+
 // TODO add implicits => flattenCollect and collect(ExecutionType)
 class XDSession private(
                          @transient override val sparkContext: SparkContext,
                          @transient private val existingSharedState: Option[XDSharedState],
-                         @transient val catalogConfig: Config
+                         //TODO: Make this attribute just a parameter
+                         @transient private[crossdata] val catalogConfig: Config
                        )
   extends SparkSession(sparkContext) with Serializable with Slf4jLoggerComponent { self =>
 
@@ -62,8 +65,8 @@ class XDSession private(
     * and a catalog that interacts with external systems.
     */
   @transient
-  private[sql] override lazy val sharedState: SharedState =
-    existingSharedState.getOrElse(new XDSharedState(sparkContext))
+  private[sql] override lazy val sharedState: XDSharedState =
+    existingSharedState.getOrElse(new XDSharedState(sparkContext, catalogConfig))
 
 
   /**
@@ -282,7 +285,7 @@ object XDSession {
        */
       config("crossdata.security.user", userId)
 
-      // Extreacted from [[SparkSession]]'s getOrCreate:
+      // Extracted from [[SparkSession]]'s getOrCreate:
       // No active nor global default session. Create a new one.
       val sparkContext = userSuppliedContext.getOrElse {
         // set app name if not given
@@ -380,27 +383,6 @@ object XDSession {
     * @since 2.0.0
     */
   def builder(): Builder = new Builder
-  
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // Private methods from now on
-  ////////////////////////////////////////////////////////////////////////////////////////
-
-  /**
-    * Helper method to create an instance of [[T]] using a single-arg constructor that
-    * accepts an [[Arg]].
-    */
-  private def reflect[T, Arg <: AnyRef](
-                                         className: String,
-                                         ctorArg: Arg)(implicit ctorArgTag: ClassTag[Arg]): T = {
-    try {
-      val clazz = Utils.classForName(className)
-      val ctor = clazz.getDeclaredConstructor(ctorArgTag.runtimeClass)
-      ctor.newInstance(ctorArg).asInstanceOf[T]
-    } catch {
-      case NonFatal(e) =>
-        throw new IllegalArgumentException(s"Error while instantiating '$className':", e)
-    }
-  }
 
 }
 
