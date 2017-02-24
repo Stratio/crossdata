@@ -6,6 +6,7 @@ import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.crossdata.XDSession
+import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, TableDAO}
 import org.apache.spark.sql.crossdata.test.{SharedXDSession, XDTestUtils}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -23,15 +24,22 @@ class ZookeeperCatalogIT extends BaseXDTest /* extends SharedXDSession*/ {
 
   val xdSession = XDSession.builder()
     .master("local[2]")
-    .config(new File("zookeeper-catalog.conf"))
+    .config(new File("src/test/resources/zookeeper-catalog.conf"))
     .config(
       "crossdata-core.catalog.class",
       "org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.ZookeeperCatalog"
     )
     .create("user01")
 
+  import xdSession.catalogConfig
+
+  object DAO {
+    val dbs = new DatabaseDAO(catalogConfig)
+    val tables = new TableDAO(catalogConfig)
+  }
+
   "A Zookeeper persistent catalog" should "persist entries" in {
-    //xdSession.
+    ()
   }
 
 }
