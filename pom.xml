@@ -126,7 +126,7 @@
         <derby.version>10.10.1.1</derby.version>
         <jackson4s.version>3.2.10</jackson4s.version>
         <mockito.version>1.10.19</mockito.version>
-        <common.utils.version>0.8.0</common.utils.version>
+        <common.utils.version>0.10.0</common.utils.version>
         <guava.version>18.0</guava.version>
         <curator.version>3.2.0</curator.version>
         <crossdata-auth-iface.version>0.1.0</crossdata-auth-iface.version>
@@ -162,6 +162,21 @@
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-streaming-kafka_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-client</artifactId>
+                <version>${curator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-framework</artifactId>
+                <version>${curator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-recipes</artifactId>
+                <version>${curator.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.stratio.crossdata</groupId>
