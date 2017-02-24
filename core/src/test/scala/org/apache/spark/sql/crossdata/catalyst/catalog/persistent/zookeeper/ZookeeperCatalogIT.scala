@@ -5,9 +5,13 @@ import java.io.File
 import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.catalog.{CatalogStorageFormat, CatalogTable, CatalogTableType}
 import org.apache.spark.sql.crossdata.XDSession
+import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.models.TableModel
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, TableDAO}
 import org.apache.spark.sql.crossdata.test.{SharedXDSession, XDTestUtils}
+import org.apache.spark.sql.types.StructType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -40,6 +44,18 @@ class ZookeeperCatalogIT extends BaseXDTest /* extends SharedXDSession*/ {
 
   "A Zookeeper persistent catalog" should "persist entries" in {
     ()
+  }
+
+  "A Zookeeper persistent catalog" should "persist tables" in {
+
+    val version = "1.11.0"
+    val identifier: TableIdentifier= new TableIdentifier("table")
+    val tableType: CatalogTableType=CatalogTableType.EXTERNAL
+    val storage: CatalogStorageFormat=new CatalogStorageFormat(None,None,None,None,false, Map.empty)
+    val schema: StructType = new StructType()
+
+    val catalog:CatalogTable=new CatalogTable(identifier, tableType, storage, schema)
+    val table =  new TableModel(catalog, version)
   }
 
 }
