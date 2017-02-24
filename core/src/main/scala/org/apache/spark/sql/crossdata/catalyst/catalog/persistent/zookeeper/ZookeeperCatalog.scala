@@ -3,7 +3,7 @@ package org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper
 import java.io.IOException
 
 import com.stratio.common.utils.components.dao.GenericDAOComponent
-import com.stratio.common.utils.components.logger.impl.SparkLoggerComponent
+import com.stratio.common.utils.components.logger.impl.Slf4jLoggerComponent
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkException
 import org.apache.spark.sql.catalyst.TableIdentifier
@@ -39,7 +39,7 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
   protected[crossdata] lazy val config: Config = ConfigFactory.parseProperties(defaultProperties)*/
 
   trait DaoContainer[M <: CatalogEntityModel] {
-    val daoComponent: GenericDAOComponent[M] with SparkLoggerComponent
+    val daoComponent: GenericDAOComponent[M] with Slf4jLoggerComponent
     val entityName: String
   }
 
