@@ -3,23 +3,31 @@ package org.apache.spark.sql.crossdata
 import java.io.File
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.apache.spark.sql.crossdata.XDSession.Builder
+import org.apache.spark.internal.Logging
 
-trait BuilderEnhancer {
+trait BuilderEnhancer extends Logging {
 
-  this: Builder =>
+  type BuilderType >: BuilderEnhancer <: BuilderEnhancer
 
   private[this] val ParentConfPrefix = "crossdata-core"
   private[this] val SparkConfPrefix = "spark"
   private[this] val CatalogConfPrefix = "catalog"
 
-  def config(conf: Config): Builder = synchronized {
-    setSparkConf(conf)
-    setCatalogConf(conf)
+  def config(key: String, value: String): BuilderType
+
+  def config(conf: Config): BuilderType = synchronized {
+    getSparkConf(conf).foreach {
+      case (key, value) => config(key, value)
+    }
+
+    getCatalogConf(conf).foreach {
+      case (key, value) => config(key, value)
+    }
+
     this
   }
 
-  def config(configFile: File): Builder = synchronized {
+  def config(configFile: File): BuilderType = synchronized {
     if (configFile.exists && configFile.canRead) {
       log.info(s"Configuration file loaded ( ${configFile.getAbsolutePath} ).")
       val conf = ConfigFactory.parseFile(configFile)
@@ -35,7 +43,7 @@ trait BuilderEnhancer {
     * Set Spark related configuration from Typesafe Config
     * @param conf
     */
-  private def setSparkConf(conf: Config): Unit = {
+  private[crossdata] def getSparkConf(conf: Config): Set[(String, String)] = {
     if (conf.hasPath(s"$ParentConfPrefix.$SparkConfPrefix")) {
 
       val sparkConf: Config = conf
@@ -47,12 +55,10 @@ trait BuilderEnhancer {
       sparkConf
         .entrySet()
         .map(entry => (entry.getKey, entry.getValue.unwrapped().toString))
-        .foreach {
-          case (key, value) => config(key, value)
-        }
-
+        .toSet
     } else {
       log.info(s"No spark configuration was found in configuration")
+      Set.empty
     }
   }
 
@@ -60,18 +66,17 @@ trait BuilderEnhancer {
     * Set  Catalog configuration from Typesafe Config
     * @param conf
     */
-  private def setCatalogConf(conf: Config) = {
+  private[crossdata] def getCatalogConf(conf: Config): Set[(String, String)] = {
     if (conf.hasPath(s"$ParentConfPrefix.$CatalogConfPrefix")) {
       import scala.collection.JavaConversions._
       conf
         .withOnlyPath(s"$ParentConfPrefix.$CatalogConfPrefix")
         .entrySet()
         .map(entry => (entry.getKey, entry.getValue.unwrapped().toString))
-        .foreach {
-          case (key, value) => config(key, value)
-        }
+        .toSet
     } else {
       log.info(s"No catalog configuration was found in configuration")
+      Set.empty
     }
   }
 
@@ -94,3 +99,4 @@ trait BuilderEnhancer {
     }
   }
 }
+

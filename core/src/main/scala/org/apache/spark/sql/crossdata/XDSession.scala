@@ -219,6 +219,8 @@ object XDSession {
     */
   class Builder extends SparkSessionBuilder with BuilderEnhancer {
 
+    override type BuilderType = Builder
+
     private[this] val options = new scala.collection.mutable.HashMap[String, String]
     private[this] var userSuppliedContext: Option[SparkContext] = None
 
