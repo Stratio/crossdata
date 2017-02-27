@@ -71,23 +71,6 @@ class XDSessionIT extends SharedXDSession with ScalaFutures {
     } (PatienceConfig(timeout = 2 seconds))
   }
 
-  it should "load catalog config from file" in {
-    val configFile = new File("src/test/resources/zookeeper-catalog.conf")
-
-    val session = XDSession
-      .builder()
-      .config(configFile)
-      .create("user")
-
-    session.catalogConfig.isEmpty shouldBe false
-    session.catalogConfig.getString("zookeeper.connectionString") shouldBe "localhost:2181"
-    session.catalogConfig.getInt("zookeeper.connectionTimeout") shouldBe 15000
-    session.catalogConfig.getInt("zookeeper.sessionTimeout") shouldBe 60000
-    session.catalogConfig.getInt("zookeeper.retryAttempts") shouldBe 5
-    session.catalogConfig.getInt("zookeeper.retryInterval") shouldBe 10000
-    session.catalogConfig.getString("prefix") shouldBe "crossdataCluster"
-  }
-
 /*
   it must "plan a PersistDataSource when creating a table " in {
     val dataframe = xdContext.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/core-reference.conf").toURI()).toString}')")
