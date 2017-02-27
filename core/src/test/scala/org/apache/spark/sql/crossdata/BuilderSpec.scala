@@ -5,9 +5,13 @@ import java.io.File
 
 import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.{Config, ConfigFactory}
+import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfter
+import org.scalatest.junit.JUnitRunner
+
 import scala.collection.mutable
 
+@RunWith(classOf[JUnitRunner])
 class BuilderSpec extends BaseXDTest with BuilderEnhancer with BeforeAndAfter{
 
   private var options: mutable.Set[(String, String)] = mutable.Set.empty[(String, String)]
