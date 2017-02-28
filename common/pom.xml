@@ -61,6 +61,20 @@
             <groupId>de.heikoseeberger</groupId>
             <artifactId>akka-http-json4s_${scala.binary.version}</artifactId>
             <version>${akka.http.json4s.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-ext_${scala.binary.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-ast_${scala.binary.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-core_${scala.binary.version}</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.json4s</groupId>

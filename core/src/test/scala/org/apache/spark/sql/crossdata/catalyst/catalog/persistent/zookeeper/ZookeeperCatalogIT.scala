@@ -8,7 +8,7 @@ import org.apache.spark.sql.catalyst.analysis.{NoSuchTableException, TableAlread
 import org.apache.spark.sql.catalyst.catalog.{CatalogStorageFormat, CatalogTable, CatalogTableType}
 import org.apache.spark.sql.crossdata.XDSession
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, TableDAO}
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{ArrayType, StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.junit.JUnitRunner
@@ -31,7 +31,19 @@ class ZookeeperCatalogIT extends BaseXDTest{ //with BeforeAndAfterAll/* extends 
   val newTableIdentifier: TableIdentifier= new TableIdentifier(newTableName)
   val tableType: CatalogTableType=CatalogTableType.EXTERNAL
   val storage: CatalogStorageFormat=new CatalogStorageFormat(None,None,None,None,false, Map.empty)
-  val schema: StructType = new StructType()
+  val Field1Name = "column1"
+  val Field2Name = "column2"
+  val FieldWitStrangeChars = "1+x"
+  val SubField1Name = "subcolumn1"
+  val SubField2Name = "subcolumn2"
+  val Field1 = StructField(Field1Name, StringType, nullable = true)
+  val Field2 = StructField(Field2Name, StringType, nullable = true)
+  val SubField = StructField(SubField1Name, StringType, nullable = true)
+  val SubField2 = StructField(SubField2Name, StringType, nullable = true)
+  val arrayField = StructField(SubField2Name, ArrayType(StringType), nullable = true)
+  val Fields = Seq[StructField](Field1, Field2)
+  val SubFields = Seq(SubField, SubField2)
+  val schema: StructType = StructType(Fields)
   val schemaAlter: StructType = new StructType()
   val catalogTable:CatalogTable=new CatalogTable(tableIdentifier, tableType, storage, schema)
   val catalogTableAlter:CatalogTable = new CatalogTable(tableIdentifier, tableType, storage, schemaAlter)
@@ -61,10 +73,14 @@ class ZookeeperCatalogIT extends BaseXDTest{ //with BeforeAndAfterAll/* extends 
 
 
   "A Zookeeper persistent catalog" should "persist tables" in {
+    //xdSession.sharedState.externalCatalog.tableExists(db,tableName) shouldBe false
+    //xdSession.sharedState.externalCatalog.createTable(catalogTable,false)
+    //xdSession.sharedState.externalCatalog.tableExists(db,tableName) shouldBe true
     externalCatalog.tableExists(db,tableName) shouldBe false
     externalCatalog.createTable(catalogTable,false)
     externalCatalog.tableExists(db,tableName) shouldBe true
   }
+
 
   "A Zookeeper persistent catalog" should  " not persist tables that exist" in {
     an[TableAlreadyExistsException] shouldBe thrownBy{
