@@ -17,6 +17,7 @@ import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.XDExternalCata
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.models.{CatalogEntityModel, DatabaseModel, PartitionModel, TableModel}
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, PartitionDAO, TableDAO}
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.sql.catalyst.util.StringUtils
 
 import scala.util.{Failure, Try}
 
@@ -85,11 +86,6 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
 
   private def getTableName(tableModel: TableModel): String = tableModel.tableDefinition.identifier.table
 
-  private def getTableNameWithPattern(tableModel: TableModel, pattern: String): Option[String] = {
-    val tableName = getTableName(tableModel)
-    if(tableName.contains(pattern)) Some(tableName) else None
-  }
-
   override def createDatabase(dbDefinition: CatalogDatabase, ignoreIfExists: Boolean): Unit = {
     import databaseDAOContainer.daoComponent.dao
     if(!ignoreIfExists && databaseExists(dbDefinition.name))
@@ -123,7 +119,7 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
   override def listDatabases(): Seq[String] = listCatalogEntities[DatabaseModel].map(getDBName)
 
   override def listDatabases(pattern: String): Seq[String] =
-    listCatalogEntities[DatabaseModel].flatMap(db => getDBNameWithPattern(db, pattern))
+    StringUtils.filterPattern(listDatabases(), pattern)
 
   override def setCurrentDatabase(db: String): Unit = { /* no-op */ }
 
@@ -171,14 +167,11 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
   override def listTables(db: String): Seq[String] =
     listCatalogEntities[TableModel].filter { table =>
       val dbName = table.tableDefinition.identifier.database
-      if(dbName.isDefined) dbName.get == db else false
-    }.map(getTableName)
+      if (dbName.isDefined) dbName.get == db else false
+    } map getTableName
 
   override def listTables(db: String, pattern: String): Seq[String] =
-    listCatalogEntities[TableModel].filter { table =>
-      val dbName = table.tableDefinition.identifier.database
-      if(dbName.isDefined) dbName.get == db else false
-    }.flatMap(table => getTableNameWithPattern(table, pattern))
+    StringUtils.filterPattern(listTables(db), pattern)
 
   override def loadTable(db: String, table: String, loadPath: String, isOverwrite: Boolean, holdDDLTime: Boolean): Unit =
     throw new UnsupportedOperationException("loadTable is not implemented")
