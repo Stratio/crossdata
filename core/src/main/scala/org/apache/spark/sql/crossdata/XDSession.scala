@@ -217,9 +217,7 @@ object XDSession {
   /**
     * Builder for [[XDSession]].
     */
-  class Builder extends SparkSessionBuilder with BuilderEnhancer {
-
-    override type BuilderType = Builder
+  class Builder extends SparkSessionBuilder with BuilderHelper {
 
     private[this] val options = new scala.collection.mutable.HashMap[String, String]
     private[this] var userSuppliedContext: Option[SparkContext] = None
@@ -238,6 +236,29 @@ object XDSession {
       this
     }
 
+    def config(conf: Config): Builder = synchronized {
+      getSparkConf(conf).foreach {
+        case (key, value) => config(key, value)
+      }
+
+      getCatalogConf(conf).foreach {
+        case (key, value) => config(key, value)
+      }
+
+      this
+    }
+
+    def config(configFile: File): Builder = synchronized {
+      if (configFile.exists && configFile.canRead) {
+        log.info(s"Configuration file loaded ( ${configFile.getAbsolutePath} ).")
+        val conf = ConfigFactory.parseFile(configFile)
+        config(conf)
+      } else {
+        log.warn(s"Configuration file ( ${configFile.getAbsolutePath} ) is not accessible.")
+      }
+
+      this
+    }
 
     override def master(master: String): Builder = config("spark.master", master)
 

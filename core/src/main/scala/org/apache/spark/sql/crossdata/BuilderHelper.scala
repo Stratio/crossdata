@@ -1,43 +1,13 @@
 package org.apache.spark.sql.crossdata
 
-import java.io.File
-
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.internal.Logging
 
-trait BuilderEnhancer extends Logging {
-
-  type BuilderType >: BuilderEnhancer <: BuilderEnhancer
+trait BuilderHelper extends Logging {
 
   private[this] val ParentConfPrefix = "crossdata-core"
   private[this] val SparkConfPrefix = "spark"
   private[this] val CatalogConfPrefix = "catalog"
-
-  def config(key: String, value: String): BuilderType
-
-  def config(conf: Config): BuilderType = synchronized {
-    getSparkConf(conf).foreach {
-      case (key, value) => config(key, value)
-    }
-
-    getCatalogConf(conf).foreach {
-      case (key, value) => config(key, value)
-    }
-
-    this
-  }
-
-  def config(configFile: File): BuilderType = synchronized {
-    if (configFile.exists && configFile.canRead) {
-      log.info(s"Configuration file loaded ( ${configFile.getAbsolutePath} ).")
-      val conf = ConfigFactory.parseFile(configFile)
-      config(conf)
-    } else {
-      log.warn(s"Configuration file ( ${configFile.getAbsolutePath} ) is not accessible.")
-    }
-
-    this
-  }
 
   /**
     * Set Spark related configuration from Typesafe Config

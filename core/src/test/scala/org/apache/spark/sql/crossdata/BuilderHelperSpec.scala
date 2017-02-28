@@ -6,25 +6,15 @@ import java.io.File
 import com.stratio.crossdata.test.BaseXDTest
 import com.typesafe.config.{Config, ConfigFactory}
 import org.junit.runner.RunWith
-import org.scalatest.BeforeAndAfter
+import org.scalatest.{BeforeAndAfter, PrivateMethodTester}
 import org.scalatest.junit.JUnitRunner
 
-import scala.collection.mutable
-
 @RunWith(classOf[JUnitRunner])
-class BuilderSpec extends BaseXDTest with BuilderEnhancer with BeforeAndAfter{
-
-  private var options: mutable.Set[(String, String)] = mutable.Set.empty[(String, String)]
-
-  override type BuilderType = BuilderEnhancer
+class BuilderHelperSpec extends BaseXDTest with BuilderHelper with BeforeAndAfter {
 
   val configFile: File = new File("src/test/resources/core-reference-spec.conf")
+  println(configFile.getAbsolutePath)
   val configuration: Config = ConfigFactory.parseFile(configFile)
-
-  override def config(key: String, value: String): BuilderType = {
-    options += key -> value
-    this
-  }
 
   "BuilderEnhancer" should "get catalog config from Config" in {
     val catalogSet = getCatalogConf(configuration)
@@ -36,43 +26,8 @@ class BuilderSpec extends BaseXDTest with BuilderEnhancer with BeforeAndAfter{
     checkSparkConf(sparkSet) shouldBe true
   }
 
-  it should "set catalog & spark configuration properly in options from Config" in {
-    config(configuration)
-    checkCatalogConf(options.toSet) shouldBe true
-    checkSparkConf(options.toSet) shouldBe true
-  }
-
-  it should "set catalog & spark configuration properly in options from Config File" in {
-    config(configFile)
-    checkCatalogConf(options.toSet) shouldBe true
-    checkSparkConf(options.toSet) shouldBe true
-  }
-
-  it should "not set options if file is not readable" in {
-    configFile.setReadable(false)
-    config(configFile)
-    options.isEmpty shouldBe true
-  }
-
-  it should "not set options if file doesn't exist" in {
-    config(new File("/path/to/non/existing/file"))
-    options.isEmpty shouldBe true
-  }
-
   // ---------------------------------------------------------------------------
 
-  before {
-    configFile.setReadable(true)
-  }
-
-  after {
-    cleanOptions()
-  }
-
-  private def cleanOptions(): Unit = {
-    options = mutable.Set.empty[(String, String)]
-  }
-  
   private def checkSparkConf(confSet: Set[(String, String)]): Boolean = {
     confSet.nonEmpty &&
       confSet.contains(("spark.app.name", "CrossdataServer")) &&
