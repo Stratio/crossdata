@@ -168,7 +168,8 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
   override def getTableOption(db: String, table: String): Option[CatalogTable] =
     getCatalogEntity[TableModel](s"$db.$table").map(t => t.tableDefinition)
 
-  override def tableExists(db: String, table: String): Boolean = getCatalogEntity[TableModel](s"$db.$table").isDefined
+  override def tableExists(db: String, table: String): Boolean =
+    getCatalogEntity[TableModel](s"$db.$table").isDefined
 
   override def listTables(db: String): Seq[String] =
     listCatalogEntities[TableModel].filter { table =>
@@ -192,23 +193,31 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
   override def loadDynamicPartitions(db: String, table: String, loadPath: String, partition: TablePartitionSpec, replace: Boolean, numDP: Int, holdDDLTime: Boolean): Unit =
     throw new UnsupportedOperationException("loadDynamicPartitions is not implemented")
 
+
+  private def partitionId(specs: TablePartitionSpec): String =
+    specs.map{case (k, v) => k + ":" +  v}.mkString("*").replace("/", "|")
+
   override def createPartitions(db: String, table: String, parts: Seq[CatalogTablePartition], ignoreIfExists: Boolean): Unit = {
-    requireTableExists(db, table)
+    requireTableExists(db, table) //TODO requireTableExists needed
     val existingParts = listCatalogEntities[PartitionModel].map(_.catalogTablePartition)
     if (!ignoreIfExists) {
-      val dupSpecs = parts.collect { case p if existingParts.contains(p.spec) => p.spec }
+//      val dupSpecs = for(param <- parts; existing <- existingParts; if param == existing) yield param
+      val dupSpecs = parts.collect { case p if existingParts.contains(p.spec) => p.spec } //TODO comparation not working
       if (dupSpecs.nonEmpty) {
-        throw new PartitionsAlreadyExistException(db = db, table = table, specs = dupSpecs)
+                throw new PartitionsAlreadyExistException(db = db, table = table, specs = dupSpecs)
+//        throw new PartitionsAlreadyExistException(db = db, table = table, specs = dupSpecs.map(_.spec))
       }
     }
 
     val tableMeta = getTable(db, table)
     val partitionColumnNames = tableMeta.partitionColumnNames
     val tablePath = new Path(tableMeta.location)
+//    val tablePath = new Path("/catalogpath/")
     // TODO: we should follow hive to roll back if one partition path failed to create.
     parts.foreach { p =>
       val partitionPath = p.storage.locationUri.map(new Path(_)).getOrElse {
-        ExternalCatalogUtils.generatePartitionPath(p.spec, partitionColumnNames, tablePath)
+        ExternalCatalogUtils.generatePartitionPath(p.spec, tableMeta.partitionColumnNames, tablePath)
+//        ExternalCatalogUtils.generatePartitionPath(p.spec, Seq("field1"), tablePath)
       }
 
       try {
@@ -222,7 +231,7 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
       }
 
       val newPartition = p.copy(storage = p.storage.copy(locationUri = Some(partitionPath.toString)))
-      partitionDAOContainer.daoComponent.dao.create(s"$db.$table.${p.spec}", PartitionModel(newPartition))
+      partitionDAOContainer.daoComponent.dao.create(s"$db.$table.${partitionId(p.spec)}", PartitionModel(newPartition))
     }
 
   }
@@ -260,14 +269,14 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
             throw new SparkException(s"Unable to delete partition path $partitionPath", e)
         }
       }
-      partitionDAOContainer.daoComponent.dao.delete(s"$db.$table.$p")
+      partitionDAOContainer.daoComponent.dao.delete(s"$db.$table.${partitionId(p)}")
 
     }
   }
 
   private def partitionExists(db: String, table: String, spec: TablePartitionSpec): Boolean = {
     requireTableExists(db, table)
-    getCatalogEntity[PartitionModel](s"$db.$table.$spec").isDefined
+    getCatalogEntity[PartitionModel](s"$db.$table.${partitionId(spec)}").isDefined
   }
 
   private def requirePartitionsExist(
@@ -323,7 +332,7 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
       }
 
       val partitionDAO = partitionDAOContainer.daoComponent.dao
-      val partitionIdentifier = s"$db.$table.$oldSpec"
+      val partitionIdentifier = s"$db.$table.${partitionId(oldSpec)}"
       partitionDAO.delete(partitionIdentifier)
       partitionDAO.update(partitionIdentifier, PartitionModel(newPartition))
     }
@@ -339,12 +348,12 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
 
   override def getPartition(db: String, table: String, spec: TablePartitionSpec): CatalogTablePartition = {
     requireTableExists(db, table)
-    getCatalogEntity[PartitionModel](s"$db.$table.$spec").map(_.catalogTablePartition)
+    getCatalogEntity[PartitionModel](s"$db.$table.${partitionId(spec)}").map(_.catalogTablePartition)
       .getOrElse(throw new NoSuchPartitionException(db, table, spec))
   }
 
   override def getPartitionOption(db: String, table: String, spec: TablePartitionSpec): Option[CatalogTablePartition] =
-    getCatalogEntity[PartitionModel](s"$db.$table.$spec").map(_.catalogTablePartition)
+    getCatalogEntity[PartitionModel](s"$db.$table.${partitionId(spec)}").map(_.catalogTablePartition)
 
   override def listPartitionNames(db: String, table: String, partialSpec: Option[TablePartitionSpec]): Seq[String] = {
 
