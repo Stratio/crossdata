@@ -32,14 +32,14 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll /* extends Sh
   )
 
   val version = "1.11.0"
-  val tableName ="table"
+  val tableName = "table"
   val tableNameNotExists = "tableNotExists"
   val newTableName = "newTableName"
-  val tableIdentifier: TableIdentifier= new TableIdentifier(tableName,Some(db.name))
-  val tableIdentifierNotExists: TableIdentifier= new TableIdentifier(tableNameNotExists)
-  val newTableIdentifier: TableIdentifier= new TableIdentifier(newTableName)
-  val tableType: CatalogTableType=CatalogTableType.EXTERNAL
-  val storage: CatalogStorageFormat=new CatalogStorageFormat(None,None,None,None,false, Map.empty)
+  val tableIdentifier: TableIdentifier = new TableIdentifier(tableName,Some(db.name))
+  val tableIdentifierNotExists: TableIdentifier = new TableIdentifier(tableNameNotExists)
+  val newTableIdentifier: TableIdentifier = new TableIdentifier(newTableName)
+  val tableType: CatalogTableType = CatalogTableType.EXTERNAL
+  val storage: CatalogStorageFormat = new CatalogStorageFormat(None,None,None,None,false, Map.empty)
   val Field1Name = "column1"
   val Field2Name = "column2"
   val FieldWitStrangeChars = "1+x"
@@ -53,13 +53,10 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll /* extends Sh
   val Fields = Seq[StructField](Field1, Field2)
   val SubFields = Seq(SubField, SubField2)
   val schema: StructType = StructType(Fields)
-  //val schema:StructType=null
   val schemaAlter: StructType = new StructType()
-  val catalogTable:CatalogTable=new CatalogTable(tableIdentifier, tableType, storage, schema)
+  val catalogTable:CatalogTable = new CatalogTable(tableIdentifier, tableType, storage, schema)
   val catalogTableAlter:CatalogTable = new CatalogTable(tableIdentifier, tableType, storage, schemaAlter)
   val catalogTableAlterNotExists:CatalogTable = new CatalogTable(tableIdentifierNotExists, tableType, storage, schemaAlter)
-
-
 
   val db2 = db.copy(s"${db.name}2")
 
