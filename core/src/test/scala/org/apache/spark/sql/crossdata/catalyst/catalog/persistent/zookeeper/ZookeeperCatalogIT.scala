@@ -159,13 +159,7 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll/* extends Sha
 
   it should "create two partitions" in {
     externalCatalog.createPartitions(databaseName, tableName, seqCatalogPartitions, true)
-    //TODO use listPartitions instead of getPartition
-    val result = externalCatalog.getPartition(databaseName, tableName, spec1) ::
-      externalCatalog.getPartition(databaseName, tableName, spec2) :: Nil
-    result should be (seqCatalogPartitions)
-    //    val specs = spec1 ++ spec2
-//    val result = externalCatalog.listPartitions(databaseName, tableName, Option(specs))
-//    result should be (seqCatalogPartitions)
+    externalCatalog.listPartitions(databaseName, tableName, None) should be (seqCatalogPartitions)
     externalCatalog.dropPartitions(databaseName, tableName, seqCatalogPartitions.map(_.spec), true, false, false)
   }
 
