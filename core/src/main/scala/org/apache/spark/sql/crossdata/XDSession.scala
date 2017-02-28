@@ -237,11 +237,13 @@ object XDSession {
     }
 
     def config(conf: Config): Builder = synchronized {
-      getSparkConf(conf).foreach {
+      val configuration = ConfigFactory.load(conf)
+
+      getSparkConf(configuration).foreach {
         case (key, value) => config(key, value)
       }
 
-      getCatalogConf(conf).foreach {
+      getCatalogConf(configuration).foreach {
         case (key, value) => config(key, value)
       }
 
@@ -251,7 +253,7 @@ object XDSession {
     def config(configFile: File): Builder = synchronized {
       if (configFile.exists && configFile.canRead) {
         log.info(s"Configuration file loaded ( ${configFile.getAbsolutePath} ).")
-        val conf = ConfigFactory.parseFile(configFile)
+        val conf = ConfigFactory.load(ConfigFactory.parseFile(configFile))
         config(conf)
       } else {
         log.warn(s"Configuration file ( ${configFile.getAbsolutePath} ) is not accessible.")
