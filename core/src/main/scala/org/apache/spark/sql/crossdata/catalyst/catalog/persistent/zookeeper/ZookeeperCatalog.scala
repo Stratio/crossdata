@@ -339,11 +339,8 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
 
   override def alterPartitions(db: String, table: String, parts: Seq[CatalogTablePartition]): Unit = {
     requirePartitionsExist(db, table, parts.map(p => p.spec))
-    parts.foreach { partition =>
-      val partitionIdentifier = s"$db.$table.${partition.spec}"
-      partitionDAOContainer.daoComponent.dao.delete(partitionIdentifier)
-      partitionDAOContainer.daoComponent.dao.create(partitionIdentifier, PartitionModel(partition))
-    }
+    dropPartitions(db, table, parts.map(_.spec), false, false, false)
+    createPartitions(db, table, parts, false)
   }
 
   override def getPartition(db: String, table: String, spec: TablePartitionSpec): CatalogTablePartition = {
@@ -360,7 +357,7 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
     val partitionColumnNames = getTable(db, table).partitionColumnNames
     listPartitions(db, table, partialSpec).map { partition =>
       partitionColumnNames.map { name =>
-        escapePathName(name) + "=" + escapePathName(partition.spec(name))
+        escapePathName(name) + "=" + escapePathName(partition.spec(name)) //partitionColumnName always should be inside spec
       }.mkString("/")
     }.sorted
   }
