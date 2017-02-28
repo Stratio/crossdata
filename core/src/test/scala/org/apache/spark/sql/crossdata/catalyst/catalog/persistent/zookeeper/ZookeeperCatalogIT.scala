@@ -4,19 +4,15 @@ import java.io.File
 
 import com.stratio.crossdata.test.BaseXDTest
 import org.apache.spark.sql.catalyst.TableIdentifier
-import org.apache.spark.sql.catalyst.analysis.{NoSuchPartitionException, PartitionAlreadyExistsException}
-import org.apache.spark.sql.catalyst.catalog.CatalogTypes.TablePartitionSpec
-import org.apache.spark.sql.catalyst.catalog._
+import org.apache.spark.sql.catalyst.analysis.{NoSuchPartitionException, NoSuchPartitionsException, PartitionsAlreadyExistException}
+import org.apache.spark.sql.catalyst.catalog.{CatalogDatabase, _}
 import org.apache.spark.sql.crossdata.XDSession
-import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.XDExternalCatalog.TypesafeConfigSettings
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.models.PartitionModel
 import org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.daos.{DatabaseDAO, PartitionDAO, TableDAO}
-import org.apache.spark.sql.types.{DataType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.junit.JUnitRunner
-
-import scala.util.Try
 
 //TODO: Extract generic test cases as in Crossdata for spark 1.6.x 's `GenericCatalogTests`
 //TODO: Improve and user SharedXDSession
@@ -36,15 +32,35 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll/* extends Sha
     )
     .create("user01")
 
+  import xdSession.sharedState.externalCatalog
 
-  val db = "testdb"
-  val table = "testtable"
+  object DAO {
+    import xdSession.catalogConfig
+    val dbs = new DatabaseDAO(catalogConfig)
+    val tables = new TableDAO(catalogConfig)
+    val partitions = new PartitionDAO(catalogConfig)
+  }
 
-  val catalogDB = CatalogDatabase(
-    db,
-    "description",
-    "locationURI",
-    Map[String, String]("property1" -> "value1"))
+  protected def cleanPersistence(): Unit = Seq(DAO.dbs.dao, DAO.tables.dao, DAO.partitions.dao) foreach (_.deleteAll)
+
+  override protected def beforeAll(): Unit = {
+    cleanPersistence()
+    externalCatalog.createDatabase(db, true)
+    externalCatalog.createTable(catalogTable, true)
+  }
+
+  override protected def afterAll(): Unit = cleanPersistence()
+
+  val databaseName = "customDatabase"
+  val tableName = "customTable"
+  val db = CatalogDatabase(
+    databaseName,
+    "some description",
+    "/",
+    Map("a" -> "b")
+  )
+
+  val db2 = db.copy(s"${db.name}2")
 
   val fieldName1 = "field1"
   val fieldName2 = "field2"
@@ -59,7 +75,7 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll/* extends Sha
     Map.empty[String, String])
 
   val catalogTable = CatalogTable(
-    TableIdentifier(table, Some(db)),
+    TableIdentifier(tableName, Some(databaseName)),
     CatalogTableType.EXTERNAL,
     storageFormat,
     new StructType(Array(StructField(fieldName1, StringType))),
@@ -80,70 +96,115 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll/* extends Sha
   val basicCatalogTablePartitionWithParameters =
     CatalogTablePartition(
       spec2,
-      CatalogStorageFormat.empty,
+      storageFormat,
       Map("param1" -> "value1")
     )
 
   import xdSession.sharedState.externalCatalog
-  val partitionDAO =  new PartitionDAO(xdSession.catalogConfig)
 
   val seqCatalogPartitions = Seq(basicCatalogTablePartition, basicCatalogTablePartitionWithParameters)
-
-  override protected def beforeAll(): Unit = {
-    externalCatalog.createDatabase(catalogDB, true)
-    externalCatalog.createTable(catalogTable, true)
-  }
-  override def afterAll(): Unit = {
-    externalCatalog.dropDatabase(db, true, false)
-    externalCatalog.dropTable(db, table, true, false)
-  }
-
-  "A Zookeeper persistent catalog" should "create a partition" in {
-    val seqWithOnePartitionSpec = Seq(basicCatalogTablePartition)
-    externalCatalog.createPartitions(db, table, seqWithOnePartitionSpec, true)
-//    externalCatalog.listPartitions(db, table, Option(spec1)) should be (seqWithOnePartitionSpec)
-//    externalCatalog.dropPartitions(db, table, Seq(spec1), true, false, false)
-
-    val partitionString = spec1.map{case (k, v) => k + ":" +  v}.mkString("*").replace("/", "|")
-    val partitionIdentifier = s"$db.$table.$partitionString"
-    partitionDAO.dao.get(partitionIdentifier).get.get should be (basicPartitionModel)
-
-  }
-
-  it should "thrown an exception creating a partition that already exists" in {
-    val seqWithOnePartitionSpec = Seq(basicCatalogTablePartition)
-    externalCatalog.createPartitions(db, table, seqWithOnePartitionSpec, false)
-    an [PartitionAlreadyExistsException] should be thrownBy externalCatalog.createPartitions(db, table, seqWithOnePartitionSpec, false)
-    externalCatalog.dropPartitions(db, table, Seq(spec1), true, false, false)
-  }
+//
+//  "A Zookeeper persistent catalog" should "be able to persist databases" in {
+//    externalCatalog.createDatabase(db, true)
+//    externalCatalog.databaseExists(databaseName) shouldBe true
+//  }
+//
+//  it should "be able to check whether a table has been persited or not" in {
+//    externalCatalog.databaseExists("fakeDb") shouldBe false
+//    externalCatalog.databaseExists(databaseName) shouldBe true
+//  }
+//
+//  it should "be able to retrieve a previously persisted database" in {
+//    val retrievedDb = externalCatalog.getDatabase(databaseName)
+//    retrievedDb shouldBe db
+//  }
+//
+//  it should "be able to alter a previously persisted database" in {
+//    val changedDb = db.copy(description = "a different description")
+//    externalCatalog.alterDatabase(changedDb)
+//    externalCatalog.getDatabase(databaseName) should not equal(db)
+//  }
+//
+//  it should "be able to list all databases" in {
+//    externalCatalog.createDatabase(db2, false)
+//    externalCatalog.listDatabases() should contain theSameElementsAs (Seq(db,db2).map(_.name))
+//  }
+//
+//  //TODO: Not currently implemented
+//  /*it should "be able to set a persisted database as current database and isolate tables" in {
+//  }*/
+//
+//  it should "be able to drop a database" in {
+//    externalCatalog.databaseExists(databaseName) shouldBe true
+//    externalCatalog.dropDatabase(databaseName, false, false)
+//    externalCatalog.databaseExists(databaseName) shouldBe false
+//  }
+//
+//  /*** PARTITIONS ***/
+//
+//  it should "create a partition" in {
+//    val seqWithOnePartitionSpec = Seq(basicCatalogTablePartition)
+//    externalCatalog.createPartitions(databaseName, tableName, seqWithOnePartitionSpec, true)
+//    externalCatalog.listPartitions(databaseName, tableName, Option(spec1)) should be (seqWithOnePartitionSpec)
+//    externalCatalog.dropPartitions(databaseName, tableName, Seq(spec1), true, false, false)
+//  }
+//
+//  it should "thrown an exception creating a partition that already exists" in {
+//    val seqWithOnePartitionSpec = Seq(basicCatalogTablePartition)
+//    externalCatalog.createPartitions(databaseName, tableName, seqWithOnePartitionSpec, false)
+//    an [PartitionsAlreadyExistException] should be thrownBy externalCatalog.createPartitions(databaseName, tableName, seqWithOnePartitionSpec, false)
+//    externalCatalog.dropPartitions(databaseName, tableName, Seq(spec1), true, false, false)
+//  }
 
   it should "create two partitions" in {
-    externalCatalog.createPartitions(db, table, seqCatalogPartitions, true)
+    externalCatalog.createPartitions(databaseName, tableName, seqCatalogPartitions, true)
     val specs = spec1 ++ spec2
-    val resultPartitions = externalCatalog.listPartitions(db, table, Option(specs))
+    val resultPartitions = externalCatalog.listPartitions(databaseName, tableName, Option(specs))
     resultPartitions should be (seqCatalogPartitions)
-    externalCatalog.dropPartitions(db, table, seqCatalogPartitions.map(_.spec), true, false, false)
+    externalCatalog.dropPartitions(databaseName, tableName, seqCatalogPartitions.map(_.spec), true, false, false)
   }
 
   it should "drop a partition" in {
-    externalCatalog.createPartitions(db, table, Seq(basicCatalogTablePartition), true)
-    externalCatalog.dropPartitions(db, table, seqCatalogPartitions.map(_.spec), true, false, false)
-    an [NoSuchPartitionException] should be thrownBy externalCatalog.getPartition(db, table, basicCatalogTablePartition.spec)
+    externalCatalog.createPartitions(databaseName, tableName, Seq(basicCatalogTablePartition), true)
+    externalCatalog.dropPartitions(databaseName, tableName, seqCatalogPartitions.map(_.spec), true, false, false)
+    an [NoSuchPartitionException] should be thrownBy externalCatalog.getPartition(databaseName, tableName, basicCatalogTablePartition.spec)
+  }
+
+
+  it should "throw an Exception erasing a partition that not exists" in {
+    an [NoSuchPartitionsException] should be thrownBy externalCatalog.dropPartitions(databaseName, tableName, seqCatalogPartitions.map(_.spec), false, false, false)
   }
 
   it should "rename a partition" in {
-    externalCatalog.createPartitions(db, table, Seq(basicCatalogTablePartition), true)
+    externalCatalog.createPartitions(databaseName, tableName, Seq(basicCatalogTablePartition), true)
     val newSpecs: Seq[CatalogTypes.TablePartitionSpec] = Seq(spec1.map{case (k,v) => k -> (v + "1")})
-    externalCatalog.renamePartitions(db, table, Seq(spec1), newSpecs)
-    val renamedPartition = externalCatalog.getPartition(db, table, newSpecs.head)
+    externalCatalog.renamePartitions(databaseName, tableName, Seq(spec1), newSpecs)
+    val renamedPartition = externalCatalog.getPartition(databaseName, tableName, newSpecs.head)
     renamedPartition should be (basicCatalogTablePartition.copy(spec = newSpecs.head))
-    externalCatalog.dropPartitions(db, table, seqCatalogPartitions.map(_.spec), true, false, false)
+    externalCatalog.dropPartitions(databaseName, tableName, newSpecs, true, false, false)
   }
 
   it should "get a partition" in {
-    externalCatalog.createPartitions(db, table, Seq(basicCatalogTablePartition), true)
-    externalCatalog.getPartition(db, table, basicCatalogTablePartition.spec) should be (basicCatalogTablePartition)
-    externalCatalog.dropPartitions(db, table, seqCatalogPartitions.map(_.spec), true, false, false)
+    externalCatalog.createPartitions(databaseName, tableName, Seq(basicCatalogTablePartition), true)
+    externalCatalog.getPartition(databaseName, tableName, basicCatalogTablePartition.spec) should be (basicCatalogTablePartition)
+    externalCatalog.dropPartitions(databaseName, tableName, seqCatalogPartitions.map(_.spec), true, false, false)
   }
+
+  it should "get None as a result of getPartitionOption when partition doesn't exists" in {
+    externalCatalog.getPartitionOption(databaseName, tableName, basicCatalogTablePartition.spec) should be (None)
+  }
+
+  //TODO
+  it should "alter a partition" in {
+    externalCatalog.createPartitions(databaseName, tableName, seqCatalogPartitions, true)
+    val newSpecs: Seq[CatalogTypes.TablePartitionSpec] = Seq(spec1.map{case (k,v) => k -> (v + "1")})
+    externalCatalog.alterPartitions(databaseName, tableName, seqCatalogPartitions)
+    val alteredPartition = externalCatalog.getPartition(databaseName, tableName, newSpecs.head)
+    alteredPartition should be (basicCatalogTablePartition.copy(spec = newSpecs.head))
+    externalCatalog.dropPartitions(databaseName, tableName, newSpecs ++ seqCatalogPartitions.map(_.spec), true, false, false)
+  }
+
+  //TODO listpartitions
+  //TODO listpartitionNames
 
 }
