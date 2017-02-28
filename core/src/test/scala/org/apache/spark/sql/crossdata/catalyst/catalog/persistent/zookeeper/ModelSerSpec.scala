@@ -11,7 +11,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ModelSer extends XDSerializationTest[TableModel] with CrossdataCommonSerializer {
+class ModelSerSpec extends XDSerializationTest[TableModel] with CrossdataCommonSerializer {
 
   override implicit val formats: Formats = json4sJacksonFormats
 
@@ -26,7 +26,7 @@ class ModelSer extends XDSerializationTest[TableModel] with CrossdataCommonSeria
   ))
 
   override def testCases: Seq[TestCase] = Seq(
-    TestCase("dadada", model)
+    TestCase("marshall & unmarshall TableModel instances", model)
   )
 
 
