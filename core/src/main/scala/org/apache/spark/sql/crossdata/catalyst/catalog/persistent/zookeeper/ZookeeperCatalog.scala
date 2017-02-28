@@ -91,15 +91,14 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
   }
 
   override def createDatabase(dbDefinition: CatalogDatabase, ignoreIfExists: Boolean): Unit = {
-    val dao = databaseDAOContainer.daoComponent.dao
+    import databaseDAOContainer.daoComponent.dao
     if(!ignoreIfExists && databaseExists(dbDefinition.name))
       throw new DatabaseAlreadyExistsException(dbDefinition.name)
     dao.create(dbDefinition.name, DatabaseModel(dbDefinition))
   }
 
   override def dropDatabase(db: String, ignoreIfNotExists: Boolean, cascade: Boolean): Unit = {
-    if(ignoreIfNotExists && !databaseExists(db))
-      throw new NoSuchDatabaseException(db)
+    if(!ignoreIfNotExists && !databaseExists(db)) throw new NoSuchDatabaseException(db)
     if(cascade)
       listTables(db).foreach(table => dropTable(db, table, true, true))
 
@@ -109,7 +108,7 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
   override def alterDatabase(dbDefinition: CatalogDatabase): Unit = {
     val dbName = dbDefinition.name
     requireDbExists(dbName)
-    val dao = databaseDAOContainer.daoComponent.dao
+    import databaseDAOContainer.daoComponent.dao
     dao.update(dbName, DatabaseModel(dbDefinition))
   }
 
@@ -129,7 +128,7 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
   override def setCurrentDatabase(db: String): Unit = { /* no-op */ }
 
   override def createTable(tableDefinition: CatalogTable, ignoreIfExists: Boolean): Unit = {
-    val dao = tableAndViewDAOContainer.daoComponent.dao
+    import tableAndViewDAOContainer.daoComponent.dao
     val tableName = tableDefinition.identifier.table
     val dbName = tableDefinition.identifier.database.getOrElse(throw new NoSuchTableException(unknown, tableName))
     if(!ignoreIfExists && tableExists(dbName, tableName))
@@ -138,25 +137,24 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
   }
 
   override def dropTable(db: String, table: String, ignoreIfNotExists: Boolean, purge: Boolean): Unit = {
-    if(ignoreIfNotExists && !tableExists(db, table))
-      throw new NoSuchTableException(db, table)
+    if(!ignoreIfNotExists && !tableExists(db, table)) throw new NoSuchTableException(db, table)
 
     tableAndViewDAOContainer.daoComponent.dao.delete(s"$db.$table")
   }
 
   override def renameTable(db: String, oldName: String, newName: String): Unit = {
     requireTableExists(db, oldName)
-    val dao = tableAndViewDAOContainer.daoComponent.dao
     val oldTable = getTable(db, oldName)
     val newTable = oldTable.copy(identifier = TableIdentifier(newName, Some(db)))
-    dao.update(s"$db.$oldName", TableModel(newTable))
+    dropTable(db, oldName, false, false)
+    createTable(newTable, false)
   }
 
   override def alterTable(tableDefinition: CatalogTable): Unit = {
     val tableName = tableDefinition.identifier.table
     val dbName = tableDefinition.identifier.database.getOrElse(throw new NoSuchTableException(unknown, tableName))
     requireTableExists(dbName, tableName)
-    val dao = tableAndViewDAOContainer.daoComponent.dao
+    import tableAndViewDAOContainer.daoComponent.dao
     dao.update(s"$dbName.$tableName", TableModel(tableDefinition))
   }
 
