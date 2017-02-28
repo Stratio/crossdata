@@ -200,7 +200,14 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll/* extends Sha
 //  }
 
 
-  it should "list two partitions" in {
+  it should "list two partitions without partialSpec" in {
+    externalCatalog.createPartitions(databaseName, tableName, seqCatalogPartitions, true)
+    val partitions = externalCatalog.listPartitions(databaseName, tableName, None)
+    partitions should be (seqCatalogPartitions)
+    externalCatalog.dropPartitions(databaseName, tableName, seqCatalogPartitions.map(_.spec), true, false, false)
+  }
+
+  it should "list two partitions with partialSpec" in {
     externalCatalog.createPartitions(databaseName, tableName, seqCatalogPartitions, true)
     val partitions = externalCatalog.listPartitions(databaseName, tableName, Some(seqCatalogPartitions.map(_.spec).reduce(_++_)))
     partitions should be (seqCatalogPartitions)
