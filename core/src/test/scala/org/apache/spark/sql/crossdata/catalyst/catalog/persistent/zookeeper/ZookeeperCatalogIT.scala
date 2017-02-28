@@ -88,12 +88,12 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll /* extends Sh
 
 
   "A Zookeeper persistent catalog" should "persist tables" in {
-    //externalCatalog.tableExists(db.name,tableName) shouldBe false
+    externalCatalog.tableExists(db.name,tableName) shouldBe false
     externalCatalog.createTable(catalogTable,false)
-    //externalCatalog.tableExists(db.name,tableName) shouldBe true
+    externalCatalog.tableExists(db.name,tableName) shouldBe true
   }
 
-/*
+
   "A Zookeeper persistent catalog" should  " not persist tables that exist" in {
     an[TableAlreadyExistsException] shouldBe thrownBy{
       externalCatalog.createTable(catalogTable,false)
@@ -217,7 +217,7 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll /* extends Sh
     externalCatalog.dropDatabase(databaseName, false, false)
     externalCatalog.databaseExists(databaseName) shouldBe false
   }
-*/
+
   override protected def afterAll(): Unit = cleanPersistence()
 
 
