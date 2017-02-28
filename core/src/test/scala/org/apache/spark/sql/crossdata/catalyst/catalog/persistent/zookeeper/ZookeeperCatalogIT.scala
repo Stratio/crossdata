@@ -93,7 +93,6 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll /* extends Sh
     externalCatalog.tableExists(db.name,tableName) shouldBe true
   }
 
-
   "A Zookeeper persistent catalog" should  " not persist tables that exist" in {
     an[TableAlreadyExistsException] shouldBe thrownBy{
       externalCatalog.createTable(catalogTable,false)
@@ -117,7 +116,7 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll /* extends Sh
     externalCatalog.createTable(catalogTable,true)
     externalCatalog.tableExists(db.name,tableName) shouldBe true
     externalCatalog.renameTable(db.name, tableName, newTableName)
-    externalCatalog.tableExists(db.name,newTableName) shouldBe true
+    externalCatalog.tableExists(db.name, newTableName) shouldBe true
 
   }
 
@@ -126,6 +125,46 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll /* extends Sh
       externalCatalog.renameTable(db.name, tableNameNotExists, newTableName)
     }
   }
+
+  "A Zookeeper persistent catalog" should  " get a table" in {
+    externalCatalog.createTable(catalogTable,true)
+    externalCatalog.tableExists(db.name,tableName) shouldBe true
+    val table = externalCatalog.getTable(db.name, tableName)
+    table.identifier.database shouldBe Some(db.name)
+    table.identifier.table shouldBe tableName
+    table.schema.toList should contain theSameElementsAs schema.toList
+  }
+
+  "A Zookeeper persistent catalog" should  " get table option" in {
+    externalCatalog.createTable(catalogTable,true)
+    externalCatalog.tableExists(db.name, tableName) shouldBe true
+    val table=externalCatalog.getTableOption(db.name, tableName).get
+    table should not be None
+    table.identifier.database shouldBe Some(db.name)
+    table.identifier.table shouldBe tableName
+    table.schema.toList should contain theSameElementsAs schema.toList
+  }
+
+  "A Zookeeper persistent catalog" should  " know if table exists" in {
+    externalCatalog.createTable(catalogTable,true)
+    externalCatalog.tableExists(db.name,tableName) shouldBe true
+  }
+
+  "A Zookeeper persistent catalog" should  " listTables" in {
+    externalCatalog.createTable(catalogTable,true)
+    externalCatalog.tableExists(db.name,tableName) shouldBe true
+    val listTables=externalCatalog.listTables(db.name)
+    listTables.size shouldBe 2
+    listTables should contain (tableName)
+
+  }
+
+
+//  TODO Uncomment when load table be available
+//  "A Zookeeper persistent catalog" should  " loadTables" ignore {
+//    val table=externalCatalog.loadTable(db.name,tableName,"/stratio/crossdata/crossdataCluster_tablesviews/customDatabase.table",false,false)
+//  }
+
 
   "A Zookeeper persistent catalog" should  " alter table" in {
     externalCatalog.createTable(catalogTable,true)
@@ -140,45 +179,6 @@ class ZookeeperCatalogIT extends BaseXDTest with BeforeAndAfterAll /* extends Sh
       externalCatalog.alterTable(catalogTableAlterNotExists)
     }
   }
-
-  "A Zookeeper persistent catalog" should  " get a table" in {
-    externalCatalog.createTable(catalogTable,true)
-    externalCatalog.tableExists(db.name,tableName) shouldBe true
-    val table=externalCatalog.getTable(tableName, db.name)
-    table.identifier.database shouldBe db.name
-    table.identifier.table shouldBe tableName
-    table.schema.toList should contain theSameElementsAs schema.toList
-  }
-
-  "A Zookeeper persistent catalog" should  " get table option" in {
-    externalCatalog.createTable(catalogTable,true)
-    externalCatalog.tableExists(db.name,tableName) shouldBe true
-    val table=externalCatalog.getTableOption(tableName,db.name).get
-    table should not be None
-    table.identifier.database shouldBe db.name
-    table.identifier.table shouldBe tableName
-    table.schema.toList should contain theSameElementsAs schema.toList
-  }
-
-  "A Zookeeper persistent catalog" should  " know if table exists" in {
-    externalCatalog.createTable(catalogTable,true)
-    externalCatalog.tableExists(db.name,tableName) shouldBe true
-  }
-
-  "A Zookeeper persistent catalog" should  " listTables" in {
-    externalCatalog.createTable(catalogTable,true)
-    externalCatalog.tableExists(db.name,tableName) shouldBe true
-    val listTables=externalCatalog.listTables(db.name)
-    listTables.size shouldBe 1
-    listTables should contain (tableName)
-
-  }
-
-  "A Zookeeper persistent catalog" should  " loadTables" in {
-    externalCatalog.loadTable(db.name,tableName,"",false,false)
-  }
-
-
 
   "A Zookeeper persistent catalog" should "be able to persist databases" in {
     externalCatalog.databaseExists(databaseName) shouldBe false
