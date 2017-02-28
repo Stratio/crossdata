@@ -22,6 +22,7 @@ hose {
     AT_FLAKINESS_PERCENTAGE = 0
     AT_NEW_FLAKINESS_PERCENTAGE = 0
 
+    /*
     ITSERVICES = [
         ['ZOOKEEPER': [
             'image': 'jplock/zookeeper:3.5.2-alpha'],
@@ -69,6 +70,21 @@ hose {
         |    -Dstreaming.receiver.zookeeper.connectionString=%%ZOOKEEPER:2181
         |    -Dlauncher.sparkHome=/opt/sds/spark/
         | """
+     */
+
+    // TODO Enable services by requirement
+    ITSERVICES = [
+        ['ZOOKEEPER': [
+            'image': 'jplock/zookeeper:3.5.2-alpha'],
+            'sleep': 30,
+            'healthcheck': 2181
+            ]
+    ]
+
+    ITPARAMETERS = """
+        |    -DCROSSDATA_CORE_CATALOG_ZOOKEEPER_CONNECTION_STRING=%%ZOOKEEPER:2181
+        | """
+
 
     ATSERVICES = [
         ['MONGODB':[
