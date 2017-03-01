@@ -71,21 +71,28 @@ class XDSessionIT extends SharedXDSession with ScalaFutures {
     } (PatienceConfig(timeout = 2 seconds))
   }
 
-  it should "load catalog config from file" in {
-    val configFile = new File("src/test/resources/zookeeper-catalog.conf")
+  it should "be able to use an external catalog" in {
 
-    val session = XDSession
-      .builder()
-      .config(configFile)
-      .create("user")
+    def xdSession(user: String): XDSession = XDSession.builder()
+      .master("local[1]")
+      .config(new File("src/test/resources/zookeeper-catalog.conf"))
+      .config(
+        "crossdata-core.catalog.class",
+        "org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.ZookeeperCatalog"
+      )
+      .create(user)
 
-    session.catalogConfig.isEmpty shouldBe false
-    session.catalogConfig.getString("zookeeper.connectionString") shouldBe "localhost:2181"
-    session.catalogConfig.getInt("zookeeper.connectionTimeout") shouldBe 15000
-    session.catalogConfig.getInt("zookeeper.sessionTimeout") shouldBe 60000
-    session.catalogConfig.getInt("zookeeper.retryAttempts") shouldBe 5
-    session.catalogConfig.getInt("zookeeper.retryInterval") shouldBe 10000
-    session.catalogConfig.getString("prefix") shouldBe "crossdataCluster"
+
+    val sessionA = xdSession("user01")
+    val sessionB = xdSession("user02")
+
+    sessionA.catalog.createExternalTable("foo", "src/test/resources/foo.json", "json")
+    sessionB.catalog.tableExists("foo") shouldBe true
+
+    sessionB.sql("DROP TABLE foo")
+
+    sessionA.catalog.tableExists("foo") shouldBe false
+
   }
 
 /*
