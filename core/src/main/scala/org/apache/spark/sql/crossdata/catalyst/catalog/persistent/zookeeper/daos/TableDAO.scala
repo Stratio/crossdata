@@ -16,7 +16,7 @@ import scala.util.Try
 class TableDAO(configuration: Config) extends GenericDAOComponent[TableModel]
   with TypesafeConfigComponent with Slf4jLoggerComponent with CrossdataSerializer with PrefixedDAO {
 
-  override implicit val formats = json4sJacksonFormats + SQLResultSerializer + UUIDSerializer +
+  override implicit val formats: Formats = json4sJacksonFormats + SQLResultSerializer + UUIDSerializer +
     StructTypeSerializer + FiniteDurationSerializer + CommandSerializer + StreamedSuccessfulSQLResultSerializer +
     AkkaMemberStatusSerializer + AkkaClusterMemberSerializer + new SortedSetSerializer[Member]()
 

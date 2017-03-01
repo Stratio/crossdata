@@ -4,7 +4,7 @@ import org.apache.spark.sql.catalyst.catalog.CatalogTable
 import org.apache.spark.sql.crossdata
 
 
-case class TableModel private (
+case class TableModel (
                        tableDefinition: CatalogTable,
                        version: String =  crossdata.CrossdataVersion
                      ) extends CatalogEntityModel
