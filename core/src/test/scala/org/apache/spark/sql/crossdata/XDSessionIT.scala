@@ -71,6 +71,30 @@ class XDSessionIT extends SharedXDSession with ScalaFutures {
     } (PatienceConfig(timeout = 2 seconds))
   }
 
+  it should "be able to use an external catalog" in {
+
+    def xdSession(user: String): XDSession = XDSession.builder()
+      .master("local[1]")
+      .config(new File("src/test/resources/zookeeper-catalog.conf"))
+      .config(
+        "crossdata-core.catalog.class",
+        "org.apache.spark.sql.crossdata.catalyst.catalog.persistent.zookeeper.ZookeeperCatalog"
+      )
+      .create(user)
+
+
+    val sessionA = xdSession("user01")
+    val sessionB = xdSession("user02")
+
+    sessionA.catalog.createExternalTable("foo", "src/test/resources/foo.json", "json")
+    sessionB.catalog.tableExists("foo") shouldBe true
+
+    sessionB.sql("DROP TABLE foo")
+
+    sessionA.catalog.tableExists("foo") shouldBe false
+
+  }
+
 /*
   it must "plan a PersistDataSource when creating a table " in {
     val dataframe = xdContext.sql(s"CREATE TABLE jsonTable USING org.apache.spark.sql.json OPTIONS (path '${Paths.get(getClass.getResource("/core-reference.conf").toURI()).toString}')")
