@@ -61,7 +61,7 @@ class XDQueryExecution(sparkSession: SparkSession, parsedPlan: LogicalPlan, cata
 
 
   // Wrap the SparkPlan so that the native execution can be tried => [executeCollect]
-  override lazy val executedPlan: SparkPlan = new XDPlan(optimizedPlan, prepareForExecution(sparkPlan)) // TODO sparkPlan is evaluated??
+  // TODO enable XDPlan => https://stratio.atlassian.net/browse/DCS-2055 override lazy val executedPlan: SparkPlan = new XDPlan(optimizedPlan, prepareForExecution(sparkPlan))
 
 
   // Extracts

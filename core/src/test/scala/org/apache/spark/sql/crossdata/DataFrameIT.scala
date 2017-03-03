@@ -47,7 +47,8 @@ class DataFrameIT extends SharedXDSession with Inside {
   xdSessionProvider.newSession("david")
 */
 
-  "A XDDataFrame (select * from nativeRelation)" should "be executed natively" in {
+  // TODO enable XDPlan => https://stratio.atlassian.net/browse/DCS-2055
+  "A XDDataFrame (select * from nativeRelation)" should "be executed natively" ignore {
     val result = Dataset.ofRows(spark, LogicalRelation(mockNativeRelation, None, None)).collect()
     result should have length 1
     result(0)(0) should equal(nativeRows(0).getInt(0))
@@ -74,7 +75,8 @@ class DataFrameIT extends SharedXDSession with Inside {
     result(0) should equal(sparkRows(0))
   }
 
-  "A XDDataFrame " should "execute collectAsList natively" in {
+  // TODO enable XDPlan => https://stratio.atlassian.net/browse/DCS-2055
+  "A XDDataFrame " should "execute collectAsList natively" ignore {
     val result = Dataset.ofRows(spark, LogicalRelation(mockNativeRelation)).collectAsList()
     result should have length 1
     result.get(0)(0) should equal(nativeRows(0).getInt(0))
@@ -85,7 +87,8 @@ class DataFrameIT extends SharedXDSession with Inside {
     dataframe.logicalPlan should matchPattern { case Limit(Literal(5, _), _) => }
   }
 
-  "A XDDataFrame " should "return a XDDataFrame when applying a count" in {
+  // TODO enable XDPlan => https://stratio.atlassian.net/browse/DCS-2055
+  "A XDDataFrame " should "return a XDDataFrame when applying a count" ignore {
     println("init")
     val result = Dataset.ofRows(spark, LogicalRelation(mockNativeRelation)).filter("id < 5").collect()
     result should have length 1
