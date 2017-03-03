@@ -86,6 +86,9 @@ class XDSessionIT extends SharedXDSession with ScalaFutures {
     val sessionA = xdSession("user01")
     val sessionB = xdSession("user02")
 
+    sessionA.catalog.listTables().count() shouldBe 0
+    sessionB.catalog.listTables().count() shouldBe 0
+
     sessionA.catalog.createExternalTable("foo", "src/test/resources/foo.json", "json")
     sessionB.catalog.tableExists("foo") shouldBe true
 

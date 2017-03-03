@@ -76,7 +76,8 @@ class ZookeeperCatalog(settings: TypesafeConfigSettings)
   private def listCatalogEntities[M <: CatalogEntityModel : Manifest](
                                                                        implicit daoContainer: DaoContainer[M]
                                                                      ): Seq[M] = lockObject.synchronized {
-    daoContainer.daoComponent.dao.getAll().get
+    if(!daoContainer.daoComponent.dao.existsPath.get) Seq.empty
+    else daoContainer.daoComponent.dao.getAll().get
   }
 
   private def getDBName(databaseModel: DatabaseModel): String = databaseModel.db.name
