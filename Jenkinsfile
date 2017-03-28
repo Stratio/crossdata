@@ -1,7 +1,7 @@
 @Library('libpipelines@master') _
 
 hose {
-    MAIL = 'crossdata'
+    EMAIL = 'crossdata'
     SLACKTEAM = 'stratiocrossdata'
     MODULE = 'crossdata'
     REPOSITORY = 'crossdata'
