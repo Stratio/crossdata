@@ -1,3 +1,9 @@
+--
+-- © 2017 Stratio Big Data Inc., Sucursal en España. All rights reserved.
+--
+-- This software – including all its source code – contains proprietary information of Stratio Big Data Inc., Sucursal en España and may not be revealed, sold, transferred, modified, distributed or otherwise made available, licensed or sublicensed to third parties; nor reverse engineered, disassembled or decompiled, without express written authorization from Stratio Big Data Inc., Sucursal en España.
+--
+
 CREATE SCHEMA databasetest;
 CREATE TABLE databasetest.crossdatanumbers (col_1 smallint, col_2 integer, col_3 bigint, col_4 decimal, col_5 numeric, col_6 real, col_7 double precision, col_8 smallserial, col_9 serial, col_10 bigserial);
 INSERT INTO databasetest.crossdatanumbers(col_1 , col_2 , col_3 , col_4 , col_5 , col_6 , col_7 , col_8 , col_9 , col_10 ) VALUES (-32768,-2147483648,-9223372036854775808,-1000.0001,-1000.0001,20000.00,2.00000000000000,1,1,1);
