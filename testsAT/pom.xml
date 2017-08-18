@@ -39,6 +39,14 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
+                    <mapping>
+                        <java>SLASHSTAR_STYLE</java>
+                        <scala>SLASHSTAR_STYLE</scala>
+                        <ts>SLASHSTAR_STYLE</ts>
+                        <scss>JAVADOC_STYLE</scss>
+                        <R>SCRIPT_STYLE</R>
+                    </mapping>
+                    <header>${license.header}</header>
                     <excludes>
                         <exclude>**/scripts/CassandraScript.cql</exclude>
                         <exclude>**/aop.xml</exclude>
