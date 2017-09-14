@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.testsAT.specs;
-
-import com.stratio.specs.BaseGSpec;
+package com.stratio.qa.specs;
 
 /**
  * Created by hdominguez on 13/10/15.

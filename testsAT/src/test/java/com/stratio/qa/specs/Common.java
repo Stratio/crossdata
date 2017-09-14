@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.crossdata.testsAT.specs;
+package com.stratio.qa.specs;
 
-import com.stratio.specs.CommonG;
-import com.stratio.tests.utils.XDContextUtil;
-import com.stratio.tests.utils.XDContextUtils;
-import com.stratio.tests.utils.XDJavaDriver;
+import com.stratio.qa.specs.CommonG;
+import com.stratio.qa.utils.XDContextUtil;
+import com.stratio.qa.utils.XDContextUtils;
+import com.stratio.qa.utils.XDJavaDriver;
 //import com.stratio.tests.utils.XDJavaDriver;
 
 /**

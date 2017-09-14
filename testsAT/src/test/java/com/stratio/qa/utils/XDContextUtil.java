@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.tests.utils;
-
-import com.stratio.crossdata.driver.JavaDriver;
+package com.stratio.qa.utils;
 
 public class XDContextUtil {
 

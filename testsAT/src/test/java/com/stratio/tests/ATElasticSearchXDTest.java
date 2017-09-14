@@ -28,7 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
@@ -39,9 +38,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.stratio.cucumber.testng.CucumberRunner;
-import com.stratio.tests.utils.BaseTest;
-import com.stratio.tests.utils.ThreadProperty;
+import com.stratio.qa.cucumber.testng.CucumberRunner;
+import com.stratio.qa.utils.BaseTest;
+import com.stratio.qa.utils.ThreadProperty;
 
 import cucumber.api.CucumberOptions;
 

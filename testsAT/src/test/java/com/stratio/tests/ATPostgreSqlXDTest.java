@@ -15,10 +15,10 @@
  */
 package com.stratio.tests;
 
-import com.stratio.cucumber.testng.CucumberRunner;
-import com.stratio.tests.utils.BaseTest;
-import com.stratio.tests.utils.CassandraUtils;
-import com.stratio.tests.utils.ThreadProperty;
+import com.stratio.qa.cucumber.testng.CucumberRunner;
+import com.stratio.qa.utils.BaseTest;
+import com.stratio.qa.utils.CassandraUtils;
+import com.stratio.qa.utils.ThreadProperty;
 import cucumber.api.CucumberOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +29,21 @@ import java.sql.DriverManager;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.TimeZone;
 
 //Indicar feature
 @CucumberOptions(features = {
-        "src/test/resources/features/PostgreSQL/PostgreSqlSelectSimple.feature"
+        "src/test/resources/features/PostgreSQL/PostgresqlNotBetweenFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlBetweenFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlLimit.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlInFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlLessFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlLessEqualFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlGreaterFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlGreaterEqualsFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlSelectAndOrFilter.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlSelectSimple.feature",
+        "src/test/resources/features/PostgreSQL/PostgresqlSelectEqualsFilter.feature"
 })
 public class ATPostgreSqlXDTest extends BaseTest {
 
@@ -45,11 +56,15 @@ public class ATPostgreSqlXDTest extends BaseTest {
     private String postgreSQL_password = System.getProperty("POSTGRESQL_PASSWORD", "hakama");
     CassandraUtils functions = new CassandraUtils();
 
-	public ATPostgreSqlXDTest() {
+
+    public ATPostgreSqlXDTest() {
 	}
 
 	@BeforeClass(groups = {"postgreSQL"})
 	public void setUp() {
+        logger.info("Default timezone: " + TimeZone.getDefault().toString());
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Madrid")); //works
+        logger.info("Default timezone before set: " + TimeZone.getDefault().toString());
         String connector = "postgreSQL";
         ThreadProperty.set("Connector", connector);
         ThreadProperty.set("Driver", "context");
@@ -63,6 +78,16 @@ public class ATPostgreSqlXDTest extends BaseTest {
             return;
         }
         logger.info("PostgreSQL JDBC Driver Registered!");
+
+        String postgresqlParams = "Postgresql parameters: " +
+                "\nPostgresql hostname: " +  postgreSQL_hostname +
+                "\nPostgresql Port: " + postgreSQL_port +
+                "\nPostgresql database: " + postgreSQL_database +
+                "\nPostgresql user: " +  postgreSQL_user +
+                "\nPostgresql password: " + postgreSQL_password;
+
+        logger.info(postgresqlParams);
+
         Connection connection = null;
         try {
             connection = DriverManager.getConnection(
