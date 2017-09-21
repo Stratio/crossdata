@@ -56,12 +56,6 @@ Spark Compatibility
 | 1.0.X             |	1.5.X         |
 
 
-=============
-Documentation
-=============
-
-For a complete documentation, please, visit https://stratio.atlassian.net/wiki/display/PLATFORM/STRATIO+CROSSDATA.
-
 ===========
 Get support
 ===========
