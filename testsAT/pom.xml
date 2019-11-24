@@ -17,7 +17,7 @@
     <properties>
         <scala.binary.version>2.11</scala.binary.version>
         <scala.version>2.11.8</scala.version>
-        <stratio-test-bdd.version>0.4.0-SNAPSHOT</stratio-test-bdd.version>
+        <stratio-test-bdd.version>0.4.0</stratio-test-bdd.version>
         <crossdata.version>${project.version}</crossdata.version>
         <assertj-core.version>1.7.0</assertj-core.version>
         <scala_2.10.version>2.10.4</scala_2.10.version>
@@ -39,6 +39,14 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
+                    <mapping>
+                        <java>SLASHSTAR_STYLE</java>
+                        <scala>SLASHSTAR_STYLE</scala>
+                        <ts>SLASHSTAR_STYLE</ts>
+                        <scss>JAVADOC_STYLE</scss>
+                        <R>SCRIPT_STYLE</R>
+                    </mapping>
+                    <header>${license.header}</header>
                     <excludes>
                         <exclude>**/scripts/CassandraScript.cql</exclude>
                         <exclude>**/aop.xml</exclude>
