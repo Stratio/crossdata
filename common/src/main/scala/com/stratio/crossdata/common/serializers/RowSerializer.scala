@@ -16,6 +16,7 @@
 package com.stratio.crossdata.common.serializers
 
 import java.sql.Timestamp
+import java.math.{BigDecimal => JBigDecimal}
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.{GenericRow, GenericRowWithSchema}
@@ -50,6 +51,7 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (_: DecimalType, v: JNumber) =>
         v match {
           case JInt(v) => Decimal(v.toString)
+          case JLong(v) => Decimal(v.toString)
           case JDecimal(v) => Decimal(v)
           case JDouble(v) => Decimal(v)
         }
@@ -94,9 +96,16 @@ case class RowSerializer(providedSchema: StructType) extends Serializer[Row] {
       case (FloatType, v: Float) => JDouble(v)
       case (DoubleType, v: Double) => JDouble(v)
       case (LongType, v: Long) => JInt(v)
+      case (_: DecimalType, v: JBigDecimal) =>
+        import scala.collection.JavaConverters._
+        JDecimal(v)
+      case (_: DecimalType, v: BigDecimal) => JDecimal(v)
       case (_: DecimalType, v: Decimal) => JDecimal(v.toBigDecimal)
+      case (_: DecimalType, v: String) => JDecimal(BigDecimal(v))
       case (_: DecimalType, v: Double) => JDecimal(BigDecimal(v))
       case (_: DecimalType, v: Float) => JDecimal(BigDecimal(v))
+      case (_: DecimalType, v: Long) => JDecimal(BigDecimal(v))
+      case (_: DecimalType, v: Int) => JDecimal(BigDecimal(v))
       case (ByteType, v: Byte) => JInt(v.toInt)
       case (BinaryType, v: Array[Byte]) => JString(new String(v))
       case (BooleanType, v: Boolean) => JBool(v)

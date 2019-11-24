@@ -18,17 +18,18 @@ package com.stratio.crossdata.server
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import akka.actor.{ActorSystem, Address}
+import akka.actor.{ActorSystem, Address, Cancellable}
 import akka.cluster.Cluster
 import com.hazelcast.config.{XmlConfigBuilder, Config => HzConfig}
 import com.stratio.crossdata.server.discovery.{ServiceDiscoveryConfigHelper => SDCH, ServiceDiscoveryHelper => SDH}
-import com.typesafe.config.ConfigValueFactory
+import com.typesafe.config.{Config, ConfigValueFactory}
 import org.apache.curator.framework.recipes.leader.LeaderLatch
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.utils.ZKPaths
 import org.apache.log4j.Logger
 import org.apache.spark.sql.crossdata.session.{HazelcastSessionProvider, XDSessionProvider}
+import org.apache.zookeeper.data.Stat
 
 import scala.collection.JavaConversions._
 import scala.concurrent.duration.FiniteDuration
@@ -45,14 +46,17 @@ trait ServiceDiscoveryProvider {
   protected val hzConfig: HzConfig = new XmlConfigBuilder().build()
   protected[crossdata] var sessionProviderOpt: Option[XDSessionProvider] = None //TODO Remove [crossdata]
 
+  /**
+    * Get public address according to the initial configuration of the servers' cluster.
+    *
+    */
   private def getLocalSeed: String =
     s"${Try(serverConfig.getString("akka.remote.netty.tcp.hostname")).getOrElse("127.0.0.1")}:${Try(serverConfig.getInt("akka.remote.netty.tcp.port")).getOrElse("13420")}"
 
-  private def getLocalSeed(xdCluster: Cluster): String = {
-    val selfAddress = xdCluster.selfAddress
-    s"${selfAddress.host.getOrElse("127.0.0.1")}:${selfAddress.port.getOrElse("13420")}"
-  }
-
+  /**
+    * Get public address according to the initial configuration of the service provider.
+    *
+    */
   private def getLocalMember: String = {
     val defaultAddr = "127.0.0.1"
     val defaultPort = "5701"
@@ -63,13 +67,12 @@ trait ServiceDiscoveryProvider {
     } getOrElse s"$defaultAddr:$defaultPort"
   }
 
-  private def getLocalMember(hsp: HazelcastSessionProvider): String = {
-    val selfAddress = hsp.gelLocalMember.getAddress
-    s"${selfAddress.getHost}:${selfAddress.getPort}"
-  }
-
-
-  protected def startServiceDiscovery(sdch: SDCH) = {
+  /**
+    * It starts the subscription to the Crossdata cluster according to the initial configuration
+    * and the information provided in the remote server of the service discovery.
+    *
+    */
+  protected def startServiceDiscovery(sdch: SDCH): SDH = {
     // Start ZK connection
     val curatorClient = startDiscoveryClient(sdch)
 
@@ -85,10 +88,8 @@ trait ServiceDiscoveryProvider {
   }
 
   /**
-    * Create and start the curator client
+    * Create and start the curator client.
     *
-    * @param sdConfig
-    * @return
     */
   private def startDiscoveryClient(sdConfig: SDCH): CuratorFramework = {
     val curatorClient = CuratorFrameworkFactory.newClient(
@@ -102,13 +103,11 @@ trait ServiceDiscoveryProvider {
   }
 
   /**
-    * Waiting to try to be the leader???
+    * Non-blocking call to acquire cluster leadership. In every moment, there is only one cluster leader.
+    * This cluster leader updates the list of current members of the cluster every x seconds (300 by default).
     *
-    * @param dClient
-    * @param sdc
-    * @return
     */
-  private def requestClusterLeadership(dClient: CuratorFramework, sdc: SDCH) = {
+  private def requestClusterLeadership(dClient: CuratorFramework, sdc: SDCH): Future[Unit] = {
     val cLeaderPath = sdc.getOrElse(SDCH.ClusterLeaderPath, SDCH.DefaultClusterLeaderPath)
 
     logger.debug(s"Service discovery - cluster leadership path: $cLeaderPath")
@@ -139,15 +138,12 @@ trait ServiceDiscoveryProvider {
     leadershipFuture
   }
 
-
   /**
-    * Trying to get who is the leader???
+    * Wait until subscription leadership is acquired in order to: write down this node as part of the seeds
+    * and join to the cluster.
     *
-    * @param dClient
-    * @param sdc
-    * @return
     */
-  private def requestSubscriptionLeadership(dClient: CuratorFramework, sdc: SDCH) = {
+  private def requestSubscriptionLeadership(dClient: CuratorFramework, sdc: SDCH): Try[LeaderLatch] = {
 
     val sLeaderPath = sdc.getOrElse(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath)
 
@@ -171,7 +167,12 @@ trait ServiceDiscoveryProvider {
     }
   }
 
-  private def generateFinalConfig(dClient: CuratorFramework, sdc: SDCH) = {
+  /**
+    * Generate contact points in the config according to the content of the remote server of the service discovery.
+    * In addition, it adds itself to the content of the contact points before generating the final config.
+    *
+    */
+  private def generateFinalConfig(dClient: CuratorFramework, sdc: SDCH): (Config, HzConfig) = {
 
     val pathForSeeds = sdc.getOrElse(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
     logger.debug(s"Service Discovery - seeds path: $pathForSeeds")
@@ -182,8 +183,10 @@ trait ServiceDiscoveryProvider {
     val localSeed = getLocalSeed
     ZKPaths.mkdirs(dClient.getZookeeperClient.getZooKeeper, pathForSeeds)
     val currentSeeds = new String(dClient.getData.forPath(pathForSeeds))
-    val newSeeds = (Set(localSeed) ++ currentSeeds.split(",").toSet).map(m => m.trim).filter(_.nonEmpty)
+    val newSeeds = (localSeed +: currentSeeds.split(",")).map(m => m.trim).filter(_.nonEmpty)
     dClient.setData.forPath(pathForSeeds, newSeeds.mkString(",").getBytes)
+
+    logger.info(s"Service discovery config - Cluster seeds: ${newSeeds.mkString(",")}")
 
     val protocol = s"akka.${
       if (Try(serverConfig.getBoolean("akka.remote.netty.ssl.enable-ssl")).getOrElse(false)) "ssl." else ""
@@ -191,7 +194,7 @@ trait ServiceDiscoveryProvider {
 
     val modifiedAkkaConfig = serverConfig.withValue(
       "akka.cluster.seed-nodes",
-      ConfigValueFactory.fromIterable(newSeeds.map { s =>
+      ConfigValueFactory.fromIterable(newSeeds.toSeq.map { s =>
         val hostPort = s.split(":")
         new Address(protocol,
           serverConfig.getString("config.cluster.name"),
@@ -206,10 +209,12 @@ trait ServiceDiscoveryProvider {
     val currentMembers = new String(dClient.getData.forPath(pathForMembers))
 
     val newMembers = (if (localMember.split(":").head != "127.0.0.1") {
-      currentMembers.split(",").toSet + localMember
+      localMember +: currentMembers.split(",")
     } else {
-      Set(localMember)
+      Array(localMember)
     }).map(m => m.trim).filter(_.nonEmpty)
+
+    logger.info(s"Service discovery config - Provider members: ${newMembers.mkString(",")}")
 
     dClient.setData.forPath(pathForMembers, newMembers.mkString(",").getBytes)
     val modifiedHzConfig = hzConfig.setNetworkConfig(
@@ -221,24 +226,26 @@ trait ServiceDiscoveryProvider {
     (modifiedAkkaConfig, modifiedHzConfig)
   }
 
-  private def updateClusterMembers(h: SDH, hsp: HazelcastSessionProvider) = {
+  /**
+    * It creates a scheduled task (every x seconds, 300 by default) that updates the members of the cluster
+    * on the remote server of the server discovery.
+    *
+    */
+  protected def updateServiceDiscovery(xCluster: Cluster, hsp: HazelcastSessionProvider, s: SDH, aSystem: ActorSystem): Cancellable = {
+    val delay = new FiniteDuration(
+      s.sdch.getOrElse(SDCH.ClusterDelayPath, SDCH.DefaultClusterDelay.toString).toLong, TimeUnit.SECONDS)
 
-    val pathForMembers = h.sdch.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
-    ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
-
-    val updatedMembers = Set(getLocalMember(hsp)) ++ sessionProviderOpt.map {
-      case hzSP: HazelcastSessionProvider =>
-        hzSP.getHzMembers.to[Set].map { m =>
-          s"${m.getAddress.getHost}:${m.getAddress.getPort}"
-        }
-      case _ => Set.empty
-    }.getOrElse(Set.empty)
-
-    logger.info(s"Updating members: ${updatedMembers.mkString(",")}")
-    h.curatorClient.setData.forPath(pathForMembers, updatedMembers.mkString(",").getBytes)
+    import scala.concurrent.ExecutionContext.Implicits.global
+    aSystem.scheduler.schedule(delay, delay)(updateSeeds(xCluster, hsp, s))
   }
 
-  private def updateSeeds(xCluster: Cluster, hsp: HazelcastSessionProvider, h: SDH) = {
+  /**
+    * It acquires the subscription leadership (in order to avoid race conditions with new members
+    * joining to the cluster at the same time) and triggers the methods to update the contact points for
+    * the members of the Crossdata cluster and the members of the service provider.
+    *
+    */
+  private def updateSeeds(xCluster: Cluster, hsp: HazelcastSessionProvider, h: SDH): Unit = {
     val sll = new LeaderLatch(h.curatorClient, h.sdch.getOrElse(SDCH.SubscriptionPath, SDCH.DefaultSubscriptionPath))
     sll.start
     sll.await
@@ -247,22 +254,46 @@ trait ServiceDiscoveryProvider {
     sll.close
   }
 
-  private def updateClusterSeeds(xCluster: Cluster, h: SDH) = {
-    val currentSeeds = xCluster.state.members.filter(_.roles.contains("server")).map(
-      m => s"${m.address.host.getOrElse("127.0.0.1")}:${m.address.port.getOrElse("13420")}") + getLocalSeed(xCluster)
+  /**
+    * Overrides the cluster seeds on the remote server of the service discovery according to the cluster state.
+    *
+    */
+  private def updateClusterSeeds(xCluster: Cluster, h: SDH): Seq[String] = {
+    val currentSeeds: Set[String] = xCluster.state.members.filter(_.roles.contains("server")).map(
+      m => s"${m.address.host.getOrElse("127.0.0.1")}:${m.address.port.getOrElse("13420")}")
+    val newSeeds: Seq[String] = (getLocalSeed +: currentSeeds.toSeq) distinct
     val pathForSeeds = h.sdch.getOrElse(SDCH.SeedsPath, SDCH.DefaultSeedsPath)
     ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForSeeds)
-    logger.info(s"Updating seeds: ${currentSeeds.mkString(",")}")
-    h.curatorClient.setData.forPath(pathForSeeds, currentSeeds.mkString(",").getBytes)
-    currentSeeds
+    val newSeedsStr = newSeeds.mkString(",")
+    logger.info(s"Updating seeds: $newSeedsStr")
+    h.curatorClient.setData.forPath(pathForSeeds, newSeedsStr.getBytes)
+    newSeeds
   }
 
-  protected def updateServiceDiscovery(xCluster: Cluster, hsp: HazelcastSessionProvider, s: SDH, aSystem: ActorSystem) = {
-    val delay = new FiniteDuration(
-      s.sdch.getOrElse(SDCH.ClusterDelayPath, SDCH.DefaultClusterDelay.toString).toLong, TimeUnit.SECONDS)
+  /**
+    * Overrides the service provider members on the remote server of the service discovery according to
+    * the current members.
+    *
+    */
+  private def updateClusterMembers(h: SDH, hsp: HazelcastSessionProvider): Seq[String] = {
 
-    import scala.concurrent.ExecutionContext.Implicits.global
-    aSystem.scheduler.schedule(delay, delay)(updateSeeds(xCluster, hsp, s))
+    val pathForMembers = h.sdch.getOrElse(SDCH.ProviderPath, SDCH.DefaultProviderPath)
+    ZKPaths.mkdirs(h.curatorClient.getZookeeperClient.getZooKeeper, pathForMembers)
+
+    val updatedMembers = getLocalMember +: sessionProviderOpt.map {
+      case hzSP: HazelcastSessionProvider =>
+        hzSP.getHzMembers.to[Seq].map { m =>
+          s"${m.getAddress.getHost}:${m.getAddress.getPort}"
+        }
+      case _ => Seq.empty
+    }.getOrElse(Seq.empty)
+
+    val newMembers = updatedMembers distinct
+    val newMembersStr = newMembers.mkString(",")
+
+    logger.info(s"Updating members: $newMembersStr")
+    h.curatorClient.setData.forPath(pathForMembers, newMembersStr.getBytes)
+    newMembers
   }
 
 }
